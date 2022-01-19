@@ -47,7 +47,9 @@ import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
+import {
+  DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+} from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { Animator, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
@@ -297,6 +299,8 @@ export abstract class Viewport implements IDisposable {
   private readonly _detachFromView: VoidFunction[] = [];
   private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
+  /** @internal */
+  public readonly tileUser: TileUser;
   private readonly _viewportId: number;
   private _doContinuousRendering = false;
   /** @internal */
@@ -439,7 +443,6 @@ export abstract class Viewport implements IDisposable {
 
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
-  private static _nextViewportId = 1;
 
   private _debugBoundingBoxes: TileBoundingBoxes = TileBoundingBoxes.None;
   private _freezeScene = false;
@@ -956,7 +959,14 @@ export abstract class Viewport implements IDisposable {
   protected constructor(target: RenderTarget) {
     this._target = target;
     target.assignFrameStatsCollector(this._frameStatsCollector);
-    this._viewportId = Viewport._nextViewportId++;
+
+    this._viewportId = TileUser.generateTileUserId();
+    this.tileUser = {
+      userId: this._viewportId,
+      viewport: this,
+      iModel: this.iModel,
+    };
+
     this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
     IModelApp.tileAdmin.registerViewport(this);
   }
