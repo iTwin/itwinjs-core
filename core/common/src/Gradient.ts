@@ -96,6 +96,8 @@ export namespace Gradient {
     public thematicSettings?: ThematicGradientSettings;
     public keys: KeyColor[] = [];
 
+    public get tintPlusShift(): number { return this.shift + (this.tint ?? 42); }
+
     /** create a GradientSymb from a json object. */
     public static fromJSON(json?: SymbProps) {
       const result = new Symb();
