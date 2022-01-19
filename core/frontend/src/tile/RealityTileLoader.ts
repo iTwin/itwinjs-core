@@ -74,6 +74,7 @@ export abstract class RealityTileLoader {
     return format;
 
   }
+
   public async loadGeometryFromStream(tile: RealityTile,  streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent> {
     const format = this._getFormat(streamBuffer);
     if (format !== TileFormat.B3dm)
@@ -86,7 +87,6 @@ export abstract class RealityTileLoader {
 
   private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     const format = this._getFormat(streamBuffer);
-
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 

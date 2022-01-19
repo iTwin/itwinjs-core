@@ -32,6 +32,7 @@ export class TerrainDisplayOverrides {
   public wantNormals?: boolean;
   public produceGeometry?: boolean;
 }
+
 /** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
  * @see [[DisplayStyleState.setOSMBuildingDisplay]].
  * @public

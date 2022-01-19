@@ -224,9 +224,10 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
 
-  /** create a tile tree that produces geometry rather than graphics.
+  /** Create a tile tree that produces geometry rather than graphics.
    * This is currently supported only for reality and map tile trees.
-   * @internal
+   * @see [[RealityTileTree.collectRealityTiles]].
+   * @alpha
    */
   public createGeometryTreeRef(): TileTreeReference | undefined {  return undefined;   }
 }

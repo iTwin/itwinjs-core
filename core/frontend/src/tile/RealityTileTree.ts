@@ -146,7 +146,11 @@ export enum RealityTileDrapeStatus { Loading, Success, Error }
 /** Base class for a collecting reality tiles from a [[RealityTileTree]].
  * @alpha
  */
-export abstract class RealityTileCollector {
+/** An object supplied to [[RealityTileTree.collectRealityTiles]] to accumulate geometry from reality tiles based on a chord tolerance and range.
+ * @alpha
+ */
+export class RealityTileCollector {
+  /** Obtain a copy of the list of collected geometry. */
   public acceptedGeometry(): RealityTileGeometry[] {
     const geometry = new Array<RealityTileGeometry>();
     for (const accepted of this.accepted) {
@@ -157,17 +161,20 @@ export abstract class RealityTileCollector {
     return geometry;
   }
 
-  /** Missing (not yet loaded) tiles.  Loading of these tiles can be requested by calling [[RealityTileCollector.requestMissingTiles]].
-   * @internal
-  */
+  /** Missing (not yet loaded) tiles. Loading of these tiles can be requested by calling [[requestMissingTiles]]. */
   public missing = new Set<RealityTile>();
+
   /** The accepted tiles. If [[RealityTileTree.collectTiles]] returns [[RealityTileCollectionStatus.Success]] then this contains complete
-   * collection of loaded tiles accepted by [[RealityTileCollector.selectTile]].
-   * @internal
+   * collection of loaded tiles accepted by [selectTile]].
    */
   public accepted = new Array<RealityTile>();
 
-  protected constructor(private _tolerance: number, private _range: Range3d, protected _iModelTransform: Transform) {  }
+  /** Create a new collector.
+   * @param _tolerance The chord tolerance describing the desired level of detail for the collected tiles.
+   * @param _range The range in which to collect tiles. Tiles that do not intersect this range will not be collected.
+   * @param _iModelTransform A transform from tile tree coordinates to spatial coordinates.
+   */
+  public constructor(private _tolerance: number, private _range: Range3d, protected _iModelTransform: Transform) {  }
 
   private _childrenLoading = false;
 
@@ -175,6 +182,7 @@ export abstract class RealityTileCollector {
   public markChildrenLoading() {
     this._childrenLoading = true;
   }
+
   /** @internal */
   public get loadingComplete() {
     return !this._childrenLoading && 0 === this.missing.size;
@@ -185,8 +193,10 @@ export abstract class RealityTileCollector {
     IModelApp.tileAdmin.requestTiles(viewport, this.missing);
   }
 
-  /** select tile based on the range and tolerance.   Subclasses can refine the selection by calling this method first and
-   * then performing additional filtering on accepted tiles.
+  /** Based on this collector's range and chord tolerance, determine what to do with the specified tile.
+   * If the tile does not intersect the range, it will be rejected.
+   * If it meets the level of detail specified by the chord tolerance, it will be accepted; otherwise, its child tiles will be processed.
+   * Subclasses can refine the selection criteria by overriding this method; they should first call `super.selectTile`.
    */
   public selectTile(tile: Tile): RealityTileCollectionSelectionStatus {
     const tileRange = this._iModelTransform.multiplyRange(tile.range);
@@ -243,6 +253,7 @@ export class RealityTileTree extends TileTree {
 
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
 
+  /** Collect tiles from this tile tree based on the criteria implemented by `collector`. */
   public collectRealityTiles(collector: RealityTileCollector): RealityTileCollectionStatus {
     this.rootTile.collectRealityTiles(collector);
 

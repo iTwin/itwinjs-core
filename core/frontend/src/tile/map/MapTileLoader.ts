@@ -103,7 +103,7 @@ export class MapTileLoader extends RealityTileLoader {
     };
   }
 
-  public loadPolyfaces(_tile: RealityTile,  _data: TileRequest.ResponseData, _system: RenderSystem): Polyface[] | undefined {
+  public loadPolyfaces(): Polyface[] | undefined {
     assert (false, "load polyFaces not implmented for map tiles");
   }
 

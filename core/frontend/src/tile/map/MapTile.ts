@@ -440,11 +440,8 @@ export class MapTile extends RealityTile {
   protected override _collectStatistics(stats: RenderMemory.Statistics): void {
     super._collectStatistics(stats);
 
-    if (undefined !== this._renderGeometry)
-      this._renderGeometry.collectStatistics(stats);
-
-    if (undefined !== this._mesh)
-      this._mesh.collectStatistics(stats);
+    this._renderGeometry?.collectStatistics(stats);
+    this._mesh?.collectStatistics(stats);
   }
 
   /** Height range is along with the tile corners to detect if tile intersects view frustum.

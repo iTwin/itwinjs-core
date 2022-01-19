@@ -131,6 +131,17 @@ export class TerrainDrapeTool extends PrimitiveTool {
     IModelApp.notifications.outputPromptByKey(`SVTTools:tools.TerrainDrape.Prompts.${undefined === this._drapeTreeRef ? "SelectDrapeRealityModel" : "EnterDrapePoint"}`);
   }
 
+  private getGeometryTreeRef(vp: Viewport, modelId: string): TileTreeReference | undefined {
+    let treeRef;
+    vp.forEachTileTreeRef((ref) => {
+      const tree = ref.treeOwner.load();
+      if (tree?.modelId === modelId)
+        treeRef = ref.createGeometryTreeRef();
+    });
+
+    return treeRef;
+  }
+
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
     if (undefined !== this._drapeTreeRef)
       return LocateFilterStatus.Accept;
@@ -138,7 +149,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
     if (!hit.modelId)
       return LocateFilterStatus.Reject;
 
-    return hit.viewport.getGeometryTreeRef(hit.modelId) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
+    return this.getGeometryTreeRef(hit.viewport, hit.modelId) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -169,7 +180,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
       if (hit?.modelId) {
         this._drapePoints.push(hit.hitPoint);
         this._drapeViewport = hit.viewport;
-        this._drapeTreeRef = hit.viewport.getGeometryTreeRef(hit.modelId);
+        this._drapeTreeRef = this.getGeometryTreeRef(hit.viewport, hit.modelId);
       }
     } else {
       this._drapePoints.push(hit ? hit.hitPoint : ev.point);
