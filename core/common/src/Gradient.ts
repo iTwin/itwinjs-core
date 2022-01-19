@@ -300,13 +300,11 @@ export namespace Gradient {
       const stepCount = Math.min(settings.stepCount, maxDimension);
       const dimension = (ThematicGradientMode.Smooth === settings.mode) ? maxDimension : stepCount;
       const hasAlpha = this.hasTranslucency;
-      const image = new Uint8Array(1 * dimension * (hasAlpha ? 4 : 3));
+      const image = new Uint8Array(1 * dimension * 4);
       let currentIdx = image.length - 1;
 
       function addColor(color: ColorDef) {
-        if (hasAlpha)
-          image[currentIdx--] = color.getAlpha();
-
+        image[currentIdx--] = hasAlpha ? color.getAlpha(): 255;
         image[currentIdx--] = color.colors.b;
         image[currentIdx--] = color.colors.g;
         image[currentIdx--] = color.colors.r;
@@ -341,7 +339,7 @@ export namespace Gradient {
       }
 
       assert(-1 === currentIdx);
-      const imageBuffer = ImageBuffer.create(image, hasAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb, 1);
+      const imageBuffer = ImageBuffer.create(image, ImageBufferFormat.Rgba, 1);
       assert(undefined !== imageBuffer);
       return imageBuffer;
     }
@@ -358,7 +356,7 @@ export namespace Gradient {
       const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
       const cosA = Math.cos(thisAngle);
       const sinA = Math.sin(thisAngle);
-      const image = new Uint8Array(width * height * (hasAlpha ? 4 : 3));
+      const image = new Uint8Array(width * height * 4);
       let currentIdx = image.length - 1;
       const shift = Math.min(1.0, Math.abs(this.shift));
 
@@ -397,9 +395,7 @@ export namespace Gradient {
                   f = Math.sin(Math.PI / 2 * (1.0 - d / dMin));
               }
               const color = this.mapColor(f);
-              if (hasAlpha)
-                image[currentIdx--] = color.getAlpha();
-
+              image[currentIdx--] = hasAlpha ? color.getAlpha(): 255;
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -418,9 +414,7 @@ export namespace Gradient {
               const yr = y * cosA - x * sinA;
               const f = Math.sin(Math.PI / 2 * (1 - Math.sqrt(xr * xr + yr * yr)));
               const color = this.mapColor(f);
-              if (hasAlpha)
-                image[currentIdx--] = color.getAlpha();
-
+              image[currentIdx--] = hasAlpha ? color.getAlpha(): 255;
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -438,9 +432,7 @@ export namespace Gradient {
               const x = xs + i / width - 0.5;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y) / r));
               const color = this.mapColor(f);
-              if (hasAlpha)
-                image[currentIdx--] = color.getAlpha();
-
+              image[currentIdx--] = hasAlpha ? color.getAlpha(): 255;
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -457,9 +449,7 @@ export namespace Gradient {
               const x = i / width - xs;
               const f = Math.sin(Math.PI / 2 * (1.0 - Math.sqrt(x * x + y * y)));
               const color = this.mapColor(f);
-              if (hasAlpha)
-                image[currentIdx--] = color.getAlpha();
-
+              image[currentIdx--] = hasAlpha ? color.getAlpha(): 255;
               image[currentIdx--] = color.colors.b;
               image[currentIdx--] = color.colors.g;
               image[currentIdx--] = color.colors.r;
@@ -497,9 +487,7 @@ export namespace Gradient {
               }
             }
             for (let i = 0; i < width; i++) {
-              if (hasAlpha)
-                image[currentIdx--] = color!.getAlpha();
-
+              image[currentIdx--] = hasAlpha ? color!.getAlpha(): 255;
               image[currentIdx--] = color!.colors.b;
               image[currentIdx--] = color!.colors.g;
               image[currentIdx--] = color!.colors.r;
@@ -509,7 +497,7 @@ export namespace Gradient {
       }
 
       assert(-1 === currentIdx);
-      const imageBuffer = ImageBuffer.create(image, hasAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb, width);
+      const imageBuffer = ImageBuffer.create(image, ImageBufferFormat.Rgba, width);
       assert(undefined !== imageBuffer);
       return imageBuffer;
     }
