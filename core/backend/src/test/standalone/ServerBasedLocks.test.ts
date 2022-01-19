@@ -182,9 +182,9 @@ describe("Server-based locks", () => {
     assertExclusiveLocks(bc1Locks, newElId);
 
     childEl.userLabel = "new user label";
-    assert.throws(() => bc1.elements.updateElement(childEl), "exclusive lock");
+    assert.throws(() => bc1.elements.updateElement(childEl.toJSON()), "exclusive lock");
     await bc1Locks.acquireLocks({ exclusive: child1 });
-    bc1.elements.updateElement(childEl);
+    bc1.elements.updateElement(childEl.toJSON());
     bc1.saveChanges();
 
     bc1.elements.deleteElement(child1); // make sure delete now works

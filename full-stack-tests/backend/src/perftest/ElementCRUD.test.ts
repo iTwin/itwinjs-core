@@ -143,7 +143,7 @@ describe("PerformanceElementsTests", () => {
         for (let m = 0; m < size; ++m) {
           const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
           const geomElement = seedIModel.elements.createElement(elementProps);
-          const id = seedIModel.elements.insertElement(geomElement);
+          const id = seedIModel.elements.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert worked");
         }
 
@@ -178,7 +178,7 @@ describe("PerformanceElementsTests", () => {
             const elementProps = createElemProps(name, perfimodel, newModelId, spatialCategoryId);
             const geomElement = perfimodel.elements.createElement(elementProps);
             const startTime = new Date().getTime();
-            const id = perfimodel.elements.insertElement(geomElement);
+            const id = perfimodel.elements.insertElement(geomElement.toJSON());
             const endTime = new Date().getTime();
             assert.isTrue(Id64.isValidId64(id), "insert worked");
             const elapsedTime = (endTime - startTime) / 1000.0;
@@ -295,7 +295,7 @@ describe("PerformanceElementsTests", () => {
             (editElem as any).baseStr = "PerfElement - UpdatedValue";
             editElem.setUserProperties("geom", geometryStream);
             try {
-              perfimodel.elements.updateElement(editElem);
+              perfimodel.elements.updateElement(editElem.toJSON());
             } catch (_err) {
               assert.fail("Element.update failed");
             }
@@ -353,7 +353,7 @@ describe("PerformanceElementsTests2d", () => {
         for (let m = 0; m < size; ++m) {
           const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
           const geomElement = seedIModel.elements.createElement(elementProps);
-          const id = seedIModel.elements.insertElement(geomElement);
+          const id = seedIModel.elements.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert worked");
         }
 
@@ -390,7 +390,7 @@ describe("PerformanceElementsTests2d", () => {
             const elementProps = createElemProps(name, perfimodel, newModelId, drawingCategoryId);
             const geomElement = perfimodel.elements.createElement(elementProps);
             const startTime = new Date().getTime();
-            const id = perfimodel.elements.insertElement(geomElement);
+            const id = perfimodel.elements.insertElement(geomElement.toJSON());
             const endTime = new Date().getTime();
             assert.isTrue(Id64.isValidId64(id), "insert worked");
             const elapsedTime = (endTime - startTime) / 1000.0;
@@ -506,7 +506,7 @@ describe("PerformanceElementsTests2d", () => {
             (editElem as any).baseStr = "PerfElement - UpdatedValue";
             editElem.setUserProperties("geom", geometryStream);
             try {
-              perfimodel.elements.updateElement(editElem);
+              perfimodel.elements.updateElement(editElem.toJSON());
             } catch (_err) {
               assert.fail("Element.update failed");
             }
