@@ -98,3 +98,19 @@ export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
+/** extracts a key expression of a type with a maximum depth of 3, e.g:
+ * ```
+ * DeepKey<{a: {b: {c: number, d: {e: string}}}}>
+ * // is equivalent to
+ * "a" | "a.b" | "a.b.c" | "a.b.d"
+ * // but not
+ * "a.b.d.e" // too deep
+ * ```
+ * useful for storing static deep property paths
+ * @note the amount of depth cannot be generic, so there is a fixed amount, which is currently 3
+ * @public
+ */
+export type DeepKey<T extends Record<string, any>> =
+  | keyof T
+  | `${keyof T extends string ? keyof T : never}.${keyof (Pick<T, string>)}`
+  | `${keyof T extends string ? keyof T : never}.${keyof (Pick<T, string>)}.${keyof Pick<(Pick<T, string>), string>}`;

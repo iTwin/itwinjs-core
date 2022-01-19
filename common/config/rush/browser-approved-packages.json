@@ -615,6 +615,10 @@
       "allowedCategories": [ "common", "frontend", "tools" ]
     },
     {
+      "name": "lodash.get",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "lolex",
       "allowedCategories": [ "backend" ]
     },

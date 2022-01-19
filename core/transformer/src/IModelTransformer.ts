@@ -7,14 +7,14 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired } from "@itwin/core-bentley";
+import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OrderedId64Array } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, DisplayStyle, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
+  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
-  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
-  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, isGeneratedClassTag, KnownLocations, Model,
+  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SpatialViewDefinition, Subject, SynchronizationConfigLink, ViewDefinition, ViewDefinition2d,
 } from "@itwin/core-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
@@ -23,6 +23,7 @@ import {
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
+import lodashGet = require("lodash.get");
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
@@ -102,25 +103,12 @@ export interface IModelTransformOptions {
   danglingPredecessorsBehavior?: "reject" | "ignore";
 }
 
-// TODO: may want to make this local to the transformer and for consumers to register their own correction maps
-// TODO: test by enumerating all biscore classes and their metadata for nav props
-// some biscore js class implementations do not match their ec metadata, this map translates them
-function forceElemToMatchMetaData(elem: Element): Element {
-  if (elem instanceof DisplayStyle) {
-    return new Proxy(elem, {
-      get(obj, key: string, receiver) {
-        const keyCorrectionsMap: Record<string, string> = {
-          modelSelector: "modelSelectorId",
-          categorySelector: "categorySelectorId",
-        };
-        const correctedKey = keyCorrectionsMap[key] ?? key;
-        return Reflect.get(obj, correctedKey, receiver);
-      },
-    });
-  } else {
-    return elem;
-  }
-}
+// TODO things to test:
+// - exhaustive transforming all (null?) properties of biscore classes
+// - test case for cyclic nav prop references
+// - test case for, if I use collectPredecessorIds for classes that don't implement requiredReferenceKeys and
+//   I don't defer but instead immediately try to transform them, what happens if there's a cycle of predecessors? What happened in the old system?
+// - need to add behavior for what to do if an element is never finalized (it should have been "skipped" or not?)
 
 /** maybe rename to PartiallyComittedElementFinalizer */
 class PartiallyCommittedElement {
@@ -435,31 +423,69 @@ export class IModelTransformer extends IModelExportHandler {
 
   private collectUnmappedReferences(element: Element) {
     const elementId = element.id;
-    const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
-    const navigationProps = Object.entries(entityMetaData.properties)
-      .filter(([_propName, prop]) => prop.isNavigation)
-      .map(([propName, _prop]) => propName);
 
     let thisPartialElem: PartiallyCommittedElement;
 
-    for (const navProp of navigationProps) {
-      const navPropValInSource: RelatedElement | undefined = (element as any)[navProp]; // cast to any since subclass can have any extensions
-      if (!navPropValInSource || !Id64.isValid(navPropValInSource.id)) continue;
-      const navPropValInTarget = this.context.findTargetElementId(navPropValInSource.id);
-      if (Id64.isValid(navPropValInTarget)) continue;
-      Logger.logTrace(loggerCategory, `Remapping not found for predecessor ${navPropValInTarget}`);
+    const insertPendingReferenceFinalizer = (referenceInSource: Id64String, accessor: string) => {
+      const referenceInTarget = this.context.findTargetElementId(referenceInSource);
+      if (Id64.isValid(referenceInTarget)) return;
+      Logger.logTrace(loggerCategory, `Remapping not found for predecessor in property '${accessor}' of element '${referenceInSource}'`);
       if (!this._partiallyCommittedElements.has(elementId)) {
+        // FIXME: probably to make onTransformElement work as well as possible, need to keep any transformed props from before the predecessor check
         const props = {};
         thisPartialElem = new PartiallyCommittedElement(props, 0, this.makeCompleter(elementId, props));
         this._partiallyCommittedElements.set(elementId, thisPartialElem);
       }
-      if (!this._pendingReferencesFinalizers.has(navPropValInSource.id))
-        this._pendingReferencesFinalizers.set(navPropValInSource.id, new Map());
-      if (!this._pendingReferencesFinalizers.get(navPropValInSource.id)!.has(elementId))
-        this._pendingReferencesFinalizers.get(navPropValInSource.id)!.set(elementId, (resolvedId) => {
-          thisPartialElem.resolveProp(navProp, resolvedId);
+      if (!this._pendingReferencesFinalizers.has(referenceInSource))
+        this._pendingReferencesFinalizers.set(referenceInSource, new Map());
+      if (!this._pendingReferencesFinalizers.get(referenceInSource)!.has(elementId))
+        this._pendingReferencesFinalizers.get(referenceInSource)!.set(elementId, (resolvedId) => {
+          thisPartialElem.resolveProp(accessor, resolvedId);
         });
       thisPartialElem!.missingReferenceCount += 1;
+    };
+
+    const isGeneratedClass = isGeneratedClassTag in element.constructor;
+
+    if (isGeneratedClass) {
+      const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
+      const navigationProps = Object.entries(entityMetaData.properties)
+        .filter(([_propName, prop]) => prop.isNavigation)
+        .map(([propName, _prop]) => propName);
+
+      for (const navProp of navigationProps) {
+        const navPropValInSource: RelatedElement | undefined = (element as any)[navProp]; // cast to any since subclass can have any extensions
+        if (!navPropValInSource || !Id64.isValid(navPropValInSource.id)) continue;
+        insertPendingReferenceFinalizer(navPropValInSource.id, navProp);
+      }
+    } else {
+      const nonGeneratedElemClass = element.constructor as typeof Element;
+      for (const referenceKey of nonGeneratedElemClass.requiredReferenceKeys) {
+        const reference = lodashGet(element, referenceKey);
+        if (reference === undefined)
+          continue;
+        if (reference === Id64.invalid)
+          continue;
+
+        // a more prudent check would be Id64.isValidId64, but the performance isn't great and we're relying on non-programmer error
+        const isId64String = (arg: any): arg is Id64String => typeof arg === "string";
+        const isRelatedElem = (arg: any): arg is RelatedElement => arg && typeof arg === "object" && "id" in arg;
+        const isId64Array = (arg: any): arg is Id64String[] => Array.isArray(arg);
+        const isId64OrderedArray = (arg: any): arg is OrderedId64Array => arg instanceof OrderedId64Array;
+        const isCompressedId64Set = (arg: any): arg is CompressedId64Set => /\*|\+/.test(arg);
+
+        if (isId64String(reference)) {
+          insertPendingReferenceFinalizer(reference, referenceKey);
+        } else if (isRelatedElem(reference)) {
+          insertPendingReferenceFinalizer(reference.id, referenceKey);
+        } else if (isId64Array(reference)) {
+          // FIXME
+        } else if (isId64OrderedArray(reference)) {
+          // FIXME
+        } else if (isCompressedId64Set(reference)) {
+          // FIXME
+        }
+      }
     }
   }
 

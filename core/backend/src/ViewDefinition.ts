@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { DeepKey, Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
@@ -187,6 +187,10 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     if (!Id64.isValid(this.displayStyleId))
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
   }
+
+  public static override get requiredReferenceKeys(): DeepKey<ViewDefinition>[] { return this._viewDefinitionReferencePaths; }
+  // eslint-disable-next-line @typescript-eslint/dot-notation
+  private static _viewDefinitionReferencePaths: DeepKey<ViewDefinition>[] = [...super["_elementReferencePaths"], "categorySelectorId", "displayStyleId"];
 
   /** @internal */
   public override toJSON(): ViewDefinitionProps {

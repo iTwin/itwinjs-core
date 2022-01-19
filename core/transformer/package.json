@@ -75,7 +75,9 @@
     "typescript": "~4.4.0"
   },
   "dependencies": {
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "lodash.get": "~4.4.2",
+    "@types/lodash.get": "~4.4.6"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

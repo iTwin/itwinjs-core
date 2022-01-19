@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import { CompressedId64Set, DeepKey, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
@@ -343,6 +343,7 @@ export class Element extends Entity implements ElementProps {
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces predecessors.
    * @see getPredecessorIds
    * @beta
+   * @deprecated implement [[Element.requiredReferenceKeys]] instead
    */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     predecessorIds.add(this.model); // The modeledElement is a predecessor
@@ -356,12 +357,22 @@ export class Element extends Entity implements ElementProps {
    * This is important for cloning operations but can be useful in other situations as well.
    * @see collectPredecessorIds
    * @beta
+   * @deprecated implement [[Element.requiredReferenceKeys]] instead
    */
   public getPredecessorIds(): Id64Set {
     const predecessorIds = new Set<Id64String>();
+    // eslint-disable-next-line deprecation/deprecation
     this.collectPredecessorIds(predecessorIds);
     return predecessorIds;
   }
+
+  /** A *required reference* is an element that had to be inserted before this element could have been inserted.
+   * This is the list of property keys on this element that store references to those elements
+   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces requires references.
+   * @beta
+   */
+  public static get requiredReferenceKeys(): string[] { return this._elementReferencePaths; }
+  private static _elementReferencePaths: DeepKey<Element>[] = ["parent", "model", "code.scope"];
 
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
@@ -446,6 +457,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
+    // eslint-disable-next-line deprecation/deprecation
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.category);
     // TODO: GeometryPartIds?
@@ -888,6 +900,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
+    // eslint-disable-next-line deprecation/deprecation
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.border) { predecessorIds.add(this.border); }
   }
@@ -913,6 +926,7 @@ export class Sheet extends Document implements SheetProps {
   }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
+    // eslint-disable-next-line deprecation/deprecation
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.sheetTemplate) { predecessorIds.add(this.sheetTemplate); }
   }
@@ -1050,6 +1064,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
+    // eslint-disable-next-line deprecation/deprecation
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.recipe) { predecessorIds.add(this.recipe.id); }
   }
@@ -1552,6 +1567,7 @@ export class RenderTimeline extends InformationRecordElement {
 
   /** @alpha */
   protected override collectPredecessorIds(ids: Id64Set): void {
+    // eslint-disable-next-line deprecation/deprecation
     super.collectPredecessorIds(ids);
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
     script?.discloseIds(ids);
