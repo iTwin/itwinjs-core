@@ -89,6 +89,26 @@ export class ClassRegistry {
     // the above line creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
 
+    const navigationProps = Object.entries(entityMetaData.properties)
+      .filter(([_propName, prop]) => prop.isNavigation)
+      .map(([propName, _prop]) => propName);
+
+    if (ClassUtils.isProperSubclassOf(generatedClass, Element)) {
+      Object.defineProperty(
+        generatedClass.prototype,
+        "collectPredecessorIds",
+        {
+          get: () => function (this: typeof generatedClass, predecessorIds: Id64Set) {
+            for (const navProp of navigationProps) {
+              const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
+              if (!relatedElem || !Id64.isValid(relatedElem.id)) continue;
+              predecessorIds.add(relatedElem.id);
+            }
+          },
+        }
+      );
+    }
+
     // if the schema is a proxy for a domain with behavior, throw exceptions for all protected operations
     if (schema.missingRequiredBehavior) {
       const throwError = () => { throw new IModelError(IModelStatus.WrongHandler, `Schema [${domainName}] not registered, but is marked with SchemaHasBehavior`); };
