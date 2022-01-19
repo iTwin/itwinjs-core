@@ -110,7 +110,7 @@ export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any
  * @note the amount of depth cannot be generic, so there is a fixed amount, which is currently 3
  * @public
  */
-export type DeepKey<T extends Record<string, any>> =
-  | keyof T
-  | `${keyof T extends string ? keyof T : never}.${keyof (Pick<T, string>)}`
-  | `${keyof T extends string ? keyof T : never}.${keyof (Pick<T, string>)}.${keyof Pick<(Pick<T, string>), string>}`;
+export type DeepKey<T> =
+  | `${keyof T & string}`
+  | `${keyof T & string}.${keyof (T[keyof T & string]) & string}`;
+
