@@ -4,18 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 import "./VisibilityWidget.scss";
 import * as React from "react";
-import { IModelApp, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { FilteringInput, SelectableContent, SelectionMode } from "@bentley/ui-components";
-import { WebFontIcon } from "@bentley/ui-core";
+import { useResizeDetector } from "react-resize-detector";
+import { BeEvent, Id64Array, Id64String } from "@itwin/core-bentley";
+import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
+import { IPresentationTreeDataProvider } from "@itwin/presentation-components";
+import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@itwin/components-react";
+import { Icon, WebFontIcon } from "@itwin/core-react";
 import {
-  CategoryTree, ClassGroupingOption, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
-} from "@bentley/ui-framework";
+  CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories,
+  WidgetControl,
+} from "@itwin/appui-react";
+import { Button } from "@itwin/itwinui-react";
+import { SampleAppIModelApp } from "../..";
+import cancelFilterIconSvg from "../icons/filter-outlined.svg?sprite";
+import filterIconSvg from "../icons/filter.svg?sprite";
 
 export class VisibilityWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactNode = <VisibilityTreeComponent imodel={options.iModelConnection} activeView={IModelApp.viewManager.selectedView} enablePreloading={options.enablePreloading}
+    this.reactNode = <VisibilityTreeComponent imodel={options.iModelConnection} activeView={IModelApp.viewManager.selectedView}
       config={options.config} />;
   }
 }
@@ -23,7 +30,6 @@ export class VisibilityWidgetControl extends WidgetControl {
 interface VisibilityTreeComponentProps {
   imodel: IModelConnection;
   activeView?: Viewport;
-  enablePreloading?: boolean;
   config?: {
     modelsTree: {
       selectionMode?: SelectionMode;
@@ -35,28 +41,29 @@ interface VisibilityTreeComponentProps {
   };
 }
 
-function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
-  const { imodel, activeView, enablePreloading } = props;
+export function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
+  const { imodel, activeView } = props;
   const modelsTreeProps = props.config?.modelsTree;
   const categoriesTreeProps = props.config?.categoriesTree;
-  const selectLabel = IModelApp.i18n.translate("UiFramework:visibilityWidget.options");
+  const selectLabel = IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.options");
+  const filteredElementIds = useElementIdsFiltering(props.activeView);
   return (
     <div className="ui-test-app-visibility-widget">
       <SelectableContent defaultSelectedContentId="models-tree" selectAriaLabel={selectLabel}>
         {[{
           id: "models-tree",
-          label: IModelApp.i18n.translate("UiFramework:visibilityWidget.modeltree"),
+          label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.modeltree"),
           render: React.useCallback(
-            () => <ModelsTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...modelsTreeProps} />,
-            [imodel, activeView, enablePreloading, modelsTreeProps],
+            () => <ModelsTreeComponent iModel={imodel} activeView={activeView} {...modelsTreeProps} filteredElementIds={filteredElementIds} />,
+            [imodel, activeView, modelsTreeProps, filteredElementIds],
           ),
         },
         {
           id: "categories-tree",
-          label: IModelApp.i18n.translate("UiFramework:visibilityWidget.categories"),
+          label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.categories"),
           render: React.useCallback(
-            () => <CategoriesTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...categoriesTreeProps} />,
-            [imodel, activeView, enablePreloading, categoriesTreeProps],
+            () => <CategoriesTreeComponent iModel={imodel} activeView={activeView} {...categoriesTreeProps} />,
+            [imodel, activeView, categoriesTreeProps],
           ),
         }]}
       </SelectableContent>
@@ -68,8 +75,8 @@ interface ModelsTreeComponentProps {
   iModel: IModelConnection;
   selectionMode?: SelectionMode;
   selectionPredicate?: ModelsTreeSelectionPredicate;
-  enablePreloading?: boolean;
   activeView?: Viewport;
+  filteredElementIds?: Id64Array;
 }
 
 function ModelsTreeComponent(props: ModelsTreeComponentProps) {
@@ -79,21 +86,37 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
     activeMatchIndex,
     onFilterApplied,
   } = useTreeFilteringState();
-
+  const { width, height, ref } = useResizeDetector();
   return (
     <>
       <Toolbar
-        searchOptions={searchOptions}
-      />
-      <ModelsTree
-        {...props}
-        enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
-        filterInfo={{
-          filter: filterString,
-          activeMatchIndex,
-        }}
-        onFilterApplied={onFilterApplied}
-      />
+        searchOptions={searchOptions} >
+        {[
+          <Button
+            key="activate-filter-btn"
+            onClick={async () => IModelApp.tools.run(TriggerFilterHierarchyByVisibleElementIdsTool.toolId)}>
+            <Icon iconSpec={`svg:${filterIconSvg}`} />
+          </Button>,
+          <Button
+            key="cancel-filter-btn"
+            onClick={async () => IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId)}>
+            <Icon iconSpec={`svg:${cancelFilterIconSvg}`} />
+          </Button>,
+        ]}
+      </Toolbar>
+      <div ref={ref} className="ui-test-app-visibility-tree-content">
+        {width && height ? <ModelsTree
+          {...props}
+          enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
+          filterInfo={{
+            filter: filterString,
+            activeMatchIndex,
+          }}
+          onFilterApplied={onFilterApplied}
+          width={width}
+          height={height}
+        /> : null}
+      </div>
     </>
   );
 }
@@ -102,7 +125,6 @@ interface CategoriesTreeComponentProps {
   iModel: IModelConnection;
   allViewports?: boolean;
   activeView?: Viewport;
-  enablePreloading?: boolean;
 }
 
 function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
@@ -122,35 +144,41 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
     return toggleAllCategories(IModelApp.viewManager, props.iModel, false, undefined, true, filteredProvider);
   }, [props.iModel, filteredProvider]);
 
+  const { width, height, ref } = useResizeDetector();
+
   return (
     <>
       <Toolbar
         searchOptions={searchOptions}
       >
         {[
-          <button key="show-all-btn" onClick={showAll}>
+          <Button key="show-all-btn" onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
-          </button>,
-          <button key="hide-all-btn" onClick={hideAll}>
+          </Button>,
+          <Button key="hide-all-btn" onClick={hideAll}>
             <WebFontIcon iconName="icon-visibility-hide-2" />
-          </button>,
+          </Button>,
         ]}
       </Toolbar>
-      <CategoryTree
-        {...props}
-        filterInfo={{
-          filter: filterString,
-          activeMatchIndex,
-        }}
-        onFilterApplied={onFilterApplied}
-      />
+      <div ref={ref} style={{ width: "100%", height: "100%", overflow: "hidden" }}>
+        {width && height ? <CategoryTree
+          {...props}
+          filterInfo={{
+            filter: filterString,
+            activeMatchIndex,
+          }}
+          onFilterApplied={onFilterApplied}
+          width={width}
+          height={height}
+        /> : null}
+      </div>
     </>
   );
 }
 
 interface ToolbarProps {
   searchOptions?: {
-    isFiltering: boolean;
+    filteringStatus: FilteringInputStatus;
     onFilterCancel: () => void;
     onFilterStart: (newFilter: string) => void;
     onResultSelectedChanged: (index: number) => void;
@@ -167,7 +195,7 @@ function Toolbar(props: ToolbarProps) {
       </div>
       {props.searchOptions && <div className="tree-toolbar-searchbox">
         <FilteringInput
-          filteringInProgress={props.searchOptions.isFiltering}
+          status={props.searchOptions.filteringStatus}
           onFilterCancel={props.searchOptions.onFilterCancel}
           onFilterClear={props.searchOptions.onFilterCancel}
           onFilterStart={props.searchOptions.onFilterStart}
@@ -207,10 +235,14 @@ const useTreeFilteringState = () => {
     setMatchedResultCount(matches);
   }, []);
 
-  const isFiltering = !!filterString && matchedResultCount === undefined;
+  const filteringStatus = !!filterString
+    ? (matchedResultCount === undefined)
+      ? FilteringInputStatus.FilteringInProgress
+      : FilteringInputStatus.FilteringFinished
+    : FilteringInputStatus.ReadyToFilter;
   return {
     searchOptions: {
-      isFiltering,
+      filteringStatus,
       onFilterCancel,
       onFilterStart,
       onResultSelectedChanged,
@@ -222,3 +254,96 @@ const useTreeFilteringState = () => {
     filteredProvider,
   };
 };
+
+const MAX_ELEMENTS_TO_FILTER_BY = 10000;
+const useElementIdsFiltering = (activeViewport: Viewport | undefined) => {
+  const [filteredElementIds, setFilteredElementIds] = React.useState<Id64Array | undefined>();
+
+  React.useEffect(() => {
+    const dropTriggerListener = ELEMENTS_FILTER.onTrigger.addListener(() => {
+      activeViewport && activeViewport.queryVisibleFeatures({ source: "screen" }, (features) => {
+        const ids = new Set<Id64String>();
+        for (const feature of features) {
+          ids.add(feature.elementId);
+          if (ids.size > MAX_ELEMENTS_TO_FILTER_BY) {
+            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Too many elements visible in the view",
+              `There are too many elements visible in the view to filter the hierarchy. Please zoom-in closer to reduce the number of visible elements.`));
+            setFilteredElementIds(undefined);
+            return;
+          }
+        }
+        setFilteredElementIds([...ids]);
+      });
+    });
+    const dropCancelListener = ELEMENTS_FILTER.onCancel.addListener(() => {
+      setFilteredElementIds(undefined);
+    });
+    return () => {
+      dropTriggerListener();
+      dropCancelListener();
+    };
+  }, [activeViewport]);
+
+  React.useEffect(() => {
+    TriggerFilterHierarchyByVisibleElementIdsTool.register(SampleAppIModelApp.sampleAppNamespace);
+    CancelFilterHierarchyByVisibleElementIdsTool.register(SampleAppIModelApp.sampleAppNamespace);
+    return () => {
+      IModelApp.tools.unRegister(TriggerFilterHierarchyByVisibleElementIdsTool.toolId);
+      IModelApp.tools.unRegister(CancelFilterHierarchyByVisibleElementIdsTool.toolId);
+    };
+  }, []);
+
+  return filteredElementIds;
+};
+
+class FilterHierarchyByElementIds {
+  public readonly onTrigger = new BeEvent<() => void>();
+  public readonly onCancel = new BeEvent<() => void>();
+}
+const ELEMENTS_FILTER = new FilterHierarchyByElementIds();
+
+export class TriggerFilterHierarchyByVisibleElementIdsTool extends Tool {
+  public static override toolId = "TriggerFilterHierarchyByVisibleElementIds";
+  public override async run(): Promise<boolean> {
+    ELEMENTS_FILTER.onTrigger.raiseEvent();
+    return true;
+  }
+  public static override get keyin(): string {
+    return "visibility widget trigger filter by visible elements";
+  }
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+
+  public static getCommandItemDef() {
+    return new CommandItemDef({
+      iconSpec: `svg:${filterIconSvg}`,
+      commandId: "TriggerFilterHierarchyByVisibleElementIds",
+      label: "Enable filter tree by visible elements",
+      execute: async () => { await IModelApp.tools.run(TriggerFilterHierarchyByVisibleElementIdsTool.toolId); },
+    });
+  }
+}
+
+export class CancelFilterHierarchyByVisibleElementIdsTool extends Tool {
+  public static override toolId = "CancelFilterHierarchyByVisibleElementIds";
+  public override async run(): Promise<boolean> {
+    ELEMENTS_FILTER.onCancel.raiseEvent();
+    return true;
+  }
+  public static override get keyin(): string {
+    return "visibility widget cancel filter by visible elements";
+  }
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+
+  public static getCommandItemDef() {
+    return new CommandItemDef({
+      iconSpec: `svg:${cancelFilterIconSvg}`,
+      commandId: "CancelFilterHierarchyByVisibleElementIds",
+      label: "Cancel filter tree by visible elements",
+      execute: async () => { await IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId); },
+    });
+  }
+}

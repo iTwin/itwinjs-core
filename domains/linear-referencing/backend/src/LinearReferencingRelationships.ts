@@ -6,16 +6,16 @@
  * @module LinearReferencing
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ElementRefersToElements } from "@bentley/imodeljs-backend";
-import { RelatedElement } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { ElementRefersToElements } from "@itwin/core-backend";
+import { RelatedElement } from "@itwin/core-common";
 
 /** Relationship indicating the Linear-Element along which concrete instances mixing-in ILinearlyLocated are located.
  * @beta
  */
 export class ILinearlyLocatedAlongILinearElement extends ElementRefersToElements {
   /** @internal */
-  public static get className(): string { return "ILinearlyLocatedAlongILinearElement"; }
+  public static override get className(): string { return "ILinearlyLocatedAlongILinearElement"; }
 }
 
 /** Relationship indicating bis:Element being linearly-located by a concrete instance mixing-in ILinearLocationElement.
@@ -23,7 +23,7 @@ export class ILinearlyLocatedAlongILinearElement extends ElementRefersToElements
  */
 export class ILinearLocationLocatesElement extends ElementRefersToElements {
   /** @internal */
-  public static get className(): string { return "ILinearLocationLocatesElement"; }
+  public static override get className(): string { return "ILinearLocationLocatesElement"; }
 }
 
 /** Relationship associating Linear-Elements with the elements they came from.

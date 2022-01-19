@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d } from "@bentley/geometry-core";
-import { PolylineData, QPoint3dList } from "@bentley/imodeljs-common";
-import { tesselatePolyline } from "../../../render/primitives/VertexTable";
+import { Point3d } from "@itwin/core-geometry";
+import { PolylineData, QPoint3dList } from "@itwin/core-common";
+import { tesselatePolyline } from "../../../render/primitives/PolylineParams";
 
 describe("PolylineTesselator", () => {
   it("produces joint triangles", () => {

@@ -1,0 +1,137 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../button/button";
+@import "../icons/variables";
+@import "../style/baseline";
+@import "../style/opacity";
+@import "../style/themecolors";
+@import "../text/mixins";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+// cspell:ignore themecolors unbordered
+
+$split-button-padding:  4px;
+
+.core-split-button {
+  flex-shrink: 1;
+
+  @include iui-font-family;
+  @include uicore-buttons-button;
+
+  padding:        $uicore-button-padding;
+  box-shadow:     none;
+
+  cursor:         pointer;
+  margin:         0;
+  display:        flex;
+  box-sizing:     border-box;
+  line-height:    $uicore-line-height;
+  outline:        none;
+
+  &.core-split-button-default-colors {
+    border-color:     $buic-background-control;
+    color:            $buic-foreground-body;
+    background-color: $buic-background-control;
+
+    > .core-split-button-label {
+      &:hover {
+        color: $buic-foreground-primary;
+      }
+    }
+
+    > .core-split-button-arrow {
+      > .core-split-button-arrow-icon {
+        &:hover {
+          color: $buic-foreground-primary;
+        }
+      }
+    }
+
+    &:focus {
+      > .core-split-button-arrow {
+        > .core-split-button-arrow-icon {
+          color: $buic-foreground-primary;
+        }
+      }
+    }
+  }
+
+  > .core-split-button-label {
+    flex: 1;
+    text-align: center;
+
+    &.core-split-button-border {
+      margin: 0 $split-button-padding;
+    }
+  }
+
+  &.core-split-button-border {
+    border-color:   $buic-text-color-disabled;
+    box-shadow:     $buic-inputs-boxshadow 0px 1px 1px inset;
+  }
+
+  > .core-split-button-divider {
+    width: $split-button-padding + 1px;
+
+    &.core-split-button-border {
+      border-right: 1px solid currentColor;
+      opacity: $uicore-opacity-disabled;
+    }
+  }
+
+  > .core-split-button-arrow {
+    > .core-split-button-arrow-icon {
+      transition: transform .2s;
+
+      text-align: center;
+      font-size: $uicore-icons-x-small;
+      line-height: $uicore-line-height;
+    }
+
+    width: $uicore-line-height;
+    height: $uicore-line-height;
+    margin-left: $split-button-padding;
+
+    > .context-menu {
+      top: $uicore-inputs-padding-bordered;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &:active,
+  &:focus {
+    @include uicore-buttons-button-unbordered;
+    border-color:         $buic-foreground-focus;
+
+    &.core-split-button-border {
+      border-color:   $buic-background-control;
+      @include uicore-buttons-button-focused;
+    }
+  }
+
+  &:focus {
+    > .core-split-button-arrow {
+      border: none;
+      box-shadow: none;
+      outline: 0px;
+    }
+  }
+
+  &.core-expanded {
+    border-color:         $buic-foreground-focus;
+
+    &.core-split-button-border {
+      border-color:   $buic-background-control;
+      @include uicore-buttons-button-focused;
+    }
+
+    > .core-split-button-arrow > .core-split-button-arrow-icon {
+      transform: scaleY(-1);
+    }
+  }
+}

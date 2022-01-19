@@ -1,0 +1,15 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "./z-index";
+
+:root {
+
+  /** Default Widget Opacity */
+  --buic-widget-opacity:      0.90;
+
+  /** CSS variables for each z-index layer */
+  @include uicore-z-index-variables();
+
+}

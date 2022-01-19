@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { parseToggle } from "@bentley/frontend-devtools";
+import { parseToggle } from "@itwin/frontend-devtools";
 import {
   DecorateContext, GraphicBranch, GraphicType, IModelApp, RenderGraphic, RenderGraphicOwner, Target, Tool, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 class ShadowMapDecoration {
   private static _instance?: ShadowMapDecoration;
@@ -100,11 +100,11 @@ class ShadowMapDecoration {
 
 /** Decorates all other viewports with the tiles selected for drawing the selected viewport's shadow map. */
 export class ToggleShadowMapTilesTool extends Tool {
-  public static toolId = "ToggleShadowMapTiles";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "ToggleShadowMapTiles";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
-  public run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && vp.view.isSpatialView())
       ShadowMapDecoration.toggle(vp, enable);
@@ -112,10 +112,10 @@ export class ToggleShadowMapTilesTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }

@@ -1,0 +1,25 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+
+@import "./button";
+@import "./disabled";
+
+
+@mixin uicore-buttons-primary {
+
+  @include uicore-buttons-button;
+
+  background:         $buic-accessory-success;
+  color:              $buic-accessory-hollow;
+
+  &:hover {
+    background-color:   $uicore-green-5;
+  }
+
+  &:active {
+    background-color:   $uicore-green-4;
+  }
+}

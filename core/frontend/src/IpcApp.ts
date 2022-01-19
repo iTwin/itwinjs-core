@@ -6,31 +6,16 @@
  * @module NativeApp
  */
 
+import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
 import {
   BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
   iTwinChannel, RemoveFunction,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /**
- * type check for an function that returns a Promise
- * @public
- */
-export type AsyncFunction = (...args: any) => Promise<any>;
-/**
- * a type that is the list of the asynchronous functions in an interface
- * @public
- */
-export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P : never }[keyof T];
-/**
- * get the type of the promised value of an asynchronous function
- * @public
- */
-export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
-
-/**
  * Options for [[IpcApp.startup]]
- * @beta
+ * @public
  */
 export interface IpcAppOptions {
   iModelApp?: IModelAppOptions;
@@ -38,7 +23,7 @@ export interface IpcAppOptions {
 
 /**
  * The frontend of apps with a dedicated backend that can use [Ipc]($docs/learning/IpcInterface.md).
- * @beta
+ * @public
  */
 export class IpcApp {
   private static _ipc: IpcSocketFrontend | undefined;
@@ -120,12 +105,15 @@ export class IpcApp {
     return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
+  /** start an IpcApp.
+   * @note this should not be called directly. It is called by NativeApp.startup */
   public static async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions) {
     this._ipc = ipc;
     IpcAppNotifyHandler.register(); // receives notifications from backend
     await IModelApp.startup(opts?.iModelApp);
   }
 
+  /** @internal */
   public static async shutdown() {
     this._ipc = undefined;
     await IModelApp.shutdown();

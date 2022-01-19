@@ -6,12 +6,12 @@
  * @module HyperModeling
  */
 
-import { assert, BeEvent, Id64String } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
-import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { assert, BeEvent, Id64String } from "@itwin/core-bentley";
+import { Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { IModelReadRpcInterface } from "@itwin/core-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, IModelApp, InputSource, Marker, MarkerImage, MarkerSet, ScreenViewport, ViewClipTool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
 
@@ -79,13 +79,13 @@ export class SectionMarker extends Marker {
   }
 
   /** @internal */
-  public drawDecoration(ctx: CanvasRenderingContext2D): void {
+  public override drawDecoration(ctx: CanvasRenderingContext2D): void {
     if (!this.isActive || !this.drawActive(ctx))
       super.drawDecoration(ctx);
   }
 
   /** @internal */
-  public onMouseEnter(ev: BeButtonEvent) {
+  public override onMouseEnter(ev: BeButtonEvent) {
     // Lazily load the tooltip.
     if (undefined === this.title) {
       IModelReadRpcInterface.getClientForRouting(this.state.iModel.routingContext.token).getToolTipMessage(this.state.iModel.getRpcProps(), this.state.id).then((tooltipMsg) => {
@@ -100,7 +100,7 @@ export class SectionMarker extends Marker {
   }
 
   /** @internal */
-  public onMouseButton(ev: BeButtonEvent): boolean {
+  public override onMouseButton(ev: BeButtonEvent): boolean {
     if (InputSource.Mouse === ev.inputSource && BeButton.Data === ev.button && ev.isDown && ev.viewport)
       this.onMouseButtonEvent.raiseEvent(this);
 
@@ -108,7 +108,7 @@ export class SectionMarker extends Marker {
   }
 
   /** @internal */
-  public addMarker(context: DecorateContext) {
+  public override addMarker(context: DecorateContext) {
     super.addMarker(context);
     if (this.isHilited)
       ViewClipTool.drawClip(context, this.state.clip, undefined, { fillClipPlanes: true, hasPrimaryPlane: true });
@@ -120,7 +120,7 @@ export class SectionMarker extends Marker {
  */
 export class SectionMarkerCluster extends Marker {
   /** Create a new cluster marker */
-  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: Promise<MarkerImage>) {
+  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
     super(location, size);
 
     this.imageOffset = new Point3d(0, 30);
@@ -144,11 +144,12 @@ export class SectionMarkerCluster extends Marker {
     const div = document.createElement("div");
     div.innerHTML = title;
     this.title = div;
-    this.setImage(image);
+    if (image)
+      this.setImage(image);
   }
 
   /** Show the cluster as a white circle with an outline */
-  public drawFunc(ctx: CanvasRenderingContext2D): void {
+  public override drawFunc(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
     ctx.strokeStyle = "#372528";
     ctx.fillStyle = "white";
@@ -158,7 +159,7 @@ export class SectionMarkerCluster extends Marker {
     ctx.stroke();
   }
 
-  public onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Don't allow clicks to be sent to active tool...
+  public override onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Don't allow clicks to be sent to active tool...
 }
 
 /** A [MarkerSet]($frontend) containing [[SectionMarker]]s identifying [SectionDrawingLocation]($backend)s within a spatial view.
@@ -166,7 +167,7 @@ export class SectionMarkerCluster extends Marker {
  * @public
  */
 export class SectionMarkerSet extends MarkerSet<SectionMarker> {
-  public minimumClusterSize = 5;
+  public override minimumClusterSize = 5;
 
   /** Constructor
    * @param viewport The viewport in which the markers are to be displayed.
@@ -182,14 +183,14 @@ export class SectionMarkerSet extends MarkerSet<SectionMarker> {
   }
 
   /** The viewport in which the markers are to be displayed. */
-  public get viewport(): ScreenViewport {
+  public override get viewport(): ScreenViewport {
     assert(undefined !== super.viewport);
     return super.viewport;
   }
 
   /** @internal */
   protected getClusterMarker(cluster: Cluster<SectionMarker>): Marker {
-    return SectionMarkerCluster.makeFrom(cluster.markers[0], cluster, cluster.markers[0].image);
+    return new SectionMarkerCluster(cluster.getClusterLocation(), cluster.markers[0].size, cluster, cluster.markers[0].image);
   }
 
   /** Find the SectionMarker corresponding to the specified [SectionDrawingLocation]($backend) Id. */

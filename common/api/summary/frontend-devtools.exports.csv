@@ -17,8 +17,10 @@ beta;AttachWmtsMapLayerByUrlTool
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
+beta;ChangeBackgroundColorTool 
 beta;ChangeCameraTool 
 beta;ChangeEmphasisSettingsTool 
+beta;ChangeFlashSettingsTool 
 beta;ChangeHiliteSettingsTool 
 beta;class ChangeHiliteTool 
 beta;class ChangePlanProjectionSettingsTool 
@@ -74,7 +76,6 @@ beta;class EmphasizeElementsTool
 beta;EmphasizeSelectedElementsTool 
 beta;EmphasizeVisibleElementsTool 
 beta;ExplosionEffect 
-beta;ExtensionServiceTool 
 beta;FadeOutTool 
 beta;FlipImageConfig 
 beta;FlipImageEffect 
@@ -98,7 +99,7 @@ beta;LoseWebGLContextTool
 beta;MapBaseColorTool 
 beta;MapBaseTransparencyTool 
 beta;MapBaseVisibilityTool 
-beta;MapLayerSubLayerVisiblityTool 
+beta;MapLayerSubLayerVisibilityTool 
 beta;MapLayerTransparencyTool 
 beta;MapLayerVisibilityTool 
 beta;MapLayerZoomTool 
@@ -124,6 +125,7 @@ beta;parseBoolean(arg: string | undefined): boolean | undefined
 beta;parseToggle(arg: string | undefined): string | boolean | undefined
 beta;class PlanarMaskBaseTool 
 beta;ProjectExtentsDecoration
+beta;QueryScheduleScriptTool 
 alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
@@ -167,6 +169,8 @@ beta;SetRealityModelTransparencyTool
 beta;SharpenEffect 
 beta;SharpnessEffect 
 beta;ShowTileVolumesTool 
+beta;SkyCubeTool 
+beta;SkySphereTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
@@ -206,6 +210,8 @@ beta;ToggleSkyboxTool
 beta;ToggleTerrainTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
+beta;ToggleTileTreeReferencesTool 
+beta;ToggleToolTipsTool 
 beta;ToggleViewAttachmentBoundariesTool 
 beta;ToggleViewAttachmentClipShapesTool 
 beta;ToggleViewAttachmentsTool 
@@ -219,3 +225,6 @@ beta;UnsharpenEffect
 beta;ViewportAddRealityModel 
 beta;ViewportTileSizeModifierTool 
 beta;class ViewportToggleTool 
+beta;VignetteConfig 
+beta;VignetteEffect 
+beta;WoWIgnoreBackgroundTool 

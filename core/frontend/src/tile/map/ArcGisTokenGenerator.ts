@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { request, RequestOptions } from "@bentley/itwin-client";
-import { FrontendRequestContext } from "../../imodeljs-frontend";
+import { request, RequestOptions } from "../../request/Request";
 
 /** @packageDocumentation
  * @module Tiles
@@ -74,7 +73,7 @@ export class ArcGisTokenGenerator {
 
     let tokenServicesUrl: string | undefined;
     try {
-      const response = await request(new FrontendRequestContext(""), infoUrl, { method: "GET", responseType: "json" });
+      const response = await request(infoUrl, { method: "GET", responseType: "json" });
       tokenServicesUrl = ArcGisTokenGenerator.getTokenServiceFromInfoJson(response?.body);
     } catch (_error) {
     }
@@ -140,7 +139,7 @@ export class ArcGisTokenGenerator {
         responseType: "json",
       };
 
-      const response = await request(new FrontendRequestContext(""), tokenServiceUrl, httpRequestOptions);
+      const response = await request(tokenServiceUrl, httpRequestOptions);
 
       // Check a token was really generated (an error could be part of the body)
       token = response?.body;

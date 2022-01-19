@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module LocatingElements
  */
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { GeometryClass, LinePixels } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
+import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicType } from "./render/GraphicBuilder";
@@ -154,11 +154,13 @@ export class HitDetail {
   }
 
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
-  public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
+  public draw(_context: DecorateContext) {
+    this.viewport.flashedId = this.sourceId;
+  }
 
   /** Get the tooltip content for this HitDetail. */
   public async getToolTip(): Promise<HTMLElement | string> {
-    let toolTipPromise = this.isElementHit ? IModelApp.viewManager.getElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
+    let toolTipPromise = this.isElementHit ? IModelApp.viewManager.overrideElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
     for (const toolTipProvider of IModelApp.viewManager.toolTipProviders)
       toolTipPromise = toolTipProvider.augmentToolTip(this, toolTipPromise);
     return toolTipPromise;
@@ -176,7 +178,7 @@ export class HitDetail {
   public get isExternalIModelHit(): boolean { return this.iModel !== this.viewport.iModel; }
 }
 
-/** A SnapDetail is generated from the result of [IModelDb.requestSnap]($backend) call. In addition to the HitDetail about the reason the element was *picked*,
+/** A SnapDetail is generated from the result of a snap request. In addition to the HitDetail about the reason the element was *picked*,
  * it holds the *exact* point on the element from the snapping logic, plus additional information that varies with the type of element and snap mode.
  * @public
  */
@@ -210,9 +212,9 @@ export class SnapDetail extends HitDetail {
   }
 
   /** Returns `HitDetailType.Snap` */
-  public getHitType(): HitDetailType { return HitDetailType.Snap; }
+  public override getHitType(): HitDetailType { return HitDetailType.Snap; }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
-  public getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
+  public override getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
   /** Return true if the pick point was closer than the snap aperture from the generated snap point. */
   public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
@@ -252,7 +254,7 @@ export class SnapDetail extends HitDetail {
   }
 
   /** Make a copy of this SnapDetail. */
-  public clone(): SnapDetail {
+  public override clone(): SnapDetail {
     const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint);
     val.sprite = this.sprite;
     val.geomType = this.geomType;
@@ -285,7 +287,7 @@ export class SnapDetail extends HitDetail {
     return this.primitive;
   }
 
-  public draw(context: DecorateContext) {
+  public override draw(context: DecorateContext) {
     if (undefined !== this.primitive) {
       let singleSegment = false;
       switch (this.snapMode) {
@@ -319,13 +321,13 @@ export class SnapDetail extends HitDetail {
 
   private static getSnapSpriteUrl(snapType: SnapMode): string {
     switch (snapType) {
-      case SnapMode.Nearest: return "sprites/SnapPointOn.png";
-      case SnapMode.NearestKeypoint: return "sprites/SnapKeypoint.png";
-      case SnapMode.MidPoint: return "sprites/SnapMidpoint.png";
-      case SnapMode.Center: return "sprites/SnapCenter.png";
-      case SnapMode.Origin: return "sprites/SnapOrigin.png";
-      case SnapMode.Bisector: return "sprites/SnapBisector.png";
-      case SnapMode.Intersection: return "sprites/SnapIntersection.png";
+      case SnapMode.Nearest: return `${IModelApp.publicPath}sprites/SnapPointOn.png`;
+      case SnapMode.NearestKeypoint: return `${IModelApp.publicPath}sprites/SnapKeypoint.png`;
+      case SnapMode.MidPoint: return `${IModelApp.publicPath}sprites/SnapMidpoint.png`;
+      case SnapMode.Center: return `${IModelApp.publicPath}sprites/SnapCenter.png`;
+      case SnapMode.Origin: return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
+      case SnapMode.Bisector: return `${IModelApp.publicPath}sprites/SnapBisector.png`;
+      case SnapMode.Intersection: return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
     }
     return "";
   }
@@ -339,7 +341,7 @@ export class IntersectDetail extends SnapDetail {
     this.normal = from.normal; // Preserve normal from primary snap location for AccuDraw smart rotation...
   }
 
-  public draw(context: DecorateContext) {
+  public override draw(context: DecorateContext) {
     if (undefined !== this.primitive && undefined !== this.otherPrimitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       const outline = context.viewport.hilite.color.adjustedForContrast(context.viewport.view.backgroundColor, 50);

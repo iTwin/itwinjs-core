@@ -7,10 +7,10 @@
  * @module Widgets
  */
 
-import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint } from "@itwin/core-bentley";
 import {
   DisclosedTileTreeSet, IModelApp, RenderMemory, TileTree, TileTreeOwner, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
@@ -216,8 +216,8 @@ export class MemoryTracker {
     row1.appendChild(cell11);
     table.appendChild(row1);
 
-    this._textures = new MemoryPanel(cell00, "Textures", ["Surface Textures", "Vertex Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps", "Texture Attachments", "Thematic Textures"]);
-    this._buffers = new MemoryPanel(cell01, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds", "Instances", "Terrain", "Reality Mesh"]);
+    this._textures = new MemoryPanel(cell00, "Textures", ["Surface Textures", "Vertex Tables", "Edge Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps", "Texture Attachments", "Thematic Textures"]);
+    this._buffers = new MemoryPanel(cell01, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Indexed Edges", "Polylines", "Point Strings", "Point Clouds", "Instances", "Terrain", "Reality Mesh"]);
     this._totalElem = this.addStatistics(cell10);
     this._totalTreesElem = this.addStatistics(cell11);
 

@@ -9,11 +9,11 @@
 import "./ShadowField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { RenderMode, ViewFlags } from "@bentley/imodeljs-common";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { Checkbox } from "@bentley/ui-core";
-import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
-import { FooterIndicator } from "@bentley/ui-ninezone";
+import { RenderMode } from "@itwin/core-common";
+import { ScreenViewport } from "@itwin/core-frontend";
+import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@itwin/appui-react";
+import { FooterIndicator } from "@itwin/appui-layout-react";
+import { Checkbox } from "@itwin/itwinui-react";
 
 // cspell:ignore statusfield
 
@@ -25,7 +25,7 @@ interface ShadowFieldState {
 /**
  * Shadow Field React component. This component is designed to be specified in a status bar definition.
  * It is used to enable/disable display of shadows.
- */
+ */
 export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldState> {
 
   constructor(props: StatusFieldProps) {
@@ -46,12 +46,12 @@ export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldSt
     setImmediate(() => this.setStateFromActiveContent(args.activeContentControl));
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     FrontstageManager.onContentControlActivatedEvent.addListener(this._handleContentControlActivatedEvent);
     this.setStateFromActiveContent(ContentViewManager.getActiveContentControl());
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     FrontstageManager.onContentControlActivatedEvent.removeListener(this._handleContentControlActivatedEvent);
   }
 
@@ -64,12 +64,12 @@ export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldSt
     const vp = this.state.viewport;
     const view = vp.view;
     if (view && view.is3d()) {
-      const scratchViewFlags = new ViewFlags();
-      const vf = vp.viewFlags.clone(scratchViewFlags);
+      let vf = vp.viewFlags;
       if (vf.shadows !== enabled) {
-        vf.shadows = enabled;
-        if (enabled)  // also ensure render mode is set to smooth, this is required to display shadows.
-          vf.renderMode = RenderMode.SmoothShade;
+        vf = vf.with("shadows", enabled);
+        if (enabled)
+          vf = vf.withRenderMode(RenderMode.SmoothShade); // required for shadows.
+
         vp.viewFlags = vf;
         vp.synchWithView();
         this.forceUpdate();
@@ -77,7 +77,7 @@ export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldSt
     }
   };
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     if (!this.state.viewport)
       return null;
 
@@ -100,7 +100,7 @@ export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldSt
         style={this.props.style}
         isInFooterMode={this.props.isInFooterMode}
       >
-        <Checkbox style={cbStyle} label="Shadows" checked={isChecked} onChange={this._onChange} disabled={isDisabled} inputClassName="statusfield-checkbox" labelClassName="statusfield-checkbox-label" />
+        <Checkbox style={cbStyle} label="Shadows" checked={isChecked} onChange={this._onChange} disabled={isDisabled} className="statusfield-checkbox" />
       </FooterIndicator >
     );
   }

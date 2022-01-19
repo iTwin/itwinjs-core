@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { ColorDef } from "@itwin/core-common";
 import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
@@ -25,6 +25,7 @@ import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addClassificationTranslucencyDiscard, octDecodeNormal } from "./Surface";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addModelViewProjectionMatrix, addNormalMatrix } from "./Vertex";
+import { addWiremesh } from "./Wiremesh";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeNormal = `
@@ -223,7 +224,7 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
   addFeatureSymbology(builder, feat, opts);
   if (feat === FeatureMode.Overrides) {
     addShaderFlags(builder);
-    addVaryingColor(builder, "return vec4(-1.0, -1.0, -1.0, -1.0);" );
+    addVaryingColor(builder, "return vec4(-1.0, -1.0, -1.0, -1.0);");
     applyFragmentFeatureColor = mixFeatureColor;
     addColorOverrideMix(builder.frag);
   }
@@ -257,6 +258,9 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
 
   if (IsThematic.Yes === flags.isThematic)
     addThematicToRealityMesh(builder, gradientTextureUnit);
+
+  if (flags.isWiremesh)
+    addWiremesh(builder);
 
   return builder;
 }

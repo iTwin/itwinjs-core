@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "removed deprecated API surface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperationsProfile,
   RpcPushChannel, RpcRoutingToken, WipRpcInterface,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 
 export const testChannel = RpcPushChannel.create<number>("test");
 

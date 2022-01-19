@@ -1,0 +1,61 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/appui-layout-react/lib/cjs/appui-layout-react/widget/tool-settings/variables";
+
+.uifw-tool-settings-content {
+  padding: unset;
+
+  >.nz-container {
+    width: 100%;
+    box-sizing: border-box;
+
+    >.uifw-zone-measurer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 100%;
+      visibility: hidden;
+    }
+
+    >.uifw-measurer {
+      height: 100%;
+      width: 100%;
+    }
+
+    >.uifw-expander {
+      width: 9999px;
+      height: 9999px;
+    }
+
+    &:not(.uifw-measure) {
+      >.uifw-measurer {
+        display: none;
+      }
+
+      >.uifw-expander {
+        display: none;
+      }
+    }
+
+    &.uifw-measure {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+    }
+  }
+
+  &.uifw-title-bar {
+    >.nz-container {
+      padding: $nz-tool-settings-content-padding;
+    }
+  }
+
+  &.uifw-tab {
+    >.nz-container {
+      padding: 5px $nz-tool-settings-content-padding;
+    }
+  }
+}

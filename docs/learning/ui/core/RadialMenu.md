@@ -1,7 +1,7 @@
 # RadialMenu
 
-The [RadialMenu]($ui-core) React component is a context menu arranged in a radial layout.
-The [RadialButton]($ui-core) React component is the button for use within a RadialMenu.
+The [RadialMenu]($core-react) React component is a context menu arranged in a radial layout.
+The [RadialButton]($core-react) React component is the button for use within a RadialMenu.
 
 ## Example
 
@@ -29,7 +29,7 @@ and closed by calling ModalDialogManager.closeDialog.
 ```tsx
 import * as React from "react";
 
-import { RadialMenu, RadialButton } from "@bentley/ui-core";
+import { RadialMenu, RadialButton } from "@itwin/core-react";
 
 export interface TestRadialMenuProps {
   opened: boolean;
@@ -101,4 +101,4 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
 
 ## API Reference
 
-- [RadialMenu]($ui-core:RadialMenu)
+- [RadialMenu]($core-react:RadialMenu)

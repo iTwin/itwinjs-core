@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@bentley/geometry-core";
-import { ClipStyle, HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
+import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { BranchStack } from "./BranchStack";
@@ -19,6 +19,7 @@ import { UniformHandle } from "./UniformHandle";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";
+import { System } from "./System";
 import { Target } from "./Target";
 import { ClipStack } from "./ClipStack";
 
@@ -214,7 +215,14 @@ export class BranchUniforms {
       if (undefined !== instancedGeom) {
         // For instanced geometry, the "model view" matrix is really a transform from center of instanced geometry range to view.
         // Shader will compute final model-view matrix based on this and the per-instance transform.
-        mv.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), mv);
+        if (vio) {
+          const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
+          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
+          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), this._scratchVIModelMatrix);
+          mv.multiplyTransformTransform(viModelMatrix, mv);
+        } else {
+          mv.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), mv);
+        }
       } else {
         if (undefined !== vio) {
           const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
@@ -235,16 +243,17 @@ export class BranchUniforms {
     Matrix4d.createTransform(mv, this._mv);
     this._mv32.initFromTransform(mv);
 
-    const inv = this._mv.createInverse();
-    if (undefined !== inv) {
-      const invTr = inv.cloneTransposed();
-      this._mvn32.initFromMatrix3d(invTr.matrixPart());
-    }
-
     // Don't bother computing mvp for instanced geometry - it's not used.
     if (!this._isInstanced) {
       uniforms.projectionMatrix.multiplyMatrixMatrix(this._mv, this._mvp);
       this._mvp32.initFromMatrix4d(this._mvp);
+      if (!System.instance.capabilities.isWebGL2) { // inverse model to view is only used if not instanced and not WebGL2
+        const inv = this._mv.createInverse();
+        if (undefined !== inv) {
+          const invTr = inv.cloneTransposed();
+          this._mvn32.initFromMatrix3d(invTr.matrixPart());
+        }
+      }
     }
 
     return true;

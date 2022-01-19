@@ -1,0 +1,45 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+@import "~@itwin/itwinui-css/scss/style/speed";
+
+@mixin uicore-expandable-blocks-list {
+
+  > div {
+
+    transition:               margin $iui-speed-fast ease-in-out;
+
+    > .iui-header {
+
+      border-color:           $uicore-gray-a transparent transparent;
+    }
+
+    &:first-child {
+
+      > .iui-header {
+
+        border-top-color:   transparent;
+      }
+    }
+  }
+
+  > .iui-expanded + div {
+
+    > .iui-header {
+
+      border-top-color:       transparent;
+    }
+
+    &.iui-expanded  > .iui-header {
+
+        border-top-color:       $uicore-blue;
+    }
+  }
+
+  > .iui-expanded + .iui-expanded {
+
+    margin-top:                 0; // $uicore-unbordered-padding;
+  }
+}

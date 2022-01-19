@@ -6,7 +6,7 @@
  * @module Effects
  */
 
-import { ScreenSpaceEffectBuilder, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
+import { ScreenSpaceEffectBuilder, UniformType, VaryingType } from "@itwin/core-frontend";
 import { AddEffectTool } from "./EffectTools";
 
 /** Adds one of a collection of "convolution kernels" that alter a [Viewport]($frontend)'s image by blending neighboring pixels.
@@ -14,8 +14,8 @@ import { AddEffectTool } from "./EffectTools";
  * @beta
  */
 export abstract class ConvolutionEffect extends AddEffectTool {
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 0; }
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
 
   protected abstract get matrix(): number[];
 
@@ -58,7 +58,7 @@ export abstract class ConvolutionEffect extends AddEffectTool {
       type: UniformType.Vec2,
       bind: (uniform, context) => {
         const rect = context.viewport.viewRect;
-        uniform.setUniform2fv([ rect.width, rect.height ]);
+        uniform.setUniform2fv([rect.width, rect.height]);
       },
     });
     builder.addUniformArray({
@@ -84,7 +84,7 @@ export abstract class ConvolutionEffect extends AddEffectTool {
  * @beta
  */
 export class GaussianBlurEffect extends ConvolutionEffect {
-  public static toolId = "GaussianBlurEffect";
+  public static override toolId = "GaussianBlurEffect";
   protected get effectName() { return "blur"; }
   protected get matrix() {
     return [
@@ -99,7 +99,7 @@ export class GaussianBlurEffect extends ConvolutionEffect {
  * @beta
  */
 export class UnsharpenEffect extends ConvolutionEffect {
-  public static toolId = "UnsharpenEffect";
+  public static override toolId = "UnsharpenEffect";
   protected get effectName() { return "unsharpen"; }
   protected get matrix() {
     return [
@@ -114,7 +114,7 @@ export class UnsharpenEffect extends ConvolutionEffect {
  * @beta
  */
 export class EmbossEffect extends ConvolutionEffect {
-  public static toolId = "EmbossEffect";
+  public static override toolId = "EmbossEffect";
   protected get effectName() { return "emboss"; }
   protected get matrix() {
     return [
@@ -129,13 +129,13 @@ export class EmbossEffect extends ConvolutionEffect {
  * @beta
  */
 export class SharpenEffect extends ConvolutionEffect {
-  public static toolId = "SharpenEffect";
+  public static override toolId = "SharpenEffect";
   protected get effectName() { return "sharpen"; }
   protected get matrix() {
     return [
-      0,-1, 0,
-      -1, 5,-1,
-      0,-1, 0,
+      0, -1, 0,
+      -1, 5, -1,
+      0, -1, 0,
     ];
   }
 }
@@ -144,13 +144,13 @@ export class SharpenEffect extends ConvolutionEffect {
  * @beta
  */
 export class SharpnessEffect extends ConvolutionEffect {
-  public static toolId = "SharpnessEffect";
+  public static override toolId = "SharpnessEffect";
   protected get effectName() { return "sharpness"; }
   protected get matrix() {
     return [
-      0,-1, 0,
-      -1, 5,-1,
-      0,-1, 0,
+      0, -1, 0,
+      -1, 5, -1,
+      0, -1, 0,
     ];
   }
 }
@@ -159,7 +159,7 @@ export class SharpnessEffect extends ConvolutionEffect {
  * @beta
  */
 export class EdgeDetectionEffect extends ConvolutionEffect {
-  public static toolId = "EdgeDetectionEffect";
+  public static override toolId = "EdgeDetectionEffect";
   protected get effectName() { return "edgedetect"; }
   protected get matrix() {
     return [

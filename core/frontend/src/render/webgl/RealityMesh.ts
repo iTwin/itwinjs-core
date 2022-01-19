@@ -7,10 +7,13 @@
  * @module WebGL
  */
 
-import { assert, dispose, IDisposable } from "@bentley/bentleyjs-core";
-import { Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
-import { AttributeMap, BufferHandle, BufferParameters, IndexedGeometry, IndexedGeometryParams, Matrix4, QBufferHandle2d, QBufferHandle3d } from "../../webgl";
+import { assert, dispose, IDisposable } from "@itwin/core-bentley";
+import { Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
+import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@itwin/core-common";
+import { AttributeMap } from "./AttributeMap";
+import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
+import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
+import { Matrix4 } from "./Matrix";
 import { GraphicBranch } from "../GraphicBranch";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
@@ -19,7 +22,7 @@ import { RenderMemory } from "../RenderMemory";
 import { RenderSystem, TerrainTexture } from "../RenderSystem";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -113,12 +116,12 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
     return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, mesh.indices, normalBuf, mesh.featureID);
   }
 
-  public get isDisposed(): boolean {
+  public override get isDisposed(): boolean {
     return super.isDisposed && this.uvParams.isDisposed;
   }
   public get bytesUsed(): number { return this.positions.bytesUsed + (undefined === this.normals ? 0 : this.normals.bytesUsed) + this.uvParams.bytesUsed + this.indices.bytesUsed; }
 
-  public dispose() {
+  public override dispose() {
     super.dispose();
     dispose(this.uvParams);
   }
@@ -126,19 +129,19 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
 
 /** @internal */
 export class RealityMeshGeometry extends IndexedGeometry implements IDisposable, RenderMemory.Consumer {
-  public get asRealityMesh(): RealityMeshGeometry | undefined { return this; }
-  public get isDisposed(): boolean { return this._realityMeshParams.isDisposed; }
+  public override get asRealityMesh(): RealityMeshGeometry | undefined { return this; }
+  public override get isDisposed(): boolean { return this._realityMeshParams.isDisposed; }
   public get uvQParams() { return this._realityMeshParams.uvParams.params; }
-  public get hasFeatures(): boolean { return this._realityMeshParams.featureID !== undefined; }
-  public get supportsThematicDisplay() { return true; }
-  public get overrideColorMix() { return .5; }     // TThis could be a setting from either the mesh or the override if required.
+  public override get hasFeatures(): boolean { return this._realityMeshParams.featureID !== undefined; }
+  public override get supportsThematicDisplay() { return true; }
+  public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
   public get transform(): Transform | undefined { return this._transform; }
 
   private constructor(private _realityMeshParams: RealityMeshGeometryParams, public textureParams: RealityTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean, private _isTerrain: boolean) {
     super(_realityMeshParams);
   }
 
-  public dispose() {
+  public override dispose() {
     super.dispose();
     dispose(this._realityMeshParams);
   }
@@ -204,10 +207,10 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
               if (!textureRange.isNull)
                 layerTextures.push(new TerrainTexture(secondaryTexture.texture, secondaryTexture.featureId, secondaryTexture.scale, secondaryTexture.translate, secondaryTexture.targetRectangle, secondaryTexture.layerIndex, secondaryTexture.transparency, textureRange));
             }
-            layerTextures.length = Math.min(layerTextures.length, texturesPerMesh);
-            meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
           }
         }
+        layerTextures.length = Math.min(layerTextures.length, texturesPerMesh);
+        meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
       }
     }
 
@@ -216,7 +219,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
     const branch = new GraphicBranch(true);
     for (const mesh of meshes) {
-      const primitive = Primitive.create(() => mesh);
+      const primitive = Primitive.create(mesh);
       branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), { tileId }));
     }
 
@@ -229,18 +232,18 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
   public get techniqueId(): TechniqueId { return TechniqueId.RealityMesh; }
 
-  public getRenderPass(target: Target): RenderPass {
+  public override getPass(target: Target) {
     if (target.isDrawingShadowMap)
-      return RenderPass.None;
+      return "none";
 
     if (this._baseIsTransparent || (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines))
-      return RenderPass.Translucent;
+      return "translucent";
 
-    return RenderPass.OpaqueGeneral;
+    return "opaque";
   }
   public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
 
-  public draw(): void {
+  public override draw(): void {
     this._params.buffers.bind();
     System.instance.context.drawElements(GL.PrimitiveType.Triangles, this._params.numIndices, GL.DataType.UnsignedShort, 0);
     this._params.buffers.unbind();

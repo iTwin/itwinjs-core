@@ -13,7 +13,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
  *
  * **Note:** No data is returned for selected custom nodes.
  *
- * @see [More details]($docs/learning/presentation/Content/SelectedNodeInstances.md)
+ * @see [More details]($docs/presentation/Content/SelectedNodeInstances.md)
  * @public
  */
 export interface SelectedNodeInstancesSpecification extends ContentSpecificationBase {
@@ -39,10 +39,4 @@ export interface SelectedNodeInstancesSpecification extends ContentSpecification
    * classes are accepted as well.
    */
   acceptablePolymorphically?: boolean;
-
-  /**
-   * Identifies whether we should ignore this specification if there is already an existing specification
-   * with higher `priority` that already provides content.
-   */
-  onlyIfNotHandled?: boolean;
 }

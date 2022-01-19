@@ -6,11 +6,10 @@
  * @module MarkupApp
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { Point3d, XAndY } from "@bentley/geometry-core";
-import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { BentleyError, Logger } from "@itwin/core-bentley";
+import { Point3d, XAndY } from "@itwin/core-geometry";
+import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
@@ -19,14 +18,15 @@ import { UndoManager } from "./Undo";
 
 // cspell:ignore blanchedalmond, lmultiply, svgs
 
-/** @beta */
+/** The width and height of a Markup image, in pixels.
+ * @public */
 export interface WidthAndHeight {
   width: number;
   height: number;
 }
 
 /** The size and SVG string for a Markup
- * @beta
+ * @public
  */
 export interface MarkupSvgData {
   /** The size of the image, in pixels. This also indicates the aspect ratio of the SVG data. */
@@ -36,7 +36,7 @@ export interface MarkupSvgData {
 }
 
 /** Markup data returned by [[MarkupApp.stop]]
- * @beta
+ * @public
  */
 export interface MarkupData extends MarkupSvgData {
   /** a base64 encoded string with the image of the view that was marked up. See [[MarkupApp.props.result]] for options. */
@@ -48,13 +48,13 @@ export interface MarkupData extends MarkupSvgData {
  * It has only static members and methods. Applications may customize and control the behavior of the Markup by
  * setting members of [[MarkupApp.props]]. When [[MarkupApp.start]] is first called, it registers a set of "Markup.xxx"
  * tools that may be invoked from UI controls.
- * @beta
+ * @public
  */
 export class MarkupApp {
   /** the current Markup being created */
   public static markup?: Markup;
   /** The namespace for the Markup tools */
-  public static namespace: I18NNamespace;
+  public static namespace?: string;
   /** By setting members of this object, applications can control the appearance and behavior of various parts of MarkupApp. */
   public static props = {
     /** the UI controls displayed on Elements by the Select Tool to allow users to modify them. */
@@ -66,13 +66,13 @@ export class MarkupApp {
       /** The attributes of the line that connects the top-center stretch handle to the rotate handle. */
       rotateLine: { "stroke": "grey", "fill-opacity": .85 },
       /** The attributes of the rotate handle. */
-      rotate: { "cursor": "url(Markup/rotate.png) 12 12, auto", "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
+      rotate: { "cursor": `url(${IModelApp.publicPath}Markup/rotate.png) 12 12, auto`, "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
       /** The attributes of box around the element. */
       moveOutline: { "cursor": "move", "stroke-dasharray": "6,6", "fill": "none", "stroke-opacity": .85, "stroke": "white" },
       /** The attributes of box that provides the move cursor. */
       move: { "cursor": "move", "opacity": 0, "stroke-width": 10, "stroke": "white" },
       /** The attributes of handles on the vertices of lines. */
-      vertex: { "cursor": "url(cursors/crosshair.cur), crosshair", "fill-opacity": .85, "stroke": "black", "fill": "white" },
+      vertex: { "cursor": `url(${IModelApp.publicPath}cursors/crosshair.cur), crosshair`, "fill-opacity": .85, "stroke": "black", "fill": "white" },
     },
     /** properties for providing feedback about selected elements. */
     hilite: {
@@ -163,12 +163,16 @@ export class MarkupApp {
   };
 
   private static _saveDefaultToolId = "";
+  /** @internal */
   public static screenToVbMtx(): Matrix {
     const matrix = this.markup?.svgMarkup?.screenCTM().inverse();
     return (undefined !== matrix ? matrix : new Matrix());
   }
+  /** @internal */
   public static getVpToScreenMtx(): Matrix { const rect = this.markup!.markupDiv.getBoundingClientRect(); return (new Matrix()).translateO(rect.left, rect.top); }
+  /** @internal */
   public static getVpToVbMtx(): Matrix { return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx()); }
+  /** @internal */
   public static convertVpToVb(pt: XAndY): Point3d {
     const pt0 = new Point(pt.x, pt.y);
     pt0.transformO(this.getVpToVbMtx());
@@ -198,7 +202,8 @@ export class MarkupApp {
     style.height = `${height}px`;
   }
 
-  public static getActionName(action: string) { return IModelApp.i18n.translate(`${this.namespace.name}:actions.${action}`); }
+  /** @internal */
+  public static getActionName(action: string) { return IModelApp.localization.getLocalizedString(`${this.namespace}:actions.${action}`); }
 
   /** Start a markup session */
   public static async start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void> {
@@ -222,7 +227,7 @@ export class MarkupApp {
     // set the markup Select tool as the default tool and start it, saving current default tool
     this._saveDefaultToolId = IModelApp.toolAdmin.defaultToolId;
     IModelApp.toolAdmin.defaultToolId = this.markupSelectToolId;
-    IModelApp.toolAdmin.startDefaultTool();
+    return IModelApp.toolAdmin.startDefaultTool();
   }
 
   /** Read the result of a Markup session, then stop the session.
@@ -242,7 +247,7 @@ export class MarkupApp {
     // now restore the default tool and start it
     IModelApp.toolAdmin.defaultToolId = this._saveDefaultToolId;
     this._saveDefaultToolId = "";
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return data;
   }
 
@@ -259,12 +264,14 @@ export class MarkupApp {
    */
   public static async initialize(): Promise<void> {
     if (undefined === this.namespace) {     // only need to do this once
-      this.namespace = IModelApp.i18n.registerNamespace("MarkupTools");
+      this.namespace = "MarkupTools";
+      const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
       IModelApp.tools.register(SelectTool, this.namespace);
       IModelApp.tools.registerModule(redlineTool, this.namespace);
       IModelApp.tools.registerModule(textTool, this.namespace);
+      return namespacePromise;
     }
-    return this.namespace.readFinished; // so caller can make sure localized messages are ready.
+    return IModelApp.localization.getNamespacePromise(this.namespace)!; // so caller can make sure localized messages are ready.
   }
 
   /** convert the current markup SVG into a string, but don't include decorations or dynamics
@@ -276,7 +283,7 @@ export class MarkupApp {
       return undefined;
     markup.svgDecorations!.remove(); // we don't want the decorations or dynamics to be included
     markup.svgDynamics!.remove();
-    IModelApp.toolAdmin.startDefaultTool();
+    void IModelApp.toolAdmin.startDefaultTool();
     return markup.svgContainer.svg(); // string-ize the SVG data
   }
 
@@ -320,7 +327,7 @@ export class MarkupApp {
       // return the markup data to be saved by the application.
       image = (!result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat));
     } catch (e) {
-      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", () => ({ message: e.message }));
+      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", BentleyError.getErrorProps(e));
     }
     return { rect: { width: canvas.width, height: canvas.height }, svg, image };
   }
@@ -365,15 +372,22 @@ const newSvgElement = (name: string) => adopt(create(name));
 /**
  * The current markup being created/edited. Holds the SVG elements, plus the active [[MarkupTool]].
  * When starting a Markup, a new Div is added as a child of the ScreenViewport's vpDiv.
- * @beta
+ * @public
  */
 export class Markup {
+  /** @internal */
   public readonly markupDiv: HTMLDivElement;
+  /** @internal */
   public readonly undo = new UndoManager();
+  /** @internal */
   public readonly selected!: MarkupSelected;
+  /** @internal */
   public readonly svgContainer?: Svg;
+  /** @internal */
   public readonly svgMarkup?: G;
+  /** @internal */
   public readonly svgDynamics?: G;
+  /** @internal */
   public readonly svgDecorations?: G;
 
   /** create the drop-shadow filter in the Defs section of the supplied svg element */

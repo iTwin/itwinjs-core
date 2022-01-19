@@ -9,6 +9,7 @@
 import { SchemaKeyProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECName } from "./ECName";
 
 /**
  * @beta
@@ -89,31 +90,6 @@ export class ECVersion {
 }
 
 /**
- * An ECName is an invariant, string based, name is needed for an item in a schema.
- * @beta
- */
-export class ECName {
-  private _name: string;
-
-  constructor(name: string) {
-    const test: boolean = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(name);
-    if (!test)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
-    this._name = name;
-  }
-
-  /**
-   * @param newName string to validate
-   * @return boolean whether newName is a valid ECName
-   */
-  public static validate(newName: string) {
-    return /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i.test(newName);
-  }
-
-  public get name() { return this._name; }
-}
-
-/**
  * The SchemaKey contains a Schemas name and version.
  * @beta
  */
@@ -158,7 +134,7 @@ export class SchemaKey {
     return new SchemaKey(schemaName, new ECVersion(readVer, writeVer, minorVer));
   }
 
-  /*
+  /**
    * Compares two schema names, case-insensitive.
    * @return True if they match; otherwise, false.
    */

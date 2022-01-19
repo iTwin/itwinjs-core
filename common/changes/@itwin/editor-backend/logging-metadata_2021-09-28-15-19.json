@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/core-electron",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/core-electron"
+}

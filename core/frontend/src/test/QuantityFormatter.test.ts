@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Parser } from "@bentley/imodeljs-quantity";
+import { Parser, UnitProps } from "@itwin/core-quantity";
 import { assert } from "chai";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 
@@ -19,8 +19,8 @@ function withinTolerance(x: number, y: number, tolerance?: number): boolean {
 /** setup a local storage mock that contains a unit system and QuantityType.Length override format */
 const storageMock = () => {
   const storage: { [key: string]: any } = {
-    "quantityTypeFormat#user#q:QuantityTypeEnumValue-1":`{"metric":{"type":"Decimal","precision":2,"roundFactor":0,"showSignOption":"OnlyNegative","formatTraits":["keepSingleZero","showUnitLabel"],"decimalSeparator":".","thousandSeparator":",","uomSeparator":" ","stationSeparator":"+","composite":{"spacer":"","includeZero":true,"units":[{"name":"Units.CM","label":"cm"}]}}}`,
-    "unitsystem#user":"metric",
+    "quantityTypeFormat#user#q:QuantityTypeEnumValue-1": `{"metric":{"type":"Decimal","precision":2,"roundFactor":0,"showSignOption":"OnlyNegative","formatTraits":["keepSingleZero","showUnitLabel"],"decimalSeparator":".","thousandSeparator":",","uomSeparator":" ","stationSeparator":"+","composite":{"spacer":"","includeZero":true,"units":[{"name":"Units.CM","label":"cm"}]}}}`,
+    "unitsystem#user": "metric",
   };
 
   return {
@@ -66,7 +66,7 @@ describe("Quantity formatter", async () => {
 
   it("Length should honor overrides from LocalUnitFormatProvider", async () => {
     // set the units settings provider that will set the QuantityFormatter to "metric" and provide overrides to display "cm"
-    await quantityFormatter.setUnitFormattingSettingsProvider (new LocalUnitFormatProvider(quantityFormatter, false));
+    await quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(quantityFormatter, false));
 
     const expected = `12345.6 cm`;
     const newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
@@ -91,7 +91,7 @@ describe("Quantity formatter", async () => {
     };
 
     // set the units settings provider that will set the QuantityFormatter to "metric" and provide overrides to display "cm"
-    await quantityFormatter.setUnitFormattingSettingsProvider (new LocalUnitFormatProvider(quantityFormatter, false));
+    await quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(quantityFormatter, false));
 
     let expected = `12345.6 cm`;
     let newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
@@ -103,8 +103,8 @@ describe("Quantity formatter", async () => {
     expected = `123456 mm`;
     await quantityFormatter.setOverrideFormats(QuantityType.Length, overrideLengthAndCoordinateEntry);
     const storedOverride = JSON.parse(localStorage.getItem("quantityTypeFormat#user#q:QuantityTypeEnumValue-1")!) as OverrideFormatEntry;
-    assert (storedOverride.metric?.composite?.units[0].label === "mm");
-    assert (storedOverride.metric?.composite?.units[0].name === "Units.MM");
+    assert(storedOverride.metric?.composite?.units[0].label === "mm");
+    assert(storedOverride.metric?.composite?.units[0].name === "Units.MM");
 
     newFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
     actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
@@ -117,7 +117,7 @@ describe("Quantity formatter", async () => {
     actual = quantityFormatter.formatQuantity(123.456, newFormatterSpec);
     assert.equal(actual, expected);
 
-    assert (localStorage.getItem("quantityTypeFormat#user#q:QuantityTypeEnumValue-1") === null) ;
+    assert(localStorage.getItem("quantityTypeFormat#user#q:QuantityTypeEnumValue-1") === null);
   });
 
   it("Length should be cached during onInitialized processing", async () => {
@@ -175,19 +175,29 @@ describe("Quantity formatter", async () => {
     const overrideImperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, true);
     const overrideImperialFormattedValue = quantityFormatter.formatQuantity(1.5, overrideImperialFormatSpec);
     assert.equal(overrideImperialFormattedValue, "59.0551 in");
-
+    quantityFormatter.addAlternateLabels("Units.FT", "shoe", "sock");
+    const alternateLabels = quantityFormatter.alternateUnitLabelsProvider.getAlternateUnitLabels({ name: "Units.FT" } as UnitProps);
+    assert(!!alternateLabels);
+    assert(alternateLabels!.includes("shoe"));
+    assert(alternateLabels!.includes("sock"));
     const overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length, true);
     const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(`48"`, overrideImperialParserSpec);
     const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(`48 in`, overrideImperialParserSpec);
     const overrideValueInMeters3 = quantityFormatter.parseToQuantityValue(`4 ft`, overrideImperialParserSpec);
+    const overrideValueInMeters4 = quantityFormatter.parseToQuantityValue(`4 shoe`, overrideImperialParserSpec);
+    const overrideValueInMeters5 = quantityFormatter.parseToQuantityValue(`4 sock`, overrideImperialParserSpec);
     assert(Parser.isParsedQuantity(overrideValueInMeters1));
     assert(Parser.isParsedQuantity(overrideValueInMeters2));
     assert(Parser.isParsedQuantity(overrideValueInMeters3));
+    assert(Parser.isParsedQuantity(overrideValueInMeters4));
+    assert(Parser.isParsedQuantity(overrideValueInMeters5));
     if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2) &&
-      Parser.isParsedQuantity(overrideValueInMeters3)) {
+      Parser.isParsedQuantity(overrideValueInMeters3) && Parser.isParsedQuantity(overrideValueInMeters4)
+      && Parser.isParsedQuantity(overrideValueInMeters5)) {
       assert(withinTolerance(overrideValueInMeters1.value, 1.2192));
       assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
       assert(withinTolerance(overrideValueInMeters3.value, overrideValueInMeters2.value));
+      assert(withinTolerance(overrideValueInMeters4.value, overrideValueInMeters5.value));
     }
   });
 
@@ -532,7 +542,8 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Angle, Math.PI / 2, `90°0'0"`);
     await testFormatting(QuantityType.Area, 1000.0, "10763.9104 ft²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.84 ft");
-    await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0.0"`);
+    await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
+    await testFormatting(QuantityType.LatLong, 0.2645, `15°9'17.0412"`);
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8399 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft (US Survey)");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
@@ -543,7 +554,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Angle, Math.PI / 2, `90°`);
     await testFormatting(QuantityType.Area, 1000.0, "1000 m²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "1000 m");
-    await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0.0"`);
+    await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "1000 m");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "1000 m");
     await testFormatting(QuantityType.Stationing, 1000.0, "1+000.00");
@@ -555,7 +566,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Angle, Math.PI / 2, `90°0'0"`);
     await testFormatting(QuantityType.Area, 1000.0, "10763.9104 ft²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.84 ft");
-    await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0.0"`);
+    await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8399 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.84");
@@ -566,7 +577,7 @@ describe("Test Formatted Quantities", async () => {
     await testFormatting(QuantityType.Angle, Math.PI / 2, `90°0'0"`);
     await testFormatting(QuantityType.Area, 1000.0, "10763.8674 ft²");
     await testFormatting(QuantityType.Coordinate, 1000.0, "3280.83 ft");
-    await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0.0"`);
+    await testFormatting(QuantityType.LatLong, Math.PI, `180°0'0"`);
     await testFormatting(QuantityType.LengthEngineering, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.LengthSurvey, 1000.0, "3280.8333 ft");
     await testFormatting(QuantityType.Stationing, 1000.0, "32+80.83");

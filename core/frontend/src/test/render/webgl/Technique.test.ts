@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { WebGLExtensionName } from "@bentley/webgl-compatibility";
+import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { AttributeMap } from "../../../render/webgl/AttributeMap";
 import { CompileStatus } from "../../../render/webgl/ShaderProgram";
 import { DrawParams, ShaderProgramParams } from "../../../render/webgl/DrawCommand";
 import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../render/webgl/ShaderBuilder";
-import { SingularTechnique } from "../../../render/webgl/Technique";
+import { SingularTechnique, Techniques } from "../../../render/webgl/Technique";
 import { System } from "../../../render/webgl/System";
 import { Target } from "../../../render/webgl/Target";
 import { TechniqueId } from "../../../render/webgl/TechniqueId";
@@ -148,7 +148,7 @@ describe("Techniques", () => {
         let ex: Error | undefined;
         try {
           compiled = prog.compile() === CompileStatus.Success;
-        } catch (err) {
+        } catch (err: any) {
           ex = err;
         }
 
@@ -175,13 +175,39 @@ describe("Techniques", () => {
         let ex: Error | undefined;
         try {
           compiled = program.compile() === CompileStatus.Success;
-        } catch (err) {
+        } catch (err: any) {
           ex = err;
         }
 
         expect(compiled).to.be.false;
         expect(ex).not.to.be.undefined;
         expect(ex!.toString().includes("uniform u_unused not found.")).to.be.true;
+      });
+
+      describe("Number of varying vectors", () => {
+        const buildProgram = ProgramBuilder.prototype.buildProgram; // eslint-disable-line @typescript-eslint/unbound-method
+        after(() => ProgramBuilder.prototype.buildProgram = buildProgram);
+
+        it("does not exceed minimum guaranteed", () => {
+          // GL_MAX_VARYING_VECTORS must be at least 8 on WebGL 1 and 15 on WebGL 2.
+          // iOS's WebGL 1 implementation gives us only the minimum 8.
+          // Our wiremesh shaders use 9, but they are only ever produced for WebGL 2, because they use gl_VertexID which is only supported in WebGL 2.
+          const minGuaranteed = useWebGL2 ? 15 : 8;
+
+          let numBuilt = 0;
+          let maxNumVaryings = 0;
+          ProgramBuilder.prototype.buildProgram = function (gl) {
+            ++numBuilt;
+            const numVaryings = this.vert.computeNumVaryingVectors(this.frag.buildSource());
+            expect(numVaryings).most(minGuaranteed);
+            maxNumVaryings = Math.max(numVaryings, maxNumVaryings);
+            return buildProgram.apply(this, [gl]);
+          };
+
+          Techniques.create(System.instance.context);
+          expect(numBuilt).least(100);
+          expect(maxNumVaryings).least(8);
+        });
       });
     });
   }

@@ -7,7 +7,7 @@ export * from "./PhysicalMaterialElements";
 export * from "./PhysicalMaterialSchema";
 
 /** @docs-package-description
- * The `@bentley/physical-material-backend` package contains classes related to working with physical materials on the backend.
+ * The `@itwin/physical-material-backend` package contains classes related to working with physical materials on the backend.
  */
 
 /** @docs-group-description PhysicalMaterial

@@ -216,7 +216,11 @@
       "propertyCategories": [
         {
           "id": "source_information",
-          "label": "@BisCore:Categories.SourceInformation@"
+          "label": "@BisCore:Categories.SourceInformation@",
+          "parentId": {
+            "type": "Root"
+          },
+          "autoExpand": true
         },
         {
           "id": "model_source",
@@ -227,163 +231,117 @@
       ],
       "relatedProperties": [
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementOwnsUniqueAspect"
-            ]
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ElementOwnsUniqueAspect"
+            },
+            "direction": "Forward"
           },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementUniqueAspect"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "isPolymorphic": true,
-          "relationshipMeaning": "SameInstance"
+          "handleTargetClassPolymorphically": true,
+          "relationshipMeaning": "SameInstance",
+          "skipIfDuplicate": true
         },
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementOwnsMultiAspects"
-            ]
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ElementOwnsMultiAspects"
+            },
+            "direction": "Forward"
           },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementMultiAspect"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "isPolymorphic": true,
-          "relationshipMeaning": "SameInstance"
+          "handleTargetClassPolymorphically": true,
+          "relationshipMeaning": "SameInstance",
+          "skipIfDuplicate": true
         },
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementHasLinks"
-            ]
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ElementHasLinks"
+            },
+            "direction": "Forward"
           },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "LinkElement"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "isPolymorphic": true,
-          "relationshipMeaning": "RelatedInstance"
+          "handleTargetClassPolymorphically": true,
+          "relationshipMeaning": "RelatedInstance",
+          "skipIfDuplicate": true
         },
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementGroupsMembers"
-            ]
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ElementGroupsMembers"
+            },
+            "targetClass": {
+              "schemaName": "BisCore",
+              "className": "GroupInformationElement"
+            },
+            "direction": "Backward"
           },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "GroupInformationElement"
-            ]
-          },
-          "requiredDirection": "Backward",
-          "isPolymorphic": true,
+          "handleTargetClassPolymorphically": true,
           "relationshipMeaning": "RelatedInstance",
           "nestedRelatedProperties": [
             {
-              "relationships": {
-                "schemaName": "BisCore",
-                "classNames": [
-                  "ElementHasLinks"
-                ]
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementHasLinks"
+                },
+                "direction": "Forward"
               },
-              "relatedClasses": {
-                "schemaName": "BisCore",
-                "classNames": [
-                  "LinkElement"
-                ]
-              },
-              "requiredDirection": "Forward",
-              "isPolymorphic": true,
+              "handleTargetClassPolymorphically": true,
               "autoExpand": true,
               "relationshipMeaning": "RelatedInstance"
             }
-          ]
+          ],
+          "skipIfDuplicate": true
         },
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ModelContainsElements"
-            ]
-          },
-          "requiredDirection": "Backward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Model"
-            ]
-          },
-          "properties": "_none_",
-          "relationshipMeaning": "SameInstance",
-          "nestedRelatedProperties": [
+          "propertiesSource": [
             {
-              "relationships": {
+              "relationship": {
                 "schemaName": "BisCore",
-                "classNames": [
-                  "ModelModelsElement"
-                ]
+                "className": "ModelContainsElements"
               },
-              "requiredDirection": "Forward",
-              "relatedClasses": {
+              "direction": "Backward"
+            },
+            {
+              "relationship": {
                 "schemaName": "BisCore",
-                "classNames": [
-                  "PhysicalPartition",
-                  "Drawing"
-                ]
+                "className": "ModelModelsElement"
               },
-              "properties": "_none_",
-              "relationshipMeaning": "SameInstance",
-              "nestedRelatedProperties": [
-                {
-                  "relationships": {
-                    "schemaName": "BisCore",
-                    "classNames": [
-                      "ElementHasLinks"
-                    ]
-                  },
-                  "requiredDirection": "Forward",
-                  "relatedClasses": {
-                    "schemaName": "BisCore",
-                    "classNames": [
-                      "RepositoryLink"
-                    ]
-                  },
-                  "properties": [
-                    {
-                      "name": "Url",
-                      "overridesPriority": 1001,
-                      "labelOverride": "@BisCore:Properties.SourceInformation.Path@",
-                      "categoryId": "model_source",
-                      "isDisplayed": true
-                    },
-                    {
-                      "name": "UserLabel",
-                      "overridesPriority": 1001,
-                      "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
-                      "categoryId": "model_source",
-                      "isDisplayed": true
-                    }
-                  ],
-                  "relationshipMeaning": "SameInstance"
-                }
-              ]
+              "direction": "Forward"
+            },
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ElementHasLinks"
+              },
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "RepositoryLink"
+              },
+              "direction": "Forward"
             }
-          ]
+          ],
+          "properties": [
+            {
+              "name": "Url",
+              "overridesPriority": 1001,
+              "labelOverride": "@BisCore:Properties.SourceInformation.Path@",
+              "categoryId": "model_source",
+              "isDisplayed": true
+            },
+            {
+              "name": "UserLabel",
+              "overridesPriority": 1001,
+              "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+              "categoryId": "model_source",
+              "isDisplayed": true
+            }
+          ],
+          "relationshipMeaning": "SameInstance",
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -429,7 +387,8 @@
               "labelOverride": "@BisCore:Properties.SourceInformation.ElementId@",
               "isDisplayed": true
             }
-          ]
+          ],
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -449,6 +408,9 @@
         {
           "id": "source_information",
           "label": "@BisCore:Categories.SourceInformation@",
+          "parentId": {
+            "type": "Root"
+          },
           "autoExpand": true
         },
         {
@@ -554,7 +516,8 @@
                 }
               ]
             }
-          ]
+          ],
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -598,7 +561,8 @@
               "handleTargetClassPolymorphically": true,
               "relationshipMeaning": "SameInstance"
             }
-          ]
+          ],
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -642,7 +606,8 @@
               "handleTargetClassPolymorphically": true,
               "relationshipMeaning": "SameInstance"
             }
-          ]
+          ],
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -654,21 +619,16 @@
       },
       "relatedProperties": [
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "DrawingGraphicRepresentsElement"
-            ]
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "DrawingGraphicRepresentsElement"
+            },
+            "direction": "Forward"
           },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Element"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "isPolymorphic": true,
-          "relationshipMeaning": "RelatedInstance"
+          "handleTargetClassPolymorphically": true,
+          "relationshipMeaning": "RelatedInstance",
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -680,21 +640,16 @@
       },
       "relatedProperties": [
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "GraphicalElement3dRepresentsElement"
-            ]
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GraphicalElement3dRepresentsElement"
+            },
+            "direction": "Forward"
           },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Element"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "isPolymorphic": true,
-          "relationshipMeaning": "RelatedInstance"
+          "handleTargetClassPolymorphically": true,
+          "relationshipMeaning": "RelatedInstance",
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -740,13 +695,14 @@
         "schemaName": "BisCore",
         "className": "LinkElement"
       },
-      "propertiesDisplay": [
+      "propertyOverrides": [
         {
           "isDisplayed": false,
-          "propertyNames": [
-            "CodeValue",
-            "UserLabel"
-          ]
+          "name": "CodeValue"
+        },
+        {
+          "name": "UserLabel",
+          "isDisplayed": false
         }
       ]
     },
@@ -756,12 +712,10 @@
         "schemaName": "BisCore",
         "className": "UrlLink"
       },
-      "propertiesDisplay": [
+      "propertyOverrides": [
         {
           "isDisplayed": false,
-          "propertyNames": [
-            "Description"
-          ]
+          "name": "Description"
         }
       ]
     },
@@ -771,12 +725,10 @@
         "schemaName": "BisCore",
         "className": "EmbeddedFileLink"
       },
-      "propertiesDisplay": [
+      "propertyOverrides": [
         {
           "isDisplayed": false,
-          "propertyNames": [
-            "Description"
-          ]
+          "name": "Description"
         }
       ]
     }

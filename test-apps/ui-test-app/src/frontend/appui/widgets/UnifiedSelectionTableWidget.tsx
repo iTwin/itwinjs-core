@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import * as React from "react";
-import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
-import { Table, TableCellContextMenuArgs } from "@bentley/ui-components";
-import { ContextMenuItem, GlobalContextMenu } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
+import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { DEFAULT_PROPERTY_GRID_RULESET, PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
+import { Table, TableCellContextMenuArgs } from "@itwin/components-react";
+import { ContextMenuItem, GlobalContextMenu } from "@itwin/core-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
 import { ContextMenuItemInfo } from "./UnifiedSelectionPropertyGridWidget";
 
 // create a HOC property grid component that supports unified selection
@@ -18,7 +19,7 @@ export class UnifiedSelectionTableWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    if (options && options.iModelConnection && options.rulesetId)
+    if (options && options.iModelConnection)
       this.reactNode = <UnifiedSelectionTableWidget iModelConnection={options.iModelConnection} />;
   }
 }
@@ -47,11 +48,11 @@ class UnifiedSelectionTableWidget extends React.PureComponent<UnifiedSelectionTa
     return state;
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this.state.dataProvider.dispose();
   }
 
-  public componentDidUpdate(_prevProps: UnifiedSelectionTableWidgetProps, prevState: UnifiedSelectionTableWidgetState) {
+  public override componentDidUpdate(_prevProps: UnifiedSelectionTableWidgetProps, prevState: UnifiedSelectionTableWidgetState) {
     if (this.state.dataProvider !== prevState.dataProvider)
       prevState.dataProvider.dispose();
   }
@@ -82,8 +83,8 @@ class UnifiedSelectionTableWidget extends React.PureComponent<UnifiedSelectionTa
       key: "example-menu-item",
       icon: "icon-placeholder",
       onSelect: this._onSampleItem,
-      title: IModelApp.i18n.translate("SampleApp:table.context-menu.sample-item.description"),
-      label: IModelApp.i18n.translate("SampleApp:table.context-menu.sample-item.label"),
+      title: IModelApp.localization.getLocalizedString("SampleApp:table.context-menu.sample-item.description"),
+      label: IModelApp.localization.getLocalizedString("SampleApp:table.context-menu.sample-item.label"),
     });
 
     this.setState({ contextMenu: args, contextMenuItemInfos: items.length > 0 ? items : undefined });
@@ -120,10 +121,10 @@ class UnifiedSelectionTableWidget extends React.PureComponent<UnifiedSelectionTa
       </GlobalContextMenu>
     );
   }
-  public render() {
-    if (this.props.iModelConnection && this.props.rulesetId) {
+  public override render() {
+    if (this.state.dataProvider) {
       return (
-        <div style={{ height: "100%" }}>
+        <div data-item-id="test-ust-container" style={{ height: "100%" }}>
           <UnifiedSelectionTable dataProvider={this.state.dataProvider} onCellContextMenu={this._onCellContextMenu} />
           {this.renderContextMenu()}
         </div>
@@ -134,6 +135,6 @@ class UnifiedSelectionTableWidget extends React.PureComponent<UnifiedSelectionTa
 }
 
 const createDataProviderFromProps = (props: UnifiedSelectionTableWidgetProps) =>
-  new PresentationTableDataProvider({ imodel: props.iModelConnection!, ruleset: props.rulesetId! });
+  new PresentationTableDataProvider({ imodel: props.iModelConnection!, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
 
 ConfigurableUiManager.registerControl("UnifiedSelectionTableDemoWidget", UnifiedSelectionTableWidgetControl);

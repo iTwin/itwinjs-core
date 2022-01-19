@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, assert, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@itwin/core-bentley";
 import {
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
-  IModelDb, IModelTransformer, IModelTransformOptions, InformationPartitionElement, ModelSelector, PhysicalModel, PhysicalPartition, Relationship,
-  SpatialCategory, SpatialViewDefinition, SubCategory, ViewDefinition,
-} from "@bentley/imodeljs-backend";
-import { ElementProps, IModel } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+  IModelDb, ModelSelector, PhysicalModel, PhysicalPartition, Relationship, SpatialCategory,
+  SpatialViewDefinition, SubCategory, ViewDefinition,
+} from "@itwin/core-backend";
+import { IModelImporter, IModelTransformer, IModelTransformOptions } from "@itwin/core-transformer";
+import { ElementProps, IModel } from "@itwin/core-common";
 
-export const progressLoggerCategory = "Progress";
+export const loggerCategory = "imodel-transformer";
 
 export interface TransformerOptions extends IModelTransformOptions {
   simplifyElementGeometry?: boolean;
@@ -31,51 +31,51 @@ export class Transformer extends IModelTransformer {
   private _startTime = new Date();
   private _targetPhysicalModelId = Id64.invalid; // will be valid when PhysicalModels are being combined
 
-  public static async transformAll(requestContext: AuthorizedClientRequestContext | ClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
+  public static async transformAll(sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
+    // might need to inject RequestContext for schemaExport.
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
-    await transformer.processSchemas(requestContext);
-    targetDb.saveChanges("processSchemas");
+    await transformer.processSchemas();
+    await transformer.saveChanges("processSchemas");
     await transformer.processAll();
-    targetDb.saveChanges("processAll");
+    await transformer.saveChanges("processAll");
     if (options?.deleteUnusedGeometryParts) {
       transformer.deleteUnusedGeometryParts();
-      targetDb.saveChanges("deleteUnusedGeometryParts");
+      await transformer.saveChanges("deleteUnusedGeometryParts");
     }
     transformer.dispose();
     transformer.logElapsedTime();
   }
 
-  public static async transformChanges(requestContext: AuthorizedClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangeSetId: string, options?: TransformerOptions): Promise<void> {
-    if ("" === sourceDb.changeSetId) {
-      assert("" === sourceStartChangeSetId);
-      return this.transformAll(requestContext, sourceDb, targetDb, options);
+  public static async transformChanges(requestContext: AccessToken, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangesetId: string, options?: TransformerOptions): Promise<void> {
+    if ("" === sourceDb.changeset.id) {
+      assert("" === sourceStartChangesetId);
+      return this.transformAll(sourceDb, targetDb, options);
     }
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
-    await transformer.processChanges(requestContext, sourceStartChangeSetId);
-    targetDb.saveChanges("processChanges");
+    await transformer.processSchemas();
+    await transformer.saveChanges("processSchemas");
+    await transformer.processChanges(requestContext, sourceStartChangesetId);
+    await transformer.saveChanges("processChanges");
     if (options?.deleteUnusedGeometryParts) {
       transformer.deleteUnusedGeometryParts();
-      targetDb.saveChanges("deleteUnusedGeometryParts");
+      await transformer.saveChanges("deleteUnusedGeometryParts");
     }
     transformer.dispose();
     transformer.logElapsedTime();
   }
 
-  private constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: IModelTransformOptions) {
-    super(sourceDb, targetDb, options);
+  private constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions) {
+    super(sourceDb, new IModelImporter(targetDb, { simplifyElementGeometry: options?.simplifyElementGeometry }), options);
   }
 
   private initialize(options?: TransformerOptions): void {
-    Logger.logInfo(progressLoggerCategory, `sourceDb=${this.sourceDb.pathName}`);
-    Logger.logInfo(progressLoggerCategory, `targetDb=${this.targetDb.pathName}`);
+    Logger.logInfo(loggerCategory, `sourceDb=${this.sourceDb.pathName}`);
+    Logger.logInfo(loggerCategory, `targetDb=${this.targetDb.pathName}`);
     this.logChangeTrackingMemoryUsed();
 
     // customize transformer using the specified options
-    if (options?.simplifyElementGeometry) {
-      this.importer.simplifyElementGeometry = true;
-    }
     if (options?.combinePhysicalModels) {
       this._targetPhysicalModelId = PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "CombinedPhysicalModel"); // WIP: Id should be passed in, not inserted here
       this.importer.doNotUpdateElementIds.add(this._targetPhysicalModelId);
@@ -116,13 +116,13 @@ export class Transformer extends IModelTransformer {
     this._numSourceElements = this.sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
-    Logger.logInfo(progressLoggerCategory, `numSourceElements=${this._numSourceElements}`);
+    Logger.logInfo(loggerCategory, `numSourceElements=${this._numSourceElements}`);
 
     // query for and log the number of source Relationships that will be processed
     this._numSourceRelationships = this.sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${ElementRefersToElements.classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
-    Logger.logInfo(progressLoggerCategory, `numSourceRelationships=${this._numSourceRelationships}`);
+    Logger.logInfo(loggerCategory, `numSourceRelationships=${this._numSourceRelationships}`);
   }
 
   /** Initialize IModelTransformer to exclude SubCategory Elements and geometry entries in a SubCategory from the target iModel.
@@ -203,10 +203,7 @@ export class Transformer extends IModelTransformer {
   /** Override that counts elements processed and optionally remaps PhysicalPartitions.
    * @note Override of IModelExportHandler.shouldExportElement
    */
-  protected shouldExportElement(sourceElement: Element): boolean {
-    if (sourceElement instanceof InformationPartitionElement) {
-      Logger.logInfo(progressLoggerCategory, `${sourceElement.classFullName} "${sourceElement.getDisplayLabel()}"`);
-    }
+  public override shouldExportElement(sourceElement: Element): boolean {
     if (this._numSourceElementsProcessed < this._numSourceElements) { // with deferred element processing, the number processed can be more than the total
       ++this._numSourceElementsProcessed;
     }
@@ -218,42 +215,55 @@ export class Transformer extends IModelTransformer {
   }
 
   /** This override of IModelTransformer.onTransformElement exists for debugging purposes */
-  protected onTransformElement(sourceElement: Element): ElementProps {
-    // if (sourceElement.getDisplayLabel() === "xxx") { // use logging to find something unique about the problem element
+  public override onTransformElement(sourceElement: Element): ElementProps {
+    // if (sourceElement.id === "0x0" || sourceElement.getDisplayLabel() === "xxx") { // use logging to find something unique about the problem element
     //   Logger.logInfo(progressLoggerCategory, "Found problem element"); // set breakpoint here
     // }
     return super.onTransformElement(sourceElement);
   }
 
-  protected shouldExportRelationship(relationship: Relationship): boolean {
+  public override shouldExportRelationship(relationship: Relationship): boolean {
     if (this._numSourceRelationshipsProcessed < this._numSourceRelationships) {
       ++this._numSourceRelationshipsProcessed;
     }
     return super.shouldExportRelationship(relationship);
   }
 
-  protected async onProgress(): Promise<void> {
+  public override async onProgress(): Promise<void> {
     if (this._numSourceElementsProcessed > 0) {
-      Logger.logInfo(progressLoggerCategory, `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`);
+      if (this._numSourceElementsProcessed >= this._numSourceElements) {
+        Logger.logInfo(loggerCategory, `Processed all ${this._numSourceElements} elements`);
+      } else {
+        Logger.logInfo(loggerCategory, `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`);
+      }
     }
     if (this._numSourceRelationshipsProcessed > 0) {
-      Logger.logInfo(progressLoggerCategory, `Processed ${this._numSourceRelationshipsProcessed} of ${this._numSourceRelationships} relationships`);
+      if (this._numSourceRelationshipsProcessed >= this._numSourceRelationships) {
+        Logger.logInfo(loggerCategory, `Processed all ${this._numSourceRelationships} relationships`);
+      } else {
+        Logger.logInfo(loggerCategory, `Processed ${this._numSourceRelationshipsProcessed} of ${this._numSourceRelationships} relationships`);
+      }
     }
     this.logElapsedTime();
     this.logChangeTrackingMemoryUsed();
+    await this.saveChanges("onProgress");
     return super.onProgress();
+  }
+
+  private async saveChanges(description: string): Promise<void> {
+    this.targetDb.saveChanges(description);
   }
 
   private logElapsedTime(): void {
     const elapsedTimeMinutes: number = (new Date().valueOf() - this._startTime.valueOf()) / 60000.0;
-    Logger.logInfo(progressLoggerCategory, `Elapsed time: ${Math.round(100 * elapsedTimeMinutes) / 100.0} minutes`);
+    Logger.logInfo(loggerCategory, `Elapsed time: ${Math.round(100 * elapsedTimeMinutes) / 100.0} minutes`);
   }
 
   public logChangeTrackingMemoryUsed(): void {
     if (this.targetDb.isBriefcase) {
       const bytesUsed = this.targetDb.nativeDb.getChangeTrackingMemoryUsed(); // can't call this internal method unless targetDb has change tracking enabled
       const mbUsed = Math.round((bytesUsed * 100) / (1024 * 1024)) / 100;
-      Logger.logInfo(progressLoggerCategory, `Change Tracking Memory Used: ${mbUsed} MB`);
+      Logger.logInfo(loggerCategory, `Change Tracking Memory Used: ${mbUsed} MB`);
     }
   }
 

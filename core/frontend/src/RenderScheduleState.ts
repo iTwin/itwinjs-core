@@ -6,25 +6,26 @@
  * @module Views
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Range1d, Transform } from "@bentley/geometry-core";
-import { RenderSchedule } from "@bentley/imodeljs-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { Range1d, Transform } from "@itwin/core-geometry";
+import { RenderSchedule } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { AnimationBranchState, AnimationBranchStates } from "./render/GraphicBranch";
 
-function formatBranchId(modelId: Id64String, branchId: number): string {
+/** @internal */
+export function formatAnimationBranchId(modelId: Id64String, branchId: number): string {
   if (branchId < 0)
     return modelId;
 
   return `${modelId}_Node_${branchId.toString()}`;
 }
 
-function addAnimationBranch(modelId: Id64String, timeline: RenderSchedule.Timeline, branchId: number, branches: AnimationBranchStates, time: number): void {
+function addAnimationBranch(modelId: Id64String, timeline: RenderSchedule.Timeline, branchId: number, branches: Map<string, AnimationBranchState>, time: number): void {
   const clipVector = timeline.getClipVector(time);
   const clip = clipVector ? IModelApp.renderSystem.createClipVolume(clipVector) : undefined;
   if (clip)
-    branches.set(formatBranchId(modelId, branchId), { clip });
+    branches.set(formatAnimationBranchId(modelId, branchId), { clip });
 }
 
 /** Provides frontend-specific APIs for applying a RenderSchedule.Script to a view via a DisplayStyleState.
@@ -47,17 +48,18 @@ export class RenderScheduleState extends RenderSchedule.ScriptReference {
     const branches = new Map<string, AnimationBranchState>();
     for (const model of this.script.modelTimelines) {
       addAnimationBranch(model.modelId, model, -1, branches, time);
-      for (let i = 0; i < model.elementTimelines.length; i++) {
-        const elem = model.elementTimelines[i];
-        const branchId = i + 1;
+      for (const elem of model.elementTimelines) {
         if (elem.getVisibility(time) <= 0)
-          branches.set(formatBranchId(model.modelId, branchId), { omit: true });
+          branches.set(formatAnimationBranchId(model.modelId, elem.batchId), { omit: true });
         else
-          addAnimationBranch(model.modelId, elem, branchId, branches, time);
+          addAnimationBranch(model.modelId, elem, elem.batchId, branches, time);
       }
     }
 
-    return branches;
+    return {
+      branchStates: branches,
+      transformNodeIds: this.script.transformBatchIds,
+    };
   }
 
   public getTransformNodeIds(modelId: Id64String): ReadonlyArray<number> | undefined {

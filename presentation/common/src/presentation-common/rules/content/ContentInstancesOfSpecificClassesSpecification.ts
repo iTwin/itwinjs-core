@@ -15,7 +15,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
  * **Note**: this specification doesn't rely on selection. It always returns instances no matter
  * what the selection is, so pre-filtering should be done in [[ContentRule]] condition and [[instanceFilter]].
  *
- * @see [More details]($docs/learning/presentation/Content/ContentInstancesOfSpecificClasses.md)
+ * @see [More details]($docs/presentation/Content/ContentInstancesOfSpecificClasses.md)
  * @public
  */
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
@@ -28,12 +28,15 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
   classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
   /**
-   * Whether to get content from instances of derived `classes`.
-   * @deprecated Renamed to [[handleInstancesPolymorphically]]. Will be removed in iModel.js 3.0
+   * List of ECClass specifications whose ECInstances should be excluded.
    */
-  arePolymorphic?: boolean;
+  excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
-  /** Whether to get content from instances of derived `classes`. */
+  /**
+   * Whether to get content from instances of derived `classes`.
+   * Acts as default value for [[classes.arePolymorphic]] and [[excludedClasses.arePolymorphic]].
+   * @deprecated Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
+   */
   handleInstancesPolymorphically?: boolean;
 
   /**
@@ -45,7 +48,7 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
   /**
    * Condition for filtering instances of defined classes.
    *
-   * **See:** [ECExpressions available in instance filter]($docs/learning/presentation/Content/ECExpressions.md#instance-filter)
+   * **See:** [ECExpressions available in instance filter]($docs/presentation/Content/ECExpressions.md#instance-filter)
    */
   instanceFilter?: string;
 }

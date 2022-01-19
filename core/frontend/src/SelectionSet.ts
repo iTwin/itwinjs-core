@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module SelectionSet
  */
-import { BeEvent, Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 
@@ -86,26 +86,26 @@ class HilitedIds extends Id64.Uint32Set {
     this._iModel = iModel;
   }
 
-  public add(low: number, high: number) {
+  public override add(low: number, high: number) {
     super.add(low, high);
     this.onChanged();
   }
 
-  public delete(low: number, high: number) {
+  public override delete(low: number, high: number) {
     super.delete(low, high);
     this.onChanged();
   }
 
-  public clear() {
+  public override clear() {
     super.clear();
     this.onChanged();
   }
 
-  public addIds(ids: Id64Arg) {
+  public override addIds(ids: Id64Arg) {
     this.change(() => super.addIds(ids));
   }
 
-  public deleteIds(ids: Id64Arg) {
+  public override deleteIds(ids: Id64Arg) {
     this.change(() => super.deleteIds(ids));
   }
 
@@ -166,20 +166,31 @@ class HilitedElementIds extends HilitedIds {
  * Hilited elements are displayed with a customizable hilite effect within a [[Viewport]].
  * The set exposes 3 types of elements in 3 separate collections: geometric elements, subcategories, and geometric models.
  * @note Typically, elements are hilited by virtue of their presence in the IModelConnection's [[SelectionSet]]. The HiliteSet allows additional
- * elements to be displayed with the hilite effect without adding them to the [[SelectionSet]].
+ * elements to be displayed with the hilite effect without adding them to the [[SelectionSet]]. If you add elements to the HiliteSet directly, you
+ * are also responsible for removing them as appropriate.
+ * @note Support for subcategories and geometric models in the HiliteSet is currently `beta`.
+ * @see [[IModelConnection.hilited]] for the HiliteSet associated with an iModel.
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
- * @beta
+ * @public
  */
 export class HiliteSet {
   private readonly _elements: HilitedElementIds;
 
+  /** The set of hilited subcategories.
+   * @beta
+   */
   public readonly subcategories: Id64.Uint32Set;
+  /** The set of hilited [[GeometricModelState]]s.
+   * @beta
+   */
   public readonly models: Id64.Uint32Set;
+  /** The set of hilited elements. */
   public get elements(): Id64.Uint32Set { return this._elements; }
 
   /** Construct a HiliteSet
    * @param iModel The iModel containing the entities to be hilited.
    * @param syncWithSelectionSet If true, the contents of the `elements` set will be synchronized with those in the `iModel`'s [[SelectionSet]].
+   * @internal
    */
   public constructor(public iModel: IModelConnection, syncWithSelectionSet = true) {
     this._elements = new HilitedElementIds(iModel, syncWithSelectionSet);

@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { Matrix4d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { BeTimePoint } from "@itwin/core-bentley";
+import { Matrix4d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@itwin/core-common";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -133,7 +133,13 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
       symbologyOverrides: this.getSymbologyOverrides(tree),
       appearanceProvider: this.getAppearanceProvider(tree),
       hiddenLineSettings: this.getHiddenLineSettings(tree),
+      animationTransformNodeId: this.getAnimationTransformNodeId(tree),
     });
+  }
+
+  /** @internal */
+  protected getAnimationTransformNodeId(_tree: TileTree): number | undefined {
+    return undefined;
   }
 
   /** Supply transform from this tile tree reference's location to iModel coordinate space.
@@ -213,7 +219,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * BIM models have highest prioirty and are never clipped.
    * @alpha
    */
-  public get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BIM; }
+  public get planarclipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
 
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }

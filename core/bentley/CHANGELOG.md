@@ -1,6 +1,273 @@
-# Change Log - @bentley/bentleyjs-core
+# Change Log - @itwin/core-bentley
 
-This log was last generated on Thu, 20 May 2021 15:06:26 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+
+## 2.19.28
+Wed, 12 Jan 2022 14:52:38 GMT
+
+_Version update only_
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+_Version update only_
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:52 GMT
+
+_Version update only_
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+_Version update only_
+
+## 2.19.23
+Mon, 22 Nov 2021 20:41:39 GMT
+
+_Version update only_
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+_Version update only_
+
+## 2.19.21
+Wed, 10 Nov 2021 10:58:24 GMT
+
+_Version update only_
+
+## 2.19.20
+Fri, 29 Oct 2021 16:14:22 GMT
+
+_Version update only_
+
+## 2.19.19
+Mon, 25 Oct 2021 16:16:25 GMT
+
+_Version update only_
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+_Version update only_
+
+## 2.19.17
+Thu, 14 Oct 2021 21:19:43 GMT
+
+_Version update only_
+
+## 2.19.16
+Mon, 11 Oct 2021 17:37:46 GMT
+
+_Version update only_
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+_Version update only_
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+_Version update only_
+
+## 2.19.13
+Tue, 21 Sep 2021 21:06:40 GMT
+
+_Version update only_
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:46 GMT
+
+_Version update only_
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:57 GMT
+
+_Version update only_
+
+## 2.19.10
+Wed, 08 Sep 2021 14:36:01 GMT
+
+_Version update only_
+
+## 2.19.9
+Wed, 25 Aug 2021 15:36:01 GMT
+
+_Version update only_
+
+## 2.19.8
+Mon, 23 Aug 2021 13:23:13 GMT
+
+_Version update only_
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+_Version update only_
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:28 GMT
+
+### Updates
+
+- Deprecated Config Class
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- Add Dictionary.findOrInsert, keys, and values.
+- async return value rather than fulfilled promise
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+_Version update only_
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:30 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:10 GMT
+
+### Updates
+
+- Added new error to indicate corrupt briefcase state
+- Add IndexMap.toArray() and OrderedId64Array.array.
+- Added new error to indicate corrupt briefcase state
+- Add CompressedId64Set.sortAndCompress.
+- Add Mutable<T>.
+- Promote BeUiEvent to public.
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:44 GMT
+
+_Version update only_
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+### Updates
+
+- handle exceptions from OneAtATimeAction execution functions
+
+## 2.16.3
+Wed, 16 Jun 2021 20:29:32 GMT
+
+_Version update only_
+
+## 2.16.2
+Thu, 03 Jun 2021 18:08:11 GMT
+
+_Version update only_
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+_Version update only_
+
+## 2.16.0
+Mon, 24 May 2021 15:58:39 GMT
+
+### Updates
+
+- Add Id64.iterable; deprecate iterate and forEach.
+- Add Id64.fromUint32PairObject() for creating an Id64String from an Id64.Uint32Pair.
+
+## 2.15.6
+Wed, 26 May 2021 15:55:18 GMT
+
+_Version update only_
 
 ## 2.15.5
 Thu, 20 May 2021 15:06:26 GMT
@@ -363,7 +630,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Added FailedToGetProductSettings error
-- Setup Guid.normalize() for internal use. 
+- Setup Guid.normalize() for internal use.
 - channel rules
 
 ## 2.0.0
@@ -371,12 +638,12 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases.
 - Update Config.App documentation to reflect the removal of the config.json file
 - Added ContextDoesNotExist error
 - BUG273249
-- Updated docs. 
-- Updated error text. 
+- Updated docs.
+- Updated error text.
 - added raw log method that bypass catogory check
 - order imports.
 - Add a type guard for `IDisposable`
@@ -410,7 +677,7 @@ Wed, 22 Jan 2020 19:24:11 GMT
 
 ### Updates
 
-- VSS$257397: Temporary fix for checking electron renderer. 
+- VSS$257397: Temporary fix for checking electron renderer.
 - Upgrade to TypeScript 3.7.2.
 
 ## 1.10.0
@@ -425,7 +692,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
 
-- Setup OidcDesktopClient for Electron use cases. 
+- Setup OidcDesktopClient for Electron use cases.
 - Added non-static wait and executeAfter to BeDuration
 - Fix warnings from static analysis
 - Added `BeDuration.race` for common timeout operations.
@@ -478,7 +745,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 ### Updates
 
 - Added OneAtATimeActivity class
-- Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
+- Introduced AsyncMutex - a utility to run async blocks of code in sequence.
 - Update to TypeScript 3.5
 
 ## 1.0.0
@@ -505,10 +772,10 @@ Mon, 13 May 2019 15:52:05 GMT
 - Logged the fields in ClientRequestContext
 - Logging fixes.
 - Put sourcemap in npm package.
-- Fixed logger to not mutate incoming objects. 
+- Fixed logger to not mutate incoming objects.
 - Improved performance logging
 - Added functions for iterating and obtaining the number of elements of a collection of Id64s represented as an Id64Arg.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Use TextDecoder to decode binary utf-8 strings if supported.
 - Upgrade TypeDoc dependency to 0.14.2
 
@@ -544,7 +811,7 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -651,7 +918,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 
 ### Updates
 
-- Changes to debug utilities. 
+- Changes to debug utilities.
 - Fluentd Bunnyan Logger added
 
 ## 0.166.0

@@ -6,11 +6,11 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@bentley/imodeljs-common";
+import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
@@ -39,19 +39,19 @@ export interface OnAspectIdArg extends OnAspectArg {
  * BIS Guideline: Subclass ElementUniqueAspect or ElementMultiAspect rather than subclassing ElementAspect directly.
  * @public
  */
-export class ElementAspect extends Entity implements ElementAspectProps {
+export class ElementAspect extends Entity {
   /** @internal */
-  public static get className(): string { return "ElementAspect"; }
+  public static override get className(): string { return "ElementAspect"; }
   public element: RelatedElement;
 
   /** @internal */
   constructor(props: ElementAspectProps, iModel: IModelDb) {
     super(props, iModel);
-    this.element = RelatedElement.fromJSON(props.element)!;
+    this.element = RelatedElement.fromJSON(props.element)!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** @internal */
-  public toJSON(): ElementAspectProps {
+  public override toJSON(): ElementAspectProps {
     const val = super.toJSON() as ElementAspectProps;
     val.element = this.element;
     return val;
@@ -102,7 +102,7 @@ export class ElementAspect extends Entity implements ElementAspectProps {
  */
 export class ElementUniqueAspect extends ElementAspect {
   /** @internal */
-  public static get className(): string { return "ElementUniqueAspect"; }
+  public static override get className(): string { return "ElementUniqueAspect"; }
 }
 
 /** An Element Multi-Aspect is an ElementAspect where there can be **n** instances of the Element Aspect class per Element.
@@ -110,7 +110,7 @@ export class ElementUniqueAspect extends ElementAspect {
  */
 export class ElementMultiAspect extends ElementAspect {
   /** @internal */
-  public static get className(): string { return "ElementMultiAspect"; }
+  public static override get className(): string { return "ElementMultiAspect"; }
 }
 
 /** A ChannelRootAspect identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
@@ -119,7 +119,7 @@ export class ElementMultiAspect extends ElementAspect {
  */
 export class ChannelRootAspect extends ElementUniqueAspect {
   /** @internal */
-  public static get className(): string { return "ChannelRootAspect"; }
+  public static override get className(): string { return "ChannelRootAspect"; }
 
   /** The owner of the channel */
   public owner: string;
@@ -131,7 +131,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
   }
 
   /** @internal */
-  public toJSON(): ChannelRootAspectProps {
+  public override toJSON(): ChannelRootAspectProps {
     const val = super.toJSON() as ChannelRootAspectProps;
     val.owner = this.owner;
     return val;
@@ -152,9 +152,9 @@ export class ChannelRootAspect extends ElementUniqueAspect {
  * @note The associated ECClass was added to the BisCore schema in version 1.0.2
  * @public
  */
-export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
+export class ExternalSourceAspect extends ElementMultiAspect {
   /** @internal */
-  public static get className(): string { return "ExternalSourceAspect"; }
+  public static override get className(): string { return "ExternalSourceAspect"; }
 
   /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source. */
   public scope: RelatedElement;
@@ -177,7 +177,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   /** @internal */
   constructor(props: ExternalSourceAspectProps, iModel: IModelDb) {
     super(props, iModel);
-    this.scope = RelatedElement.fromJSON(props.scope)!;
+    this.scope = RelatedElement.fromJSON(props.scope)!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
     this.source = RelatedElement.fromJSON(props.source);
     this.identifier = props.identifier;
     this.kind = props.kind;
@@ -205,7 +205,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   }
 
   /** @internal */
-  public toJSON(): ExternalSourceAspectProps {
+  public override toJSON(): ExternalSourceAspectProps {
     const val = super.toJSON() as ExternalSourceAspectProps;
     val.scope = this.scope;
     val.source = this.source;

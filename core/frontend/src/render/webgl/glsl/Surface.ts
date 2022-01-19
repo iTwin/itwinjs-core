@@ -6,11 +6,13 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { Material } from "../Material";
-import { SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
+import {
+  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent,
+} from "../ShaderBuilder";
 import { System } from "../System";
 import { FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
@@ -34,7 +36,8 @@ import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addTranslucency } from "./Translucency";
 import { addFeatureAndMaterialLookup, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
-import { wantMaterials } from "../Mesh";
+import { wantMaterials } from "../SurfaceGeometry";
+import { addWiremesh } from "./Wiremesh";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -363,7 +366,7 @@ const computeAnimatedNormal = `
 ${computeNormal}`;
 
 const applyBackgroundColor = `
-  return u_surfaceFlags[kSurfaceBitIndex_BackgroundFill] ? vec4(u_bgColor.rgb, 1.0) : baseColor;
+  return u_surfaceFlags[kSurfaceBitIndex_BackgroundFill] ? vec4(u_bgColor.rgb, baseColor.a) : baseColor;
 `;
 
 const computeTexCoord = `
@@ -437,6 +440,20 @@ function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: Is
   builder.vert.addFunction(octDecodeNormal);
   addChooseWithBitFlagFunctions(builder.vert);
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : computeNormal);
+
+  // Set to true to colorize surfaces based on normals (in world space).
+  // You must also set checkMaxVarying to false in ProgramBuilder.buildProgram to avoid assertions, if using a non-optimized build.
+  const debugNormals = false;
+  if (debugNormals) {
+    builder.frag.set(FragmentShaderComponent.ApplyDebugColor, "return vec4(vec3(v_normal / 2.0 + 0.5), baseColor.a);");
+    builder.addFunctionComputedVarying("v_normal", VariableType.Vec3, "computeDebugNormal", `
+      vec2 tc = g_vertexBaseCoords;
+      tc.x += 3.0 * g_vert_stepX;
+      vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+      vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertexData2;
+      return u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(octDecodeNormal(normal)) : vec3(0.0);
+    `);
+  }
 }
 
 /** @internal */
@@ -487,10 +504,34 @@ export const discardClassifiedByAlpha = `
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
 
-// Target.readPixels() renders everything in opaque pass. It turns off textures for normal surfaces but keeps them for things like 3d view attachment tiles.
-// We want to discard fully-transparent pixels of those things during readPixels() so that we don't locate the attachment unless the cursor is over a
-// non-transparent pixel of it.
-const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha < (1.0 / 255.0);`;
+const discardByTextureAlpha = `
+  if (isSurfaceBitSet(kSurfaceBit_HasTexture)) {
+    float cutoff = abs(u_alphaCutoff);
+    if (kRenderPass_Translucent == u_renderPass)
+      return u_alphaCutoff > 0.0 && alpha >= cutoff;
+    else
+      return alpha < cutoff;
+  }
+
+  return false;
+`;
+
+function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
+  addRenderPass(frag);
+  frag.addUniform("u_alphaCutoff", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_alphaCutoff", (uniform, params) => {
+      // This cutoff is used to discard pixels based on the alpha value sampled from the surface texture.
+      // During readPixels, or when transparency is disabled, only discard 100% opaque pixels.
+      // Otherwise, if the geometry draws in both opaque and translucent passes, use DisplayParams.minTransparency to filter pixels into appropriate pass to produce appropriate blending.
+      // Negative cutoff applies only during opaque pass; positive cutoff applies during opaque and translucent passes.
+      const pass = params.geometry.getPass(params.target);
+      const cutoff = (!Pass.rendersOpaqueAndTranslucent(pass) || params.target.isReadPixelsInProgress || !params.target.currentViewFlags.transparency) ? -1 / 255 : 241 / 255;
+      uniform.setUniform1f(cutoff);
+    });
+  });
+
+  frag.set(FragmentShaderComponent.DiscardByAlpha, discardByTextureAlpha);
+}
 
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
@@ -504,9 +545,8 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     addColorPlanarClassifier(builder, flags.isTranslucent, flags.isThematic);
   }
 
-  if (flags.isThematic) {
+  if (flags.isThematic)
     addThematicDisplay(builder);
-  }
 
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
@@ -545,7 +585,6 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     if (FeatureMode.None === feat) {
       addFragColorWithPreMultipliedAlpha(builder.frag);
     } else {
-      builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
       if (!flags.isClassified)
         addOverrideClassifierColor(builder, flags.isThematic);
       else
@@ -564,9 +603,14 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
   if (flags.isClassified)
     addClassificationTranslucencyDiscard(builder);
+  else
+    addTransparencyDiscard(builder.frag);
 
   addSurfaceMonochrome(builder.frag);
   addMaterial(builder);
+
+  if (flags.isWiremesh)
+    addWiremesh(builder);
 
   return builder;
 }

@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { IndexedPolyface, Polyface, Transform } from "@bentley/geometry-core";
-import { OctEncodedNormal, QParams2d, QParams3d, RenderTexture } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { IndexedPolyface, Polyface, Transform } from "@itwin/core-geometry";
+import { QParams2d, QParams3d, RenderTexture } from "@itwin/core-common";
 import { GltfMeshData } from "../../../tile/internal";
 import { RenderMemory } from "../../RenderMemory";
 import { Mesh } from "./MeshPrimitives";

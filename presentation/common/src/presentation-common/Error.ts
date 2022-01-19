@@ -6,32 +6,32 @@
  * @module Core
  */
 
-import { BentleyError, GetMetaDataFunction, LogFunction } from "@bentley/bentleyjs-core";
+import { BentleyError, GetMetaDataFunction } from "@itwin/core-bentley";
 
 /**
  * Status codes used by Presentation APIs.
  * @public
  */
 export enum PresentationStatus {
-  /** Success result */
+  /** Success result. */
   Success = 0,
-  /** Request was canceled */
+
+  /** Request was cancelled. */
   Canceled = 1,
+
   /** Error: Unknown */
   Error = 0x10000,
-  /** Error: Not initialized */
+
+  /** Error: Backend is not initialized. */
   NotInitialized = Error + 1,
-  /** Error: Attempting to use something after disposal */
-  UseAfterDisposal = Error + 2,
-  /** Error: Argument is invalid */
+
+  /** Error: Argument is invalid. */
   InvalidArgument = Error + 3,
-  /** Error: Received invalid response */
-  InvalidResponse = Error + 4,
-  /** Error: Requested content when there is none. */
-  NoContent = Error + 5,
-  /** Error: Backend needs to be synced with client state */
-  BackendOutOfSync = Error + 6,
-  /** Error: The timeout for the request was reached which prevented it from being fulfilled */
+
+  /**
+   * Timeout for the request was reached which prevented it from being fulfilled. Frontend may
+   * repeat the request.
+   */
   BackendTimeout = Error + 7,
 }
 
@@ -49,8 +49,8 @@ export class PresentationError extends BentleyError {
    * @param log Optional log function which logs the error.
    * @param getMetaData Optional function that returns meta-data related to an error.
    */
-  public constructor(errorNumber: PresentationStatus, message?: string, log?: LogFunction, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, log, "Presentation", getMetaData);
+  public constructor(errorNumber: PresentationStatus, message?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
   }
 
   /**
@@ -58,7 +58,7 @@ export class PresentationError extends BentleyError {
    * method to create a string representation of the error.
    */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  protected _initName(): string {
+  protected override _initName(): string {
     let value = PresentationStatus[this.errorNumber];
     if (!value)
       value = `Unknown Error (${this.errorNumber})`;

@@ -6,49 +6,11 @@
  * @module Rendering
  */
 
-import { Id64, Id64Arg, Id64Array, Id64Set } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorDefProps, FeatureAppearance, FeatureAppearanceProps, RgbColor } from "@bentley/imodeljs-common";
+import { Id64, Id64Arg, Id64Set } from "@itwin/core-bentley";
+import { AppearanceOverrideProps, ColorDef, EmphasizeElementsProps, FeatureAppearance, FeatureOverrideType, RgbColor } from "@itwin/core-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { Viewport } from "./Viewport";
-
-/** Options for overriding element appearance.
- * @see [[EmphasizeElements]]
- * @see [[AppearanceOverrideProps]]
- * @public
- */
-export enum FeatureOverrideType {
-  /** Override color only. */
-  ColorOnly,
-  /** Override alpha only. */
-  AlphaOnly,
-  /** Override both color and alpha. */
-  ColorAndAlpha,
-}
-
-/** JSON representation of an appearance override in an [[EmphasizeElementsProps]].
- * @see [[EmphasizeElements]].
- * @public
- */
-export interface AppearanceOverrideProps {
-  overrideType?: FeatureOverrideType;
-  color?: ColorDefProps;
-  ids?: Id64Array;
-}
-
-/** JSON representation of an [[EmphasizeElements]].
- * @public
- */
-export interface EmphasizeElementsProps {
-  neverDrawn?: Id64Array;
-  alwaysDrawn?: Id64Array;
-  isAlwaysDrawnExclusive?: boolean;
-  alwaysDrawnExclusiveEmphasized?: Id64Array;
-  defaultAppearance?: FeatureAppearanceProps;
-  appearanceOverride?: AppearanceOverrideProps[];
-  wantEmphasis?: boolean;
-  unanimatedAppearance?: FeatureAppearanceProps;
-}
 
 /** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
  * @public
@@ -70,17 +32,29 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const emphasizedElements = this.getEmphasizedElements(vp);
     if (undefined !== emphasizedElements) {
       overrides.setDefaultOverrides(this._defaultAppearance!);
-      const app = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
-      emphasizedElements.forEach((id) => { overrides.overrideElement(id, app); });
+      const appearance = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
+
+      // Avoid creating a new object per-element inside the loop
+      const args = { elementId: "", appearance };
+      for (const elementId of emphasizedElements) {
+        args.elementId = elementId;
+        overrides.override(args);
+      }
     }
 
     const overriddenElements = this.getOverriddenElements();
     if (undefined !== overriddenElements) {
       if (undefined !== this._defaultAppearance)
         overrides.setDefaultOverrides(this._defaultAppearance);
+
+      // Avoid creating a new object per-element inside the loop
+      const args = { elementId: "", appearance: FeatureAppearance.defaults };
       for (const [key, ids] of overriddenElements) {
-        const ovrApp = this.createAppearanceFromKey(key);
-        ids.forEach((id) => { overrides.overrideElement(id, ovrApp); });
+        args.appearance = this.createAppearanceFromKey(key);
+        for (const elementId of ids) {
+          args.elementId = elementId;
+          overrides.override(args);
+        }
       }
     }
 
@@ -440,7 +414,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return true;
   }
 
-  /** Set the element IDs to be always drawn normally with all other elements in the view overridden to draw using a default appearance..
+  /** Set the element IDs to be always drawn normally with all other elements in the view overridden to draw using a default appearance.
    * @param ids The IDs of the elements to always draw.
    * @param vp The viewport.
    * @param defaultAppearance Optional default appearance, uses non-locatable transparent grey if not specified.

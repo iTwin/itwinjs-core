@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@bentley/bentleyjs-core";
-import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { Logger } from "@itwin/core-bentley";
+import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { AxisAlignedBox3d, ColorByName, ColorDef } from "@itwin/core-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl, IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType,
   MessageBoxType, Tool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 // cspell:ignore lerp
 
@@ -31,9 +31,12 @@ class IncidentMarker extends Marker {
   }
 
   // when someone clicks on our marker, open a message box with the severity of the incident.
-  public onMouseButton(ev: BeButtonEvent): boolean {
-    if (ev.button === BeButton.Data && ev.isDown)
-      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, `severity = ${this.severity}`, MessageBoxIconType.Information); // eslint-disable-line @typescript-eslint/no-floating-promises
+  public override onMouseButton(ev: BeButtonEvent): boolean {
+    if (ev.button === BeButton.Data && ev.isDown) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, `severity = ${this.severity}`, MessageBoxIconType.Information);
+    }
+
     return true;
   }
 
@@ -58,7 +61,7 @@ class IncidentMarker extends Marker {
    * World decorations for markers are completely optional. If you don't want anything drawn with WorldDecorations, don't follow this example.
    *
    */
-  public addMarker(context: DecorateContext) {
+  public override addMarker(context: DecorateContext) {
     super.addMarker(context);
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.rotation.transpose(), .2, .2, IncidentMarker._sweep360);
@@ -79,7 +82,7 @@ class IncidentClusterMarker extends Marker {
   // public get wantImage() { return this._isHilited; }
 
   // draw the cluster as a white circle with an outline color based on what's in the cluster
-  public drawFunc(ctx: CanvasRenderingContext2D) {
+  public override drawFunc(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
     ctx.strokeStyle = this._clusterColor;
     ctx.fillStyle = "white";
@@ -90,7 +93,7 @@ class IncidentClusterMarker extends Marker {
   }
 
   /** Create a new cluster marker with label and color based on the content of the cluster */
-  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: Promise<MarkerImage>) {
+  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
     super(location, size);
 
     // get the top 10 incidents by severity
@@ -113,6 +116,7 @@ class IncidentClusterMarker extends Marker {
     this.label = cluster.markers.length.toLocaleString();
     this.labelColor = "black";
     this.labelFont = "bold 14px sans-serif";
+    this.setScaleFactor({ low: .7, high: 1.2 });
 
     let title = "";
     sorted.forEach((marker) => {
@@ -127,14 +131,15 @@ class IncidentClusterMarker extends Marker {
     div.innerHTML = title;
     this.title = div;
     this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
-    this.setImage(image);
+    if (image)
+      this.setImage(image);
   }
 }
 
 /** A MarkerSet to hold incidents. This class supplies to `getClusterMarker` method to create IncidentClusterMarkers. */
 class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
   protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return IncidentClusterMarker.makeFrom(cluster.markers[0], cluster, IncidentMarkerDemo.decorator!.warningSign);
+    return new IncidentClusterMarker(cluster.getClusterLocation(), cluster.markers[0].size, cluster, IncidentMarkerDemo.decorator!.warningSign);
   }
 }
 
@@ -246,8 +251,8 @@ export class IncidentMarkerDemo {
 }
 
 export class IncidentMarkerDemoTool extends Tool {
-  public static toolId = "ToggleIncidentMarkers";
-  public run(_args: any[]): boolean {
+  public static override toolId = "ToggleIncidentMarkers";
+  public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && vp.view.isSpatialView())
       IncidentMarkerDemo.toggle(vp.view.iModel.projectExtents);

@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 
 /** Parameters that define the way geometry on a [[SubCategory]] appears.

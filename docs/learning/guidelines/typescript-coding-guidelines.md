@@ -1,7 +1,7 @@
 # iTwin.js TypeScript Coding Guidelines
 
 These are the TypeScript coding guidelines that we expect all iTwin.js contributors to follow.
-Where possible, these guidelines are enforced through our TSLint configuration file (tslint.json).
+Where possible, these guidelines are enforced through our ESLint configuration (`plugin:@bentley/imodeljs-recommended`).
 
 ## Names
 
@@ -13,6 +13,8 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 6. Use `_` as a prefix for private properties.
 7. Use whole words in names when possible. Only use abbreviations where their use is common and obvious.
 8. We use "Id", "3d", "2d" rather than capital D.
+9. Always capitalize the M and T in "iModel" and "iTwin".
+10. Capitalize the i in "iModel" and "iTwin" according to the other naming conventions.
 
 ## Files
 
@@ -40,7 +42,7 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 
 ## General Constructs
 
-1. Always use semicolons. JavaScript does not require a semicolon when it thinks it can safely infer its existence. Not using a semicolon is confusing and error prone. Our TSLint rules enforce this.
+1. Always use semicolons. JavaScript does not require a semicolon when it thinks it can safely infer its existence. Not using a semicolon is confusing and error prone. Our ESLint rules enforce this.
 2. Use curly braces `{}` instead of `new Object()`.
 3. Use brackets `[]` instead of `new Array()`.
 
@@ -154,7 +156,7 @@ On the other hand, vertical whitespace can contribute significantly to code read
    2. `if (x < 10) { }`
    3. `public calculate(x: number, y: string): void { . . . }`
 1. Use 2 spaces per indentation. Do not use tabs!
-1. Turn on `tslint` in your editor to see violations of these rules immediately.
+1. Turn on `eslint` in your editor to see violations of these rules immediately.
 
 ## Return
 
@@ -304,15 +306,15 @@ class Role {
 
 ## Prefer getters where possible
 
-If a public method takes no parameters and its name begins with a keyword such as "is", "has", or "want", the method should be a getter (specified by using the "get" modifier in front of the method name). This way the method is accessed as a property rather than as a function. This avoids confusion over whether it is necessary to include parenthesis to access the value, and the caller will get a compile error if they are included. This rule is enforced by TsLint.
+If a public method takes no parameters and its name begins with a keyword such as "is", "has", or "want", the method should be a getter (specified by using the "get" modifier in front of the method name). This way the method is accessed as a property rather than as a function. This avoids confusion over whether it is necessary to include parenthesis to access the value, and the caller will get a compile error if they are included. This rule is enforced by ESLint.
 
 If the value being returned is expensive to compute, consider using a different name to reflect this. Possible prefixes are "compute" or "calculate", etc.
 
 ## Don't export const enums
 
-Exported `const enum`s require a .d.ts file to be present when a file that consumes one is transpiled. This prevents the [--isolatedModules](https://www.typescriptlang.org/docs/handbook/compiler-options.html) option required by [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html) and are therefore forbidden. A TSLint rule enforces this.
+Exported `const enum`s require a .d.ts file to be present when a file that consumes one is transpiled. This prevents the [--isolatedModules](https://www.typescriptlang.org/docs/handbook/compiler-options.html) option required by [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html) and are therefore forbidden. An ESLint rule enforces this.
 
-> Note: `const enum`s are slightly more efficient, so there may be reasons to use them in non-exported code. The TSLint rule must be disabled to allow them.
+> Note: `const enum`s are slightly more efficient, so there may be reasons to use them in non-exported code. The ESLint rule must be disabled with `// eslint-disable-line no-restricted-syntax` to allow them.
 
 ## Don't repeat type names unnecessarily
 
@@ -367,6 +369,7 @@ The following JavaDoc tags are supported by TypeDoc:
   - The `@returns` description (when provided) should start with *Returns* for readability within the generated documentation.
   - The `@return` JavaDoc tag is also supported, but `@returns` is preferred for readability and consistency with `@throws`.
   <!--
+
   - *TODO:*
     - *Need to decide how to document methods returning `Promise<T>`. Should the description mention a `Promise` or just `T` since the return type will clearly indicate `Promise` and using `await` will cause `T` to be returned.*
   -->
@@ -413,7 +416,7 @@ This pattern is *built-in* to JavaScript via [JSON](https://www.json.org/), usin
 
 Our convention is to define either a `Type Alias` or an `interface` with the suffix `Props` (for properties) for any information that can be serialized to/from JSON. There will often be an eponymous class without the `Props` suffice to supply methods for working with instances of that type. A serializeable class `Abc` will usually implement `AbcProps`, if it is an `interface`. Then, either its constructor or a static `fomJson` method will take an `AbcProps` as its argument, and it will override the `toJSON` method to return an `AbcProps`. Anyone implementing the "other end" of a JSON serialized type will then know what properties to expect/include.
 
-For example, in `@bentley/geometry-core` we have a class called `Angle`. You will find code similar to:
+For example, in `@itwin/core-geometry` we have a class called `Angle`. You will find code similar to:
 
 ```ts
 /** The Properties for a JSON representation of an Angle.
@@ -436,7 +439,7 @@ From this we can tell that an Angle may be serialized to/from JSON as either:
 - has a member named `degrees` of type `number`, or
 - has a member named `radians` of type `number`.
 
-Likewise, in `@bentley/geometry-core`, we have a class called XYZ. This is a base class for 3d points and vectors. We define the following type:
+Likewise, in `@itwin/core-geometry`, we have a class called XYZ. This is a base class for 3d points and vectors. We define the following type:
 
 ```ts
 /** Properties for a JSON XYZ.
@@ -467,7 +470,7 @@ Every .ts file should have this notice as its **first lines**:
 
 ## Source Code Editor
 
-While not an absolute requirement, we recommend and optimize for [Visual Studio Code](https://code.visualstudio.com/). You will be likely be less productive if you attempt to use anything else. We recommend configuring the **ESLint** extension for Visual Studio Code and using our [@bentley/eslint-plugin](https://www.npmjs.com/package/@bentley/eslint-plugin) to get real-time feedback.
+While not an absolute requirement, we recommend and optimize for [Visual Studio Code](https://code.visualstudio.com/). You will be likely be less productive if you attempt to use anything else. We recommend configuring the **ESLint** extension for Visual Studio Code and using our [@itwin/eslint-plugin](https://www.npmjs.com/package/@itwin/eslint-plugin) to get real-time feedback.
 
 ## React Function Components
 

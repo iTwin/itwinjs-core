@@ -6,19 +6,19 @@
  * @module Rendering
  */
 
-import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Point2d, XAndY } from "@bentley/geometry-core";
-import { Frustum, ImageBuffer, SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { Id64String, IDisposable } from "@itwin/core-bentley";
+import { Point2d, XAndY } from "@itwin/core-geometry";
+import { Frustum, ImageBuffer, SpatialClassifier } from "@itwin/core-common";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
+import { ReadImageBufferArgs, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { IModelConnection } from "../IModelConnection";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { AnimationBranchStates } from "./GraphicBranch";
-import { GraphicBuilderOptions } from "./GraphicBuilder";
+import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { GraphicList } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
@@ -60,6 +60,10 @@ export interface RenderTargetDebugControl {
   displayRealityTileRanges: boolean;
   logRealityTiles: boolean;
   freezeRealityTiles: boolean;
+  /** Obtain a summary of the render commands required to draw the scene currently displayed.
+   * Each entry specifies  the type of command and the number of such commands required by the current scene.
+   */
+  getRenderCommands(): Array<{ name: string, count: number }>;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
@@ -104,10 +108,10 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
   public updateSolarShadows(_context: SceneContext | undefined): void { }
   public getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined { return undefined; }
-  public createPlanarClassifier(_properties?: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined { return undefined; }
+  public createPlanarClassifier(_properties?: SpatialClassifier): RenderPlanarClassifier | undefined { return undefined; }
   public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
 
-  public createGraphicBuilder(options: GraphicBuilderOptions) {
+  public createGraphicBuilder(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
     return this.renderSystem.createGraphic(options);
   }
 
@@ -127,8 +131,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** `rect` is specified in *CSS* pixels. */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
-  /** `_rect` is specified in *CSS* pixels. */
+  /** @deprecated use readImageBuffer */
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
+  public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
   public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
 

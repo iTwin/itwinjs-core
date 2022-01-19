@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
-import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
+import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 
 const formatString = (format: string, ...args: string[]) => {
   return format.replace(/{(\d+)}/g, (match, theNumber) => {

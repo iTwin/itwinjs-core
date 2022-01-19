@@ -7,8 +7,6 @@
  */
 
 import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
-import { DEPRECATED_AllInstanceNodesSpecification } from "./AllInstanceNodesSpecification";
-import { DEPRECATED_AllRelatedInstanceNodesSpecification } from "./AllRelatedInstanceNodesSpecification";
 import { ChildNodeRule } from "./ChildNodeRule";
 import { CustomNodeSpecification } from "./CustomNodeSpecification";
 import { CustomQueryInstanceNodesSpecification } from "./CustomQueryInstanceNodesSpecification";
@@ -21,8 +19,6 @@ import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecifi
  */
 export enum ChildNodeSpecificationTypes {
   // hierarchy specifications
-  DEPRECATED_AllInstanceNodes = "AllInstanceNodes", // eslint-disable-line @typescript-eslint/naming-convention
-  DEPRECATED_AllRelatedInstanceNodes = "AllRelatedInstanceNodes", // eslint-disable-line @typescript-eslint/naming-convention
   RelatedInstanceNodes = "RelatedInstanceNodes",
   InstanceNodesOfSpecificClasses = "InstanceNodesOfSpecificClasses",
   CustomQueryInstanceNodes = "CustomQueryInstanceNodes",
@@ -67,7 +63,7 @@ export interface ChildNodeSpecificationBase {
   hideIfNoChildren?: boolean;
 
   /**
-   * An [ECExpression]($docs/learning/presentation/Hierarchies/ECExpressions.md#specification) which
+   * An [ECExpression]($docs/presentation/Hierarchies/ECExpressions.md#specification) which
    * indicates whether a node should be hidden or not.
    *
    * @note While the attribute provides much flexibility, it also has performance implications - it's
@@ -98,7 +94,7 @@ export interface ChildNodeSpecificationBase {
   /** Specifications of related instances that can be used in nodes' creation. */
   relatedInstances?: RelatedInstanceSpecification[];
 
-  /** [Nested rule]($docs/learning/presentation/Hierarchies/Terminology.md#nested-rules) specifications. */
+  /** [Nested rule]($docs/presentation/Hierarchies/Terminology.md#nested-rule) specifications. */
   nestedRules?: ChildNodeRule[];
 }
 
@@ -121,7 +117,5 @@ export interface DefaultGroupingPropertiesContainer {
  * @public
  */
 export type ChildNodeSpecification =
-  DEPRECATED_AllInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
-  DEPRECATED_AllRelatedInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
   CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification |
   RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;

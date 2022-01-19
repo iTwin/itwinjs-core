@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelIndex.scss";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelClient, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelConnection } from "@bentley/imodeljs-frontend";
-import { LoadingSpinner } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { LoadingSpinner } from "@itwin/core-react";
+import { NamedVersion } from "@itwin/imodels-client-management";
+import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
 import { Tab, Tabs } from "./Tabs";
+import { SampleAppIModelApp } from "../../index";
 
 /* represents a tab item on the IModelIndex page */
 interface Category {
@@ -53,8 +54,8 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     super(props, context);
 
     // TODO: registering categories is application specific, move this to Navigator source.
-    IModelIndex.RegisterCategory(UiFramework.translate("iModelIndex.views"), this._renderSheets);
-    IModelIndex.RegisterCategory(UiFramework.translate("iModelIndex.3dModels"), this._render3dModels);
+    IModelIndex.RegisterCategory(IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.views"), this._renderSheets);
+    IModelIndex.RegisterCategory(IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.3dModels"), this._render3dModels);
 
     this.state = {
       currentCategory: 0, thumbnail: undefined, upToDate: false, header: undefined,
@@ -63,18 +64,14 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   }
 
   /* retrieve imodel thumbnail and version information on mount */
-  public async componentDidMount() {
-    const projectId = this.props.iModelConnection.contextId!;
-    const iModelId = this.props.iModelConnection.iModelId!;
-
-    await this.startRetrieveThumbnail(projectId, iModelId);
+  public override async componentDidMount() {
     await this.startRetrieveIModelInfo();
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     // TODO: an application should not have to unregister categories/tabs.
-    IModelIndex.UnregisterCategory(UiFramework.translate("iModelIndex.views"));
-    IModelIndex.UnregisterCategory(UiFramework.translate("iModelIndex.3dModels"));
+    IModelIndex.UnregisterCategory(IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.views"));
+    IModelIndex.UnregisterCategory(IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.3dModels"));
   }
 
   /* register a category (tab) */
@@ -89,40 +86,39 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     IModelIndex._categories = IModelIndex._categories.filter((_category: Category) => _category.label !== _label);
   }
 
-  /* retrieves the iModel thumbnail. */
-  private async startRetrieveThumbnail(projectId: string, iModelId: string) {
-    const _thumbnail = await UiFramework.iModelServices.getThumbnail(projectId, iModelId);
-    this.setState({ thumbnail: _thumbnail });
-  }
-
   /* retrieve version information */
   private async startRetrieveIModelInfo() {
-    const hubClient: IModelClient = new IModelHubClient();
-    const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
-    const contextId = this.props.iModelConnection.contextId!;
     const iModelId = this.props.iModelConnection.iModelId!;
+    const accessToken = await IModelApp.getAccessToken();
 
-    /* get the iModel name */
-    const imodels = await hubClient.iModels.get(requestContext, contextId, new IModelQuery().byId(iModelId));
+    if (!SampleAppIModelApp.hubClient)
+      return;
 
-    /* get the top named version */
-    const _versions: Version[] = await hubClient.versions.get(requestContext, iModelId, new VersionQuery().top(1));
-
-    /* determine if the version is up-to-date */
-    const changeSetId = this.props.iModelConnection.changeSetId!;
-    const _upToDate = (_versions.length > 0 && _versions[0].changeSetId === changeSetId);
+    const imodel = await SampleAppIModelApp.hubClient?.iModels.getSingle({
+      iModelId,
+      authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
+    });
 
     /* get the version name */
-    let currentVersions: Version[] = [];
+    const currentVersions: NamedVersion[] = [];
     let _versionName = "";
     try {
-      currentVersions = await hubClient.versions.get(requestContext, iModelId, new VersionQuery().byChangeSet(changeSetId));
-      _versionName = (currentVersions.length === 1) ? currentVersions[0].name! : "Version name not found!";
+      for await (const ver of SampleAppIModelApp.hubClient?.namedVersions.getRepresentationList({
+        urlParams: {
+          $top: 1,
+        },
+        iModelId,
+        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
+      })) {
+        currentVersions.push(ver);
+        break;
+      }
+      _versionName = (currentVersions.length === 1) ? currentVersions[0].name : "Version name not found!";
     } catch (e) { }
 
     this.setState({
-      upToDate: _upToDate, checkingUpToDate: false, iModelName: imodels[0].name, versionName: _versionName,
-      versionDate: (currentVersions.length === 1) ? this._getReadableDate(currentVersions[0].createdDate) : "",
+      checkingUpToDate: false, iModelName: imodel.name, versionName: _versionName,
+      versionDate: (currentVersions.length === 1) ? this._getReadableDate(currentVersions[0].createdDateTime) : "",
     });
   }
 
@@ -166,21 +162,21 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   /* render the 3d Models tab */
   private _render3dModels = () => {
     return (<ModelsTab key={2} iModelConnection={this.props.iModelConnection}
-      showFlatList={true} onEnter={this._onEnter} showToast={false} />);
+      onEnter={this._onEnter} showToast={false} />);
   };
 
   private _renderWaiting() {
     return (
       <div className="imodelindex-waiting fade-in">
         <div className="entering-imodel">
-          <LoadingSpinner message={UiFramework.translate("iModelIndex.enteriModeling")} />
+          <LoadingSpinner message={IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.enteriModeling")} />
         </div>
       </div>
     );
   }
-  public render() {
-    const statusText = (this.state.upToDate) ? UiFramework.translate("iModelIndex.upToDate") :
-      UiFramework.translate("iModelIndex.updatesAvailable");
+  public override render() {
+    const statusText = (this.state.upToDate) ? IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.upToDate") :
+      IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.updatesAvailable");
     return (
       <div className="imodelindex fade-in">
         <div className="imodelindex-header">

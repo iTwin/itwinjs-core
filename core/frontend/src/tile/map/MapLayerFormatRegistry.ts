@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module MapLayers
+ */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
-import { RequestBasicCredentials } from "@bentley/itwin-client";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+import { RequestBasicCredentials } from "../../request/Request";
 
 /** @internal */
 export class MapLayerFormat {
@@ -30,6 +32,7 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 export interface MapLayerSourceValidation {
   status: MapLayerSourceStatus;
   subLayers?: MapSubLayerProps[];
+  authInfo?: MapLayerAuthenticationInfo;
 }
 
 /**
@@ -49,8 +52,8 @@ export interface MapLayerOptions {
 /** @internal */
 export class MapLayerFormatRegistry {
   private _configOptions: MapLayerOptions;
-  constructor(opts: MapLayerOptions) {
-    this._configOptions = opts;
+  constructor(opts?: MapLayerOptions) {
+    this._configOptions = opts ?? {};
     internalMapLayerImageryFormats.forEach((format) => this.register(format));
   }
   private _formats = new Map<string, MapLayerFormatType>();

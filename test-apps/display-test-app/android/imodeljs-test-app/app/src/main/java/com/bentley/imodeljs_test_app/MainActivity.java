@@ -17,11 +17,13 @@ public class MainActivity extends AppCompatActivity {
 
         boolean alwaysExtractAssets = true; // for debugging, otherwise the host will only extract when app version changes
         m_host = new IModelJsHost(this, alwaysExtractAssets);
+        m_host.startup();
 
         String files = getFilesDir().getPath();
         MobileFrontend frontend = new MobileFrontend(m_host, "&standalone=true&iModelName=" + files + "/plant.ibim");
         m_host.setFrontend(frontend);
         setContentView(frontend);
+        frontend.loadEntryPoint();
     }
 
     @Override

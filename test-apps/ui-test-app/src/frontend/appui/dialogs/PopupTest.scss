@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/button/hollow";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
 
 .popup-test {
   width: 100%;
@@ -25,12 +25,11 @@
   width: 100%;
   justify-content: space-evenly;
 
-  > div {
+  >div {
     position: relative;
   }
 
   button {
-    @include uicore-buttons-hollow;
     width: 110px;
   }
 }
@@ -51,13 +50,13 @@
   justify-content: center;
   font-size: 14px;
 
-  > div {
+  >div {
     display: flex;
     align-items: center;
     margin: 0 15px;
     justify-content: space-evenly;
 
-    > label {
+    >label {
       margin-right: 5px;
     }
   }
@@ -90,14 +89,14 @@
     margin: 0 0 10px 0;
   }
 
-  > ul {
+  >ul {
     font-size: 12px;
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
-  > ul > li {
+  >ul>li {
     padding: 5px 5px;
     color: inherit;
 

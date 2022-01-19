@@ -6,11 +6,10 @@
  * @module iModelHubClient
  */
 
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import {
-  AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance, WsgQuery,
-} from "@bentley/itwin-client";
+import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
+import { WsgQuery } from "../wsg/WsgQuery";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { addSelectContainerAccessKey } from "./HubQuery";
@@ -176,27 +175,22 @@ export class CheckpointV2Handler {
   }
 
   /** Get the [[CheckpointV2]]s.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried [[CheckpointV2]]s or select different data from them.
    * @returns Checkpoints that match the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: CheckpointV2Query = new CheckpointV2Query()): Promise<CheckpointV2[]> {
-    requestContext.enter();
+  public async get(accessToken: AccessToken, iModelId: GuidString, query: CheckpointV2Query = new CheckpointV2Query()): Promise<CheckpointV2[]> {
     Logger.logInfo(loggerCategory, "Querying CheckpointsV2 for iModel", () => ({ iModelId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const checkpoints = await this._handler.getInstances<CheckpointV2>(requestContext, CheckpointV2, this.getRelativeUrl(iModelId), query.getQueryOptions());
-    requestContext.enter();
+    const checkpoints = await this._handler.getInstances<CheckpointV2>(accessToken, CheckpointV2, this.getRelativeUrl(iModelId), query.getQueryOptions());
 
     Logger.logTrace(loggerCategory, "Queried CheckpointsV2 for iModel", () => ({ iModelId, count: checkpoints.length }));
     return checkpoints;
   }
 
   /** Create a [[CheckpointV2]] for the specified iModel.
-   * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param checkpoint [[CheckpointV2]] instance to create. Requires changeSetId to be set. [[CheckpointV2]] is always created with state 'InProgress'.
    * @returns The created [[CheckpointV2]] instance from iModelHub. Container AccessKey is always returned.
@@ -204,22 +198,18 @@ export class CheckpointV2Handler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
-  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2> {
-    requestContext.enter();
+  public async create(accessToken: AccessToken, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2> {
     Logger.logInfo(loggerCategory, "Creating CheckpointV2 for iModel", () => ({ iModelId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("checkpoint", checkpoint);
     ArgumentCheck.validChangeSetId("checkpoint.changeSetId", checkpoint.changeSetId, false);
 
-    checkpoint = await this._handler.postInstance<CheckpointV2>(requestContext, CheckpointV2, this.getRelativeUrl(iModelId), checkpoint);
-    requestContext.enter();
+    checkpoint = await this._handler.postInstance<CheckpointV2>(accessToken, CheckpointV2, this.getRelativeUrl(iModelId), checkpoint);
     Logger.logTrace(loggerCategory, "Created CheckpointV2 for iModel", () => ({ iModelId, checkpoint }));
     return checkpoint;
   }
 
   /** Update the [[CheckpointV2]] of an iModel.
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param checkpoint [[CheckpointV2]] to update. Requires wsgId set to existing [[CheckpointV2]] instance.
    * @returns Updated [[CheckpointV2]] instance from iModelHub. Container AccessKey is returned if [[CheckpointV2]] state is 'InProgress'.
@@ -227,17 +217,14 @@ export class CheckpointV2Handler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
-  public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2> {
-    requestContext.enter();
+  public async update(accessToken: AccessToken, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2> {
     Logger.logInfo(loggerCategory, "Updating CheckpointV2 for iModel", () => ({ iModelId, checkpoint }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("checkpoint", checkpoint);
     const checkpointId = parseInt(checkpoint.wsgId, 10);
     ArgumentCheck.definedNumber("checkpoint.wsgId", checkpointId);
 
-    const updatedCheckpoint = await this._handler.postInstance<CheckpointV2>(requestContext, CheckpointV2, this.getRelativeUrl(iModelId, checkpointId), checkpoint);
-    requestContext.enter();
+    const updatedCheckpoint = await this._handler.postInstance<CheckpointV2>(accessToken, CheckpointV2, this.getRelativeUrl(iModelId, checkpointId), checkpoint);
     Logger.logTrace(loggerCategory, "Updated CheckpointV2 for iModel", () => ({ iModelId, updatedCheckpoint }));
     return updatedCheckpoint;
   }

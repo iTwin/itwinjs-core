@@ -6,22 +6,24 @@
  * @module QuantityFormatting
  */
 
-import { FormatProps } from "@bentley/imodeljs-quantity";
+import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { SelectedViewportChangedArgs } from "../ViewManager";
 import {
   FormattingUnitSystemChangedArgs, OverrideFormatEntry, QuantityFormatOverridesChangedArgs, QuantityFormatter,
-  QuantityTypeKey, UnitFormattingSettingsProvider, UnitSystemKey,
+  QuantityTypeKey, UnitFormattingSettingsProvider,
 } from "./QuantityFormatter";
 
 /** This abstract class reacts to changes in the "active" iModel and updates the [[QuantityFormatter]] overrides and active
  * presentation unit system based on stored preferences.  In addition, monitors the [[QuantityFormatter]] for changes to format overrides and the active
  * unit system and stores these changes. The "active" iModel is determined by listening to the `IModelApp.viewManager.onSelectedViewportChanged` event
- *  and gets the iModel from the selected viewport.
- * @beta */
+ * and gets the iModel from the selected viewport.
+ * @beta
+ */
 export abstract class BaseUnitFormattingSettingsProvider implements UnitFormattingSettingsProvider {
-  protected _imodelConnection: IModelConnection|undefined;
+  protected _imodelConnection: IModelConnection | undefined;
+
   /**
    * @param maintainOverridesPerIModel If maintainOverridesPerIModel is true the base class will set up listeners
    * to monitor "active" iModel changes so the overrides for the QuantityFormatter properly match the overrides set

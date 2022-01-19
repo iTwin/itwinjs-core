@@ -12,7 +12,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
 /**
  * Creates nodes for all instances of specified ECClasses.
  *
- * @see [More details]($docs/learning/presentation/Hierarchies/InstanceNodesOfSpecificClasses.md)
+ * @see [More details]($docs/presentation/Hierarchies/InstanceNodesOfSpecificClasses.md)
  * @public
  */
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
@@ -25,14 +25,21 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
   classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
   /**
-   * Should all [[classes]] be handled polymorphically.
+   * Specifications of ECClasses whose instances should be excluded.
+   */
+  excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+
+  /**
+   * Whether to get instances from derived `classes`.
+   * Acts as default value for [[classes.arePolymorphic]] and [[excludedClasses.arePolymorphic]].
+   * @deprecated Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
    */
   arePolymorphic?: boolean;
 
   /**
    * Condition for filtering instances of defined classes.
    *
-   * **See:** [ECExpressions Available in InstanceFilter]($docs/learning/presentation/Hierarchies/ECExpressions.md#instance-filter).
+   * **See:** [ECExpressions Available in InstanceFilter]($docs/presentation/Hierarchies/ECExpressions.md#instance-filter).
    */
   instanceFilter?: string;
 }

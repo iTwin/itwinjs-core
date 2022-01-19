@@ -2,22 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert } from "chai";
 import * as path from "path";
 import * as semver from "semver";
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BackendRequestContext, BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations,
-  PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
-} from "@bentley/imodeljs-backend";
+  BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalPartition, Schema,
+  Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+} from "@itwin/core-backend";
 import {
   CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, PropertyMetaData, RelatedElement,
   TypeDefinitionElementProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema } from "../analytical-backend";
 
 class TestAnalyticalSchema extends Schema {
-  public static get schemaName(): string { return "TestAnalytical"; }
+  public static override get schemaName(): string { return "TestAnalytical"; }
   public static get schemaFilePath(): string { return path.join(__dirname, "assets", "TestAnalytical.ecschema.xml"); }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
@@ -31,16 +32,16 @@ class TestAnalyticalSchema extends Schema {
 }
 
 class TestAnalyticalPartition extends AnalyticalPartition {
-  public static get className(): string { return "Partition"; }
+  public static override get className(): string { return "Partition"; }
 }
 
 class TestAnalyticalElement extends AnalyticalElement {
-  public static get className(): string { return "Element"; }
+  public static override get className(): string { return "Element"; }
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 class TestAnalyticalModel extends AnalyticalModel {
-  public static get className(): string { return "Model"; }
+  public static override get className(): string { return "Model"; }
 }
 
 describe("AnalyticalSchema", () => {
@@ -68,7 +69,7 @@ describe("AnalyticalSchema", () => {
     assert.isTrue(IModelJsFs.existsSync(BisCoreSchema.schemaFilePath));
     assert.isTrue(IModelJsFs.existsSync(analyticalSchemaFileName));
     assert.isTrue(IModelJsFs.existsSync(testSchemaFileName));
-    await iModelDb.importSchemas(new BackendRequestContext(), [analyticalSchemaFileName, testSchemaFileName]);
+    await iModelDb.importSchemas([analyticalSchemaFileName, testSchemaFileName]);
     assert.isFalse(iModelDb.nativeDb.hasPendingTxns(), "Expect importSchemas to not have txns for snapshots");
     assert.isFalse(iModelDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
     iModelDb.saveChanges();
@@ -160,7 +161,7 @@ describe("AnalyticalSchema", () => {
     });
 
     // Import the Analytical schema
-    await iModelDb.importSchemas(new BackendRequestContext(), [AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
+    await iModelDb.importSchemas([AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
     iModelDb.saveChanges("Import TestAnalytical schema");
 
     // Insert a SpatialCategory
@@ -186,7 +187,7 @@ describe("AnalyticalSchema", () => {
       classFullName: TestAnalyticalModel.classFullName,
       modeledElement: { id: analyticalPartitionId },
     });
-    const analyticalModelId: Id64String = iModelDb.models.insertModel(analyticalModel);
+    const analyticalModelId: Id64String = iModelDb.models.insertModel(analyticalModel.toJSON());
     assert.isTrue(Id64.isValidId64(analyticalModelId));
 
     // Create a Test Analytical element

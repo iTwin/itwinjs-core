@@ -1,0 +1,19 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "variables";
+
+.components-toolbar-overflow-sizer {
+  display: inline-block;
+  position: relative;
+
+  &.components-horizontal {
+    width: 100%
+  }
+
+  &.components-vertical {
+    height: 100%
+  }
+}

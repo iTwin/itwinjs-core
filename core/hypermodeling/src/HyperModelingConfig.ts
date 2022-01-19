@@ -6,7 +6,7 @@
  * @module HyperModeling
  */
 
-import { SectionType } from "@bentley/imodeljs-common";
+import { SectionType } from "@itwin/core-common";
 import { SectionMarkerHandler } from "./SectionMarkerHandler";
 
 /** Configures display of [[SectionMarker]]s for [[HyperModelingDecorator]]s.

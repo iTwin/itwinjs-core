@@ -7,7 +7,7 @@
  */
 
 // cspell:ignore lhvp rhvp
-import { ReadonlySortedArray, SortedArray } from "@bentley/bentleyjs-core";
+import { ReadonlySortedArray, SortedArray } from "@itwin/core-bentley";
 import { Viewport } from "./Viewport";
 
 /** An immutable set of [[Viewport]]s wherein uniqueness is determined by each Viewport's unique integer identifier.

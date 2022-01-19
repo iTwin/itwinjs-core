@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Range1d } from "@bentley/geometry-core";
+import { Range1d } from "@itwin/core-geometry";
 
 /** Constants and functions for working with two-dimensions [Frustum]($common)s.
  * A 2d view is rendered using an orthographic frustum with depth. 2d elements have no meaningful placement in Z, but they can have a display priority

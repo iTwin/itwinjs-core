@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BentleyError } from "../BentleyError";
-import { DbResult, GetMetaDataFunction, Logger, LogLevel, PerfLogger, using } from "../bentleyjs-core";
-import { ClientRequestContext } from "../ClientRequestContext";
-import { EnvMacroSubst } from "../Logger";
+import { BentleyError, LoggingMetaData } from "../BentleyError";
+import { using } from "../Disposable";
+import { Logger, LogLevel, PerfLogger } from "../Logger";
 import { BeDuration } from "../Time";
 
 let outerr: any[];
@@ -71,50 +70,6 @@ type FunctionReturningAny = () => any;
 
 describe("Logger", () => {
 
-  it("envvar subst", () => {
-    process.env.test1 = "test1";
-    process.env.test2 = "test2";
-
-    assert.equal(EnvMacroSubst.replace("${test1}"), "test1");
-    assert.equal(EnvMacroSubst.replace(" ${test1}"), " test1");
-    assert.equal(EnvMacroSubst.replace("${test1} "), "test1 ");
-    assert.equal(EnvMacroSubst.replace("${test2}"), "test2");
-    assert.equal(EnvMacroSubst.replace("${test1}${test2}"), "test1test2");
-    assert.equal(EnvMacroSubst.replace("-${test1}-${test2}-"), "-test1-test2-");
-    // should fail
-    assert.equal(EnvMacroSubst.replace("${testx}"), "${testx}");
-    assert.equal(EnvMacroSubst.replace("$(test1)"), "$(test1)");
-
-    const testObj: any = {
-      prop1: "${test1}",
-      prop2: "${test2}",
-      propx: "${testx}",
-      propy: "${testy}",
-      i: 1,
-      a: ["${test1}", "${test2}"],
-      nested: {
-        nestedprop1: "${test1}",
-        nestedprop2: "${test2}",
-        nestedpropy: "${testy}",
-        j: 2,
-      },
-    };
-    assert.isTrue(EnvMacroSubst.anyPropertyContainsEnvvars(testObj, true));
-    EnvMacroSubst.replaceInProperties(testObj, true, { testy: "testy" });
-    assert.isTrue(EnvMacroSubst.anyPropertyContainsEnvvars(testObj, true)); // still contains ${testx}, which looks like a macro
-    assert.equal(testObj.prop1, "test1");
-    assert.equal(testObj.prop2, "test2");
-    assert.equal(testObj.propx, "${testx}");
-    assert.equal(testObj.propy, "testy");
-    assert.equal(testObj.i, 1);
-    assert.equal(testObj.a[0], "test1");
-    assert.equal(testObj.a[1], "test2");
-    assert.equal(testObj.nested.nestedprop1, "test1");
-    assert.equal(testObj.nested.nestedprop2, "test2");
-    assert.equal(testObj.nested.nestedpropy, "testy");
-    assert.equal(testObj.nested.j, 2);
-  });
-
   it("log without initializing", () => {
     // logging messages in the components must not cause failures if the app hasn't initialized logging.
     Logger.logError("test", "An error occurred");
@@ -128,15 +83,48 @@ describe("Logger", () => {
     assert.isFalse(Logger.isEnabled("test", LogLevel.Trace));
   });
 
-  it("call metadata source functions without initializing", () => {
-    const newMetaDataSource = (metaData: any) => {
-      metaData.prop1 = "test1";
-      metaData.prop2 = "test2";
-      metaData.prop3 = "test3";
-    };
-    assert.isTrue(Logger.registerMetaDataSource(newMetaDataSource)); // Try to register source before initializing logger
-    const mdnew = Logger.makeMetaData(() => { });
-    assert.include(mdnew, { prop1: "test1", prop2: "test2", prop3: "test3" });
+  it("static logger metadata", () => {
+    const aProps = `"a":"hello"`;
+    const meta1Props = `"prop1":"test1","prop2":"test2","prop3":"test3"`;
+    const meta2Props = `"value2":"v2"`;
+
+    let out = Logger.stringifyMetaData({ a: "hello" });
+    assert.equal(out, `{${aProps}}`);
+
+    // use a function for static metadata
+    Logger.staticMetaData.set("meta1", () => ({ prop1: "test1", prop2: "test2", prop3: "test3" }));
+
+    out = Logger.stringifyMetaData({ a: "hello" });
+    assert.equal(out, `{${meta1Props},${aProps}}`);
+
+    // use an object for static metadata
+    Logger.staticMetaData.set("meta2", { value2: "v2" });
+
+    // metadata from an object
+    out = Logger.stringifyMetaData({ a: "hello" });
+    assert.equal(out, `{${meta1Props},${meta2Props},${aProps}}`);
+
+    // metadata from a function
+    out = Logger.stringifyMetaData(() => ({ a: "hello" }));
+    assert.equal(out, `{${meta1Props},${meta2Props},${aProps}}`);
+
+    // even if there's no metadata, you should still get static metadata
+    out = Logger.stringifyMetaData();
+    assert.equal(out, `{${meta1Props},${meta2Props}}`);
+
+    // delete static metadata
+    Logger.staticMetaData.delete("meta1");
+    out = Logger.stringifyMetaData({ a: "hello" });
+    assert.equal(out, `{${meta2Props},${aProps}}`, "meta2 still exists");
+
+    Logger.staticMetaData.delete("meta2");
+    out = Logger.stringifyMetaData({ a: "hello" });
+    // no static metadata
+    assert.equal(out, `{${aProps}}`);
+
+    // no metadata at all
+    out = Logger.stringifyMetaData();
+    assert.equal(out, "");
   });
 
   it("levels", () => {
@@ -416,11 +404,11 @@ describe("Logger", () => {
     const perfMessages = new Array<string>();
     const perfData = new Array<any>();
     Logger.initialize(undefined, undefined,
-      (category, message, metadata?: GetMetaDataFunction) => {
+      (category, message, metadata?: LoggingMetaData) => {
         if (category === "Performance") {
           perfMessages.push(message);
 
-          const data = metadata ? metadata() : {};
+          const data = metadata ? BentleyError.getMetaData(metadata) : {};
           perfData.push(data);
         }
       }, undefined);
@@ -465,99 +453,20 @@ describe("Logger", () => {
 
   it("should log exceptions", () => {
     Logger.initialize(
-      (c, m, d) => outerr = [c, m, d ? d() : {}],
-      (c, m, d) => outwarn = [c, m, d ? d() : {}],
-      (c, m, d) => outinfo = [c, m, d ? d() : {}],
-      (c, m, d) => outtrace = [c, m, d ? d() : {}]);
+      (c, m, d) => outerr = [c, m, BentleyError.getMetaData(d)],
+      (c, m, d) => outwarn = [c, m, BentleyError.getMetaData(d)],
+      (c, m, d) => outinfo = [c, m, BentleyError.getMetaData(d)],
+      (c, m, d) => outtrace = [c, m, BentleyError.getMetaData(d)]);
     Logger.setLevel("testcat", LogLevel.Error);
 
     clearOutlets();
     try {
       throw new Error("error message");
-    } catch (err) {
+    } catch (err: any) {
       Logger.logException("testcat", err);
     }
     checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
 
-    clearOutlets();
-    try {
-      throw new BentleyError(DbResult.BE_SQLITE_ERROR, "bentley error message", Logger.logError, "testcat", () => ({ MyProp: "mypropvalue" }));
-    } catch (_err) {
-    }
-    checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ExceptionType: "BentleyError" }], [], [], []);
-  });
-
-  it("logger shouldn't mutate arguments", () => {
-    Logger.initialize((_category: string, _message: string, getMetaData?: GetMetaDataFunction) => Logger.makeMetaData(getMetaData));
-    Logger.setLevel("testcat", LogLevel.Error);
-    const myInstance = { foo: "foo" };
-    Logger.logError("testcat", "some message", () => myInstance);
-    assert.equal(Object.keys(myInstance).length, 1);
-  });
-
-  it("log should capture ActivityId", () => {
-    Logger.initialize(
-      (c, m, d) => outerr = [c, m, d ? d() : {}],
-      (c, m, d) => outwarn = [c, m, d ? d() : {}],
-      (c, m, d) => outinfo = [c, m, d ? d() : {}],
-      (c, m, d) => outtrace = [c, m, d ? d() : {}]);
-    Logger.setLevel("testcat", LogLevel.Error);
-
-    const lctx1 = new ClientRequestContext("activity1").enter();
-    clearOutlets();
-    Logger.logError("testcat", "message1");
-    checkOutlets(["testcat", "message1", { ActivityId: lctx1.activityId }], [], [], []);
-
-    const lctx2 = new ClientRequestContext("activity2").enter();
-    clearOutlets();
-    Logger.logError("testcat", "message2");
-    checkOutlets(["testcat", "message2", { ActivityId: lctx2.activityId }], [], [], []);
-
-    clearOutlets();
-    try {
-      throw new BentleyError(DbResult.BE_SQLITE_ERROR, "bentley error message", Logger.logError, "testcat", () => ({ MyProp: "mypropvalue" }));
-    } catch (_err) {
-    }
-    checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ActivityId: lctx2.activityId, ExceptionType: "BentleyError" }], [], [], []);
-  });
-
-  it("register and remove metadata source", () => {
-    Logger.initialize(
-      (c, m, d) => outerr = [c, m, d],
-      (c, m, d) => outwarn = [c, m, d],
-      (c, m, d) => outinfo = [c, m, d],
-      (c, m, d) => outtrace = [c, m, d]);
-
-    const lctx1 = new ClientRequestContext("activity1").enter();
-    const md = Logger.makeMetaData(() => { });
-    assert.include(md, {
-      ActivityId: lctx1.activityId,
-      ApplicationId: "",
-      ApplicationVersion: "",
-      SessionId: "00000000-0000-0000-0000-000000000000",
-    });
-
-    const newMetaDataSource = (metaData: any) => {
-      metaData.prop1 = "test1";
-      metaData.prop2 = "test2";
-      metaData.prop3 = "test3";
-    };
-    assert.isTrue(Logger.registerMetaDataSource(newMetaDataSource));
-    assert.isFalse(Logger.registerMetaDataSource(newMetaDataSource)); // Try to register the same source twice
-    const md2 = Logger.makeMetaData(() => { });
-    assert.include(md2, {
-      prop1: "test1",
-      prop2: "test2",
-      prop3: "test3",
-    });
-
-    assert.isTrue(Logger.removeMetaDataSource(newMetaDataSource), "metadata source successfully removed");
-    const md3 = Logger.makeMetaData(() => { });
-    assert.notInclude(md3, {
-      prop1: "test1",
-      prop2: "test2",
-      prop3: "test3",
-    });
   });
 
 });

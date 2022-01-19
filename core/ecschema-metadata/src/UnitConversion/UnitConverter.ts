@@ -2,8 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { Constant, SchemaContext, SchemaItem, SchemaKey, Unit } from "../ecschema-metadata";
+import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
+import { SchemaContext } from "../Context";
+import { Constant } from "../Metadata/Constant";
+import { SchemaItem } from "../Metadata/SchemaItem";
+import { Unit } from "../Metadata/Unit";
+import { SchemaKey } from "../SchemaKey";
 import { UnitConversion } from "./UnitConversion";
 import { UnitGraph } from "./UnitTree";
 
@@ -63,7 +67,7 @@ export class UnitConverter {
 
     const areCompatible = await Unit.areCompatible(from as Unit, to as Unit);
     if (!areCompatible)
-      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, ()  => {
+      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, () => {
         return { from, to };
       });
 
@@ -79,7 +83,7 @@ export class UnitConverter {
     const toMapStore = this._uGraph.reduce(to, toBaseUnits);
 
     if (!this.checkBaseUnitsMatch(fromBaseUnits, toBaseUnits))
-      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not have matching base units`, ()  => {
+      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not have matching base units`, () => {
         return { from, to };
       });
 

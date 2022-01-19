@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";

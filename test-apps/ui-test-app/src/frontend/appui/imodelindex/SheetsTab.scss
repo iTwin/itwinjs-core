@@ -2,20 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/button/blue";
-@import "~@bentley/ui-core/lib/ui-core/icons/variables";
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
-@import "~@bentley/ui-core/lib/ui-core/style/space";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@itwin/core-react/lib/cjs/core-react/icons/variables";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
+@import "~@itwin/itwinui-css/scss/style/space";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 /* 3D Models tab */
 .viewstab-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding-bottom: $uicore-m;
+  padding-bottom: $iui-m;
   box-sizing: border-box;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   background: $uicore-gray-c;
   position: relative;
   overflow: hidden;
@@ -32,7 +31,7 @@
   }
 
   .searchbox {
-    margin-right: $uicore-sm;
+    margin-right: $iui-sm;
     width: 220px;
   }
 
@@ -49,7 +48,8 @@
     transition: all background-color .2s ease;
 
     /* Hover over list/thumbnail button */
-    &.active, &:hover {
+    &.active,
+    &:hover {
       color: $uicore-white;
       background: $uicore-blue;
     }
@@ -57,22 +57,31 @@
 
   /* enter iModel button */
   .open-button {
-    margin: $uicore-l $uicore-m 0 auto !important;
-    @include uicore-buttons-blue;
+    margin: $iui-l $iui-m 0 auto !important;
   }
 }
 
 @-webkit-keyframes show {
-  0%   {opacity: 0;}
-  100% {opacity: 1;}
+  0% {
+    opacity: 0;
   }
 
-@keyframes show {
-  0%   {opacity: 0;}
-  100% {opacity: 1;}
+  100% {
+    opacity: 1;
+  }
 }
 
-.no-views-alert  {
+@keyframes show {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.no-views-alert {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -90,31 +99,60 @@
   -moz-animation: alert .4s ease forwards;
   -ms-animation: alert .4s ease forwards;
   -o-animation: alert .4s ease forwards;
-   animation: alert .4s ease forwards;
-  -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  animation: alert .4s ease forwards;
+  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 /* Animation */
 
 @-webkit-keyframes alert {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
+
 @-moz-keyframes alert {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
+
 @-ms-keyframes alert {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
+
 @-o-keyframes alert {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
+
 @keyframes alert {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }

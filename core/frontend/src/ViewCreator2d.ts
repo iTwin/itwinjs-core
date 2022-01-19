@@ -12,15 +12,18 @@ API for creating a 2D view from a given modelId and modelType (classFullName).
 Additional options (such as background color) can be passed during view creation.
 */
 
-import { Id64Array, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, IModelError, ModelSelectorProps, SheetProps, ViewDefinition2dProps, ViewStateProps } from "@bentley/imodeljs-common";
-import { Range3d } from "@bentley/geometry-core";
-import { DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
-import { IModelConnection } from "./IModelConnection";
-import { ViewState, ViewState2d } from "./ViewState";
+import { Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import {
+  CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, IModelError, ModelSelectorProps, QueryBinder, QueryRowFormat, SheetProps,
+  ViewDefinition2dProps, ViewStateProps,
+} from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { DrawingViewState } from "./DrawingViewState";
+import { EntityState } from "./EntityState";
+import { IModelConnection } from "./IModelConnection";
+import { DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { SheetViewState } from "./SheetViewState";
-import { EntityState, loggerCategory } from "./imodeljs-frontend";
+import { ViewState, ViewState2d } from "./ViewState";
 
 /** Options for creating a [[ViewState2d]] via [[ViewCreator2d]].
  *  @public
@@ -89,10 +92,10 @@ export class ViewCreator2d {
       const modelType = modelProps[0].classFullName;
       baseClassName = await this._imodel.findClassFor(modelType, undefined);
     } else
-      throw new IModelError(IModelStatus.BadModel, "ViewCreator2d._getModelBaseClassName: modelId is invalid", Logger.logError, loggerCategory, () => ({ modelId }));
+      throw new IModelError(IModelStatus.BadModel, "ViewCreator2d._getModelBaseClassName: modelId is invalid");
 
     if (baseClassName === undefined)
-      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d.getViewForModel: modelType is invalid", Logger.logError, loggerCategory, () => ({ modelId }));
+      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d.getViewForModel: modelType is invalid");
 
     return baseClassName;
   }
@@ -114,7 +117,7 @@ export class ViewCreator2d {
       props = await this._addSheetViewProps(modelId, props);
       viewState = SheetViewState.createFromProps(props, this._imodel);
     } else
-      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d._createViewState2d: modelType not supported", Logger.logError, loggerCategory, () => ({ modelType, modelId }));
+      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d._createViewState2d: modelType not supported");
 
     return viewState;
   }
@@ -206,7 +209,7 @@ export class ViewCreator2d {
     const displayStyleProps: DisplayStyleProps = {
       code: Code.createEmpty(),
       model: dictionaryId,
-      classFullName: "BisCore:DisplayStyle",
+      classFullName: "BisCore:DisplayStyle2d",
       jsonProperties: {
         styles: {
           backgroundColor: bgColor.tbgr,
@@ -234,7 +237,7 @@ export class ViewCreator2d {
   private async _addSheetViewProps(modelId: Id64String, props: ViewStateProps) {
     let width = 0;
     let height = 0;
-    for await (const row of this._imodel.query(`SELECT Width, Height FROM bis.Sheet WHERE ECInstanceId = ${modelId}`)) {
+    for await (const row of this._imodel.query(`SELECT Width, Height FROM bis.Sheet WHERE ECInstanceId = ?`, QueryBinder.from([modelId]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       width = row.width as number;
       height = row.height as number;
       break;
@@ -322,7 +325,7 @@ export class ViewCreator2d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    for await (const row of this._imodel.query(query))
+    for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       rows.push(row.id);
 
     return rows;

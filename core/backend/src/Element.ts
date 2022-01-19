@@ -6,19 +6,15 @@
  * @module Elements
  */
 
+import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  assert, CompressedId64Set, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array,
-} from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { LockLevel } from "@bentley/imodelhub-client";
-import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
-  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
-} from "@bentley/imodeljs-common";
-import { ConcurrencyControl } from "./ConcurrencyControl";
+  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps,
+  SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+} from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -107,11 +103,11 @@ export interface OnSubModelIdArg extends OnElementArg {
  * * [Creating elements]($docs/learning/backend/CreateElements.md)
  * @public
  */
-export class Element extends Entity implements ElementProps {
+export class Element extends Entity {
   /** @internal */
-  public static get className(): string { return "Element"; }
+  public static override get className(): string { return "Element"; }
   /** @internal */
-  public static get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
+  public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
 
   /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
@@ -139,54 +135,6 @@ export class Element extends Entity implements ElementProps {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
-  /** Disclose the codes and locks needed to perform the specified operation on this element
-   * @param req the request to populate
-   * @param props the version of the element that will be written
-   * @param iModel the iModel
-   * @param opcode the operation
-   * @param original a pre-change copy of the element. Passed only in the case of Update.
-   * @beta
-   */
-  public static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined) {
-    assert(iModel.isBriefcaseDb());
-    if (!iModel.isBriefcaseDb()) {
-      return;
-    }
-    switch (opcode) {
-      case DbOpcode.Insert: {
-        if (Code.isValid(props.code) && !Code.isEmpty(props.code))
-          req.addCodes([props.code]);
-        req.addLocks([ConcurrencyControl.Request.getModelLock(props.model, LockLevel.Shared)]);
-        break;
-      }
-      case DbOpcode.Delete: {
-        assert(props.id !== undefined);
-        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockLevel.Exclusive)]);
-
-        // Elements.deleteElement will automatically delete children, so we must automatically request the necessary resources for the children.
-        iModel.elements.queryChildren(props.id).forEach((childId) => {
-          this.populateRequest(req, { ...props, id: childId } as ElementProps, iModel, opcode, original); // (Rather than load the child's props, just fake it. We know that only the id property is needed. Likewise, pass anything for "original", since it's not used in the delete case. )
-        });
-        break;
-      }
-      case DbOpcode.Update: {
-        assert(props.id !== undefined);
-        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockLevel.Exclusive)]);
-
-        assert(original !== undefined && original.id === props.id);
-        if (original !== undefined) {
-
-          if (Code.isValid(props.code) && !Code.isEmpty(props.code) && !Code.equalCodes(props.code, original.code))
-            req.addCodes([props.code]);
-
-          if (props.model !== original.model)
-            req.addLocks([ConcurrencyControl.Request.getModelLock(original.model, LockLevel.Shared)]);
-        }
-        break;
-      }
-    }
-  }
-
   /** Called before a new Element is inserted.
    * @note throw an exception to disallow the insert
    * @note If you override this method, you must call super.
@@ -194,9 +142,10 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onInsert(arg: OnElementPropsArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Insert);
-    }
+    const { iModel, props } = arg;
+    iModel.locks.checkSharedLock(props.model, "model", "insert"); // inserting requires shared lock on model
+    if (props.parent)   // inserting requires shared lock on parent, if present
+      iModel.locks.checkSharedLock(props.parent.id, "parent", "insert");
   }
 
   /** Called after a new Element was inserted.
@@ -205,9 +154,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onInserted(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Insert);
-    }
+    arg.iModel.locks.elementWasCreated(arg.id);
   }
 
   /** Called before an Element is updated.
@@ -217,9 +164,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Update);
-    }
+    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Called after an Element was updated.
@@ -227,11 +172,7 @@ export class Element extends Entity implements ElementProps {
    * @note `this` is the class of the Element that was updated
    * @beta
    */
-  protected static onUpdated(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Update);
-    }
-  }
+  protected static onUpdated(_arg: OnElementIdArg): void { }
 
   /** Called before an Element is deleted.
    * @note throw an exception to disallow the delete
@@ -240,11 +181,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      const props = arg.iModel.elements.tryGetElementProps(arg.id);
-      if (props !== undefined)
-        arg.iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
-    }
+    arg.iModel.locks.checkExclusiveLock(arg.id, "element", "delete");
   }
 
   /** Called after an Element was deleted.
@@ -383,7 +320,7 @@ export class Element extends Entity implements ElementProps {
   /** Save this Element's properties to an object for serializing to JSON.
    * @internal
    */
-  public toJSON(): ElementProps {
+  public override toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
 
     if (Code.isValid(this.code))
@@ -464,32 +401,27 @@ export class Element extends Entity implements ElementProps {
   }
 
   /** Insert this Element into the iModel. */
-  public insert() { return this.iModel.elements.insertElement(this); }
+  public insert() { return this.id = this.iModel.elements.insertElement(this.toJSON()); }
   /** Update this Element in the iModel. */
-  public update() { this.iModel.elements.updateElement(this); }
+  public update() { this.iModel.elements.updateElement(this.toJSON()); }
   /** Delete this Element from the iModel. */
   public delete() { this.iModel.elements.deleteElement(this.id); }
-
-  /** Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
-   * @param opcode The operation that will be performed on the element.
-   */
-  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
-    if (this.iModel.isBriefcaseDb()) {
-      this.iModel.concurrencyControl.buildRequestForElement(this, opcode);
-    }
-  }
 }
 
 /** An abstract base class to model real world entities that intrinsically have geometry.
  * @public
  */
-export abstract class GeometricElement extends Element implements GeometricElementProps {
+export abstract class GeometricElement extends Element {
   /** @internal */
-  public static get className(): string { return "GeometricElement"; }
+  public static override get className(): string { return "GeometricElement"; }
   /** The Id of the [[Category]] for this GeometricElement. */
   public category: Id64String;
   /** The GeometryStream for this GeometricElement. */
   public geom?: GeometryStreamProps;
+  /** How to build the element's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
+   * @alpha
+   */
+  public elementGeometryBuilderParams?: ElementGeometryBuilderParams;
   /** The origin, orientation, and bounding box of this GeometricElement. */
   public abstract get placement(): Placement2d | Placement3d;
 
@@ -508,16 +440,17 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   public getPlacementTransform(): Transform { return this.placement.transform; }
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
-  /** @internal */
-  public toJSON(): GeometricElementProps {
+  /** Obtain the JSON representation of this element. */
+  public override toJSON(): GeometricElementProps {
     const val = super.toJSON() as GeometricElementProps;
     val.category = this.category;
     if (this.geom)
       val.geom = this.geom;
     return val;
   }
+
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.category);
     // TODO: GeometryPartIds?
@@ -528,9 +461,9 @@ export abstract class GeometricElement extends Element implements GeometricEleme
  * See [how to create a GeometricElement3d]($docs/learning/backend/CreateElements.md#GeometricElement3d).
  * @public
  */
-export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
+export abstract class GeometricElement3d extends GeometricElement {
   /** @internal */
-  public static get className(): string { return "GeometricElement3d"; }
+  public static override get className(): string { return "GeometricElement3d"; }
   public placement: Placement3d;
   public typeDefinition?: TypeDefinition;
 
@@ -543,7 +476,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
   }
 
   /** @internal */
-  public toJSON(): GeometricElement3dProps {
+  public override toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
     val.placement = this.placement;
     if (undefined !== this.typeDefinition) { val.typeDefinition = this.typeDefinition; }
@@ -551,7 +484,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
   }
 
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
   }
@@ -562,7 +495,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
  */
 export abstract class GraphicalElement3d extends GeometricElement3d {
   /** @internal */
-  public static get className(): string { return "GraphicalElement3d"; }
+  public static override get className(): string { return "GraphicalElement3d"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -570,9 +503,9 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
 /** An abstract base class to model information entities that intrinsically have 2d geometry.
  * @public
  */
-export abstract class GeometricElement2d extends GeometricElement implements GeometricElement2dProps {
+export abstract class GeometricElement2d extends GeometricElement {
   /** @internal */
-  public static get className(): string { return "GeometricElement2d"; }
+  public static override get className(): string { return "GeometricElement2d"; }
   public placement: Placement2d;
   public typeDefinition?: TypeDefinition;
 
@@ -585,7 +518,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
   }
 
   /** @internal */
-  public toJSON(): GeometricElement2dProps {
+  public override toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
     val.placement = this.placement;
     if (undefined !== this.typeDefinition) { val.typeDefinition = this.typeDefinition; }
@@ -593,7 +526,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
   }
 
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
   }
@@ -604,7 +537,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
  */
 export abstract class GraphicalElement2d extends GeometricElement2d {
   /** @internal */
-  public static get className(): string { return "GraphicalElement2d"; }
+  public static override get className(): string { return "GraphicalElement2d"; }
   /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -614,7 +547,7 @@ export abstract class GraphicalElement2d extends GeometricElement2d {
  */
 export class AnnotationElement2d extends GraphicalElement2d {
   /** @internal */
-  public static get className(): string { return "AnnotationElement2d"; }
+  public static override get className(): string { return "AnnotationElement2d"; }
   /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -624,7 +557,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
  */
 export class DrawingGraphic extends GraphicalElement2d {
   /** @internal */
-  public static get className(): string { return "DrawingGraphic"; }
+  public static override get className(): string { return "DrawingGraphic"; }
   /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -634,7 +567,7 @@ export class DrawingGraphic extends GraphicalElement2d {
  */
 export class TextAnnotation2d extends AnnotationElement2d {
   /** @internal */
-  public static get className(): string { return "TextAnnotation2d"; }
+  public static override get className(): string { return "TextAnnotation2d"; }
   /** @internal */
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -644,7 +577,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
  */
 export class TextAnnotation3d extends GraphicalElement3d {
   /** @internal */
-  public static get className(): string { return "TextAnnotation3d"; }
+  public static override get className(): string { return "TextAnnotation3d"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -654,7 +587,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
  */
 export abstract class SpatialElement extends GeometricElement3d {
   /** @internal */
-  public static get className(): string { return "SpatialElement"; }
+  public static override get className(): string { return "SpatialElement"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -664,7 +597,7 @@ export abstract class SpatialElement extends GeometricElement3d {
  */
 export abstract class PhysicalElement extends SpatialElement {
   /** @internal */
-  public static get className(): string { return "PhysicalElement"; }
+  public static override get className(): string { return "PhysicalElement"; }
   /** If defined, the [[PhysicalMaterial]] that makes up this PhysicalElement. */
   public physicalMaterial?: RelatedElement;
   /** @internal */
@@ -673,7 +606,7 @@ export abstract class PhysicalElement extends SpatialElement {
     this.physicalMaterial = RelatedElement.fromJSON(props.physicalMaterial);
   }
   /** @internal */
-  public toJSON(): PhysicalElementProps {
+  public override toJSON(): PhysicalElementProps {
     const val = super.toJSON() as PhysicalElementProps;
     val.physicalMaterial = this.physicalMaterial?.toJSON();
     return val;
@@ -685,7 +618,7 @@ export abstract class PhysicalElement extends SpatialElement {
  */
 export abstract class SpatialLocationElement extends SpatialElement {
   /** @internal */
-  public static get className(): string { return "SpatialLocationElement"; }
+  public static override get className(): string { return "SpatialLocationElement"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -695,12 +628,13 @@ export abstract class SpatialLocationElement extends SpatialElement {
  */
 export class VolumeElement extends SpatialLocationElement {
   /** @internal */
-  public static get className(): string { return "VolumeElement"; }
+  public static override get className(): string { return "VolumeElement"; }
   /** @internal */
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]].
+/** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]],
+ * enabling [HyperModeling]($hypermodeling).
  * @note The associated ECClass was added to the BisCore schema in version 1.0.11.
  * @public
  */
@@ -709,7 +643,7 @@ export class SectionDrawingLocation extends SpatialLocationElement {
   public sectionView: RelatedElement;
 
   /** @internal */
-  public static get className(): string { return "SectionDrawingLocation"; }
+  public static override get className(): string { return "SectionDrawingLocation"; }
 
   public constructor(props: SectionDrawingLocationProps, iModel: IModelDb) {
     super(props, iModel);
@@ -717,7 +651,7 @@ export class SectionDrawingLocation extends SpatialLocationElement {
   }
 
   /** @internal */
-  public toJSON(): SectionDrawingLocationProps {
+  public override toJSON(): SectionDrawingLocationProps {
     return {
       ...super.toJSON(),
       sectionView: this.sectionView.toJSON(),
@@ -732,7 +666,7 @@ export class SectionDrawingLocation extends SpatialLocationElement {
  */
 export abstract class InformationContentElement extends Element {
   /** @internal */
-  public static get className(): string { return "InformationContentElement"; }
+  public static override get className(): string { return "InformationContentElement"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -743,7 +677,7 @@ export abstract class InformationContentElement extends Element {
  */
 export abstract class DriverBundleElement extends InformationContentElement {
   /** @internal */
-  public static get className(): string { return "DriverBundleElement"; }
+  public static override get className(): string { return "DriverBundleElement"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -753,7 +687,7 @@ export abstract class DriverBundleElement extends InformationContentElement {
  */
 export abstract class InformationReferenceElement extends InformationContentElement {
   /** @internal */
-  public static get className(): string { return "InformationReferenceElement"; }
+  public static override get className(): string { return "InformationReferenceElement"; }
   /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -762,14 +696,14 @@ export abstract class InformationReferenceElement extends InformationContentElem
  * See [how to create a Subject element]$(docs/learning/backend/CreateElements.md#Subject).
  * @public
  */
-export class Subject extends InformationReferenceElement implements SubjectProps {
+export class Subject extends InformationReferenceElement {
   /** @internal */
-  public static get className(): string { return "Subject"; }
+  public static override get className(): string { return "Subject"; }
   public description?: string;
   /** @internal */
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
-  public toJSON(): SubjectProps { // This override only specializes the return type
+  public override toJSON(): SubjectProps { // This override only specializes the return type
     return super.toJSON() as SubjectProps; // Entity.toJSON takes care of auto-handled properties
   }
   /** Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
@@ -809,7 +743,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
    */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
     const subject = this.create(iModelDb, parentSubjectId, name, description);
-    return iModelDb.elements.insertElement(subject);
+    return iModelDb.elements.insertElement(subject.toJSON());
   }
 }
 
@@ -822,7 +756,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
  */
 export abstract class Document extends InformationContentElement {
   /** @internal */
-  public static get className(): string { return "Document"; }
+  public static override get className(): string { return "Document"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -832,7 +766,7 @@ export abstract class Document extends InformationContentElement {
  */
 export class Drawing extends Document {
   /** @internal */
-  public static get className(): string { return "Drawing"; }
+  public static override get className(): string { return "Drawing"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -864,12 +798,13 @@ export class Drawing extends Document {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawingId },
     });
-    return iModelDb.models.insertModel(model);
+    return iModelDb.models.insertModel(model.toJSON());
   }
 }
 
 /** A document that represents a section drawing, that is, a graphical documentation derived from a planar
  * section of a spatial view. A SectionDrawing element is modelled by a [[SectionDrawingModel]] or a [[GraphicalModel3d]].
+ * A [[SectionDrawingLocation]] can associate the drawing with a spatial location, enabling [HyperModeling]($hypermodeling).
  * @public
  */
 export class SectionDrawing extends Drawing {
@@ -877,33 +812,68 @@ export class SectionDrawing extends Drawing {
   public sectionType: SectionType;
   /** The spatial view from which the section was generated. */
   public spatialView: RelatedElement;
+  /** A transform from the section drawing model's coordinates to spatial coordinates. */
+  public drawingToSpatialTransform?: Transform;
+  /** If the section drawing is placed onto a [[Sheet]] via a [[ViewAttachment]], a transform from the sheet's coordinates to spatial coordinates. */
+  public sheetToSpatialTransform?: Transform;
+  /** If the section drawing is placed onto a [[Sheet]] via a [[ViewAttachment]], the clip to apply to the sheet graphics when drawn in the context
+   * of the spatial view.
+   * @note The ClipVector is defined in spatial coordinates.
+   */
+  public drawingBoundaryClip?: ClipVector;
+  /** If true, when displaying the section drawing as a [DrawingViewState]($frontend), the [[spatialView]] will also be displayed. */
+  public displaySpatialView: boolean;
 
   /** @internal */
-  public static get className(): string { return "SectionDrawing"; }
+  public static override get className(): string { return "SectionDrawing"; }
 
   /** @internal */
   constructor(props: SectionDrawingProps, iModel: IModelDb) {
     super(props, iModel);
     this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
     this.spatialView = RelatedElement.fromJSON(props.spatialView) ?? RelatedElement.none;
+    this.displaySpatialView = JsonUtils.asBool(props.jsonProperties?.displaySpatialView);
+
+    const json = props.jsonProperties;
+    if (!json)
+      return;
+
+    if (json.drawingToSpatialTransform)
+      this.drawingToSpatialTransform = Transform.fromJSON(json.drawingToSpatialTransform);
+
+    if (json.sheetToSpatialTransform)
+      this.sheetToSpatialTransform = Transform.fromJSON(json.sheetToSpatialTransform);
+
+    if (json.drawingBoundaryClip)
+      this.drawingBoundaryClip = ClipVector.fromJSON(json.drawingBoundaryClip);
   }
 
-  /** @internal */
-  public toJSON(): SectionDrawingProps {
-    return {
+  /** Convert to JSON representation. */
+  public override toJSON(): SectionDrawingProps {
+    const props: SectionDrawingProps = {
       ...super.toJSON(),
       sectionType: this.sectionType,
       spatialView: this.spatialView.toJSON(),
     };
+
+    if (!props.jsonProperties)
+      props.jsonProperties = {};
+
+    props.jsonProperties.displaySpatialView = this.displaySpatialView ? true : undefined;
+    props.jsonProperties.drawingToSpatialTransform = this.drawingToSpatialTransform?.toJSON();
+    props.jsonProperties.sheetToSpatialTransform = this.sheetToSpatialTransform?.toJSON();
+    props.jsonProperties.drawingBoundaryClip = this.drawingBoundaryClip?.toJSON();
+
+    return props;
   }
 }
 
 /** The template for a SheetBorder
  * @public
  */
-export class SheetBorderTemplate extends Document implements SheetBorderTemplateProps {
+export class SheetBorderTemplate extends Document {
   /** @internal */
-  public static get className(): string { return "SheetBorderTemplate"; }
+  public static override get className(): string { return "SheetBorderTemplate"; }
   public height?: number;
   public width?: number;
   /** @internal */
@@ -913,16 +883,16 @@ export class SheetBorderTemplate extends Document implements SheetBorderTemplate
 /** The template for a [[Sheet]]
  * @public
  */
-export class SheetTemplate extends Document implements SheetTemplateProps {
+export class SheetTemplate extends Document {
   /** @internal */
-  public static get className(): string { return "SheetTemplate"; }
+  public static override get className(): string { return "SheetTemplate"; }
   public height?: number;
   public width?: number;
   public border?: Id64String;
   /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.border) { predecessorIds.add(this.border); }
   }
@@ -931,9 +901,9 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
 /** A digital representation of a *sheet of paper*. Modeled by a [[SheetModel]].
  * @public
  */
-export class Sheet extends Document implements SheetProps {
+export class Sheet extends Document {
   /** @internal */
-  public static get className(): string { return "Sheet"; }
+  public static override get className(): string { return "Sheet"; }
   public height: number;
   public width: number;
   public scale?: number;
@@ -947,7 +917,7 @@ export class Sheet extends Document implements SheetProps {
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.sheetTemplate) { predecessorIds.add(this.sheetTemplate); }
   }
@@ -962,38 +932,13 @@ export class Sheet extends Document implements SheetProps {
   }
 }
 
-/** An Information Carrier carries information, but is not the information itself. For example, the arrangement
- * of ink on paper or the sequence of electronic bits are information carriers.
- * @deprecated BisCore will focus on the information itself and not how it is carried.
- * @note This TypeScript class should not be removed until the (deprecated) InformationCarrierElement class is removed from the BisCore schema.
- * @internal
- */
-export abstract class InformationCarrierElement extends Element {
-  /** @internal */
-  public static get className(): string { return "InformationCarrierElement"; }
-  /** @internal */
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/** An Information Carrier that carries a Document. An electronic file is a good example.
- * @deprecated BisCore will focus on the information itself and not how it is carried.
- * @note This TypeScript class should not be removed until the (deprecated) DocumentCarrier class is removed from the BisCore schema.
- * @internal
- */
-export abstract class DocumentCarrier extends InformationCarrierElement {  // eslint-disable-line deprecation/deprecation
-  /** @internal */
-  public static get className(): string { return "DocumentCarrier"; }
-  /** @internal */
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
-}
-
 /** Information Record Element is an abstract base class for modeling information records. Information Record
  * Element is the default choice if no other subclass of Information Content Element makes sense.
  * @public
  */
 export abstract class InformationRecordElement extends InformationContentElement {
   /** @internal */
-  public static get className(): string { return "InformationRecordElement"; }
+  public static override get className(): string { return "InformationRecordElement"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -1001,15 +946,15 @@ export abstract class InformationRecordElement extends InformationContentElement
 /** A Definition Element holds configuration-related information that is meant to be referenced / shared.
  * @public
  */
-export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
+export abstract class DefinitionElement extends InformationContentElement {
   /** @internal */
-  public static get className(): string { return "DefinitionElement"; }
+  public static override get className(): string { return "DefinitionElement"; }
   /** If true, don't show this DefinitionElement in user interface lists. */
   public isPrivate: boolean;
   /** @internal */
   constructor(props: DefinitionElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = true === props.isPrivate; }
   /** @internal */
-  public toJSON(): DefinitionElementProps {
+  public override toJSON(): DefinitionElementProps {
     const val = super.toJSON() as DefinitionElementProps;
     val.isPrivate = this.isPrivate;
     return val;
@@ -1022,7 +967,7 @@ export abstract class DefinitionElement extends InformationContentElement implem
  */
 export abstract class DefinitionSet extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "DefinitionSet"; }
+  public static override get className(): string { return "DefinitionSet"; }
 }
 
 /** A DefinitionContainer exclusively owns a set of DefinitionElements contained within its sub-model (of type DefinitionModel).
@@ -1031,7 +976,7 @@ export abstract class DefinitionSet extends DefinitionElement {
  */
 export class DefinitionContainer extends DefinitionSet {
   /** @internal */
-  public static get className(): string { return "DefinitionContainer"; }
+  public static override get className(): string { return "DefinitionContainer"; }
   /** Create a DefinitionContainer
    * @param iModelDb The IModelDb
    * @param definitionModelId The Id of the [DefinitionModel]($backend) that will contain this DefinitionContainer element.
@@ -1061,7 +1006,7 @@ export class DefinitionContainer extends DefinitionSet {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
     const containerElement = this.create(iModelDb, definitionModelId, code, isPrivate);
-    const containerElementId = iModelDb.elements.insertElement(containerElement);
+    const containerElementId = iModelDb.elements.insertElement(containerElement.toJSON());
     const containerSubModelProps: ModelProps = {
       classFullName: DefinitionModel.classFullName,
       modeledElement: { id: containerElementId },
@@ -1078,7 +1023,7 @@ export class DefinitionContainer extends DefinitionSet {
  */
 export class DefinitionGroup extends DefinitionSet {
   /** @internal */
-  public static get className(): string { return "DefinitionGroup"; }
+  public static override get className(): string { return "DefinitionGroup"; }
   /** Create a DefinitionGroup
    * @param iModelDb The IModelDb
    * @param definitionModelId The Id of the [DefinitionModel]($backend) that will contain this DefinitionGroup element.
@@ -1102,14 +1047,14 @@ export class DefinitionGroup extends DefinitionSet {
 /** Defines a set of properties (the *type*) that may be associated with an element.
  * @public
  */
-export abstract class TypeDefinitionElement extends DefinitionElement implements TypeDefinitionElementProps {
+export abstract class TypeDefinitionElement extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "TypeDefinitionElement"; }
+  public static override get className(): string { return "TypeDefinitionElement"; }
   public recipe?: RelatedElement;
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.recipe) { predecessorIds.add(this.recipe.id); }
   }
@@ -1120,7 +1065,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
  */
 export abstract class RecipeDefinitionElement extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "RecipeDefinitionElement"; }
+  public static override get className(): string { return "RecipeDefinitionElement"; }
   /** @internal */
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
@@ -1132,7 +1077,7 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
  */
 export abstract class PhysicalType extends TypeDefinitionElement {
   /** @internal */
-  public static get className(): string { return "PhysicalType"; }
+  public static override get className(): string { return "PhysicalType"; }
   /** If defined, the [[PhysicalMaterial]] that makes up this PhysicalType. */
   public physicalMaterial?: RelatedElement;
   /** @internal */
@@ -1141,7 +1086,7 @@ export abstract class PhysicalType extends TypeDefinitionElement {
     this.physicalMaterial = RelatedElement.fromJSON(props.physicalMaterial);
   }
   /** @internal */
-  public toJSON(): PhysicalTypeProps {
+  public override toJSON(): PhysicalTypeProps {
     const val = super.toJSON() as PhysicalTypeProps;
     val.physicalMaterial = this.physicalMaterial?.toJSON();
     return val;
@@ -1162,7 +1107,7 @@ export abstract class PhysicalType extends TypeDefinitionElement {
  */
 export abstract class SpatialLocationType extends TypeDefinitionElement {
   /** @internal */
-  public static get className(): string { return "SpatialLocationType"; }
+  public static override get className(): string { return "SpatialLocationType"; }
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -1182,7 +1127,7 @@ export abstract class SpatialLocationType extends TypeDefinitionElement {
  */
 export class TemplateRecipe3d extends RecipeDefinitionElement {
   /** @internal */
-  public static get className(): string { return "TemplateRecipe3d"; }
+  public static override get className(): string { return "TemplateRecipe3d"; }
   /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
   /** Create a Code for a TemplateRecipe3d given a name that is meant to be unique within the scope of its Model.
@@ -1219,7 +1164,7 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
     const element = this.create(iModelDb, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = iModelDb.elements.insertElement(element);
+    const modeledElementId: Id64String = iModelDb.elements.insertElement(element.toJSON());
     const modelProps: GeometricModel3dProps = {
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: modeledElementId },
@@ -1234,7 +1179,7 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
  */
 export abstract class GraphicalType2d extends TypeDefinitionElement {
   /** @internal */
-  public static get className(): string { return "GraphicalType2d"; }
+  public static override get className(): string { return "GraphicalType2d"; }
   /** @internal */
   public constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -1254,7 +1199,7 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
  */
 export class TemplateRecipe2d extends RecipeDefinitionElement {
   /** @internal */
-  public static get className(): string { return "TemplateRecipe2d"; }
+  public static override get className(): string { return "TemplateRecipe2d"; }
   /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
   /** Create a Code for a TemplateRecipe2d given a name that is meant to be unique within the scope of its Model.
@@ -1291,7 +1236,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
     const element = this.create(iModelDb, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = iModelDb.elements.insertElement(element);
+    const modeledElementId: Id64String = iModelDb.elements.insertElement(element.toJSON());
     const modelProps: GeometricModel2dProps = {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: modeledElementId },
@@ -1306,13 +1251,17 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
  * @see [iModel Information Hierarchy]($docs/bis/intro/top-of-the-world), [[Subject]], [[Model]]
  * @public
  */
-export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
+export abstract class InformationPartitionElement extends InformationContentElement {
   /** @internal */
-  public static get className(): string { return "InformationPartitionElement"; }
+  public static override get className(): string { return "InformationPartitionElement"; }
+  /** A human-readable string describing the intent of the partition. */
   public description?: string;
   /** @internal */
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
-
+  /** @internal */
+  public override toJSON(): InformationPartitionElementProps { // This override only specializes the return type
+    return super.toJSON() as InformationPartitionElementProps; // Entity.toJSON takes care of auto-handled properties
+  }
   /** Create a code that can be used for any subclass of InformationPartitionElement.
    * @param iModelDb The IModelDb
    * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child InformationPartitionElements.
@@ -1331,7 +1280,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
  */
 export class DefinitionPartition extends InformationPartitionElement {
   /** @internal */
-  public static get className(): string { return "DefinitionPartition"; }
+  public static override get className(): string { return "DefinitionPartition"; }
 }
 
 /** A DocumentPartition element establishes a *Document* modeling perspective for its parent Subject.
@@ -1341,7 +1290,7 @@ export class DefinitionPartition extends InformationPartitionElement {
  */
 export class DocumentPartition extends InformationPartitionElement {
   /** @internal */
-  public static get className(): string { return "DocumentPartition"; }
+  public static override get className(): string { return "DocumentPartition"; }
 }
 
 /** A GroupInformationPartition element establishes a *Group Information* modeling perspective for its parent Subject.
@@ -1351,7 +1300,7 @@ export class DocumentPartition extends InformationPartitionElement {
  */
 export class GroupInformationPartition extends InformationPartitionElement {
   /** @internal */
-  public static get className(): string { return "GroupInformationPartition"; }
+  public static override get className(): string { return "GroupInformationPartition"; }
 }
 
 /** A GraphicalPartition3d element establishes a *3D Graphical* modeling perspective for its parent Subject.
@@ -1362,7 +1311,7 @@ export class GroupInformationPartition extends InformationPartitionElement {
  */
 export class GraphicalPartition3d extends InformationPartitionElement {
   /** @internal */
-  public static get className(): string { return "GraphicalPartition3d"; }
+  public static override get className(): string { return "GraphicalPartition3d"; }
 }
 
 /** An InformationRecordPartition element establishes a *Information Record* modeling perspective for its parent Subject.
@@ -1372,7 +1321,7 @@ export class GraphicalPartition3d extends InformationPartitionElement {
  */
 export class InformationRecordPartition extends InformationPartitionElement {
   /** @internal */
-  public static get className(): string { return "InformationRecordPartition"; }
+  public static override get className(): string { return "InformationRecordPartition"; }
 }
 
 /** A LinkPartition element establishes a *Link* modeling perspective for its parent Subject. A LinkPartition is always sub-modeled by a LinkModel.
@@ -1381,7 +1330,7 @@ export class InformationRecordPartition extends InformationPartitionElement {
  */
 export class LinkPartition extends InformationPartitionElement {
   /** @internal */
-  public static get className(): string { return "LinkPartition"; }
+  public static override get className(): string { return "LinkPartition"; }
 }
 
 /** A PhysicalPartition element establishes a *Physical* modeling perspective for its parent Subject. A PhysicalPartition is always sub-modeled by a PhysicalModel.
@@ -1390,7 +1339,7 @@ export class LinkPartition extends InformationPartitionElement {
  */
 export class PhysicalPartition extends InformationPartitionElement {
   /** @internal */
-  public static get className(): string { return "PhysicalPartition"; }
+  public static override get className(): string { return "PhysicalPartition"; }
 }
 
 /** A SpatialLocationPartition element establishes a *SpatialLocation* modeling perspective for its parent Subject.
@@ -1400,7 +1349,7 @@ export class PhysicalPartition extends InformationPartitionElement {
  */
 export class SpatialLocationPartition extends InformationPartitionElement {
   /** @internal */
-  public static get className(): string { return "SpatialLocationPartition"; }
+  public static override get className(): string { return "SpatialLocationPartition"; }
 }
 
 /** Group Information is an abstract base class for modeling entities whose main purpose is to reference a group of related elements.
@@ -1408,7 +1357,7 @@ export class SpatialLocationPartition extends InformationPartitionElement {
  */
 export abstract class GroupInformationElement extends InformationReferenceElement {
   /** @internal */
-  public static get className(): string { return "GroupInformationElement"; }
+  public static override get className(): string { return "GroupInformationElement"; }
 }
 
 /** An information element that specifies a link.
@@ -1416,7 +1365,7 @@ export abstract class GroupInformationElement extends InformationReferenceElemen
  */
 export abstract class LinkElement extends InformationReferenceElement {
   /** @internal */
-  public static get className(): string { return "LinkElement"; }
+  public static override get className(): string { return "LinkElement"; }
   /** Create a Code for a LinkElement given a name that is meant to be unique within the scope of the specified Model.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the Model that contains the LinkElement and provides the scope for its name.
@@ -1431,9 +1380,9 @@ export abstract class LinkElement extends InformationReferenceElement {
 /** An information element that specifies a URL link.
  * @public
  */
-export class UrlLink extends LinkElement implements UrlLinkProps {
+export class UrlLink extends LinkElement {
   /** @internal */
-  public static get className(): string { return "UrlLink"; }
+  public static override get className(): string { return "UrlLink"; }
   public description?: string;
   public url?: string;
 
@@ -1445,7 +1394,7 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
   }
 
   /** @internal */
-  public toJSON(): UrlLinkProps {
+  public override toJSON(): UrlLinkProps {
     const val = super.toJSON() as UrlLinkProps;
     val.description = this.description;
     val.url = this.url;
@@ -1459,15 +1408,15 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
  */
 export class FolderLink extends UrlLink {
   /** @internal */
-  public static get className(): string { return "FolderLink"; }
+  public static override get className(): string { return "FolderLink"; }
 }
 
 /** An information element that links to a repository.
  * @public
  */
-export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
+export class RepositoryLink extends UrlLink {
   /** @internal */
-  public static get className(): string { return "RepositoryLink"; }
+  public static override get className(): string { return "RepositoryLink"; }
   public repositoryGuid?: GuidString;
   /** @note This property was added to the BisCore schema in version 1.0.13 */
   public format?: string;
@@ -1480,7 +1429,7 @@ export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
   }
 
   /** @internal */
-  public toJSON(): RepositoryLinkProps {
+  public override toJSON(): RepositoryLinkProps {
     const val = super.toJSON() as RepositoryLinkProps;
     val.repositoryGuid = this.repositoryGuid;
     val.format = this.format;
@@ -1493,7 +1442,7 @@ export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
  */
 export class EmbeddedFileLink extends LinkElement {
   /** @internal */
-  public static get className(): string { return "EmbeddedFileLink"; }
+  public static override get className(): string { return "EmbeddedFileLink"; }
 }
 
 /** A real world entity is modeled as a Role Element when a set of external circumstances define an important
@@ -1503,17 +1452,21 @@ export class EmbeddedFileLink extends LinkElement {
  */
 export abstract class RoleElement extends Element {
   /** @internal */
-  public static get className(): string { return "RoleElement"; }
+  public static override get className(): string { return "RoleElement"; }
 }
 
 /** A Definition Element that specifies a collection of geometry that is meant to be reused across Geometric
  * Element instances. Leveraging Geometry Parts can help reduce file size and improve display performance.
  * @public
  */
-export class GeometryPart extends DefinitionElement implements GeometryPartProps {
+export class GeometryPart extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "GeometryPart"; }
+  public static override get className(): string { return "GeometryPart"; }
   public geom?: GeometryStreamProps;
+  /** How to build the part's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
+   * @alpha
+   */
+  public elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
   public bbox: ElementAlignedBox3d;
   /** @internal */
   public constructor(props: GeometryPartProps, iModel: IModelDb) {
@@ -1523,7 +1476,7 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
   }
 
   /** @internal */
-  public toJSON(): GeometryPartProps {
+  public override toJSON(): GeometryPartProps {
     const val = super.toJSON() as GeometryPartProps;
     val.geom = this.geom;
     val.bbox = this.bbox;
@@ -1545,9 +1498,9 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
 /** The definition element for a line style
  * @public
  */
-export class LineStyle extends DefinitionElement implements LineStyleProps {
+export class LineStyle extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "LineStyle"; }
+  public static override get className(): string { return "LineStyle"; }
   public description?: string;
   public data!: string;
   /** @internal */
@@ -1570,7 +1523,7 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
  */
 export class RenderTimeline extends InformationRecordElement {
   /** @internal */
-  public static get className(): string { return "RenderTimeline"; }
+  public static override get className(): string { return "RenderTimeline"; }
   /** A human-readable description of the timeline, which may be an empty string. */
   public description: string;
   /** The JSON representation of the instructions for visualizing change over time.
@@ -1589,7 +1542,7 @@ export class RenderTimeline extends InformationRecordElement {
     return new RenderTimeline(props, iModel);
   }
 
-  public toJSON(): RenderTimelineProps {
+  public override toJSON(): RenderTimelineProps {
     const props = super.toJSON() as RenderTimelineProps;
     if (this.description.length > 0)
       props.description = this.description;
@@ -1601,20 +1554,20 @@ export class RenderTimeline extends InformationRecordElement {
   private static parseScriptProps(json: string): RenderSchedule.ScriptProps {
     try {
       return JSON.parse(json);
-    } catch (_) {
+    } catch {
       return [];
     }
   }
 
   /** @alpha */
-  protected collectPredecessorIds(ids: Id64Set): void {
+  protected override collectPredecessorIds(ids: Id64Set): void {
     super.collectPredecessorIds(ids);
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
     script?.discloseIds(ids);
   }
 
   /** @alpha */
-  protected static onCloned(context: IModelCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
+  protected static override onCloned(context: IModelCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
     super.onCloned(context, sourceProps, targetProps);
     if (context.isBetweenIModels)
       targetProps.script = JSON.stringify(this.remapScript(context, this.parseScriptProps(targetProps.script)));

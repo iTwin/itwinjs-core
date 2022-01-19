@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { DialogPropertySyncItem } from "@bentley/ui-abstract";
-import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@bentley/ui-components";
+import { ColorDef } from "@itwin/core-common";
+import { IModelApp } from "@itwin/core-frontend";
+import { DialogPropertySyncItem } from "@itwin/appui-abstract";
+import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@itwin/imodel-components-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, SyncToolSettingsPropertiesEventArgs, ToolSettingsEntry, ToolSettingsGrid, ToolSettingsManager,
   ToolUiProvider,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { Tool1 } from "../../tools/Tool1";
 
 function Tool1Weight() {
@@ -76,12 +76,12 @@ class Tool1UiProvider extends ToolUiProvider {
       { labelNode: "Red", editorNode: <Tool1ColorSwatch color={ColorDef.red} /> },
       { labelNode: "Blue", editorNode: <Tool1ColorSwatch color={ColorDef.blue} /> },
       { labelNode: "Active", editorNode: <Tool1Color /> },
-      { labelNode: IModelApp.i18n.translate("SampleApp:tool1.date"), editorNode: <input type="date" /> },
-      { labelNode: IModelApp.i18n.translate("SampleApp:tool1.number"), editorNode: <input type="number" min="10" max="20" /> },
-      { labelNode: IModelApp.i18n.translate("SampleApp:tool1.password"), editorNode: <input type="password" /> },
-      { labelNode: <label htmlFor="radio">{IModelApp.i18n.translate("SampleApp:tool1.radio")}</label>, editorNode: <input name="radio" type="radio" /> },
-      { labelNode: <label htmlFor="range">{IModelApp.i18n.translate("SampleApp:tool1.range")}</label>, editorNode: <input name="range" type="range" min="1" max="100" step="5" /> },
-      { labelNode: <label htmlFor="month">{IModelApp.i18n.translate("SampleApp:tool1.month")}</label>, editorNode: <input name="month" type="month" /> },
+      { labelNode: IModelApp.localization.getLocalizedString("SampleApp:tool1.date"), editorNode: <input type="date" /> },
+      { labelNode: IModelApp.localization.getLocalizedString("SampleApp:tool1.number"), editorNode: <input type="number" min="10" max="20" /> },
+      { labelNode: IModelApp.localization.getLocalizedString("SampleApp:tool1.password"), editorNode: <input type="password" /> },
+      { labelNode: <label htmlFor="radio">{IModelApp.localization.getLocalizedString("SampleApp:tool1.radio")}</label>, editorNode: <input name="radio" type="radio" /> },
+      { labelNode: <label htmlFor="range">{IModelApp.localization.getLocalizedString("SampleApp:tool1.range")}</label>, editorNode: <input name="range" type="range" min="1" max="100" step="5" /> },
+      { labelNode: <label htmlFor="month">{IModelApp.localization.getLocalizedString("SampleApp:tool1.month")}</label>, editorNode: <input name="month" type="month" /> },
     ];
   }
 }

@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { BentleyError, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   ColorDef, GeometricElementProps, IModelStatus, isPlacement2dProps, LinePixels, PersistentGraphicsRequestProps, Placement, Placement2d, Placement3d,
-} from "@bentley/imodeljs-common";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+} from "@itwin/core-common";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 import {
   AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicBranch, GraphicType, IModelApp,
   IModelConnection, IpcApp, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner,
   ToolAssistanceInstruction,
-} from "@bentley/imodeljs-frontend";
-import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper } from "@itwin/appui-abstract";
 import { EditTools } from "./EditTool";
 
 /** @alpha */
@@ -171,12 +171,12 @@ export class TransformGraphicsProvider {
 
 /** @alpha Base class for applying a transform to element placements. */
 export abstract class TransformElementsTool extends ElementSetTool {
-  protected get allowSelectionSet(): boolean { return true; }
-  protected get allowGroups(): boolean { return true; }
-  protected get allowDragSelect(): boolean { return true; }
-  protected get controlKeyContinuesSelection(): boolean { return true; }
-  protected get wantAccuSnap(): boolean { return true; }
-  protected get wantDynamics(): boolean { return true; }
+  protected override get allowSelectionSet(): boolean { return true; }
+  protected override get allowGroups(): boolean { return true; }
+  protected override get allowDragSelect(): boolean { return true; }
+  protected override get controlKeyContinuesSelection(): boolean { return true; }
+  protected override get wantAccuSnap(): boolean { return true; }
+  protected override get wantDynamics(): boolean { return true; }
   protected get wantMakeCopy(): boolean { return false; } // For testing repeat vs. restart...
   protected _graphicsProvider?: TransformGraphicsProvider;
   protected _startedCmd?: string;
@@ -212,11 +212,11 @@ export abstract class TransformElementsTool extends ElementSetTool {
     this._graphicsProvider = undefined;
   }
 
-  protected async onAgendaModified(): Promise<void> {
+  protected override async onAgendaModified(): Promise<void> {
     await this.createAgendaGraphics(true);
   }
 
-  protected async initAgendaDynamics(): Promise<boolean> {
+  protected override async initAgendaDynamics(): Promise<boolean> {
     await this.createAgendaGraphics(false);
     return super.initAgendaDynamics();
   }
@@ -226,7 +226,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
       this._graphicsProvider.addGraphics(transform, context);
   }
 
-  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+  public override onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
     const transform = this.calculateTransform(ev);
     if (undefined === transform)
       return;
@@ -261,11 +261,11 @@ export abstract class TransformElementsTool extends ElementSetTool {
       if (IModelStatus.Success === await TransformElementsTool.callCommand("transformPlacement", this.agenda.compressIds(), transform.toJSON()))
         await this.saveChanges();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
   }
 
-  public async processAgenda(ev: BeButtonEvent): Promise<void> {
+  public override async processAgenda(ev: BeButtonEvent): Promise<void> {
     const transform = this.calculateTransform(ev);
     if (undefined === transform)
       return;
@@ -273,23 +273,22 @@ export abstract class TransformElementsTool extends ElementSetTool {
     this.updateAnchorLocation(transform);
   }
 
-  public async onProcessComplete(): Promise<void> {
+  public override async onProcessComplete(): Promise<void> {
     if (this.wantMakeCopy)
       return; // TODO: Update agenda to hold copies, replace current selection set with copies, etc...
     return super.onProcessComplete();
   }
 
-  public onCleanup(): void {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.clearAgendaGraphics();
-    super.onCleanup();
+  public override async onCleanup() {
+    await this.clearAgendaGraphics();
+    return super.onCleanup();
   }
 }
 
 /** @alpha Move elements by applying translation to placement. */
 export class MoveElementsTool extends TransformElementsTool {
-  public static toolId = "MoveElements";
-  public static iconSpec = "icon-move";
+  public static override toolId = "MoveElements";
+  public static override iconSpec = "icon-move";
 
   protected calculateTransform(ev: BeButtonEvent): Transform | undefined {
     if (undefined === this.anchorPoint)
@@ -297,17 +296,17 @@ export class MoveElementsTool extends TransformElementsTool {
     return Transform.createTranslation(ev.point.minus(this.anchorPoint));
   }
 
-  protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
+  protected override provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
     let mainMsg;
     if (!this.isSelectByPoints && !this.wantAdditionalElements)
       mainMsg = CoreTools.translate(this.wantAdditionalInput ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint");
     super.provideToolAssistance(mainMsg);
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new MoveElementsTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
 
@@ -326,70 +325,66 @@ export enum RotateAbout {
 
 /** @alpha Rotate elements by applying transform to placement. */
 export class RotateElementsTool extends TransformElementsTool {
-  public static toolId = "RotateElements";
-  public static iconSpec = "icon-rotate";
+  public static override toolId = "RotateElements";
+  public static override iconSpec = "icon-rotate";
 
   protected xAxisPoint?: Point3d;
   protected havePivotPoint = false;
   protected haveFinalPoint = false;
 
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 3; }
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 3; }
 
-  private _rotateMethodValue: DialogItemValue = { value: RotateMethod.By3Points };
-  public get rotateMethod(): RotateMethod { return this._rotateMethodValue.value as RotateMethod; }
-  public set rotateMethod(method: RotateMethod) { this._rotateMethodValue.value = method; }
-
-  private static _methodName = "rotateMethod";
   private static methodMessage(str: string) { return EditTools.translate(`RotateElements.Method.${str}`); }
-  protected _getMethodDescription = (): PropertyDescription => {
-    return {
-      name: RotateElementsTool._methodName,
-      displayLabel: EditTools.translate("RotateElements.Label.Method"),
-      typename: "enum",
-      enum: {
-        choices: [
-          { label: RotateElementsTool.methodMessage("3Points"), value: RotateMethod.By3Points },
-          { label: RotateElementsTool.methodMessage("Angle"), value: RotateMethod.ByAngle },
-        ],
-      },
-    };
+  private static getMethodChoices = (): EnumerationChoice[] => {
+    return [
+      { label: RotateElementsTool.methodMessage("3Points"), value: RotateMethod.By3Points },
+      { label: RotateElementsTool.methodMessage("Angle"), value: RotateMethod.ByAngle },
+    ];
   };
 
-  private _rotateAboutValue: DialogItemValue = { value: RotateAbout.Point };
-  public get rotateAbout(): RotateAbout { return this._rotateAboutValue.value as RotateAbout; }
-  public set rotateAbout(about: RotateAbout) { this._rotateAboutValue.value = about; }
+  private _methodProperty: DialogProperty<number> | undefined;
+  public get methodProperty() {
+    if (!this._methodProperty)
+      this._methodProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildEnumPicklistEditorDescription(
+        "rotateMethod", EditTools.translate("RotateElements.Label.Method"), RotateElementsTool.getMethodChoices()), RotateMethod.By3Points as number);
+    return this._methodProperty;
+  }
 
-  private static _aboutName = "rotateAbout";
+  public get rotateMethod(): RotateMethod { return this.methodProperty.value as RotateMethod; }
+  public set rotateMethod(method: RotateMethod) { this.methodProperty.value = method; }
+
   private static aboutMessage(str: string) { return EditTools.translate(`RotateElements.About.${str}`); }
-  protected _getAboutDescription = (): PropertyDescription => {
-    return {
-      name: RotateElementsTool._aboutName,
-      displayLabel: EditTools.translate("RotateElements.Label.About"),
-      typename: "enum",
-      enum: {
-        choices: [
-          { label: RotateElementsTool.aboutMessage("Point"), value: RotateAbout.Point },
-          { label: RotateElementsTool.aboutMessage("Origin"), value: RotateAbout.Origin },
-          { label: RotateElementsTool.aboutMessage("Center"), value: RotateAbout.Center },
-        ],
-      },
-    };
+  private static getAboutChoices = (): EnumerationChoice[] => {
+    return [
+      { label: RotateElementsTool.aboutMessage("Point"), value: RotateAbout.Point },
+      { label: RotateElementsTool.aboutMessage("Origin"), value: RotateAbout.Origin },
+      { label: RotateElementsTool.aboutMessage("Center"), value: RotateAbout.Center },
+    ];
   };
 
-  private _rotateAngleValue: DialogItemValue = { value: 0.0 };
-  public get rotateAngle(): number { return this._rotateAngleValue.value as number; }
-  public set rotateAngle(value: number) { this._rotateAngleValue.value = value; }
+  private _aboutProperty: DialogProperty<number> | undefined;
+  public get aboutProperty() {
+    if (!this._aboutProperty)
+      this._aboutProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildEnumPicklistEditorDescription(
+        "rotateAbout", EditTools.translate("RotateElements.Label.About"), RotateElementsTool.getAboutChoices()), RotateAbout.Point as number);
+    return this._aboutProperty;
+  }
 
-  private static _angleName = "rotateAngle";
-  private static _angleDescription?: AngleDescription;
-  private _getAngleDescription = (): PropertyDescription => {
-    if (!RotateElementsTool._angleDescription)
-      RotateElementsTool._angleDescription = new AngleDescription(RotateElementsTool._angleName, EditTools.translate("RotateElements.Label.Angle"));
-    return RotateElementsTool._angleDescription;
-  };
+  public get rotateAbout(): RotateAbout { return this.aboutProperty.value as RotateAbout; }
+  public set rotateAbout(method: RotateAbout) { this.aboutProperty.value = method; }
 
-  protected get requireAcceptForSelectionSetDynamics(): boolean { return RotateMethod.ByAngle !== this.rotateMethod; }
+  private _angleProperty: DialogProperty<number> | undefined;
+  public get angleProperty() {
+    if (!this._angleProperty)
+      this._angleProperty = new DialogProperty<number>(new AngleDescription("rotateAngle", EditTools.translate("RotateElements.Label.Angle")), 0.0);
+    return this._angleProperty;
+  }
+
+  public get rotateAngle(): number { return this.angleProperty.value; }
+  public set rotateAngle(value: number) { this.angleProperty.value = value; }
+
+  protected override get requireAcceptForSelectionSetDynamics(): boolean { return RotateMethod.ByAngle !== this.rotateMethod; }
 
   protected calculateTransform(ev: BeButtonEvent): Transform | undefined {
     if (undefined === ev.viewport)
@@ -465,7 +460,7 @@ export class RotateElementsTool extends TransformElementsTool {
     return Transform.createFixedPointAndMatrix(this.anchorPoint, matrix);
   }
 
-  protected transformAgendaDynamics(transform: Transform, context: DynamicsContext): void {
+  protected override transformAgendaDynamics(transform: Transform, context: DynamicsContext): void {
     if (RotateAbout.Point === this.rotateAbout)
       return super.transformAgendaDynamics(transform, context);
 
@@ -485,7 +480,7 @@ export class RotateElementsTool extends TransformElementsTool {
     }
   }
 
-  protected async transformAgenda(transform: Transform): Promise<void> {
+  protected override async transformAgenda(transform: Transform): Promise<void> {
     if (RotateAbout.Point === this.rotateAbout)
       return super.transformAgenda(transform);
 
@@ -494,11 +489,11 @@ export class RotateElementsTool extends TransformElementsTool {
       if (IModelStatus.Success === await TransformElementsTool.callCommand("rotatePlacement", this.agenda.compressIds(), transform.matrix.toJSON(), RotateAbout.Center === this.rotateAbout))
         await this.saveChanges();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
   }
 
-  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+  public override onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
     const transform = this.calculateTransform(ev);
     if (undefined !== transform)
       return this.transformAgendaDynamics(transform, context);
@@ -512,14 +507,14 @@ export class RotateElementsTool extends TransformElementsTool {
     context.addGraphic(builder.finish());
   }
 
-  protected get wantAdditionalInput(): boolean {
+  protected override get wantAdditionalInput(): boolean {
     if (RotateMethod.ByAngle === this.rotateMethod)
       return super.wantAdditionalInput;
 
     return !this.haveFinalPoint;
   }
 
-  protected wantProcessAgenda(ev: BeButtonEvent): boolean {
+  protected override wantProcessAgenda(ev: BeButtonEvent): boolean {
     if (RotateMethod.ByAngle === this.rotateMethod)
       return super.wantProcessAgenda(ev);
 
@@ -533,7 +528,7 @@ export class RotateElementsTool extends TransformElementsTool {
     return super.wantProcessAgenda(ev);
   }
 
-  protected setupAndPromptForNextAction(): void {
+  protected override setupAndPromptForNextAction(): void {
     super.setupAndPromptForNextAction();
 
     if (RotateMethod.ByAngle === this.rotateMethod)
@@ -549,7 +544,7 @@ export class RotateElementsTool extends TransformElementsTool {
     hints.sendHints();
   }
 
-  protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
+  protected override provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
     let mainMsg;
     if (RotateMethod.ByAngle === this.rotateMethod) {
       if (!this.isSelectByPoints && !this.wantAdditionalElements && this.wantAdditionalInput)
@@ -567,61 +562,40 @@ export class RotateElementsTool extends TransformElementsTool {
     super.provideToolAssistance(mainMsg);
   }
 
-  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
-    if (RotateElementsTool._methodName === updatedValue.propertyName) {
-      this._rotateMethodValue = updatedValue.value;
-      if (!this._rotateMethodValue)
-        return false;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: RotateElementsTool._methodName, value: this._rotateMethodValue });
-      this.onRestartTool(); // calling restart, not reinitialize to not exit tool for selection set...
-      return true;
-    } else if (RotateElementsTool._aboutName === updatedValue.propertyName) {
-      this._rotateAboutValue = updatedValue.value;
-      if (!this._rotateAboutValue)
-        return false;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: RotateElementsTool._aboutName, value: this._rotateAboutValue });
-      return true;
-    } else if (RotateElementsTool._angleName === updatedValue.propertyName) {
-      this._rotateAngleValue = updatedValue.value;
-      if (!this._rotateAngleValue)
-        return false;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: RotateElementsTool._angleName, value: this._rotateAngleValue });
-      return true;
-    }
-    return false;
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (this.methodProperty.name === updatedValue.propertyName)
+      await this.onRestartTool(); // calling restart, not reinitialize to not exit tool for selection set...
+
+    return true;
   }
 
-  public supplyToolSettingsProperties(): DialogItem[] | undefined {
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
     const toolSettings = new Array<DialogItem>();
-    toolSettings.push({ value: this._rotateMethodValue, property: this._getMethodDescription(), isDisabled: false, editorPosition: { rowPriority: 1, columnIndex: 2 } });
-    toolSettings.push({ value: this._rotateAboutValue, property: this._getAboutDescription(), isDisabled: false, editorPosition: { rowPriority: 2, columnIndex: 2 } });
+
+    toolSettings.push(this.methodProperty.toDialogItem({ rowPriority: 1, columnIndex: 2 }));
+    toolSettings.push(this.aboutProperty.toDialogItem({ rowPriority: 2, columnIndex: 2 }));
+
     if (RotateMethod.ByAngle === this.rotateMethod)
-      toolSettings.push({ value: this._rotateAngleValue, property: this._getAngleDescription(), isDisabled: false, editorPosition: { rowPriority: 3, columnIndex: 2 } });
+      toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 3, columnIndex: 2 }));
+
     return toolSettings;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new RotateElementsTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
-  public onInstall(): boolean {
-    if (!super.onInstall())
+  public override async onInstall(): Promise<boolean> {
+    if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
-    const rotateMethod = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, RotateElementsTool._methodName);
-    if (undefined !== rotateMethod)
-      this._rotateMethodValue = rotateMethod;
-
-    const rotateAbout = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, RotateElementsTool._aboutName);
-    if (undefined !== rotateAbout)
-      this._rotateAboutValue = rotateAbout;
-
-    const rotateAngle = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, RotateElementsTool._angleName);
-    if (undefined !== rotateAngle)
-      this._rotateAngleValue = rotateAngle;
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
+    this.initializeToolSettingPropertyValues([this.methodProperty, this.aboutProperty, this.angleProperty]);
 
     return true;
   }
@@ -631,7 +605,7 @@ export class RotateElementsTool extends TransformElementsTool {
    *  - `about=0|1|2` Location to rotate about. 0 for point, 1 for placement origin, and 2 for center of range.
    *  - `angle=number` Rotation angle in degrees when not defining angle by points.
    */
-  public parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     let rotateMethod;
     let rotateAbout;
     let rotateAngle;
@@ -678,13 +652,13 @@ export class RotateElementsTool extends TransformElementsTool {
 
     // Update current session values so keyin args are picked up for tool settings/restart...
     if (undefined !== rotateMethod)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: RotateElementsTool._methodName, value: { value: rotateMethod } });
+      this.saveToolSettingPropertyValue(this.methodProperty, { value: rotateMethod });
 
     if (undefined !== rotateAbout)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: RotateElementsTool._aboutName, value: { value: rotateAbout } });
+      this.saveToolSettingPropertyValue(this.aboutProperty, { value: rotateAbout });
 
     if (undefined !== rotateAngle)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: RotateElementsTool._angleName, value: { value: rotateAngle } });
+      this.saveToolSettingPropertyValue(this.angleProperty, { value: rotateAngle });
 
     return this.run();
   }

@@ -10,7 +10,7 @@ import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
-import { CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
+import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -57,8 +57,8 @@ export class Format {
   public get stationSeparator(): string { return this._stationSeparator; }
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
   public get formatTraits(): FormatTraits { return this._formatTraits; }
-  public get spacer(): string | undefined { return this._spacer; }
-  public get includeZero(): boolean | undefined { return this._includeZero; }
+  public get spacer(): string { return this._spacer; }
+  public get includeZero(): boolean { return this._includeZero; }
   public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
   public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
   public get customProps(): any { return this._customProps; }
@@ -336,6 +336,60 @@ export class Format {
     if (!newUnit || !newUnit.isValid)
       throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
     this.units!.push([newUnit, label]);
+  }
+
+  /**
+   *  Clone Format
+   */
+  public clone(options?: CloneOptions): Format {
+    const newFormat = new Format(this.name);
+    newFormat._roundFactor = this._roundFactor;
+    newFormat._type = this._type;
+    newFormat._precision = this._precision;
+    newFormat._minWidth = this._minWidth;
+    newFormat._scientificType = this._scientificType;
+    newFormat._showSignOption = this._showSignOption;
+    newFormat._decimalSeparator = this._decimalSeparator;
+    newFormat._thousandSeparator = this._thousandSeparator;
+    newFormat._uomSeparator = this._uomSeparator;
+    newFormat._stationSeparator = this._stationSeparator;
+    newFormat._stationOffsetSize = this._stationOffsetSize;
+    newFormat._formatTraits = this._formatTraits;
+    newFormat._spacer = this._spacer;
+    newFormat._includeZero = this._includeZero;
+    newFormat._customProps = this._customProps;
+    this._units && (newFormat._units = [...this._units]);
+
+    if (newFormat._units) {
+      if (options?.showOnlyPrimaryUnit) {
+        if (newFormat._units.length > 1)
+          newFormat._units.length = 1;
+      }
+    }
+
+    if (undefined !== options?.traits)
+      newFormat._formatTraits = options?.traits;
+
+    if (undefined !== options?.type)
+      newFormat._type = options.type;
+
+    if (undefined !== options?.precision) {
+      // ensure specified precision is valid
+      const precision = Format.parsePrecision(options?.precision, "clone", newFormat._type);
+      newFormat._precision = precision;
+    }
+
+    if (undefined !== options?.primaryUnit) {
+      if (options.primaryUnit.unit) {
+        const newUnits = new Array<[UnitProps, string | undefined]>();
+        newUnits.push([options.primaryUnit.unit, options.primaryUnit.label]);
+        newFormat._units = newUnits;
+      } else if (options.primaryUnit.label && newFormat._units?.length) {
+        // update label only
+        newFormat._units[0][1] = options.primaryUnit.label;
+      }
+    }
+    return newFormat;
   }
 
   private loadFormatProperties(jsonObj: FormatProps) {

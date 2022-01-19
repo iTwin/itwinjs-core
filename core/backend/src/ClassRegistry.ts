@@ -6,12 +6,11 @@
  * @module Schema
  */
 
-import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { EntityMetaData, IModelError } from "@bentley/imodeljs-common";
+import { DbResult, IModelStatus, Logger } from "@itwin/core-bentley";
+import { EntityMetaData, IModelError } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
-import { IModelSchemaLoader } from "./IModelSchemaLoader";
 
 /** The mapping between a BIS class name (in the form "schema:class") and its JavaScript constructor function
  * @public
@@ -28,7 +27,7 @@ export class ClassRegistry {
     const key = (`${schema.schemaName}:${entityClass.className}`).toLowerCase();
     if (this._classMap.has(key)) {
       const errMsg = `Class ${key} is already registered. Make sure static className member is correct on JavaScript class ${entityClass.name}`;
-      Logger.logError("imodeljs-frontend.classRegistry", errMsg);
+      Logger.logError("core-frontend.classRegistry", errMsg);
       throw new Error(errMsg);
     }
 
@@ -37,10 +36,20 @@ export class ClassRegistry {
 
   /** Generate a proxy Schema for a domain that has not been registered. */
   private static generateProxySchema(domain: string, iModel: IModelDb): typeof Schema {
-    const hasBehavior = undefined !== new IModelSchemaLoader(iModel).getSchema(domain).customAttributes?.get("BisCore.SchemaHasBehavior");
+    const hasBehavior = iModel.withPreparedSqliteStatement(`
+      SELECT NULL FROM [ec_CustomAttribute] [c]
+        JOIN [ec_schema] [s] ON [s].[Id] = [c].[ContainerId]
+        JOIN [ec_class] [e] ON [e].[Id] = [c].[ClassId]
+        JOIN [ec_schema] [b] ON [e].[SchemaId] = [b].[Id]
+      WHERE [c].[ContainerType] = 1 AND [s].[Name] = ? AND [b].[Name] || '.' || [e].[name] = ?`, (stmt) => {
+      stmt.bindString(1, domain);
+      stmt.bindString(2, "BisCore.SchemaHasBehavior");
+      return stmt.step() === DbResult.BE_SQLITE_ROW;
+    });
+
     const schemaClass = class extends Schema {
-      public static get schemaName() { return domain; }
-      public static get missingRequiredBehavior() { return hasBehavior; }
+      public static override get schemaName() { return domain; }
+      public static override get missingRequiredBehavior() { return hasBehavior; }
     };
 
     Schemas.registerSchema(schemaClass); // register the class before we return it.
@@ -68,7 +77,7 @@ export class ClassRegistry {
     if (undefined === superclass)
       throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${name}`);
 
-    const generatedClass = class extends superclass { public static get className() { return className; } };
+    const generatedClass = class extends superclass { public static override get className() { return className; } };
     // the above line creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
 

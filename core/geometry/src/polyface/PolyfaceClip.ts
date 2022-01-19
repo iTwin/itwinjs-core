@@ -12,13 +12,19 @@
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
+import { AnyRegion } from "../curve/CurveChain";
 import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
+import { UnionRegion } from "../curve/UnionRegion";
 import { PlaneAltitudeEvaluator } from "../Geometry";
+import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+import { Transform } from "../geometry3d/Transform";
 import { SweepContour } from "../solid/SweepContour";
 import { ChainMergeContext } from "../topology/ChainMerge";
 import { RangeSearch } from "./multiclip/RangeSearch";
@@ -26,6 +32,19 @@ import { RangeSearch } from "./multiclip/RangeSearch";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { PolyfaceQuery } from "./PolyfaceQuery";
+
+  /**
+   * carrier for a point array with an index into UnionOfConvexClipPlaneSets
+   * @private
+   */
+   class ClipCandidate {
+    public nextConvexSetIndex: number;
+    public points: GrowableXYZArray;
+    public constructor(points: GrowableXYZArray, nextConvexSetIndex: number) {
+      this.nextConvexSetIndex = nextConvexSetIndex;
+      this.points = points;
+    }
+  }
 
 /**
  * A pair of PolyfaceBuilder objects, for use by clippers that emit inside and outside parts.
@@ -108,47 +127,105 @@ export class PolyfaceClip {
   /** Clip each facet of polyface to the the clippers.
    * * Add inside, outside fragments to builderA, builderB
    * * This does not consider params, normals, colors.  Just points.
+   * * outputSelect determines how the clip output is structured
+   *   * 0 outputs all shards -- this may have many interior edges.
+   *   * 1 stitches shards together to get cleaner facets.
    * @internal
    */
-  public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders) {
+  public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector: number = 1) {
     const builderA = destination.builderA;
     const builderB = destination.builderB;
     const visitor = polyface.createVisitor(0);
     const cache = new GrowableXYZArrayCache();
-    let currentCandidates: GrowableXYZArray[] = [];
-    let nextCandidates: GrowableXYZArray[] = [];
+    const insideShards: GrowableXYZArray[] = [];
+    const outsideShards: GrowableXYZArray[] = [];
+    const residualPolygons: ClipCandidate[] = [];
+    let candidate: ClipCandidate | undefined;
+    const  outsideParts: GrowableXYZArray[] = [];
 
     const numConvexSet = allClippers.convexSets.length;
     for (visitor.reset(); visitor.moveToNextFacet();) {
-      // !!! currentCandidates and next candidates are empty at this point !!!
-      currentCandidates.push(cache.grabAndFill(visitor.point));
-      for (let convexSetIndex = 0; convexSetIndex < numConvexSet; convexSetIndex++) {
-        const clipper = allClippers.convexSets[convexSetIndex];
-        if (currentCandidates.length === 0)
-          break;
-        // !!! nextCandidates is empty
-        // Each currentCandidate splits into
-        //  a) a part inside the current clipper.  This is saved in builderA, nothing more to do with it
-        //  b) additional parts to be saved in nextCandidates to clipped again with subsequent clippers
-        let candidate;
-        while ((candidate = currentCandidates.pop()) !== undefined) {
-          const insidePart = clipper.clipInsidePushOutside(candidate, nextCandidates, cache);
-          // accepted polygons immediately generate edges on this ConvexSet's planes ...
-          this.addPolygonToBuilderAndDropToCache(insidePart, builderA, cache);
+      residualPolygons.push(new ClipCandidate(cache.grabAndFill(visitor.point), 0));
+      while ((candidate = residualPolygons.pop()) !== undefined) {
+        const convexSetIndex = candidate.nextConvexSetIndex;
+        if (convexSetIndex >= numConvexSet) {
+          // ths remnant polygon is OUT ...
+          if (candidate.points.length > 2)
+            outsideShards.push(candidate.points);
+        } else {
+          const clipper = allClippers.convexSets[convexSetIndex];
+          outsideParts.length = 0;    //  NO NO -- why isn't it empty from prior step cleanup?
+          const insidePart = clipper.clipInsidePushOutside(candidate.points, outsideParts, cache);
+          if (insidePart) {
+            if (insidePart.length > 2)
+              insideShards.push(insidePart);
+            // Keep outside parts active for clip by later facets . . .
+            for (const outsidePolygon of outsideParts) {
+              residualPolygons.push(new ClipCandidate(outsidePolygon, convexSetIndex + 1));
+              }
+          } else {
+            // Nothing was insidePart.  The outside parts might be split by intermediate steps -- but all the pieces are there.
+            candidate.nextConvexSetIndex++;
+            residualPolygons.push(candidate);
+          }
+          outsideParts.length = 0;
         }
-        // currentCandidates is empty
-        // each polygon nextCandidates becomes a candidate for later clippers (or drop out)
-        const q = currentCandidates; currentCandidates = nextCandidates; nextCandidates = q;
       }
-      this.addPolygonArrayToBuilderAndDropToCache(currentCandidates, builderB, cache);
+      if (outsideShards.length === 0) {
+          builderA?.addPolygonGrowableXYZArray(visitor.point);
+      } else if (insideShards.length === 0) {
+        // the facet spanned clippers but is intact outside
+        builderB?.addPolygonGrowableXYZArray(visitor.point);
+      } else {
+        const localToWorld = FrameBuilder.createRightHandedFrame(undefined, visitor.point);
+        let worldToLocal: Transform | undefined;
+        if (outputSelector === 1 && localToWorld !== undefined
+          && undefined !== (worldToLocal = localToWorld.inverse())) {
+          this.cleanupAndAddRegion(builderA, insideShards, worldToLocal, localToWorld);
+
+          this.cleanupAndAddRegion(builderB, outsideShards, worldToLocal, localToWorld);
+        } else {
+        for (const shard of insideShards)
+          this.addPolygonToBuilderAndDropToCache(shard, builderA, cache);
+          for (const shard of outsideShards)
+            this.addPolygonToBuilderAndDropToCache(shard, builderB, cache);
+        }
+      }
+      outsideShards.length = 0;
+      insideShards.length = 0;
     }
+    cache.dropAllToCache(outsideParts);
     if (destination.buildClosureFaces) {
       for (const clipper of allClippers.convexSets) {
         this.buildClosureFacesForConvexSet(visitor, clipper, destination, cache);
       }
     }
   }
-
+  private static addRegion(builder: PolyfaceBuilder | undefined, region: AnyRegion | undefined) {
+    if (builder !== undefined && region !== undefined) {
+      if (region instanceof Loop && region.children.length === 1 && region.children[0] instanceof LineString3d) {
+        builder.addPolygonGrowableXYZArray(region.children[0].packedPoints);
+      } else if (region instanceof UnionRegion) {
+        for (const child of region.children)
+          this.addRegion(builder, child);
+      }
+    }
+  }
+  // WARNING: shards are transformed into local system, not reverted!!!
+  private static cleanupAndAddRegion(builder: PolyfaceBuilder | undefined, shards: GrowableXYZArray[],
+  worldToLocal: Transform | undefined, localToWorld: Transform | undefined) {
+    if (builder !== undefined && shards.length > 0) {
+      if (worldToLocal)
+        GrowableXYZArray.multiplyTransformInPlace(worldToLocal, shards);
+      const outsidePieces = RegionOps.polygonBooleanXYToLoops(shards, RegionBinaryOpType.Union, []);
+      if (outsidePieces && outsidePieces.children.length > 0){
+        if (localToWorld)
+          outsidePieces.tryTransformInPlace(localToWorld);
+        RegionOps.consolidateAdjacentPrimitives(outsidePieces);
+          this.addRegion(builder, outsidePieces);
+      }
+    }
+  }
   private static addPolygonToBuilderAndDropToCache(polygon: GrowableXYZArray | undefined, builder: PolyfaceBuilder | undefined, cache: GrowableXYZArrayCache) {
     if (polygon) {
       if (builder)
@@ -361,14 +438,16 @@ export class PolyfaceClip {
    * * if `destination.buildClosureFaces` is set, and also build closure facets
    * * This method parses  the variant input types and calls a more specific method.
    * * WARNING: The new mesh is "points only".
+   * * outputSelect applies only for UnionOfConvexClipPlaneSets -- see [[PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders]]
    */
-  public static clipPolyfaceInsideOutside(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders) {
+  public static clipPolyfaceInsideOutside(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders,
+    outputSelect: number = 0) {
     if (clipper instanceof ClipPlane) {
       this.clipPolyfaceClipPlaneToBuilders(polyface, clipper, destination);
     } else if (clipper instanceof ConvexClipPlaneSet) {
       this.clipPolyfaceConvexClipPlaneSetToBuilders(polyface, clipper, destination);
     } else if (clipper instanceof UnionOfConvexClipPlaneSets) {
-      this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface, clipper, destination);
+      this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface, clipper, destination, outputSelect);
     }
   }
   /** Clip each facet of polyface to the ClipPlane or ConvexClipPlaneSet

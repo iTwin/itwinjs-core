@@ -6,10 +6,10 @@
  * @module DisplayStyles
  */
 
-import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { RgbColor } from "./RgbColor";
 import { FeatureAppearance, FeatureOverrides } from "./FeatureSymbology";
 
@@ -96,7 +96,7 @@ export namespace RenderSchedule {
     pivot?: number[];
   }
 
-  /** JSON representation of a [Transform]($geometry-core) associated with a [[RenderSchedule.TransformEntryProps]]. */
+  /** JSON representation of a [Transform]($core-geometry) associated with a [[RenderSchedule.TransformEntryProps]]. */
   export interface TransformProps extends TransformComponentsProps {
     /** 3 X 4 transformation matrix containing 3 arrays of matrix rows consisting of 4 numbers each: [qx qy qz ax]
      * where the fourth columnn in each row holds the translation.
@@ -120,7 +120,7 @@ export namespace RenderSchedule {
     colorTimeline?: ColorEntryProps[];
     /** Timeline applying transforms to the associated geometry. */
     transformTimeline?: TransformEntryProps[];
-    /** Timeline applying [ClipVector]($geometry-core)s to the associated geometry. */
+    /** Timeline applying [ClipVector]($core-geometry)s to the associated geometry. */
     cuttingPlaneTimeline?: CuttingPlaneEntryProps[];
   }
 
@@ -193,7 +193,7 @@ export namespace RenderSchedule {
         this.value = Math.max(0, Math.min(100, props.value));
     }
 
-    public toJSON(): VisibilityEntryProps {
+    public override toJSON(): VisibilityEntryProps {
       const props = super.toJSON() as VisibilityEntryProps;
       if (100 !== this.value)
         props.value = this.value;
@@ -213,7 +213,7 @@ export namespace RenderSchedule {
         this.value = new RgbColor(props.value.red, props.value.green, props.value.blue);
     }
 
-    public toJSON(): ColorEntryProps {
+    public override toJSON(): ColorEntryProps {
       const props = super.toJSON() as ColorEntryProps;
       if (this.value) {
         props.value = {
@@ -251,9 +251,9 @@ export namespace RenderSchedule {
 
     public toJSON(): TransformComponentsProps {
       return {
-        position: [ this.position.x, this.position.y, this.position.z ],
-        pivot: [ this.pivot.x, this.pivot.y, this.pivot.z ],
-        orientation: [ this.orientation.x, this.orientation.y, this.orientation.z, this.orientation.w ],
+        position: [this.position.x, this.position.y, this.position.z],
+        pivot: [this.pivot.x, this.pivot.y, this.pivot.z],
+        orientation: [this.orientation.x, this.orientation.y, this.orientation.z, this.orientation.w],
       };
     }
   }
@@ -272,7 +272,7 @@ export namespace RenderSchedule {
         this.components = TransformComponents.fromJSON(props.value);
     }
 
-    public toJSON(): TransformEntryProps {
+    public override toJSON(): TransformEntryProps {
       const props = super.toJSON() as TransformEntryProps;
       if (this.components) {
         props.value = this.components.toJSON();
@@ -285,7 +285,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Defines a [ClipPlane]($geometry-core) associated with a [[RenderSchedule.CuttingPlaneEntry]]. */
+  /** Defines a [ClipPlane]($core-geometry) associated with a [[RenderSchedule.CuttingPlaneEntry]]. */
   export class CuttingPlane {
     /** A point on the plane. */
     public readonly position: XYAndZ;
@@ -305,8 +305,8 @@ export namespace RenderSchedule {
 
     public toJSON(): CuttingPlaneProps {
       const props: CuttingPlaneProps = {
-        position: [ this.position.x, this.position.y, this.position.z ],
-        direction: [ this.direction.x, this.direction.y, this.direction.z ],
+        position: [this.position.x, this.position.y, this.position.z],
+        direction: [this.direction.x, this.direction.y, this.direction.z],
       };
 
       if (this.visible)
@@ -319,9 +319,9 @@ export namespace RenderSchedule {
     }
   }
 
-  /** A timeline entry that applies a [ClipPlane]($geometry-core) to the affected geometry. */
+  /** A timeline entry that applies a [ClipPlane]($core-geometry) to the affected geometry. */
   export class CuttingPlaneEntry extends TimelineEntry {
-    /** The definition of the [ClipPlane]($geometry-core), or undefined if this entry applies no clipping. */
+    /** The definition of the [ClipPlane]($core-geometry), or undefined if this entry applies no clipping. */
     public readonly value: CuttingPlane | undefined;
 
     public constructor(props: CuttingPlaneEntryProps) {
@@ -330,7 +330,7 @@ export namespace RenderSchedule {
         this.value = new CuttingPlane(props.value);
     }
 
-    public toJSON(): CuttingPlaneEntryProps {
+    public override toJSON(): CuttingPlaneEntryProps {
       const props = super.toJSON() as CuttingPlaneEntryProps;
       if (this.value)
         props.value = this.value.toJSON();
@@ -445,7 +445,7 @@ export namespace RenderSchedule {
   /** A list of [[RenderSchedule.VisibilityEntry]]s within a [[RenderSchedule.Timeline]]. */
   export class VisibilityTimelineEntries extends TimelineEntryList<VisibilityEntry, VisibilityEntryProps, number> {
     /** Returns the visibility value for the entry at the specified position in the list, or 100 (fully-visible) if no such entry exists. */
-    public getValue(index: number): number {
+    public override getValue(index: number): number {
       return super.getValue(index) ?? 100;
     }
   }
@@ -453,7 +453,7 @@ export namespace RenderSchedule {
   /** A list of [[RenderSchedule.TransformEntry]]s within a [[RenderSchedule.Timeline]]. */
   export class TransformTimelineEntries extends TimelineEntryList<TransformEntry, TransformEntryProps, Readonly<Transform>> {
     /** Returns the transform for the entry at the specified position in the list, or an identity transform if no such entry exists. */
-    public getValue(index: number): Readonly<Transform> {
+    public override getValue(index: number): Readonly<Transform> {
       return super.getValue(index) ?? Transform.identity;
     }
   }
@@ -635,7 +635,7 @@ export namespace RenderSchedule {
       return new ElementTimeline(props ?? { elementIds: [], batchId: 0 });
     }
 
-    public toJSON(): ElementTimelineProps {
+    public override toJSON(): ElementTimelineProps {
       return {
         ...super.toJSON(),
         batchId: this.batchId,
@@ -758,7 +758,7 @@ export namespace RenderSchedule {
       return new ModelTimeline(props ?? { elementTimelines: [], modelId: Id64.invalid });
     }
 
-    public toJSON(): ModelTimelineProps {
+    public override toJSON(): ModelTimelineProps {
       return {
         ...super.toJSON(),
         modelId: this.modelId,
@@ -776,7 +776,7 @@ export namespace RenderSchedule {
     public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
       const appearance = this.getFeatureAppearance(this.getVisibility(time), time);
       if (appearance)
-        overrides.overrideModel(this.modelId, appearance);
+        overrides.override({ modelId: this.modelId, appearance });
 
       for (const timeline of this.elementTimelines)
         timeline.addSymbologyOverrides(overrides, time);
@@ -810,9 +810,14 @@ export namespace RenderSchedule {
     public readonly containsFeatureOverrides: boolean;
     /** The total time period over which this script animates. */
     public readonly duration: Range1d;
+    /** The batchIds of all nodes in all timelines that apply a transform.
+     * @internal
+     */
+    public readonly transformBatchIds: ReadonlySet<number>;
 
     protected constructor(props: Readonly<ScriptProps>) {
       this.duration = Range1d.createNull();
+      const transformBatchIds = new Set<number>();
 
       const modelTimelines: ModelTimeline[] = [];
       let containsModelClipping = false;
@@ -830,6 +835,9 @@ export namespace RenderSchedule {
         requiresBatching ||= model.requiresBatching;
         containsTransform ||= model.containsTransform;
         containsFeatureOverrides ||= model.containsFeatureOverrides;
+
+        for (const batchId of model.transformBatchIds)
+          transformBatchIds.add(batchId);
       }
 
       this.modelTimelines = modelTimelines;
@@ -837,6 +845,7 @@ export namespace RenderSchedule {
       this.containsTransform = containsTransform;
       this.requiresBatching = requiresBatching || this.containsTransform;
       this.containsFeatureOverrides = containsFeatureOverrides;
+      this.transformBatchIds = transformBatchIds;
     }
 
     public static fromJSON(props: Readonly<ScriptProps>): Script | undefined {
@@ -939,8 +948,8 @@ export namespace RenderSchedule {
       let value: CuttingPlaneProps | undefined;
       if (plane) {
         value = {
-          position: [ plane.position.x, plane.position.y, plane.position.z ],
-          direction: [ plane.direction.x, plane.direction.y, plane.direction.z ],
+          position: [plane.position.x, plane.position.y, plane.position.z],
+          direction: [plane.direction.x, plane.direction.y, plane.direction.z],
         };
 
         if (plane.visible)
@@ -960,9 +969,9 @@ export namespace RenderSchedule {
 
       const value: TransformProps = { transform: transform?.toRows() };
       if (components) {
-        value.pivot = [ components.pivot.x, components.pivot.y, components.pivot.z ];
+        value.pivot = [components.pivot.x, components.pivot.y, components.pivot.z];
         value.orientation = components.orientation.toJSON();
-        value.position = [ components.position.x, components.position.y, components.position.z ];
+        value.position = [components.position.x, components.position.y, components.position.z];
       }
 
       this.transform.push({ time, value, interpolation });
@@ -972,7 +981,7 @@ export namespace RenderSchedule {
      * @see [[RenderSchedule.ScriptBuilder.finish]] to obtain the JSON for the entire [[RenderSchedule.Script]].
      */
     public finish(): TimelineProps {
-      const props: TimelineProps = { };
+      const props: TimelineProps = {};
       if (this.visibility?.length)
         props.visibilityTimeline = this.visibility;
 
@@ -1012,7 +1021,7 @@ export namespace RenderSchedule {
     /** Obtain the JSON representation of the [[RenderSchedule.ElementTimeline]] produced by this builder.
      * @see [[RenderSchedule.ScriptBuilder.finish]] to obtain the JSON for the entire [[RenderSchedule.Script]].
      */
-    public finish(): ElementTimelineProps {
+    public override finish(): ElementTimelineProps {
       const props = super.finish() as ElementTimelineProps;
       props.batchId = this.batchId;
       props.elementIds = this.elementIds;
@@ -1047,7 +1056,13 @@ export namespace RenderSchedule {
     public addElementTimeline(elementIds: CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder {
       const batchId = this._obtainNextBatchId();
       let ids: CompressedId64Set;
+
+      // It's far too easy to accidentally pass a single Id (compiler can't help).
+      if (typeof elementIds === "string" && Id64.isValidId64(elementIds))
+        elementIds = [elementIds];
+
       if (typeof elementIds === "string") {
+        // Already compressed.
         ids = elementIds;
       } else {
         const sorted = Array.from(elementIds);
@@ -1063,7 +1078,7 @@ export namespace RenderSchedule {
     /** Obtain the JSON representation of the [[RenderSchedule.ModelTimeline]] produced by this builder.
      * @see [[RenderSchedule.ScriptBuilder.finish]] to obtain the JSON for the entire [[RenderSchedule.Script]].
      */
-    public finish(): ModelTimelineProps {
+    public override finish(): ModelTimelineProps {
       const props = super.finish() as ModelTimelineProps;
       props.modelId = this.modelId;
       if (undefined !== this.realityModelUrl)

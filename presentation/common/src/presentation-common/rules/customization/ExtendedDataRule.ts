@@ -20,7 +20,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  *   application needs to additionally know element model's ID. The rule can be used
  *   to inject that ID into element's node.
  *
- * @see [More details]($docs/learning/presentation/Customization/ExtendedDataRule.md)
+ * @see [More details]($docs/presentation/Customization/ExtendedDataRule.md)
  * @public
  */
 export interface ExtendedDataRule extends RuleBase, ConditionContainer {
@@ -29,8 +29,8 @@ export interface ExtendedDataRule extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order for it to be used. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/presentation/Customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
@@ -40,8 +40,8 @@ export interface ExtendedDataRule extends RuleBase, ConditionContainer {
    * The key part of the pair should be unique within all keys which are used for specific
    * presentation object, even if they are applied using different `ExtendedData` definitions.
    *
-   * The value part of the pair is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/presentation/Customization/ECExpressions.md#rule-condition) and whose
+   * The value part of the pair is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#rule-condition) and whose
    * evaluated result is used as the value of the extended data item.
    */
   items: { [key: string]: string };

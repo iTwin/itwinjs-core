@@ -6,7 +6,8 @@
  * @module Symbology
  */
 
-import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@bentley/geometry-core";
+import { compareNumbers } from "@itwin/core-bentley";
+import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
 
@@ -93,7 +94,7 @@ export class ThematicGradientSettings {
   public static get contentRange(): number { return 1.0 - 2.0 * ThematicGradientSettings.margin; }
   public static get contentMax(): number { return 1.0 - ThematicGradientSettings.margin; }
 
-  public static defaults = ThematicGradientSettings.fromJSON();
+  public static readonly defaults = new ThematicGradientSettings({ });
 
   private static _defaultCustomKeys = [[0.0, 255, 255, 255], [1.0, 0, 0, 0]];
 
@@ -117,6 +118,34 @@ export class ThematicGradientSettings {
     }
 
     return true;
+  }
+
+  /** Compares two sets of thematic gradient settings.
+   * @param lhs First set of thematic gradient settings to compare
+   * @param rhs Second set of thematic gradient settings to compare
+   * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
+   */
+  public static compare(lhs: ThematicGradientSettings, rhs: ThematicGradientSettings): number {
+    let diff = 0;
+    if ((diff = compareNumbers(lhs.mode, rhs.mode)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.stepCount, rhs.stepCount)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.marginColor.tbgr, rhs.marginColor.tbgr)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.colorScheme, rhs.colorScheme)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.colorMix, rhs.colorMix)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.customKeys.length, rhs.customKeys.length)) !== 0)
+      return diff;
+
+    for (let i = 0; i < lhs.customKeys.length; i++) {
+      if ((diff = compareNumbers(lhs.customKeys[i].color.tbgr, rhs.customKeys[i].color.tbgr)) !== 0)
+        return diff;
+    }
+
+    return diff;
   }
 
   private constructor(json?: ThematicGradientSettingsProps) {
@@ -157,21 +186,31 @@ export class ThematicGradientSettings {
   }
 
   public static fromJSON(json?: ThematicGradientSettingsProps) {
-    return new ThematicGradientSettings(json);
+    return json ? new ThematicGradientSettings(json) : this.defaults;
   }
 
   public toJSON(): ThematicGradientSettingsProps {
-    const json: ThematicGradientSettingsProps = {
-      mode: this.mode,
-      stepCount: this.stepCount,
-      marginColor: this.marginColor.toJSON(),
-      colorScheme: this.colorScheme,
-      colorMix: this.colorMix,
-    };
+    const props: ThematicGradientSettingsProps = { };
+    if (ThematicGradientMode.Smooth !== this.mode)
+      props.mode = this.mode;
 
-    json.customKeys = [];
-    this.customKeys.forEach((key) => json.customKeys!.push({ value: key.value, color: key.color.tbgr }));
-    return json;
+    if (10 !== this.stepCount)
+      props.stepCount = this.stepCount;
+
+    const marginColor = this.marginColor.toJSON();
+    if (0 !== marginColor)
+      props.marginColor = marginColor;
+
+    if (ThematicGradientColorScheme.BlueRed !== this.colorScheme)
+      props.colorScheme = this.colorScheme;
+
+    if (0 !== this.colorMix)
+      props.colorMix = this.colorMix;
+
+    if (this.customKeys.length > 0)
+      props.customKeys = this.customKeys.map((key) => { return { value: key.value, color: key.color.toJSON() }; });
+
+    return props;
   }
 
   /** Create a copy of this ThematicGradientSettings, optionally modifying some of its properties.
@@ -325,7 +364,6 @@ export enum ThematicDisplayMode {
   Height = 0,
   /** The color gradient will be mapped to surface geometry and point clouds using inverse distance weighting based on world positions and corresponding values from a list of sensors.
    * @note Performance will decrease as more sensors are added.
-   * @public
    */
   InverseDistanceWeightedSensors = 1,
   /** The color gradient will be mapped to surface geometry based on the slope of the surface. The slope value is calculated based on the angle between the surface and the axis specified in the associated [[ThematicDisplay]] object.
@@ -365,6 +403,7 @@ export interface ThematicDisplayProps {
 /** The thematic display setup of a [[DisplayStyle3d]].
  * Thematic display allows a user to colorize a scene using a color gradient in a way that provides a visual cue about certain attributes of the rendered geometry. This scene colorization will be done based on certain geometric attributes like height, surface slope, position of surfaces relative to a sun position, or geometric position relative to a list of sensors.
  * The documentation for [[ThematicDisplayMode]] describes how each mode colorizes the scene.
+ * @note Applying thematic display to geometry prevents shadows from applying to the same geometry.
  * @public
  */
 export class ThematicDisplay {

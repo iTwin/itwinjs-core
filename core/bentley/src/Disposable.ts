@@ -17,7 +17,7 @@
  *
  * IDisposable tends to be contagious; that is, if a type has members which implement IDisposable, that type should also implement IDisposable to dispose of those members.
  *
- * Implementations of IDisposable tend to be more "low-level" types. The disposal of such types is often handled on your behalf by imodel.js.
+ * Implementations of IDisposable tend to be more "low-level" types. The disposal of such types is often handled on your behalf.
  * However, always consult the documentation for an IDisposable type to determine under what circumstances you are expected to explicitly dispose of it.
  * @public
  */

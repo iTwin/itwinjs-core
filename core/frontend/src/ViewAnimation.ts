@@ -6,9 +6,10 @@
  * @module Views
  */
 
-import { EasingFunction } from "@bentley/imodeljs-common";
+import { EasingFunction } from "@itwin/core-common";
 import { ViewStatus } from "./ViewStatus";
 import { MarginPercent } from "./MarginPercent";
+import { Point3d } from "@itwin/core-geometry";
 
 /** An object to animate a transition of a [[Viewport]].
  * Only one animator may be associated with a viewport at a time. Registering a new
@@ -37,18 +38,46 @@ export interface ViewAnimationOptions {
   cancelOnAbort?: boolean;
   /** easing function for animation. Default is Easing.Cubic.Out */
   easingFunction?: EasingFunction;
+  /** Invoked when the animator is finished.  didComplete is true only if the animation finished without being interrupted. */
+  animationFinishedCallback?(didComplete: boolean): void;
+}
+
+/**  Options that control how a view is aligned with the globe.
+ * @public
+ */
+export interface GlobalAlignmentOptions {
+  /** The target point about which the alignment occurs.  This point will remain stationary in the view */
+  target: Point3d;
+  /** If defined and true then the alignment rotation is scaled by the [[ViewState.globalViewTransition]].  This is
+   * typically used when zooming out from is zoomed out from a specific location to a more global representation.
+   */
+  transition?: boolean;
+}
+
+/** A method to be called if an error occurs while adjusting a ViewState's extents
+ * @public
+ */
+export interface OnViewExtentsError {
+  /** Function to be called when the extents are adjusted due to a limits error (view too larger or too small) */
+  onExtentsError?: (status: ViewStatus) => ViewStatus;
+}
+
+/** Options that control the margin around the edges of a volume for lookAt and Fit view operations
+ * @public
+ */
+export interface MarginOptions {
+  /** The percentage of the view to leave blank around the edges. */
+  marginPercent?: MarginPercent;
 }
 
 /** Options that control how operations that change a viewport behave.
  * @public
  */
-export interface ViewChangeOptions extends ViewAnimationOptions {
+export interface ViewChangeOptions extends OnViewExtentsError, ViewAnimationOptions {
   /** Whether to save the result of this change into the view undo stack. Default is to save in undo. */
   noSaveInUndo?: boolean;
   /** Whether the change should be animated or not. Default is to not animate frustum change. */
   animateFrustumChange?: boolean;
-  /** The percentage of the view to leave blank around the edges. */
-  marginPercent?: MarginPercent;
-  /** Function to be called when the extents are adjusted due to a limits error (view too larger or too small) */
-  onExtentsError?: (status: ViewStatus) => ViewStatus;
+  /** If defined the controls how the view will be aligned with the globe */
+  globalAlignment?: GlobalAlignmentOptions;
 }

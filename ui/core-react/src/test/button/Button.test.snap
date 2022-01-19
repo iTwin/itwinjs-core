@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Button /> disabled renders correctly 1`] = `
+<ForwardRef
+  disabled={true}
+  size="small"
+  styleType="cta"
+>
+  Label
+</ForwardRef>
+`;
+
+exports[`<Button /> renders correctly 1`] = `
+<ForwardRef
+  size="small"
+  styleType="cta"
+/>
+`;
+
+exports[`<Button /> should render blue 1`] = `
+<ForwardRef
+  size="small"
+  styleType="high-visibility"
+/>
+`;
+
+exports[`<Button /> should render disabled 1`] = `
+<ForwardRef
+  size="small"
+  styleType="cta"
+/>
+`;
+
+exports[`<Button /> should render hollow 1`] = `
+<ForwardRef
+  size="small"
+  styleType="default"
+/>
+`;
+
+exports[`<Button /> should render large 1`] = `
+<ForwardRef
+  styleType="cta"
+/>
+`;
+
+exports[`<Button /> should render primary 1`] = `
+<ForwardRef
+  size="small"
+  styleType="cta"
+/>
+`;
+
+exports[`<Button /> with children renders correctly 1`] = `
+<ForwardRef
+  size="small"
+  styleType="cta"
+>
+  children
+</ForwardRef>
+`;

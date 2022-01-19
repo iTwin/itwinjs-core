@@ -43,7 +43,7 @@ export interface RepeatableRelationshipStepSpecification extends RelationshipSte
 /**
  * Specification of a relationship path.
  *
- * @see [More details]($docs/learning/presentation/RelationshipPathSpecification.md)
+ * @see [More details]($docs/presentation/Common-Rules/RelationshipPathSpecification.md)
  * @public
  */
 export type RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[];
@@ -51,7 +51,7 @@ export type RelationshipPathSpecification = RelationshipStepSpecification | Rela
 /**
  * Specification of a repeatable relationship path.
  *
- * @see [More details]($docs/learning/presentation/RelationshipPathSpecification.md)
+ * @see [More details]($docs/presentation/Common-Rules/RelationshipPathSpecification.md)
  * @public
  */
 export type RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[];

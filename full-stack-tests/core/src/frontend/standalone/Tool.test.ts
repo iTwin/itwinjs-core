@@ -3,21 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg } from "@itwin/core-bentley";
 import {
-  ElementAgenda, HiliteSet, IModelConnection, MockRender, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
+  ElementAgenda, HiliteSet, IModelConnection, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection,
+} from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("Tools", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
   after(async () => {
     if (imodel) await imodel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("ElementAgenda tests", () => {
@@ -159,7 +160,7 @@ describe("HiliteSet", () => {
   let hilited: HiliteSet;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     selected = imodel.selectionSet;
     hilited = imodel.hilited;
@@ -167,7 +168,7 @@ describe("HiliteSet", () => {
 
   after(async () => {
     if (imodel) await imodel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   function expectHilitedElements(ids: Id64Arg) {

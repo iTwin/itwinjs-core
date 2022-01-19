@@ -2,41 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chalk from "chalk";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
-import { getAppRelativePath, getSourcePosition, paths } from "../utils/paths";
-const getAllDependencies = require("../utils/resolve-recurse/resolve");
+import { getAppRelativePath, getSourcePosition } from "../utils/paths";
+const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
-const WebpackError = require("webpack/lib/WebpackError");
-const ModuleDependencyWarning = require("webpack/lib/ModuleDependencyWarning");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-
-class MissingExternalWarning extends WebpackError {
-  constructor(pkgName: string) {
-    super();
-
-    this.name = "MissingExternalWarning";
-    this.message = `\nCan't copy external package "${pkgName}" because it is not a direct dependency.\n`;
-    this.message = `${this.message}To fix this, run ${chalk.cyan(`npm install -P ${pkgName}`)}`;
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
 export class CopyExternalsPlugin {
   private _promises: Array<Promise<any>> = [];
   private _copiedPackages: Set<string> = new Set();
-  private _appDependencies: Set<string>;
   private _logger: any;
-
-  constructor() {
-    const appPackageJson = require(paths.appPackageJson);
-    // NEEDSWORK: We need to special case imodeljs-native now that it is not an explicit dependency of most apps.
-    // This is a bit of a hack, but it's easier to just do this for now than build out the entire dependency tree...
-    this._appDependencies = new Set([...Object.keys(appPackageJson.dependencies), "@bentley/imodeljs-native"]);
-  }
 
   public apply(compiler: Compiler) {
     compiler.hooks.compilation.tap("CopyExternalsPlugin", (compilation: any) => {
@@ -58,21 +36,25 @@ export class CopyExternalsPlugin {
     if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
       return;
 
-    if (!this._appDependencies.has(pkgName)) {
-      this._logger.warn(`Can't copy package "${pkgName}" - it is not a direct dependency.`);
+    let packageJsonPath = "";
+    try {
+      packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [currentModule.issuer.context] });
+    } catch (error) {
+      // Always _log_ missing externals as a warning, but don't add it as a compilation warning if it's an "optional" dependency.
+      const warning = `Can't copy external package "${pkgName}" - it is not installed.`;
+      this._logger.warn(warning);
       for (const reason of currentModule.reasons) {
         if (!reason.module || !reason.dependency)
           continue;
 
-        this._logger.log(`"${pkgName}" included at ${getSourcePosition(reason.module, reason.dependency.loc)}`);
-
-        if (!reason.dependency.optional) {
-          compilation.warnings.push(new ModuleDependencyWarning(reason.module, new MissingExternalWarning(pkgName), reason.dependency.loc));
-        }
+        const location = getSourcePosition(reason.module, reason.dependency.loc);
+        this._logger.log(`"${pkgName}" included at ${location}`);
+        if (!reason.dependency.optional)
+          compilation.warnings.push(`${location}\n${warning}\nTo fix this, either npm install ${pkgName} or wrap the import in a try/catch.`);
       }
       return;
     }
-    const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [paths.appNodeModules, path.join(paths.appNodeModules, "@bentley", "imodeljs-backend")] });
+
     await this.copyPackage(pkgName, outputDir, path.dirname(packageJsonPath));
     if (!packageJsonPath)
       return;
@@ -84,7 +66,7 @@ export class CopyExternalsPlugin {
       return;
 
     // Grab external package's dependencies and all of its dependencies and so on recursively
-    const depsFromRecursion = await getAllDependencies({
+    const depsFromRecursion = await resolveRecurse({
       path: path.dirname(packageJsonPath),
     });
     await this.recurseDependencies(depsFromRecursion.dependencies, outputDir);

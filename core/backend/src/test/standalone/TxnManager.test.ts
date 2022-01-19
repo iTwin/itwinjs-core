@@ -4,21 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
-} from "@bentley/imodeljs-common";
+  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
+} from "@itwin/core-common";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
-} from "../../imodeljs-backend";
+  IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
+} from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
+
+/// cspell:ignore accum
 
 describe("TxnManager", () => {
   let imodel: StandaloneDb;
   let props: TestPhysicalObjectProps;
   let testFileName: string;
-  const requestContext = new BackendRequestContext();
 
   const performUpgrade = (pathname: string) => {
     const nativeDb = new IModelHost.platform.DgnDb();
@@ -39,7 +40,7 @@ describe("TxnManager", () => {
     IModelJsFs.copySync(seedFileName, testFileName);
     performUpgrade(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
-    await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
+    await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
 
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0)));
@@ -66,6 +67,17 @@ describe("TxnManager", () => {
     IModelJsFs.removeSync(testFileName);
   });
 
+  function makeEntity(id: string, classFullName: string): EntityIdAndClassId {
+    const classId = imodel.nativeDb.classNameToId(classFullName);
+    expect(Id64.isValid(classId)).to.be.true;
+    return { id, classId };
+  }
+
+  function physicalModelEntity(id: string) { return makeEntity(id, "BisCore:PhysicalModel"); }
+  function physicalObjectEntity(id: string) { return makeEntity(id, "TestBim:TestPhysicalObject"); }
+  function spatialCategoryEntity(id: string) { return makeEntity(id, "BisCore:SpatialCategory"); }
+  function subCategoryEntity(categoryId: string) { return makeEntity(IModel.getDefaultSubCategoryId(categoryId), "BisCore:SubCategory"); }
+
   it("TxnManager", async () => {
     const models = imodel.models;
     const elements = imodel.elements;
@@ -77,7 +89,7 @@ describe("TxnManager", () => {
 
     assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
 
-    let txns = imodel.txns;
+    const txns = imodel.txns;
     assert.isFalse(txns.hasPendingTxns);
 
     const change1Msg = "change 1";
@@ -254,39 +266,23 @@ describe("TxnManager", () => {
     expect(lastMod3).not.to.equal(lastMod2);
 
     assert.isTrue(txns.isUndoPossible);
-    assert.isTrue(txns.checkUndoPossible(true));
-    assert.isTrue(txns.checkUndoPossible(false));
-    assert.isTrue(txns.checkUndoPossible());
 
-    // test the ability to undo/redo from previous sessions
-    imodel.close();
-    imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
-    txns = imodel.txns;
+    // test restarting the session, which should truncate undo history
+    txns.restartSession();
 
     assert.isFalse(txns.isUndoPossible);
-    assert.isTrue(txns.checkUndoPossible(true));
-    assert.isFalse(txns.checkUndoPossible(false));
-    assert.isFalse(txns.checkUndoPossible());
-    assert.equal(deleteTxnMsg, txns.getUndoString(true));
     assert.equal("", txns.getUndoString());
 
-    assert.equal(IModelStatus.Success, txns.reverseTxns(1, true), "reverse from previous session");
-    assert.equal(saveUpdateMsg, txns.getUndoString(true));
-    assert.equal(deleteTxnMsg, txns.getRedoString());
-    assert.equal(IModelStatus.Success, txns.reinstateTxn());
-    assert.equal(IModelStatus.Success, txns.cancelTo(txns.queryFirstTxnId(true), true), "cancel all committed txns");
-    assert.isFalse(txns.checkUndoPossible(true));
     assert.isFalse(txns.isRedoPossible);
-    assert.isFalse(txns.isUndoPossible);
     assert.isFalse(txns.hasUnsavedChanges);
-    assert.isFalse(txns.hasPendingTxns);
+    assert.isTrue(txns.hasPendingTxns); // these are from the previous session
     cleanup.forEach((drop) => drop());
   });
 
   class EventAccumulator {
-    public readonly inserted: string[] = [];
-    public readonly updated: string[] = [];
-    public readonly deleted: string[] = [];
+    public readonly inserted: EntityIdAndClassId[] = [];
+    public readonly updated: EntityIdAndClassId[] = [];
+    public readonly deleted: EntityIdAndClassId[] = [];
     public numValidates = 0;
     public numApplyChanges = 0;
     private _numBeforeUndo = 0;
@@ -348,13 +344,13 @@ describe("TxnManager", () => {
     }
 
     private copyArray(changes: TxnChangedEntities, propName: "inserted" | "updated" | "deleted"): void {
-      const source = changes[propName];
-      if (!source)
-        return;
+      const iterNames = { inserted: "inserts", updated: "updates", deleted: "deletes" } as const;
+      const iterName = iterNames[propName];
+      const entities = changes[iterName];
 
       const dest = this[propName];
-      for (const id of source)
-        dest.push(id);
+      for (const entity of entities)
+        dest.push({ ...entity });
     }
 
     public expectNumValidations(expected: number) {
@@ -370,13 +366,13 @@ describe("TxnManager", () => {
       expect(this._numBeforeUndo).to.equal(expected);
     }
 
-    public expectChanges(expected: { inserted?: string[], updated?: string[], deleted?: string[] }): void {
+    public expectChanges(expected: { inserted?: EntityIdAndClassId[], updated?: EntityIdAndClassId[], deleted?: EntityIdAndClassId[] }): void {
       this.expect(expected.inserted, "inserted");
       this.expect(expected.updated, "updated");
       this.expect(expected.deleted, "deleted");
     }
 
-    private expect(expected: string[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
+    private expect(expected: EntityIdAndClassId[] | undefined, propName: "inserted" | "updated" | "deleted"): void {
       expect(this[propName]).to.deep.equal(expected ?? []);
     }
 
@@ -397,7 +393,7 @@ describe("TxnManager", () => {
       id2 = elements.insertElement(props);
       imodel.saveChanges("2 inserts");
       accum.expectNumValidations(1);
-      accum.expectChanges({ inserted: [id1, id2] });
+      accum.expectChanges({ inserted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
@@ -413,7 +409,7 @@ describe("TxnManager", () => {
       elem2.update();
       imodel.saveChanges("2 updates");
       accum.expectNumValidations(1);
-      accum.expectChanges({ updated: [id1, id2] });
+      accum.expectChanges({ updated: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     EventAccumulator.testElements(imodel, (accum) => {
@@ -421,14 +417,14 @@ describe("TxnManager", () => {
       elem2.delete();
       imodel.saveChanges("2 deletes");
       accum.expectNumValidations(1);
-      accum.expectChanges({ deleted: [id1, id2] });
+      accum.expectChanges({ deleted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     // Undo
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reverseSingleTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ inserted: [id1, id2] });
+      accum.expectChanges({ inserted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
       accum.expectNumApplyChanges(1);
       accum.expectNumValidations(0);
     });
@@ -436,32 +432,32 @@ describe("TxnManager", () => {
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reverseSingleTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ updated: [id1, id2] });
+      accum.expectChanges({ updated: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reverseSingleTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ deleted: [id1, id2] });
+      accum.expectChanges({ deleted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     // Redo
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reinstateTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ inserted: [id1, id2] });
+      accum.expectChanges({ inserted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reinstateTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ updated: [id1, id2] });
+      accum.expectChanges({ updated: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
     });
 
     EventAccumulator.testElements(imodel, (accum) => {
       imodel.txns.reinstateTxn();
       accum.expectNumUndoRedo(1);
-      accum.expectChanges({ deleted: [id1, id2] });
+      accum.expectChanges({ deleted: [physicalObjectEntity(id1), physicalObjectEntity(id2)] });
       accum.expectNumApplyChanges(1);
       accum.expectNumValidations(0);
     });
@@ -475,9 +471,9 @@ describe("TxnManager", () => {
 
       // We received 3 separate "elements changed" events - one for each txn - and just concatenated the lists.
       accum.expectChanges({
-        inserted: [id1, id2],
-        updated: [id1, id2],
-        deleted: [id1, id2],
+        inserted: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
+        updated: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
+        deleted: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
       });
     });
 
@@ -490,9 +486,25 @@ describe("TxnManager", () => {
 
       // We received 3 separate "elements changed" events - one for each txn - and just concatenated the lists.
       accum.expectChanges({
-        inserted: [id1, id2],
-        updated: [id1, id2],
-        deleted: [id1, id2],
+        inserted: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
+        updated: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
+        deleted: [physicalObjectEntity(id1), physicalObjectEntity(id2)],
+      });
+    });
+
+    EventAccumulator.testElements(imodel, (accum) => {
+      const elemId1 = imodel.elements.insertElement(props);
+      const catId = SpatialCategory.insert(imodel, IModel.dictionaryId, Guid.createValue(), new SubCategoryAppearance({ color: ColorByName.green }));
+      const elemId2 = imodel.elements.insertElement(props);
+      imodel.saveChanges("2 physical elems and 1 spatial category");
+      accum.expectNumValidations(1);
+      accum.expectChanges({
+        inserted: [
+          physicalObjectEntity(elemId1),
+          spatialCategoryEntity(catId),
+          subCategoryEntity(catId),
+          physicalObjectEntity(elemId2),
+        ],
       });
     });
   });
@@ -505,7 +517,7 @@ describe("TxnManager", () => {
       newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
       imodel.saveChanges("1 insert");
       accum.expectNumValidations(1);
-      accum.expectChanges({ inserted: [newModelId] });
+      accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
     });
     await BeDuration.wait(10); // we rely on updating the lastMod of the newly inserted element, make sure it will be different
 
@@ -533,7 +545,7 @@ describe("TxnManager", () => {
       newModel.delete();
       imodel.saveChanges("1 delete");
       accum.expectNumValidations(1);
-      accum.expectChanges({ deleted: [newModelId] });
+      accum.expectChanges({ deleted: [physicalModelEntity(newModelId)] });
 
       accum.expectNumApplyChanges(0);
     });
@@ -543,7 +555,7 @@ describe("TxnManager", () => {
       imodel.txns.reverseSingleTxn();
       accum.expectNumUndoRedo(1);
       accum.expectNumApplyChanges(1);
-      accum.expectChanges({ inserted: [newModelId] });
+      accum.expectChanges({ inserted: [physicalModelEntity(newModelId)] });
     });
 
     EventAccumulator.testModels(imodel, (accum) => {
@@ -564,7 +576,7 @@ describe("TxnManager", () => {
       imodel.txns.reverseSingleTxn();
       accum.expectNumUndoRedo(1);
       accum.expectNumApplyChanges(1);
-      accum.expectChanges({ deleted: [newModelId] });
+      accum.expectChanges({ deleted: [physicalModelEntity(newModelId)] });
     });
 
     // Redo
@@ -574,7 +586,7 @@ describe("TxnManager", () => {
 
       accum.expectNumUndoRedo(4);
       accum.expectNumApplyChanges(4);
-      accum.expectChanges({ inserted: [newModelId], deleted: [newModelId] });
+      accum.expectChanges({ inserted: [physicalModelEntity(newModelId)], deleted: [physicalModelEntity(newModelId)] });
     });
   });
 
@@ -665,11 +677,19 @@ describe("TxnManager", () => {
   });
 
   it("dispatches events in batches", async () => {
+    function entityCount(entities: EntityIdAndClassIdIterable): number {
+      let count = 0;
+      for (const _entity of entities)
+        ++count;
+
+      return count;
+    }
+
     const test = (numChangesExpected: number, func: () => void) => {
       const numChanged: number[] = [];
       const prevMax = setMaxEntitiesPerEvent(2);
       const dropListener = imodel.txns.onElementsChanged.addListener((changes) => {
-        const numEntities = changes.inserted.length + changes.updated.length + changes.deleted.length;
+        const numEntities = entityCount(changes.inserts) + entityCount(changes.updates) + entityCount(changes.deletes);
         numChanged.push(numEntities);
         expect(numEntities).least(1);
         expect(numEntities <= 2).to.be.true;
@@ -765,4 +785,18 @@ describe("TxnManager", () => {
     dropListener();
   });
 
+  // This bug occurred in one of the authoring apps. This test reproduced the problem, and now serves as a regression test.
+  it("doesn't crash when reversing a single txn that inserts a model and a contained element while geometric model tracking is enabled", () => {
+    imodel.nativeDb.setGeometricModelTrackingEnabled(true);
+
+    const model = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
+    expect(Id64.isValidId64(model)).to.be.true;
+    const elem = imodel.elements.insertElement({ ...props, model });
+    expect(Id64.isValidId64(elem)).to.be.true;
+
+    imodel.saveChanges("insert model and element");
+    imodel.txns.reverseSingleTxn();
+
+    imodel.nativeDb.setGeometricModelTrackingEnabled(false);
+  });
 });

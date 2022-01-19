@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import sinon from "sinon";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   CategorizedPropertyItem, FlatGridItemType, IPropertyDataProvider, PrimitivePropertyRenderer, PropertyCategory, PropertyCategoryRendererManager,
   PropertyCategoryRendererProps, PropertyData, PropertyDataChangeEvent, PropertyValueRendererManager, VirtualizedPropertyGridWithDataProvider,
-} from "@bentley/ui-components";
-import { Orientation } from "@bentley/ui-core";
+} from "@itwin/components-react";
+import { Orientation } from "@itwin/core-react";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
@@ -39,13 +38,7 @@ describe("Category renderer customization", () => {
       };
     }
 
-    beforeEach(() => {
-      sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 1200);
-      sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 500);
-    });
-
     afterEach(() => {
-      sinon.restore();
       PropertyCategoryRendererManager.defaultManager.removeRenderer("my_custom_renderer");
     });
 
@@ -77,7 +70,12 @@ describe("Category renderer customization", () => {
 
       const dataProvider = setupDataProvider();
       const { findByText } = render(
-        <VirtualizedPropertyGridWithDataProvider orientation={Orientation.Horizontal} dataProvider={dataProvider} />,
+        <VirtualizedPropertyGridWithDataProvider
+          dataProvider={dataProvider}
+          width={500}
+          height={1200}
+          orientation={Orientation.Horizontal}
+        />,
       );
       expect(await findByText("rootCategory1Property")).not.to.be.null;
     });

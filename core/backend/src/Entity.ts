@@ -6,15 +6,21 @@
  * @module Schema
  */
 
-import { DbOpcode, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { EntityProps, PropertyCallback, PropertyMetaData } from "@bentley/imodeljs-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
-/** Base class for all Entities in an iModel. Every subclass of Entity handles one BIS class.
+/** Represents an entity in an [[IModelDb]] such as an [[Element]], [[Model]], or [[Relationship]].
+ * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
+ * An Entity is typically instantiated from an [EntityProps]($common) and can be converted back to this representation via [[Entity.toJSON]].
  * @public
  */
-export class Entity implements EntityProps {
+export class Entity {
+  /** An immutable property used to discriminate between [[Entity]] and [EntityProps]($common), used to inform the TypeScript compiler that these two types
+   * are never substitutable for one another. To obtain an EntityProps from an Entity, use [[Entity.toJSON]].
+   */
+  public readonly isInstanceOfEntity: true = true;
   /** The Schema that defines this class. */
   public static schema: typeof Schema;
 
@@ -53,7 +59,9 @@ export class Entity implements EntityProps {
     this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]), false);
   }
 
-  /** @internal */
+  /** Obtain the JSON representation of this Entity. Subclasses of [[Entity]] typically override this method to return their corresponding sub-type of [EntityProps]($common) -
+   * for example, [[GeometricElement.toJSON]] returns a [GeometricElementProps]($common).
+   */
   public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;
@@ -62,13 +70,6 @@ export class Entity implements EntityProps {
     this.forEachProperty((propName: string) => val[propName] = (this as any)[propName], false);
     return val;
   }
-
-  /** Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
-   * @param _opcode The operation that will be performed on the element.
-   * @note subclasses must override this method
-   * @alpha
-   */
-  public buildConcurrencyControlRequest(_opcode: DbOpcode): void { }
 
   /** Call a function for each property of this Entity.
    * @param func The callback to be invoked on each property

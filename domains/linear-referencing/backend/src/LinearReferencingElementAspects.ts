@@ -6,12 +6,12 @@
  * @module LinearReferencing
  */
 
-import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { ElementMultiAspect, IModelDb } from "@bentley/imodeljs-backend";
-import { RelatedElement } from "@bentley/imodeljs-common";
+import { Id64String, JsonUtils } from "@itwin/core-bentley";
+import { ElementMultiAspect, IModelDb } from "@itwin/core-backend";
+import { RelatedElement } from "@itwin/core-common";
 import {
   DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps,
-} from "@bentley/linear-referencing-common";
+} from "@itwin/linear-referencing-common";
 import {
   LinearlyReferencedAtPositionRefersToReferent, LinearlyReferencedFromPositionRefersToReferent, LinearlyReferencedToPositionRefersToReferent,
 } from "./LinearReferencingRelationships";
@@ -40,15 +40,15 @@ export class DistanceExpression implements DistanceExpressionProps {
  */
 export class LinearlyReferencedLocation extends ElementMultiAspect {
   /** @internal */
-  public static get className(): string { return "LinearlyReferencedLocation"; }
+  public static override get className(): string { return "LinearlyReferencedLocation"; }
 }
 
 /** Concrete multi-aspect class carrying 'at' linearly-referenced positions along a Linear-Element.
  * @beta
  */
-export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation implements LinearlyReferencedAtLocationAspectProps {
+export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
   /** @internal */
-  public static get className(): string { return "LinearlyReferencedAtLocation"; }
+  public static override get className(): string { return "LinearlyReferencedAtLocation"; }
 
   public atPosition: DistanceExpression;
   public fromReferent?: LinearlyReferencedAtPositionRefersToReferent;
@@ -84,9 +84,9 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation imp
 /** Concrete multi-aspect class carrying 'from-to' linearly-referenced positions along a Linear-Element.
  * @beta
  */
-export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation implements LinearlyReferencedFromToLocationAspectProps {
+export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation {
   /** @internal */
-  public static get className(): string { return "LinearlyReferencedFromToLocation"; }
+  public static override get className(): string { return "LinearlyReferencedFromToLocation"; }
 
   public fromPosition: DistanceExpression;
   public fromPositionFromReferent?: LinearlyReferencedFromPositionRefersToReferent;

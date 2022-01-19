@@ -1,5 +1,5 @@
 {
-  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "declaration": false,
     "declarationMap": false,
@@ -16,6 +16,11 @@
     "noEmit": true,
     "types": [
       "@bentley/react-scripts"
+    ],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
     ]
   },
   "include": [

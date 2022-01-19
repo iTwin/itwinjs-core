@@ -9,7 +9,7 @@
 import {
   BeButtonEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
   ToolAssistanceInstruction, ToolAssistanceSection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -18,23 +18,23 @@ import { RedlineTool } from "./RedlineTool";
 // cspell:ignore rbox
 
 /** Tool to place new text notes on a Markup.
- * @beta
+ * @public
  */
 export class PlaceTextTool extends RedlineTool {
-  public static toolId = "Markup.Text.Place";
-  public static iconSpec = "icon-text-medium";
-  protected _nRequiredPoints = 1;
-  protected _minPoints = 0;
+  public static override toolId = "Markup.Text.Place";
+  public static override iconSpec = "icon-text-medium";
+  protected override _nRequiredPoints = 1;
+  protected override _minPoints = 0;
   protected _value!: string;
 
-  public onPostInstall(): void {
+  public override async onPostInstall() {
     this._value = MarkupApp.props.text.startValue; // so applications can put a default string (e.g. user's initials) in the note. Can be empty
-    super.onPostInstall();
+    return super.onPostInstall();
   }
 
-  protected showPrompt(): void { this.provideToolAssistance(`${MarkupTool.toolKey}Text.Place.Prompts.FirstPoint`, true); }
+  protected override showPrompt(): void { this.provideToolAssistance(`${MarkupTool.toolKey}Text.Place.Prompts.FirstPoint`, true); }
 
-  protected createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): void {
+  protected override async createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
     if (isDynamics && InputSource.Touch === ev.inputSource)
       return;
     const start = MarkupApp.convertVpToVb(ev.viewPoint); // starting point in viewbox coordinates
@@ -45,26 +45,25 @@ export class PlaceTextTool extends RedlineTool {
     if (isDynamics) {
       svg.add(text.getOutline().attr(MarkupApp.props.text.edit.textBox).addClass(MarkupApp.textOutlineClass)); // in dynamics, draw the box around the text
     } else {
-      new EditTextTool(text, true).run(); // text is now positioned, open text editor
+      await new EditTextTool(text, true).run(); // text is now positioned, open text editor
     }
   }
-  public onRestartTool(): void { }
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { await this.exitTool(); return EventHandled.Yes; }
 }
 
 /** Tool for editing text. Started automatically by the place text tool and by clicking on text from the SelectTool
- * @beta
+ * @public
  */
 export class EditTextTool extends MarkupTool {
-  public static toolId = "Markup.Text.Edit";
-  public static iconSpec = "icon-text-medium";
+  public static override toolId = "Markup.Text.Edit";
+  public static override iconSpec = "icon-text-medium";
   public editor?: HTMLTextAreaElement;
   public editDiv?: HTMLDivElement;
   public boxed?: G;
   constructor(public text?: MarkupText | G, private _fromPlaceTool = false) { super(); }
 
-  protected showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`));
+  protected override showPrompt(): void {
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
@@ -123,9 +122,9 @@ export class EditTextTool extends MarkupTool {
     (editor as any).onselectstart = editor.oncontextmenu = editor.onmousedown = editor.onmouseup = mouseListener; // enable default handling for these events
 
     // Tab, Escape, ctrl-enter, or shift-enter all end the editor
-    editor.onkeydown = (ev: KeyboardEvent) => {
+    editor.onkeydown = async (ev: KeyboardEvent) => {
       if (ev.key === "Tab" || ev.key === "Escape" || (ev.key === "Enter" && (ev.shiftKey || ev.ctrlKey)))
-        this.exitTool();
+        this.exitTool(); // eslint-disable-line @typescript-eslint/no-floating-promises
       ev.stopPropagation();
 
     };
@@ -154,7 +153,7 @@ export class EditTextTool extends MarkupTool {
   }
 
   /** Called when EditText exits, saves the edited value into the text element */
-  public onCleanup() {
+  public override async onCleanup() {
     if (!this.editDiv)
       return;
 
@@ -193,14 +192,14 @@ export class EditTextTool extends MarkupTool {
     this.editor = undefined;
   }
 
-  public onInstall() {
-    if (!super.onInstall())
+  public override async onInstall() {
+    if (!await super.onInstall())
       return false;
     this.startEditor();
     return true;
   }
 
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
-  public async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
-  public async onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { await this.exitTool(); return EventHandled.Yes; }
+  public override async onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { await this.exitTool(); return EventHandled.Yes; }
+  public override async onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled> { await this.exitTool(); return EventHandled.Yes; }
 }

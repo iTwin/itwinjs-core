@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { IModelConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
+import { ColorDef } from "@itwin/core-common";
+import { IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 
 interface ViewSpec extends IModelConnection.ViewSpec {
   isPrivate: boolean;
@@ -36,7 +36,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     if (undefined === view) {
       try {
         view = await iModel.views.load(id);
-      } catch (_) {
+      } catch {
         // The view probably refers to a nonexistent display style or model/category selector. Replace with a default spatial view.
         // Or, we've opened a blank connection and `id` is intentionally invalid.
         // The viewport's title bar will display "UNNAMED" instead of the bad view's name.
@@ -60,7 +60,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     return viewList;
   }
 
-  public clear(): void {
+  public override clear(): void {
     super.clear();
     this._defaultViewId = Id64.invalid;
     this._views.clear();
@@ -125,16 +125,12 @@ export class ViewList extends SortedArray<ViewSpec> {
 
     // turn on the background map
     const style = blankView.displayStyle;
-    const viewFlags = style.viewFlags;
-    viewFlags.backgroundMap = true;
-    style.viewFlags = viewFlags; // call to accessor to get the json properties to reflect the changes to ViewFlags
+    style.viewFlags = style.viewFlags.with("backgroundMap", true);
 
     style.backgroundColor = ColorDef.white;
 
     // turn on the skybox in the environment
-    const env = style.environment;
-    env.sky.display = true;
-    style.environment = env; // call to accessor to get the json properties to reflect the changes
+    style.environment = style.environment.withDisplay({ sky: true });
 
     return blankView;
   }
