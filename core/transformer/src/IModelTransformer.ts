@@ -251,7 +251,7 @@ export class IModelTransformer extends IModelExportHandler {
     } else {
       this.importer = target;
       /* eslint-disable deprecation/deprecation */
-      if (this._options.preserveElementIdsForFiltering !== this.importer.preserveElementIdsForFiltering) {
+      if (Boolean(this._options.preserveElementIdsForFiltering) !== this.importer.preserveElementIdsForFiltering) {
         Logger.logWarning(
           loggerCategory,
           "A custom importer was passed as a target but its 'preserveElementIdsForFiltering' option is out of sync with the transformer's option."
