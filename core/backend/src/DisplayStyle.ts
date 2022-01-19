@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { CompressedId64Set, DeepKey, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
@@ -42,7 +42,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
 
   /** @alpha */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
+    super.collectPredecessorIds(predecessorIds);
     for (const [id] of this.settings.subCategoryOverrides) {
       predecessorIds.add(id);
     }
@@ -58,8 +58,6 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
         script.script.discloseIds(predecessorIds);
     }
   }
-
-  public static override requiredReferenceKeys = [...super.requiredReferenceKeys, "settings.subCategoryOverrides", "settings.excludedElementIds", "settings.renderTimeline"];
 
   /** @alpha */
   protected static override onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {

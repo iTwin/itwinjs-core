@@ -112,19 +112,14 @@ export interface IModelTransformOptions {
 
 /** a container for tracking the state of a partially committed element and finalizing it when it's ready to be fully committed */
 class PartiallyCommittedElement {
-  public totalMissingReferenceCount: number;
   public constructor(
     public props: Record<string, any>,
-    public missingReferenceCounts: Record<string, number>,
+    public missingPredecessors: Id64Set,
     private _onComplete: () => void,
-  ) {
-    this.totalMissingReferenceCount = Object.values(missingReferenceCounts).reduce((prev, cur) => prev + cur);
-  }
-  public resolveProp(key: string, value: any) {
-    this.props[key] = value;
-    this.missingReferenceCounts[key] -= 1;
-    this.totalMissingReferenceCount -= 1;
-    if (this.totalMissingReferenceCount === 0) this._onComplete();
+  ) {}
+  public resolvePredecessor(predecessor: Id64String) {
+    this.missingPredecessors.delete(predecessor);
+    if (this.missingPredecessors.size === 0) this._onComplete();
   }
 }
 
@@ -204,8 +199,8 @@ export class IModelTransformer extends IModelExportHandler {
     return this._options.targetScopeElementId;
   }
 
-  /** map of unprocessed source elements to a map of processed source element's pending references */
-  protected _pendingReferencesFinalizers = new Map<Id64String, Map<Id64String, (resolvedId: Id64String) => void>>();
+  /** map of unprocessed source elements to a map of processed source elements waiting for that unprocessed */
+  protected _pendingReferences = new Map<Id64String, Map<Id64String, PartiallyCommittedElement>>();
 
   /** map of paritally committed element ids to their partial commit progress */
   protected _partiallyCommittedElements = new Map<Id64String, PartiallyCommittedElement>();
@@ -491,16 +486,13 @@ export class IModelTransformer extends IModelExportHandler {
       if (!this._partiallyCommittedElements.has(elementId)) {
         // FIXME: probably to make onTransformElement work as well as possible, need to keep any transformed props from before the predecessor check
         const props = {};
-        const totalMissingReferenceCounts = Object.fromEntries(Object.keys(props).map((prop) => [prop, 0]));
-        thisPartialElem = new PartiallyCommittedElement(props, totalMissingReferenceCounts, this.makeCompleter(elementId, props));
+        thisPartialElem = new PartiallyCommittedElement(props, new Set(element.getPredecessorIds()), this.makeCompleter(elementId, props));
         this._partiallyCommittedElements.set(elementId, thisPartialElem);
       }
-      if (!this._pendingReferencesFinalizers.has(referenceInSource))
-        this._pendingReferencesFinalizers.set(referenceInSource, new Map());
-      if (!this._pendingReferencesFinalizers.get(referenceInSource)!.has(elementId))
-        this._pendingReferencesFinalizers.get(referenceInSource)!.set(elementId, (resolvedId) => thisPartialElem.resolveProp(accessor, resolvedId));
-      thisPartialElem!.totalMissingReferenceCount += 1;
-      thisPartialElem!.missingReferenceCounts[accessor] += 1;
+      if (!this._pendingReferences.has(referenceInSource))
+        this._pendingReferences.set(referenceInSource, new Map());
+      if (!this._pendingReferences.get(referenceInSource)!.has(elementId))
+        this._pendingReferences.get(referenceInSource)!.set(elementId, thisPartialElem);
     };
 
     const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
@@ -551,7 +543,7 @@ export class IModelTransformer extends IModelExportHandler {
     if (!isGeneratedClass) {
       const nonGeneratedElemClass = sourceElement.constructor as typeof Element;
       for (const referenceKey of nonGeneratedElemClass.requiredReferenceKeys) {
-        const idContainer = lodashGet(sourceElement, referenceKey);
+        const idContainer = lodashGet(sourceElement, referenceKey); // TODO: test that out-of-order code.scope predecessor is updated correctly
         await Promise.all(mapId64(idContainer, async (id) => {
           // not allowed to directly export the root subject
           if (idContainer === Id64.invalid || idContainer === IModel.rootSubjectId) return;
@@ -601,9 +593,9 @@ export class IModelTransformer extends IModelExportHandler {
     }
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
     // now that we've mapped this elem we can fix unmapped references to it
-    if (this._pendingReferencesFinalizers.has(sourceElement.id)) {
-      for (const finalizer of this._pendingReferencesFinalizers.get(sourceElement.id)!.values()) {
-        finalizer(targetElementProps.id!);
+    if (this._pendingReferences.has(sourceElement.id)) {
+      for (const pendingRef of this._pendingReferences.get(sourceElement.id)?.values() ?? []) {
+        pendingRef.resolvePredecessor(sourceElement.id);
       }
     }
     if (!this._options.noProvenance) {

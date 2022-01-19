@@ -41,10 +41,9 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
   }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
+    super.collectPredecessorIds(predecessorIds);
     this.models.forEach((modelId: Id64String) => predecessorIds.add(modelId));
   }
-  public static override requiredReferenceKeys = [...super.requiredReferenceKeys, "models"];
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the ModelSelector and provides the scope for its name.
@@ -108,7 +107,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
   }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
+    super.collectPredecessorIds(predecessorIds);
     this.categories.forEach((categoryId: Id64String) => predecessorIds.add(categoryId));
   }
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -199,7 +198,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
 
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
+    super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.categorySelectorId);
     predecessorIds.add(this.displayStyleId);
     const acsId: Id64String = this.getAuxiliaryCoordinateSystemId();

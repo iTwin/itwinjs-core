@@ -343,7 +343,6 @@ export class Element extends Entity implements ElementProps {
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces predecessors.
    * @see getPredecessorIds
    * @beta
-   * @deprecated implement [[Element.requiredReferenceKeys]] instead
    */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     predecessorIds.add(this.model); // The modeledElement is a predecessor
@@ -357,11 +356,10 @@ export class Element extends Entity implements ElementProps {
    * This is important for cloning operations but can be useful in other situations as well.
    * @see collectPredecessorIds
    * @beta
-   * @deprecated implement [[Element.requiredReferenceKeys]] instead
    */
   public getPredecessorIds(): Id64Set {
     const predecessorIds = new Set<Id64String>();
-    this.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
+    this.collectPredecessorIds(predecessorIds);
     return predecessorIds;
   }
 
@@ -370,7 +368,7 @@ export class Element extends Entity implements ElementProps {
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces requires references.
    * @beta
    */
-  public static requiredReferenceKeys: string[] = ["parent", "model", "code.scope"];
+  public static requiredReferenceKeys: string[] = ["parent", "model"];
 
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
@@ -455,10 +453,11 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
+    super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.category);
     // TODO: GeometryPartIds?
   }
+  public static override requiredReferenceKeys = [...super.requiredReferenceKeys, "category"];
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.
@@ -897,7 +896,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
+    super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.border) { predecessorIds.add(this.border); }
   }
 }
@@ -922,7 +921,7 @@ export class Sheet extends Document implements SheetProps {
   }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
+    super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.sheetTemplate) { predecessorIds.add(this.sheetTemplate); }
   }
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
@@ -1059,7 +1058,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
+    super.collectPredecessorIds(predecessorIds);
     if (undefined !== this.recipe) { predecessorIds.add(this.recipe.id); }
   }
 }
@@ -1561,7 +1560,7 @@ export class RenderTimeline extends InformationRecordElement {
 
   /** @alpha */
   protected override collectPredecessorIds(ids: Id64Set): void {
-    super.collectPredecessorIds(ids); // eslint-disable-line deprecation/deprecation
+    super.collectPredecessorIds(ids);
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
     script?.discloseIds(ids);
   }
