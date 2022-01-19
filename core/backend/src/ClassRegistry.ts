@@ -13,9 +13,6 @@ import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 
-/** @internal class tag to tell if an entity class was generated instead of manually registered */
-export const isGeneratedClassTag: unique symbol = Symbol("isGeneratedClassTag");
-
 /** The mapping between a BIS class name (in the form "schema:class") and its JavaScript constructor function
  * @public
  */
@@ -81,11 +78,7 @@ export class ClassRegistry {
     if (undefined === superclass)
       throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${name}`);
 
-    const generatedClass = class extends superclass {
-      public static override get className() { return className; }
-      /** @internal */
-      public static [isGeneratedClassTag] = true;
-    };
+    const generatedClass = class extends superclass { public static override get className() { return className; } };
     // the above line creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
 
