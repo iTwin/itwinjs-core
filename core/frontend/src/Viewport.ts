@@ -965,6 +965,7 @@ export abstract class Viewport implements IDisposable {
       userId: this._viewportId,
       viewport: this,
       iModel: this.iModel,
+      onRequestStateChanged: () => this.invalidateScene(),
     };
 
     this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);

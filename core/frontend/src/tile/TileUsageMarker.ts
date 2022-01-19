@@ -10,6 +10,7 @@ import { BeTimePoint } from "@itwin/core-bentley";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
+import { TileRequest } from "./internal";
 
 /** Represents some object that makes use of [[Tile]]s in some way - e.g., by displaying them, requesting their contents, querying their geometry, etc.
  * Each [[Tile]] keeps track of its users via its [[TileUsageMarker]]. A tile with no users is eligible to be discarded via [[Tile.prune]].
@@ -26,6 +27,10 @@ export interface TileUser {
   readonly iModel: IModelConnection;
   /** If this user belongs to a viewport, the viewport. Some users are not associated with any viewport. */
   readonly viewport?: Viewport;
+  /** An optional function invoked when a [[TileRequest]] associated with a [[Tile]] in use by this user changes state - e.g., when the request completes, fails, or is cancelled.
+   * For example, a [[Viewport]] responds to such events by invalidating its scene.
+   */
+  readonly onRequestStateChanged?: (req: TileRequest) => void;
 }
 
 let nextTileUserId = 1;
@@ -38,10 +43,11 @@ export namespace TileUser {
   }
 
   /** Create a new TileUser associated with the specified `iModel` with a new, unique Id. */
-  export function create(iModel: IModelConnection): TileUser {
+  export function create(iModel: IModelConnection, onRequestStateChanged?: (req: TileRequest) => void): TileUser {
     return {
       iModel,
       userId: generateTileUserId(),
+      onRequestStateChanged,
     };
   }
 }
