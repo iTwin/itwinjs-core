@@ -13,8 +13,8 @@ import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
-  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, isGeneratedClassTag, KnownLocations, Model,
-  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SpatialViewDefinition, Subject, SynchronizationConfigLink, ViewDefinition, ViewDefinition2d,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, isGeneratedClassTag,
+  KnownLocations, Model, RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
@@ -110,18 +110,76 @@ export interface IModelTransformOptions {
 //   I don't defer but instead immediately try to transform them, what happens if there's a cycle of predecessors? What happened in the old system?
 // - need to add behavior for what to do if an element is never finalized (it should have been "skipped" or not?)
 
-/** maybe rename to PartiallyComittedElementFinalizer */
+/** a container for tracking the state of a partially committed element and finalizing it when it's ready to be fully committed */
 class PartiallyCommittedElement {
+  public totalMissingReferenceCount: number;
   public constructor(
     public props: Record<string, any>,
-    public missingReferenceCount: number,
+    public missingReferenceCounts: Record<string, number>,
     private _onComplete: () => void,
-  ) {}
+  ) {
+    this.totalMissingReferenceCount = Object.values(missingReferenceCounts).reduce((prev, cur) => prev + cur);
+  }
   public resolveProp(key: string, value: any) {
     this.props[key] = value;
-    this.missingReferenceCount -= 1;
-    if (this.missingReferenceCount === 0) this._onComplete();
+    this.missingReferenceCounts[key] -= 1;
+    this.totalMissingReferenceCount -= 1;
+    if (this.totalMissingReferenceCount === 0) this._onComplete();
   }
+}
+
+/** apply a function to each Id64s in a supported container of Id64s */
+function mapId64<R>(
+  idContainer:
+  | Id64String
+  | CompressedId64Set
+  | OrderedId64Array
+  | Id64Set
+  | Id64String[]
+  | { id: Id64String }
+  | undefined,
+  func: (id: Id64String) => R
+): R[] {
+  // a more prudent check would be Id64.isValidId64, but the performance isn't great and we're relying on non-programmer error
+  const isId64String = (arg: any): arg is Id64String => typeof arg === "string";
+  const isRelatedElem = (arg: any): arg is RelatedElement =>
+    arg && typeof arg === "object" && "id" in arg;
+  const isId64Array = (arg: any): arg is Id64String[] => Array.isArray(arg);
+  const isId64Set = (arg: any): arg is Id64Set => arg instanceof Set;
+  const isId64OrderedArray = (arg: any): arg is OrderedId64Array =>
+    arg instanceof OrderedId64Array;
+  const isCompressedId64Set = (arg: any): arg is CompressedId64Set =>
+    /\*|\+/.test(arg);
+
+  const results = [];
+
+  // is a string if compressed or singular id64, but check for singular just checks if it's a string so do this test first
+  if (idContainer === undefined) {
+    // nothing
+  } else if (isCompressedId64Set(idContainer)) {
+    for (const id of CompressedId64Set.iterable(idContainer)) {
+      results.push(func(id));
+    }
+  } else if (isId64String(idContainer)) {
+    results.push(func(idContainer));
+  } else if (isRelatedElem(idContainer)) {
+    results.push(func(idContainer.id));
+  } else if (
+    isId64Array(idContainer) ||
+    isId64OrderedArray(idContainer) ||
+    isId64Set(idContainer)
+  ) {
+    for (const id of idContainer) {
+      results.push(func(id));
+    }
+  } else {
+    throw Error(
+      `Id64 container '${idContainer}' is unsupported.\n` +
+        `Currently only singular Id64, prop-like objects containing an "id" property, arrays of Id64, sets of Id64, OrderedId64Array objects,\n` +
+        `or CompressedId64Set's are supported.`
+    );
+  }
+  return results;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -433,103 +491,32 @@ export class IModelTransformer extends IModelExportHandler {
       if (!this._partiallyCommittedElements.has(elementId)) {
         // FIXME: probably to make onTransformElement work as well as possible, need to keep any transformed props from before the predecessor check
         const props = {};
-        thisPartialElem = new PartiallyCommittedElement(props, 0, this.makeCompleter(elementId, props));
+        const totalMissingReferenceCounts = Object.fromEntries(Object.keys(props).map((prop) => [prop, 0]));
+        thisPartialElem = new PartiallyCommittedElement(props, totalMissingReferenceCounts, this.makeCompleter(elementId, props));
         this._partiallyCommittedElements.set(elementId, thisPartialElem);
       }
       if (!this._pendingReferencesFinalizers.has(referenceInSource))
         this._pendingReferencesFinalizers.set(referenceInSource, new Map());
       if (!this._pendingReferencesFinalizers.get(referenceInSource)!.has(elementId))
-        this._pendingReferencesFinalizers.get(referenceInSource)!.set(elementId, (resolvedId) => {
-          thisPartialElem.resolveProp(accessor, resolvedId);
-        });
-      thisPartialElem!.missingReferenceCount += 1;
+        this._pendingReferencesFinalizers.get(referenceInSource)!.set(elementId, (resolvedId) => thisPartialElem.resolveProp(accessor, resolvedId));
+      thisPartialElem!.totalMissingReferenceCount += 1;
+      thisPartialElem!.missingReferenceCounts[accessor] += 1;
     };
 
-    const isGeneratedClass = isGeneratedClassTag in element.constructor;
+    const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
+    const navigationProps = Object.entries(entityMetaData.properties)
+      .filter(([_propName, prop]) => prop.isNavigation)
+      .map(([propName, _prop]) => propName);
 
-    if (isGeneratedClass) {
-      const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
-      const navigationProps = Object.entries(entityMetaData.properties)
-        .filter(([_propName, prop]) => prop.isNavigation)
-        .map(([propName, _prop]) => propName);
-
-      for (const navProp of navigationProps) {
-        const navPropValInSource: RelatedElement | undefined = (element as any)[navProp]; // cast to any since subclass can have any extensions
-        if (!navPropValInSource || !Id64.isValid(navPropValInSource.id)) continue;
-        insertPendingReferenceFinalizer(navPropValInSource.id, navProp);
+    for (const navProp of navigationProps) {
+      if (!(navProp in element)) {
+        Logger.logWarning(loggerCategory, `element (${element.id}) is missing exactly named json prop '${navProp}' in its metadata`);
+        continue;
       }
-    } else {
-      const nonGeneratedElemClass = element.constructor as typeof Element;
-      for (const referenceKey of nonGeneratedElemClass.requiredReferenceKeys) {
-        const reference = lodashGet(element, referenceKey);
-        if (reference === undefined)
-          continue;
-        if (reference === Id64.invalid)
-          continue;
-
-        // a more prudent check would be Id64.isValidId64, but the performance isn't great and we're relying on non-programmer error
-        const isId64String = (arg: any): arg is Id64String => typeof arg === "string";
-        const isRelatedElem = (arg: any): arg is RelatedElement => arg && typeof arg === "object" && "id" in arg;
-        const isId64Array = (arg: any): arg is Id64String[] => Array.isArray(arg);
-        const isId64OrderedArray = (arg: any): arg is OrderedId64Array => arg instanceof OrderedId64Array;
-        const isCompressedId64Set = (arg: any): arg is CompressedId64Set => /\*|\+/.test(arg);
-
-        if (isId64String(reference)) {
-          insertPendingReferenceFinalizer(reference, referenceKey);
-        } else if (isRelatedElem(reference)) {
-          insertPendingReferenceFinalizer(reference.id, referenceKey);
-        } else if (isId64Array(reference)) {
-          // FIXME
-        } else if (isId64OrderedArray(reference)) {
-          // FIXME
-        } else if (isCompressedId64Set(reference)) {
-          // FIXME
-        }
-      }
+      const navPropValInSource: RelatedElement | undefined = (element as any)[navProp]; // cast to any since subclass can have any extensions
+      if (!navPropValInSource || !Id64.isValid(navPropValInSource.id)) continue;
+      insertPendingReferenceFinalizer(navPropValInSource.id, navProp);
     }
-  }
-
-  /** Determine if any predecessors have not been imported yet.
-   * @param sourceElement The Element from the source iModel
-   */
-  private findMissingPredecessors(sourceElement: Element): Id64Set {
-    const sourcePredecessorIds: Id64Set = sourceElement.getPredecessorIds();
-    sourcePredecessorIds.forEach((sourcePredecessorId: Id64String) => {
-      if (Id64.invalid === sourcePredecessorId) {
-        sourcePredecessorIds.delete(sourcePredecessorId);
-      } else {
-        const targetPredecessorId: Id64String = this.context.findTargetElementId(sourcePredecessorId);
-        if (Id64.isValidId64(targetPredecessorId)) {
-          // a valid Id indicates that the predecessor has already been remapped
-          sourcePredecessorIds.delete(sourcePredecessorId);
-        } else {
-          const sourcePredecessor = this.sourceDb.elements.tryGetElement(sourcePredecessorId);
-          if (sourcePredecessor === undefined) {
-            switch (this._options.danglingPredecessorsBehavior) {
-              case "ignore":
-                Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has a missing predecessor (${sourcePredecessorId})`);
-                sourcePredecessorIds.delete(sourcePredecessorId);
-                return;
-              case "reject":
-                throw new IModelError(
-                  IModelStatus.NotFound,
-                  `Found a reference to an element "${sourcePredecessorId}" that doesn't exist while looking for predecessors of "${sourceElement.id}"`
-                  + "\nThis must have been caused by an upstream application that changed the iModel."
-                  + "\nYou can set the IModelTransformerOptions.danglingPredecessorsBehavior option to 'ignore' to ignore this, but this will leave the iModel"
-                  + "\nin a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom"
-                  + "\ntransformer to remove the reference and fix affected elements may be suitable."
-                );
-            }
-          }
-          if (!this.exporter.shouldExportElement(sourcePredecessor)) {
-            // any predecessor that has been explicitly excluded is not considered missing
-            sourcePredecessorIds.delete(sourcePredecessorId);
-            Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has an excluded predecessor (${sourcePredecessorId}) "${sourcePredecessor.getDisplayLabel()}"`);
-          }
-        }
-      }
-    });
-    return sourcePredecessorIds;
   }
 
   /** Cause the specified Element and its child Elements (if applicable) to be exported from the source iModel and imported into the target iModel.
@@ -559,7 +546,21 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.onExportElement]($transformer) that imports an element into the target iModel when it is exported from the source iModel.
    * This override calls [[onTransformElement]] and then [IModelImporter.importElement]($transformer) to update the target iModel.
    */
-  public override onExportElement(sourceElement: Element): void {
+  public override async onExportElement(sourceElement: Element) {
+    const isGeneratedClass = isGeneratedClassTag in sourceElement.constructor;
+    if (!isGeneratedClass) {
+      const nonGeneratedElemClass = sourceElement.constructor as typeof Element;
+      for (const referenceKey of nonGeneratedElemClass.requiredReferenceKeys) {
+        const idContainer = lodashGet(sourceElement, referenceKey);
+        await Promise.all(mapId64(idContainer, async (id) => {
+          // not allowed to directly export the root subject
+          if (idContainer === Id64.invalid || idContainer === IModel.rootSubjectId) return;
+          const alreadyExported = this.context.findTargetElementId(id) !== Id64.invalid;
+          if (alreadyExported) return;
+          await this.exporter.exportElement(id);
+        }));
+      }
+    }
     let targetElementId: Id64String | undefined;
     let targetElementProps: ElementProps;
     if (this._options.preserveElementIdsForFiltering) {

@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { CompressedId64Set, DeepKey, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
@@ -361,8 +361,7 @@ export class Element extends Entity implements ElementProps {
    */
   public getPredecessorIds(): Id64Set {
     const predecessorIds = new Set<Id64String>();
-    // eslint-disable-next-line deprecation/deprecation
-    this.collectPredecessorIds(predecessorIds);
+    this.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
     return predecessorIds;
   }
 
@@ -371,8 +370,7 @@ export class Element extends Entity implements ElementProps {
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces requires references.
    * @beta
    */
-  public static get requiredReferenceKeys(): string[] { return this._elementReferencePaths; }
-  private static _elementReferencePaths: DeepKey<Element>[] = ["parent", "model", "code.scope"];
+  public static requiredReferenceKeys: string[] = ["parent", "model", "code.scope"];
 
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
@@ -457,8 +455,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    // eslint-disable-next-line deprecation/deprecation
-    super.collectPredecessorIds(predecessorIds);
+    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
     predecessorIds.add(this.category);
     // TODO: GeometryPartIds?
   }
@@ -900,8 +897,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    // eslint-disable-next-line deprecation/deprecation
-    super.collectPredecessorIds(predecessorIds);
+    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
     if (undefined !== this.border) { predecessorIds.add(this.border); }
   }
 }
@@ -926,8 +922,7 @@ export class Sheet extends Document implements SheetProps {
   }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    // eslint-disable-next-line deprecation/deprecation
-    super.collectPredecessorIds(predecessorIds);
+    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
     if (undefined !== this.sheetTemplate) { predecessorIds.add(this.sheetTemplate); }
   }
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
@@ -1064,8 +1059,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    // eslint-disable-next-line deprecation/deprecation
-    super.collectPredecessorIds(predecessorIds);
+    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
     if (undefined !== this.recipe) { predecessorIds.add(this.recipe.id); }
   }
 }
@@ -1567,8 +1561,7 @@ export class RenderTimeline extends InformationRecordElement {
 
   /** @alpha */
   protected override collectPredecessorIds(ids: Id64Set): void {
-    // eslint-disable-next-line deprecation/deprecation
-    super.collectPredecessorIds(ids);
+    super.collectPredecessorIds(ids); // eslint-disable-line deprecation/deprecation
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
     script?.discloseIds(ids);
   }

@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { DeepKey, Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
@@ -41,9 +41,10 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
   }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
     this.models.forEach((modelId: Id64String) => predecessorIds.add(modelId));
   }
+  public static override requiredReferenceKeys = [...super.requiredReferenceKeys, "models"];
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the ModelSelector and provides the scope for its name.
@@ -107,7 +108,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
   }
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
     this.categories.forEach((categoryId: Id64String) => predecessorIds.add(categoryId));
   }
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -188,10 +189,6 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
   }
 
-  public static override get requiredReferenceKeys(): DeepKey<ViewDefinition>[] { return this._viewDefinitionReferencePaths; }
-  // eslint-disable-next-line @typescript-eslint/dot-notation
-  private static _viewDefinitionReferencePaths: DeepKey<ViewDefinition>[] = [...super["_elementReferencePaths"], "categorySelectorId", "displayStyleId"];
-
   /** @internal */
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
@@ -202,7 +199,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
 
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+    super.collectPredecessorIds(predecessorIds); // eslint-disable-line deprecation/deprecation
     predecessorIds.add(this.categorySelectorId);
     predecessorIds.add(this.displayStyleId);
     const acsId: Id64String = this.getAuxiliaryCoordinateSystemId();
@@ -210,6 +207,8 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
       predecessorIds.add(acsId);
     }
   }
+
+  public static override requiredReferenceKeys = [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
 
   /** @internal */
   protected static override onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
@@ -348,6 +347,8 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.modelSelectorId);
   }
+
+  public static override requiredReferenceKeys = [...super.requiredReferenceKeys, "modelSelectorId"];
 
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
