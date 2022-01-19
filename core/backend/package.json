@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.0.0-dev.175",
+  "version": "3.1.0-dev.6",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -38,18 +38,16 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.175",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.175",
-    "@itwin/core-common": "workspace:^3.0.0-dev.175",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.175",
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.175"
+    "@itwin/core-bentley": "workspace:^3.1.0-dev.6",
+    "@itwin/core-common": "workspace:^3.1.0-dev.6",
+    "@itwin/core-geometry": "workspace:^3.1.0-dev.6",
+    "@itwin/ecschema-metadata": "workspace:^3.1.0-dev.6"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -80,7 +78,7 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
-    "@bentley/imodeljs-native": "3.0.26",
+    "@bentley/imodeljs-native": "3.1.1",
     "@itwin/core-telemetry": "workspace:*",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",

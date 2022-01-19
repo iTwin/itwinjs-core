@@ -108,7 +108,7 @@ export class IndexedEdgeGeometry extends MeshGeometry {
   protected override _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
 
   public get techniqueId() { return TechniqueId.IndexedEdge; }
-  public getRenderPass(target: Target) { return this.computeEdgePass(target); }
+  public override getPass(target: Target) { return this.computeEdgePass(target); }
   public get renderOrder() { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
   public override getColor(target: Target) { return this.computeEdgeColor(target); }
   public override wantMonochrome(target: Target) { return target.currentViewFlags.renderMode === RenderMode.Wireframe; }

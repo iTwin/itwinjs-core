@@ -11,7 +11,7 @@
 import * as path from "path";
 import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
+import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb, TokenArg } from "./IModelDb";
@@ -107,7 +107,7 @@ export class Downloads {
  * @internal
 */
 export class V2CheckpointManager {
-  private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
+  private static async getCommandArgs(checkpoint: CheckpointProps): Promise<CloudSqlite.DaemonCommandArg> {
     try {
       const v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
       if (!v2props)
@@ -125,7 +125,7 @@ export class V2CheckpointManager {
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
 
     // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
-    const attachResult = await BlobDaemon.command("attach", args);
+    const attachResult = await CloudSqlite.Daemon.command("attach", args);
     if (attachResult.result !== DbResult.BE_SQLITE_OK) {
       const error = `Daemon attach failed: ${attachResult.errMsg}`;
       if (checkpoint.expectV2)
@@ -133,9 +133,9 @@ export class V2CheckpointManager {
 
       throw new IModelError(attachResult.result, error);
     }
-    const sasTokenExpiry = new URLSearchParams(args.auth).get("se");
+    const sasTokenExpiry = new URLSearchParams(args.sasToken).get("se");
 
-    return { filePath: BlobDaemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 };
+    return { filePath: CloudSqlite.Daemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 };
   }
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {

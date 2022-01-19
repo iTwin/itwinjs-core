@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { DrawParams } from "../DrawCommand";
 import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
-import { RenderPass, TextureUnit } from "../RenderFlags";
+import { Pass, TextureUnit } from "../RenderFlags";
 import { IsInstanced } from "../TechniqueFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
@@ -215,7 +215,7 @@ export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
 export function addAlpha(vert: VertexShaderBuilder): void {
   vert.addUniform("u_hasAlpha", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_hasAlpha", (uniform, params) => {
-      uniform.setUniform1f(RenderPass.Translucent === params.geometry.getRenderPass(params.target) ? 1.0 : 0.0);
+      uniform.setUniform1f(Pass.rendersTranslucent(params.geometry.getPass(params.target)) ? 1 : 0);
     });
   });
 }

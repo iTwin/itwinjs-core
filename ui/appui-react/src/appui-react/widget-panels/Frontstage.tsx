@@ -253,7 +253,7 @@ export function useLabels() {
 
 /** @internal */
 export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: PanelSide, widgetId: WidgetIdTypes): NineZoneState {
-  const visibleWidgets = widgets.filter((w) => w.isVisible);
+  const visibleWidgets = widgets.filter((w) => w.isVisible && (w.defaultState !== WidgetState.Floating));
   if (visibleWidgets.length === 0)
     return state;
 
@@ -272,10 +272,12 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
 
   const activeWidget = visibleWidgets.find((widget) => widget.isActive);
   const minimized = !activeWidget;
-  state = addPanelWidget(state, side, widgetId, tabs, {
-    activeTabId: activeWidget ? activeWidget.id : tabs[0],
-    minimized,
-  });
+  if (activeWidget?.defaultState !== WidgetState.Floating) {
+    state = addPanelWidget(state, side, widgetId, tabs, {
+      activeTabId: activeWidget ? activeWidget.id : tabs[0],
+      minimized,
+    });
+  }
 
   return state;
 }
@@ -672,6 +674,10 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
       toolSettingsTab.preferredPanelWidgetSize = toolSettingsWidgetDef.preferredPanelSize;
     }
   });
+  nineZone = addMissingWidgets(frontstageDef, nineZone);
+  nineZone = removeHiddenWidgets(nineZone, frontstageDef);
+  nineZone = processPopoutWidgets(nineZone, frontstageDef);
+
   return nineZone;
 }
 

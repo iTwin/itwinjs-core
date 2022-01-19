@@ -11,8 +11,8 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
-import { rpcInterfaces, TestRpcInterface } from "../common/RpcInterfaces";
-import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./hub/ITwinPlatformEnv";
+import { rpcInterfaces } from "../common/RpcInterfaces";
+import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
 import { setBackendAccessToken } from "../certa/certaCommon";
 
 export class TestUtility {
@@ -31,6 +31,7 @@ export class TestUtility {
     // A version of the above that uses BisCore 1.0.13 and includes a second display style with schedule script stored
     // separately on a RenderTimeline element.
     synchroNew: "SYNCHRO.UTK.1.0.13",
+    realityDataAccess: "Tuxford_qa",
   };
 
   public static testSnapshotIModels = {
@@ -65,7 +66,7 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
-      authorizationClient = new ElectronRendererAuthorization ();
+      authorizationClient = new ElectronRendererAuthorization();
       IModelApp.authorizationClient = authorizationClient;
       const accessToken = await setBackendAccessToken(user);
       if ("" === accessToken)
@@ -77,11 +78,7 @@ export class TestUtility {
       await (authorizationClient as IModelHubUserMgr).signIn();
     }
 
-    const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
-    if (cloudParams.iModelBank)
-      this.iTwinPlatformEnv = new ITwinStackCloudEnv(cloudParams.iModelBank.url);
-    else
-      this.iTwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
+    this.iTwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
 
     ((IModelApp as any)._hubAccess) = this.iTwinPlatformEnv.hubAccess;
   }
