@@ -133,6 +133,11 @@ export interface MapLayerPropsBase {
 
 }
 
+/** JSON representation of the settings for an image based map layer. Extends [[MapLayerPropsBase]] that includes basic settings and adds the image based properties.
+ * @see [[MapImageryProps]]
+ * @see [[ModelMapLayerProps]] for the model map layer properties.
+ * @beta
+ */
 export interface ImageMapLayerProps extends MapLayerPropsBase {
   /** URL */
   url: string;
@@ -146,10 +151,19 @@ export interface ImageMapLayerProps extends MapLayerPropsBase {
    */
   accessKey?: MapLayerKey;
 }
+/** JSON representation of the settings for an model based map layer. Extends [[MapLayerPropsBase]] that includes basic settings and adds the id of the layer model.
+ * @see [[MapImageryProps]]
+ * @see [[ImageMapLayerProps]] for the image map layer properties.
+ * @beta
+ */
 export interface ModelMapLayerProps extends MapLayerPropsBase {
   modelId: Id64String;
 }
 
+/**
+ * Map layer properties, either [[ImageMapLayerProps]] or [[ModelMapLayerProps]]
+ * @beta
+ */
 export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
 
 /**
@@ -161,12 +175,13 @@ export interface MapLayerKey {
   value: string;
 }
 
-/** Normalized representation of a [[MapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
+/** Abstract base class for normalized representation of a [[MapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
+ * This class is extended by [[ImageMapLayerSettings]] and [ModelMapLayerSettings]] to create the settings for image and model based layers.
  * One or more map layers may be included within [[MapImagerySettings]] object.
  * @see [[MapImagerySettings]]
  * @beta
  */
-export class MapLayerSettingsBase {
+export abstract class MapLayerSettingsBase {
   public readonly visible: boolean;
 
   public readonly name: string;
@@ -183,13 +198,22 @@ export class MapLayerSettingsBase {
 
     this.transparency = transparency;
   }
-  /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static fromJSON(json: MapLayerProps): MapLayerSettings {
-    return ("url" in json) ? ImageMapLayerSettings.fromJSON(json) : ModelMapLayerSettings.fromJSON(json);
+  /** Construct from JSON, performing validation and applying default values for undefined fields.
+   *  Creates [[ImageMapLayerSettings]] if [[ImageMapLayerProps.url]] exists, [[ModelMapLayerSettings]] if [[ModelMapLayerProps.url]] exists or undefined otherwise.
+   */
+  public static fromJSON(json: MapLayerProps): MapLayerSettings | undefined {
+    if ("url" in json)
+      return ImageMapLayerSettings.fromJSON(json);
+    else if ("modelId in json")
+      return ModelMapLayerSettings.fromJSON(json);
+    assert (false);
+    return undefined;
   }
 
-  /** return JSON representation of this MapLayerSettings object */
-  public toJSON(): MapLayerPropsBase {
+  /** return base JSON representation of this MapLayerSettings object
+   * @internal
+   */
+  protected toJSON(): MapLayerPropsBase {
     const props: MapLayerPropsBase = { name: this.name };
 
     if (0 !== this.transparency)
@@ -230,6 +254,13 @@ export class MapLayerSettingsBase {
 
 }
 
+/** Normalized representation of a [[ImageMapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
+ * Image map layers are created from servers that produce images that represent map tiles.  Map layers map also be represented by models.
+ * One or more map layers may be included within [[MapImagerySettings]] object.
+ * @see [[MapImagerySettings]]
+ * @see [[ModelMapLayerSettings]] for model based map layer settings.
+ * @beta
+ */
 export class ImageMapLayerSettings extends MapLayerSettingsBase {
   public readonly formatId: string;
   public readonly url: string;
@@ -391,6 +422,13 @@ export class ImageMapLayerSettings extends MapLayerSettingsBase {
     this.password = password;
   }
 }
+/** Normalized representation of a [[ModelMapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
+ * Model map layers are produced from models, typically from two dimensional geometry that may originate in a GIS system.
+ * One or more map layers may be included within [[MapImagerySettings]] object.
+ * @see [[MapImagerySettings]]
+ * @see [[ImageMapLayerSettings]] for image based map layer settings.
+ * @beta
+ */
 export class ModelMapLayerSettings extends MapLayerSettingsBase {
   public readonly modelId: Id64String;
 
@@ -435,6 +473,9 @@ export class ModelMapLayerSettings extends MapLayerSettingsBase {
   }
 }
 
+/** Settings for a map layer, either [[ImageMapLayerSettings]]  or [[ModelMapLayerSettings]]
+ * @beta
+ */
 export type MapLayerSettings = ImageMapLayerSettings | ModelMapLayerSettings;
 
 /** JSON representation of a [[BaseMapLayerSettings]].

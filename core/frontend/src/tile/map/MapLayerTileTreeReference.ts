@@ -41,6 +41,7 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
   }
 }
 
+/** @internal  */
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
   if (layerSettings instanceof ModelMapLayerSettings) {
     return createModelMapLayerTileTreeReference(layerSettings, layerIndex, iModel);

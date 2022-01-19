@@ -336,6 +336,8 @@ public;ImageGraphic
 public;ImageGraphicCorners
 public;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
 public;ImageGraphicProps
+beta;ImageMapLayerProps 
+beta;ImageMapLayerSettings 
 public;ImagePrimitive
 public;ImageSource
 public;ImageSourceFormat
@@ -401,8 +403,10 @@ public;Localization
 beta;MapImageryProps
 beta;MapImagerySettings
 beta;MapLayerKey
-beta;MapLayerProps
-beta;MapLayerSettings
+beta;MapLayerProps = ImageMapLayerProps | ModelMapLayerProps
+beta;MapLayerPropsBase
+beta;MapLayerSettings = ImageMapLayerSettings | ModelMapLayerSettings
+beta;class MapLayerSettingsBase
 beta;MapSubLayerProps
 beta;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
@@ -424,6 +428,8 @@ public;ModelGeometryChanges
 public;ModelGeometryChangesProps
 public;ModelIdAndGeometryGuid
 public;ModelLoadProps
+beta;ModelMapLayerProps 
+beta;ModelMapLayerSettings 
 public;ModelPlanarClipMaskArgs 
 public;ModelProps 
 public;ModelQueryParams 

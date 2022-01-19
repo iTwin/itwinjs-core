@@ -327,6 +327,7 @@ export class TileDrawArgs {
   public produceGraphics(): RenderGraphic | undefined {
     return this._produceGraphicBranch(this.graphics);
   }
+  /** @internal */
   public get secondaryClassifiers(): Map<number, RenderPlanarClassifier>| undefined {
     return undefined;
   }

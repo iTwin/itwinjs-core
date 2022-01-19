@@ -482,13 +482,13 @@ export namespace BaseLayerSettings {
 }
 
 // @beta
-export interface BaseMapLayerProps extends MapLayerProps {
+export interface BaseMapLayerProps extends ImageMapLayerProps {
     // (undocumented)
     provider?: BackgroundMapProviderProps;
 }
 
 // @beta
-export class BaseMapLayerSettings extends MapLayerSettings {
+export class BaseMapLayerSettings extends ImageMapLayerSettings {
     clone(changedProps: Partial<MapLayerProps>): BaseMapLayerSettings;
     // @internal (undocumented)
     cloneProps(changedProps: Partial<MapLayerProps>): BaseMapLayerProps;
@@ -4371,6 +4371,49 @@ export interface ImageGraphicProps {
     textureId: Id64String;
 }
 
+// @beta
+export interface ImageMapLayerProps extends MapLayerPropsBase {
+    accessKey?: MapLayerKey;
+    formatId: string;
+    subLayers?: MapSubLayerProps[];
+    url: string;
+}
+
+// @beta
+export class ImageMapLayerSettings extends MapLayerSettingsBase {
+    // @internal
+    protected constructor(url: string, name: string, formatId: string, visible?: boolean, jsonSubLayers?: MapSubLayerProps[] | undefined, transparency?: number, transparentBackground?: boolean, isBase?: boolean, userName?: string, password?: string, accessKey?: MapLayerKey);
+    // (undocumented)
+    accessKey?: MapLayerKey;
+    get allSubLayersInvisible(): boolean;
+    clone(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerSettings;
+    // @internal (undocumented)
+    protected cloneProps(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerProps;
+    // @internal (undocumented)
+    displayMatches(other: MapLayerSettings): boolean;
+    // (undocumented)
+    readonly formatId: string;
+    static fromJSON(json: ImageMapLayerProps): ImageMapLayerSettings;
+    getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
+    isSubLayerVisible(subLayer: MapSubLayerSettings): boolean;
+    // @internal (undocumented)
+    protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
+    // @internal (undocumented)
+    matchesNameAndUrl(name: string, url: string): boolean;
+    // (undocumented)
+    password?: string;
+    // (undocumented)
+    setCredentials(userName?: string, password?: string): void;
+    subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined;
+    // (undocumented)
+    readonly subLayers: MapSubLayerSettings[];
+    toJSON(): ImageMapLayerProps;
+    // (undocumented)
+    readonly url: string;
+    // (undocumented)
+    userName?: string;
+}
+
 // @public
 export interface ImagePrimitive {
     // (undocumented)
@@ -5129,59 +5172,39 @@ export interface MapLayerKey {
 }
 
 // @beta
-export interface MapLayerProps {
-    accessKey?: MapLayerKey;
-    formatId: string;
+export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
+
+// @beta
+export interface MapLayerPropsBase {
     isBase?: boolean;
     name: string;
-    subLayers?: MapSubLayerProps[];
     transparency?: number;
     transparentBackground?: boolean;
-    url: string;
     visible?: boolean;
 }
 
 // @beta
-export class MapLayerSettings {
+export type MapLayerSettings = ImageMapLayerSettings | ModelMapLayerSettings;
+
+// @beta
+export abstract class MapLayerSettingsBase {
     // @internal
-    protected constructor(url: string, name: string, formatId: string, visible?: boolean, jsonSubLayers?: MapSubLayerProps[] | undefined, transparency?: number, transparentBackground?: boolean, isBase?: boolean, userName?: string, password?: string, accessKey?: MapLayerKey);
-    // (undocumented)
-    accessKey?: MapLayerKey;
-    get allSubLayersInvisible(): boolean;
-    clone(changedProps: Partial<MapLayerProps>): MapLayerSettings;
+    protected constructor(name: string, visible?: boolean, transparency?: number, transparentBackground?: boolean, isBase?: boolean);
     // @internal (undocumented)
-    protected cloneProps(changedProps: Partial<MapLayerProps>): MapLayerProps;
+    protected cloneProps(changedProps: Partial<MapLayerPropsBase>): MapLayerPropsBase;
     // @internal (undocumented)
-    displayMatches(other: MapLayerSettings): boolean;
-    // (undocumented)
-    readonly formatId: string;
-    static fromJSON(json: MapLayerProps): MapLayerSettings;
-    getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
+    displayMatches(other: MapLayerSettingsBase): boolean;
+    static fromJSON(json: MapLayerProps): MapLayerSettings | undefined;
     // (undocumented)
     readonly isBase: boolean;
-    isSubLayerVisible(subLayer: MapSubLayerSettings): boolean;
-    // @internal (undocumented)
-    protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
-    // @internal (undocumented)
-    matchesNameAndUrl(name: string, url: string): boolean;
     // (undocumented)
     readonly name: string;
-    // (undocumented)
-    password?: string;
-    // (undocumented)
-    setCredentials(userName?: string, password?: string): void;
-    subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined;
-    // (undocumented)
-    readonly subLayers: MapSubLayerSettings[];
-    toJSON(): MapLayerProps;
+    // @internal
+    protected toJSON(): MapLayerPropsBase;
     // (undocumented)
     readonly transparency: number;
     // (undocumented)
     readonly transparentBackground: boolean;
-    // (undocumented)
-    readonly url: string;
-    // (undocumented)
-    userName?: string;
     // (undocumented)
     readonly visible: boolean;
 }
@@ -5399,6 +5422,28 @@ export interface ModelLoadProps {
     code?: CodeProps;
     // (undocumented)
     id?: Id64String;
+}
+
+// @beta
+export interface ModelMapLayerProps extends MapLayerPropsBase {
+    // (undocumented)
+    modelId: Id64String;
+}
+
+// @beta
+export class ModelMapLayerSettings extends MapLayerSettingsBase {
+    // @internal
+    protected constructor(modelId: Id64String, name: string, visible?: boolean, transparency?: number, transparentBackground?: boolean, isBase?: boolean);
+    get allSubLayersInvisible(): boolean;
+    clone(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerSettings;
+    // @internal (undocumented)
+    protected cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps;
+    // @internal (undocumented)
+    displayMatches(other: MapLayerSettings): boolean;
+    static fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings;
+    // (undocumented)
+    readonly modelId: Id64String;
+    toJSON(): ModelMapLayerProps;
 }
 
 // @public
@@ -8297,6 +8342,8 @@ export class SpatialClassifier {
     readonly expand: number;
     readonly flags: SpatialClassifierFlags;
     static fromJSON(props: SpatialClassifierProps): SpatialClassifier;
+    // @beta
+    static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier;
     readonly modelId: Id64String;
     readonly name: string;
     toJSON(): SpatialClassifierProps;

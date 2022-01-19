@@ -133,7 +133,7 @@ export interface GraphicBranchOptions {
   frustum?: GraphicBranchFrustum;
   /** Supplements the view's [[FeatureSymbology.Overrides]] for graphics in the branch. */
   appearanceProvider?: FeatureAppearanceProvider;
-  /** Secondary planar classifiers (map layers) */
+  /** @internal Secondary planar classifiers (map layers) */
   secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
 }
 

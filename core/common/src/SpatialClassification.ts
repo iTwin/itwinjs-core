@@ -183,7 +183,9 @@ export class SpatialClassifier {
     };
   }
 
-  /** Construct from Model Map Layer. */
+  /** Construct from Model Map Layer.
+   * @beta
+   */
   public static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier {
     const flags =  SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
 
