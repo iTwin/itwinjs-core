@@ -21,14 +21,21 @@ export class TerrainDrapeTool extends PrimitiveTool {
   private _motionPoint?: Point3d;
   private _drapeViewport?: Viewport;
   private _drapeTreeRef?: TileTreeReference;
-  public static toolId = "TerrainDrape";
-  public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() {
+  public static override toolId = "TerrainDrape";
+
+  public override requireWriteableTarget(): boolean {
+    return false;
+  }
+
+  public override async onPostInstall() {
     super.onPostInstall();
     this.setupAndPromptForNextAction();
   }
 
-  public onUnsuspend(): void { this.showPrompt(); }
+  public override async onUnsuspend(): Promise<void> {
+    this.showPrompt();
+  }
+
   public createDecorations(context: DecorateContext, _suspend: boolean): void {
     if (this._drapeTreeRef && this._drapeViewport && this._drapePoints.length > 0) {
       if (this._drapePoints.length > 1) {
@@ -58,10 +65,12 @@ export class TerrainDrapeTool extends PrimitiveTool {
       }
     }
   }
-  public decorate(context: DecorateContext): void {
+
+  public override decorate(context: DecorateContext): void {
     this.createDecorations(context, false);
   }
-  public decorateSuspended(context: DecorateContext): void {
+
+  public override decorateSuspended(context: DecorateContext): void {
     this.createDecorations(context, true);
   }
 
@@ -74,7 +83,8 @@ export class TerrainDrapeTool extends PrimitiveTool {
   private showPrompt(): void {
     IModelApp.notifications.outputPromptByKey(`FrontendDevTools:tools.TerrainDrape.Prompts.${undefined === this._drapeTreeRef ? "SelectDrapeRealityModel" : "EnterDrapePoint"}`);
   }
-  public async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
+
+  public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
     if (undefined !== this._drapeTreeRef)
       return LocateFilterStatus.Accept;
 
@@ -84,13 +94,13 @@ export class TerrainDrapeTool extends PrimitiveTool {
     return hit.viewport.getGeometryTreeRef(hit.modelId) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
   }
 
-  public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
     this._motionPoint = ev.point;
     if (ev.viewport)
       ev.viewport.invalidateDecorations();
   }
 
-  public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     this._drapedStrings = undefined;
     if (this._drapePoints.length) {
       this._drapePoints.pop();
@@ -105,7 +115,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     this._motionPoint = undefined;
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (undefined === this._drapeTreeRef) {
@@ -122,13 +132,13 @@ export class TerrainDrapeTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public onRestartTool(): void {
+  public override async onRestartTool(): Promise<void> {
     const tool = new TerrainDrapeTool();
     if (!tool.run())
       this.exitTool();
   }
 
-  public parseAndRun(..._args: string[]): boolean {
+  public override async parseAndRun(..._args: string[]): Promise<boolean> {
     this.run();
     return true;
   }
