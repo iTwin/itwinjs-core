@@ -7,6 +7,7 @@
  */
 
 import { IModelConnection } from "../IModelConnection";
+import { Viewport } from "../Viewport";
 import { DisclosedTileTreeSet, TileRequest } from "./internal";
 
 /** Represents some object that makes use of [[Tile]]s in some way - e.g., by requesting and/or displaying their contents, querying their geometry, etc.
@@ -30,4 +31,23 @@ export interface TileUser {
    * is cancelled. For example, a [[Viewport]] responds to such events by invalidating its scene.
    */
   readonly onRequestStateChanged?: (req: TileRequest) => void;
+}
+
+let nextUserId = 1;
+
+/** @public */
+export namespace TileUser {
+  export function generateId(): number {
+    return nextUserId++;
+  }
+
+  /** Previously, the only type of TileUser was a Viewport, so some deprecated APIs still exist that expose tile users as viewports.
+   * This method converts a collection of TileUsers to one of Viewports to support those methods until they can be removed.
+   * @internal
+   */
+  export function * viewportsFromUsers(users: Iterable<TileUser>): Iterable<Viewport> {
+    for (const user of users)
+      if (user instanceof Viewport)
+        yield user;
+  }
 }
