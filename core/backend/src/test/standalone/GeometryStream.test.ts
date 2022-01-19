@@ -14,13 +14,13 @@ import {
 import {
   AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
   ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
-  ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass,
+  ElementGeometryUpdate, FillDisplay, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass,
   GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryPrimitive, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
   GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../core-backend";
+import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils, Timer } from "../";
 
 function assertTrue(expr: boolean): asserts expr {
@@ -838,26 +838,18 @@ describe("GeometryStream", () => {
     assert.isTrue(usageInfo.usedIds!.includes(partId));
   });
 
-  it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
+  it("create GeometricElement3d from world coordinate text using a newly added font", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
 
-    let fontProps: FontProps = { id: 0, type: FontType.TrueType, name: "Arial" };
-    try {
-      fontProps = imodel.embedFont(fontProps); // throws Error
-      assert.isTrue(fontProps.id !== 0);
-    } catch (error: any) {
-      if ("win32" === Platform.platformName)
-        assert.fail("Font embed failed");
-      return; // failure expected if not windows, skip remainder of test...
-    }
+    const arialId = imodel.addNewFont({ type: FontType.TrueType, name: "Arial" });
 
     assert.isTrue(0 !== imodel.fontMap.fonts.size);
     const foundFont = imodel.fontMap.getFont("Arial");
-    assert.isTrue(foundFont && foundFont.id === fontProps.id);
+    assert.isTrue(foundFont && foundFont.id === arialId);
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(45, 0, 0);
@@ -867,7 +859,7 @@ describe("GeometryStream", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: fontProps.id,
+      font: arialId,
       height: 2,
       bold: true,
       origin: testOrigin,
@@ -1495,19 +1487,10 @@ describe("ElementGeometry", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
 
-    let fontProps: FontProps = { id: 0, type: FontType.TrueType, name: "Arial" };
-    try {
-      fontProps = imodel.embedFont(fontProps); // throws Error
-      assert.isTrue(fontProps.id !== 0);
-    } catch (error: any) {
-      if ("win32" === Platform.platformName)
-        assert.fail("Font embed failed");
-      return; // failure expected if not windows, skip remainder of test...
-    }
-
+    const arialId = imodel.addNewFont({ type: FontType.TrueType, name: "Arial" });
     assert.isTrue(0 !== imodel.fontMap.fonts.size);
     const foundFont = imodel.fontMap.getFont("Arial");
-    assert.isTrue(foundFont && foundFont.id === fontProps.id);
+    assert.isTrue(foundFont && foundFont.id === arialId);
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
@@ -1521,7 +1504,7 @@ describe("ElementGeometry", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: fontProps.id,
+      font: arialId,
       height: 2,
       bold: true,
       origin: testOrigin,

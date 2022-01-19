@@ -698,12 +698,11 @@ export class ExtensiveTestScenario {
   }
 
   public static populateDb(sourceDb: IModelDb): void {
-    // Embed font
-    if (Platform.platformName.startsWith("win")) {
-      sourceDb.embedFont({ id: 1, type: FontType.TrueType, name: "Arial" });
-      assert.exists(sourceDb.fontMap.getFont("Arial"));
-      assert.exists(sourceDb.fontMap.getFont(1));
-    }
+
+    // make sure Arial is in the font table
+    sourceDb.addNewFont({ type: FontType.TrueType, name: "Arial" });
+    assert.exists(sourceDb.fontMap.getFont("Arial"));
+
     // Initialize project extents
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
     sourceDb.updateProjectExtents(projectExtents);
