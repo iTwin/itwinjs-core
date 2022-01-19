@@ -20,7 +20,7 @@ import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
-import { IModelExporter, IModelExportHandler } from "./IModelExporter";
+import { HandlerResponse, IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import lodashGet = require("lodash.get");
@@ -538,74 +538,82 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.onExportElement]($transformer) that imports an element into the target iModel when it is exported from the source iModel.
    * This override calls [[onTransformElement]] and then [IModelImporter.importElement]($transformer) to update the target iModel.
    */
-  public override async onExportElement(sourceElement: Element) {
-    const isGeneratedClass = isGeneratedClassTag in sourceElement.constructor;
-    if (!isGeneratedClass) {
-      const nonGeneratedElemClass = sourceElement.constructor as typeof Element;
-      for (const referenceKey of nonGeneratedElemClass.requiredReferenceKeys) {
-        const idContainer = lodashGet(sourceElement, referenceKey); // TODO: test that out-of-order code.scope predecessor is updated correctly
-        await Promise.all(mapId64(idContainer, async (id) => {
-          // not allowed to directly export the root subject
-          if (idContainer === Id64.invalid || idContainer === IModel.rootSubjectId) return;
-          const alreadyExported = this.context.findTargetElementId(id) !== Id64.invalid;
-          if (alreadyExported) return;
-          await this.exporter.exportElement(id);
-        }));
-      }
-    }
-    let targetElementId: Id64String | undefined;
-    let targetElementProps: ElementProps;
-    if (this._options.preserveElementIdsForFiltering) {
-      targetElementId = sourceElement.id;
-      targetElementProps = this.onTransformElement(sourceElement);
-    } else if (this._options.wasSourceIModelCopiedToTarget) {
-      targetElementId = sourceElement.id;
-      targetElementProps = this.targetDb.elements.getElementProps(targetElementId);
-    } else {
-      targetElementId = this.context.findTargetElementId(sourceElement.id);
-      targetElementProps = this.onTransformElement(sourceElement);
-    }
-    // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing predecessor so not worth checking)
-    if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
-      targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
-      if (undefined !== targetElementId) {
-        const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
-        if (targetElement.classFullName === targetElementProps.classFullName) { // ensure code remapping doesn't change the target class
-          this.context.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
-        } else {
-          targetElementId = undefined;
-          targetElementProps.code = Code.createEmpty(); // clear out invalid code
+  public override onExportElement(sourceElement: Element): HandlerResponse {
+    const asyncImpl = async () => {
+      const isGeneratedClass = isGeneratedClassTag in sourceElement.constructor;
+      if (!isGeneratedClass) {
+        const nonGeneratedElemClass = sourceElement.constructor as typeof Element;
+        for (const referenceKey of nonGeneratedElemClass.requiredReferenceKeys) {
+          const idContainer = lodashGet(sourceElement, referenceKey); // TODO: test that out-of-order code.scope predecessor is updated correctly
+          await Promise.all(mapId64(idContainer, async (id) => {
+            // not allowed to directly export the root subject
+            if (idContainer === Id64.invalid || idContainer === IModel.rootSubjectId) return;
+            const alreadyExported = this.context.findTargetElementId(id) !== Id64.invalid;
+            if (alreadyExported) return;
+            await this.exporter.exportElement(id);
+          }));
         }
       }
-    }
-    if (undefined !== targetElementId && Id64.isValidId64(targetElementId)) {
-      // compare LastMod of sourceElement to ExternalSourceAspect of targetElement to see there are changes to import
-      if (!this.hasElementChanged(sourceElement, targetElementId)) {
-        return;
-      }
-    } else {
-      // TODO: this might need to always be called now
-      this.collectUnmappedReferences(sourceElement);
-    }
-    targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
-    if (!this._options.wasSourceIModelCopiedToTarget) {
-      this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
-    }
-    this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
-    // now that we've mapped this elem we can fix unmapped references to it
-    if (this._pendingReferences.has(sourceElement.id)) {
-      for (const pendingRef of this._pendingReferences.get(sourceElement.id)?.values() ?? []) {
-        pendingRef.resolvePredecessor(sourceElement.id);
-      }
-    }
-    if (!this._options.noProvenance) {
-      const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
-      if (aspectProps.id === undefined) {
-        this.provenanceDb.elements.insertAspect(aspectProps);
+      let targetElementId: Id64String | undefined;
+      let targetElementProps: ElementProps;
+      if (this._options.preserveElementIdsForFiltering) {
+        targetElementId = sourceElement.id;
+        targetElementProps = this.onTransformElement(sourceElement);
+      } else if (this._options.wasSourceIModelCopiedToTarget) {
+        targetElementId = sourceElement.id;
+        targetElementProps = this.targetDb.elements.getElementProps(targetElementId);
       } else {
-        this.provenanceDb.elements.updateAspect(aspectProps);
+        targetElementId = this.context.findTargetElementId(sourceElement.id);
+        targetElementProps = this.onTransformElement(sourceElement);
       }
-    }
+      // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing predecessor so not worth checking)
+      if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
+        targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
+        if (undefined !== targetElementId) {
+          const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
+          if (targetElement.classFullName === targetElementProps.classFullName) { // ensure code remapping doesn't change the target class
+            this.context.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
+          } else {
+            targetElementId = undefined;
+            targetElementProps.code = Code.createEmpty(); // clear out invalid code
+          }
+        }
+      }
+      if (undefined !== targetElementId && Id64.isValidId64(targetElementId)) {
+        // compare LastMod of sourceElement to ExternalSourceAspect of targetElement to see there are changes to import
+        if (!this.hasElementChanged(sourceElement, targetElementId)) {
+          return;
+        }
+      } else {
+        // TODO: this might need to always be called now
+        this.collectUnmappedReferences(sourceElement);
+      }
+      targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
+      if (!this._options.wasSourceIModelCopiedToTarget) {
+        this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
+      }
+      this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
+      // now that we've mapped this elem we can fix unmapped references to it
+      if (this._pendingReferences.has(sourceElement.id)) {
+        for (const pendingRef of this._pendingReferences.get(sourceElement.id)?.values() ?? []) {
+          pendingRef.resolvePredecessor(sourceElement.id);
+        }
+      }
+      if (!this._options.noProvenance) {
+        const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
+        if (aspectProps.id === undefined) {
+          this.provenanceDb.elements.insertAspect(aspectProps);
+        } else {
+          this.provenanceDb.elements.updateAspect(aspectProps);
+        }
+      }
+    };
+
+    const resultPromise = asyncImpl();
+    // see [IModelExporter.ensureCoreAsyncHandlerAwaitedHack]($transformer)
+    // eslint-disable-next-line @typescript-eslint/dot-notation, deprecation/deprecation
+    this.exporter["ensureCoreAsyncHandlerAwaitedHack"] = resultPromise;
+    return resultPromise;
   }
 
   /** Override of [IModelExportHandler.onDeleteElement]($transformer) that is called when [IModelExporter]($transformer) detects that an Element has been deleted from the source iModel.
@@ -700,6 +708,12 @@ export class IModelTransformer extends IModelExportHandler {
     targetModelProps.parentModel = this.context.findTargetElementId(targetModelProps.parentModel!);
     return targetModelProps;
   }
+
+  /** Import elements that were deferred in a prior pass.
+   * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
+   * @deprecated
+   */
+  public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
 
   /** Imports all relationships that subclass from the specified base class.
    * @param baseRelClassFullName The specified base relationship class.
