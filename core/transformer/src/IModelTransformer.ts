@@ -476,7 +476,7 @@ export class IModelTransformer extends IModelExportHandler {
    * transforms the source element with all references now valid, then updates the partial element with the results
    * @internal
    */
-  private makePartialElemCompleter(sourceElem: Element) {
+  private makePartialElementCompleter(sourceElem: Element) {
     return () => {
       const sourceElemId = sourceElem.id;
       const targetElemId = this.context.findTargetElementId(sourceElem.id);
@@ -488,6 +488,9 @@ export class IModelTransformer extends IModelExportHandler {
     };
   }
 
+  /** collect references this element has that are yet to be mapped, and if necessary create a
+   * PartiallyCommittedElement for it to track resolution of unmapped references
+   */
   private collectUnmappedReferences(element: Element) {
     const elementId = element.id;
 
@@ -500,7 +503,7 @@ export class IModelTransformer extends IModelExportHandler {
       if (!this._partiallyCommittedElements.has(elementId)) {
         // FIXME: probably to make onTransformElement work as well as possible, need to keep any transformed props from before the predecessor check
         const missingPredecessors = new Set([...element.getPredecessorIds()].filter((id) => this.context.findTargetElementId(id) === Id64.invalid));
-        thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElemCompleter(element));
+        thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
         this._partiallyCommittedElements.set(elementId, thisPartialElem);
       }
       if (!this._pendingReferences.has(referencedInSource))
@@ -596,10 +599,8 @@ export class IModelTransformer extends IModelExportHandler {
         if (!this.hasElementChanged(sourceElement, targetElementId)) {
           return;
         }
-      } else {
-        // TODO: this might need to always be called now
-        this.collectUnmappedReferences(sourceElement);
       }
+      this.collectUnmappedReferences(sourceElement);
       targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
       if (!this._options.wasSourceIModelCopiedToTarget) {
         this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
