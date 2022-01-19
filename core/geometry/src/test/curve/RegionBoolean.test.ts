@@ -37,7 +37,6 @@ import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { PointStreamXYZHandlerBase, VariantPointDataStream } from "../../geometry3d/PointStreaming";
 import { MultiLineStringDataVariant } from "../../topology/Triangulation";
-import { prettyPrint } from "../testFunctions";
 
 /* eslint-disable no-console */
 
