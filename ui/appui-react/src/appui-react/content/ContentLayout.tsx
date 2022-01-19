@@ -32,6 +32,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
   const { content } = props;
   const [isActive, setIsActive] = React.useState(content === ContentViewManager.getActiveContent());
   const activeFrontstageDef = useActiveFrontstageDef();
+  // istanbul ignore next
   const [hasMultipleContents, setHasMultipleContents] = React.useState(activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length || !!activeFrontstageDef?.contentGroup?.getContentControls().length));
 
   React.useEffect(() => {
@@ -41,6 +42,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
   React.useEffect(() => {
     const handleActiveContentChanged = (args: ActiveContentChangedEventArgs) => {
       setIsActive(content === args.activeContent);
+      // istanbul ignore next
       setHasMultipleContents(activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length || !!activeFrontstageDef?.contentGroup?.getContentControls().length));
     };
     return ContentViewManager.onActiveContentChangedEvent.addListener(handleActiveContentChanged);
@@ -52,6 +54,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
 
   React.useEffect(() => {
     const onAvailableContentChanged = () => {
+      // istanbul ignore next
       setHasMultipleContents(activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length || !!activeFrontstageDef?.contentGroup?.getContentControls().length));
     };
     return ContentViewManager.onAvailableContentChangedEvent.addListener(onAvailableContentChanged);

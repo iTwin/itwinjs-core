@@ -18,7 +18,7 @@ import {
 import { LocalStateStorage } from "@itwin/core-react";
 import {
   ChildWindowLocationProps, ContentDialog, ContentDialogManager, ContentGroup, ContentLayoutManager, ContentProps,
-  FrontstageManager, StageContentLayout, StageContentLayoutProps, UiFramework, useActiveViewport,
+  FrontstageManager, StageContentLayout, StageContentLayoutProps, UiFramework,
 } from "@itwin/appui-react";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";

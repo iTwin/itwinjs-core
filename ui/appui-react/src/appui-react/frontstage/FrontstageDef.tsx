@@ -575,6 +575,7 @@ export class FrontstageDef {
   }
 
   public addFloatingContentControl(contentControl?: ContentControl) {
+    // istanbul ignore next
     if (!contentControl)
       return;
     if (!this._floatingContentControls)
@@ -585,10 +586,12 @@ export class FrontstageDef {
   }
 
   public dropFloatingContentControl(contentControl?: ContentControl) {
+    // istanbul ignore next
     if (!contentControl || !this._floatingContentControls)
       return;
 
     const index = this._floatingContentControls.indexOf(contentControl);
+    // istanbul ignore else
     if (index > -1) {
       this._floatingContentControls.splice(index, 1);
       ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
@@ -715,13 +718,12 @@ export class FrontstageDef {
    *  @internal
    */
   public getPanelCurrentState(panelDef: StagePanelDef): [StagePanelState, number] {
-    // istanbul ignore else
+    // istanbul ignore next
     if (this.nineZoneState) {
       const side = toPanelSide(panelDef.location);
       const panel = this.nineZoneState.panels[side];
-      if (panel) {
+      if (panel)
         return [panel.collapsed ? StagePanelState.Minimized : StagePanelState.Open, panel.size ?? 0];
-      }
       return [StagePanelState.Off, 0];
     }
     return [panelDef.defaultState, panelDef.defaultSize ?? 0];

@@ -148,6 +148,7 @@ export class FloatingViewportContentControl extends ViewportContentControl {
     this._reactNode = r;
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
 
+    // istanbul ignore else
     if (this.viewport && activeFrontstageDef)
       activeFrontstageDef.setActiveViewFromViewport(this.viewport);
   }

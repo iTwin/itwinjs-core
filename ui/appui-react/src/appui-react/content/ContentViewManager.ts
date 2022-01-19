@@ -83,6 +83,7 @@ export class ContentViewManager {
         return control;
     }
 
+    // istanbul ignore else
     if (activeContentGroup) {
       const activeContentControl = activeContentGroup.getControlFromElement(content);
       if (activeContentControl)
@@ -108,6 +109,7 @@ export class ContentViewManager {
 
   public static addFloatingContentControl(contentControl?: ContentControl) {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    // istanbul ignore else
     if (activeFrontstageDef && contentControl) {
       activeFrontstageDef.addFloatingContentControl(contentControl);
     }
@@ -115,6 +117,7 @@ export class ContentViewManager {
 
   public static dropFloatingContentControl(contentControl?: ContentControl) {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    // istanbul ignore else
     if (activeFrontstageDef && contentControl)
       activeFrontstageDef.dropFloatingContentControl(contentControl);
   }
@@ -224,5 +227,4 @@ export class ContentViewManager {
       return false;
     return (ViewUtilities.viewSupportsCamera(content.viewport));
   }
-
 }

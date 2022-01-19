@@ -67,12 +67,14 @@ export interface ContentDialogProps extends DialogProps {
 export function ContentDialog(props: ContentDialogProps) {
   const { className, children, dialogId, style, modal, modelessId, onModelessPointerDown, ...otherProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
   const activeContentControlId = useActiveContentControlId();
+  // istanbul ignore next
   const dialogClassName = React.useMemo(() => classnames(activeContentControlId === dialogId ? "active-content-dialog" : "inactive-content-dialog", className),
     [activeContentControlId, className, dialogId]);
 
   const [zIndex, setZIndex] = React.useState(ContentDialogManager.getDialogZIndex(dialogId));
   const updateZIndex = React.useCallback(() => {
     const newZ = ContentDialogManager.getDialogZIndex(dialogId);
+    // istanbul ignore else
     if (newZ !== zIndex) {
       setZIndex(newZ);
     }
