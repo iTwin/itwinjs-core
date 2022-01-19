@@ -201,33 +201,6 @@ export abstract class RealityTileCollector {
   }
 }
 
-/** [[RealityTileCollector]] subclass that restricts selection to tiles that overlap a line string.
- * @alpha
- */
-export class RealityTileByDrapeLineStringCollector extends RealityTileCollector {
-  constructor(tolerance: number, range: Range3d, iModelTransform: Transform, private _points: GrowableXYZArray) {
-    super(tolerance, range, iModelTransform);
-  }
-  public override selectTile(tile: Tile): RealityTileCollectionSelectionStatus {
-    let status = super.selectTile(tile);
-
-    if (RealityTileCollectionSelectionStatus.Reject !== status && !this.rangeOverlapsLineString(tile.range))
-      status = RealityTileCollectionSelectionStatus.Reject;
-
-    return status;
-  }
-
-  private rangeOverlapsLineString(range: Range3d) {
-    let inside = false;
-    const clipper = ConvexClipPlaneSet.createRange3dPlanes (range, true, true, true, true, false, false);
-    clipper.transformInPlace(this._iModelTransform);
-    for (let i = 0; i < this._points.length - 1 && !inside; i++)
-      inside = clipper.announceClippedSegmentIntervals (0, 1, this._points.getPoint3dAtUncheckedPointIndex(i), this._points.getPoint3dAtUncheckedPointIndex(i+1));
-
-    return inside;
-  }
-}
-
 /** @internal */
 export class RealityTileTree extends TileTree {
   public traversalChildrenByDepth: TraversalChildrenDetails[] = [];
@@ -546,30 +519,5 @@ export class RealityTileTree extends TileTree {
     depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
     // eslint-disable-next-line no-console
     console.log(`${label}: ${count} Min: ${min} Max: ${max} Depths: ${depthString}`);
-  }
-
-  /** Drape a line string on a reality  tile tree.
-   * @alpha
-   */
-  public drapeLinestring(outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, viewport: Viewport, maxDistance = 1.0E5): RealityTileDrapeStatus {
-    const range = Range3d.createNull();
-    range.extendArray(inPoints);
-    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
-    range.extendZOnly(maxDistance);
-    const tileSelector = new RealityTileByDrapeLineStringCollector(tolerance, range, this.iModelTransform, inPoints);
-    const collectionStatus = this.collectRealityTiles(tileSelector);
-
-    if (collectionStatus === RealityTileCollectionStatus.Loading)
-      tileSelector.requestMissingTiles(viewport);
-
-    for (const geometry of tileSelector.acceptedGeometry()) {
-      if (geometry.polyfaces)
-        geometry.polyfaces.forEach((polyface) => {
-          const sweepStrings = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(inPoints, polyface);
-          sweepStrings.forEach((sweepString) => outStrings.push(sweepString));
-        });
-    }
-
-    return collectionStatus === RealityTileCollectionStatus.Loading ? RealityTileDrapeStatus.Loading : RealityTileDrapeStatus.Success;
   }
 }

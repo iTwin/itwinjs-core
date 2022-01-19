@@ -3,19 +3,39 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GrowableXYZArray, LineString3d, Point3d, Range3d } from "@bentley/geometry-core";
+import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Point3d, PolyfaceQuery, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import {
-  BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, RealityTileDrapeStatus, RealityTileTree, TileTreeReference, Viewport,
+  BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool,
+  RealityTileCollector, RealityTileCollectionSelectionStatus, RealityTileDrapeStatus, RealityTileTree, Tile, TileTreeReference, Viewport, RealityTileCollectionStatus,
 } from "@bentley/imodeljs-frontend";
 
-/** @packageDocumentation
- * @module Tools
- */
+/** [[RealityTileCollector]] subclass that restricts selection to tiles that overlap a line string. */
+class RealityTileByDrapeLineStringCollector extends RealityTileCollector {
+  constructor(tolerance: number, range: Range3d, iModelTransform: Transform, private _points: GrowableXYZArray) {
+    super(tolerance, range, iModelTransform);
+  }
+  public override selectTile(tile: Tile): RealityTileCollectionSelectionStatus {
+    let status = super.selectTile(tile);
 
-/**
- * Demonstrates draping line strings on terrain meshes.  The terrain can be defined by map terrain (from Cesium World Terrain) or a reality model.
- * @alpha
+    if (RealityTileCollectionSelectionStatus.Reject !== status && !this.rangeOverlapsLineString(tile.range))
+      status = RealityTileCollectionSelectionStatus.Reject;
+
+    return status;
+  }
+
+  private rangeOverlapsLineString(range: Range3d) {
+    let inside = false;
+    const clipper = ConvexClipPlaneSet.createRange3dPlanes (range, true, true, true, true, false, false);
+    clipper.transformInPlace(this._iModelTransform);
+    for (let i = 0; i < this._points.length - 1 && !inside; i++)
+      inside = clipper.announceClippedSegmentIntervals (0, 1, this._points.getPoint3dAtUncheckedPointIndex(i), this._points.getPoint3dAtUncheckedPointIndex(i+1));
+
+    return inside;
+  }
+}
+
+/** Demonstrates draping line strings on terrain meshes.  The terrain can be defined by map terrain (from Cesium World Terrain) or a reality model.
  */
 export class TerrainDrapeTool extends PrimitiveTool {
   private _drapePoints = new GrowableXYZArray();
@@ -38,6 +58,28 @@ export class TerrainDrapeTool extends PrimitiveTool {
     this.showPrompt();
   }
 
+  private drapeLineString(tree: RealityTileTree, outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, viewport: Viewport, maxDistance = 1.0E5): RealityTileDrapeStatus {
+    const range = Range3d.createNull();
+    range.extendArray(inPoints);
+    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
+    range.extendZOnly(maxDistance);
+    const tileSelector = new RealityTileByDrapeLineStringCollector(tolerance, range, tree.iModelTransform, inPoints);
+    const collectionStatus = tree.collectRealityTiles(tileSelector);
+
+    if (collectionStatus === RealityTileCollectionStatus.Loading)
+      tileSelector.requestMissingTiles(viewport);
+
+    for (const geometry of tileSelector.acceptedGeometry()) {
+      if (geometry.polyfaces)
+        geometry.polyfaces.forEach((polyface) => {
+          const sweepStrings = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(inPoints, polyface);
+          sweepStrings.forEach((sweepString) => outStrings.push(sweepString));
+        });
+    }
+
+    return collectionStatus === RealityTileCollectionStatus.Loading ? RealityTileDrapeStatus.Loading : RealityTileDrapeStatus.Success;
+  }
+
   public createDecorations(context: DecorateContext, _suspend: boolean): void {
     if (this._drapeTreeRef && this._drapeViewport && this._drapePoints.length > 0) {
       if (this._drapePoints.length > 1) {
@@ -51,7 +93,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
             const drapeRange = Range3d.createNull();
             drapeRange.extendArray(this._drapePoints);
             const tolerance = drapeRange.diagonal().magnitude() / 5000.0;
-            loading = RealityTileDrapeStatus.Loading ===  drapeTree.drapeLinestring(this._drapedStrings, this._drapePoints, tolerance, this._drapeViewport);
+            loading = RealityTileDrapeStatus.Loading ===  this.drapeLineString(drapeTree, this._drapedStrings, this._drapePoints, tolerance, this._drapeViewport);
           }
 
           this._drapedStrings.forEach((lineString) => builder.addLineString(lineString.points));
