@@ -431,9 +431,9 @@ export class TileAdmin {
    */
   public addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void {
     // "selected" are tiles we are drawing.
-    this._lruList.markSelectedForViewport(vp.viewportId, selected);
+    this._lruList.markSelectedForUser(vp.tileUser.userId, selected);
     // "ready" are tiles we want to draw but can't yet because, for example, their siblings are not yet ready to be drawn.
-    this._lruList.markSelectedForViewport(vp.viewportId, ready);
+    this._lruList.markSelectedForUser(vp.tileUser.userId, ready);
 
     const entry = this.getTilesForViewport(vp);
     if (undefined === entry) {
@@ -469,7 +469,7 @@ export class TileAdmin {
    */
   public clearTilesForViewport(vp: Viewport): void {
     this._selectedAndReady.delete(vp);
-    this._lruList.clearSelectedForViewport(vp.viewportId);
+    this._lruList.clearSelectedForUser(vp.tileUser.userId);
   }
 
   /** Indicates that the TileAdmin should cease tracking the specified viewport, e.g. because it is about to be destroyed.
