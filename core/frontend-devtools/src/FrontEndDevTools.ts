@@ -66,7 +66,6 @@ import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
-import { TerrainDrapeTool } from "./tools/TerrainDrapeTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -163,7 +162,6 @@ export class FrontendDevTools {
       SkySphereTool,
       SnowEffect,
       SourceAspectIdFromElementIdTool,
-      TerrainDrapeTool,
       TestClipStyleTool,
       Toggle3dManipulationsTool,
       ToggleDrawingGraphicsTool,

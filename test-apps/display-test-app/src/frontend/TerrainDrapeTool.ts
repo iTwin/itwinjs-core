@@ -5,7 +5,9 @@
 
 import { GrowableXYZArray, LineString3d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, RealityTileDrapeStatus, RealityTileTree, TileTreeReference, Viewport } from "@bentley/imodeljs-frontend";
+import {
+  BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, RealityTileDrapeStatus, RealityTileTree, TileTreeReference, Viewport,
+} from "@bentley/imodeljs-frontend";
 
 /** @packageDocumentation
  * @module Tools
@@ -42,7 +44,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
         const drapeTree = this._drapeTreeRef.treeOwner.load();
         if (drapeTree instanceof RealityTileTree) {
           const builder =  context.createGraphicBuilder(GraphicType.WorldDecoration);
-          builder.setSymbology(ColorDef.white, ColorDef.white, 2);
+          builder.setSymbology(ColorDef.red, ColorDef.red, 5);
           let loading = false;
           if (!this._drapedStrings) {
             this._drapedStrings = new Array<LineString3d>();
@@ -51,12 +53,15 @@ export class TerrainDrapeTool extends PrimitiveTool {
             const tolerance = drapeRange.diagonal().magnitude() / 5000.0;
             loading = RealityTileDrapeStatus.Loading ===  drapeTree.drapeLinestring(this._drapedStrings, this._drapePoints, tolerance, this._drapeViewport);
           }
+
           this._drapedStrings.forEach((lineString) => builder.addLineString(lineString.points));
           if (loading)
             this._drapedStrings = undefined;
+
           context.addDecorationFromBuilder(builder);
         }
       }
+
       if (this._motionPoint) {
         const builder =  context.createGraphicBuilder(GraphicType.WorldOverlay);
         builder.setSymbology(ColorDef.white, ColorDef.white, 1, LinePixels.Code0);
@@ -81,7 +86,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
   }
 
   private showPrompt(): void {
-    IModelApp.notifications.outputPromptByKey(`FrontendDevTools:tools.TerrainDrape.Prompts.${undefined === this._drapeTreeRef ? "SelectDrapeRealityModel" : "EnterDrapePoint"}`);
+    IModelApp.notifications.outputPromptByKey(`SVTTools:tools.TerrainDrape.Prompts.${undefined === this._drapeTreeRef ? "SelectDrapeRealityModel" : "EnterDrapePoint"}`);
   }
 
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {

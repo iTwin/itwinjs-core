@@ -41,7 +41,6 @@ export * from "./tools/SavedViews";
 export * from "./tools/SelectionTools";
 export * from "./tools/SetGpuMemoryLimitTool";
 export * from "./tools/SourceAspectIdTools";
-export * from "./tools/TerrainDrapeTool";
 export * from "./tools/TileRequestDecoration";
 export * from "./tools/TileTreeBoundsDecoration";
 export * from "./tools/ToolTipProvider";
