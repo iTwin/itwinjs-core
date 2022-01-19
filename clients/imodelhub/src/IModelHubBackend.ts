@@ -344,7 +344,12 @@ export class IModelHubBackend implements BackendHubAccess {
   public async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
-    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
+    if (arg.dontApplyChangesets !== undefined && arg.dontApplyChangesets) {
+      checkpointQuery = checkpointQuery.byChangeSetId(checkpoint.changeset.id).selectContainerAccessKey();
+    } else {
+      checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
+    }
+
     const accessToken = await this.getAccessToken(checkpoint);
     let checkpoints: CheckpointV2[] = [];
     try {

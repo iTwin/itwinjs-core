@@ -9,7 +9,7 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@itwin/core-bentley";
+import { BeEvent, BentleyError, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -54,6 +54,9 @@ export interface DownloadRequest {
 
   /** If true, skips v1 fallback in CheckpointManager.downloadCheckpoint call which takes place if no v2 checkpoints are found for the given iModelId. */
   downloadV2Only?: boolean;
+
+  /** If true, download requests will ONLY download a checkpoint if one exists at the requested changeset id. If false, a preceding checkpoint will be satisfactory, meaning changesets may need to be applied.  */
+  readonly dontApplyChangesets?: boolean;
 
   /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names,
    * no download is performed and `localFile` is updated to reflect the fact that the file exists with that name.
@@ -248,6 +251,8 @@ export class CheckpointManager {
         // Apply change sets if necessary
         const currentChangeset: Mutable<ChangesetIndexAndId> = nativeDb.getCurrentChangeset();
         if (currentChangeset.id !== checkpoint.changeset.id) {
+          if (request.dontApplyChangesets !== undefined && request.dontApplyChangesets)
+            throw new BentleyError(BentleyStatus.ERROR, `Current changeset id does not match the requested changeset id AND property 'dontApplyChangesets' on request is set to true.`);
           const accessToken = checkpoint.accessToken;
           const toIndex = checkpoint.changeset.index ??
             (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
@@ -263,7 +268,7 @@ export class CheckpointManager {
       }
     } catch (error: any) {
 
-      Logger.logError(loggerCategory, "Error downloading checkpoint - deleting it", () => traceInfo);
+      Logger.logError(loggerCategory, "Error downloading checkpoint - deleting it", () => ({ error: BentleyError.getErrorProps(error), ...traceInfo }));
       IModelJsFs.removeSync(targetFile);
 
       if (error.errorNumber === ChangeSetStatus.CorruptedChangeStream || error.errorNumber === ChangeSetStatus.InvalidId || error.errorNumber === ChangeSetStatus.InvalidVersion) {
