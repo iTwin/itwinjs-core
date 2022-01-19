@@ -484,20 +484,21 @@ export class IModelTransformer extends IModelExportHandler {
 
     let thisPartialElem: PartiallyCommittedElement;
 
-    const insertPendingReferenceFinalizer = (referenceInSource: Id64String, accessor: string) => {
-      const referenceInTarget = this.context.findTargetElementId(referenceInSource);
+    const insertPendingReferenceFinalizer = (referencedInSource: Id64String, accessor: string) => {
+      const referenceInTarget = this.context.findTargetElementId(referencedInSource);
       if (Id64.isValid(referenceInTarget)) return;
-      Logger.logTrace(loggerCategory, `Remapping not found for predecessor in property '${accessor}' of element '${referenceInSource}'`);
+      Logger.logTrace(loggerCategory, `Remapping not found for predecessor in property '${accessor}' of element '${referencedInSource}'`);
       if (!this._partiallyCommittedElements.has(elementId)) {
         // FIXME: probably to make onTransformElement work as well as possible, need to keep any transformed props from before the predecessor check
         const props = {};
-        thisPartialElem = new PartiallyCommittedElement(props, new Set(element.getPredecessorIds()), this.makeCompleter(elementId, props));
+        const missingPredecessors = new Set([...element.getPredecessorIds()].filter((id) => this.context.findTargetElementId(id) === Id64.invalid));
+        thisPartialElem = new PartiallyCommittedElement(props, missingPredecessors, this.makeCompleter(elementId, props));
         this._partiallyCommittedElements.set(elementId, thisPartialElem);
       }
-      if (!this._pendingReferences.has(referenceInSource))
-        this._pendingReferences.set(referenceInSource, new Map());
-      if (!this._pendingReferences.get(referenceInSource)!.has(elementId))
-        this._pendingReferences.get(referenceInSource)!.set(elementId, thisPartialElem);
+      if (!this._pendingReferences.has(referencedInSource))
+        this._pendingReferences.set(referencedInSource, new Map());
+      if (!this._pendingReferences.get(referencedInSource)!.has(elementId))
+        this._pendingReferences.get(referencedInSource)!.set(elementId, thisPartialElem);
     };
 
     const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
@@ -512,7 +513,7 @@ export class IModelTransformer extends IModelExportHandler {
       }
       const navPropValInSource: RelatedElement | undefined = (element as any)[navProp]; // cast to any since subclass can have any extensions
       if (!navPropValInSource || !Id64.isValid(navPropValInSource.id)) continue;
-      insertPendingReferenceFinalizer(navPropValInSource.id, navProp);
+      insertPendingReferenceFinalizer(navPropValInSource?.id, navProp);
     }
   }
 
@@ -719,6 +720,17 @@ export class IModelTransformer extends IModelExportHandler {
    * @deprecated
    */
   public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
+
+  private finalizeTransformation() {
+    if (this._partiallyCommittedElements.size > 0) {
+      Logger.logWarning(
+        loggerCategory,
+        `the following elements were never fully resolved:\n${[
+          ...this._partiallyCommittedElements.keys(),
+        ].join("\n")}`
+      );
+    }
+  }
 
   /** Imports all relationships that subclass from the specified base class.
    * @param baseRelClassFullName The specified base relationship class.
@@ -969,6 +981,7 @@ export class IModelTransformer extends IModelExportHandler {
       await this.detectRelationshipDeletes();
     }
     this.importer.computeProjectExtents();
+    this.finalizeTransformation();
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
@@ -986,6 +999,7 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
     this.importer.computeProjectExtents();
+    this.finalizeTransformation();
   }
 }
 
