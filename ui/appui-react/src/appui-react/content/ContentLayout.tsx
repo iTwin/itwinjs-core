@@ -32,8 +32,12 @@ export function ContentWrapper(props: ContentWrapperProps) {
   const { content } = props;
   const [isActive, setIsActive] = React.useState(content === ContentViewManager.getActiveContent());
   const activeFrontstageDef = useActiveFrontstageDef();
+
   // istanbul ignore next
-  const [hasMultipleContents, setHasMultipleContents] = React.useState(activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length || !!activeFrontstageDef?.contentGroup?.getContentControls().length));
+  const [hasMultipleContents, setHasMultipleContents] = React.useState(() =>
+  (activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
+    (activeFrontstageDef?.contentGroup?.getContentControls().length ?? 0) > 1)
+  )
 
   React.useEffect(() => {
     setIsActive(content === ContentViewManager.getActiveContent());
@@ -43,7 +47,8 @@ export function ContentWrapper(props: ContentWrapperProps) {
     const handleActiveContentChanged = (args: ActiveContentChangedEventArgs) => {
       setIsActive(content === args.activeContent);
       // istanbul ignore next
-      setHasMultipleContents(activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length || !!activeFrontstageDef?.contentGroup?.getContentControls().length));
+      setHasMultipleContents((activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
+        (activeFrontstageDef?.contentGroup?.getContentControls().length ?? 0) > 1));
     };
     return ContentViewManager.onActiveContentChangedEvent.addListener(handleActiveContentChanged);
   }, [activeFrontstageDef, content]);
@@ -55,7 +60,8 @@ export function ContentWrapper(props: ContentWrapperProps) {
   React.useEffect(() => {
     const onAvailableContentChanged = () => {
       // istanbul ignore next
-      setHasMultipleContents(activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length || !!activeFrontstageDef?.contentGroup?.getContentControls().length));
+      setHasMultipleContents((activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
+        (activeFrontstageDef?.contentGroup?.getContentControls().length ?? 0) > 1));
     };
     return ContentViewManager.onAvailableContentChangedEvent.addListener(onAvailableContentChanged);
   }, [activeFrontstageDef]);
