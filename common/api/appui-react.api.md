@@ -4410,7 +4410,7 @@ export interface PresentationSelectionScope {
 }
 
 // @public @deprecated
-export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, import("react-redux").Omit<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "toolPrompt">>;
 
 // @public
 export class PropsHelper {
@@ -4600,10 +4600,10 @@ export class SelectionContextToolDefinitions {
 }
 
 // @public
-export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "selectionCount">>;
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export enum SelectionScope {
     // (undocumented)
     Assembly = 1,
     // (undocumented)
@@ -5484,7 +5484,7 @@ export const showWidget: (base: {
 }, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @public
-export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "setSnapMode" | "snapMode">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -7642,7 +7642,7 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
 
 // @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React.JSXElementConstructor<P> & C) => {
@@ -7700,7 +7700,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {

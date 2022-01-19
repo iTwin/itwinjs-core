@@ -10,15 +10,15 @@ import { RpcInterface } from '@itwin/core-common';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
-import { SchemaKeyProps } from '@bentley/ecschema-metadata';
+import { SchemaKeyProps } from '@itwin/ecschema-metadata';
 import { SchemaMatchType } from '@itwin/ecschema-metadata';
-import { SchemaProps } from '@bentley/ecschema-metadata';
+import { SchemaProps } from '@itwin/ecschema-metadata';
 
 // @internal
 export abstract class ECSchemaRpcInterface extends RpcInterface {
     static getClient(): ECSchemaRpcInterface;
-    getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<string>;
-    getSchemaKeys(_tokenProps: IModelRpcProps): Promise<SchemaKey[]>;
+    getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps>;
+    getSchemaKeys(_tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]>;
     // (undocumented)
     static readonly interfaceName = "ECSchemaRpcInterface";
     // (undocumented)
