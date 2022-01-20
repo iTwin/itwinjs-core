@@ -89,6 +89,7 @@ beta;CheckboxFormatPropEditorSpec
 public;CheckpointConnection 
 public;ClipEventType
 public;Cluster
+beta;CollectTileStatus = "accept" | "reject" | "continue"
 alpha;CompassMode
 public;ComputeChordToleranceArgs
 internal;ContextMode
@@ -190,6 +191,7 @@ internal;GeographicTilingScheme
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
+beta;GeometryTileTreeReference 
 internal;GeoServices
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
@@ -464,12 +466,7 @@ internal;RealityModelTileTree
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
 internal;RealityTile 
-alpha;RealityTileByDrapeLineStringCollector 
-alpha;RealityTileCollectionSelectionStatus
-alpha;RealityTileCollectionStatus
-alpha;class RealityTileCollector
 internal;RealityTileContent 
-alpha;RealityTileDrapeStatus
 internal;RealityTileDrawArgs 
 alpha;RealityTileGeometry
 internal;class RealityTileLoader
@@ -477,13 +474,8 @@ internal;RealityTileParams
 internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
-<<<<<<< HEAD:common/api/summary/imodeljs-frontend.exports.csv
 internal;RealityTreeReference 
-public;RemoteBriefcaseConnection 
-deprecated;RemoteBriefcaseConnection 
-=======
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
->>>>>>> master:common/api/summary/core-frontend.exports.csv
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics
@@ -594,6 +586,8 @@ internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): voi
 internal;isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean
 public;TileDrawArgParams
 public;TileDrawArgs
+beta;TileGeometryCollector
+beta;TileGeometryCollectorOptions
 public;TileGraphicType
 public;TileLoadPriority
 public;TileLoadStatus
