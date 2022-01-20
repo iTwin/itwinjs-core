@@ -17,6 +17,7 @@ steps:
     echo "##vso[task.setvariable variable=imjs_test_imodelhub_user_password;]$test_hub_password"
     echo "##vso[task.setvariable variable=test_bing_maps_key;]$bing_key"
     echo "##vso[task.setvariable variable=test_mapbox_key;]$mapbox_key"
+    echo "##vso[task.setvariable variable=imjs_cesium_ion_key;]$cesium_ion_key"
   displayName: 'Add config to environment'
   env:
     test_reg_password: $(imjs_regular_user_password)
@@ -26,3 +27,4 @@ steps:
     agent_client_secret: $(imjs_agent_client_secret)
     bing_key: $(bing_maps_key)
     mapbox_key: $(mapbox_key)
+    cesium_ion_key: $(cesium_ion_key)
