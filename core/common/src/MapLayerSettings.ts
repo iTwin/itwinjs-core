@@ -299,17 +299,16 @@ export class ImageMapLayerSettings extends MapLayerSettingsBase {
   }
   /** return JSON representation of this MapLayerSettings object */
   public override toJSON(): ImageMapLayerProps {
-    const props = super.toJSON();
-    let subLayers;
+    const props: ImageMapLayerProps = {...super.toJSON(), url: this.url, formatId: this.formatId };
     if (this.subLayers.length > 0) {
-      subLayers = [];
+      props.subLayers = [];
       this.subLayers.forEach((subLayer) => {
         const subLayerJson = subLayer.toJSON();
         if (subLayerJson)
-          subLayers.push(subLayerJson);
+          props.subLayers!.push(subLayerJson);
       });
     }
-    return { ... props, url: this.url, formatId: this.formatId, subLayers };
+    return props;
   }
   /** Create a copy of this MapLayerSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
