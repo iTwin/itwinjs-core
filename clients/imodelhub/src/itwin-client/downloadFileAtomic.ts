@@ -6,11 +6,12 @@ import got from "got";
 import { PassThrough, pipeline as pipeline_callback } from "stream";
 import { promisify } from "util";
 import { BriefcaseStatus } from "@itwin/core-bentley";
-import { ProgressCallback, ResponseError } from "./Request";
+import { ResponseError } from "./Request";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "../itwin-client/FileHandler";
 import { BufferedStream } from "./AzureFileHandler";
 
 import WriteStreamAtomic from "fs-write-stream-atomic";
+import { ProgressCallback } from "@itwin/core-common";
 
 const pipeline = promisify(pipeline_callback);
 

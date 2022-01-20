@@ -9,9 +9,9 @@ import * as fs from "fs-extra";
 import nock from "nock";
 import * as path from "path";
 import { AsyncMutex, BeEvent } from "@itwin/core-bentley";
-import { ProgressInfo } from "../itwin-client/Request";
 import { CancelRequest } from "../itwin-client/FileHandler";
 import { AzureFileHandler } from "../itwin-client/AzureFileHandler";
+import { ProgressInfo } from "@itwin/core-common";
 
 const testValidUrl = "https://example.com/";
 const testErrorUrl = "http://bad.example.com/";  // NB: This is not automatically mocked - each test should use nock as-needed.

@@ -22,7 +22,7 @@ import {
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, ProgressInfo, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
@@ -153,12 +153,6 @@ interface SampleIModelParams {
   iModelId: string;
   viewIds?: string[];
   stageId?: string;
-}
-
-interface ProgressInfo {
-  percent?: number;
-  total?: number;
-  loaded: number;
 }
 
 export class SampleAppIModelApp {

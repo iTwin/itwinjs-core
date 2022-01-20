@@ -8,13 +8,14 @@
 
 import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
 import { DownloadFailed, FileHandler, SasUrlExpired } from "../itwin-client/FileHandler";
-import { ProgressCallback, ProgressInfo, RequestQueryOptions } from "../itwin-client/Request";
+import { RequestQueryOptions } from "../itwin-client/Request";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
 import { addSelectApplicationData, addSelectFileAccessKey, StringIdQuery } from "./HubQuery";
+import { ProgressCallback, ProgressInfo } from "@itwin/core-common";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 

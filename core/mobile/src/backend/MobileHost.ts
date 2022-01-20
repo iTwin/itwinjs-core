@@ -10,13 +10,13 @@ import {
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
-import { ProgressCallback } from "./Request";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { mobileAppChannel } from "../common/MobileAppChannel";
 import { BatteryState, DeviceEvents,  MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAppAuthorizationConfiguration } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
+import { ProgressCallback } from "@itwin/core-common";
 
 /** @beta */
 export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: string, cancelled: boolean, err?: string) => void;

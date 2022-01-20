@@ -10,9 +10,10 @@ import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
 import { AccessToken, BentleyError, GetMetaDataFunction, Logger } from "@itwin/core-bentley";
-import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
+import { request, RequestOptions } from "./Request";
 import { MobileHost } from "./MobileHost";
 import { Base64 } from "js-base64";
+import { ProgressCallback, ProgressInfo } from "@itwin/core-common";
 
 const loggerCategory: string = "mobile.filehandler";
 

@@ -11,6 +11,7 @@ import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
 import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { ProgressCallback } from "@itwin/core-common";
 
 const loggerCategory: string = "core-mobile-backend.Request";
 
@@ -110,16 +111,6 @@ export interface Response {
   header: any; // Parsed headers of response
   status: number; // Status code of response
 }
-
-/** @internal */
-export interface ProgressInfo {
-  percent?: number;
-  total?: number;
-  loaded: number;
-}
-
-/** @internal */
-export type ProgressCallback = (progress: ProgressInfo) => void;
 
 /** Error object that's thrown/rejected if the Request fails due to a network error, or if the status is *not* in the range of 200-299 (inclusive)
  * @internal

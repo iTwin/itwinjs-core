@@ -12,6 +12,7 @@ import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
 import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
+import { ProgressCallback } from "@itwin/core-common";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.Request;
 
@@ -121,16 +122,6 @@ export interface Response {
   header: any; // Parsed headers of response
   status: number; // Status code of response
 }
-
-/** @internal */
-export interface ProgressInfo {
-  percent?: number;
-  total?: number;
-  loaded: number;
-}
-
-/** @internal */
-export type ProgressCallback = (progress: ProgressInfo) => void;
 
 /** @internal */
 export class RequestGlobalOptions {

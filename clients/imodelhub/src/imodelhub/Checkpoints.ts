@@ -8,7 +8,6 @@
 
 import { AccessToken, GuidString, Logger, PerfLogger } from "@itwin/core-bentley";
 import { CancelRequest, FileHandler } from "../itwin-client/FileHandler";
-import { ProgressCallback } from "../itwin-client/Request";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgQuery } from "../wsg/WsgQuery";
@@ -16,6 +15,7 @@ import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
 import { addSelectFileAccessKey } from "./HubQuery";
 import { InitializationState } from "./iModels";
+import { ProgressCallback } from "@itwin/core-common";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 

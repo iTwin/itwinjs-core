@@ -8,7 +8,6 @@
 
 import { join } from "path";
 import { UserCancelledError } from "./itwin-client/FileHandler";
-import { ProgressCallback, ProgressInfo } from "./itwin-client/Request";
 import {
   AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg, CheckpointArg,
   CheckpointProps, CreateNewIModelProps, IModelDb, IModelHost, IModelIdArg, IModelJsFs, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, SnapshotDb, TokenArg,
@@ -16,7 +15,7 @@ import {
 } from "@itwin/core-backend";
 import { BentleyError, BriefcaseStatus, GuidString, Id64String, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
+  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName, ProgressCallback, ProgressInfo,
 } from "@itwin/core-common";
 import { IModelBankClient } from "./imodelbank/IModelBankClient";
 import { IModelClient } from "./IModelClient";

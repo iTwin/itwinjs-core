@@ -15,12 +15,13 @@ import { Transform, TransformCallback } from "stream";
 import {
   CancelRequest, DownloadFailed, FileHandler, SasUrlExpired, UserCancelledError,
 } from "./FileHandler";
-import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
+import { request, RequestOptions } from "./Request";
 import { AccessToken, Logger } from "@itwin/core-bentley";
 import { ArgumentCheck } from "../imodelhub/Errors";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "./AzCopy";
 import { BlobDownloader, ConfigData, ProgressData } from "./BlobDownloader";
+import { ProgressCallback, ProgressInfo } from "@itwin/core-common";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.FileHandlers;
 
