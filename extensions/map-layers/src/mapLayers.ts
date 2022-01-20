@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
-import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
+import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
-import { ConfigurableUiManager } from "@itwin/appui-react";
 
 /** MapLayersUI is use when the package is used as a dependency to another app.
  * '''ts
@@ -16,6 +15,7 @@ import { ConfigurableUiManager } from "@itwin/appui-react";
 export class MapLayersUI {
   private static _defaultNs = "mapLayers";
   private static _uiItemsProvider: MapLayersUiItemsProvider;
+  private static _itemsProviderRegistered?: boolean;
 
   private static _iTwinConfig?: UserPreferencesAccess;
   public static get iTwinConfig(): UserPreferencesAccess | undefined { return this._iTwinConfig; }
@@ -40,15 +40,22 @@ export class MapLayersUI {
 
     // _uiItemsProvider always created to provide access to localization.
     MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(IModelApp.localization);
-    if (registerItemsProvider)
+    if (registerItemsProvider) {
       UiItemsManager.register(MapLayersUI._uiItemsProvider);
-    else
-      ConfigurableUiManager.registerControl(MapLayersWidgetControl.id, MapLayersWidgetControl);
+    }
+    MapLayersUI._itemsProviderRegistered = registerItemsProvider;
   }
 
-  /** Unregisters the GeoTools internationalization service namespace */
+  /** Unregisters internationalization service namespace and UiItemManager / control */
   public static terminate() {
     IModelApp.localization.unregisterNamespace(this.localizationNamespace);
+
+    if (MapLayersUI._itemsProviderRegistered !== undefined) {
+      if (MapLayersUI._itemsProviderRegistered) {
+        UiItemsManager.unregister(MapLayersUI._uiItemsProvider.id);
+      }
+      MapLayersUI._itemsProviderRegistered = undefined;
+    }
   }
 
   /** The internationalization service namespace. */

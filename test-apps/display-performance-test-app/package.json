@@ -37,7 +37,6 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/browser-authorization": "^0.4.0",
     "@itwin/core-backend": "workspace:*",
@@ -50,9 +49,9 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/electron-authorization": "^0.6.0",
     "@itwin/hypermodeling-frontend": "workspace:*",
-    "@itwin/imodels-access-backend": "~0.3.0",
-    "@itwin/imodels-access-frontend": "~0.3.0",
-    "@itwin/imodels-client-authoring": "~0.3.0",
+    "@itwin/imodels-access-backend": "^1.0.0",
+    "@itwin/imodels-access-frontend": "^1.0.0",
+    "@itwin/imodels-client-authoring": "^1.0.0",
     "@itwin/reality-data-client": "^0.5.0",
     "body-parser": "^1.18.2"
   },

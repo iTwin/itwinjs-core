@@ -414,10 +414,8 @@ $npm install  @itwin/ecschema-metadata
 $npm install  @itwin/core-geometry
 $npm install  @itwin/core-backend
 $npm install  @itwin/core-common
-$npm install  @bentley/itwin-client
 
 $npm install  --save-dev @itwin/build-tools
-$npm install  --save-dev @bentley/config-loader
 $npm install  --save-dev @itwin/eslint-plugin
 $npm install  --save-dev @itwin/oidc-signin-tool
 

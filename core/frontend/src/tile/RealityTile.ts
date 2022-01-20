@@ -17,8 +17,8 @@ import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  RealityTileRegion,
-  RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TraversalDetails, TraversalSelectionContext,
+  RealityTileRegion, RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel,
+  TileTreeLoadStatus, TileUser, TraversalDetails, TraversalSelectionContext,
 } from "./internal";
 
 /** @internal */
@@ -132,8 +132,8 @@ export class RealityTile extends Tile {
     return this.realityRoot.loader.loadTileContent(this, data, system, isCanceled);
   }
 
-  public override computeLoadPriority(viewports: Iterable<Viewport>): number {
-    return this.realityRoot.loader.computeTilePriority(this, viewports);
+  public override computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number {
+    return this.realityRoot.loader.computeTilePriority(this, viewports, users);
   }
 
   public getContentClip(): ClipVector | undefined {

@@ -18,7 +18,12 @@ export enum IModelHubClientLoggerCategory {
   /** @internal */
   IModelBank = "imodelhub-client.iModelBank",
 
-  /** The logger category used for file handlers
-   */
+  /** The logger category used for file handlers */
   FileHandlers = "imodelhub-client.FileHandlers",
+
+  /** The logger category used for requests. */
+  Request = "imodelhub-client.Request",
+
+  /** The logger category used by base clients */
+  Clients = "imodelhub-client.Clients",
 }
