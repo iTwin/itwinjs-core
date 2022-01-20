@@ -959,7 +959,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     target.assignFrameStatsCollector(this._frameStatsCollector);
     this._viewportId = TileUser.generateId();
     this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
-    IModelApp.tileAdmin.registerViewport(this);
+    IModelApp.tileAdmin.registerUser(this);
   }
 
   public dispose(): void {
@@ -968,7 +968,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     this._target = dispose(this._target);
     this.subcategories.dispose();
-    IModelApp.tileAdmin.forgetViewport(this);
+    IModelApp.tileAdmin.forgetUser(this);
     this.onDisposed.raiseEvent(this);
     this.detachFromView();
   }
@@ -1501,7 +1501,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** The number of outstanding requests for tiles to be displayed in this viewport.
    * @see Viewport.numSelectedTiles
    */
-  public get numRequestedTiles(): number { return IModelApp.tileAdmin.getNumRequestsForViewport(this); }
+  public get numRequestedTiles(): number { return IModelApp.tileAdmin.getNumRequestsForUser(this); }
 
   /** The number of tiles selected for display in the view as of the most recently-drawn frame.
    * The tiles selected may not meet the desired level-of-detail for the view, instead being temporarily drawn while
@@ -1510,7 +1510,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see Viewport.numReadyTiles
    */
   public get numSelectedTiles(): number {
-    const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
+    const tiles = IModelApp.tileAdmin.getTilesForUser(this);
     return undefined !== tiles ? tiles.selected.size + tiles.external.selected : 0;
   }
 
@@ -1522,7 +1522,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see Viewport.numRequestedTiles
    */
   public get numReadyTiles(): number {
-    const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
+    const tiles = IModelApp.tileAdmin.getTilesForUser(this);
     return undefined !== tiles ? tiles.ready.size + tiles.external.ready : 0;
   }
 
@@ -2301,8 +2301,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     if (!this._sceneValid) {
       if (!this._freezeScene) {
         this._frameStatsCollector.beginTime("createChangeSceneTime");
-        IModelApp.tileAdmin.clearTilesForViewport(this);
-        IModelApp.tileAdmin.clearUsageForViewport(this);
+        IModelApp.tileAdmin.clearTilesForUser(this);
+        IModelApp.tileAdmin.clearUsageForUser(this);
 
         const context = this.createSceneContext();
         this.createScene(context);

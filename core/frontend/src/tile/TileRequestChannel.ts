@@ -8,7 +8,7 @@
 
 import { assert, PriorityQueue } from "@itwin/core-bentley";
 import { IModelConnection } from "../IModelConnection";
-import { Tile, TileContent, TileRequest } from "./internal";
+import { Tile, TileContent, TileRequest, TileUser } from "./internal";
 
 class TileRequestQueue extends PriorityQueue<TileRequest> {
   public constructor() {
@@ -190,14 +190,14 @@ export class TileRequestChannel {
 
     // Recompute priority of each request.
     for (const pending of this._pending)
-      pending.priority = pending.tile.computeLoadPriority(pending.viewports);
+      pending.priority = pending.tile.computeLoadPriority(TileUser.viewportsFromUsers(pending.users), pending.users); // ###TODO use pending.viewports
 
     // Sort pending requests by priority.
     this._pending.sort();
 
     // Cancel any previously pending requests that are no longer needed.
     for (const queued of this._previouslyPending)
-      if (queued.viewports.isEmpty)
+      if (queued.users.isEmpty)
         this.cancel(queued);
 
     this._previouslyPending.clear();
@@ -205,7 +205,7 @@ export class TileRequestChannel {
     // Cancel any active requests that are no longer needed.
     // NB: Do NOT remove them from the active set until their http activity has completed.
     for (const active of this._active)
-      if (active.viewports.isEmpty)
+      if (active.users.isEmpty)
         this.cancel(active);
 
     // Batch-cancel running requests.

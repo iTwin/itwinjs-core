@@ -18,7 +18,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import {
-  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUserIdSet,
+  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUser, TileUserIdSet,
 } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
@@ -235,8 +235,9 @@ export abstract class Tile {
    * @param _viewports The viewports for which the tile has been requested for display.
    * @returns The priority.
    * @see [[TileLoadPriority]] for suggested priority values.
+   * ###TODO document _viewports is deprecated.
    */
-  public computeLoadPriority(_viewports: Iterable<Viewport>): number {
+  public computeLoadPriority(_viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     return this.depth;
   }
 

@@ -21,9 +21,7 @@ import { DisclosedTileTreeSet, TileRequest } from "./internal";
 export interface TileUser {
   /** A unique integer identifying this user amongst all extant users. This Id **must** be obtained via [[generateId]]. */
   readonly tileUserId: number;
-  /** The iModel with which the user is associated. By default, when the iModel is closed, the user will automatically be unregistered via [[TileAdmin.forgetUser]].
-   * Viewports are not forgotten when their iModel is closed because they may be reused with another iModel.
-   */
+  /** The iModel with which the user is associated. */
   readonly iModel: IModelConnection;
   /** Disclose all tile trees currently in use by this user. Any tile tree not disclosed by any user becomes eligible for garbage collection. */
   readonly discloseTileTrees: (trees: DisclosedTileTreeSet) => void;

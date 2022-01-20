@@ -43,6 +43,7 @@ export * from "./IModelTileRequestChannels";
 export * from "./TileRequestChannels";
 export * from "./TileUsageMarker";
 export * from "./TileUser";
+export * from "./TileUserSet";
 export * from "./GltfReader";
 export * from "./I3dmReader";
 export * from "./B3dmReader";
