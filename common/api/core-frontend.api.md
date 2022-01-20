@@ -10453,7 +10453,6 @@ export class TileAdmin {
     readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
-    // @internal
     clearTilesForUser(user: TileUser): void;
     // @internal
     clearUsageForUser(user: TileUser): void;
@@ -10476,7 +10475,6 @@ export class TileAdmin {
     get enableIndexedEdges(): boolean;
     // @internal (undocumented)
     get enableInstancing(): boolean;
-    // @internal
     forgetUser(user: TileUser): void;
     // @internal
     freeMemory(): void;
@@ -10490,6 +10488,7 @@ export class TileAdmin {
     }): Promise<Uint8Array>;
     getMaximumMajorTileFormatVersion(formatVersion?: number): number;
     getNumRequestsForUser(user: TileUser): number;
+    getNumRequestsForViewport(vp: Viewport): number;
     // @internal
     getRequestsForUser(user: TileUser): Set<Tile> | undefined;
     // @internal (undocumented)
@@ -10543,7 +10542,6 @@ export class TileAdmin {
     // @internal
     purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void>;
     queryVersionInfo(): Promise<Readonly<TileVersionInfo>>;
-    // @internal
     registerUser(user: TileUser): void;
     // @internal (undocumented)
     requestCachedTileContent(tile: {
