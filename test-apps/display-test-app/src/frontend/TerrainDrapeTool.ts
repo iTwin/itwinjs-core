@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Point3d, PolyfaceQuery, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { ColorDef, LinePixels } from "@itwin/core-common";
 import {
   BeButtonEvent, CollectTileStatus, DecorateContext, DisclosedTileTreeSet, EventHandled, GeometryTileTreeReference, GraphicType, HitDetail, IModelApp,
   LocateFilterStatus, LocateResponse, PrimitiveTool, Tile, TileGeometryCollector, TileUser, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
-/** TileGeometryCollector that restricts collection to tiles that overlap a line string. */
+/** A TileGeometryCollector that restricts collection to tiles that overlap a line string. */
 class DrapeLineStringCollector extends TileGeometryCollector {
   constructor(user: TileUser, chordTolerance: number, range: Range3d, transform: Transform, private _points: GrowableXYZArray) {
     super({ user, chordTolerance, range, transform });
