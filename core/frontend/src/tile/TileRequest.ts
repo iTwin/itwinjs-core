@@ -9,6 +9,7 @@
 import { assert, base64StringToUint8Array, IModelStatus } from "@itwin/core-bentley";
 import { ImageSource } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
+import { Viewport } from "../Viewport";
 import { ReadonlyTileUserSet, Tile, TileContent, TileRequestChannel, TileTree, TileUser } from "./internal";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile.requestContent]] to obtain the raw content and
@@ -20,8 +21,9 @@ export class TileRequest {
   public readonly tile: Tile;
   /** The channel via which the request will be executed. */
   public readonly channel: TileRequestChannel;
-  // ###TODO reinstate and deprecate -- public viewports: ReadonlyTileUserSet;
-  /** The set of [[TileUser]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no user cares about it. */
+  /** The set of [[TileUser]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no user cares about it.
+   * @internal
+   */
   public users: ReadonlyTileUserSet;
   private _state: TileRequest.State;
   /** Determines the order in which pending requests are pulled off the queue to become active. A tile with a lower priority value takes precedence over one with a higher value. */
@@ -33,6 +35,11 @@ export class TileRequest {
     this.tile = tile;
     this.channel = tile.channel;
     this.users = IModelApp.tileAdmin.getTileUserSetForRequest(user);
+  }
+
+  /** The set of [[Viewport]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no user cares about it. */
+  public get viewports(): Iterable<Viewport> {
+    return TileUser.viewportsFromUsers(this.users);
   }
 
   /** The request's current state. */
