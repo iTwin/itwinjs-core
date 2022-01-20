@@ -190,7 +190,7 @@ export class TileRequestChannel {
 
     // Recompute priority of each request.
     for (const pending of this._pending)
-      pending.priority = pending.tile.computeLoadPriority(TileUser.viewportsFromUsers(pending.users), pending.users); // ###TODO use pending.viewports
+      pending.priority = pending.tile.computeLoadPriority(pending.viewports, pending.users);
 
     // Sort pending requests by priority.
     this._pending.sort();

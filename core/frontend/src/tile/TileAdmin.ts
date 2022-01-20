@@ -393,6 +393,11 @@ export class TileAdmin {
     return this._lruList.selectedTiles;
   }
 
+  /** Returns the number of pending and active requests associated with the specified viewport. */
+  public getNumRequestsForViewport(vp: Viewport): number {
+    return this.getNumRequestsForUser(vp);
+  }
+
   /** Returns the number of pending and active requests associated with the specified user. */
   public getNumRequestsForUser(user: TileUser): number {
     const requests = this.getRequestsForUser(user);
@@ -468,9 +473,7 @@ export class TileAdmin {
     entry.external.ready += statistics.ready;
   }
 
-  /** Clears the sets of tiles associated with a TileUser.
-   * @internal
-   */
+  /** Clears the sets of tiles associated with a TileUser. */
   public clearTilesForUser(user: TileUser): void {
     this._selectedAndReady.delete(user);
     this._lruList.clearUsed(user.tileUserId);
@@ -478,7 +481,6 @@ export class TileAdmin {
 
   /** Indicates that the TileAdmin should cease tracking the specified TileUser, e.g. because it is about to be destroyed.
    * Any requests which are of interest only to the specified user will be canceled.
-   * @internal
    */
   public forgetUser(user: TileUser): void {
     this.onUserIModelClosed(user);
@@ -488,7 +490,6 @@ export class TileAdmin {
   /** Indicates that the TileAdmin should track tile requests for the specified TileUser.
    * This is invoked by the Viewport constructor and should be invoked manually for any non-Viewport TileUser.
    * [[forgetUser]] must be later invoked to unregister the user.
-   * @internal
    */
   public registerUser(user: TileUser): void {
     this._users.add(user);
