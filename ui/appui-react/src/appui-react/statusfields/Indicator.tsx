@@ -75,7 +75,7 @@ export function Indicator(props: IndicatorProps) {
         style={style}
         onClick={handleOnIndicatorClick}
       >
-        {isLabelVisible && label && <span>{ConditionalStringValue.getValue(label)}</span>}
+        {isLabelVisible && label && <span className="nz-label">{ConditionalStringValue.getValue(label)}</span>}
         {icon && <div className="uifw-indicator-icon"><Icon iconSpec={icon} /></div>}
       </div>
       {dialog && <FooterPopup contentType={contentType}

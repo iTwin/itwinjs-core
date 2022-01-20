@@ -89,6 +89,9 @@ export class StandardMessageBox extends React.PureComponent<StandardMessageBoxPr
       case MessageBoxIconType.Critical:
         severity = MessageSeverity.Error;
         break;
+      case MessageBoxIconType.Success:
+        severity = MessageSeverity.Success;
+        break;
     }
 
     return (

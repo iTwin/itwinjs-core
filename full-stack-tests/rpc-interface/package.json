@@ -1,6 +1,6 @@
 {
   "name": "@itwin/rpcinterface-full-stack-tests",
-  "version": "3.0.0-dev.174",
+  "version": "3.1.0-dev.7",
   "description": "Test the full iTwin.js Core stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
@@ -33,7 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/imodelhub-client": "workspace:*",
+    "@itwin/imodels-access-backend": "^1.0.0",
+    "@itwin/imodels-access-frontend": "^1.0.0",
+    "@itwin/imodels-client-authoring": "^1.0.0",
+    "@itwin/imodels-client-management": "^1.0.0",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -57,6 +60,7 @@
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
     "@itwin/express-server": "workspace:*",
+    "@itwin/imodels-access-backend": "^1.0.0",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/projects-client": "^0.3.0",
     "@types/chai": "^4.1.4",

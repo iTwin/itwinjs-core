@@ -106,6 +106,7 @@ internal;createMaskTreeReference(view: ViewState, model: GeometricModelState): T
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
+public;CreateRenderMaterialArgs
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 public;CreateTextureArgs
 public;CreateTextureFromSourceArgs
@@ -330,6 +331,8 @@ internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 internal;MapCartoRectangle 
+internal;MapLayerAuthenticationInfo
+beta;MapLayerAuthType
 internal;MapLayerFormat
 internal;MapLayerFormatRegistry
 internal;MapLayerFormatType = typeof MapLayerFormat
@@ -341,6 +344,7 @@ internal;MapLayerSources
 internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
+internal;MapLayerTokenEndpoint
 internal;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
@@ -446,6 +450,8 @@ internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLoc
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
+public;ReadImageBufferArgs
+internal;ReadonlyTileUserSet 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 beta;RealityDataSource
 beta;RealityDataSource
@@ -471,6 +477,7 @@ internal;RenderDiagnostics
 internal;RenderGeometry = IDisposable & RenderMemory.Consumer
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
+internal;RenderMaterialSource
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
@@ -561,7 +568,6 @@ internal;TextureDrapeMap = Map
 public;TextureImage
 public;TextureImageSource = HTMLImageElement | ImageBuffer
 public;TextureOwnership = TextureCacheOwnership | "external"
-public;TextureTransparency
 internal;ThreeAxes
 public;class Tile
 public;TileAdmin
@@ -594,6 +600,10 @@ public;class TileTreeReference
 public;TileTreeSupplier
 internal;TileUrlImageryProvider 
 public;TileUsageMarker
+public;TileUser
+public;TileUser
+internal;TileUserIdSet 
+internal;TileUserIdSets 
 public;TileVisibility
 beta;TokenArg
 public;Tool
@@ -627,6 +637,7 @@ public;UniformArrayParams
 public;UniformContext
 public;UniformParams
 public;UniformType
+internal;UniqueTileUserSets
 beta;UnitFormattingSettingsProvider
 beta;UnitNameKey = string
 internal;UpsampledMapTile 
@@ -666,8 +677,6 @@ public;class ViewManip
 public;class Viewport 
 public;ViewportDecorator
 public;ViewportGraphicBuilderOptions 
-internal;ViewportIdSet 
-internal;ViewportIdSets 
 public;class ViewPose
 internal;ViewPose2d 
 internal;ViewPose3d 

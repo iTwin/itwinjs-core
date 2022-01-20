@@ -105,7 +105,8 @@ export class HiliteSetProvider {
    * for the same input doesn't cost.
    */
   public async getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet> {
-    if (!this._cached || this._cached.keysGuid !== selection.guid) {
+    const selectionGuid = selection.guid;
+    if (!this._cached || this._cached.keysGuid !== selectionGuid) {
       // need to create a new set without transients
       const transientIds = new Array<Id64String>();
       const keys = new KeySet();
@@ -118,7 +119,7 @@ export class HiliteSetProvider {
       });
       const records = await this.getRecords(keys);
       const result = this.createHiliteSet(records, transientIds);
-      this._cached = { keysGuid: selection.guid, result };
+      this._cached = { keysGuid: selectionGuid, result };
     }
     return this._cached.result;
   }

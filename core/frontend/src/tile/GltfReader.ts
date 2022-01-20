@@ -11,7 +11,7 @@ import { Angle, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform
 import {
   BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
-  QPoint3dList, Quantization, RenderTexture, TextureMapping, TileFormat, TileReadStatus,
+  QPoint3dList, Quantization, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import { getImageSourceFormatForMimeType, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
@@ -24,7 +24,6 @@ import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives"
 import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { TextureTransparency } from "../render/RenderTexture";
 import { TileContent } from "./internal";
 
 /* eslint-disable no-restricted-syntax */
@@ -1797,7 +1796,7 @@ export abstract class GltfReader {
       type: textureType,
       image: {
         source: image,
-        transparency: isTransparent ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+        transparency: isTransparent ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
     });
 

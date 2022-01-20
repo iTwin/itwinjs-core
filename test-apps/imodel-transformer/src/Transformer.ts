@@ -203,7 +203,7 @@ export class Transformer extends IModelTransformer {
   /** Override that counts elements processed and optionally remaps PhysicalPartitions.
    * @note Override of IModelExportHandler.shouldExportElement
    */
-  protected override shouldExportElement(sourceElement: Element): boolean {
+  public override shouldExportElement(sourceElement: Element): boolean {
     if (this._numSourceElementsProcessed < this._numSourceElements) { // with deferred element processing, the number processed can be more than the total
       ++this._numSourceElementsProcessed;
     }
@@ -215,21 +215,21 @@ export class Transformer extends IModelTransformer {
   }
 
   /** This override of IModelTransformer.onTransformElement exists for debugging purposes */
-  protected override onTransformElement(sourceElement: Element): ElementProps {
+  public override onTransformElement(sourceElement: Element): ElementProps {
     // if (sourceElement.id === "0x0" || sourceElement.getDisplayLabel() === "xxx") { // use logging to find something unique about the problem element
     //   Logger.logInfo(progressLoggerCategory, "Found problem element"); // set breakpoint here
     // }
     return super.onTransformElement(sourceElement);
   }
 
-  protected override shouldExportRelationship(relationship: Relationship): boolean {
+  public override shouldExportRelationship(relationship: Relationship): boolean {
     if (this._numSourceRelationshipsProcessed < this._numSourceRelationships) {
       ++this._numSourceRelationshipsProcessed;
     }
     return super.shouldExportRelationship(relationship);
   }
 
-  protected override async onProgress(): Promise<void> {
+  public override async onProgress(): Promise<void> {
     if (this._numSourceElementsProcessed > 0) {
       if (this._numSourceElementsProcessed >= this._numSourceElements) {
         Logger.logInfo(loggerCategory, `Processed all ${this._numSourceElements} elements`);

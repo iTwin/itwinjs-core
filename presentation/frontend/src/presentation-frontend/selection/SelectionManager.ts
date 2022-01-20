@@ -64,6 +64,10 @@ export class SelectionManager implements ISelectionProvider {
     return selectionContainer;
   }
 
+  /** @internal */
+  // istanbul ignore next
+  public getToolSelectionSyncHandler(imodel: IModelConnection) { return this._imodelToolSelectionSyncHandlers.get(imodel)?.handler; }
+
   /**
    * Request the manager to sync with imodel's tool selection (see `IModelConnection.selectionSet`).
    */

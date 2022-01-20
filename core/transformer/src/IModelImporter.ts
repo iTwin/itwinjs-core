@@ -367,7 +367,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 
   /** Format an ElementAspect for the Logger. */
-  private formatElementAspectForLogger(elementAspectProps: ElementAspectProps): string {
+  private formatElementAspectForLogger(elementAspectProps: ElementAspectProps | ElementAspect): string {
     return `${elementAspectProps.classFullName} elementId=[${elementAspectProps.element.id}]`;
   }
 

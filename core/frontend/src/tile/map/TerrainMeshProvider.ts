@@ -8,7 +8,7 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import { Range1d } from "@itwin/core-geometry";
-import { RequestOptions } from "@bentley/itwin-client";
+import { RequestOptions } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile } from "../internal";
