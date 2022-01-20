@@ -4399,12 +4399,12 @@ export class ImageMapLayerSettings extends MapLayerSettingsBase {
     isSubLayerVisible(subLayer: MapSubLayerSettings): boolean;
     // @internal (undocumented)
     protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
-    // @internal (undocumented)
-    matchesNameAndUrl(name: string, url: string): boolean;
     // (undocumented)
     password?: string;
     // (undocumented)
     setCredentials(userName?: string, password?: string): void;
+    // (undocumented)
+    get source(): string;
     subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined;
     // (undocumented)
     readonly subLayers: MapSubLayerSettings[];
@@ -5198,8 +5198,11 @@ export abstract class MapLayerSettingsBase {
     static fromJSON(json: MapLayerProps): MapLayerSettings | undefined;
     // (undocumented)
     readonly isBase: boolean;
+    // @internal (undocumented)
+    matchesNameAndSource(name: string, source: string): boolean;
     // (undocumented)
     readonly name: string;
+    abstract get source(): string;
     // @internal
     protected toJSON(): MapLayerPropsBase;
     // (undocumented)
@@ -5444,6 +5447,8 @@ export class ModelMapLayerSettings extends MapLayerSettingsBase {
     static fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings;
     // (undocumented)
     readonly modelId: Id64String;
+    // (undocumented)
+    get source(): string;
     toJSON(): ModelMapLayerProps;
 }
 

@@ -2483,14 +2483,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal
     detachMapLayerByIndex(index: number, isOverlay: boolean): void;
     // @internal (undocumented)
-    detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void;
+    detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void;
     detachRealityModelByNameAndUrl(name: string, url: string): boolean;
     // @internal (undocumented)
     get displayTerrain(): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     equalState(other: DisplayStyleState): boolean;
     // @internal (undocumented)
-    findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean): number;
+    findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean): number;
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
     // @internal (undocumented)
     forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void;
@@ -2516,7 +2516,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get globeMode(): GlobeMode;
     // @internal (undocumented)
-    hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean;
+    hasAttachedMapLayer(name: string, source: string, isOverlay: boolean): boolean;
     hasAttachedRealityModel(name: string, url: string): boolean;
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
@@ -6172,7 +6172,7 @@ export abstract class MapTilingScheme {
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
     // (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
