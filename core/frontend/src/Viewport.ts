@@ -47,7 +47,9 @@ import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
+import {
+  DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+} from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { Animator, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
@@ -241,7 +243,7 @@ export interface ReadImageBufferArgs {
  * @see [[ViewManager]]
  * @public
  */
-export abstract class Viewport implements IDisposable {
+export abstract class Viewport implements IDisposable, TileUser {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
    * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
    * otherwise, avoid performing excessive computations in response to this event.
@@ -439,7 +441,6 @@ export abstract class Viewport implements IDisposable {
 
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
-  private static _nextViewportId = 1;
 
   private _debugBoundingBoxes: TileBoundingBoxes = TileBoundingBoxes.None;
   private _freezeScene = false;
@@ -956,9 +957,9 @@ export abstract class Viewport implements IDisposable {
   protected constructor(target: RenderTarget) {
     this._target = target;
     target.assignFrameStatsCollector(this._frameStatsCollector);
-    this._viewportId = Viewport._nextViewportId++;
+    this._viewportId = TileUser.generateId();
     this._perModelCategoryVisibility = PerModelCategoryVisibility.createOverrides(this);
-    IModelApp.tileAdmin.registerViewport(this);
+    IModelApp.tileAdmin.registerUser(this);
   }
 
   public dispose(): void {
@@ -967,7 +968,7 @@ export abstract class Viewport implements IDisposable {
 
     this._target = dispose(this._target);
     this.subcategories.dispose();
-    IModelApp.tileAdmin.forgetViewport(this);
+    IModelApp.tileAdmin.forgetUser(this);
     this.onDisposed.raiseEvent(this);
     this.detachFromView();
   }
@@ -1500,7 +1501,7 @@ export abstract class Viewport implements IDisposable {
   /** The number of outstanding requests for tiles to be displayed in this viewport.
    * @see Viewport.numSelectedTiles
    */
-  public get numRequestedTiles(): number { return IModelApp.tileAdmin.getNumRequestsForViewport(this); }
+  public get numRequestedTiles(): number { return IModelApp.tileAdmin.getNumRequestsForUser(this); }
 
   /** The number of tiles selected for display in the view as of the most recently-drawn frame.
    * The tiles selected may not meet the desired level-of-detail for the view, instead being temporarily drawn while
@@ -1509,7 +1510,7 @@ export abstract class Viewport implements IDisposable {
    * @see Viewport.numReadyTiles
    */
   public get numSelectedTiles(): number {
-    const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
+    const tiles = IModelApp.tileAdmin.getTilesForUser(this);
     return undefined !== tiles ? tiles.selected.size + tiles.external.selected : 0;
   }
 
@@ -1521,7 +1522,7 @@ export abstract class Viewport implements IDisposable {
    * @see Viewport.numRequestedTiles
    */
   public get numReadyTiles(): number {
-    const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
+    const tiles = IModelApp.tileAdmin.getTilesForUser(this);
     return undefined !== tiles ? tiles.ready.size + tiles.external.ready : 0;
   }
 
@@ -2300,8 +2301,8 @@ export abstract class Viewport implements IDisposable {
     if (!this._sceneValid) {
       if (!this._freezeScene) {
         this._frameStatsCollector.beginTime("createChangeSceneTime");
-        IModelApp.tileAdmin.clearTilesForViewport(this);
-        IModelApp.tileAdmin.clearUsageForViewport(this);
+        IModelApp.tileAdmin.clearTilesForUser(this);
+        IModelApp.tileAdmin.clearUsageForUser(this);
 
         const context = this.createSceneContext();
         this.createScene(context);
@@ -2634,6 +2635,16 @@ export abstract class Viewport implements IDisposable {
       removeStyleListener();
       removeViewListener();
     };
+  }
+
+  /** TileUser implementation @internal */
+  public get tileUserId(): number {
+    return this.viewportId;
+  }
+
+  /** TileUser implementation @internal */
+  public onRequestStateChanged(): void {
+    this.invalidateScene();
   }
 }
 

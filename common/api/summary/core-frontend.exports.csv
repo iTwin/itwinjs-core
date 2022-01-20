@@ -455,6 +455,7 @@ public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId:
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
+internal;ReadonlyTileUserSet 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 beta;RealityDataSource
 beta;RealityDataSource
@@ -603,6 +604,10 @@ public;class TileTreeReference
 public;TileTreeSupplier
 internal;TileUrlImageryProvider 
 public;TileUsageMarker
+public;TileUser
+public;TileUser
+internal;TileUserIdSet 
+internal;TileUserIdSets 
 public;TileVisibility
 beta;TokenArg
 public;Tool
@@ -636,6 +641,7 @@ public;UniformArrayParams
 public;UniformContext
 public;UniformParams
 public;UniformType
+internal;UniqueTileUserSets
 beta;UnitFormattingSettingsProvider
 beta;UnitNameKey = string
 internal;UpsampledMapTile 
@@ -675,8 +681,6 @@ public;class ViewManip
 public;class Viewport 
 public;ViewportDecorator
 public;ViewportGraphicBuilderOptions 
-internal;ViewportIdSet 
-internal;ViewportIdSets 
 public;class ViewPose
 internal;ViewPose2d 
 internal;ViewPose3d 

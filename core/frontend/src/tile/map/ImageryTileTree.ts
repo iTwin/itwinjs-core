@@ -13,7 +13,7 @@ import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem } from "../../render/RenderSystem";
-import { ScreenViewport, Viewport } from "../../Viewport";
+import { ScreenViewport } from "../../Viewport";
 import {
   MapCartoRectangle, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
@@ -171,7 +171,7 @@ class ImageryTileLoader extends RealityTileLoader {
   constructor(private _imageryProvider: MapLayerImageryProvider, private _iModel: IModelConnection) {
     super();
   }
-  public override computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
+  public override computeTilePriority(tile: Tile): number {
     return 25 * (this._imageryProvider.usesCachedTiles ? 2 : 1) - tile.depth;     // Always cached first then descending by depth (high resolution/front first)
   }  // Prioritized fast, cached tiles first.
 

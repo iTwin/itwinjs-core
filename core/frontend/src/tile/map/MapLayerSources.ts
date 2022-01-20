@@ -8,7 +8,7 @@
 
 import { compareStrings } from "@itwin/core-bentley";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
 } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";

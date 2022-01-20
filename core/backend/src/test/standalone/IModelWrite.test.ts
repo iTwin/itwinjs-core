@@ -27,7 +27,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
-  const spatialCategoryId = rwIModel.elements.insertElement(category);
+  const spatialCategoryId = rwIModel.elements.insertElement(category.toJSON());
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
   // const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 

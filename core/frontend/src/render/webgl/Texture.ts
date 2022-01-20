@@ -539,11 +539,11 @@ export class Texture2DHandle extends TextureHandle {
     return this.create(Texture2DCreateParams.createForImageBitmap(image, type));
   }
 
-  private static _placeHolderTextureData = new Uint8Array([128, 128, 128]);
+  private static _placeHolderTextureData = new Uint8Array([128, 128, 128, 255]);
 
   public static override createForElement(id: Id64String, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat, onLoaded: ExternalTextureLoadCallback) {
     // set a placeholder texture while we wait for the external texture to load
-    const handle = this.createForData(1, 1, this._placeHolderTextureData, undefined, undefined, GL.Texture.Format.Rgb);
+    const handle = this.createForData(1, 1, this._placeHolderTextureData, undefined, undefined, GL.Texture.Format.Rgba);
 
     if (undefined === handle)
       return undefined;

@@ -8,7 +8,6 @@
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
-import { ScreenViewport } from "../../../Viewport";
 import { MapLayerImageryProvider } from "../../internal";
 
 /** Base class imagery map layer formats.  Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
@@ -44,7 +43,7 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     return url;
   }
 
-  public override getLogo(_vp: ScreenViewport): HTMLTableRowElement | undefined {
+  public override getLogo(): HTMLTableRowElement | undefined {
     return IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") });
   }
 
