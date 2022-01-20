@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @@public */
+/** @public */
 export interface ProgressInfo {
   percent?: number;
   total?: number;
   loaded: number;
 }
 
-/** @@public */
+/** @public */
 export type ProgressCallback = (progress: ProgressInfo) => void;

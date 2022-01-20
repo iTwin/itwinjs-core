@@ -6205,10 +6205,10 @@ export enum ProfileOptions {
     Upgrade = 1
 }
 
-// @public
+// @public (undocumented)
 export type ProgressCallback = (progress: ProgressInfo) => void;
 
-// @public
+// @public (undocumented)
 export interface ProgressInfo {
     // (undocumented)
     loaded: number;
