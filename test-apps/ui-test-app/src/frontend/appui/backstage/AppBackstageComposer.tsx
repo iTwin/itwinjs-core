@@ -20,6 +20,7 @@ import { Frontstage2 } from "../frontstages/Frontstage2";
 import { Frontstage3 } from "../frontstages/Frontstage3";
 import { Frontstage4 } from "../frontstages/Frontstage4";
 import { FrontstageUi2 } from "../frontstages/FrontstageUi2";
+import { FrontstageWithNoWidgets } from "../frontstages/FrontStageWithNoWidgets";
 
 export function AppBackstageComposer() {
   const hiddenCondition3 = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
@@ -45,6 +46,7 @@ export function AppBackstageComposer() {
       BackstageItemUtilities.createStageLauncher(Frontstage3.stageId, 200, 30, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstage3"), undefined, "icon-placeholder", { isHidden: hiddenCondition3 }),
       BackstageItemUtilities.createStageLauncher(Frontstage4.stageId, 200, 40, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstage4"), undefined, "icon-placeholder", { isDisabled: enableCondition }),
       BackstageItemUtilities.createStageLauncher(FrontstageUi2.stageId, 200, 50, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstageUi20"), undefined, "icon-placeholder", { isHidden: notUi2Condition }),
+      BackstageItemUtilities.createStageLauncher(FrontstageWithNoWidgets.stageId, 200, 60, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstageNoWidgets"), undefined, "icon-placeholder"),
       BackstageItemUtilities.createStageLauncher(IModelOpenFrontstage.stageId, 300, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
       BackstageItemUtilities.createStageLauncher(IModelIndexFrontstage.stageId, 300, 20, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
       BackstageItemUtilities.createActionItem(LocalFileOpenFrontstage.stageId, 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.localization.getLocalizedString("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),

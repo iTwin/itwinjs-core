@@ -61,7 +61,7 @@ function insertPhysicalModel(db: IModelDb): Id64String {
 
   expect(model instanceof PhysicalModel).to.be.true;
 
-  const modelId = db.models.insertModel(model);
+  const modelId = db.models.insertModel(model.toJSON());
   expect(Id64.isValidId64(modelId)).to.be.true;
   return modelId;
 }
@@ -126,7 +126,7 @@ describe("tile tree", () => {
       model: IModel.dictionaryId,
       code: Code.createEmpty(),
     }, db);
-    renderTimelineId = db.elements.insertElement(renderTimeline);
+    renderTimelineId = db.elements.insertElement(renderTimeline.toJSON());
     expect(Id64.isValid(renderTimelineId)).to.be.true;
   });
 
