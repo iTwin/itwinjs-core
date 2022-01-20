@@ -209,8 +209,9 @@ export class PrimitiveCommand {
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);
 
-    if (exec.setProgram(program))
-      this.primitive.draw(exec);
+    if (exec.setProgram(program)) {
+      exec.target.compositor.drawPrimitive(this.primitive, exec);
+    }
   }
 
   public get hasFeatures(): boolean { return this.primitive.hasFeatures; }
