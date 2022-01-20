@@ -39,10 +39,7 @@ export namespace TileUser {
     return nextUserId++;
   }
 
-  /** Previously, the only type of TileUser was a Viewport, so some deprecated APIs still exist that expose tile users as viewports.
-   * This method converts a collection of TileUsers to one of Viewports to support those methods until they can be removed.
-   * @internal
-   */
+  /** Iterate the subset of `users` that are [[Viewport]]s. */
   export function * viewportsFromUsers(users: Iterable<TileUser>): Iterable<Viewport> {
     for (const user of users)
       if (user instanceof Viewport)
