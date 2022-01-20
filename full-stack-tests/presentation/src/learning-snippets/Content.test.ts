@@ -1055,9 +1055,9 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
 
-        expect(content!.contentSet).to.not.containSubset([
+        expect(content!.contentSet).to.have.lengthOf(7).and.not.containSubset([
           { classInfo: { name: "BisCore:PhysicalModel" } },
-        ]).and.to.have.lengthOf(6);
+        ]);
       });
 
       it("uses `handlePropertiesPolymorphically` attribute", async () => {

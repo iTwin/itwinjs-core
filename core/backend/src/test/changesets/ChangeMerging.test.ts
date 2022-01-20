@@ -74,7 +74,7 @@ describe("ChangeMerging", () => {
       const dictionary: DictionaryModel = firstDb.models.getModel<DictionaryModel>(IModel.dictionaryId);
       const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
       spatialCategoryId = SpatialCategory.insert(dictionary.iModel, dictionary.id, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
-      el1 = firstDb.elements.insertElement(IModelTestUtils.createPhysicalObject(firstDb, modelId, spatialCategoryId));
+      el1 = firstDb.elements.insertElement(IModelTestUtils.createPhysicalObject(firstDb, modelId, spatialCategoryId).toJSON());
       firstDb.saveChanges();
       csHistory.push(createChangeset(firstDb));
       firstParent = csHistory.length - 1;
@@ -102,7 +102,7 @@ describe("ChangeMerging", () => {
     if (true) {
       const el1cc = firstDb.elements.getElement(el1);
       expectedValueOfEl1UserLabel = el1cc.userLabel = `${el1cc.userLabel} -> changed by first`;
-      firstDb.elements.updateElement(el1cc);
+      firstDb.elements.updateElement(el1cc.toJSON());
       firstDb.saveChanges("first modified el1.userLabel");
       csHistory.push(createChangeset(firstDb));
       firstParent = csHistory.length - 1;
@@ -112,7 +112,7 @@ describe("ChangeMerging", () => {
     if (true) {
       const el1before: Element = secondDb.elements.getElement(el1);
       el1before.userLabel = `${el1before.userLabel} -> changed by first`;
-      secondDb.elements.updateElement(el1before);
+      secondDb.elements.updateElement(el1before.toJSON());
       secondDb.saveChanges("second modified el1.userLabel");
 
       // merge => take second's change (RejectIncomingChange). That's because the default updateVsUpdate setting is RejectIncomingChange

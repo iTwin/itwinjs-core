@@ -93,14 +93,14 @@ export class SubCategory extends DefinitionElement {
    */
   public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const subCategory = this.create(iModelDb, parentCategoryId, name, appearance);
-    return iModelDb.elements.insertElement(subCategory);
+    return iModelDb.elements.insertElement(subCategory.toJSON());
   }
 }
 
 /** A Category element is the target of the `category` member of [[GeometricElement]].
  * @public
  */
-export class Category extends DefinitionElement implements CategoryProps {
+export class Category extends DefinitionElement {
   /** @internal */
   public static override get className(): string { return "Category"; }
   public rank: Rank = Rank.User;
@@ -132,7 +132,7 @@ export class Category extends DefinitionElement implements CategoryProps {
 
     const subCat = this.iModel.elements.getElement<SubCategory>(this.myDefaultSubCategoryId());
     subCat.appearance = new SubCategoryAppearance(props);
-    this.iModel.elements.updateElement(subCat);
+    this.iModel.elements.updateElement(subCat.toJSON());
   }
 }
 
@@ -198,9 +198,9 @@ export class DrawingCategory extends Category {
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
     const elements = iModelDb.elements;
-    const categoryId = elements.insertElement(category);
+    category.id = elements.insertElement(category.toJSON());
     category.setDefaultAppearance(defaultAppearance);
-    return categoryId;
+    return category.id;
   }
 }
 
@@ -264,8 +264,8 @@ export class SpatialCategory extends Category {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
-    const categoryId = iModelDb.elements.insertElement(category);
+    category.id = iModelDb.elements.insertElement(category.toJSON());
     category.setDefaultAppearance(defaultAppearance);
-    return categoryId;
+    return category.id;
   }
 }

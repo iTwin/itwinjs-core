@@ -37,7 +37,7 @@ Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecif
 
 ### Attribute: `excludedClasses`
 
-Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that specify which ECClasses need to be excluded from the result.
+Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that prevents specified ECClasses and subclasses from being selected by [`classes` attribute](#attribute-classes).
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset]]
@@ -47,7 +47,6 @@ Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecif
   | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
   | without excluded classes              | ![Example when doing normal class based instance select](./media/contentinstancesofspecificclasses-with-excludedclasses-1.png)       |
   | with `PhysicalModel` classes excluded | ![Example when selecting instances with some classes excluded](./media/contentinstancesofspecificclasses-with-excludedclasses-2.png) |
-
 
 ### Attribute: `handlePropertiesPolymorphically`
 
@@ -81,7 +80,7 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 
 > **Default value:** `false`
 
-Identifies whether we should ignore this specification if another specification was already handled (based on rule priorities and definition order). Should be used when defining a fallback specification.
+Specifies whether this specification should be ignored if another specification was handled before as determined by rule and specification priorities. This provides a mechanism for defining a fallback specification.
 
 ```ts
 [[include:SharedAttributes.OnlyIfNotHandled.Ruleset]]
