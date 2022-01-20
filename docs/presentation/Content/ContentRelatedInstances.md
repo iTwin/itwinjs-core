@@ -31,6 +31,9 @@ Either a single or an array of specifications may be specified for this attribut
 ```ts
 [[include:ContentRelatedInstances.RelationshipPaths.Ruleset]]
 ```
+
+The following is a result of selecting one instance of `bis.Model` as input for the ruleset above:
+
 ![Example of using "relationship paths" attribute](./media/contentrelatedinstances-with-relationshippaths.png)
 
 ### Attribute: `instanceFilter`
