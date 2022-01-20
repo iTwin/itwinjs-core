@@ -365,7 +365,7 @@ export class MapTileTree extends RealityTileTree {
 }
 
 interface MapTreeId {
-  viewportId: number;
+  tileUserId: number;
   applyTerrain: boolean;
   terrainProviderName: TerrainProviderName;
   terrainHeightOrigin: number;
@@ -410,7 +410,7 @@ class MapTreeSupplier implements TileTreeSupplier {
   public readonly isEcefDependent = true;
 
   public compareTileTreeIds(lhs: MapTreeId, rhs: MapTreeId): number {
-    let cmp = compareNumbers(lhs.viewportId, rhs.viewportId);
+    let cmp = compareNumbers(lhs.tileUserId, rhs.tileUserId);
     if (0 === cmp) {
       cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
       if (0 === cmp) {
@@ -521,7 +521,7 @@ type CheckTerrainDisplayOverride = () => TerrainDisplayOverrides | undefined;
  * @internal
  */
 export class MapTileTreeReference extends TileTreeReference {
-  private _viewportId: number;
+  private _tileUserId: number;
   private _settings: BackgroundMapSettings;
   private readonly _iModel: IModelConnection;
   private _baseImageryLayerIncluded = false;
@@ -531,9 +531,9 @@ export class MapTileTreeReference extends TileTreeReference {
   private _symbologyOverrides: FeatureSymbology.Overrides | undefined;
   private _planarClipMask?: PlanarClipMaskState;
 
-  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, viewportId: number, public isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
+  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, public isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
     super();
-    this._viewportId = viewportId;
+    this._tileUserId = tileUserId;
     this._settings = settings;
     this._iModel = iModel;
     let tree;
@@ -641,7 +641,7 @@ export class MapTileTreeReference extends TileTreeReference {
     }
 
     const id: MapTreeId = {
-      viewportId: this._viewportId,
+      tileUserId: this._tileUserId,
       applyTerrain: this.settings.applyTerrain && !this.isOverlay && !this._isDrape,
       terrainProviderName: this.settings.terrainSettings.providerName,
       terrainHeightOrigin: this.settings.terrainSettings.heightOrigin,

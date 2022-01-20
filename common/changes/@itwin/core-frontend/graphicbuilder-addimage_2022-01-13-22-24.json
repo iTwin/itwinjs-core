@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Simplify RenderMaterial creation by deprecating RenderSystem.createMaterial in favor of RenderSystem.createRenderMaterial.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
