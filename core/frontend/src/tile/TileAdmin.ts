@@ -19,9 +19,8 @@ import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import {
   DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree,
-  TileTreeOwner, TileUsageMarker, UniqueTileUserSets,
+  TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
 } from "./internal";
-import {TileUser} from "./TileUser";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles

@@ -14,7 +14,6 @@ import {
   BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
 } from "@itwin/core-common";
 import { RenderSystem } from "../render/RenderSystem";
-import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 import {
   ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
