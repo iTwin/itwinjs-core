@@ -186,7 +186,9 @@ export abstract class TileTree {
     return dbToEcef.multiplyTransformTransform(this.iModelTransform);
   }
 
-  /**
+  /** Populate [[TileGeometryCollector.polyfaces]] with geometry obtained from this tile tree's tiles satisfying the collector's criteria.
+   * The base implementation does nothing.
+   * @see [[TileTreeReference.createGeometryTreeReference]] to attempt to create a TileTree that can collect geometry.
    * @beta
    */
   public collectTileGeometry(_collector: TileGeometryCollector): void {

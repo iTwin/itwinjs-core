@@ -226,19 +226,23 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
 
-  /**
+  /** Create a tile tree reference equivalent to this one that also supplies an implementation of [[GeometryTileTreeReference.collectTileGeometry]].
+   * Return `undefined` if geometry collection is not supported.
+   * @see [[createGeometryTreeReference]].
    * @beta
    */
   protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     return undefined;
   }
 
-  /**
+  /** If defined, supplies the implementation of [[GeometryTileTreeReference.collectTileGeometry]].
    * @beta
    */
   public collectTileGeometry?: (collector: TileGeometryCollector) => void;
 
-  /** @beta */
+  /** A function that can be assigned to [[collectTileGeometry]] to enable geometry collection for references to tile trees that support geometry collection.
+   * @beta
+   */
   protected _collectTileGeometry(collector: TileGeometryCollector): void {
     const tree = this.treeOwner.load();
     switch (this.treeOwner.loadStatus) {
@@ -252,7 +256,10 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     }
   }
 
-  /**
+  /** Obtain a tile tree reference equivalent to this one that also supplies an implementation of [[GeometryTileTreeReference.collectTileGeometry]], or
+   * undefined if geometry collection is not supported.
+   * Currently, only terrain and reality model tiles support geometry collection.
+   * @note Do not override this method - override [[_createGeometryTreeReference]] instead.
    * @beta
    */
   public createGeometryTreeReference(): GeometryTileTreeReference | undefined {
