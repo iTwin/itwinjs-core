@@ -363,9 +363,11 @@ export class Element extends Entity implements ElementProps {
     return predecessorIds;
   }
 
-  /** A *required reference* is an element that had to be inserted before this element could have been inserted.
-   * This is the list of property keys on this element that store references to those elements
+  // FIXME: rename to requiredReferencePaths
+  /** A *required reference* is an element that had to be inserted before this element could have been inserted.j
+   * This is the list of property paths on this element that store references to those elements
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces requires references.
+   * @note any property listed here must be added to the predecessor ids in [[collectPredecessorIds]]
    * @beta
    */
   public static requiredReferenceKeys: string[] = ["parent", "model"];

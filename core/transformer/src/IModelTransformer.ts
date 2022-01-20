@@ -561,8 +561,14 @@ export class IModelTransformer extends IModelExportHandler {
       for (const referenceKey of elemClass.requiredReferenceKeys) {
         const idContainer = lodashGet(sourceElement, referenceKey); // TODO: test that out-of-order code.scope predecessor is updated correctly AND REMOVE LODASH
         await Promise.all(mapId64(idContainer, async (id) => {
-          // not allowed to directly export the root subject
-          if (idContainer === Id64.invalid || idContainer === IModel.rootSubjectId) return;
+          if (id === Id64.invalid || id === IModel.rootSubjectId) return; // not allowed to directly export the root subject
+          const withinSameIModel = this.sourceDb === this.targetDb;
+          if (withinSameIModel) { // within the same iModel, can use existing DefinitionElements without remapping
+            const asDefinitionElem = this.sourceDb.elements.tryGetElement(id, DefinitionElement);
+            if (asDefinitionElem && !(asDefinitionElem instanceof RecipeDefinitionElement)) {
+              this.context.remapElement(id, id);
+            }
+          }
           const alreadyExported = this.context.findTargetElementId(id) !== Id64.invalid;
           if (alreadyExported) return;
           await this.exporter.exportElement(id);
