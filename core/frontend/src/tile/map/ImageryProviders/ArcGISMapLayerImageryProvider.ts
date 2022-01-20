@@ -7,10 +7,9 @@
  */
 
 import { Cartographic, ImageSource, IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
-import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
+import { getJson, request, RequestOptions, Response } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
-import { ScreenViewport } from "../../../Viewport";
 import {
   ArcGisErrorCode, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
   MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId,
@@ -178,7 +177,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  public override getLogo(_vp: ScreenViewport) {
+  public override getLogo() {
     return IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText });
   }
 

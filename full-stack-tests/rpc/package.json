@@ -19,7 +19,6 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",

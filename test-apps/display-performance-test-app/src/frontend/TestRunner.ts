@@ -520,7 +520,7 @@ export class TestRunner {
             break;
           }
 
-          const tiles = IModelApp.tileAdmin.getTilesForViewport(vp);
+          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
           if (tiles && tiles.external.requested > 0) {
             haveNewTiles = true;
             break;
@@ -1326,7 +1326,7 @@ function getSelectedTileStats(vp: ScreenViewport): SelectedTileStats {
   const mem = new RenderMemory.Statistics();
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
   for (const viewport of [vp, ...vp.view.secondaryViewports]) {
-    const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
+    const selected = IModelApp.tileAdmin.getTilesForUser(viewport)?.selected;
     if (!selected)
       continue;
 

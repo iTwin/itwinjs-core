@@ -7,7 +7,8 @@
  */
 
 import { AccessToken, GuidString, IModelHubStatus, Logger } from "@itwin/core-bentley";
-import { CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
+import { CancelRequest, FileHandler } from "../itwin-client/FileHandler";
+import { ProgressCallback } from "../itwin-client/Request";
 import { IModelClient } from "../IModelClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
