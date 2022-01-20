@@ -33,7 +33,6 @@ export interface ViewToolWidgetComposerProps {
  *  * ```
  * <ViewToolWidgetComposer hideNavigationAid />
  * ```
-
  * @public
  */
 export function ViewToolWidgetComposer(props: ViewToolWidgetComposerProps) {

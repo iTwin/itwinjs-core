@@ -10,7 +10,7 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { TelemetryManager } from "@bentley/telemetry-client";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { BackendHubAccess } from "./BackendHubAccess";
@@ -74,7 +74,7 @@ export interface CrashReportingConfig {
 export class IModelHostConfiguration {
 
   /**
-   * Root of the directory holding all the files that iModel.js caches
+   * Root of the directory holding all the files that iTwin.js caches
    * - If not specified at startup a platform specific default is used -
    *   - Windows: $(HOMEDIR)/AppData/Local/iModelJs/
    *   - Mac/iOS: $(HOMEDIR)/Library/Caches/iModelJs/
@@ -160,6 +160,10 @@ export class IModelHostConfiguration {
    */
   public crashReportingConfig?: CrashReportingConfig;
 
+  /** The AuthorizationClient used to get accessTokens
+   * @beta
+   */
+  public authorizationClient?: AuthorizationClient;
 }
 
 /**
@@ -323,7 +327,7 @@ export class IModelHost {
   private static _isValid = false;
   /** Returns true if IModelHost is started.  */
   public static get isValid() { return this._isValid; }
-  /** This method must be called before any iModel.js services are used.
+  /** This method must be called before any iTwin.js services are used.
    * @param configuration Host configuration data.
    * Raises [[onAfterStartup]].
    * @see [[shutdown]].
@@ -335,6 +339,8 @@ export class IModelHost {
 
     if (IModelHost.sessionId === "")
       IModelHost.sessionId = Guid.createValue();
+
+    this.authorizationClient = configuration.authorizationClient;
 
     this.logStartup();
 
@@ -439,7 +445,7 @@ export class IModelHost {
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 
-  /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
+  /** This method must be called when an iTwin.js host is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
     // NB: This method is set as a node listener where `this` is unbound
     if (!IModelHost._isValid)

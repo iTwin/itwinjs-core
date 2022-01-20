@@ -27,7 +27,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
-  const spatialCategoryId = rwIModel.elements.insertElement(category);
+  const spatialCategoryId = rwIModel.elements.insertElement(category.toJSON());
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
   // const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
@@ -337,7 +337,7 @@ describe("IModelWriteTest", () => {
       const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, accessToken: superAccessToken });
       assert.equal(changesets.length, 1);
     }
-    await rwIModel.locks.acquireSharedLock(IModel.dictionaryId);
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     let totalEl = 0;
@@ -426,7 +426,7 @@ describe("IModelWriteTest", () => {
     const codeProps = Code.createEmpty();
     codeProps.value = "DrawingModel";
     let totalEl = 0;
-    await rwIModel.locks.acquireSharedLock(IModel.dictionaryId);
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
@@ -485,7 +485,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     assert.equal(rows.length, 10);
@@ -503,13 +503,13 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       rows = [];
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(row);
       }
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       // create some element and push those changes
-      await rwIModel2.locks.acquireSharedLock(drawingModelId);
+      await rwIModel2.locks.acquireLocks({ shared: drawingModelId });
       insertElements(rwIModel2, "Test2dElement", 10, (n: number) => {
         return { s: `s-${n}` };
       });
@@ -557,7 +557,7 @@ describe("IModelWriteTest", () => {
       assert.equal(changesets.length, 4);
     }
     // create some element and push those changes
-    await rwIModel.locks.acquireSharedLock(drawingModelId);
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
     insertElements(rwIModel, "Test2dElement", 10, (n: number) => {
       return {
         s: `s-${n}`, v: `v-${n}`,
@@ -593,7 +593,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     assert.equal(rows.length, 30);
@@ -610,7 +610,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     assert.equal(rows.length, 10);
@@ -633,7 +633,7 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
       rows = [];
       // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(row);
       }
       assert.equal(rows.length, 30);
@@ -677,7 +677,7 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         rows.push(row);
       }
       assert.equal(rows.length, 10);

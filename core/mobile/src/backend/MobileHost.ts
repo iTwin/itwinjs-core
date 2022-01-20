@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
-import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
+import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, InternetConnectivityStatus, NativeAppAuthorizationConfiguration, RpcInterfaceDefinition,
+  IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
+import { ProgressCallback } from "./Request";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
-import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
+import { mobileAppChannel } from "../common/MobileAppChannel";
+import { BatteryState, DeviceEvents,  MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
-import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
+import { MobileAppAuthorizationConfiguration } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 
 /** @beta */
@@ -67,7 +69,7 @@ export abstract class MobileDevice {
   public abstract authSignIn(callback: (err?: string) => void): void;
   public abstract authSignOut(callback: (err?: string) => void): void;
   public abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
-  public authInit(_config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void { callback(); }
+  public authInit(_config: MobileAppAuthorizationConfiguration, callback: (err?: string) => void): void { callback(); }
   public abstract authStateChanged(accessToken?: string, err?: string): void;
 }
 
@@ -84,10 +86,8 @@ export interface MobileHostOpts extends NativeHostOpts {
     device?: MobileDevice;
     /** list of RPC interface definitions to register */
     rpcInterfaces?: RpcInterfaceDefinition[];
-    /** if present, [[NativeHost.authorizationClient]] will be set to an instance of NativeAppAuthorizationBackend and will be initialized. */
-    authConfig?: NativeAppAuthorizationConfiguration;
-    /** if true, do not attempt to initialize AuthorizationClient on startup */
-    noInitializeAuthClient?: boolean;
+    /** if present, [[IModelHost.authorizationClient]] will be set to an instance of [[MobileAuthorizationBackend]]. */
+    authConfig?: MobileAppAuthorizationConfiguration;
   };
 }
 
@@ -102,9 +102,6 @@ export class MobileHost {
   public static readonly onEnterForeground = new BeEvent();
   public static readonly onEnterBackground = new BeEvent();
   public static readonly onWillTerminate = new BeEvent();
-
-  /** @internal */
-  public static get authorization() { return IModelHost.authorizationClient as MobileAuthorizationBackend; }
 
   /**  @internal */
   public static reconnect(connection: number) {
@@ -171,12 +168,5 @@ export class MobileHost {
     ];
 
     MobileRpcManager.initializeImpl(rpcInterfaces);
-
-    const authorizationBackend = new MobileAuthorizationBackend(opt?.mobileHost?.authConfig);
-    const connectivityStatus = NativeHost.checkInternetConnectivity();
-    if (opt?.mobileHost?.authConfig && true !== opt?.mobileHost?.noInitializeAuthClient && connectivityStatus === InternetConnectivityStatus.Online) {
-      await authorizationBackend.initialize(opt?.mobileHost?.authConfig);
-    }
-    IModelHost.authorizationClient = authorizationBackend;
   }
 }

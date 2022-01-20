@@ -7,10 +7,9 @@
  */
 
 import { Cartographic, ImageSource, IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
-import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
+import { getJson, request, RequestOptions, Response } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
-import { ScreenViewport } from "../../../Viewport";
 import {
   ArcGisErrorCode, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
   MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId,
@@ -141,11 +140,9 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     if (json !== undefined) {
       this.serviceJson = json;
       if (json.capabilities) {
-        const nbLods = json.tileInfo?.lods?.length;
+
         this._querySupported = json.capabilities.indexOf("Query") >= 0;
         this._tileMapSupported = json.capabilities.indexOf("Tilemap") >= 0;
-        if (this._tileMapSupported)
-          this._tileMap = new ArcGISTileMap(this._settings.url, nbLods);
       }
       if (json.copyrightText) this._copyrightText = json.copyrightText;
       if (false !== (this._usesCachedTiles = json.tileInfo !== undefined && this.isEpsg3857Compatible(json.tileInfo))) {
@@ -154,6 +151,12 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
             ;
         }
       }
+
+      // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
+      if (this._usesCachedTiles && this._tileMapSupported) {
+        this._tileMap = new ArcGISTileMap(this._settings.url, json.tileInfo?.lods?.length);
+      }
+
       const footprintJson = await ArcGisUtilities.getFootprintJson(this._settings.url, this.getRequestAuthorization());
       if (undefined !== footprintJson && undefined !== footprintJson.featureCollection && Array.isArray(footprintJson.featureCollection.layers)) {
         for (const layer of footprintJson.featureCollection.layers) {
@@ -174,7 +177,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  public override getLogo(_vp: ScreenViewport) {
+  public override getLogo() {
     return IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText });
   }
 

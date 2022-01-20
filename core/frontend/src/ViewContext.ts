@@ -21,7 +21,7 @@ import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
 import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
 import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
-import { RenderTextureDrape } from "./render/RenderSystem";
+import { RenderSystem, RenderTextureDrape } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
 import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
@@ -55,6 +55,11 @@ export class RenderContext {
   /** The [[Viewport]] associated with this context. */
   public get viewport(): Viewport {
     return this._viewport;
+  }
+
+  /** The [[RenderSystem]] being used to produce graphics for this context. */
+  public get renderSystem(): RenderSystem {
+    return this.target.renderSystem;
   }
 
   /** @internal */

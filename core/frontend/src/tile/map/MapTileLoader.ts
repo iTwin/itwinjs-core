@@ -9,7 +9,7 @@
 import { assert, Id64String } from "@itwin/core-bentley";
 import { Range1d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
-import { request } from "@bentley/itwin-client";
+import { request } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { RenderSystem } from "../../render/RenderSystem";

@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { UiFramework } from "@itwin/appui-react";
-import { BeEvent, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { BeEvent, Id64Array, Id64String, IModelStatus, UnexpectedErrors } from "@itwin/core-bentley";
 import { IModelError, QueryRowFormat } from "@itwin/core-common";
 import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
-import { ErrorHandling } from "./ErrorHandling";
 
 export const iModelInfoAvailableEvent = new BeEvent();
 
@@ -46,7 +45,7 @@ export class ModelNameCache extends NamedElementCache {
   public async findAll() {
     const wh = this.nameSelectWhereClause;
     this.cache = [];
-    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.InformationPartitionElement ${wh}`, undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.InformationPartitionElement ${wh}`, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       this.cache.push({ id: result.id, name: result.name });
     }
     iModelInfoAvailableEvent.raiseEvent();
@@ -58,7 +57,7 @@ export class CategoryNameCache extends NamedElementCache {
   public async findAll() {
     const wh = this.nameSelectWhereClause;
     this.cache = [];
-    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.Category ${wh}`, undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.Category ${wh}`, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       this.cache.push({ id: result.id, name: result.name });
     }
     iModelInfoAvailableEvent.raiseEvent();
@@ -88,7 +87,7 @@ export class ActiveSettingsManager {
     const promises = [this._computeCategoriesOnViewChanged(view), this._computeModelsOnViewChanged(view)];
     Promise.all(promises)
       .then(() => iModelInfoAvailableEvent.raiseEvent())
-      .catch((err: Error) => ErrorHandling.onUnexpectedError(err));
+      .catch((err: Error) => UnexpectedErrors.handle(err));
   }
 
   private static async _computeCategoriesOnViewChanged(view: ViewState) {

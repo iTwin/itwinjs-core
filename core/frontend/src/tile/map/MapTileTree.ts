@@ -74,14 +74,15 @@ export class MapTileTree extends RealityTileTree {
   public baseTransparent: boolean;
   public mapTransparent: boolean;
 
-  constructor(params: RealityTileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, public geodeticOffset: number, public sourceTilingScheme: MapTilingScheme, id: MapTreeId) {
+  constructor(params: RealityTileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, public geodeticOffset: number,
+    public sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean) {
     super(params);
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
-    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(ecefToDb, bimElevationBias, params.iModel, id.applyTerrain);
+    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(ecefToDb, bimElevationBias, params.iModel, applyTerrain);
     const quadId = new QuadId(sourceTilingScheme.rootLevel, 0, 0);
     this.globeOrigin = this.ecefToDb.getOrigin().clone();
     this.earthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
-    const globalHeightRange = id.applyTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(0, 0);
+    const globalHeightRange = applyTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(0, 0);
     const globalRectangle = MapCartoRectangle.create();
 
     this.globeMode = id.globeMode;
@@ -91,7 +92,7 @@ export class MapTileTree extends RealityTileTree {
     this.baseColor = id.baseColor;
     this.baseTransparent = id.baseTransparent;
     this.mapTransparent = id.mapTransparent;
-    if (id.applyTerrain) {
+    if (applyTerrain) {
       this.minEarthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator + globalHeightRange.low, Constant.earthRadiusWGS84.equator + globalHeightRange.low, Constant.earthRadiusWGS84.polar + globalHeightRange.low);
       this.maxEarthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator + globalHeightRange.high, Constant.earthRadiusWGS84.equator + globalHeightRange.high, Constant.earthRadiusWGS84.polar + globalHeightRange.high);
     } else {
@@ -364,7 +365,7 @@ export class MapTileTree extends RealityTileTree {
 }
 
 interface MapTreeId {
-  viewportId: number;
+  tileUserId: number;
   applyTerrain: boolean;
   terrainProviderName: TerrainProviderName;
   terrainHeightOrigin: number;
@@ -409,7 +410,7 @@ class MapTreeSupplier implements TileTreeSupplier {
   public readonly isEcefDependent = true;
 
   public compareTileTreeIds(lhs: MapTreeId, rhs: MapTreeId): number {
-    let cmp = compareNumbers(lhs.viewportId, rhs.viewportId);
+    let cmp = compareNumbers(lhs.tileUserId, rhs.tileUserId);
     if (0 === cmp) {
       cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
       if (0 === cmp) {
@@ -475,7 +476,8 @@ class MapTreeSupplier implements TileTreeSupplier {
   }
 
   public async createTileTree(id: MapTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
-    let bimElevationBias, terrainProvider, geodeticOffset = 0;
+    let bimElevationBias = 0, terrainProvider, geodeticOffset = 0;
+    let applyTerrain = id.applyTerrain;
     const modelId = iModel.transientIds.next;
     const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
 
@@ -487,24 +489,26 @@ class MapTreeSupplier implements TileTreeSupplier {
       bimElevationBias = - await this.computeHeightBias(id.terrainHeightOrigin, id.terrainHeightOriginMode, id.terrainExaggeration, iModel, elevationProvider);
       geodeticOffset = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
       terrainProvider = await getCesiumTerrainProvider(iModel, modelId, id.wantSkirts, id.wantNormals, id.terrainExaggeration);
-    } else {
+
+      if (!terrainProvider) {
+        applyTerrain = false;
+        geodeticOffset = 0;
+      }
+    }
+
+    if (!terrainProvider) {
       terrainProvider = new EllipsoidTerrainProvider(iModel, modelId, id.wantSkirts);
       bimElevationBias = id.mapGroundBias;
     }
-    if (undefined === terrainProvider)
-      return undefined;
+
     const loader = new MapTileLoader(iModel, modelId, bimElevationBias, terrainProvider);
     const ecefToDb = iModel.getMapEcefToDb(bimElevationBias);
 
-    if (undefined === loader) {
-      assert(false, "Invalid Terrain Provider");
-      return undefined;
-    }
     if (id.maskModelIds)
       await iModel.models.load(CompressedId64Set.decompressSet(id.maskModelIds));
 
     const treeProps = new MapTileTreeProps(modelId, loader, iModel, gcsConverterAvailable);
-    return new MapTileTree(treeProps, ecefToDb, bimElevationBias, geodeticOffset, terrainProvider.tilingScheme, id);
+    return new MapTileTree(treeProps, ecefToDb, bimElevationBias, geodeticOffset, terrainProvider.tilingScheme, id, applyTerrain);
   }
 }
 
@@ -517,7 +521,7 @@ type CheckTerrainDisplayOverride = () => TerrainDisplayOverrides | undefined;
  * @internal
  */
 export class MapTileTreeReference extends TileTreeReference {
-  private _viewportId: number;
+  private _tileUserId: number;
   private _settings: BackgroundMapSettings;
   private readonly _iModel: IModelConnection;
   private _baseImageryLayerIncluded = false;
@@ -527,9 +531,9 @@ export class MapTileTreeReference extends TileTreeReference {
   private _symbologyOverrides: FeatureSymbology.Overrides | undefined;
   private _planarClipMask?: PlanarClipMaskState;
 
-  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, viewportId: number, public isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
+  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, public isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
     super();
-    this._viewportId = viewportId;
+    this._tileUserId = tileUserId;
     this._settings = settings;
     this._iModel = iModel;
     let tree;
@@ -637,7 +641,7 @@ export class MapTileTreeReference extends TileTreeReference {
     }
 
     const id: MapTreeId = {
-      viewportId: this._viewportId,
+      tileUserId: this._tileUserId,
       applyTerrain: this.settings.applyTerrain && !this.isOverlay && !this._isDrape,
       terrainProviderName: this.settings.terrainSettings.providerName,
       terrainHeightOrigin: this.settings.terrainSettings.heightOrigin,
@@ -717,9 +721,12 @@ export class MapTileTreeReference extends TileTreeReference {
     const nonLocatable = this.settings.locatable ? undefined : true;
     const transparency = this.settings.transparency ? this.settings.transparency : undefined;
     this._symbologyOverrides = new FeatureSymbology.Overrides();
-    if (nonLocatable || transparency)
-
-      this._symbologyOverrides.overrideModel(tree.modelId, FeatureAppearance.fromJSON({ transparency, nonLocatable }));
+    if (nonLocatable || transparency) {
+      this._symbologyOverrides.override({
+        modelId: tree.modelId,
+        appearance: FeatureAppearance.fromJSON({ transparency, nonLocatable }),
+      });
+    }
 
     const args = this.createDrawArgs(context);
     if (undefined !== args)

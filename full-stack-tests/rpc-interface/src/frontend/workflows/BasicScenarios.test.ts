@@ -53,7 +53,7 @@ describe("Basic Scenarios", async () => {
     const iModel = await testContext.iModelWithChangesets!.getConnection();
 
     const rows = [];
-    for await (const row of iModel.query("SELECT ECInstanceId AS id FROM BisCore.Element", undefined, QueryRowFormat.UseJsPropertyNames, { limit:{count: 10}}))
+    for await (const row of iModel.query("SELECT ECInstanceId AS id FROM BisCore.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 10 } }))
       rows.push(row);
 
     expect(rows).not.to.be.empty;

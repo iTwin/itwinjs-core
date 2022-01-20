@@ -27,7 +27,7 @@ import { SpatialViewState } from "./SpatialViewState";
  *  @public
 */
 export interface ViewCreator3dOptions {
-  /** Turn [[Camera]] on when generating the view. */
+  /** Turn [[Camera]] on when generating the view. Defaults to true (on) */
   cameraOn?: boolean;
   /** Turn [[SkyBox]] on when generating the view. */
   skyboxOn?: boolean;
@@ -138,7 +138,7 @@ export class ViewCreator3d {
     };
 
     const cameraData = new Camera();
-    const cameraOn = options?.cameraOn ? options.cameraOn : false;
+    const cameraOn = options?.cameraOn !== false;
     const viewDefinitionProps: ViewDefinition3dProps = {
       categorySelectorId: "",
       displayStyleId: "",
@@ -158,7 +158,7 @@ export class ViewCreator3d {
     const displayStyleProps: DisplayStyle3dProps = {
       code: Code.createEmpty(),
       model: dictionaryId,
-      classFullName: "BisCore:DisplayStyle",
+      classFullName: "BisCore:DisplayStyle3d",
       jsonProperties: {
         styles: {
           viewflags: {
@@ -282,7 +282,7 @@ export class ViewCreator3d {
    */
   private _executeQuery = async (query: string) => {
     const rows = [];
-    for await (const row of this._imodel.query(query, undefined, QueryRowFormat.UseJsPropertyNames))
+    for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       rows.push(row.id);
 
     return rows;

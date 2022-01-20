@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Mutable } from "@itwin/core-bentley";
-import { SnapshotDb } from "../../IModelDb";
+import { Mutable, OpenMode } from "@itwin/core-bentley";
+import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
-import { SettingsPriority } from "../../workspace/Settings";
+import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 import { SettingsGroupSpec, SettingSpec, SettingsSpecRegistry } from "../../workspace/SettingsSpecRegistry";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -183,4 +183,45 @@ describe("Settings", () => {
     expect(appSettings.getArray<string>("cSpell/enableFiletypes")!.length).equals(17);
     appSettings.dropDictionary(settingFileName);
   });
+
+  it("IModel persistent settings ", () => {
+    const iModelName = IModelTestUtils.prepareOutputFile("IModelSetting", "test.bim");
+    const iModel2 = IModelTestUtils.createSnapshotFromSeed(iModelName, IModelTestUtils.resolveAssetFile("test.bim"));
+
+    const setting1: SettingDictionary = {
+      "imodel/setting1": "this is from setting1",
+    };
+    const setting1changed: SettingDictionary = {
+      "imodel/setting1": "this is changed setting1",
+    };
+    const setting2: SettingDictionary = {
+      "workspace/container/alias": [
+        { name: "default-icons", id: "icons-01" },
+        { name: "default-lang", id: "lang-05" },
+        { name: "default-fonts", id: "fonts-02" }, // a container id that doesn't exist
+        { name: "default-key", id: "key-05" },
+      ],
+    };
+    iModel2.saveSettingDictionary("testSetting", setting2);
+    iModel2.saveSettingDictionary("test1", setting1);
+    iModel2.close();
+
+    let iModel3 = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
+    expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
+    expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1["imodel/setting1"]);
+
+    iModel3.saveSettingDictionary("test1", setting1changed);
+    iModel3.close();
+    iModel3 = StandaloneDb.openFile(iModelName);
+    expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
+    expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1changed["imodel/setting1"]);
+    iModel3.deleteSettingDictionary("test1");
+    iModel3.close();
+
+    iModel3 = StandaloneDb.openFile(iModelName);
+    expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
+    expect(iModel3.workspace.settings.getString("imodel/setting1")).to.be.undefined;
+    iModel3.close();
+  });
+
 });

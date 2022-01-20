@@ -10,7 +10,7 @@ import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-b
 import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
   ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
-  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps,
+  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -28,13 +28,16 @@ import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
+import { PointStringParams } from "./primitives/PointStringParams";
+import { PolylineParams } from "./primitives/PolylineParams";
+import { MeshParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "./RenderTexture";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
+import { CreateRenderMaterialArgs } from "./RenderMaterial";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -103,9 +106,6 @@ class GraphicOwner extends RenderGraphicOwner {
 export interface RenderSystemDebugControl {
   /** Destroy this system's webgl context. Returns false if this behavior is not supported. */
   loseContext(): boolean;
-
-  /** Draw surfaces as "pseudo-wiremesh", using GL_LINES instead of GL_TRIANGLES. Useful for visualizing faces of a mesh. Not suitable for real wiremesh display. */
-  drawSurfacesAsWiremesh: boolean;
 
   /** Overrides [[RenderSystem.dpiAwareLOD]].
    * @internal
@@ -233,6 +233,7 @@ export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
+ * @see [Display system overview]($docs/learning/display/index.md)
  * @see [[IModelApp.renderSystem]].
  * @public
  */
@@ -273,6 +274,9 @@ export abstract class RenderSystem implements IDisposable {
   public get supportsInstancing(): boolean { return true; }
 
   /** @internal */
+  public get supportsIndexedEdges(): boolean { return true; }
+
+  /** @internal */
   public get supportsNonuniformScaledInstancing(): boolean { return true; }
 
   /** @internal */
@@ -304,8 +308,17 @@ export abstract class RenderSystem implements IDisposable {
    * @param _params A description of the material's properties.
    * @param _imodel The IModelConnection associated with the material.
    * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
+   * @deprecated Use [[createRenderMaterial]].
    */
+  // eslint-disable-next-line deprecation/deprecation
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
+
+  /** Create a [RenderMaterial]($common).
+   * @see [[CreateRenderMaterialArgs]] for a description of the material parameters.
+   */
+  public createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined {
+    return undefined;
+  }
 
   /** Creates a [[GraphicBuilder]] for creating a [[RenderGraphic]].
    * @param placement The local-to-world transform in which the builder's geometry is to be defined.
@@ -478,6 +491,16 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a graphic from a [[GraphicBranch]]. */
   public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
 
+  /** Create a node in the scene graph corresponding to a transform node in the scene's schedule script.
+   * Nodes under this branch will only be drawn if they belong to the specified transform node.
+   * This allows the graphics in a single Tile to be efficiently drawn with different transforms applied by different nodes.
+   * The node Id is either the Id of a single transform node in the script, of 0xffffffff to indicate all nodes that have no transform applied to them.
+   * @internal
+   */
+  public createAnimationTransformNode(graphic: RenderGraphic, _nodeId: number): RenderGraphic {
+    return graphic;
+  }
+
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal
    */
@@ -536,7 +559,7 @@ export abstract class RenderSystem implements IDisposable {
           ownership: { key: id, iModel },
           image: {
             source: image.image,
-            transparency: ImageSourceFormat.Png === image.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+            transparency: ImageSourceFormat.Png === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
           },
         });
       }
@@ -594,7 +617,7 @@ export abstract class RenderSystem implements IDisposable {
       ownership,
       image: {
         source: image,
-        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
     });
   }
@@ -610,7 +633,7 @@ export abstract class RenderSystem implements IDisposable {
       ownership,
       image: {
         source: image,
-        transparency: hasAlpha ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+        transparency: hasAlpha ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
     });
   }
@@ -625,7 +648,7 @@ export abstract class RenderSystem implements IDisposable {
       type: params.type,
       source,
       ownership,
-      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Translucent,
+      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Mixed,
     });
   }
 
@@ -633,7 +656,7 @@ export abstract class RenderSystem implements IDisposable {
   public async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
     try {
       // JPEGs don't support transparency.
-      const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Translucent);
+      const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Mixed);
       const image = await imageElementFromImageSource(args.source);
       if (!IModelApp.hasRenderSystem)
         return undefined;

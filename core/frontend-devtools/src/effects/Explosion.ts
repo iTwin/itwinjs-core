@@ -8,9 +8,9 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { RenderTexture } from "@itwin/core-common";
+import { RenderTexture, TextureTransparency } from "@itwin/core-common";
 import {
-  DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, TextureTransparency, Tool,
+  DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
 } from "@itwin/core-frontend";
 import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
 
@@ -186,7 +186,7 @@ class ParticleSystem {
 
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
     // Note: The decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
-    const image = await imageElementFromUrl("./sprites/particle_explosion.png");
+    const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_explosion.png`);
     const texture = IModelApp.renderSystem.createTexture({
       ownership: "external",
       image: { source: image, transparency: TextureTransparency.Mixed },

@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import {
@@ -66,7 +65,7 @@ class GeoNameMarker extends Marker {
 
 class GeoNameMarkerSet extends MarkerSet<GeoNameMarker> {
   public override minimumClusterSize = 5;
-  protected getClusterMarker(cluster: Cluster<GeoNameMarker>): Marker { return Marker.makeFrom(cluster.markers[0], cluster, cluster.markers[0].image); }
+  protected getClusterMarker(cluster: Cluster<GeoNameMarker>): Marker { return new Marker(cluster.getClusterLocation(), cluster.markers[0].size,); }
 }
 
 export class GeoNameMarkerManager {
@@ -129,14 +128,19 @@ export class GeoNameMarkerManager {
   private async doCitySearch(longLatRange: Range2d, cityCount: number): Promise<GeoNameProps[] | undefined> {
     const urlTemplate = "http://api.geonames.org/citiesJSON?&north={north}&south={south}&east={east}&west={west}&lang=en&username=BentleySystems&maxRows={count}";
     const url = urlTemplate.replace("{west}", this.radiansToString(longLatRange.low.x)).replace("{south}", this.radiansToString(longLatRange.low.y)).replace("{east}", this.radiansToString(longLatRange.high.x)).replace("{north}", this.radiansToString(longLatRange.high.y)).replace("{count}", cityCount.toString());
-    const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
 
     try {
       this.outputInfoMessage("LoadingLocations");
-      const locationResponse: Response = await request(url, requestOptions);
+      let json: any = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json", // eslint-disable-line @typescript-eslint/naming-convention
+        },
+      });
+      json = json.json();
 
       const cities = new Array<GeoNameProps>();
-      for (const geoName of locationResponse.body.geonames) {
+      for (const geoName of json.geonames) {
         cities.push(geoName);
       }
       this.outputInfoMessage("LoadingComplete");

@@ -88,7 +88,9 @@ public;BasicNavigationWidgetProps
 public;BasicToolWidget(props: BasicToolWidgetProps): JSX.Element
 public;BasicToolWidgetProps
 public;BooleanListenerProps
+deprecated;BooleanListenerProps
 public;BooleanSyncUiListener 
+deprecated;BooleanSyncUiListener 
 alpha;BumpToolSetting 
 alpha;Calculator 
 internal;CalculatorEngine
@@ -103,8 +105,11 @@ alpha;CardContainerProps
 alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
+alpha;Category
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
+alpha;CategoryVisibilityHandler 
+alpha;CategoryVisibilityHandlerParams
 public;ChildWindowLocationProps
 public;ChildWindowManager
 beta;ClassGroupingOption
@@ -299,7 +304,7 @@ beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
 public;IModelViewportControl 
 public;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
-beta;Indicator 
+beta;Indicator(props: IndicatorProps): JSX.Element
 public;InitialAppUiSettings
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
 internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState
@@ -312,7 +317,7 @@ public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
 internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open
-internal;isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is
+internal;isFrontstageStateSettingResult(settingsResult: UiStateStorageResult): settingsResult is
 beta;isNoSelectionActive(): boolean
 internal;isPanelCollapsed(zoneStates: ReadonlyArray
 internal;isReactContent: (content: PopupContentType) => content is ReactContent
@@ -350,7 +355,9 @@ beta;ListPickerItem
 beta;ListPickerItemProps 
 beta;ListPickerProps
 beta;ListPickerPropsExtended 
+internal;loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport): Promise
 public;MarkupTools
+deprecated;MarkupTools
 alpha;MenuButton 
 alpha;MenuButtonPopup 
 alpha;MenuButtonPopupProps 
@@ -415,7 +422,6 @@ internal;packNineZoneState(state: NineZoneState): SavedNineZoneState
 internal;PanelSizeChangedEvent 
 internal;PanelSizeChangedEventArgs
 beta;PanelStateChangedEvent 
-deprecated;PanelStateChangedEvent 
 public;PanelStateChangedEventArgs
 deprecated;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
@@ -500,6 +506,8 @@ public;SnapModeField: import("react-redux").ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
+public;SplitPane(props: SplitPaneProps): JSX.Element
+public;SplitPaneProps
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
 public;StageContentLayout
@@ -507,7 +515,6 @@ public;StageContentLayoutProps
 public;StagePanel 
 public;StagePanelChangeHandler
 public;StagePanelDef 
-deprecated;StagePanelDef 
 public;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 deprecated;StagePanelHeader 
@@ -563,8 +570,10 @@ public;StickyMessageProps
 public;SupportsViewSelectorChange
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs
-public;SyncUiEvent 
-public;SyncUiEventArgs
+public;SyncUiEvent = UiSyncEvent
+deprecated;SyncUiEvent = UiSyncEvent
+public;SyncUiEventArgs = UiSyncEventArgs
+deprecated;SyncUiEventArgs = UiSyncEventArgs
 public;SyncUiEventDispatcher
 public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
@@ -648,12 +657,12 @@ public;UiDataProvidedDialogProps
 public;UiFramework
 internal;UiIntervalEvent 
 internal;UiIntervalEventArgs
-internal;UiSettingsContext: React.Context
 beta;UiSettingsPage({ allowSettingUiFrameworkVersion }:
-public;UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element
 public;UiSettingsProviderProps
 public;UiShowHideManager
 internal;UiShowHideSettingsProvider 
+internal;UiStateStorageContext: React.Context
+public;UiStateStorageHandler(props: UiSettingsProviderProps): JSX.Element
 public;UiVisibilityChangedEvent 
 public;UiVisibilityEventArgs
 alpha;UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element
@@ -667,6 +676,7 @@ public;useActiveViewport(): ScreenViewport | undefined
 public;useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined
 internal;useAvailableUiItemsProviders(): readonly string[]
 public;useBackstageManager: () => BackstageManager
+internal;useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport): Category[]
 internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 public;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
@@ -679,7 +689,6 @@ internal;useItemsManager(frontstageDef: FrontstageDef): void
 internal;useLabels(): NineZoneLabels
 internal;useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch
 internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined
-public;UserInfo
 public;UserSettingsProvider
 public;UserSettingsStorage 
 deprecated;UserSettingsStorage 
@@ -688,12 +697,11 @@ internal;useSaveFrontstageSettings(frontstageDef: FrontstageDef): void
 public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined
 beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
-internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
 internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElement
 public;useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 public;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
-public;useUiSettingsStorageContext(): UiSettingsStorage
+public;useUiStateStorageHandler(): UiStateStorage
 internal;useUiVisibility(): boolean
 internal;useUpdateNineZoneSize(frontstageDef: FrontstageDef): void
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider
@@ -703,6 +711,7 @@ alpha;useWidgetDirection(): "horizontal" | "vertical"
 alpha;ValidationTextbox 
 beta;ViewAttributesStatusField 
 public;ViewLayout
+internal;ViewOverlayHost({ viewport, featureOptions, userSuppliedOverlay }: ViewOverlayHostProps): JSX.Element | null
 public;ViewOverlayProps
 public;ViewportContentControl 
 beta;ViewSelector 
@@ -777,14 +786,11 @@ deprecated;WorkflowProps
 internal;WorkflowPropsList
 deprecated;WorkflowPropsList
 public;Zone 
-deprecated;Zone 
 public;ZoneDef 
-deprecated;ZoneDef 
 public;ZoneDefProvider
 public;ZoneLocation
 deprecated;ZoneLocation
 public;ZoneProps 
-deprecated;ZoneProps 
 internal;ZoneRuntimeProps
 public;ZoneState
 deprecated;ZoneState

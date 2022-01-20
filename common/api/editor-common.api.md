@@ -8,6 +8,8 @@ import { AngleProps } from '@itwin/core-geometry';
 import { ColorDefProps } from '@itwin/core-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EcefLocationProps } from '@itwin/core-common';
+import { ElementGeometryBuilderParams } from '@itwin/core-common';
+import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryDataEntry } from '@itwin/core-common';
 import { ElementGeometryInfo } from '@itwin/core-common';
 import { ElementGeometryOpcode } from '@itwin/core-common';
@@ -25,15 +27,15 @@ import { XYZProps } from '@itwin/core-geometry';
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
-    insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String>;
-    insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String>;
+    insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
+    insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
     requestElementGeometry(id: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
     rotatePlacement(ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
     // (undocumented)
     transformPlacement(ids: CompressedId64Set, transform: TransformProps): Promise<IModelStatus>;
     updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void>;
-    updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void>;
+    updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: ElementGeometryBuilderParams): Promise<void>;
     updateProjectExtents(extents: Range3dProps): Promise<void>;
 }
 
@@ -113,6 +115,7 @@ export interface CutProps {
     depth?: CutDepthMode;
     direction?: CutDirectionMode;
     distance?: number;
+    keepProfile?: true;
     outside?: true;
     profile: Id64String;
     targetPoint?: XYZProps;
@@ -198,6 +201,7 @@ export enum EmbossDirectionMode {
 // @alpha (undocumented)
 export interface EmbossProps {
     direction?: EmbossDirectionMode;
+    keepProfile?: true;
     profile: Id64String;
     targetPoint?: XYZProps;
 }
@@ -228,13 +232,6 @@ export interface FaceParameterRangeProps {
 }
 
 // @alpha (undocumented)
-export interface FlatBufferGeometricElementData {
-    entryArray: ElementGeometryDataEntry[];
-    isWorld?: boolean;
-    viewIndependent?: boolean;
-}
-
-// @alpha (undocumented)
 export interface FlatBufferGeometryFilter {
     accept?: ElementGeometryOpcode[];
     geometry?: {
@@ -244,12 +241,6 @@ export interface FlatBufferGeometryFilter {
     };
     maxDisplayable?: number;
     reject?: ElementGeometryOpcode[];
-}
-
-// @alpha (undocumented)
-export interface FlatBufferGeometryPartData {
-    entryArray: ElementGeometryDataEntry[];
-    is2dPart?: boolean;
 }
 
 // @alpha
@@ -267,6 +258,7 @@ export interface ImprintProps {
     extend?: true;
     face?: SubEntityProps;
     imprint: Id64String | SubEntityProps[] | ElementGeometryDataEntry;
+    keepProfile?: true;
 }
 
 // @alpha (undocumented)
@@ -282,6 +274,8 @@ export interface LocateSubEntityProps {
 // @alpha (undocumented)
 export interface LoftProps {
     guides?: Id64String | Id64String[];
+    keepGuides?: true;
+    keepTools?: true;
     orderCurves?: true;
     orientCurves?: true;
     periodic?: true;
@@ -349,6 +343,7 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
     isPlanarBody(id: Id64String, index: number): Promise<boolean>;
     isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined>;
+    isRedundantEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean>;
     isSmoothEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
@@ -434,6 +429,7 @@ export interface SweepFacesProps {
 export interface SweepPathProps {
     alignParallel?: true;
     createSheet?: true;
+    keepPath?: true;
     lockDirection?: XYZProps;
     path: Id64String;
     scale?: number;
@@ -450,7 +446,7 @@ export interface ThickenSheetProps {
 // @alpha (undocumented)
 export interface TransformSubEntityProps {
     subEntities: SubEntityProps | SubEntityProps[];
-    transforms: TransformProps | TransformProps[];
+    transforms: TransformProps[];
 }
 
 

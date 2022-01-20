@@ -35,6 +35,7 @@ export namespace RenderMemory {
     VisibleEdges,
     SilhouetteEdges,
     PolylineEdges,
+    IndexedEdges,
     Polylines,
     PointStrings,
     PointClouds,
@@ -60,6 +61,7 @@ export namespace RenderMemory {
 
     public get surfaces() { return this.consumers[BufferType.Surfaces]; }
     public get visibleEdges() { return this.consumers[BufferType.VisibleEdges]; }
+    public get indexedEdges() { return this.consumers[BufferType.IndexedEdges]; }
     public get silhouetteEdges() { return this.consumers[BufferType.SilhouetteEdges]; }
     public get polylineEdges() { return this.consumers[BufferType.PolylineEdges]; }
     public get polylines() { return this.consumers[BufferType.Polylines]; }
@@ -86,6 +88,7 @@ export namespace RenderMemory {
   export enum ConsumerType {
     Textures = 0,
     VertexTables,
+    EdgeTables,
     FeatureTables,
     FeatureOverrides,
     ClipVolumes,
@@ -111,6 +114,7 @@ export namespace RenderMemory {
     public get totalBytes(): number { return this._totalBytes; }
     public get textures() { return this.consumers[ConsumerType.Textures]; }
     public get vertexTables() { return this.consumers[ConsumerType.VertexTables]; }
+    public get edgeTables() { return this.consumers[ConsumerType.EdgeTables]; }
     public get featureTables() { return this.consumers[ConsumerType.FeatureTables]; }
     public get thematicTextures() { return this.consumers[ConsumerType.ThematicTextures]; }
     public get featureOverrides() { return this.consumers[ConsumerType.FeatureOverrides]; }
@@ -138,6 +142,7 @@ export namespace RenderMemory {
 
     public addTexture(numBytes: number) { this.addConsumer(ConsumerType.Textures, numBytes); }
     public addVertexTable(numBytes: number) { this.addConsumer(ConsumerType.VertexTables, numBytes); }
+    public addEdgeTable(numBytes: number) { this.addConsumer(ConsumerType.EdgeTables, numBytes); }
     public addFeatureTable(numBytes: number) { this.addConsumer(ConsumerType.FeatureTables, numBytes); }
     public addThematicTexture(numBytes: number) { this.addConsumer(ConsumerType.ThematicTextures, numBytes); }
     public addFeatureOverrides(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
@@ -148,6 +153,7 @@ export namespace RenderMemory {
 
     public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
     public addVisibleEdges(numBytes: number) { this.addBuffer(BufferType.VisibleEdges, numBytes); }
+    public addIndexedEdges(numBytes: number) { this.addBuffer(BufferType.IndexedEdges, numBytes); }
     public addSilhouetteEdges(numBytes: number) { this.addBuffer(BufferType.SilhouetteEdges, numBytes); }
     public addPolylineEdges(numBytes: number) { this.addBuffer(BufferType.PolylineEdges, numBytes); }
     public addPolyline(numBytes: number) { this.addBuffer(BufferType.Polylines, numBytes); }

@@ -8,7 +8,7 @@
 
 import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
-  BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
+  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
   IModelVersion, LocalDirName, LocalFileName,
 } from "@itwin/core-common";
 import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
@@ -49,13 +49,13 @@ export class LockConflict extends IModelError {
  */
 export interface V2CheckpointAccessProps {
   /** blob store account name. */
-  readonly user: string;
+  readonly accountName: string;
   /** The name of the iModel's blob store container holding all checkpoints. */
-  readonly container: string;
+  readonly containerId: string;
   /** AccessToken that grants access to the container. */
-  readonly auth: AccessToken;
+  readonly sasToken: AccessToken;
   /** The name of the virtual file within the container, used for the checkpoint */
-  readonly dbAlias: string;
+  readonly dbName: string;
   /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
   readonly storageType: string;
 }
@@ -132,7 +132,7 @@ export interface ChangesetIndexArg extends IModelIdArg {
   readonly changeset: ChangesetIdWithIndex;
 }
 
-/** Argument for methods that must supply an IModelId and a range of ChangesetIds.
+/** Argument for methods that must supply an IModelId and a range of Changesets.
  * @public
  */
 export interface ChangesetRangeArg extends IModelIdArg {
@@ -149,7 +149,7 @@ export type CheckpointArg = DownloadRequest;
  */
 export interface CreateNewIModelProps extends IModelNameArg {
   readonly description?: string;
-  readonly revision0?: LocalFileName;
+  readonly version0?: LocalFileName;
   readonly noLocks?: true;
 }
 
@@ -190,7 +190,7 @@ export interface BackendHubAccess {
    * download a v1 checkpoint
    * @internal
    */
-  downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetId>;
+  downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
 
   /**
    * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
@@ -201,7 +201,7 @@ export interface BackendHubAccess {
    * download a v2 checkpoint
    * @internal
    */
-  downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetId>;
+  downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
 
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired

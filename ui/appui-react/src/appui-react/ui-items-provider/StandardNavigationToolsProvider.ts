@@ -6,7 +6,7 @@
  * @module StandardUiItemsProvider
  */
 
-import { CommonToolbarItem, StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
+import { BaseUiItemsProvider, CommonToolbarItem, ToolbarOrientation, ToolbarUsage, UiItemsManager } from "@itwin/appui-abstract";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 
@@ -33,7 +33,7 @@ export interface DefaultNavigationTools {
  * Provide standard tools for the ViewNavigationWidgetComposer.
  * @public
  */
-export class StandardNavigationToolsProvider implements UiItemsProvider {
+export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
   /**
    * static function to register the StandardContentToolsProvider
    * @param providerId - unique identifier for this instance of the provider. This is required in case separate packages want
@@ -44,28 +44,18 @@ export class StandardNavigationToolsProvider implements UiItemsProvider {
    * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
    */
   public static register(providerId: string, defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
-    UiItemsManager.register(new StandardNavigationToolsProvider(providerId, defaultNavigationTools, isSupportedStage));
+    const provider = new StandardNavigationToolsProvider(providerId, defaultNavigationTools, isSupportedStage);
+    UiItemsManager.register(provider);
+    return provider;
   }
 
-  constructor(private _providerId: string, private defaultNavigationTools?: DefaultNavigationTools, private isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
-
-  public static unregister(providerId: string) {
-    UiItemsManager.unregister(providerId);
+  constructor(providerId: string, private defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
+    super(providerId, isSupportedStage);
   }
 
-  public get id(): string { return this._providerId; }
-
-  public provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[] {
+  public override provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[] {
     const items: CommonToolbarItem[] = [];
-    let provideToStage = false;
-
-    if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
-    } else {
-      provideToStage = (stageUsage === StageUsage.General);
-    }
-
-    if (provideToStage && toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Horizontal) {
+    if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Horizontal) {
 
       if (!this.defaultNavigationTools || !this.defaultNavigationTools.horizontal || this.defaultNavigationTools.horizontal.rotateView)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.rotateViewCommand));
@@ -86,7 +76,7 @@ export class StandardNavigationToolsProvider implements UiItemsProvider {
         items.push(ToolbarHelper.createToolbarItemFromItemDef(60, CoreTools.viewRedoCommand));
       }
 
-    } else /* istanbul ignore else */ if (provideToStage && toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
+    } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
 
       if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.walk)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.walkViewCommand));

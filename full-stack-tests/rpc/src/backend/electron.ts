@@ -14,7 +14,6 @@ async function init() {
     ElectronHost.rpcConfig.protocol.transferChunkThreshold = value;
     return true;
   });
-
 }
 
 module.exports = init();

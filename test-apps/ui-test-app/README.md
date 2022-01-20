@@ -13,6 +13,8 @@ The application may be run as an Electron app, Mobile app or within a browser. T
     > If you intend to use the ui-test-app offline with a snapshot iModel, you can safely ignore these instructions. When prompted to sign-in click the "Work offline" button.
 3. Optionally, set other environment variables to configure the application prior to startup. The full list of supported variable are [below](#environment-variables).
 
+Note: Before running `ui-test-app` for the first time, use the command `npm run build:ci` from the `ui-test-app` directory to ensure all assets are properly displayed when running locally.
+
 * To start the application in Electron, navigate to the root of ui-test-app, and use the command:
 
   ```cmd
@@ -102,13 +104,13 @@ If you do have an existing client, set the following environment variables with 
   * IMJS_OIDC_BROWSER_TEST_REDIRECT_URI
     * By default set this to `http://localhost:3000/signin-callback`
   * IMJS_OIDC_BROWSER_TEST_SCOPES
-    * By default set this to `openid email profile organization itwinjs`
+    * By default set this to `openid profile organization email itwinjs projects:read`
 * For Electron/Desktop, use a client that is "Type" `Desktop/Mobile` and set the following variables
   * IMJS_OIDC_ELECTRON_TEST_CLIENT_ID
   * IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI
     * By default set this to `http://localhost:3000/signin-callback`
   * IMJS_OIDC_ELECTRON_TEST_SCOPES
-    * By default set this to `openid email profile organization itwinjs`
+    * By default set this to `openid profile organization email itwinjs offline_access projects:read`
 
 > Note: In the Web case, if you change the PORT of the frontend then you will also need to update the redirect_uri in both the Developer Portal and the `IMJS_OIDC_BROWSER_TEST_REDIRECT_URI` variable to reflect the new port. The default port is `3000`.
 

@@ -15,8 +15,8 @@ import {
 } from "@itwin/core-common";
 import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { NumberInput, Toggle } from "@itwin/core-react";
-import { Select } from "@itwin/itwinui-react";
+import { NumberInput } from "@itwin/core-react";
+import { Select, ToggleSwitch } from "@itwin/itwinui-react";
 import { SourceMapContext } from "../ui/widget/MapLayerManager";
 import { MapManagerSettings } from "../ui/widget/MapManagerSettings";
 import { TestUtils } from "./TestUtils";
@@ -86,7 +86,7 @@ describe("MapManagerSettings", () => {
     backgroundMapSettingsMock.setup((bgMapSettings) => bgMapSettings.applyTerrain).returns(() => false);
     backgroundMapSettingsMock.setup((bgMapSettings) => bgMapSettings.terrainSettings).returns(() => terrainSettingsMock.object);
     backgroundMapSettingsMock.setup((bgMapSettings) => bgMapSettings.useDepthBuffer).returns(() => false);
-    backgroundMapSettingsMock.setup((bgMapSettings) => bgMapSettings.useDepthBuffer).returns(() => true);
+    backgroundMapSettingsMock.setup((bgMapSettings) => bgMapSettings.locatable).returns(() => true);
     displayStyleSettingsMock.reset();
     displayStyleSettingsMock.setup((styleSettings) => styleSettings.backgroundMap).returns(() => backgroundMapSettingsMock.object);
     displayStyleMock.reset();
@@ -139,7 +139,7 @@ describe("MapManagerSettings", () => {
     expect(numericInputs.at(0).find("input").html().includes("disabled")).to.be.true;
 
     // Make sure the 'useDepthBuffer' toggle is NOT disabled
-    let toggles = component.find(Toggle);
+    let toggles = component.find(ToggleSwitch);
 
     // Elevation type should be disabled initially
     let select = component.find(Select);
@@ -151,16 +151,15 @@ describe("MapManagerSettings", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
 
     // Toggle 'enable' terrain
-    const input = toggles.at(getToggleIndex("terrain")).find("input");
-    input.simulate("change", { checked: true });
+    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
     component.update();
 
     // 'changeBackgroundMapProps' should have been called once now
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.once());
 
     // 'useDepthBuffer' toggle should now be disabled
-    toggles = component.find(Toggle);
-    expect(toggles.at(getToggleIndex("depthBuffer")).find(".uicore-disabled").exists()).to.be.true;
+    toggles = component.find(ToggleSwitch);
+    expect(toggles.at(getToggleIndex("depthBuffer")).find(".iui-disabled").exists()).to.be.true;
 
     const quantityInputs = component.find(QuantityNumberInput);
     // Make sure groundBias is now disabled
@@ -198,9 +197,10 @@ describe("MapManagerSettings", () => {
     expect(sliders.at(1).props()["aria-disabled"]).to.be.true;
 
     // Turn on the mask toggle
-    const toggles = component.find(Toggle);
-    toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
-    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", { checked: true });
+    const toggles = component.find(ToggleSwitch);
+    toggles.at(getToggleIndex("mask")).find("input").simulate("change", {target: { checked: true }});
+    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", {target: { checked: true }});
+
     component.update();
 
     // Make sure the slider is now enabled
@@ -215,10 +215,10 @@ describe("MapManagerSettings", () => {
 
   it("Locatable toggle", () => {
     const component = mountComponent();
-    const toggles = component.find(Toggle);
+    const toggles = component.find(ToggleSwitch);
 
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
-    toggles.at(getToggleIndex("locatable")).find("input").simulate("change", { checked: true });
+    toggles.at(getToggleIndex("locatable")).find("input").simulate("change", {target: { checked: false }});
     component.update();
 
     // 'changeBackgroundMapProps' should have been called once now
@@ -230,17 +230,16 @@ describe("MapManagerSettings", () => {
 
     const component = mountComponent();
 
-    const toggles = component.find(Toggle);
+    const toggles = component.find(ToggleSwitch);
 
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
-
-    toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
+    toggles.at(getToggleIndex("mask")).find("input").simulate("change", {target: { checked: true }});
     component.update();
 
     // 'changeBackgroundMapProps' should have been called once now
     viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: undefined } }), moq.Times.once());
 
-    toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
+    toggles.at(getToggleIndex("mask")).find("input").simulate("change", {target: { checked: false }});
     component.update();
 
     viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } }), moq.Times.once());
@@ -251,29 +250,29 @@ describe("MapManagerSettings", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
     const component = mountComponent();
 
-    let toggles = component.find(Toggle);
+    let toggles = component.find(ToggleSwitch);
 
     // By default, the toggle should be disabled
-    expect(toggles.at(getToggleIndex("overrideMaskTransparency")).find(".uicore-disabled").exists()).to.be.true;
+    expect(toggles.at(getToggleIndex("overrideMaskTransparency")).find(".iui-disabled").exists()).to.be.true;
 
     // First turn ON the masking toggle
-    toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
+    toggles.at(getToggleIndex("mask")).find("input").simulate("change", {target: { checked: true }});
     component.update();
 
-    toggles = component.find(Toggle);
+    toggles = component.find(ToggleSwitch);
 
     // Toggle should be enabled now
-    expect(toggles.at(getToggleIndex("overrideMaskTransparency")).find(".uicore-disabled").exists()).to.be.false;
+    expect(toggles.at(getToggleIndex("overrideMaskTransparency")).find(".iui-disabled").exists()).to.be.false;
 
     // .. then we can turn ON the override mask transparency
-    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", { checked: true });
+    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", {target: { checked: true }});
     component.update();
 
     // 'changeBackgroundMapProps' should have been called once now
     viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: 0 } }), moq.Times.once());
 
     // turn if OFF again
-    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", { checked: false });
+    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", {target: { checked: false }});
     component.update();
 
     viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: undefined } }), moq.Times.exactly(2));
@@ -299,8 +298,8 @@ describe("MapManagerSettings", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
 
     // turn on the 'terrain' toggle then change the input value
-    const toggles = component.find(Toggle);
-    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", { checked: true });
+    const toggles = component.find(ToggleSwitch);
+    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
 
     const oneStepIncrementValue = 1; // 1 foot
     const oneStepFiredValue = oneStepIncrementValue*0.3048; // .. in meters
@@ -318,8 +317,8 @@ describe("MapManagerSettings", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
 
     // turn ON the 'terrain' toggle then change the input value
-    const toggles = component.find(Toggle);
-    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", { checked: true });
+    const toggles = component.find(ToggleSwitch);
+    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
     changeNumericInputValue(numericInputs.at(0), 1);
 
     viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { exaggeration: 1 } }), moq.Times.once());
@@ -332,8 +331,8 @@ describe("MapManagerSettings", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
 
     // turn ON the 'terrain' toggle then change the combo box value
-    const toggles = component.find(Toggle);
-    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", { checked: true });
+    const toggles = component.find(ToggleSwitch);
+    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
 
     const select = component.find(Select);
     select.props().onChange!("geoid");
@@ -347,8 +346,8 @@ describe("MapManagerSettings", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
 
     // turn ON the 'terrain' toggle then change the combo box value
-    const toggles = component.find(Toggle);
-    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", { checked: true });
+    const toggles = component.find(ToggleSwitch);
+    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
 
     const select = component.find(Select);
     select.props().onChange!("geodetic");
@@ -362,8 +361,8 @@ describe("MapManagerSettings", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
 
     // turn ON the 'terrain' toggle then change the combo box value
-    const toggles = component.find(Toggle);
-    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", { checked: true });
+    const toggles = component.find(ToggleSwitch);
+    toggles.at(getToggleIndex("terrain")).find("input").simulate("change", {target: { checked: true }});
 
     const select = component.find(Select);
     select.props().onChange!("ground");

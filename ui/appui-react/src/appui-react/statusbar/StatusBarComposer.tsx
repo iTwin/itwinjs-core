@@ -10,11 +10,11 @@ import classnames from "classnames";
 import * as React from "react";
 import {
   AbstractStatusBarActionItem, AbstractStatusBarLabelItem, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
-  isAbstractStatusBarActionItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarLabelSide, StatusBarSection,
+  isAbstractStatusBarActionItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarLabelSide, StatusBarSection, UiSyncEventArgs,
 } from "@itwin/appui-abstract";
 import { CommonProps, Icon, useRefs, useResizeObserver } from "@itwin/core-react";
 import { eqlOverflown, FooterIndicator } from "@itwin/appui-layout-react";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { Indicator } from "../statusfields/Indicator";
 import { StatusBarOverflow } from "./Overflow";
 import { StatusBarOverflowPanel } from "./OverflowPanel";
@@ -104,7 +104,7 @@ const DockedStatusBarEntry = React.memo<DockedStatusBarEntryProps>(function Dock
 /** Private function to set up sync event monitoring of statusbar items */
 function useStatusBarItemSyncEffect(itemsManager: StatusBarItemsManager, syncIdsOfInterest: string[]) {
   React.useEffect(() => {
-    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       if (0 === syncIdsOfInterest.length)
         return;
 
@@ -144,10 +144,22 @@ function generateActionStatusBarItem(item: AbstractStatusBarActionItem, isInFoot
 /** local function to combine items from Stage and from Extensions */
 function combineItems(stageItems: ReadonlyArray<CommonStatusBarItem>, addonItems: ReadonlyArray<CommonStatusBarItem>) {
   const items: CommonStatusBarItem[] = [];
-  if (stageItems.length)
-    items.push(...stageItems);
-  if (addonItems.length)
-    items.push(...addonItems);
+  if (stageItems.length) {
+    // Walk through each and ensure no duplicate ids are added.
+    stageItems.forEach((srcItem) => {
+      if (-1 === items.findIndex((item) => item.id === srcItem.id)) {
+        items.push(srcItem);
+      }
+    });
+  }
+  if (addonItems.length) {
+    // Walk through each and ensure no duplicate ids are added.
+    addonItems.forEach((srcItem) => {
+      if (-1 === items.findIndex((item) => item.id === srcItem.id)) {
+        items.push(srcItem);
+      }
+    });
+  }
   return items;
 }
 
@@ -236,7 +248,7 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
   useStatusBarItemSyncEffect(defaultItemsManager, syncIdsOfInterest);
 
   const statusBarContext = React.useContext(StatusBarContext);
-  const [addonItemsManager] = React.useState(new StatusBarItemsManager());
+  const [addonItemsManager] = React.useState(() => new StatusBarItemsManager());
   const addonItems = useUiItemsProviderStatusBarItems(addonItemsManager);
   const addonSyncIdsOfInterest = React.useMemo(() => StatusBarItemsManager.getSyncIdsOfInterest(addonItems), [addonItems]);
   useStatusBarItemSyncEffect(addonItemsManager, addonSyncIdsOfInterest);

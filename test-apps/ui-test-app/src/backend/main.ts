@@ -7,13 +7,13 @@ import * as path from "path";
 import { IModelHostConfiguration } from "@itwin/core-backend";
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Presentation } from "@itwin/presentation-backend";
-import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
 import { loggerCategory } from "../common/TestAppConfiguration";
 import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { getSupportedRpcs } from "../common/rpcs";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
@@ -27,7 +27,7 @@ import { getSupportedRpcs } from "../common/rpcs";
     initializeLogging();
 
     const iModelHost = new IModelHostConfiguration();
-    iModelHost.hubAccess = new IModelHubBackend();
+    iModelHost.hubAccess = new BackendIModelsAccess();
 
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {

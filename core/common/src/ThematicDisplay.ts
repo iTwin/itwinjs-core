@@ -6,6 +6,7 @@
  * @module Symbology
  */
 
+import { compareNumbers } from "@itwin/core-bentley";
 import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
@@ -117,6 +118,34 @@ export class ThematicGradientSettings {
     }
 
     return true;
+  }
+
+  /** Compares two sets of thematic gradient settings.
+   * @param lhs First set of thematic gradient settings to compare
+   * @param rhs Second set of thematic gradient settings to compare
+   * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
+   */
+  public static compare(lhs: ThematicGradientSettings, rhs: ThematicGradientSettings): number {
+    let diff = 0;
+    if ((diff = compareNumbers(lhs.mode, rhs.mode)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.stepCount, rhs.stepCount)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.marginColor.tbgr, rhs.marginColor.tbgr)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.colorScheme, rhs.colorScheme)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.colorMix, rhs.colorMix)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.customKeys.length, rhs.customKeys.length)) !== 0)
+      return diff;
+
+    for (let i = 0; i < lhs.customKeys.length; i++) {
+      if ((diff = compareNumbers(lhs.customKeys[i].color.tbgr, rhs.customKeys[i].color.tbgr)) !== 0)
+        return diff;
+    }
+
+    return diff;
   }
 
   private constructor(json?: ThematicGradientSettingsProps) {
