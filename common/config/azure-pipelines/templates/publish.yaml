@@ -13,6 +13,7 @@ steps:
   displayName: Gather packages for release
   inputs:
     workingDirectory: ${{ parameters.workingDir }}
+<<<<<<< HEAD
     scriptSource: inline
     script: |
      import sys, os, glob, re, subprocess
@@ -171,6 +172,10 @@ steps:
      else:
        print ("All packages are up-to-date.")
 
+=======
+    scriptSource: filepath
+    scriptPath: common/scripts/gather_packages.py
+>>>>>>> fa636a0c7e (Move gather packages script to file (#3041))
     arguments: '$(Build.ArtifactStagingDirectory) $(Build.SourcesDirectory) $(Build.SourceBranch)'
     condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
 
