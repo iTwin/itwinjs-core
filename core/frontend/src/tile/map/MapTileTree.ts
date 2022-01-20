@@ -574,7 +574,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (! this._settings.applyTerrain || this._isDrape)
       return undefined;     // Don't bother generating non-terrain (flat) geometry.
 
-    return new MapTileTreeReference(this._settings, undefined, [], this._iModel, this._viewportId, false, false, () => { return { produceGeometry: true }; });
+    return new MapTileTreeReference(this._settings, undefined, [], this._iModel, this._tileUserId, false, false, () => { return { produceGeometry: true }; });
   }
 
   /** Terrain  tiles do not contribute to the range used by "fit view". */
