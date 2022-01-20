@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelbank-client",
+      "comment": "use ProgressInfo and ProgressCallback from core-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelbank-client"
+}
