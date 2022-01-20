@@ -15,7 +15,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
 import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, I3dmReader, readPointCloudTileContent, RealityTile, RealityTileContent, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel,
+  TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "./internal";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
@@ -36,7 +36,7 @@ export abstract class RealityTileLoader {
     this.preloadRealityParentSkip = IModelApp.tileAdmin.contextPreloadParentSkip;
   }
 
-  public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number {
+  public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     // ###TODO: Handle case where tile tree reference(s) have a transform different from tree's (background map with ground bias).
     return RealityTileLoader.computeTileClosestToEyePriority(tile, viewports, tile.tree.iModelTransform);
   }

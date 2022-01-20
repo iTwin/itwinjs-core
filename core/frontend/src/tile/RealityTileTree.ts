@@ -490,7 +490,7 @@ export class RealityTileTree extends TileTree {
         this.logTiles("Imagery:", imageryTiles.values());
     }
 
-    IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, selected, args.readyTiles);
+    IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles);
     return selected;
   }
 

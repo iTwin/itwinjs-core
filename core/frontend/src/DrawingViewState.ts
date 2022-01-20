@@ -252,9 +252,9 @@ class SectionAttachment {
 
     // Report tile statistics to drawing viewport.
     const tileAdmin = IModelApp.tileAdmin;
-    const selectedAndReady = tileAdmin.getTilesForViewport(this.viewport);
-    const requested = tileAdmin.getRequestsForViewport(this.viewport);
-    tileAdmin.addExternalTilesForViewport(context.viewport, {
+    const selectedAndReady = tileAdmin.getTilesForUser(this.viewport);
+    const requested = tileAdmin.getRequestsForUser(this.viewport);
+    tileAdmin.addExternalTilesForUser(context.viewport, {
       requested: requested?.size ?? 0,
       selected: selectedAndReady?.selected.size ?? 0,
       ready: selectedAndReady?.ready.size ?? 0,
