@@ -3,17 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "./ViewportContentControl.css";
+import "./FloatingViewportContent.css";
 import * as React from "react";
 import { IModelApp, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 import { ViewportComponent } from "@itwin/imodel-components-react";
-import { ContentViewManager, ContentWrapper, FloatingViewportContentControl, UiShowHideManager } from "@itwin/appui-react";
+import { FloatingViewportContentControl } from "./ViewportContentControl";
+import { ContentViewManager } from "./ContentViewManager";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { ContentWrapper } from "./ContentLayout";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const SampleViewport = viewWithUnifiedSelection(ViewportComponent);
+const FloatingViewport = viewWithUnifiedSelection(ViewportComponent);
 
-export interface ViewportContentComponentProps {
+/**
+ * @beta
+ */
+export interface FloatingViewportContentProps {
   /** callback used to construct context menu when user right-clicks on canvas/viewport */
   onContextMenu?: (e: React.MouseEvent) => boolean;
   /** viewport/content control uniqueId */
@@ -22,7 +28,14 @@ export interface ViewportContentComponentProps {
   initialViewState: ViewState;
 }
 
-export default function ViewportContentComponent(props: ViewportContentComponentProps) { // eslint-disable-line @typescript-eslint/naming-convention
+/**
+ * FloatingViewportContent component that creates its own [FloatingViewportContentControl].
+ * This allows it to be recognized as an "active" content control so that tools operate on this
+ * content.
+ * @beta
+ */
+// istanbul ignore next
+export function FloatingViewportContent(props: FloatingViewportContentProps) { // eslint-disable-line @typescript-eslint/naming-convention
   const { contentId, initialViewState } = props;
   const [viewport, setViewport] = React.useState<ScreenViewport | undefined>();
   const contentControl = React.useRef<FloatingViewportContentControl | undefined>();
@@ -44,7 +57,7 @@ export default function ViewportContentComponent(props: ViewportContentComponent
 
   const viewPortControl = React.useMemo(() =>
     initialViewState ? (
-      <SampleViewport
+      <FloatingViewport
         viewportRef={onViewportRef}
         imodel={initialViewState.iModel}
         viewState={initialViewState}

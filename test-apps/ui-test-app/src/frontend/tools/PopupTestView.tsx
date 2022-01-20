@@ -6,8 +6,7 @@
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
 import { AbstractMenuItemProps } from "@itwin/appui-abstract";
-import { UiFramework, useActiveIModelConnection } from "@itwin/appui-react";
-import ViewportContentComponent from "../appui/childwindows/ViewportContentControl";
+import { FloatingViewportContent, UiFramework, useActiveIModelConnection } from "@itwin/appui-react";
 
 import "./PopupTestView.scss";
 import ViewDefinitionSelector, { getViewDefinitions } from "../appui/childwindows/ViewDefinitionSelector";
@@ -66,7 +65,7 @@ export function PopupTestView({ contentId, showViewPicker }: { contentId: string
   return (
     <div className="test-popup-test-view" ref={divRef}>
       {initialViewState &&
-        <ViewportContentComponent contentId={contentId} initialViewState={initialViewState} onContextMenu={handleContextMenu} />}
+        <FloatingViewportContent contentId={contentId} initialViewState={initialViewState} onContextMenu={handleContextMenu} />}
       {!!showViewPicker && initialViewState &&
         <ViewDefinitionSelector imodel={initialViewState.iModel} selectedViewDefinition={initialViewState.id} onViewDefinitionSelected={onViewDefinitionChanged} />}
     </div>

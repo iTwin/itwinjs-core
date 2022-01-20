@@ -35,9 +35,9 @@ export function ContentWrapper(props: ContentWrapperProps) {
 
   // istanbul ignore next
   const [hasMultipleContents, setHasMultipleContents] = React.useState(() =>
-  (activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
+    (activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length) ||
     (activeFrontstageDef?.contentGroup?.getContentControls().length ?? 0) > 1)
-  )
+  );
 
   React.useEffect(() => {
     setIsActive(content === ContentViewManager.getActiveContent());

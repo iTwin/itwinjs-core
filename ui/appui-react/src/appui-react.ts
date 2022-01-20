@@ -43,6 +43,7 @@ export * from "./appui-react/content/ContentGroup";
 export * from "./appui-react/content/ContentLayout";
 export * from "./appui-react/content/ContentLayoutManager";
 export * from "./appui-react/content/ContentViewManager";
+export * from "./appui-react/content/FloatingViewportContent";
 export * from "./appui-react/content/ViewStateHelper";
 export * from "./appui-react/content/StageContentLayout";
 export * from "./appui-react/content/ViewportContentControl";

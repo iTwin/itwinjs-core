@@ -226,7 +226,9 @@ internal;expandWidget: (base:
 public;ExtensibleToolbarProps
 beta;featureOverridesActiveStateFunc(state: Readonly
 beta;FloatingContentControl 
+beta;FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element
 beta;FloatingViewportContentControl 
+beta;FloatingViewportContentProps
 alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 

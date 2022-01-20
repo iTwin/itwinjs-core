@@ -2272,11 +2272,21 @@ export class FloatingContentControl extends ContentControl {
     constructor(uniqueId: string, name: string, node: React.ReactNode);
 }
 
+// @beta
+export function FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element;
+
 // @beta (undocumented)
 export class FloatingViewportContentControl extends ViewportContentControl {
     constructor(uniqueId: string, name: string, node: React_2.ReactNode);
     get reactNode(): React_2.ReactNode;
     set reactNode(r: React_2.ReactNode);
+}
+
+// @beta (undocumented)
+export interface FloatingViewportContentProps {
+    contentId: string;
+    initialViewState: ViewState;
+    onContextMenu?: (e: React.MouseEvent) => boolean;
 }
 
 // @alpha

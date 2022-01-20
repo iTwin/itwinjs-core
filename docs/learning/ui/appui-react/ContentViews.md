@@ -217,6 +217,21 @@ const fourQuadrants: ContentLayoutProps = {
 };
 ```
 
+### Floating content view
+
+In addition to the "fixed" content views that are defined for a Frontstage, via the [ContentGroupProps]($appui-react), one or more "floating" content dialogs can be opened to display an IModel view, as seen below.
+
+![Floating iModel Content Dialog](./images/ModalDialog.png "Floating iModel Content Dialog")
+
+The code snippet below is from the `ui-test-app` file [ImmediateTools.tsx](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/tools/ImmediateTools.tsx) and shows the API call to open a floating content dialog. The ContentDialogManager manages the z-index of the "active" content dialog and ensures the active dialog appears above other floating content dialogs. The content dialog should be displaying a
+
+ The example `IModelViewDialog` component uses the component [PopupTestView](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/tools/PopupTestView.tsx) along with [FloatingViewportContent]($appui-react), the active IModel and the default viewstate (both stored in Redux state) to display an IModel view. This example also registers a custom right-click menu to show when right-clicking on the view canvas.  The z-index of these dialogs are below the z-index of all other UI elements.
+
+```tsx
+    ContentDialogManager.openDialog(<IModelViewDialog x={x} y={y} id={OpenViewDialogTool.dialogId}
+      title={`IModel View (${OpenViewDialogTool._counter})`} />, OpenViewDialogTool.dialogId);
+```
+
 ## API Reference
 
 - [Content Views]($appui-react:ContentView)

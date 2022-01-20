@@ -86,8 +86,10 @@ export class ConfigurableUiManager {
     // Initialize the ToolSettingsManager that manages Tool Settings properties.
     ToolSettingsManager.initialize();
 
-    // Initialize dialog managers that require a
+    // Initialize dialog managers that allow one or more dialogs to be open at a time. These managers adjust the z-indexing
+    // to ensure the most recently focused dialog of a specific type displays above its siblings.
     ModelessDialogManager.initialize();
+    // ContentDialog have a z-index just above the fixed content views and below all other UI elements.
     ContentDialogManager.initialize();
 
     // Initialize the Keyboard Shortcut manager
