@@ -18,8 +18,6 @@ export type TileUser = Viewport;
 
 export type CollectTileStatus = "accept" | "reject" | "continue";
 
-export type CollectTileGeometryStatus = "loading" | "complete";
-
 export interface TileGeometryCollectorOptions {
   chordTolerance: number;
   range: Range3d;
@@ -46,7 +44,7 @@ export class TileGeometryCollector {
     IModelApp.tileAdmin.requestTiles(this._options.user, this._missing);
   }
 
-  public get isGeometryLoaded(): boolean {
+  public get isAllGeometryLoaded(): boolean {
     return !this._childrenLoading && this._missing.size === 0;
   }
 
@@ -64,5 +62,5 @@ export class TileGeometryCollector {
 }
 
 export interface GeometryTileTreeReference extends TileTreeReference {
-  collectTilePolyfaces: (collector: TileGeometryCollector) => CollectTileGeometryStatus;
+  collectTilePolyfaces: (collector: TileGeometryCollector) => void;
 }

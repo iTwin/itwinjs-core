@@ -15,7 +15,9 @@ import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
-import { DisclosedTileTreeSet, TileDrawArgs, TileTree, TileTreeLoadStatus, TileTreeOwner } from "./internal";
+import {
+  DisclosedTileTreeSet, GeometryTileTreeReference, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner,
+} from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
  * @public
@@ -224,10 +226,36 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
 
+  /**
+   * @beta
+   */
+  protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
+    return undefined;
+  }
+
+  /**
+   * @beta
+   */
+  public readonly collectTilePolyfaces?: (collector: TileGeometryCollector) => void;
+
+  /**
+   * @beta
+   */
+  public createGeometryTreeReference(): GeometryTileTreeReference | undefined {
+    if (this.collectTilePolyfaces) {
+      // Unclear why compiler doesn't detect that `this` satisfies the GeometryTileTreeReference interface...it must be looking only at the types, not this particular instance.
+      return this as GeometryTileTreeReference;
+    }
+
+    return this._createGeometryTreeReference();
+  }
+
   /** Create a tile tree that produces geometry rather than graphics.
    * This is currently supported only for reality and map tile trees.
    * @see [[RealityTileTree.collectRealityTiles]].
    * @alpha
    */
-  public createGeometryTreeRef(): TileTreeReference | undefined {  return undefined;   }
+  public createGeometryTreeRef(): TileTreeReference | undefined {
+    return undefined;
+  }
 }

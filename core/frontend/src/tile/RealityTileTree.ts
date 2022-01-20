@@ -140,9 +140,6 @@ export enum RealityTileCollectionSelectionStatus { Continue, Reject, Accept }
  */
 export enum RealityTileCollectionStatus { Loading, Success }
 
-/** @alpha */
-export enum RealityTileDrapeStatus { Loading, Success, Error }
-
 /** Base class for a collecting reality tiles from a [[RealityTileTree]].
  * @alpha
  */
