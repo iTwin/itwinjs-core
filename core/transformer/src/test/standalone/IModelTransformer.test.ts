@@ -1013,7 +1013,7 @@ describe("IModelTransformer", () => {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawingId },
     });
-    sourceDb.models.insertModel(model);
+    sourceDb.models.insertModel(model.toJSON());
 
     const myCodeSpecId = sourceDb.codeSpecs.insert(CodeSpec.create(sourceDb, "MyCodeSpec", CodeScopeSpec.Type.RelatedElement));
 
@@ -1070,13 +1070,13 @@ describe("IModelTransformer", () => {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawing1Id },
     });
-    const drawingModel1Id = sourceDb.models.insertModel(drawingModel1);
+    const drawingModel1Id = sourceDb.models.insertModel(drawingModel1.toJSON());
 
     const drawingModel2 = sourceDb.models.createModel({
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawing2Id },
     });
-    const drawingModel2Id = sourceDb.models.insertModel(drawingModel2);
+    const drawingModel2Id = sourceDb.models.insertModel(drawingModel2.toJSON());
 
     const modelCodeSpec = sourceDb.codeSpecs.insert(CodeSpec.create(sourceDb, "ModelCodeSpec", CodeScopeSpec.Type.Model));
     const relatedCodeSpecId = sourceDb.codeSpecs.insert(CodeSpec.create(sourceDb, "RelatedCodeSpec", CodeScopeSpec.Type.RelatedElement));

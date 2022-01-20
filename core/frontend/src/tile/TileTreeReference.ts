@@ -30,7 +30,7 @@ export enum TileGraphicType {
 }
 
 /** A reference to a [[TileTree]] suitable for drawing within a [[Viewport]]. The reference does not *own* its tile tree - it merely refers to it by
- * way of the tree [[TileTreeOwner]].
+ * way of the tree's [[TileTreeOwner]].
  * The specific [[TileTree]] referenced by this object may change based on the current state of the Viewport in which it is drawn - for example,
  * as a result of changing the RenderMode, or animation settings, or classification settings, etc.
  * A reference to a TileTree is typically associated with a [[ViewState]], a [[DisplayStyleState]], or a [[Viewport]].

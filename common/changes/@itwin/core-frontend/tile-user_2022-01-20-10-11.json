@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Generalize the concept of a TileUser to include types other than Viewports.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
