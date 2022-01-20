@@ -27,9 +27,9 @@ import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
-  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams,
-  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
-  TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
+  getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
+  TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 
 function getUrl(content: any) {
@@ -723,9 +723,25 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     this._produceGeometry = props.produceGeometry;
 
     // Maybe we should throw if both props.rdSourceKey && props.url are undefined
-    this._rdSourceKey = props.rdSourceKey ? props.rdSourceKey : props.url ? RealityDataSource.createKeyFromUrl(props.url, RealityDataProvider.ContextShare) :
-      RealityDataSource.createKeyFromUrl("", RealityDataProvider.ContextShare);
+    if (props.rdSourceKey)
+      this._rdSourceKey = props.rdSourceKey;
+    else
+      this._rdSourceKey = RealityDataSource.createKeyFromUrl(props.url ?? "", RealityDataProvider.ContextShare)
+
+    if (this._produceGeometry) {
+      this.collectTileGeometry = (collector) => {
+        const tree = this.treeOwner.load();
+        if (TileTreeLoadStatus.Loaded !== this.treeOwner.loadStatus) {
+          collector.markLoading();
+          return;
+        }
+
+        assert(undefined !== tree);
+        tree.collectTileGeometry(collector);
+      }
+    }
   }
+
   public get treeOwner(): TileTreeOwner {
     const treeId: RealityTreeId = {
       rdSourceKey: this._rdSourceKey,
@@ -739,8 +755,18 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     return realityTreeSupplier.getOwner(treeId, this._iModel);
   }
 
-  public override createGeometryTreeRef(): TileTreeReference | undefined {
-    return new RealityTreeReference({ iModel: this._iModel, modelId: this.modelId, source: this._source, rdSourceKey: this._rdSourceKey, name: this._name, produceGeometry: true });
+  protected override _createGeometryTreeReference(): GeometryTileTreeReference {
+    const ref = new RealityTreeReference({
+      iModel: this._iModel,
+      modelId: this.modelId,
+      source: this._source,
+      rdSourceKey: this._rdSourceKey,
+      name: this._name,
+      produceGeometry: true,
+    });
+
+    assert(undefined !== ref.collectTileGeometry);
+    return ref as GeometryTileTreeReference;
   }
 
   private get _wantWiremesh(): boolean {

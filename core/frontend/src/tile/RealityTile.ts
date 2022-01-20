@@ -17,7 +17,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  RealityTileCollectionSelectionStatus, RealityTileCollector, RealityTileRegion, RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel,
+  RealityTileRegion, RealityTileTree, Tile, TileContent, TileDrawArgs, TileGeometryCollector, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel,
   TileTreeLoadStatus, TileUser, TraversalDetails, TraversalSelectionContext,
 } from "./internal";
 
@@ -398,32 +398,31 @@ export class RealityTile extends Tile {
     this._reprojectedGraphic = dispose(this._reprojectedGraphic);
   }
 
-  public collectRealityTiles(collector: RealityTileCollector) {
-    const status = collector.selectTile(this);
+  public collectTileGeometry(collector: TileGeometryCollector): void {
+    const status = collector.collectTile(this);
 
     switch(status) {
-      case RealityTileCollectionSelectionStatus.Reject:
+      case "reject":
         return;
 
-      case RealityTileCollectionSelectionStatus.Continue:
+      case "continue":
         if (!this.isLeaf && !this._anyChildNotFound) {
-          const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
+          const childrenLoadStatus = this.loadChildren();
           if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-            collector.markChildrenLoading();
-            return;
-          }
-          if (undefined !== this.realityChildren && !this._anyChildNotFound)
+            collector.markLoading();
+          } else if (undefined !== this.realityChildren && !this._anyChildNotFound) {
             for (const child of this.realityChildren)
-              child.collectRealityTiles(collector);
-          break;
-        }
+              child.collectTileGeometry(collector);
+          }
 
+          break;
+        } // else fall through to "accept"
       // eslint-disable-next-line no-fallthrough
-      case RealityTileCollectionSelectionStatus.Accept:
-        if (this.isReady)
-          collector.accepted.push(this);
-        else
-          collector.missing.add(this.loadableTile);
+      case "accept":
+        if (!this.isReady)
+          collector.addMissingTile(this.loadableTile);
+        else if (this.geometry?.polyfaces)
+          collector.polyfaces.push(...this.geometry.polyfaces);
 
         break;
     }

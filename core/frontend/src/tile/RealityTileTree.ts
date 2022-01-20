@@ -18,7 +18,10 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileGeometry, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
+import {
+  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileGeometry, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
+  TileGraphicType, TileParams, TileTree, TileTreeParams,
+} from "./internal";
 
 /** @internal */
 export class TraversalDetails {
@@ -130,84 +133,6 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly gcsConverterAvailable: boolean;
 }
 
-/** The return status for collecting a tile with [[RealityTileCollector.SelectTile]]
- * @alpha
- */
-export enum RealityTileCollectionSelectionStatus { Continue, Reject, Accept }
-
-/**  The return status for collecting a set of tiles with [[RealityTileTree.collectTiles.
- * @alpha
- */
-export enum RealityTileCollectionStatus { Loading, Success }
-
-/** Base class for a collecting reality tiles from a [[RealityTileTree]].
- * @alpha
- */
-/** An object supplied to [[RealityTileTree.collectRealityTiles]] to accumulate geometry from reality tiles based on a chord tolerance and range.
- * @alpha
- */
-export class RealityTileCollector {
-  /** Obtain a copy of the list of collected geometry. */
-  public acceptedGeometry(): RealityTileGeometry[] {
-    const geometry = new Array<RealityTileGeometry>();
-    for (const accepted of this.accepted) {
-      if (accepted.geometry)
-        geometry.push(accepted.geometry);
-    }
-
-    return geometry;
-  }
-
-  /** Missing (not yet loaded) tiles. Loading of these tiles can be requested by calling [[requestMissingTiles]]. */
-  public missing = new Set<RealityTile>();
-
-  /** The accepted tiles. If [[RealityTileTree.collectTiles]] returns [[RealityTileCollectionStatus.Success]] then this contains complete
-   * collection of loaded tiles accepted by [selectTile]].
-   */
-  public accepted = new Array<RealityTile>();
-
-  /** Create a new collector.
-   * @param _tolerance The chord tolerance describing the desired level of detail for the collected tiles.
-   * @param _range The range in which to collect tiles. Tiles that do not intersect this range will not be collected.
-   * @param _iModelTransform A transform from tile tree coordinates to spatial coordinates.
-   */
-  public constructor(private _tolerance: number, private _range: Range3d, protected _iModelTransform: Transform) {  }
-
-  private _childrenLoading = false;
-
-  /** @internal */
-  public markChildrenLoading() {
-    this._childrenLoading = true;
-  }
-
-  /** @internal */
-  public get loadingComplete() {
-    return !this._childrenLoading && 0 === this.missing.size;
-  }
-
-  /** Request missing (unloaded) tiles.  Call this method if [[RealityTileTree.collectTiles]] returns [[RealityTileCollectionStatus.Loading]]. */
-  public requestMissingTiles(viewport: Viewport) {
-    IModelApp.tileAdmin.requestTiles(viewport, this.missing);
-  }
-
-  /** Based on this collector's range and chord tolerance, determine what to do with the specified tile.
-   * If the tile does not intersect the range, it will be rejected.
-   * If it meets the level of detail specified by the chord tolerance, it will be accepted; otherwise, its child tiles will be processed.
-   * Subclasses can refine the selection criteria by overriding this method; they should first call `super.selectTile`.
-   */
-  public selectTile(tile: Tile): RealityTileCollectionSelectionStatus {
-    const tileRange = this._iModelTransform.multiplyRange(tile.range);
-    if (!tileRange.intersectsRange(this._range))
-      return RealityTileCollectionSelectionStatus.Reject;
-
-    if (tile.maximumSize === 0.0 || !tile.isDisplayable)
-      return RealityTileCollectionSelectionStatus.Continue;
-
-    const tileTolerance = tile.radius/ tile.maximumSize;
-    return tileTolerance < this._tolerance ? RealityTileCollectionSelectionStatus.Accept : RealityTileCollectionSelectionStatus.Continue;
-  }
-}
-
 /** @internal */
 export class RealityTileTree extends TileTree {
   public traversalChildrenByDepth: TraversalChildrenDetails[] = [];
@@ -251,10 +176,8 @@ export class RealityTileTree extends TileTree {
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
 
   /** Collect tiles from this tile tree based on the criteria implemented by `collector`. */
-  public collectRealityTiles(collector: RealityTileCollector): RealityTileCollectionStatus {
-    this.rootTile.collectRealityTiles(collector);
-
-    return collector.loadingComplete ? RealityTileCollectionStatus.Success : RealityTileCollectionStatus.Loading;
+  public override collectTileGeometry(collector: TileGeometryCollector): void {
+    this.rootTile.collectTileGeometry(collector);
   }
 
   public prune(): void {

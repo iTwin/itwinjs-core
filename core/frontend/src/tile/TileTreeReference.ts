@@ -236,13 +236,13 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /**
    * @beta
    */
-  public readonly collectTilePolyfaces?: (collector: TileGeometryCollector) => void;
+  public collectTileGeometry?: (collector: TileGeometryCollector) => void;
 
   /**
    * @beta
    */
   public createGeometryTreeReference(): GeometryTileTreeReference | undefined {
-    if (this.collectTilePolyfaces) {
+    if (this.collectTileGeometry) {
       // Unclear why compiler doesn't detect that `this` satisfies the GeometryTileTreeReference interface...it must be looking only at the types, not this particular instance.
       return this as GeometryTileTreeReference;
     }

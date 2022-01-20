@@ -24,24 +24,27 @@ export interface TileGeometryCollectorOptions {
 export class TileGeometryCollector {
   public readonly polyfaces: Polyface[] = [];
   private readonly _missing = new Set<Tile>();
-  private _childrenLoading = false;
+  private _loading = false;
   protected readonly _options: TileGeometryCollectorOptions;
 
   public constructor(options: TileGeometryCollectorOptions) {
     this._options = options;
   }
 
-  /** @internal */
-  public markChildrenLoading(): void {
-    this._childrenLoading = true;
+  public markLoading(): void {
+    this._loading = true;
   }
 
   public requestMissingTiles(): void {
     IModelApp.tileAdmin.requestTiles(this._options.user, this._missing);
   }
 
+  public addMissingTile(tile: Tile): void {
+    this._missing.add(tile);
+  }
+
   public get isAllGeometryLoaded(): boolean {
-    return !this._childrenLoading && this._missing.size === 0;
+    return !this._loading && this._missing.size === 0;
   }
 
   public collectTile(tile: Tile): CollectTileStatus {
@@ -58,5 +61,5 @@ export class TileGeometryCollector {
 }
 
 export interface GeometryTileTreeReference extends TileTreeReference {
-  collectTilePolyfaces: (collector: TileGeometryCollector) => void;
+  collectTileGeometry: (collector: TileGeometryCollector) => void;
 }
