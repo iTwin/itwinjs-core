@@ -236,7 +236,6 @@ export abstract class Tile {
    * @param users The [[TileUser]]s that are currently using the tile for some purpose, such as displaying its content.
    * @returns The priority.
    * @see [[TileLoadPriority]] for suggested priority values.
-   * ###TODO document _viewports is deprecated.
    */
   public computeLoadPriority(_viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     return this.depth;
