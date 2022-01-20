@@ -11129,7 +11129,6 @@ export interface TileUser {
 export namespace TileUser {
     // (undocumented)
     export function generateId(): number;
-    // @internal
     export function viewportsFromUsers(users: Iterable<TileUser>): Iterable<Viewport>;
 }
 

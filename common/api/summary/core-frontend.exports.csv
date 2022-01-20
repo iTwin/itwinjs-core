@@ -602,7 +602,6 @@ internal;TileUrlImageryProvider
 public;TileUsageMarker
 public;TileUser
 public;TileUser
-internal;viewportsFromUsers(users: Iterable
 internal;TileUserIdSet 
 internal;TileUserIdSets 
 public;TileVisibility
