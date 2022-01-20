@@ -285,7 +285,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     if (!activeViewport || !activeViewport.displayStyle)
       return;
 
-    const indexInDisplayStyle = activeViewport.displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+    const indexInDisplayStyle = activeViewport.displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
     if (indexInDisplayStyle < 0)
       return;
 
@@ -313,7 +313,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       const isVisible = !mapLayerSettings.visible;
 
       const displayStyle = activeViewport.displayStyle;
-      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
       if (-1 !== indexInDisplayStyle) {
         // update the display style
         displayStyle.changeMapLayerProps({ visible: isVisible }, indexInDisplayStyle, mapLayerSettings.isOverlay);
@@ -364,10 +364,10 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       else if (destination.droppableId === "backgroundMapLayers" && backgroundMapLayers)
         toMapLayer = backgroundMapLayers[destination.index];
       if (toMapLayer)
-        toIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(toMapLayer.name, toMapLayer.url, toMapLayer.isOverlay);
+        toIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(toMapLayer.name, toMapLayer.url, toMapLayer.isOverlay);
     }
 
-    const fromIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(fromMapLayer.name, fromMapLayer.url, fromMapLayer.isOverlay);
+    const fromIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(fromMapLayer.name, fromMapLayer.url, fromMapLayer.isOverlay);
     if (fromIndexInDisplayStyle < 0)
       return;
 

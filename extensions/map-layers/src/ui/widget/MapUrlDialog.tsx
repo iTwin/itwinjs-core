@@ -130,7 +130,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       return undefined;
     }
 
-    const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndUrl(props.layerRequiringCredentials.name, props.layerRequiringCredentials.url, isOverlay);
+    const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndSource(props.layerRequiringCredentials.name, props.layerRequiringCredentials.url, isOverlay);
     if (indexInDisplayStyle === undefined || indexInDisplayStyle < 0) {
       return undefined;
     } else {

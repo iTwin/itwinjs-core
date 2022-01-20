@@ -66,7 +66,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
           <Button
             className="map-manager-item-requireAuth"
             onClick={() => {
-              const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndUrl(activeLayer.name, activeLayer.url, activeLayer.isOverlay);
+              const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndSource(activeLayer.name, activeLayer.url, activeLayer.isOverlay);
               if (indexInDisplayStyle !== undefined && indexInDisplayStyle >= 0) {
                 const layerSettings = props.activeViewport.displayStyle.mapLayerAtIndex(indexInDisplayStyle, activeLayer.isOverlay);
                 if (layerSettings instanceof ImageMapLayerSettings) {

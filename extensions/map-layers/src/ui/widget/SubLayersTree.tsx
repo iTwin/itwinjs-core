@@ -108,7 +108,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     const vp = IModelApp.viewManager.selectedView;
     const displayStyle = vp?.displayStyle;
     if (displayStyle && vp) {
-      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
+      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
       displayStyle.changeMapSubLayerProps({ visible: true }, -1, indexInDisplayStyle, mapLayer.isOverlay);
       vp.invalidateRenderPlan();
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
@@ -123,7 +123,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     const vp = IModelApp.viewManager.selectedView;
     const displayStyle = vp?.displayStyle;
     if (displayStyle && vp) {
-      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
+      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
       displayStyle.changeMapSubLayerProps({ visible: false }, -1, indexInDisplayStyle, mapLayer.isOverlay);
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer && updatedMapLayer instanceof ImageMapLayerSettings) {
@@ -289,7 +289,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
       next: (changes) => {
         const vp = IModelApp.viewManager.selectedView;
         const displayStyle = vp?.displayStyle;
-        const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(this._mapLayer.name, this._mapLayer.url, this._mapLayer.isOverlay) : -1;
+        const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(this._mapLayer.name, this._mapLayer.url, this._mapLayer.isOverlay) : -1;
         changes.forEach((change) => {
           const isSelected = (change.newState === CheckBoxState.On);
 

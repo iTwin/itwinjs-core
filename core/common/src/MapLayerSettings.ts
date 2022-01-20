@@ -252,6 +252,13 @@ export abstract class MapLayerSettingsBase {
     return true;
   }
 
+  /** Return a unique string identifying the layers source... The URL for image layer or modelID for model layer  */
+  public abstract get source(): string;
+
+  /** @internal */
+  public matchesNameAndSource(name: string, source: string): boolean {
+    return this.name === name && this.source === source;
+  }
 }
 
 /** Normalized representation of a [[ImageMapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
@@ -268,6 +275,7 @@ export class ImageMapLayerSettings extends MapLayerSettingsBase {
   public password?: string;
   public accessKey?: MapLayerKey;
   public readonly subLayers: MapSubLayerSettings[];
+  public override get source(): string { return this.url; }
 
   /** @internal */
   protected constructor(url: string, name: string, formatId: string, visible = true,
@@ -399,11 +407,6 @@ export class ImageMapLayerSettings extends MapLayerSettingsBase {
   }
 
   /** @internal */
-  public matchesNameAndUrl(name: string, url: string): boolean {
-    return this.name === name && this.url === url;
-  }
-
-  /** @internal */
   protected static mapTypeName(type: BackgroundMapType) {   // TBD.. Localization.
     switch (type) {
       case BackgroundMapType.Aerial:
@@ -430,6 +433,7 @@ export class ImageMapLayerSettings extends MapLayerSettingsBase {
  */
 export class ModelMapLayerSettings extends MapLayerSettingsBase {
   public readonly modelId: Id64String;
+  public override get source(): string { return this.modelId; }
 
   /** @internal */
   protected constructor(modelId: Id64String,  name: string, visible = true,

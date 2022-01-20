@@ -413,13 +413,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean {
-    return -1 !== this.findMapLayerIndexByNameAndUrl(name, url, isOverlay);
+  public hasAttachedMapLayer(name: string, source: string, isOverlay: boolean): boolean {
+    return -1 !== this.findMapLayerIndexByNameAndSource(name, source, isOverlay);
   }
 
   /** @internal */
-  public detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void {
-    const index = this.findMapLayerIndexByNameAndUrl(name, url, isOverlay);
+  public detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void {
+    const index = this.findMapLayerIndexByNameAndSource(name, source, isOverlay);
     if (- 1 !== index)
       this.detachMapLayerByIndex(index, isOverlay);
   }
@@ -438,8 +438,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean) {
-    return this.getMapLayers(isOverlay).findIndex((layer) => layer instanceof ImageMapLayerSettings && layer.matchesNameAndUrl(name, url));
+  public findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean) {
+    return this.getMapLayers(isOverlay).findIndex((layer) => layer instanceof ImageMapLayerSettings && layer.matchesNameAndSource(name, source));
   }
 
   /** @internal */
