@@ -19,7 +19,7 @@ import { DisclosedTileTreeSet, TileRequest } from "./internal";
  * @public
  */
 export interface TileUser {
-  /** A unique integer identifying this user amongst all extant users. This Id **must** be obtained via [[generateId]]. */
+  /** A unique integer identifying this user amongst all extant users. This Id **must** be obtained via [[TIleUser.generateId]]. */
   readonly tileUserId: number;
   /** The iModel with which the user is associated. */
   readonly iModel: IModelConnection;
