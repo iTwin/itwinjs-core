@@ -46,9 +46,7 @@ const computeAmbientOcclusion = `
   if (order >= kRenderOrder_PlanarBit)
     order = order - kRenderOrder_PlanarBit;
 
-  bool isNonPickableGeometry = 0.0 == depthAndOrder.x;
-
-  if (!isNonPickableGeometry && (order < kRenderOrder_LitSurface || order == kRenderOrder_Linear))
+  if (order < kRenderOrder_LitSurface || order == kRenderOrder_Linear)
     return vec4(1.0);
 
   // NB: linearDepth: 1 == near, 0 == far
