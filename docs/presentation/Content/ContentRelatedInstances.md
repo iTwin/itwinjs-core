@@ -25,8 +25,7 @@ Returns content for instances related to the selected (input) instances.
 
 ### Attribute: `relationshipPaths`
 
-Specifies a list of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) to follow when looking for related instances.
-Either a single or an array of specifications may be specified for this attribute. Specifying an empty array makes the whole specification a no-op.
+Specifies a chain of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) that forms a path from an input instance to the output instances. When this array is empty, the specification produces no results.
 
 ```ts
 [[include:ContentRelatedInstances.RelationshipPaths.Ruleset]]
