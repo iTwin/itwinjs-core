@@ -58,7 +58,7 @@ function collectStatisticsForViewedTileTrees(vp: Viewport, stats: RenderMemory.S
 
 function collectStatisticsForSelectedTiles(vp: Viewport, stats: RenderMemory.Statistics): number {
   const trees = new Set<TileTree>();
-  const selectedTiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
+  const selectedTiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
   if (selectedTiles) {
     for (const tile of selectedTiles) {
       trees.add(tile.tree);

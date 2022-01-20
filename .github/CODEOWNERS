@@ -77,7 +77,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/linear-referencing-backend/        @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common.*        @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common/         @calebmshafer @diegoalexdiaz
-/common/**/map-layers/                        @bsteinbk @mdastous-bentley
+/common/**/map-layers/                        @mdastous-bentley @MarcBedard8
 /common/**/oidc-signin-tool/                  @calebmshafer @wgoehrig
 /common/**/core-orbitgt.*                     @iTwin/itwinjs-core-display
 /common/**/core-orbitgt/                      @iTwin/itwinjs-core-display

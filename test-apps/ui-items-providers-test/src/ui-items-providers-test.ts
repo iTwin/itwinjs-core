@@ -14,6 +14,7 @@ import { GeneralUiItemsProvider } from "./ui/providers/GeneralUiItemsProvider";
 import { OpenAbstractDialogTool } from "./tools/OpenAbstractModalDialogTool";
 import { NetworkTracingFrontstage } from "./ui/frontstages/NetworkTracing";
 import { CustomFrontstage } from "./ui/frontstages/CustomContent";
+import { FloatingWidgetsUiProvider } from "./ui/providers/FloatingWidgetsUiProvider";
 
 /** UiItemsProvidersTest is a package that augments the user interface components for an iModelApp. When the package's
  * initialize method is called tools, frontstages and UiItemProviders are registered.
@@ -41,6 +42,7 @@ export class UiItemsProvidersTest {
     // register new frontstages and it's stage specific items provider
     NetworkTracingFrontstage.register();
     CustomFrontstage.register();
+    FloatingWidgetsUiProvider.register();
 
     // register to add items to "General" usage stages"
     UiItemsManager.register(new GeneralUiItemsProvider());

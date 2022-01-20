@@ -21,13 +21,6 @@ packageClassification:  [
       ]
    },
    {
-     "order":"2",
-     "header": "Client Packages",
-     "packages": [
-       "itwin-client"
-     ]
-   },
-   {
       "order":"3",
       "header":"UI Packages",
       "packages":[

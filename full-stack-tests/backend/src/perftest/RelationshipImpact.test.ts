@@ -112,7 +112,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     setPropVal(geomElement, "propBase", "Test Value");
     const cType: string = cName.substring(cName.length - 1);
     setPropVal(geomElement, `propChild${cType}`, `${cType} Value`);
-    const id = imodel.elements.insertElement(geomElement);
+    const id = imodel.elements.insertElement(geomElement.toJSON());
     assert.isTrue(Id64.isValidId64(id), "insert failed");
     return id;
   }
@@ -178,7 +178,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
         const geomElement = seedIModel.elements.createElement(elementProps);
         setPropVal(geomElement, "propBase", "Test Value");
         setPropVal(geomElement, "propChildA", "A Value");
-        const id3 = seedIModel.elements.insertElement(geomElement);
+        const id3 = seedIModel.elements.insertElement(geomElement.toJSON());
         assert.isTrue(Id64.isValidId64(id3), "insert failed");
 
         validateRel(seedIModel, idC, idD);
@@ -228,7 +228,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
       const geomElement = perfimodel.elements.createElement(elementProps);
       setPropVal(geomElement, "propBase", "Test Value");
       setPropVal(geomElement, "propChildA", "A Value");
-      const idA = perfimodel.elements.insertElement(geomElement);
+      const idA = perfimodel.elements.insertElement(geomElement.toJSON());
       assert.isTrue(Id64.isValidId64(idA), "insert failed");
       const endTime1 = new Date().getTime();
       totalTimeNav = totalTimeNav + ((endTime1 - startTime1) / 1000.0);

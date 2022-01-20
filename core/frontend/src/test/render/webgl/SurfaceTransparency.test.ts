@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import {
-  ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency,
+  ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
@@ -101,12 +101,7 @@ describe("Surface transparency", () => {
   });
 
   function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number): RenderMaterial {
-    const params = new RenderMaterial.Params();
-    params.alpha = alpha;
-    if (texture)
-      params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
-
-    const material = IModelApp.renderSystem.createMaterial(params, imodel);
+    const material = IModelApp.renderSystem.createRenderMaterial({ alpha, textureMapping: texture ? { texture, weight: textureWeight } : undefined });
     expect(material).not.to.be.undefined;
     return material!;
   }

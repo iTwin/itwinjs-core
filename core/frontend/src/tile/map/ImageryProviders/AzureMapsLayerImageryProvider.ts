@@ -8,7 +8,6 @@
 
 import { MapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
-import { ScreenViewport } from "../../../Viewport";
 import { MapLayerImageryProvider } from "../../internal";
 
 /** @internal */
@@ -22,7 +21,7 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
     return `${this._settings.url}&${this._settings.accessKey.key}=${this._settings.accessKey.value}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
   }
 
-  public override getLogo(_vp: ScreenViewport) {
+  public override getLogo() {
     return IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright") });
   }
 }
