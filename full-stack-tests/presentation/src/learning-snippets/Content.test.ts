@@ -883,9 +883,8 @@ describe("Learning Snippets", () => {
 
       it("uses `relationshipPaths` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentRelatedInstances.RelationshipPaths.Ruleset
-        // The ruleset has a specification that returns `bis.Element` content instances which are related to input `bis.Model` class
-        // through `bis.ModelContainsElements` relationship by following it in forward.
-        // direction (from `bis.Model` to `bis.Element`).
+        // This ruleset returns content for `bis.Element` instances that are related to input `bis.Model` instances
+        // through `bis.ModelContainsElements` relationship.
         const ruleset: Ruleset = {
           id: "example",
           rules: [
