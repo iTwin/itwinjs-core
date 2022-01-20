@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@itwin/core-bentley";
+import { assert, BeTimePoint } from "@itwin/core-bentley";
 import { Matrix4d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@itwin/core-common";
 import { HitDetail } from "../HitDetail";
@@ -238,6 +238,20 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    */
   public collectTileGeometry?: (collector: TileGeometryCollector) => void;
 
+  /** @beta */
+  protected _collectTileGeometry(collector: TileGeometryCollector): void {
+    const tree = this.treeOwner.load();
+    switch (this.treeOwner.loadStatus) {
+      case TileTreeLoadStatus.Loaded:
+        assert(undefined !== tree);
+        tree.collectTileGeometry(collector);
+        break;
+      case TileTreeLoadStatus.Loading:
+        collector.markLoading();
+        break;
+    }
+  }
+
   /**
    * @beta
    */
@@ -248,14 +262,5 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     }
 
     return this._createGeometryTreeReference();
-  }
-
-  /** Create a tile tree that produces geometry rather than graphics.
-   * This is currently supported only for reality and map tile trees.
-   * @see [[RealityTileTree.collectRealityTiles]].
-   * @alpha
-   */
-  public createGeometryTreeRef(): TileTreeReference | undefined {
-    return undefined;
   }
 }

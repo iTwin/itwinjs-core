@@ -6,20 +6,20 @@
 import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Point3d, PolyfaceQuery, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import {
-  BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool,
-  RealityTileCollector, RealityTileCollectionSelectionStatus, RealityTileDrapeStatus, RealityTileTree, Tile, TileTreeReference, Viewport, RealityTileCollectionStatus,
+  BeButtonEvent, CollectTileStatus, DecorateContext, DisclosedTileTreeSet, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool,
+  RealityTileTree, Tile, TileGeometryCollector, TileTreeReference, TileUser, Viewport,
 } from "@bentley/imodeljs-frontend";
 
-/** [[RealityTileCollector]] subclass that restricts selection to tiles that overlap a line string. */
-class RealityTileByDrapeLineStringCollector extends RealityTileCollector {
-  constructor(tolerance: number, range: Range3d, iModelTransform: Transform, private _points: GrowableXYZArray) {
-    super(tolerance, range, iModelTransform);
+/** TileGeometryCollector that restricts collection to tiles that overlap a line string. */
+class DrapeLineStringCollector extends TileGeometryCollector {
+  constructor(user: TileUser, chordTolerance: number, range: Range3d, transform: Transform, private _points: GrowableXYZArray) {
+    super({ user, chordTolerance, range, transform });
   }
-  public override selectTile(tile: Tile): RealityTileCollectionSelectionStatus {
-    let status = super.selectTile(tile);
 
-    if (RealityTileCollectionSelectionStatus.Reject !== status && !this.rangeOverlapsLineString(tile.range))
-      status = RealityTileCollectionSelectionStatus.Reject;
+  public override collectTile(tile: Tile): CollectTileStatus {
+    let status = super.collectTile(tile);
+    if ("reject" !== status && !this.rangeOverlapsLineString(tile.range))
+      status = "reject";
 
     return status;
   }
@@ -27,11 +27,31 @@ class RealityTileByDrapeLineStringCollector extends RealityTileCollector {
   private rangeOverlapsLineString(range: Range3d) {
     let inside = false;
     const clipper = ConvexClipPlaneSet.createRange3dPlanes (range, true, true, true, true, false, false);
-    clipper.transformInPlace(this._iModelTransform);
+    if (this._options.transform)
+      clipper.transformInPlace(this._options.transform);
+
     for (let i = 0; i < this._points.length - 1 && !inside; i++)
       inside = clipper.announceClippedSegmentIntervals (0, 1, this._points.getPoint3dAtUncheckedPointIndex(i), this._points.getPoint3dAtUncheckedPointIndex(i+1));
 
     return inside;
+  }
+}
+
+class TerrainDrape implements TileUser {
+  public readonly tileUserId: number;
+
+  public constructor(public readonly viewport: Viewport, public readonly treeRef: TileTreeReference) {
+    this.tileUserId = TileUser.generateId();
+  }
+
+  public get iModel() { return this.viewport.iModel; }
+
+  public onRequestStateChanged() {
+    this.viewport.invalidateDecorations();
+  }
+
+  public discloseTileTrees(trees: DisclosedTileTreeSet) {
+    trees.disclose(this.treeRef);
   }
 }
 

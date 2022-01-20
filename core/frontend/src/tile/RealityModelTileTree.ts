@@ -728,18 +728,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     else
       this._rdSourceKey = RealityDataSource.createKeyFromUrl(props.url ?? "", RealityDataProvider.ContextShare)
 
-    if (this._produceGeometry) {
-      this.collectTileGeometry = (collector) => {
-        const tree = this.treeOwner.load();
-        if (TileTreeLoadStatus.Loaded !== this.treeOwner.loadStatus) {
-          collector.markLoading();
-          return;
-        }
-
-        assert(undefined !== tree);
-        tree.collectTileGeometry(collector);
-      }
-    }
+    if (this._produceGeometry)
+      this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);
   }
 
   public get treeOwner(): TileTreeOwner {

@@ -24,33 +24,9 @@ import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
 import {
-  BingElevationProvider,
-  createDefaultViewFlagOverrides,
-  DisclosedTileTreeSet,
-  EllipsoidTerrainProvider,
-  getCesiumTerrainProvider,
-  ImageryMapLayerTreeReference,
-  ImageryMapTileTree,
-  MapCartoRectangle,
-  MapTile,
-  MapTileLoader,
-  MapTilingScheme,
-  PlanarTilePatch,
-  QuadId,
-  RealityTileDrawArgs,
-  RealityTileTree,
-  RealityTileTreeParams,
-  Tile,
-  TileDrawArgs,
-  TileLoadPriority,
-  TileParams,
-  TileTree,
-  TileTreeLoadStatus,
-  TileTreeOwner,
-  TileTreeReference,
-  TileTreeSupplier,
-  UpsampledMapTile,
-  WebMercatorTilingScheme,
+  BingElevationProvider, createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference, getCesiumTerrainProvider, ImageryMapLayerTreeReference, ImageryMapTileTree,
+  MapCartoRectangle, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs,
+  TileLoadPriority, TileParams, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint = Point3d.create();
@@ -565,16 +541,22 @@ export class MapTileTreeReference extends TileTreeReference {
 
     if (this._settings.planarClipMask && this._settings.planarClipMask.isValid)
       this._planarClipMask = PlanarClipMaskState.create(this._settings.planarClipMask);
+
+    if (this._overrideTerrainDisplay && this._overrideTerrainDisplay()?.produceGeometry)
+      this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);
   }
+
   public override get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
   public override get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
 
-  public override createGeometryTreeRef(): TileTreeReference | undefined {
+  protected override _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     if (! this._settings.applyTerrain || this._isDrape)
       return undefined;     // Don't bother generating non-terrain (flat) geometry.
 
-    return new MapTileTreeReference(this._settings, undefined, [], this._iModel, this._tileUserId, false, false, () => { return { produceGeometry: true }; });
+    const ref = new MapTileTreeReference(this._settings, undefined, [], this._iModel, this._tileUserId, false, false, () => { return { produceGeometry: true }; });
+    assert(undefined !== ref.collectTileGeometry);
+    return ref as GeometryTileTreeReference;
   }
 
   /** Terrain  tiles do not contribute to the range used by "fit view". */
