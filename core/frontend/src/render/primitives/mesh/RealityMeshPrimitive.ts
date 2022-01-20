@@ -78,8 +78,8 @@ export class RealityMeshPrimitive implements RenderMemory.Consumer {
     }
 
     if (includeNormals)
-      for (let i = 0; i < normals!.length; )
-        polyface.addNormal(OctEncodedNormal.decodeValue(normals![i++]));
+      for (let i = 0; i < normals.length; )
+        polyface.addNormal(OctEncodedNormal.decodeValue(normals[i++]));
 
     if (includeParams)
       for (let i = 0; i < uvs.length; )

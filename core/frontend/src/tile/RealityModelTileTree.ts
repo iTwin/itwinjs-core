@@ -29,7 +29,7 @@ import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
   getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
-  TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 
 function getUrl(content: any) {
@@ -726,7 +726,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     if (props.rdSourceKey)
       this._rdSourceKey = props.rdSourceKey;
     else
-      this._rdSourceKey = RealityDataSource.createKeyFromUrl(props.url ?? "", RealityDataProvider.ContextShare)
+      this._rdSourceKey = RealityDataSource.createKeyFromUrl(props.url ?? "", RealityDataProvider.ContextShare);
 
     if (this._produceGeometry)
       this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);

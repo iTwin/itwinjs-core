@@ -98,7 +98,7 @@ export class RealityTile extends Tile {
   public get isPointCloud() { return this.realityRoot.loader.containsPointClouds; }
   public get isLoaded() { return this.loadStatus === TileLoadStatus.Ready; }      // Reality tiles may depend on secondary tiles (maps) so can ge loaded but not ready.
   public get geometry(): RealityTileGeometry | undefined { return this._geometry;  }
-  
+
   public override get isDisplayable(): boolean {
     if (this.noContentButTerminateOnSelection)
       return false;

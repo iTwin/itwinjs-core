@@ -8,7 +8,7 @@
 
 import { assert, BeTimePoint } from "@itwin/core-bentley";
 import {
-  ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Matrix3d, Point3d, PolyfaceQuery, Range3d, Transform, Vector3d, XYZProps,
+  Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps,
 } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
@@ -17,9 +17,8 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
 import {
-  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileGeometry, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
+  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
   TileGraphicType, TileParams, TileTree, TileTreeParams,
 } from "./internal";
 

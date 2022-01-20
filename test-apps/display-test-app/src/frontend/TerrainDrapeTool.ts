@@ -94,7 +94,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
   }
 
   public override async onPostInstall() {
-    super.onPostInstall();
+    await super.onPostInstall();
     this.setupAndPromptForNextAction();
   }
 
@@ -228,12 +228,11 @@ export class TerrainDrapeTool extends PrimitiveTool {
 
   public override async onRestartTool(): Promise<void> {
     const tool = new TerrainDrapeTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      await this.exitTool();
   }
 
   public override async parseAndRun(..._args: string[]): Promise<boolean> {
-    this.run();
-    return true;
+    return this.run();
   }
 }
