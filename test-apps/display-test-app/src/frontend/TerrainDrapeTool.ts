@@ -6,8 +6,8 @@
 import { ConvexClipPlaneSet, GrowableXYZArray, LineString3d, Point3d, PolyfaceQuery, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import {
-  BeButtonEvent, CollectTileStatus, DecorateContext, DisclosedTileTreeSet, EventHandled, GraphicType, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool,
-  RealityTileTree, Tile, TileGeometryCollector, TileTreeReference, TileUser, Viewport,
+  BeButtonEvent, CollectTileStatus, DecorateContext, DisclosedTileTreeSet, EventHandled, GeometryTileTreeReference, GraphicType, HitDetail, IModelApp,
+  LocateFilterStatus, LocateResponse, PrimitiveTool, Tile, TileGeometryCollector, TileUser, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 /** TileGeometryCollector that restricts collection to tiles that overlap a line string. */
@@ -37,11 +37,16 @@ class DrapeLineStringCollector extends TileGeometryCollector {
   }
 }
 
-class TerrainDrape implements TileUser {
+class TerrainDraper implements TileUser {
   public readonly tileUserId: number;
 
-  public constructor(public readonly viewport: Viewport, public readonly treeRef: TileTreeReference) {
+  public constructor(public readonly viewport: Viewport, public readonly treeRef: GeometryTileTreeReference) {
     this.tileUserId = TileUser.generateId();
+    IModelApp.tileAdmin.registerUser(this);
+  }
+
+  public dispose(): void {
+    IModelApp.tileAdmin.forgetUser(this);
   }
 
   public get iModel() { return this.viewport.iModel; }
@@ -53,6 +58,26 @@ class TerrainDrape implements TileUser {
   public discloseTileTrees(trees: DisclosedTileTreeSet) {
     trees.disclose(this.treeRef);
   }
+
+  public drapeLineString(outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
+    const tree = this.treeRef.treeOwner.load();
+    if (!tree)
+      return "loading";
+
+    const range = Range3d.createNull();
+    range.extendArray(inPoints);
+    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
+    range.extendZOnly(maxDistance);
+
+    const collector = new DrapeLineStringCollector(this, tolerance, range, tree.iModelTransform, inPoints);
+    this.treeRef.collectTileGeometry(collector);
+    collector.requestMissingTiles();
+
+    for (const polyface of collector.polyfaces)
+      outStrings.push(...PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(inPoints, polyface));
+
+    return collector.isAllGeometryLoaded ? "complete" : "loading";
+  }
 }
 
 /** Demonstrates draping line strings on terrain meshes.  The terrain can be defined by map terrain (from Cesium World Terrain) or a reality model.
@@ -61,8 +86,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
   private _drapePoints = new GrowableXYZArray();
   private _drapedStrings?: LineString3d[];
   private _motionPoint?: Point3d;
-  private _drapeViewport?: Viewport;
-  private _drapeTreeRef?: TileTreeReference;
+  private _draper?: TerrainDraper;
   public static override toolId = "TerrainDrape";
 
   public override requireWriteableTarget(): boolean {
@@ -74,62 +98,51 @@ export class TerrainDrapeTool extends PrimitiveTool {
     this.setupAndPromptForNextAction();
   }
 
+  public override async onCleanup() {
+    this.disposeDraper();
+  }
+
+  private disposeDraper(): void {
+    this._draper?.dispose();
+    this._draper = undefined;
+  }
+
   public override async onUnsuspend(): Promise<void> {
     this.showPrompt();
   }
 
-  private drapeLineString(tree: RealityTileTree, outStrings: LineString3d[], inPoints: GrowableXYZArray, tolerance: number, viewport: Viewport, maxDistance = 1.0E5): RealityTileDrapeStatus {
-    const range = Range3d.createNull();
-    range.extendArray(inPoints);
-    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
-    range.extendZOnly(maxDistance);
-    const tileSelector = new RealityTileByDrapeLineStringCollector(tolerance, range, tree.iModelTransform, inPoints);
-    const collectionStatus = tree.collectRealityTiles(tileSelector);
+  public createDecorations(context: DecorateContext, _suspend: boolean): void {
+    if (!this._draper)
+      return;
 
-    if (collectionStatus === RealityTileCollectionStatus.Loading)
-      tileSelector.requestMissingTiles(viewport);
+    if (this._drapePoints.length > 1) {
+      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+      builder.setSymbology(ColorDef.red, ColorDef.red, 5);
 
-    for (const geometry of tileSelector.acceptedGeometry()) {
-      if (geometry.polyfaces)
-        geometry.polyfaces.forEach((polyface) => {
-          const sweepStrings = PolyfaceQuery.sweepLinestringToFacetsXYReturnChains(inPoints, polyface);
-          sweepStrings.forEach((sweepString) => outStrings.push(sweepString));
-        });
+      let loading = false;
+      if (!this._drapedStrings) {
+        this._drapedStrings = [];
+        const drapeRange = Range3d.createNull();
+        drapeRange.extendArray(this._drapePoints);
+
+        const tolerance = drapeRange.diagonal().magnitude() / 5000;
+        loading = "loading" === this._draper.drapeLineString(this._drapedStrings, this._drapePoints, tolerance);
+      }
+
+      for (const lineString of this._drapedStrings)
+        builder.addLineString(lineString.points);
+
+      if (loading)
+        this._drapedStrings = undefined;
+
+      context.addDecorationFromBuilder(builder);
     }
 
-    return collectionStatus === RealityTileCollectionStatus.Loading ? RealityTileDrapeStatus.Loading : RealityTileDrapeStatus.Success;
-  }
-
-  public createDecorations(context: DecorateContext, _suspend: boolean): void {
-    if (this._drapeTreeRef && this._drapeViewport && this._drapePoints.length > 0) {
-      if (this._drapePoints.length > 1) {
-        const drapeTree = this._drapeTreeRef.treeOwner.load();
-        if (drapeTree instanceof RealityTileTree) {
-          const builder =  context.createGraphicBuilder(GraphicType.WorldDecoration);
-          builder.setSymbology(ColorDef.red, ColorDef.red, 5);
-          let loading = false;
-          if (!this._drapedStrings) {
-            this._drapedStrings = new Array<LineString3d>();
-            const drapeRange = Range3d.createNull();
-            drapeRange.extendArray(this._drapePoints);
-            const tolerance = drapeRange.diagonal().magnitude() / 5000.0;
-            loading = RealityTileDrapeStatus.Loading ===  this.drapeLineString(drapeTree, this._drapedStrings, this._drapePoints, tolerance, this._drapeViewport);
-          }
-
-          this._drapedStrings.forEach((lineString) => builder.addLineString(lineString.points));
-          if (loading)
-            this._drapedStrings = undefined;
-
-          context.addDecorationFromBuilder(builder);
-        }
-      }
-
-      if (this._motionPoint) {
-        const builder =  context.createGraphicBuilder(GraphicType.WorldOverlay);
-        builder.setSymbology(ColorDef.white, ColorDef.white, 1, LinePixels.Code0);
-        builder.addLineString([this._drapePoints.getPoint3dAtUncheckedPointIndex(this._drapePoints.length - 1), this._motionPoint]);
-        context.addDecorationFromBuilder(builder);
-      }
+    if (this._motionPoint) {
+      const builder =  context.createGraphicBuilder(GraphicType.WorldOverlay);
+      builder.setSymbology(ColorDef.white, ColorDef.white, 1, LinePixels.Code0);
+      builder.addLineString([this._drapePoints.getPoint3dAtUncheckedPointIndex(this._drapePoints.length - 1), this._motionPoint]);
+      context.addDecorationFromBuilder(builder);
     }
   }
 
@@ -142,28 +155,30 @@ export class TerrainDrapeTool extends PrimitiveTool {
   }
 
   private setupAndPromptForNextAction(): void {
-    this.initLocateElements(undefined === this._drapeTreeRef);
+    this.initLocateElements(undefined === this._draper);
     IModelApp.locateManager.options.allowDecorations = true;    // So we can select "contextual" reality models.
     this.showPrompt();
   }
 
   private showPrompt(): void {
-    IModelApp.notifications.outputPromptByKey(`SVTTools:tools.TerrainDrape.Prompts.${undefined === this._drapeTreeRef ? "SelectDrapeRealityModel" : "EnterDrapePoint"}`);
+    IModelApp.notifications.outputPromptByKey(`SVTTools:tools.TerrainDrape.Prompts.${undefined === this._draper ? "SelectDrapeRealityModel" : "EnterDrapePoint"}`);
   }
 
-  private getGeometryTreeRef(vp: Viewport, modelId: string): TileTreeReference | undefined {
-    let treeRef;
+  private getGeometryTreeRef(vp: Viewport, modelId: string): GeometryTileTreeReference | undefined {
+    let treeRef: GeometryTileTreeReference | undefined;
     vp.forEachTileTreeRef((ref) => {
-      const tree = ref.treeOwner.load();
-      if (tree?.modelId === modelId)
-        treeRef = ref.createGeometryTreeRef();
+      if (!treeRef) {
+        const tree = ref.treeOwner.load();
+        if (tree?.modelId === modelId)
+          treeRef = ref.createGeometryTreeReference();
+      }
     });
 
     return treeRef;
   }
 
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
-    if (undefined !== this._drapeTreeRef)
+    if (undefined !== this._draper)
       return LocateFilterStatus.Accept;
 
     if (!hit.modelId)
@@ -180,12 +195,11 @@ export class TerrainDrapeTool extends PrimitiveTool {
 
   public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     this._drapedStrings = undefined;
-    if (this._drapePoints.length) {
+    if (this._drapePoints.length)
       this._drapePoints.pop();
-    } else {
-      this._drapeTreeRef = undefined;
-      this._drapeViewport = undefined;
-    }
+    else
+      this.disposeDraper();
+
     if (ev.viewport)
       ev.viewport.invalidateDecorations();
 
@@ -196,15 +210,17 @@ export class TerrainDrapeTool extends PrimitiveTool {
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     this._motionPoint = undefined;
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
-    if (undefined === this._drapeTreeRef) {
+    if (undefined === this._draper) {
       if (hit?.modelId) {
         this._drapePoints.push(hit.hitPoint);
-        this._drapeViewport = hit.viewport;
-        this._drapeTreeRef = this.getGeometryTreeRef(hit.viewport, hit.modelId);
+        const drapeTreeRef = this.getGeometryTreeRef(hit.viewport, hit.modelId);
+        if (drapeTreeRef)
+          this._draper = new TerrainDraper(hit.viewport, drapeTreeRef);
       }
     } else {
       this._drapePoints.push(hit ? hit.hitPoint : ev.point);
     }
+
     this._drapedStrings = undefined;
     this.setupAndPromptForNextAction();
     return EventHandled.No;
