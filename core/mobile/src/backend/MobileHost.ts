@@ -6,7 +6,7 @@
 import { BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition,
+  IModelReadRpcInterface, IModelTileRpcInterface, ProgressCallback, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
@@ -16,7 +16,6 @@ import { BatteryState, DeviceEvents,  MobileAppFunctions, Orientation } from "..
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAppAuthorizationConfiguration } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
-import { ProgressCallback } from "@itwin/core-common";
 
 /** @beta */
 export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: string, cancelled: boolean, err?: string) => void;
