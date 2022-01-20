@@ -10,7 +10,7 @@ import {
   CommonStatusBarItem,
   CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities,
   StagePanelLocation, StagePanelSection,
-  StageUsage, StatusBarSection,
+  StatusBarSection,
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
@@ -24,7 +24,6 @@ import { getTestProviderState, setIsTraceAvailable } from "../../store";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
 import { VisibilityTreeComponent } from "../widgets/VisibilityWidget";
-import { ViewAttributesWidgetComponent } from "../widgets/ViewAttributesWidget";
 
 /** the following will import svgs into DOM and generate SymbolId that is used to locate the svg image. This
  * processing is done via the 'magic' webpack plugin and requires the use or the Bentley build scripts. */
@@ -194,22 +193,6 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
         // eslint-disable-next-line react/display-name
         getWidgetContent: () => {
           return <PresentationPropertyGridWidget />;
-        },
-        canPopout: true,
-      };
-
-      widgets.push(widget);
-    }
-    if (stageId === NetworkTracingFrontstage.stageId || _stageUsage === StageUsage.General) {
-      const widget: AbstractWidgetProps = {
-        id: "ui-item-provider-test:ViewAttributesWidget",
-        label: "View Attributes",
-        icon: "icon-window-settings",
-        defaultState: WidgetState.Floating,
-        isFloatingStateSupported: true,
-        // eslint-disable-next-line react/display-name
-        getWidgetContent: () => {
-          return <ViewAttributesWidgetComponent />;
         },
         canPopout: true,
       };

@@ -108,7 +108,7 @@ export class GeoJsonImporter {
     this.iModelDb.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, ((view: ViewDefinition) => {
       const categorySelector = this.iModelDb.elements.getElement<CategorySelector>(view.categorySelectorId);
       categorySelector.categories.push(categoryId);
-      this.iModelDb.elements.updateElement(categorySelector);
+      this.iModelDb.elements.updateElement(categorySelector.toJSON());
 
       return true;
     }));
