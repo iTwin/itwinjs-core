@@ -91,6 +91,7 @@ export * from "./Render";
 export * from "./RenderMaterial";
 export * from "./RenderSchedule";
 export * from "./RenderTexture";
+export * from "./Request";
 export * from "./RgbColor";
 export * from "./rpc/core/RpcConfiguration";
 export * from "./rpc/DevToolsRpcInterface";
