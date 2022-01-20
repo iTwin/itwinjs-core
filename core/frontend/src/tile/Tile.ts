@@ -232,7 +232,8 @@ export abstract class Tile {
   }
 
   /** Compute the load priority of this tile. This determines which tiles' contents are requested first.
-   * @param _viewports The viewports for which the tile has been requested for display.
+   * @param _viewports The subset of `users` that are [[Viewport]]s - typically, these viewports want to display the tile's content.
+   * @param users The [[TileUser]]s that are currently using the tile for some purpose, such as displaying its content.
    * @returns The priority.
    * @see [[TileLoadPriority]] for suggested priority values.
    * ###TODO document _viewports is deprecated.
