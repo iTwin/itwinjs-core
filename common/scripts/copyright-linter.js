@@ -7,9 +7,9 @@ const path = require("path");
 const child_process = require("child_process");
 
 function getFileNames(lintBranch) {
-  // Get name of every file changed between current branch and master,
-  // otherwise get name of every file changed in last commit and currently
-  const diffCommand = "git diff --name-only " + (lintBranch ? "master" : "HEAD~1");
+  // Get name of every file changed, added, or renamed (excluding deleted files)
+  // defaults to between current branch and master, otherwise between last commit and currently
+  const diffCommand = "git diff --name-only --diff-filter=d -l0 " + (lintBranch ? "master" : "HEAD~1");
 
   return child_process.execSync(diffCommand)
     .toString()
