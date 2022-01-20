@@ -1145,19 +1145,19 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Request geometry stream information from an element in binary format instead of json.
-   * @returns DbResult.BE_SQLITE_OK if successful
+   * @returns IModelStatus.Success if successful
    * @alpha
    */
-  public elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult {
+  public elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus {
     return this.nativeDb.processGeometryStream(requestProps);
   }
 
   /** Create brep geometry for inclusion in an element's geometry stream.
-   * @returns DbResult.BE_SQLITE_OK if successful
+   * @returns IModelStatus.Success if successful
    * @throws [[IModelError]] to report issues with input geometry or parameters
    * @alpha
    */
-  public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
+  public createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus {
     return this.nativeDb.createBRepGeometry(createProps);
   }
 

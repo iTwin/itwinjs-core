@@ -2225,7 +2225,7 @@ export abstract class IModelDb extends IModel {
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     // @alpha
-    createBRepGeometry(createProps: BRepGeometryCreate): DbResult;
+    createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus;
     // @beta
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // (undocumented)
@@ -2234,7 +2234,7 @@ export abstract class IModelDb extends IModel {
     // @beta
     deleteSettingDictionary(name: string): void;
     // @alpha
-    elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
+    elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus;
     // (undocumented)
     readonly elements: IModelDb.Elements;
     // @internal (undocumented)
