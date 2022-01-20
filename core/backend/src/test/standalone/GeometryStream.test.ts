@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BentleyStatus, DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
@@ -264,7 +264,7 @@ function validateGeometricElementProps(info: ElementGeometryInfo, expected: Geom
   assert.isFalse(bbox?.isNull);
 }
 
-function doElementGeometryValidate(imodel: SnapshotDb, elementId: Id64String, expected: ExpectedElementGeometryEntry[], isWorld: boolean, elementProps?: GeometricElement3dProps, brepOpt?: number): DbResult {
+function doElementGeometryValidate(imodel: SnapshotDb, elementId: Id64String, expected: ExpectedElementGeometryEntry[], isWorld: boolean, elementProps?: GeometricElement3dProps, brepOpt?: number): IModelStatus {
   const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
     if (undefined !== elementProps)
       validateGeometricElementProps(info, elementProps);
@@ -1270,7 +1270,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const expected: ExpectedElementGeometryEntry[] = [{ opcode: ElementGeometryOpcode.SolidPrimitive, geometryCategory: "solid", geometrySubCategory: "sphere" }];
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, "0x1d", expected, false));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, "0x1d", expected, false));
   });
 
   it("create GeometricElement3d from local coordinate point and arc primitive flatbuffer data", async () => {
@@ -1328,7 +1328,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with local coordinate indexed polyface flatbuffer data", async () => {
@@ -1385,7 +1385,7 @@ describe("ElementGeometry", () => {
     timer = new Timer("elementGeometryRequest");
     const status = imodel.elementGeometryRequest({ onGeometry, elementId: newId });
     timer.end();
-    assert.isTrue(DbResult.BE_SQLITE_OK === status);
+    assert.isTrue(IModelStatus.Success === status);
   });
 
   it("create GeometricElement3d from local coordinate brep flatbuffer data", async () => {
@@ -1422,9 +1422,9 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedSkip, false, undefined, 2));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedSkip, false, undefined, 2));
   });
 
   it("apply world coordinate transform directly to brep flatbuffer data", async () => {
@@ -1467,7 +1467,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
   });
 
   it("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {
@@ -1517,7 +1517,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d from local coordinate image flatbuffer data", async () => {
@@ -1549,7 +1549,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with sub-graphic ranges flatbuffer data", async () => {
@@ -1592,7 +1592,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with part reference flatbuffer data", async () => {
@@ -1615,7 +1615,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(partId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, partId, expectedPart, false));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, partId, expectedPart, false));
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
@@ -1649,7 +1649,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with appearance flatbuffer data", async () => {
@@ -1777,7 +1777,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with pattern flatbuffer data", async () => {
@@ -1891,7 +1891,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("should insert elements and parts with binary geometry stream", () => {
@@ -2050,7 +2050,7 @@ describe("BRepGeometry", () => {
     };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2061,7 +2061,7 @@ describe("BRepGeometry", () => {
     createProps.operation = BRepGeometryOperation.Intersect;
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2071,7 +2071,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: -0.5 };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2083,7 +2083,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { bothDirections: true };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2122,7 +2122,7 @@ describe("BRepGeometry", () => {
     };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2132,7 +2132,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: -0.5 };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2144,7 +2144,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = undefined;
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2182,7 +2182,7 @@ describe("BRepGeometry", () => {
     };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2214,21 +2214,21 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.operation = BRepGeometryOperation.Subtract;
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.operation = BRepGeometryOperation.Intersect;
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2250,7 +2250,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2275,7 +2275,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2298,7 +2298,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2307,7 +2307,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { bothDirections: true };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2316,7 +2316,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: 1 };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2325,7 +2325,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: 1, bothDirections: true };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2348,7 +2348,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2359,7 +2359,7 @@ describe("BRepGeometry", () => {
     builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, -1.5), 2)));
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2370,7 +2370,7 @@ describe("BRepGeometry", () => {
     builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, -0.5), 2, AngleSweep.createStartSweepDegrees(0, -360))));
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2391,21 +2391,21 @@ describe("BRepGeometry", () => {
       parameters: { frontDistance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.parameters = { backDistance: 0.25 };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.parameters = { frontDistance: 0.1, backDistance: 0.1 };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2426,7 +2426,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2447,7 +2447,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2468,7 +2468,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2489,7 +2489,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2513,7 +2513,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2534,7 +2534,7 @@ describe("BRepGeometry", () => {
       parameters: { radius: 1 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2581,7 +2581,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
