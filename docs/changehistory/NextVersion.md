@@ -27,3 +27,7 @@ Can now be expressed as follows (note no IModelConnection is required):
     textureMapping: { texture, weight: 0.25 },
   });
 ```
+
+## Floating content views in AppUI
+
+The [FloatingViewportContent]($appui-react) component has been added to support the display an IModel view within a modeless [ContentDialog]($appui-react). These "floating" viewports are displayed above the "fixed" viewports and below other UI items. See example `OpenViewDialogTool` in `ui-test-app` that opens a "floating" viewport in file [ImmediateTools.tsx](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/tools/ImmediateTools.tsx).
