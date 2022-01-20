@@ -39,7 +39,7 @@ export interface OnAspectIdArg extends OnAspectArg {
  * BIS Guideline: Subclass ElementUniqueAspect or ElementMultiAspect rather than subclassing ElementAspect directly.
  * @public
  */
-export class ElementAspect extends Entity implements ElementAspectProps {
+export class ElementAspect extends Entity {
   /** @internal */
   public static override get className(): string { return "ElementAspect"; }
   public element: RelatedElement;
@@ -152,7 +152,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
  * @note The associated ECClass was added to the BisCore schema in version 1.0.2
  * @public
  */
-export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
+export class ExternalSourceAspect extends ElementMultiAspect {
   /** @internal */
   public static override get className(): string { return "ExternalSourceAspect"; }
 

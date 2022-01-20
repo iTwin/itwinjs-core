@@ -74,9 +74,9 @@
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
     "@bentley/icons-generic": "^1.0.15",
-    "@itwin/imodels-access-backend": "~0.3.0",
-    "@itwin/imodels-access-frontend": "~0.3.0",
-    "@itwin/imodels-client-management": "~0.3.0",
+    "@itwin/imodels-access-backend": "^1.0.0",
+    "@itwin/imodels-access-frontend": "^1.0.0",
+    "@itwin/imodels-client-management": "^1.0.0",
     "@itwin/reality-data-client": "^0.5.0",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/appui-layout-react": "workspace:*",

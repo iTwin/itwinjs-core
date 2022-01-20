@@ -148,7 +148,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   }
 
   public override getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined {
-    const tiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
+    const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);
     const copyrights: string[] = [];
     for (const match of matchingAttributions)
