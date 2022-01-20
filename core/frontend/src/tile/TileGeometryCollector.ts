@@ -8,13 +8,9 @@
 
 import { Polyface, Range3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
-import { Viewport } from "../Viewport"; // ###TODO remove me
 import {
-  Tile, TileTreeReference,/* ###TODO TileUser, */
+  Tile, TileTreeReference, TileUser,
 } from "./internal";
-
-// ###TODO remove me
-export type TileUser = Viewport;
 
 export type CollectTileStatus = "accept" | "reject" | "continue";
 
