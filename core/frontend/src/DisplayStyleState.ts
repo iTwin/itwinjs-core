@@ -9,7 +9,7 @@ import { assert, BeEvent, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
-  BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  BaseLayerSettings, BaseMapLayerSettings, CartographicRange, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
   MapLayerSettings, MapLayerSettingsBase, MapSubLayerProps, ModelMapLayerSettings, RenderSchedule, RenderTimelineProps,
   SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
@@ -25,6 +25,7 @@ import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ScreenViewport } from "./Viewport";
+import { GeometricModelState } from "./ModelState";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -505,8 +506,22 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public async getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined> {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
-    if (undefined === mapLayerSettings || mapLayerSettings instanceof ModelMapLayerSettings)
+    if (undefined === mapLayerSettings)
       return undefined;
+
+    if (mapLayerSettings instanceof ModelMapLayerSettings) {
+      const ecefTransform = this.iModel.ecefLocation?.getTransform();
+      if (!ecefTransform)
+        return undefined;
+      const model = this.iModel.models.getLoaded(mapLayerSettings.modelId);
+      if (!model || !(model instanceof GeometricModelState))
+        return undefined;
+
+      const modelRange = await model.queryModelRange();
+      const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
+
+      return MapCartoRectangle.create(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
+    }
 
     const imageryProvider = IModelApp.mapLayerFormatRegistry.createImageryProvider(mapLayerSettings);
     if (undefined === imageryProvider)

@@ -56,7 +56,7 @@ class AttachMapLayerBaseTool extends Tool {
   }
 }
 
-/** Attach a map layer from URL base class. */
+/** Attach a map layer from URL base class. A layer is attached for each unique model in the selection */
 export class AttachModelMapLayerTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
