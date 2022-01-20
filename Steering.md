@@ -12,7 +12,7 @@ The Steering Committee’s responsibilities are to:
 
 ## Membership 
 
-The Steering Committee memberships are not time-limited nor is there a maximum size limit.  The size of the committee is expected to vary to ensure adequate coverage in area expertise and diversity of types of users.  The Steering Committee must have a minimum of four members, and no more than one-fourth of the members maybe affiliated with the same employer.    
+The Steering Committee memberships are not time-limited nor is there a maximum size limit.  The size of the committee is expected to vary to ensure adequate coverage in area expertise and diversity of types of users.  The Steering Committee must have a minimum of four members, and no more than one-fourth of the members may be affiliated with the same employer.    
 
 To be eligible for membership in the Steering Committee, you must: 
 
