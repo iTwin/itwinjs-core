@@ -166,6 +166,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   }
 
   /** Keep title bar of movable Dialog at least partially visible */
+  // istanbul ignore next
   private _handleAppWindowResize = (): void => {
     if (!this._containerRef.current || !this.props.movable)
       return;
@@ -520,6 +521,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       this.setState({ width, height });
     }
 
+    // istanbul ignore next
     if (movable && this.state.moving) {
       x = event.clientX - this.state.grabOffsetX;
       y = event.clientY - this.state.grabOffsetY;
