@@ -6206,6 +6206,19 @@ export enum ProfileOptions {
 }
 
 // @public
+export type ProgressCallback = (progress: ProgressInfo) => void;
+
+// @public
+export interface ProgressInfo {
+    // (undocumented)
+    loaded: number;
+    // (undocumented)
+    percent?: number;
+    // (undocumented)
+    total?: number;
+}
+
+// @public
 export class Projection implements ProjectionProps {
     constructor(_data?: ProjectionProps);
     readonly affine?: AffineTransform;

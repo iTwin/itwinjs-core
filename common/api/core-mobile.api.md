@@ -14,6 +14,7 @@ import * as https from 'https';
 import { IModelAppOptions } from '@itwin/core-frontend';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
+import { ProgressCallback } from '@itwin/core-common';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { RpcConfiguration } from '@itwin/core-common';
 import { RpcEndpoint } from '@itwin/core-common';
