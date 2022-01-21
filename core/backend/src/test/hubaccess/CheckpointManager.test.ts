@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid, IModelStatus } from "@itwin/core-bentley";
-import { IModelError } from "@itwin/core-common";
+import { ChangesetIdWithIndex, IModelError } from "@itwin/core-common";
 import { HubMock } from "../";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelHost } from "../../core-backend";
@@ -183,5 +183,13 @@ describe("Checkpoint Manager", () => {
     const request = { localFile, checkpoint: { accessToken: "dummy", iTwinId, iModelId, changeset }, downloadV2Only: true };
     await expect(CheckpointManager.downloadCheckpoint(request)).to.be.rejectedWith(iModelError);
     assert.isTrue(v1Spy.callCount === 0);
+  });
+  it("attempting to get a v2 checkpoint should throw if one doesn't exist at the requested changeset while dontApplyChangesets is true", async () => {
+    const changeset: ChangesetIdWithIndex = { id: "dummyid", index: 1};
+    const errorToBeThrown = new IModelError(IModelStatus.NotFound, `No v2 checkpoint exists at the requested changeset id dummyid AND dontApplyChangesets is true.`);
+    const request = { localFile: "any", checkpoint: { accessToken: "dummy", iTwinId: "any", iModelId: "any", changeset }, dontApplyChangesets: true };
+    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
+    await expect(V2CheckpointManager.getCheckpointDb(request)).to.be.rejectedWith("No v2 checkpoint exists at the requested changeset id dummyid AND dontApplyChangesets is true.");
   });
 });
