@@ -5853,6 +5853,8 @@ export class MapTile extends RealityTile {
     getSizeProjectionCorners(): Point3d[] | undefined;
     // (undocumented)
     get graphicType(): TileGraphicType;
+    // (undocumented)
+    get hasGraphics(): boolean;
     get heightRange(): Range1d | undefined;
     // (undocumented)
     protected _heightRange: Range1d | undefined;
