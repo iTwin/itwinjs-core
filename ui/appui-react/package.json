@@ -109,7 +109,7 @@
     "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
     "jsdom": "^19.0.0",
-    "jsdom-global": "3.0.2",
+    "global-jsdom": "8.4.0",
     "mocha": "^8.3.2",
     "npm-run-all": "^4.1.5",
     "nyc": "^15.1.0",
@@ -150,7 +150,7 @@
     "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "require": [
       "ignore-styles",
-      "jsdom-global/register",
+      "global-jsdom/register",
       "source-map-support/register",
       "ts-node/register"
     ],

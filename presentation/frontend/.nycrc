@@ -5,7 +5,7 @@
   "branches": 100,
   "lines": 100,
   "require": [
-    "jsdom-global/register"
+    "global-jsdom/register"
   ],
   "exclude": [
     "src/presentation-frontend.ts",

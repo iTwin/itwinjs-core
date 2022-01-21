@@ -574,7 +574,7 @@
         "-r",
         "ignore-styles",
         "-r",
-        "jsdom-global/register",
+        "global-jsdom/register",
         "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
@@ -595,7 +595,7 @@
         "../.mocharc.json",
         "--no-timeouts",
         "-r",
-        "jsdom-global/register",
+        "global-jsdom/register",
         "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
@@ -613,7 +613,7 @@
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
         "-r",
-        "jsdom-global/register",
+        "global-jsdom/register",
         "-r",
         "ignore-styles",
         "lib/**/*.js"
@@ -642,7 +642,7 @@
         "-r",
         "ignore-styles",
         "-r",
-        "jsdom-global/register",
+        "global-jsdom/register",
         "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [

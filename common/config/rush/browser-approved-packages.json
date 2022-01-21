@@ -555,6 +555,10 @@
       "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
+      "name": "global-jsdom",
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+    },
+    {
       "name": "got",
       "allowedCategories": [ "common" ]
     },
@@ -604,10 +608,6 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "jsdom-global",
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {

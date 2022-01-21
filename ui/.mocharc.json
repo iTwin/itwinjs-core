@@ -3,7 +3,6 @@
     "../scripts/copy-test-setup.js",
     "raf/polyfill",
     "source-map-support/register",
-    "jsdom-global/register",
     "ignore-styles"
   ],
   "checkLeaks": true,
