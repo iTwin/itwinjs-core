@@ -636,7 +636,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
   public abstract updateSolarShadows(context: SceneContext | undefined): void;
-  public abstract drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor): void;
+  public abstract drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean): void;
 
   /** Obtain a framebuffer with a single spare RGBA texture that can be used for screen-space effect shaders. */
   public abstract get screenSpaceEffectFbo(): FrameBuffer;
@@ -696,9 +696,9 @@ abstract class Compositor extends SceneCompositor {
   protected readonly _viewProjectionMatrix = new Matrix4();
   protected _primitiveDrawState = PrimitiveDrawState.Both; // used by drawPrimitive to decide whether a primitive needs to be drawn.
 
-  public drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor) {
-    if ((primitive.isPickable && this._primitiveDrawState !== PrimitiveDrawState.NonPickable) ||
-        (!primitive.isPickable && this._primitiveDrawState !== PrimitiveDrawState.Pickable))
+  public drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean) {
+    if ((outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.NonPickable) ||
+        (!outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.Pickable))
       primitive.draw(exec);
   }
 
