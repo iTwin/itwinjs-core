@@ -43,6 +43,7 @@ export interface SerializedRpcActivity {
   applicationVersion: string;
   sessionId: string;
   authorization: string;
+  accept: string;
   csrfToken?: { headerName: string, headerValue: string };
 }
 

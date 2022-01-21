@@ -452,6 +452,7 @@ describe("RpcInterface", () => {
         applicationVersion: "testbed1",
         sessionId: "",
         authorization: "",
+        accept: _request.accept ?? "",
       };
       return serializedContext;
     };

@@ -44,6 +44,9 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     /** The name of the HTTP authorization header. */
     authorization: "Authorization",
+
+    /** The name of the HTTP accept header */
+    accept: "Accept",
   };
 
   /** The name of the RPC protocol version header. */
@@ -100,7 +103,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       }
 
       iTwinId = encodeURIComponent(token.iTwinId || "");
-      iModelId = encodeURIComponent(token.iModelId!);
+      iModelId = encodeURIComponent(token.iModelId || "");
 
       routeChangesetId = token.changeset?.id || "0";
       appMode = AppMode.MilestoneReview;
