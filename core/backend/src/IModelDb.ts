@@ -250,6 +250,10 @@ export abstract class IModelDb extends IModel {
   public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
 
   /** @internal */
+  public clearFontMap(): void {
+    this._fontMap = undefined;
+  }
+  /** @internal */
   public addNewFont(prop: { type: FontType, name: string }): number {
     this._fontMap = undefined;
     return this.nativeDb.addNewFont(prop);

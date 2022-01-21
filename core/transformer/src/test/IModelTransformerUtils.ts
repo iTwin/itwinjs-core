@@ -194,10 +194,9 @@ export class TransformerExtensiveTestScenario {
     assert.isTrue(targetDb.codeSpecs.hasName("InformationRecords"));
     assert.isFalse(targetDb.codeSpecs.hasName("SourceCodeSpec"));
     assert.isFalse(targetDb.codeSpecs.hasName("ExtraCodeSpec"));
+
     // Font
-    if (Platform.platformName.startsWith("win")) {
-      assert.exists(targetDb.fontMap.getFont("Arial"));
-    }
+    assert.exists(targetDb.fontMap.getFont("Arial"));
     // Subject
     const subjectId: Id64String = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, targetSubjectName))!;
     assert.isTrue(Id64.isValidId64(subjectId));
