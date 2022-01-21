@@ -174,27 +174,18 @@ export class RpcBriefcaseUtility {
 
       Logger.logTrace(loggerCategory, "unable to lazily open V2 checkpoint - attempting to download V2 checkpoint", () => ({ error: BentleyError.getErrorProps(e), ...tokenProps }));
       try {
-        // throw new Error();
-        let downloadStarted: boolean = false;
         const v2Request: DownloadRequest = {
           checkpoint,
           localFile: V1CheckpointManager.getFileName(checkpoint),
           aliasFiles: [],
           dontApplyChangesets: true,
-          onProgress: (_loaded: number, _total: number) => {
-            downloadStarted = true;
-            return 0;
-          },
         };
         db = await BeDuration.race(timeout, V2CheckpointManager.getCheckpointDb(v2Request));
         if (db === undefined) {
-          Logger.logTrace(loggerCategory, "Open V2 checkpoint - pending", () => ({ ...tokenProps }));
+          Logger.logTrace(loggerCategory, "Download / Open V2 checkpoint - pending", () => ({ ...tokenProps }));
           throw new RpcPendingResponse();
         }
-        if (downloadStarted)
-          Logger.logTrace(loggerCategory, `Opened V2 checkpoint`, () => ({ ...tokenProps }));
-        else
-          Logger.logTrace(loggerCategory, `Opened checkpoint`, () => ({ ...tokenProps })); // Unable to know if this was a v2 or v1 checkpoint. It already existed on disk.
+        Logger.logTrace(loggerCategory, `Opened checkpoint`, () => ({ ...tokenProps })); // Unable to know if this was a v2 or v1 checkpoint. It already existed on disk.
       } catch (error) {
         if (error instanceof RpcPendingResponse) throw(error);
         Logger.logTrace(loggerCategory, "Unable to download V2 checkpoint, falling back to V1 checkpoint", () => ({ error: BentleyError.getErrorProps(error), ...tokenProps }));
@@ -207,10 +198,10 @@ export class RpcBriefcaseUtility {
         db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
 
         if (db === undefined) {
-          Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", () => ({ ...tokenProps }));
+          Logger.logTrace(loggerCategory, "Download / Open V1 checkpoint - pending", () => ({ ...tokenProps }));
           throw new RpcPendingResponse();
         }
-        Logger.logTrace(loggerCategory, "Opened V1 checkpoint", () => ({ ...tokenProps }));
+        Logger.logTrace(loggerCategory, "Opened checkpoint", () => ({ ...tokenProps }));
       }
     }
 
