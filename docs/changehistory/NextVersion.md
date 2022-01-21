@@ -399,7 +399,7 @@ await IModelApp.startup(appOptions);
 
 #### Deprecation of the settings on iModelApp
 
-The previous `IModelApp.settings` API has been removed in favor of [IModelApp.userPreferences]($frontend). The updated API will provide a clear distinction between the "settings" within the control of the user (user preferences) and which are within control of the admin of an iModel/iTwin (Workspaces). The separation is intended to make it clear who is capability of modifying and overriding a given setting while making the API easier to use.
+The previous `IModelApp.settings` API has been removed in favor of [IModelApp.userPreferences]($frontend). The updated API will provide a clear distinction between the "settings" within the control of the user (user preferences) and which are within control of the admin of an iModel/iTwin (Workspaces). The separation is intended to make it clear who is capable of modifying and overriding a given setting while making the API easier to use.
 
 The new [UserPreferencesAccess]($frontend) interface is a simple, easy-to-use API that can be implemented in many different ways. The `core-frontend` package does not dictate an implementation and could easily be setup using Local Storage (via [Storage APIs](https://developer.mozilla.org/en-US/docs/Web/API/Storage)) or by a cloud-hosted storage mechanism to share across user sessions.
 
@@ -513,7 +513,7 @@ This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInt
 
 #### Authorization Clients
 
-The class hierarchy of `AuthorizationClient`s has been simplified in the core packages and the only contract of any authorization client is the [AuthorizationClient]($core-common) interface. The single `getAccessToken()` method 
+The class hierarchy of `AuthorizationClient`s has been simplified in the core packages and the only contract of any authorization client is the [AuthorizationClient]($core-common) interface.
 
 ### iModels
 
