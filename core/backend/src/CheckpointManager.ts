@@ -55,7 +55,7 @@ export interface DownloadRequest {
   /** If true, skips v1 fallback in CheckpointManager.downloadCheckpoint call which takes place if no v2 checkpoints are found for the given iModelId. */
   downloadV2Only?: boolean;
 
-  /** If true, download requests will ONLY download a checkpoint if one exists at the requested changeset id. If false, a preceding checkpoint will be satisfactory, meaning changesets may need to be applied.  */
+  /** Only applies to v2 downloads: If true, download requests will ONLY download a checkpoint if one exists at the requested changeset id. If false, a preceding checkpoint will be satisfactory, meaning changesets may need to be applied.  */
   readonly dontApplyChangesets?: boolean;
 
   /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names,
@@ -131,9 +131,7 @@ export class V2CheckpointManager {
   public static async getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb> {
     request.downloadV2Only = true;
     const db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
-    if (db !== undefined) return db;
-    await CheckpointManager.downloadCheckpoint(request);
-    return SnapshotDb.openCheckpointV1(request.localFile, request.checkpoint);
+    return (undefined !== db) ? db : Downloads.download(request, async (job: DownloadJob) => this.downloadAndOpen(job));
   }
 
   public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: LocalFileName, expiryTimestamp: number }> {
@@ -156,8 +154,26 @@ export class V2CheckpointManager {
   }
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
+    // Since we don't have full control over the hubAccess methods, and those methods may query preceding checkpoints. We need this check
+    // in order to avoid wasting time downloading a checkpoint that may not satisfy our request.
+    const request = job.request;
+    if (request.dontApplyChangesets !== undefined && request.dontApplyChangesets) {
+      const checkpoint = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
+      if (checkpoint === undefined)
+        throw new IModelError(IModelStatus.NotFound, `No v2 checkpoint exists at the requested changeset id ${request.checkpoint.changeset.id} AND dontApplyChangesets is true.`);
+    }
     CheckpointManager.onDownloadV2.raiseEvent(job);
+    Logger.logTrace(loggerCategory, `Downloading V2 checkpoint`);
     return (await IModelHost.hubAccess.downloadV2Checkpoint(job.request)).id;
+  }
+
+  private static async downloadAndOpen(job: DownloadJob) {
+    const db = CheckpointManager.tryOpenLocalFile(job.request);
+    if (db)
+      return db;
+    await this.performDownload(job);
+    await CheckpointManager.updateToRequestedVersion(job.request);
+    return SnapshotDb.openCheckpointV1(job.request.localFile, job.request.checkpoint);
   }
 
   /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
@@ -203,6 +219,7 @@ export class V1CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
+    Logger.logTrace(loggerCategory, `Downloading V1 checkpoint`);
     return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
   }
 }
