@@ -3,23 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
-@import "~@itwin/core-react/lib/cjs/core-react/z-index";
 
-.uifw-card {
-  background-color: $buic-background-card;
-  @include uicore-z-index(content-card-popup);
-
-  .uifw-card-content {
-    padding: 6px 10px;
+.core-dialog.active-content-dialog {
+  .core-dialog-area {
+    > .core-dialog-head {
+      color: $buic-text-color-highlight;
+      background-color: $buic-background-titlebar;
+      > .core-dialog-title {
+      font-weight: 800;
+      }
+    }
   }
 
-  .uifw-card-separator {
-    height: 2px;
-    margin-bottom: 1px;
-    background: rgba($buic-foreground-body-reverse-rgb, 0.45);
+  .core-dialog.inactive-content-dialog {
+    .core-dialog-area {
+      > .core-dialog-head {
+        background-color: $buic-background-titlebar-outoffocus;
+      }
+    }
   }
-}
-
-.uifw-card-gap {
-  height: 4px;
 }
