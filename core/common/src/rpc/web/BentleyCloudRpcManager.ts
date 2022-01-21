@@ -37,7 +37,7 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
   public static readonly accessControl = {
     allowOrigin: "*",
     allowMethods: "POST, GET, OPTIONS",
-    allowHeaders: "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id, X-Protocol-Version",
+    allowHeaders: "Content-Type, Access-Control-Allow-Headers, Authorization, Accept, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id, X-Protocol-Version",
   };
 
   /** The protocol of the configuration. */

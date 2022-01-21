@@ -524,12 +524,14 @@ export class IModelApp {
 
     RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
       const id = _request.id;
+      const accept = _request.accept || "";
       const serialized: SerializedRpcActivity = {
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
         sessionId: this.sessionId,
         authorization: await this.getAccessToken(),
+        accept,
       };
 
       const csrf = IModelApp.securityOptions.csrfProtection;

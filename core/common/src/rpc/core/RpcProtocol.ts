@@ -122,6 +122,9 @@ export abstract class RpcProtocol {
 
     /** The name of the authorization header. */
     authorization: "",
+
+    /** The name of the accept header. */
+    accept: "",
   };
 
   /** If greater than zero, specifies where to break large binary request payloads. */

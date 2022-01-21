@@ -159,6 +159,9 @@ export abstract class RpcRequest<TResponse = any> {
   /** Convenience access to the protocol of this request. */
   public readonly protocol: RpcProtocol;
 
+  /** The accept header value for this request */
+  public readonly accept: string | undefined;
+
   /** The implementation response for this request. */
   public readonly response: Promise<TResponse | undefined>;
 
@@ -236,12 +239,13 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   /** Constructs an RPC request. */
-  public constructor(client: RpcInterface, operation: string, parameters: any[]) {
+  public constructor(client: RpcInterface, operation: string, parameters: any[], accept?: string) {
     this._created = new Date().getTime();
     this.path = "";
     this.method = "";
     this.client = client;
     this.protocol = client.configuration.protocol;
+    this.accept = accept;
     this.operation = RpcOperation.lookup(client.constructor as any, operation);
     this.parameters = parameters;
     this.retryInterval = this.operation.policy.retryInterval(client.configuration);

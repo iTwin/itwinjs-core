@@ -101,6 +101,7 @@ export abstract class RpcConfiguration {
       applicationVersion: "",
       sessionId: "",
       authorization: "",
+      accept: "",
     }),
   };
 
