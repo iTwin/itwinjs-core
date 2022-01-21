@@ -32,7 +32,7 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
-import { getSavedViewLayoutProps, OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/ImmediateTools";
+import { getSavedViewLayoutProps, OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewDialogTool, OpenViewPopoutTool } from "../../tools/ImmediateTools";
 import { AppUi } from "../AppUi";
 // cSpell:Ignore contentviews statusbars uitestapp
 import { IModelViewportControl } from "../contentviews/IModelViewport";
@@ -870,6 +870,8 @@ class AdditionalTools {
       badgeType: BadgeType.TechnicalPreview,
     }),
   ], 100, { groupPriority: 20 }), this.getMiscGroupItem(), OpenComponentExamplesPopoutTool.getActionButtonDef(400, 40),
-  OpenCustomPopoutTool.getActionButtonDef(410, 40), OpenViewPopoutTool.getActionButtonDef(420, 40)];
+  OpenCustomPopoutTool.getActionButtonDef(410, 40), OpenViewPopoutTool.getActionButtonDef(420, 40),
+  OpenViewDialogTool.getActionButtonDef(430, 40),
+  ];
 }
 
