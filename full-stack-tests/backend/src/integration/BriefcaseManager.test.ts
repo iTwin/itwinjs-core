@@ -5,10 +5,11 @@
 
 import { assert, expect } from "chai";
 import * as os from "os";
+import * as sinon from "sinon";
 import * as readline from "readline";
-import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
-import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg } from "@itwin/core-backend";
+import { AccessToken, BeDuration, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
+import { BriefcaseIdValue, BriefcaseProps, IModel, IModelError, IModelVersion } from "@itwin/core-common";
+import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V1CheckpointManager, V2CheckpointManager } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
 
@@ -43,7 +44,27 @@ describe("BriefcaseManager", () => {
     readOnlyTestIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
     noVersionsTestIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readWrite);
   });
+  it("should not fire off a v2 download during the rpc retry if a v1 download has already started", async () => {
+    // Use the larger iModel, so that the download is long enough to trigger the RpcPendingResponse thrown.
+    const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
+    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    assert.isAbove(changesets.length, 70);
+    // First attempt to get v2 checkpoint will now fail. This forces us to download v1. Now make sure that when we inevitably throw
+    // RpcPendingResponse, we don't end up down the v2 checkpoint path on the retry due to the download already being in progress.
+    const getV2CheckpointDbSpy = sinon.stub(V2CheckpointManager, "getCheckpointDb").onFirstCall().callsFake((_request) => { throw new Error(); }).callThrough();
+    const v2DlAndOpenSpy = sinon.spy(V2CheckpointManager as any, "downloadAndOpen");
+    const v1DlAndOpenSpy = sinon.spy(V1CheckpointManager as any, "downloadAndOpen");
+    const iModel = await HubWrappers.openCheckpointUsingRpc({accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changesets[69].id).toJSON(), deleteFirst: true});
+    assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
+    assert(getV2CheckpointDbSpy.callCount >= 2, "Expected V2CheckpointManager.getCheckpointDb to be called atleast twice"); // Once to throw the error that we stubbed and atleast once after due to rpcpendingresponse
+    assert(v1DlAndOpenSpy.callCount === 1, "Expected v1 downloadandopen to be called once.");
+    assert(v2DlAndOpenSpy.callCount === 0, "Expected v2 download and open to never be called.");
+    const filePath = iModel.nativeDb.getFilePath();
+    iModel.close();
+    IModelJsFs.removeSync(filePath);
 
+    sinon.restore();
+  });
   it("should open and close an iModel from the Hub", async () => {
     const iModel = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
