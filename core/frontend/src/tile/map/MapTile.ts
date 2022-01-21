@@ -121,6 +121,7 @@ export class MapTile extends RealityTile {
   protected _renderGeometry?: RenderTerrainGeometry;
   protected _mesh?: TerrainMeshPrimitive;     // Primitive retained on leaves only for upsampling.
   public override get isReady(): boolean { return super.isReady && this.baseImageryIsReady; }
+  public override get hasGraphics(): boolean { return this._renderGeometry !== undefined; }
   public get renderGeometry() { return this._renderGeometry; }
   public get mesh() { return this._mesh; }
   public get loadableTerrainTile() { return this.loadableTile as MapTile; }
