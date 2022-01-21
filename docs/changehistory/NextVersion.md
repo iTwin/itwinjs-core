@@ -28,6 +28,7 @@ Table of Contents:
   - [AppUI](#appui)
   - [Utility Methods](#utility-methods)
   - [Buildology](#buildology)
+  - [Client Libraries](#clients)
   - [iModel Transformer](#transformation)
   - [Various Changes](#various-changes)
 - [Dependency Update](#dependency-updates)
@@ -490,6 +491,12 @@ The loader has been deprecated due to a preference for using the dotenv package 
 
 ### Authorization re-work
 
+The release contains quite a few changes to authorization to make iTwin.js more flexible for different non-Bentley Identity Providers and removing the enforcement of OAuth2.0 in the core library. In order to make this change, a set of changes were made; the format of the token used, refactored how an access token is passed through the code and remove the default clients that made it challenging to use different authentication workflows.
+
+#### AccessToken refactor
+
+The previous `AccessToken` class has been completely removed in favor of a simple [AccessToken]($core-bentley) string type. The core packages no longer interpret the token and only pass it around directly to the method that need it using [TokenArg]($core-backend).
+
 #### ClientRequestContext and AuthorizedClientRequestContext have been removed
 
 The classes `ClientRequestContext` and `AuthorizedClientRequestContext` existed to identify RPC requests between a web frontend and a cloud backend. They have been removed. Most places that previously used an `AuthorizedClientRequestContext` should now be replaced with [AccessToken]($core-bentley).
@@ -503,6 +510,10 @@ requestContext.enter();
 you can simply delete it.
 
 This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInterface.md) implementations, all *unhandled* exceptions will automatically be logged along the appropriate RPC metadata. For this reason, it often preferable to throw an exception rather than logging an error and returning a status in code that may or may not be called from RPC.
+
+#### Authorization Clients
+
+The class hierarchy of `AuthorizationClient`s has been simplified in the core packages and the only contract of any authorization client is the [AuthorizationClient]($core-common) interface. The single `getAccessToken()` method 
 
 ### iModels
 
@@ -988,8 +999,6 @@ Adjusting callers of [RenderSystem.createTextureFromImageSource]($frontend):
 ```
 
 #### Default minimum level of detail for spatial views
-
-TODO @pmconne should this be in app setup or do you think it makes sense here?
 
 [TileAdmin.Props.minimumSpatialTolerance]($frontend) specifies the minimum level of detail to produce for views of spatial models. Previously, the default was `undefined`, indicating no minimum. The default has been changed to 1 millimeter. This means that when zooming in extremely closely, geometry that contains details on the order of 1mm or smaller will not refine further. This prevents the display system from requesting extraordinarily detailed graphics, improving performance.
 
