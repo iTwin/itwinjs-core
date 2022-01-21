@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Allow use of accept header in rpc layer",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

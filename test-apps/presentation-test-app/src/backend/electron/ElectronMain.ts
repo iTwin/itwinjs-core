@@ -22,7 +22,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
     ipcHandlers: [SampleIpcHandler],
   };
   const iModelHost = new IModelHostConfiguration();
-  const authClient = await ElectronMainAuthorization.create({
+  const authClient = new ElectronMainAuthorization({
     clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
     redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
     scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
@@ -31,6 +31,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
   iModelHost.authorizationClient = authClient;
 
   await ElectronHost.startup({ electronHost, iModelHost });
+  await authClient.signInSilent();
   await ElectronHost.openMainWindow();
 
   // __PUBLISH_EXTRACT_END__
