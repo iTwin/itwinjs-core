@@ -7684,7 +7684,8 @@ export class RpcRegistry {
 
 // @internal
 export abstract class RpcRequest<TResponse = any> {
-    constructor(client: RpcInterface, operation: string, parameters: any[]);
+    constructor(client: RpcInterface, operation: string, parameters: any[], accept?: string);
+    readonly accept: string | undefined;
     static get activeRequests(): ReadonlyMap<string, RpcRequest>;
     static get aggregateLoad(): RpcOperationsProfile;
     // (undocumented)
@@ -7928,6 +7929,8 @@ export enum SectionType {
 
 // @public
 export interface SerializedRpcActivity {
+    // (undocumented)
+    accept: string;
     // (undocumented)
     applicationId: string;
     // (undocumented)
