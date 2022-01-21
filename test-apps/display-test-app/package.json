@@ -65,7 +65,7 @@
     "@itwin/webgl-compatibility": "workspace:*",
     "@itwin/reality-data-client": "^0.5.0",
     "@itwin/browser-authorization": "^0.4.0",
-    "@itwin/electron-authorization": "^0.6.0",
+    "@itwin/electron-authorization": "^0.7.0",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
