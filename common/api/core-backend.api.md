@@ -1029,6 +1029,7 @@ export interface DownloadJob {
 export interface DownloadRequest {
     readonly aliasFiles?: ReadonlyArray<string>;
     readonly checkpoint: CheckpointProps;
+    readonly dontApplyChangesets?: boolean;
     downloadV2Only?: boolean;
     localFile: LocalFileName;
     readonly onProgress?: ProgressFunction;
