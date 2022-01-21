@@ -247,16 +247,29 @@ export abstract class IModelDb extends IModel {
     this.onChangesetApplied.raiseEvent();
   }
 
-  public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
+  public get fontMap(): FontMap {
+    return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap()));
+  }
 
   /** @internal */
   public clearFontMap(): void {
     this._fontMap = undefined;
   }
-  /** @internal */
-  public addNewFont(prop: { type: FontType, name: string }): number {
-    this._fontMap = undefined;
-    return this.nativeDb.addNewFont(prop);
+
+  /**
+   * Add a new font name/type to the font table for this iModel and return its FontId.
+   * @param name The name of the font to add
+   * @param type The type of the font. If undefined, font is TrueType.
+   * @returns The FontId for the newly added font. If a font by that name/type already exists, this method does not fail, it returns the existing Id.
+   * @note This is generally intended to be used by administrators establishing the set of fonts available for an iModel during
+   * project setup. It requires a writeable iModel with the schema lock held. On success, the font table is changed and the current transaction must be
+   * committed for the change to become permanent. Then, push a changeset so that other briefcases can use the font.
+   * @beta
+   */
+  public addNewFont(name: string, type?: FontType): number {
+    this.locks.checkExclusiveLock(IModel.repositoryModelId, "schema", "addNewFont");
+    this.clearFontMap();
+    return this.nativeDb.addNewFont({ name, type: type ?? FontType.TrueType });
   }
 
   /** Check if this iModel has been opened read-only or not. */

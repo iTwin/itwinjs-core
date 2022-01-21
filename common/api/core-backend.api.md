@@ -77,7 +77,7 @@ import { ExternalSourceAttachmentRole } from '@itwin/core-common';
 import { ExternalSourceProps } from '@itwin/core-common';
 import { FilePropertyProps } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
-import { FontProps } from '@itwin/core-common';
+import { FontType } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
@@ -2212,6 +2212,8 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
+    // @beta
+    addNewFont(name: string, type?: FontType): number;
     // @internal
     protected beforeClose(): void;
     // @internal
@@ -2219,6 +2221,8 @@ export abstract class IModelDb extends IModel {
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
+    // @internal (undocumented)
+    clearFontMap(): void;
     close(): void;
     get codeSpecs(): CodeSpecs;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
@@ -2237,8 +2241,6 @@ export abstract class IModelDb extends IModel {
     elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus;
     // (undocumented)
     readonly elements: IModelDb.Elements;
-    // @internal (undocumented)
-    embedFont(prop: FontProps): FontProps;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static findByFilename(fileName: LocalFileName): IModelDb | undefined;

@@ -8,7 +8,7 @@ import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentl
 import {
   AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
   ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
-  FillDisplay, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams,
+  FillDisplay, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams,
   GeometryPartProps, GeometryPrimitive, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient,
   ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps,
   Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode, ThematicGradientSettings, ViewFlags,
@@ -826,7 +826,7 @@ describe("GeometryStream", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
 
-    const arialId = imodel.addNewFont({ type: FontType.TrueType, name: "Arial" });
+    const arialId = imodel.addNewFont("Arial");
 
     assert.isTrue(0 !== imodel.fontMap.fonts.size);
     const foundFont = imodel.fontMap.getFont("Arial");
@@ -1468,7 +1468,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
 
-    const arialId = imodel.addNewFont({ type: FontType.TrueType, name: "Arial" });
+    const arialId = imodel.addNewFont("Arial");
     assert.isTrue(0 !== imodel.fontMap.fonts.size);
     const foundFont = imodel.fontMap.getFont("Arial");
     assert.isTrue(foundFont && foundFont.id === arialId);
