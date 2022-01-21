@@ -46,8 +46,8 @@ const filePaths = getFileNames(process.argv.includes("--branch"))
 if (filePaths) {
   filePaths.forEach((filePath) => {
     let fileContent = fs.readFileSync(filePath, { encoding: "utf8" });
-    const lastNewlineIdx = fileContent.lastIndexOf("\n");
-    const copyrightBanner = getCopyrightBanner(lastNewlineIdx > 0 && fileContent[lastNewlineIdx - 1] === "\r");
+    const lastNewlineIndex = fileContent.lastIndexOf("\n");
+    const copyrightBanner = getCopyrightBanner(lastNewlineIndex > 0 && fileContent[lastNewlineIndex - 1] === "\r");
 
     // up-to-date
     if (fileContent.startsWith(copyrightBanner))

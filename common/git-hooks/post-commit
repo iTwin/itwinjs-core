@@ -25,7 +25,7 @@ fi
 
 # apply unstaged changes regardless of linter success
 if [ "$unstagedChanges" != "" ]; then
-# may merge conflict if unstaged changes altered copyright headers
+# may merge conflict if both staged and unstaged changes altered copyright headers
 git stash pop
 fi
 
