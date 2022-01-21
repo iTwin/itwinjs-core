@@ -7519,7 +7519,6 @@ packages:
     dependencies:
       '@bentley/itwin-client': 3.0.0-dev.138
     transitivePeerDependencies:
-      - '@itwin/core-bentley'
       - supports-color
 
   /@itwin/reality-data-client/0.5.0:
