@@ -164,11 +164,18 @@ describe("RealityDataAccess (#integration)", () => {
     }
   });
 
-  it.skip("should get RealityDataSource for Open Street Map Building (OSM)", async () => {
+  it("should get RealityDataSource for Open Street Map Building (OSM)", async () => {
     assert.isTrue(imodel !== undefined);
     const rdSourceKey = getOSMBuildingsKey();
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iTwinId);
-    expect(rdSource).not.undefined;
-    expect(rdSource?.isContextShare).to.be.false;
+    // NOTE: This test will fail if IMJS_CESIUM_ION_KEY is not defined in your .env file;
+    const cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+    assert.isDefined(cesiumIonKey, "This test will fail if IMJS_CESIUM_ION_KEY is not defined in your .env file");
+    if (cesiumIonKey !== undefined) {
+      expect(rdSource).not.undefined;
+      expect(rdSource?.isContextShare).to.be.false;
+    } else {
+      expect(rdSource).to.be.undefined;
+    }
   });
 });

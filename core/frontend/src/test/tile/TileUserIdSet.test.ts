@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ViewportIdSet, ViewportIdSets } from "../../tile/LRUTileList";
+import { TileUserIdSet, TileUserIdSets } from "../../tile/LRUTileList";
 
-function makeViewportIdSet(ids: number[]): ViewportIdSet {
-  const set = new ViewportIdSet();
+function makeTileUserIdSet(ids: number[]): TileUserIdSet {
+  const set = new TileUserIdSet();
   for (const id of ids)
     set.add(id);
 
   return set;
 }
 
-describe("ViewportIdSet", () => {
+describe("TileUserIdSet", () => {
   it("compares for equality", () => {
     const idLists = [
       [ ],
@@ -26,42 +26,42 @@ describe("ViewportIdSet", () => {
 
     for (let i = 0; i < idLists.length; i++) {
       const list = idLists[i];
-      const set = makeViewportIdSet(list);
+      const set = makeTileUserIdSet(list);
       expect(set.equals(set)).to.be.true;
       const reverse = [ ...list ];
       reverse.reverse();
-      expect(set.equals(makeViewportIdSet(reverse))).to.be.true;
+      expect(set.equals(makeTileUserIdSet(reverse))).to.be.true;
 
       for (let j = 0; j < idLists.length; j++)
-        expect(set.equals(makeViewportIdSet(idLists[j]))).to.equal(i === j);
+        expect(set.equals(makeTileUserIdSet(idLists[j]))).to.equal(i === j);
     }
   });
 });
 
-describe("ViewportIdSets", () => {
+describe("TileUserIdSets", () => {
   it("adds unique sets as needed", () => {
-    const sets = new ViewportIdSets();
+    const sets = new TileUserIdSets();
     expect(sets.length).to.equal(0);
 
     const s1 = sets.plus(1);
     expect(sets.length).to.equal(1);
     expect(sets.plus(1)).to.equal(s1);
-    expect(sets.plus(1, makeViewportIdSet([1]))).to.equal(s1);
+    expect(sets.plus(1, makeTileUserIdSet([1]))).to.equal(s1);
     expect(sets.length).to.equal(1);
 
     const s2 = sets.plus(2);
     expect(sets.length).to.equal(2);
     expect(s2).not.to.equal(s1);
 
-    const s12 = sets.plus(2, makeViewportIdSet([1]));
+    const s12 = sets.plus(2, makeTileUserIdSet([1]));
     expect(sets.length).to.equal(3);
     expect(s12.length).to.equal(2);
 
-    const s21 = sets.plus(1, makeViewportIdSet([2]));
+    const s21 = sets.plus(1, makeTileUserIdSet([2]));
     expect(s21).to.equal(s12);
     expect(sets.length).to.equal(3);
 
-    const s123 = sets.plus(2, makeViewportIdSet([3, 1]));
+    const s123 = sets.plus(2, makeTileUserIdSet([3, 1]));
     expect(sets.length).to.equal(4);
     expect(s123.length).to.equal(3);
 
@@ -76,7 +76,7 @@ describe("ViewportIdSets", () => {
   });
 
   it("drops empty and duplicate sets", () => {
-    const sets = new ViewportIdSets();
+    const sets = new TileUserIdSets();
     const set = sets.plus(1);
     expect(sets.length).to.equal(1);
     expect(set.length).to.equal(1);
@@ -87,8 +87,8 @@ describe("ViewportIdSets", () => {
 
     const s1 = sets.plus(1);
     const s2 = sets.plus(2);
-    const s12 = sets.plus(1, makeViewportIdSet([2]));
-    const s134 = sets.plus(3, makeViewportIdSet([1, 4]));
+    const s12 = sets.plus(1, makeTileUserIdSet([2]));
+    const s134 = sets.plus(3, makeTileUserIdSet([1, 4]));
     expect(sets.length).to.equal(4);
 
     sets.drop(1);
@@ -98,11 +98,11 @@ describe("ViewportIdSets", () => {
     expect(s12.length).to.equal(1);
     expect(s134.length).to.equal(2);
 
-    const arr = (sets as any)._array as ViewportIdSet[];
+    const arr = (sets as any)._array as TileUserIdSet[];
     expect(arr.indexOf(s1)).to.equal(-1);
     expect(arr.indexOf(s134)).not.to.equal(-1);
 
-    // One of the two sets containing only viewport Id 2 should have been removed.
+    // One of the two sets containing only tile user Id 2 should have been removed.
     const s2Removed = arr.indexOf(s2) === -1;
     expect(arr.indexOf(s12) === -1).not.to.equal(s2Removed);
 

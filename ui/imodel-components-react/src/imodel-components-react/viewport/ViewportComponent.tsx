@@ -171,7 +171,6 @@ export function ViewportComponent(props: ViewportProps) {
       screenViewport.onViewChanged.removeListener(handleViewChanged);
       screenViewportRef.current = null;
       screenViewportCreated.current = false;
-
       ViewportComponentEvents.onDrawingViewportChangeEvent.removeListener(handleDrawingViewportChangeEvent);
       ViewportComponentEvents.onCubeRotationChangeEvent.removeListener(handleCubeRotationChangeEvent);
       ViewportComponentEvents.onStandardRotationChangeEvent.removeListener(handleStandardRotationChangeEvent);

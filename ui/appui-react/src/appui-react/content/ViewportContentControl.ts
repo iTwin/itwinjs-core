@@ -11,6 +11,7 @@ import {
   DrawingViewState, IModelApp, IModelConnection, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
 } from "@itwin/core-frontend";
 import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
 import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
@@ -126,4 +127,29 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
   /** Get the React.Element for a ViewSelector change. */
   // istanbul ignore next
   public getReactElementForViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): React.ReactNode { return null; }
+}
+
+/**
+ * @beta
+ */
+export class FloatingViewportContentControl extends ViewportContentControl {
+  constructor(uniqueId: string, name: string, node: React.ReactNode) {
+    super(new ConfigurableCreateInfo(name, uniqueId, name), undefined);
+    this._reactNode = node;
+    this.setIsReady();
+  }
+
+  /** The React node associated with this control. */
+  public override get reactNode(): React.ReactNode {
+    return this._reactNode;
+  }
+
+  public override set reactNode(r: React.ReactNode) {
+    this._reactNode = r;
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+
+    // istanbul ignore else
+    if (this.viewport && activeFrontstageDef)
+      activeFrontstageDef.setActiveViewFromViewport(this.viewport);
+  }
 }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Added ContentDialogManager, ContentDialog, and FloatingViewportContentControl to allow imodel viewport in a modeless dialog.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
