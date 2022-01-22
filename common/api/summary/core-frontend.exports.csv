@@ -89,6 +89,7 @@ beta;CheckboxFormatPropEditorSpec
 public;CheckpointConnection 
 public;ClipEventType
 public;Cluster
+beta;CollectTileStatus = "accept" | "reject" | "continue"
 alpha;CompassMode
 public;ComputeChordToleranceArgs
 internal;ContextMode
@@ -190,6 +191,7 @@ internal;GeographicTilingScheme
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
+beta;GeometryTileTreeReference 
 internal;GeoServices
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
@@ -451,6 +453,7 @@ public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId:
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
+internal;ReadonlyTileUserSet 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 beta;RealityDataSource
 beta;RealityDataSource
@@ -463,12 +466,15 @@ internal;RealityModelTileTree
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
 internal;RealityTile 
+internal;RealityTileContent 
 internal;RealityTileDrawArgs 
+alpha;RealityTileGeometry
 internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
+internal;RealityTreeReference 
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
@@ -480,7 +486,6 @@ internal;RenderMaterialSource
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
-internal;class RenderRealityMeshGeometry 
 internal;RenderScheduleState 
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
 internal;RenderSkyCubeParams
@@ -491,6 +496,7 @@ public;RenderSystem
 beta;RenderSystemDebugControl
 internal;class RenderTarget 
 internal;RenderTargetDebugControl
+internal;class RenderTerrainGeometry 
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 internal;RootIModelTile = Tile &
@@ -580,6 +586,8 @@ internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): voi
 internal;isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean
 public;TileDrawArgParams
 public;TileDrawArgs
+beta;TileGeometryCollector
+beta;TileGeometryCollectorOptions
 public;TileGraphicType
 public;TileLoadPriority
 public;TileLoadStatus
@@ -599,6 +607,10 @@ public;class TileTreeReference
 public;TileTreeSupplier
 internal;TileUrlImageryProvider 
 public;TileUsageMarker
+public;TileUser
+public;TileUser
+internal;TileUserIdSet 
+internal;TileUserIdSets 
 public;TileVisibility
 beta;TokenArg
 public;Tool
@@ -632,6 +644,7 @@ public;UniformArrayParams
 public;UniformContext
 public;UniformParams
 public;UniformType
+internal;UniqueTileUserSets
 beta;UnitFormattingSettingsProvider
 beta;UnitNameKey = string
 internal;UpsampledMapTile 
@@ -671,8 +684,6 @@ public;class ViewManip
 public;class Viewport 
 public;ViewportDecorator
 public;ViewportGraphicBuilderOptions 
-internal;ViewportIdSet 
-internal;ViewportIdSets 
 public;class ViewPose
 internal;ViewPose2d 
 internal;ViewPose3d 
