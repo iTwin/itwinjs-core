@@ -12,7 +12,7 @@ Returns content for selected (input) instances.
 | [`acceptableSchemaName`](#attribute-acceptableschemaname)           | No        | `string`                                                                            | `""`    |
 | [`acceptableClassNames`](#attribute-acceptableclassnames)           | No        | `string[]`                                                                          | `[]`    |
 | [`acceptablePolymorphically`](#attribute-acceptablepolymorphically) | No        | `boolean`                                                                           | `false` |
-| [`onlyIfNotHandled`](#attribute-onlyifnothandled)                   | No        | boolean                                                                             | `false` |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)                   | No        | `boolean`                                                                           | `false` |
 | *Ordering*                                                          |
 | [`priority`](#attribute-priority)                                   | No        | `number`                                                                            | `1000`  |
 | *Content Modifiers*                                                 |
@@ -26,7 +26,7 @@ Returns content for selected (input) instances.
 
 ### Attribute: `acceptableSchemaName`
 
->> **Default behaviour:** All schema names accepted
+> **Default behaviour:** All schema names accepted
 
 Specifies ECSchema name which the input instances have to match for the specification to be used.
 
@@ -42,7 +42,7 @@ Specifies ECSchema name which the input instances have to match for the specific
 
 ### Attribute: `acceptableClassNames`
 
->> **Default behaviour:** All class names accepted
+> **Default behaviour:** All class names accepted
 
 Specifies a list of class names which the input instances have to match for the specification to be used.
 
@@ -65,10 +65,10 @@ Specifies whether derived classes of `acceptableClassNames` should be included i
 [[include:SelectedNodeInstances.AcceptablePolymorphically.Ruleset]]
 ```
 
-  | Selected input                  | Result                                                                                                        |
-  | ------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-  | `BisCore.DictionaryModel`       | ![Example when selecting "DictionaryModel"](./media/selectednodeinstances-with-acceptablepolymorphically.png) |
-  | `BisCore.SpatialViewDefinition` | ![Example when selecting "SpatialViewDefinition"](./media/content-empty-table.png)                            |
+  | Selecting `BisCore.ViewDefinition` input with `acceptablePolymorphically` set to | Result                                                                                                                                      |
+  | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `true`                                                                           | ![Example when selecting "View Definition" with "acceptable polymorphically"](./media/selectednodeinstances-with-spatialviewdefinition.png) |
+  | `false`                                                                          | ![Example when doing a simple "View Definition" select](./media/content-empty-table.png)                                                    |
 
 ### Attribute: `onlyIfNotHandled`
 

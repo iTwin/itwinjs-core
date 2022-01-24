@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, NestedContentField, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel, tryGetFieldByLabel } from "../Utils";
@@ -583,17 +583,6 @@ describe("Learning Snippets", () => {
 
     });
 
-    // The iModel uses BisCore older than 1.0.2 - the returned content should not
-    // include ExternalSourceAspect properties
-    const content = await Presentation.presentation.getContent({
-      imodel,
-      rulesetOrId: ruleset,
-      keys: new KeySet([{ className: "BisCore:Element", id: "0x61" }]),
-      descriptor: {},
-    });
-    expect(content!.descriptor.fields).to.not.containSubset([{
-      label: "External Source Aspect",
-    }]).and.to.have.lengthOf(1);
   });
 
   describe("Specifications", () => {
@@ -892,7 +881,7 @@ describe("Learning Snippets", () => {
         await terminate();
       });
 
-      it.only("uses `acceptableSchemaName` attribute", async () => {
+      it("uses `acceptableSchemaName` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SelectedNodeInstances.AcceptableSchemaName.Ruleset
         // The ruleset has a specification that only returns content for input class instances which
         // are under `BisCore` schema.
@@ -922,7 +911,7 @@ describe("Learning Snippets", () => {
         }]);
       });
 
-      it.only("uses `acceptableClassNames` attribute", async () => {
+      it("uses `acceptableClassNames` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SelectedNodeInstances.AcceptableClassNames.Ruleset
         // The ruleset has a specification that only returns content for input class instances which
         // are of class `bis.SpatialViewDefinition`.
@@ -952,7 +941,7 @@ describe("Learning Snippets", () => {
         }]);
       });
 
-      it.only("uses `acceptablePolymorphically` attribute", async () => {
+      it("uses `acceptablePolymorphically` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SelectedNodeInstances.AcceptablePolymorphically.Ruleset
         // The ruleset has a specification that returns content for `bis.Model` input class instances
         // and all deriving classes.
@@ -962,7 +951,7 @@ describe("Learning Snippets", () => {
             ruleType: RuleTypes.Content,
             specifications: [{
               specType: ContentSpecificationTypes.SelectedNodeInstances,
-              acceptableClassNames: ["Model"],
+              acceptableClassNames: ["ViewDefinition"],
               acceptablePolymorphically: true,
             }],
           }],
@@ -978,9 +967,8 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
 
-        expect(content!.contentSet).to.have.lengthOf(1).and.to.containSubset([{
-          classInfo: { label: "Dictionary Model" },
-        }]);
+        expect(content!.contentSet).to.have.lengthOf(1);
+        expect(content!.contentSet[0].primaryKeys[0].className).to.equal("BisCore:SpatialViewDefinition");
       });
 
     });
