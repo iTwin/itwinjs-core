@@ -36,5 +36,5 @@ except TimeoutExpired:
   out, err = proc.communicate()
 
 print(out)
-print(err, file=sys.stderr)
+print >> sys.stderr, err
 exit(proc.returncode)
