@@ -31,7 +31,10 @@ print ("Executing: " + " ".join(command))
 proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 out, err = proc.communicate()
 if (out):
-  print(out.decode("utf-8"))
+  # print(out.decode("utf-8"))
+  print(out)
 if (err):
-  print(err.decode("utf-8"))
+  # print(err.decode("utf-8"))
+  print(err)
+print(proc.returncode)
 exit(proc.returncode)
