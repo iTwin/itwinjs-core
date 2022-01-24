@@ -439,7 +439,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   public findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean) {
-    return this.getMapLayers(isOverlay).findIndex((layer) => layer instanceof ImageMapLayerSettings && layer.matchesNameAndSource(name, source));
+    return this.getMapLayers(isOverlay).findIndex((layer) => layer.matchesNameAndSource(name, source));
   }
 
   /** @internal */
