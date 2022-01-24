@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Bug fix: non-pickable decorations would fail to render if Ambient Occlusion was enabled.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
