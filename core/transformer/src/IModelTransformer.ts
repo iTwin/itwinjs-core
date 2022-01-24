@@ -200,10 +200,10 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** map of (unprocessed element, referencing processed element) pairs to the partially committed element that needs the reference resolved */
-  protected _pendingReferences = new Map<Id64String, Map<Id64String, PartiallyCommittedElement>>();
+  protected _pendingReferences = new Id64.Uint32Map<Id64.Uint32Map<PartiallyCommittedElement>>();
 
   /** map of partially committed element ids to their partial commit progress */
-  protected _partiallyCommittedElements = new Map<Id64String, PartiallyCommittedElement>();
+  protected _partiallyCommittedElements = new Id64.Uint32Map<PartiallyCommittedElement>();
 
   /** the options that were used to initialize this transformer */
   private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingPredecessorsBehavior">;
@@ -484,7 +484,7 @@ export class IModelTransformer extends IModelExportHandler {
         throw Error(`${sourceElemId} has not been inserted into the target, a completer cannot be made for it. This is a bug.`);
       const targetElemProps = this.onTransformElement(sourceElem);
       this.targetDb.elements.updateElement({...targetElemProps, id: targetElemId});
-      this._partiallyCommittedElements.delete(sourceElemId);
+      this._partiallyCommittedElements.deleteById(sourceElemId);
     };
   }
 
@@ -500,16 +500,16 @@ export class IModelTransformer extends IModelExportHandler {
       const referenceInTarget = this.context.findTargetElementId(referencedInSource);
       if (Id64.isValid(referenceInTarget)) return;
       Logger.logTrace(loggerCategory, `Remapping not found for predecessor in property '${accessor}' of element '${referencedInSource}'`);
-      if (!this._partiallyCommittedElements.has(elementId)) {
+      if (!this._partiallyCommittedElements.hasById(elementId)) {
         // FIXME: probably to make onTransformElement work as well as possible, need to keep any transformed props from before the predecessor check
         const missingPredecessors = new Set([...element.getPredecessorIds()].filter((id) => this.context.findTargetElementId(id) === Id64.invalid));
         thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
-        this._partiallyCommittedElements.set(elementId, thisPartialElem);
+        this._partiallyCommittedElements.setById(elementId, thisPartialElem);
       }
-      if (!this._pendingReferences.has(referencedInSource))
-        this._pendingReferences.set(referencedInSource, new Map());
-      if (!this._pendingReferences.get(referencedInSource)!.has(elementId))
-        this._pendingReferences.get(referencedInSource)!.set(elementId, thisPartialElem);
+      if (!this._pendingReferences.hasById(referencedInSource))
+        this._pendingReferences.setById(referencedInSource, new Id64.Uint32Map());
+      if (!this._pendingReferences.getById(referencedInSource)!.hasById(elementId))
+        this._pendingReferences.getById(referencedInSource)!.setById(elementId, thisPartialElem);
     };
 
     const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
@@ -613,13 +613,13 @@ export class IModelTransformer extends IModelExportHandler {
       }
       this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
       // now that we've mapped this elem we can fix unmapped references to it
-      if (this._pendingReferences.has(sourceElement.id)) {
-        for (const [referencerId, pendingRef] of this._pendingReferences.get(sourceElement.id) ?? []) {
+      if (this._pendingReferences.hasById(sourceElement.id)) {
+        for (const [referencerId, pendingRef] of this._pendingReferences.getById(sourceElement.id)?.entriesById() ?? []) {
           pendingRef.resolvePredecessor(sourceElement.id);
-          this._pendingReferences.get(sourceElement.id)!.delete(referencerId);
+          this._pendingReferences.getById(sourceElement.id)!.deleteById(referencerId);
         }
-        if (this._pendingReferences.get(sourceElement.id)?.size === 0)
-          this._pendingReferences.delete(sourceElement.id);
+        if (this._pendingReferences.getById(sourceElement.id)?.size === 0)
+          this._pendingReferences.deleteById(sourceElement.id);
       }
       if (!this._options.noProvenance) {
         const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
@@ -742,7 +742,7 @@ export class IModelTransformer extends IModelExportHandler {
       Logger.logWarning(
         loggerCategory,
         `the following elements were never fully resolved:\n${[
-          ...this._partiallyCommittedElements.keys(),
+          ...this._partiallyCommittedElements.keysById(),
         ].join("\n")}`
       );
     }
