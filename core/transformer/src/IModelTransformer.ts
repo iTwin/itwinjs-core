@@ -520,22 +520,29 @@ export class IModelTransformer extends IModelExportHandler {
     };
   }
 
-  // (relationship.classFullName, sourceId) pairs mapping to targetId
-  private _linkTableReferencesCache = new Map<string, Id64.Uint32Map<Id64String>>();
+  // (relationship.classFullName, sourceId) pairs mapping to all targets
+  private _linkTableReferencesCaches = new Map<string, Id64.Uint32Map<Id64.Uint32Set>>();
 
   private precacheLinkTableReferences() {
     for (const classFullName of [
       ElementRefersToElements.classFullName,
       ElementDrivesElement.classFullName,
-      "ModelSelectorRefersToModel",
+      "BisCore:ModelSelectorRefersToModels",
     ]) {
-      const thisClassCache = new Id64.Uint32Map<Id64String>();
-      this._linkTableReferencesCache.set(classFullName, thisClassCache);
+      const thisClassCache = new Id64.Uint32Map<Id64.Uint32Set>();
+      this._linkTableReferencesCaches.set(classFullName, thisClassCache);
       this.sourceDb.withPreparedStatement(
         `SELECT SourceECInstanceId, TargetECInstanceId FROM ${classFullName}`,
         (stmt) => {
           while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-            thisClassCache.setById(stmt.getValue(0).getId(), stmt.getValue(1).getId());
+            const sourceId = stmt.getValue(0).getId();
+            const targetId = stmt.getValue(1).getId();
+            let thisSourceCache = thisClassCache.getById(sourceId);
+            if (thisSourceCache === undefined) {
+              thisSourceCache = new Id64.Uint32Set();
+              thisClassCache.setById(sourceId, thisSourceCache);
+            }
+            thisSourceCache.addId(targetId);
           }
         }
       );
@@ -549,7 +556,7 @@ export class IModelTransformer extends IModelExportHandler {
     const elementId = element.id;
     let thisPartialElem: PartiallyCommittedElement;
 
-    if (this._linkTableReferencesCache.size === 0)
+    if (this._linkTableReferencesCaches.size === 0)
       this.precacheLinkTableReferences();
 
     const missingPredecessors = element.getPredecessorIds();
@@ -574,6 +581,7 @@ export class IModelTransformer extends IModelExportHandler {
       .filter(([_propName, prop]) => prop.isNavigation)
       .map(([propName, _prop]) => propName);
 
+    // insert a pending reference for every nav prop
     for (const navProp of navigationProps) {
       if (!(navProp in element)) {
         Logger.logWarning(loggerCategory, `element (${element.id}) is missing exactly named json prop '${navProp}' in its metadata`);
@@ -582,6 +590,14 @@ export class IModelTransformer extends IModelExportHandler {
       const navPropValInSource: RelatedElement | undefined = (element as any)[navProp]; // cast to any since subclass can have any extensions
       if (!navPropValInSource || !Id64.isValid(navPropValInSource.id)) continue;
       insertPendingReferenceFinalizer(navPropValInSource?.id, navProp);
+    }
+
+    // insert a pending reference for every link table relationship where this is the source
+    for (const [relName, refsCache] of this._linkTableReferencesCaches) {
+      const targetIds = refsCache.getById(elementId);
+      for (const targetId of targetIds?.valuesById() ?? []) {
+        insertPendingReferenceFinalizer(targetId, relName);
+      }
     }
   }
 
