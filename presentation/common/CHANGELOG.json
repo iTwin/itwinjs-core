@@ -2,6 +2,78 @@
   "name": "@itwin/presentation-common",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/presentation-common_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Removed deprecated rules for iModel.js 3.0."
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "Added 'BaseNodeKey.version' property and 'NodeKey.equals' function to compare keys taking their versions into account."
+          },
+          {
+            "comment": "rename to @itwin/presentation-common"
+          },
+          {
+            "comment": "Added `excludedClasses` attribute to `ContentInstancesOfSpecificClassesSpecification` and `InstanceNodesOfSpecificClassesSpecification` specifications."
+          },
+          {
+            "comment": "Added 'onlyIfNotHandled' property support to all content rule specifications"
+          },
+          {
+            "comment": "Update `SelectClassInfo.pathFromInputToSelectClass` type definition to match reality - the relationship may not always be set."
+          },
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Added API to get properties of all elements."
+          },
+          {
+            "comment": "Added `getContentSources` RPC to retrieve information about where content for specific types of elements comes from."
+          },
+          {
+            "comment": "Fixed processing of merged content values under nested content field."
+          },
+          {
+            "comment": "Remove ability to get multiple element properties over RPC."
+          },
+          {
+            "comment": "Add `getContentInstanceKeys` RPC to efficiently get content instance keys."
+          },
+          {
+            "comment": "Remove `priority` attribute from presentation request options type."
+          },
+          {
+            "comment": "Optimize `KeySetJSON` size by compressing instance IDs."
+          },
+          {
+            "comment": "Remove `PresentationRpcInterface.loadHierarchy`."
+          },
+          {
+            "comment": "The `condition` attribute should be defined on both `ChildNodeRule` and `RootNodeRule`."
+          },
+          {
+            "comment": "Added `ignoreCategories` parameter in `createFieldHierarchies` function for adding all of the nested properties to parent field's child fields without considering categories. "
+          },
+          {
+            "comment": "Removed `PresentationUnitSystem`  in favor of `UnitSystemKey` from `@itwin/core-quantity`."
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/presentation-common_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",
