@@ -1135,6 +1135,8 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     protected pickSubEntities(id: Id64String, boresite: Ray3d, maxFace: number, maxEdge: number, maxVertex: number, maxDistance: number, hiddenEdgesVisible: boolean, filter?: SubEntityFilter): Promise<SubEntityLocationProps[] | undefined>;
     // (undocumented)
     processAgenda(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     protected removeSubEntity(_id: Id64String, props?: SubEntityLocationProps): Promise<void>;
     // (undocumented)
     protected get requiredSubEntityCount(): number;

@@ -52,7 +52,7 @@ describe("Decorations", () => {
     viewport = ScreenViewport.create(div, view);
     width = viewport.viewRect.width;
     height = viewport.viewRect.height;
-    boxDecLocRect = new ViewRect(0, 0, width / 2, height / 2);
+    boxDecLocRect = new ViewRect(0, height / 2, width / 2, height);
     sphereDecBgLocRect = new ViewRect(width - 2, height / 2 + 128, width - 2 + 1, height / 2 + 128 + 1);
   });
 
@@ -96,8 +96,6 @@ describe("Decorations", () => {
     dec.drop();
   }).timeout(20000); // macOS is slow.
 
-  // ###TODO: Viewport.readImage is broken. It accepts a ViewRect which defines the origin at the top-left, and passes it to gl.readPixels, which
-  // defines the origin at the bottom-left. Update these tests after fixing that.
   it("rotates about view-independent origin", () => {
     const viewIndependentOrigin = new Point3d(0.5, 0.5, 0);
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, points: shapePoints, viewIndependentOrigin });

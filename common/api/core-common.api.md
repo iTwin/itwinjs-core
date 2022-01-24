@@ -2228,7 +2228,7 @@ export class DisplayStyleSettings {
     readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>;
     readonly onRenderTimelineChanged: BeEvent<(newRenderTimeline: Id64String | undefined) => void>;
     // @internal @deprecated
-    readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>;
+    readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ScriptProps> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
     readonly onSubCategoryOverridesChanged: BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>;
     readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
@@ -2241,8 +2241,8 @@ export class DisplayStyleSettings {
     get renderTimeline(): Id64String | undefined;
     set renderTimeline(id: Id64String | undefined);
     // @internal @deprecated (undocumented)
-    get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
-    set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined);
+    get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined;
+    set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined);
     get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
     // @internal
     synchMapImagery(): void;
@@ -2279,7 +2279,7 @@ export interface DisplayStyleSettingsProps {
     planarClipOvr?: DisplayStylePlanarClipMaskProps[];
     renderTimeline?: Id64String;
     // @internal @deprecated
-    scheduleScript?: RenderSchedule.ModelTimelineProps[];
+    scheduleScript?: RenderSchedule.ScriptProps;
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
     timePoint?: number;
     // (undocumented)
@@ -2628,6 +2628,18 @@ export namespace ElementGeometry {
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
+// @alpha
+export interface ElementGeometryBuilderParams {
+    entryArray: ElementGeometryDataEntry[];
+    viewIndependent?: boolean;
+}
+
+// @alpha
+export interface ElementGeometryBuilderParamsForPart {
+    entryArray: ElementGeometryDataEntry[];
+    is2dPart?: boolean;
+}
+
 // @public (undocumented)
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
@@ -2688,15 +2700,6 @@ export interface ElementGeometryRequest {
     onGeometry: ElementGeometryFunction;
     replaceBReps?: boolean;
     skipBReps?: boolean;
-}
-
-// @alpha
-export interface ElementGeometryUpdate {
-    elementId: Id64String;
-    entryArray: ElementGeometryDataEntry[];
-    is2dPart?: boolean;
-    isWorld?: boolean;
-    viewIndependent?: boolean;
 }
 
 // @public
@@ -2830,6 +2833,7 @@ export interface EntityMetaDataProps {
 export interface EntityProps {
     classFullName: string;
     id?: Id64String;
+    readonly isInstanceOfEntity?: never;
     jsonProperties?: {
         [key: string]: any;
     };
@@ -3525,6 +3529,8 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 // @public
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
+    // @alpha
+    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     placement?: PlacementProps;
 }
@@ -3632,6 +3638,8 @@ export interface GeometryPartInstanceProps {
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
     bbox?: LowAndHighXYZ;
+    // @alpha
+    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
 }
@@ -3712,9 +3720,9 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     [Symbol.iterator](): IterableIterator<GeometryStreamIteratorEntry>;
     constructor(geometryStream: GeometryStreamProps, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform);
     readonly flags: GeometryStreamFlags;
-    static fromGeometricElement2d(element: GeometricElement2dProps): GeometryStreamIterator;
-    static fromGeometricElement3d(element: GeometricElement3dProps): GeometryStreamIterator;
-    static fromGeometryPart(geomPart: GeometryPartProps, geomParams?: GeometryParams, partTransform?: Transform): GeometryStreamIterator;
+    static fromGeometricElement2d(element: Pick<GeometricElement2dProps, "geom" | "placement" | "category">): GeometryStreamIterator;
+    static fromGeometricElement3d(element: Pick<GeometricElement3dProps, "geom" | "placement" | "category">): GeometryStreamIterator;
+    static fromGeometryPart(geomPart: Pick<GeometryPartProps, "geom">, geomParams?: GeometryParams, partTransform?: Transform): GeometryStreamIterator;
     geometryStream: GeometryStreamProps;
     // @internal (undocumented)
     get isViewIndependent(): boolean;
@@ -6740,20 +6748,27 @@ export abstract class RenderMaterial {
 
 // @public (undocumented)
 export namespace RenderMaterial {
+    // @deprecated (undocumented)
     export class Params {
         constructor(key?: string);
         get alpha(): number | undefined;
         set alpha(alpha: number | undefined);
+        // @alpha
         ambient: number;
         static readonly defaults: Params;
         diffuse: number;
         diffuseColor?: ColorDef;
+        // @alpha
         emissiveColor?: ColorDef;
         static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params;
         key?: string;
+        // @alpha
         reflect: number;
+        // @alpha
         reflectColor?: ColorDef;
+        // @alpha
         refract: number;
+        // @alpha
         shadows: boolean;
         specular: number;
         specularColor?: ColorDef;
@@ -8631,7 +8646,7 @@ export namespace TextureMapping {
         worldMapping?: boolean;
     }
     export class Params {
-        constructor(props?: ParamProps);
+        constructor(props?: TextureMapping.ParamProps);
         // @internal
         computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
         mode: TextureMapping.Mode;
@@ -8642,6 +8657,7 @@ export namespace TextureMapping {
     }
     export class Trans2x3 {
         constructor(m00?: number, m01?: number, originX?: number, m10?: number, m11?: number, originY?: number);
+        static readonly identity: Trans2x3;
         readonly transform: Transform;
     }
 }

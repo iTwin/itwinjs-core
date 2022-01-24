@@ -15,7 +15,7 @@ function createNewModelAndCategory(rwIModel: IModelDb, parent?: Id64String) {
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
 
-  const spatialCategoryId = rwIModel.elements.insertElement(category);
+  const spatialCategoryId = category.insert();
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
   return { modelId, spatialCategoryId };
 }
@@ -74,7 +74,7 @@ describe("ViewDefinition", () => {
     // Better way to create and insert
     const props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId, categorySelectorId, displayStyleId };
     const viewDefinition = iModel.elements.createElement<SpatialViewDefinition>(props);
-    let viewDefinitionId = iModel.elements.insertElement(viewDefinition);
+    let viewDefinitionId = iModel.elements.insertElement(viewDefinition.toJSON());
     assert.isNotEmpty(viewDefinitionId);
     assert.isTrue(Id64.isValid(viewDefinitionId));
 

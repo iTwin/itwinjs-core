@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { SnapshotDb } from "@itwin/core-backend";
-import { Code, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps } from "@itwin/core-common";
+import { Code, GeometricElement3dProps, GeometryStreamBuilder, IModel, Placement3dProps } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully.
@@ -54,7 +54,7 @@ describe("Wire Format Snippets", () => {
 
   it("RepositoryModel", () => {
     // __PUBLISH_EXTRACT_START__ WireFormat_RepositoryModel.code
-    const modelProps = iModel.models.getModel(IModel.repositoryModelId) as ModelProps;
+    const modelProps = iModel.models.getModel(IModel.repositoryModelId).toJSON();
     const json = JSON.stringify(modelProps, undefined, 2);
     // __PUBLISH_EXTRACT_END__
     assert.isDefined(modelProps);

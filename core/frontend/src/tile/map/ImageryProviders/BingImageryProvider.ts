@@ -9,7 +9,7 @@
 import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
 import { Range2d } from "@itwin/core-geometry";
 import { ImageSource, MapLayerSettings } from "@itwin/core-common";
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { request, RequestOptions, Response } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
 import {
@@ -148,7 +148,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   }
 
   public override getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined {
-    const tiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
+    const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);
     const copyrights: string[] = [];
     for (const match of matchingAttributions)

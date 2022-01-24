@@ -95,5 +95,4 @@ describe("ContentViewManager", () => {
     expect(ContentViewManager.isContent3dView(localContentMock.object)).to.be.false;
     expect(ContentViewManager.contentSupportsCamera(localContentMock.object)).to.be.false;
   });
-
 });

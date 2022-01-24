@@ -25,12 +25,14 @@ Returns content for instances related to the selected (input) instances.
 
 ### Attribute: `relationshipPaths`
 
-Specifies a list of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) to follow when looking for related instances.
-Either a single or an array of specifications may be specified for this attribute. Specifying an empty array makes the whole specification a no-op.
+Specifies a chain of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) that forms a path from an input instance to the output instances. When this array is empty, the specification produces no results.
 
 ```ts
 [[include:ContentRelatedInstances.RelationshipPaths.Ruleset]]
 ```
+
+The following is a result of selecting one instance of `bis.Model` as input for the ruleset above:
+
 ![Example of using "relationship paths" attribute](./media/contentrelatedinstances-with-relationshippaths.png)
 
 ### Attribute: `instanceFilter`
@@ -38,13 +40,13 @@ Either a single or an array of specifications may be specified for this attribut
 Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering instances of ECClasses targeted through the [`relationshipPaths` attribute](#attribute-relationshippaths).
 
 ```ts
-[[include:SharedAttributes.InstanceFilter.Ruleset]]
+[[include:ContentRelatedInstances.InstanceFilter.Ruleset]]
 ```
 
-  |                | Result                                                                                                       |
-  | -------------- | ------------------------------------------------------------------------------------------------------------ |
-  | without filter | ![Example when selecting all instances](./media/contentinstancesofspecificclasses-with-instancefilter-1.png) |
-  | with filter    | ![Example when filtering instances](./media/contentinstancesofspecificclasses-with-instancefilter-2.png)     |
+  |                | Result                                                                                      |
+  | -------------- | ------------------------------------------------------------------------------------------- |
+  | without filter | ![Example when selecting all instances](./media/sharedattributes-with-instancefilter-1.png) |
+  | with filter    | ![Example when filtering instances](./media/sharedattributes-with-instancefilter-2.png)     |
 
 ### Attribute: `onlyIfNotHandled`
 
@@ -56,22 +58,22 @@ Identifies whether we should ignore this specification if another specification 
 [[include:SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
-  | onlyIfNotHandled | Result                                                                                                                      |
-  | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
-  | `true`           | ![Example using both specifications](./media/contentinstancesofspecificclasses-with-onlyifnothandled-1.png)                 |
-  | `false`          | ![Example with "only if not handled" specifications](./media/contentinstancesofspecificclasses-with-onlyifnothandled-2.png) |
+  | onlyIfNotHandled | Result                                                                                                     |
+  | ---------------- | ---------------------------------------------------------------------------------------------------------- |
+  | `true`           | ![Example using both specifications](./media/sharedattributes-with-onlyifnothandled-1.png)                 |
+  | `false`          | ![Example with "only if not handled" specifications](./media/sharedattributes-with-onlyifnothandled-2.png) |
 
 ### Attribute: `priority`
 
 > **Default value:** `1000`
 
-Defines the order in which specifications are handled - higher priority means the specifications is handled first. If priorities are equal, the specifications are handled in the order they're defined.
+Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
 
 ```ts
 [[include:SharedAttributes.Priority.Ruleset]]
 ```
 
-![Example of using "priority" attribute](./media/contentinstancesofspecificclasses-with-priority.png)
+![Example of using "priority" attribute](./media/sharedattributes-with-priority.png)
 
 ### Attribute: `relatedProperties`
 
@@ -81,9 +83,9 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
-  | without related properties                                                                                           | with related properties                                                                                                   |
-  | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-  | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
+  | without related properties                                                                          | with related properties                                                                                    |
+  | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+  | ![Example when doing normal property select](./media/sharedattributes-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/sharedattributes-with-relatedproperties-2.png) |
 
 ### Attribute: `calculatedProperties`
 
@@ -93,19 +95,19 @@ Specifications of [calculated properties](./CalculatedPropertiesSpecification.md
 [[include:SharedAttributes.CalculatedProperties.Ruleset]]
 ```
 
-![Example of using "calculated properties" attribute](./media/contentinstancesofspecificclasses-with-calculatedproperties.png)
+![Example of using "calculated properties" attribute](./media/sharedattributes-with-calculatedproperties.png)
 
 ### Attribute: `propertyCategories`
 
-Specifications of [custom categories](PropertyCategorySpecification.md).
+Defines a list of [custom categories](PropertyCategorySpecification.md).
 
-Simply defining the categories does nothing - they have to be referenced through [`PropertySpecification.categoryId`](./PropertySpecification.md) specified in [`propertyOverrides`](#attribute-propertyoverrides) list.
+Custom categories are not present in the result unless they contain at least one property. To assign a property to the category, reference its `id` in [`PropertySpecification.categoryId`](./PropertySpecification.md) when defining [`propertyOverrides`](#attribute-propertyoverrides).
 
 ```ts
 [[include:SharedAttributes.PropertyCategories.Ruleset]]
 ```
 
-![Example of using "property categories" attribute](./media/contentinstancesofspecificclasses-with-propertycategories.png)
+![Example of using "property categories" attribute](./media/sharedattributes-with-propertycategories.png)
 
 ### Attribute: `propertyOverrides`
 
@@ -115,16 +117,16 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 [[include:SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
-  |        | Result                                                                                                                      |
-  | ------ | --------------------------------------------------------------------------------------------------------------------------- |
-  | before | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-propertyoverrides-1.png)        |
-  | after  | ![Example when selecting with "property overrides"](./media/contentinstancesofspecificclasses-with-propertyoverrides-2.png) |
+  |        | Result                                                                                                     |
+  | ------ | ---------------------------------------------------------------------------------------------------------- |
+  | before | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
+  | after  | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
 
 ### Attribute: `showImages`
 
 > **Default value:** `false`
 
-Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating content.
+Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
 
 ### Attribute: `relatedInstances`
 
@@ -144,8 +146,8 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
 [[include:SharedAttributes.RelatedInstances.Ruleset]]
 ```
 
-  |                                                                   | Result                                                                                                                                                 |
-  | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-  | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/contentinstancesofspecificclasses-with-relatedinstances-3.png)                                           |
-  | `ModelSelector` instances                                         | ![A list of model selectors](./media/contentinstancesofspecificclasses-with-relatedinstances-2.png)                                                    |
-  | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/contentinstancesofspecificclasses-with-relatedinstances-1.png) |
+  |                                                                   | Result                                                                                                                                |
+  | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+  | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/sharedattributes-with-relatedinstances-3.png)                                           |
+  | `ModelSelector` instances                                         | ![A list of model selectors](./media/sharedattributes-with-relatedinstances-2.png)                                                    |
+  | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/sharedattributes-with-relatedinstances-1.png) |

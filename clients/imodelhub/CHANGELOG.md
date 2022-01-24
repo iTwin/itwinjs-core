@@ -1,6 +1,83 @@
 # Change Log - @bentley/imodelhub-client
 
-This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+
+## 2.19.28
+Wed, 12 Jan 2022 14:52:38 GMT
+
+_Version update only_
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+_Version update only_
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:52 GMT
+
+_Version update only_
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+_Version update only_
+
+## 2.19.23
+Mon, 22 Nov 2021 20:41:39 GMT
+
+_Version update only_
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+_Version update only_
+
+## 2.19.21
+Wed, 10 Nov 2021 10:58:24 GMT
+
+_Version update only_
+
+## 2.19.20
+Fri, 29 Oct 2021 16:14:22 GMT
+
+_Version update only_
+
+## 2.19.19
+Mon, 25 Oct 2021 16:16:25 GMT
+
+_Version update only_
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+_Version update only_
+
+## 2.19.17
+Thu, 14 Oct 2021 21:19:43 GMT
+
+### Updates
+
+- Fix changeset download by id issue.
+
+## 2.19.16
+Mon, 11 Oct 2021 17:37:46 GMT
+
+_Version update only_
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+_Version update only_
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+_Version update only_
 
 ## 2.19.13
 Tue, 21 Sep 2021 21:06:40 GMT
@@ -418,7 +495,7 @@ Fri, 02 Oct 2020 18:03:32 GMT
 
 ### Updates
 
-- Fixed lint warnings. 
+- Fixed lint warnings.
 - Changed the bulk lock deletion to use the new chunked bulk lock delete API
 
 ## 2.6.5
@@ -548,17 +625,17 @@ Thu, 28 May 2020 22:48:59 GMT
 
 - Added FailedToGetProductSettings error
 - Download ChangeSets in chunks
-- Simplified logging for monitoring briefcase operations. 
+- Simplified logging for monitoring briefcase operations.
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
 - Changed ChangeSets download API
 - Added unlink for file handler
-- Updated docs. 
+- Updated docs.
 - Changeset download get sas url just before starting download
 - react to changes in imodeljs-clients
 - update imodelbank auth clients to implement FrontendAuthorizationClient
