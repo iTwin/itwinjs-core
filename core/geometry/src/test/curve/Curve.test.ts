@@ -46,7 +46,7 @@ import { prettyPrint } from "../testFunctions";
 import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
-import { Matrix3d } from "../../core-geometry";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 
 /* eslint-disable no-console */
 
