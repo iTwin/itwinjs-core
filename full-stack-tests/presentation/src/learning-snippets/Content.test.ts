@@ -943,7 +943,7 @@ describe("Learning Snippets", () => {
 
       it("uses `acceptablePolymorphically` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SelectedNodeInstances.AcceptablePolymorphically.Ruleset
-        // The ruleset has a specification that returns content for `bis.Model` input class instances
+        // The ruleset has a specification that returns content for `bis.ViewDefinition` input class instances
         // and all deriving classes.
         const ruleset: Ruleset = {
           id: "example",
@@ -959,7 +959,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // Ensure that only `bis.Model` content instances are returned.
+        // Ensure that only content instances of `bis.ViewDefinition` and derived classes are returned.
         const content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
