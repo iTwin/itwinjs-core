@@ -39,6 +39,12 @@ const oldCopyrightBanner = RegExp(
   "m" // Lack of 'g' means only select the first match in each file
 );
 
+// Regex that matches Rush's copyright banner from Microsoft, must not change these files
+const microsoftCopyrightBanner = RegExp(
+  "//\\s*Copyright.*Microsoft Corporation",
+  "m"
+);
+
 // If '--branch' is passed-in all files changed since main/master will be linted
 // otherwise only files changed last commit and currently will be linted
 const filePaths = getFileNames(process.argv.includes("--branch"))
@@ -51,6 +57,9 @@ if (filePaths) {
 
     // up-to-date
     if (fileContent.startsWith(copyrightBanner))
+      return;
+    // file has Microsoft copyright
+    if (microsoftCopyrightBanner.test(fileContent))
       return;
 
     fileContent = fileContent.replace(
