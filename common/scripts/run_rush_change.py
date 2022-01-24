@@ -25,7 +25,7 @@ else:
     # Uses default head ("origin/master"), if not defined
     branchCmd = []
 
-command = ["node", "common/scripts/install-run-rush.js change", "-v"] + branchCmd
+command = ["node", "common/scripts/install-run-rush.js", "change", "-v"] + branchCmd
 print ("Executing: " + " ".join(command))
 
 proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
