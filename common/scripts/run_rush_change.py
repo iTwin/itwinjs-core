@@ -29,12 +29,9 @@ command = ["node", "common/scripts/install-run-rush.js change", "-v"] + branchCm
 print ("Executing: " + " ".join(command))
 
 proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-# try:
-#   out, err = proc.communicate(timeout=60)
-# except:
-#   proc.kill()
-#   out, err = proc.communicate()
-
-# print(out)
-# print >> sys.stderr, err
+out, err = proc.communicate()
+if (out != b''):
+  print(out.decode(sys.stdout.encoding))
+if (err != b''):
+  sys.stderr.write(err.decode(sys.stdout.encoding))
 exit(proc.returncode)
