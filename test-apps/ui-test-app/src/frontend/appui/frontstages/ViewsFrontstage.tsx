@@ -32,7 +32,7 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
-import { getSavedViewLayoutProps, OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/ImmediateTools";
+import { getSavedViewLayoutProps, OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewDialogTool, OpenViewPopoutTool } from "../../tools/ImmediateTools";
 import { AppUi } from "../AppUi";
 // cSpell:Ignore contentviews statusbars uitestapp
 import { IModelViewportControl } from "../contentviews/IModelViewport";
@@ -432,8 +432,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={400}
             widgets={
               [
-                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                  applicationData={{ iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
                 /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
                    applicationData={{ iTwinName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
               ]}
@@ -469,6 +467,11 @@ export class ViewsFrontstage extends FrontstageProvider {
         }
         bottomPanel={
           <StagePanel
+            pinned={false}
+            widgets={[
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
+                applicationData={{ iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
+            ]}
             allowedZones={this._bottomPanel.allowedZones}
           />
         }
@@ -867,6 +870,8 @@ class AdditionalTools {
       badgeType: BadgeType.TechnicalPreview,
     }),
   ], 100, { groupPriority: 20 }), this.getMiscGroupItem(), OpenComponentExamplesPopoutTool.getActionButtonDef(400, 40),
-  OpenCustomPopoutTool.getActionButtonDef(410, 40), OpenViewPopoutTool.getActionButtonDef(420, 40)];
+  OpenCustomPopoutTool.getActionButtonDef(410, 40), OpenViewPopoutTool.getActionButtonDef(420, 40),
+  OpenViewDialogTool.getActionButtonDef(430, 40),
+  ];
 }
 

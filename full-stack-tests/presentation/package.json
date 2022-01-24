@@ -23,7 +23,6 @@
     "cover": "npm run -s test"
   },
   "dependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/components-react": "workspace:*",
     "@itwin/core-backend": "workspace:*",

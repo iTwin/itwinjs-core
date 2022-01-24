@@ -10,7 +10,7 @@ import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-b
 import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
   ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
-  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps,
+  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -36,7 +36,8 @@ import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "./RenderTexture";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
+import { CreateRenderMaterialArgs } from "./RenderMaterial";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -136,8 +137,9 @@ export interface RenderSystemDebugControl {
 }
 
 /** @internal */
-export abstract class RenderRealityMeshGeometry implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderTerrainGeometry implements IDisposable, RenderMemory.Consumer {
   public abstract dispose(): void;
+  public abstract get transform(): Transform | undefined;
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
@@ -307,8 +309,17 @@ export abstract class RenderSystem implements IDisposable {
    * @param _params A description of the material's properties.
    * @param _imodel The IModelConnection associated with the material.
    * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
+   * @deprecated Use [[createRenderMaterial]].
    */
+  // eslint-disable-next-line deprecation/deprecation
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
+
+  /** Create a [RenderMaterial]($common).
+   * @see [[CreateRenderMaterialArgs]] for a description of the material parameters.
+   */
+  public createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined {
+    return undefined;
+  }
 
   /** Creates a [[GraphicBuilder]] for creating a [[RenderGraphic]].
    * @param placement The local-to-world transform in which the builder's geometry is to be defined.
@@ -400,9 +411,9 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined { return undefined; }
+  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderTerrainGeometry | undefined { return undefined; }
   /** @internal */
-  public createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_terrainGeometry: RenderTerrainGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
   /** @internal */
@@ -549,7 +560,7 @@ export abstract class RenderSystem implements IDisposable {
           ownership: { key: id, iModel },
           image: {
             source: image.image,
-            transparency: ImageSourceFormat.Png === image.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+            transparency: ImageSourceFormat.Png === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
           },
         });
       }
@@ -607,7 +618,7 @@ export abstract class RenderSystem implements IDisposable {
       ownership,
       image: {
         source: image,
-        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
     });
   }
@@ -623,7 +634,7 @@ export abstract class RenderSystem implements IDisposable {
       ownership,
       image: {
         source: image,
-        transparency: hasAlpha ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+        transparency: hasAlpha ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
     });
   }
@@ -638,7 +649,7 @@ export abstract class RenderSystem implements IDisposable {
       type: params.type,
       source,
       ownership,
-      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Translucent,
+      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Mixed,
     });
   }
 
@@ -646,7 +657,7 @@ export abstract class RenderSystem implements IDisposable {
   public async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
     try {
       // JPEGs don't support transparency.
-      const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Translucent);
+      const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Mixed);
       const image = await imageElementFromImageSource(args.source);
       if (!IModelApp.hasRenderSystem)
         return undefined;

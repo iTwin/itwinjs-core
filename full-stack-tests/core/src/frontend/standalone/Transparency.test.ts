@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
+  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
 import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
@@ -228,22 +228,26 @@ describe("Transparency", async () => {
     if (undefined !== alpha)
       bytes.push(alpha);
 
+    // ###TODO test Mixed transparency.
+    const transparency = undefined !== alpha && alpha < 255 ? TextureTransparency.Translucent : TextureTransparency.Opaque;
     const img = ImageBuffer.create(new Uint8Array(bytes), fmt, 1);
-    // eslint-disable-next-line deprecation/deprecation
-    const texture = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next));
+    const texture = IModelApp.renderSystem.createTexture({
+      type: RenderTexture.Type.Normal,
+      image: { source: img, transparency },
+    });
+
     expect(texture).not.to.be.undefined;
     return texture!;
   }
 
   // Alpha in [0,1].
   function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number, diffuseColor?: ColorDef): RenderMaterial {
-    const params = new RenderMaterial.Params();
-    params.alpha = alpha;
-    params.diffuseColor = diffuseColor;
-    if (texture)
-      params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
+    const material = IModelApp.renderSystem.createRenderMaterial({
+      alpha,
+      diffuse: { color: diffuseColor },
+      textureMapping: texture ? { texture, weight: textureWeight } : undefined,
+    });
 
-    const material = IModelApp.renderSystem.createMaterial(params, imodel);
     expect(material).not.to.be.undefined;
     return material!;
   }

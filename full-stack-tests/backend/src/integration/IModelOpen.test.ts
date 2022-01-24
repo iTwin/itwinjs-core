@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BentleyError, GuidString } from "@itwin/core-bentley";
-import { IModelVersion } from "@itwin/core-common";
+import { AccessToken, GuidString, RepositoryStatus } from "@itwin/core-bentley";
+import { IModelError, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { BriefcaseManager, IModelHost, SnapshotDb } from "@itwin/core-backend";
@@ -31,7 +31,7 @@ describe("IModelOpen", () => {
   it("Unauthorized requests should cause an obvious error", async () => {
     // Try the bad request context
     await expect(HubWrappers.downloadAndOpenCheckpoint({ accessToken: "bad", iTwinId: testITwinId, iModelId: testIModelId }))
-      .to.be.rejectedWith(BentleyError).to.eventually.have.property("status", 401);
+      .to.be.rejectedWith(IModelError).to.eventually.have.property("errorNumber", RepositoryStatus.InvalidRequest);
   });
 
   it("should be able to handle simultaneous open calls", async () => {

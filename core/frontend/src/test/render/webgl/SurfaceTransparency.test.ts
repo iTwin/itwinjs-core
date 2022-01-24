@@ -5,18 +5,17 @@
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import {
-  ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
+  ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
-import { TextureTransparency } from "../../../render/RenderTexture";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { ScreenViewport } from "../../../Viewport";
 import { Target } from "../../../render/webgl/Target";
 import { Primitive } from "../../../render/webgl/Primitive";
-import { RenderPass } from "../../../render/webgl/RenderFlags";
+import { Pass, RenderPass, SinglePass } from "../../../render/webgl/RenderFlags";
 import { MeshGraphic } from "../../../render/webgl/Mesh";
 import { SurfaceGeometry } from "../../../render/webgl/SurfaceGeometry";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
@@ -102,12 +101,7 @@ describe("Surface transparency", () => {
   });
 
   function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number): RenderMaterial {
-    const params = new RenderMaterial.Params();
-    params.alpha = alpha;
-    if (texture)
-      params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
-
-    const material = IModelApp.renderSystem.createMaterial(params, imodel);
+    const material = IModelApp.renderSystem.createRenderMaterial({ alpha, textureMapping: texture ? { texture, weight: textureWeight } : undefined });
     expect(material).not.to.be.undefined;
     return material!;
   }
@@ -125,7 +119,10 @@ describe("Surface transparency", () => {
 
     const plan = createRenderPlanFromViewport(viewport);
     viewport.target.changeRenderPlan(plan);
-    expect(primitive.getRenderPass(viewport.target as Target)).to.equal(pass);
+
+    const primPass = primitive.getPass(viewport.target as Target);
+    expect(Pass.rendersOpaqueAndTranslucent(primPass)).to.be.false;
+    expect(Pass.toRenderPass(primPass as SinglePass)).to.equal(pass);
   }
 
   function expectOpaque(setup: SetupFunc): void {

@@ -9,7 +9,8 @@
 import { assert, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, RenderMaterial, SheetProps, TextureMapping, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, SheetProps,
+  TextureTransparency, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@itwin/core-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
@@ -33,7 +34,6 @@ import { AttachToViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
-import { TextureTransparency } from "./render/RenderTexture";
 
 // cSpell:ignore ovrs
 
@@ -756,9 +756,9 @@ class OrthographicAttachment {
 
     // Report tile statistics to sheet view's viewport.
     const tileAdmin = IModelApp.tileAdmin;
-    const selectedAndReady = tileAdmin.getTilesForViewport(this._viewport);
-    const requested = tileAdmin.getRequestsForViewport(this._viewport);
-    tileAdmin.addExternalTilesForViewport(context.viewport, {
+    const selectedAndReady = tileAdmin.getTilesForUser(this._viewport);
+    const requested = tileAdmin.getRequestsForUser(this._viewport);
+    tileAdmin.addExternalTilesForUser(context.viewport, {
       requested: requested?.size ?? 0,
       selected: selectedAndReady?.selected.size ?? 0,
       ready: selectedAndReady?.ready.size ?? 0,
@@ -849,7 +849,7 @@ class RasterAttachment {
     view.setAspectRatioSkew(skew);
 
     if (true !== props.jsonProperties?.displayOptions?.preserveBackground) {
-      // Make background color 100% transparent so that Viewport.readImage() will discard transparent pixels.
+      // Make background color 100% transparent so that Viewport.readImageBuffer() will discard transparent pixels.
       const bgColor = sheetView.displayStyle.backgroundColor.withAlpha(0);
       view.displayStyle.backgroundColor = bgColor;
     }
@@ -924,7 +924,7 @@ class RasterAttachment {
 
   private createGraphics(vp: Viewport): RenderGraphic | undefined {
     // Create a texture from the contents of the view.
-    const image = vp.readImage(vp.viewRect, undefined, false);
+    const image = vp.readImageBuffer({ upsideDown: true });
     if (undefined === image)
       return undefined;
 
@@ -943,9 +943,7 @@ class RasterAttachment {
 
     // Create a material for the texture
     const graphicParams = new GraphicParams();
-    const materialParams = new RenderMaterial.Params();
-    materialParams.textureMapping = new TextureMapping(texture, new TextureMapping.Params());
-    graphicParams.material = IModelApp.renderSystem.createMaterial(materialParams, vp.iModel);
+    graphicParams.material = IModelApp.renderSystem.createRenderMaterial({ textureMapping: { texture } });
 
     // Apply the texture to a rectangular polyface.
     const depth = this.zDepth;

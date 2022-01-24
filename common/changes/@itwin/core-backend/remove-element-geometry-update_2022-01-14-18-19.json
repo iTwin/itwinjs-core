@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Remove IModelDb.elementGeometryUpdate.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

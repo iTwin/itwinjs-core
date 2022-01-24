@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { FillFlags, RenderMode, ViewFlags } from "@itwin/core-common";
+import { FillFlags, RenderMode, TextureTransparency, ViewFlags } from "@itwin/core-common";
 import { SurfaceType } from "../primitives/SurfaceParams";
 import { VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
@@ -16,7 +16,7 @@ import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { MaterialInfo } from "./Material";
-import { RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
+import { Pass, RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -126,29 +126,29 @@ export class SurfaceGeometry extends MeshGeometry {
       return this.colorInfo;
   }
 
-  public getRenderPass(target: Target): RenderPass {
+  public override getPass(target: Target): Pass {
     // Classifiers have a dedicated pass
     if (this.isClassifier)
-      return RenderPass.Classification;
+      return "classification";
 
-    const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
+    let opaquePass: Pass = this.isPlanar ? "opaque-planar" : "opaque";
 
     // When reading pixels, glyphs are always opaque. Otherwise always transparent (for anti-aliasing).
     if (this.isGlyph)
-      return target.isReadPixelsInProgress ? opaquePass : RenderPass.Translucent;
+      return target.isReadPixelsInProgress ? opaquePass : "translucent";
 
     const vf = target.currentViewFlags;
 
     // When rendering thematic isolines, we need translucency because they have anti-aliasing.
     if (target.wantThematicDisplay && this.supportsThematicDisplay && target.uniforms.thematic.wantIsoLines)
-      return RenderPass.Translucent;
+      return "translucent";
 
     // In wireframe, unless fill is explicitly enabled for planar region, surface does not draw
     if (RenderMode.Wireframe === vf.renderMode && !this.mesh.isTextureAlwaysDisplayed) {
       const fillFlags = this.fillFlags;
       const showFill = FillFlags.Always === (fillFlags & FillFlags.Always) || (vf.fill && FillFlags.ByView === (fillFlags & FillFlags.ByView));
       if (!showFill)
-        return RenderPass.None;
+        return "none";
     }
 
     // If transparency disabled by render mode or view flag, always draw opaque.
@@ -167,11 +167,19 @@ export class SurfaceGeometry extends MeshGeometry {
       hasAlpha = this.getColor(target).hasTranslucency;
 
     if (!hasAlpha) {
+      // ###TODO handle TextureTransparency.Mixed; remove Texture.hasTranslucency.
       const tex = this.wantTextures(target, true) ? this.texture : undefined;
-      hasAlpha = undefined !== tex && tex.hasTranslucency;
+      switch (tex?.transparency) {
+        case TextureTransparency.Translucent:
+          hasAlpha = true;
+          break;
+        case TextureTransparency.Mixed:
+          opaquePass = `${opaquePass}-translucent`;
+          break;
+      }
     }
 
-    return hasAlpha ? RenderPass.Translucent : opaquePass;
+    return hasAlpha ? "translucent" : opaquePass;
   }
 
   protected _wantWoWReversal(target: Target): boolean {

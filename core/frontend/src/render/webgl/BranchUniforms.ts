@@ -19,6 +19,7 @@ import { UniformHandle } from "./UniformHandle";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";
+import { System } from "./System";
 import { Target } from "./Target";
 import { ClipStack } from "./ClipStack";
 
@@ -242,16 +243,17 @@ export class BranchUniforms {
     Matrix4d.createTransform(mv, this._mv);
     this._mv32.initFromTransform(mv);
 
-    const inv = this._mv.createInverse();
-    if (undefined !== inv) {
-      const invTr = inv.cloneTransposed();
-      this._mvn32.initFromMatrix3d(invTr.matrixPart());
-    }
-
     // Don't bother computing mvp for instanced geometry - it's not used.
     if (!this._isInstanced) {
       uniforms.projectionMatrix.multiplyMatrixMatrix(this._mv, this._mvp);
       this._mvp32.initFromMatrix4d(this._mvp);
+      if (!System.instance.capabilities.isWebGL2) { // inverse model to view is only used if not instanced and not WebGL2
+        const inv = this._mv.createInverse();
+        if (undefined !== inv) {
+          const invTr = inv.cloneTransposed();
+          this._mvn32.initFromMatrix3d(invTr.matrixPart());
+        }
+      }
     }
 
     return true;

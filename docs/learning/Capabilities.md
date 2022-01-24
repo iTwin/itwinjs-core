@@ -21,7 +21,7 @@ Not all capabilities are at the same maturity level, the key below explains the 
 
 There are two forms of iModels:
 
-1. ✔️️ Briefcase iModels synchronize with iModelHub and have a ChangeSet Timeline
+1. ✔️️ Briefcase iModels synchronize with iModelHub and have a Changeset Timeline
 2. ✔️️ [Snapshot iModels](./backend/AccessingIModels.md) are static, read-only (conceptually similar to PDF), are not synchronized, and have no timeline
 
 ### iModelHub
@@ -29,7 +29,7 @@ There are two forms of iModels:
 [iModelHub](./iModelHub/index) is the control center for Briefcase iModels and manages:
 
 - ✔️️ Authenticating access to iModels
-- ✔️️ Synchronization with the ChangeSet [Timeline](./iModelHub/index.md#the-timeline-of-changes-to-an-iModel)
+- ✔️️ Synchronization with the Changeset [Timeline](./iModelHub/index.md#the-timeline-of-changes-to-an-iModel)
 - ✔️️ [Named Versions](./iModelHub/versions.md)
 
 ### BIS Classes

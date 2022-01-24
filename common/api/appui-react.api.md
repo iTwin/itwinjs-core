@@ -565,13 +565,15 @@ export class AppUiSettings implements UserSettingsProvider {
     // (undocumented)
     readonly providerId = "AppUiSettingsProvider";
     // (undocumented)
+    showWidgetIcon: UiStateEntry<boolean>;
+    // (undocumented)
     widgetOpacity: UiStateEntry<number>;
 }
 
 // @beta
 export function areNoFeatureOverridesActive(): boolean;
 
-// @public @deprecated
+// @public
 export class Backstage extends React.Component<BackstageProps, BackstageState> {
     constructor(props: BackstageProps);
     static get backstageToggleCommand(): import("../shared/CommandItemDef").CommandItemDef;
@@ -716,7 +718,7 @@ export class BackstageManager {
     toggle(): void;
 }
 
-// @public @deprecated
+// @public
 export interface BackstageProps extends CommonProps {
     // (undocumented)
     header?: React.ReactNode;
@@ -1155,6 +1157,8 @@ export enum ConfigurableUiActionId {
     // (undocumented)
     SetFrameworkVersion = "configurableui:set-framework-version",
     // (undocumented)
+    SetShowWidgetIcon = "configurableui:set-show-widget-icon",
+    // (undocumented)
     SetSnapMode = "configurableui:set_snapmode",
     // (undocumented)
     SetTheme = "configurableui:set_theme",
@@ -1174,6 +1178,7 @@ export const ConfigurableUiActions: {
     setWidgetOpacity: (opacity: number) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetWidgetOpacity, number>;
     setDragInteraction: (dragInteraction: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetDragInteraction, boolean>;
     setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetFrameworkVersion, FrameworkVersionId>;
+    setShowWidgetIcon: (showWidgetIcon: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetShowWidgetIcon, boolean>;
     setViewOverlayDisplay: (displayViewOverlay: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetViewOverlayDisplay, boolean>;
 };
 
@@ -1269,6 +1274,8 @@ export interface ConfigurableUiState {
     // (undocumented)
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
+    showWidgetIcon: boolean;
+    // (undocumented)
     snapMode: number;
     // (undocumented)
     theme: string;
@@ -1320,6 +1327,50 @@ export interface ContentControlActivatedEventArgs {
     activeContentControl: ContentControl;
     // (undocumented)
     oldContentControl?: ContentControl;
+}
+
+// @public
+export function ContentDialog(props: ContentDialogProps): JSX.Element;
+
+// @public
+export class ContentDialogChangedEvent extends DialogChangedEvent {
+}
+
+// @public
+export class ContentDialogManager {
+    static get activeDialog(): React.ReactNode | undefined;
+    // @internal (undocumented)
+    static closeAll(): void;
+    static closeDialog(id: string): void;
+    static get dialogCount(): number;
+    // @internal (undocumented)
+    static readonly dialogManager: DialogManagerBase;
+    static get dialogs(): import("./DialogManagerBase").DialogInfo[];
+    // (undocumented)
+    static getDialogInfo(id: string): ContentDialogInfo | undefined;
+    static getDialogZIndex(id: string): number;
+    static handlePointerDownEvent(_event: React.PointerEvent, id: string, updateFunc: () => void): void;
+    static initialize(): void;
+    static readonly onContentDialogChangedEvent: ContentDialogChangedEvent;
+    static openDialog(dialog: React.ReactNode, id: string, parentDocument?: Document): void;
+    static update(): void;
+}
+
+// @public
+export interface ContentDialogProps extends DialogProps {
+    // (undocumented)
+    children: React.ReactNode;
+    // (undocumented)
+    dialogId: string;
+    // (undocumented)
+    movable?: boolean;
+}
+
+// @public
+export class ContentDialogRenderer extends React.PureComponent<CommonProps> {
+    constructor(props: CommonProps);
+    // (undocumented)
+    render(): React.ReactNode;
 }
 
 // @public
@@ -1447,7 +1498,11 @@ export interface ContentToolWidgetComposerProps {
 
 // @public
 export class ContentViewManager {
+    // (undocumented)
+    static addFloatingContentControl(contentControl?: ContentControl): void;
     static contentSupportsCamera(content: ContentControl | undefined): boolean;
+    // (undocumented)
+    static dropFloatingContentControl(contentControl?: ContentControl): void;
     static getActiveContent(): React.ReactNode | undefined;
     static getActiveContentControl(): ContentControl | undefined;
     static isContent3dView(content: ContentControl | undefined): boolean;
@@ -1457,11 +1512,17 @@ export class ContentViewManager {
     static isContentSpatialView(content: ContentControl | undefined): boolean;
     static get isMouseDown(): boolean;
     static readonly onActiveContentChangedEvent: ActiveContentChangedEvent;
+    static readonly onAvailableContentChangedEvent: UiEvent<{
+        contentId: string;
+    }>;
     static readonly onMouseDownChangedEvent: MouseDownChangedEvent;
     static refreshActiveContent(activeContent: React.ReactNode): void;
     static setActiveContent(activeContent?: React.ReactNode, forceEventProcessing?: boolean): void;
     static setMouseDown(mouseDown: boolean): void;
 }
+
+// @internal
+export function ContentWrapper(props: ContentWrapperProps): JSX.Element;
 
 // @public
 export class CoreTools {
@@ -2134,6 +2195,29 @@ export const expandWidget: (base: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly iconSpec?: boolean | React.ReactText | {
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+                readonly key: React.Key | null;
+            } | {} | {
+                readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+            } | {
+                readonly key: React.Key | null;
+                readonly children: boolean | React.ReactText | {
+                    readonly type: string | React.JSXElementConstructor<any>;
+                    readonly props: any;
+                    readonly key: React.Key | null;
+                } | {} | {
+                    readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+                } | any | null | undefined;
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
@@ -2182,6 +2266,28 @@ export interface ExtensibleToolbarProps {
 
 // @beta
 export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>): BaseItemState;
+
+// @beta (undocumented)
+export class FloatingContentControl extends ContentControl {
+    constructor(uniqueId: string, name: string, node: React.ReactNode);
+}
+
+// @beta
+export function FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element;
+
+// @beta (undocumented)
+export class FloatingViewportContentControl extends ViewportContentControl {
+    constructor(uniqueId: string, name: string, node: React_2.ReactNode);
+    get reactNode(): React_2.ReactNode;
+    set reactNode(r: React_2.ReactNode);
+}
+
+// @beta (undocumented)
+export interface FloatingViewportContentProps {
+    contentId: string;
+    initialViewState: ViewState;
+    onContextMenu?: (e: React.MouseEvent) => boolean;
+}
 
 // @alpha
 export class FocusToolSettings extends Tool {
@@ -2252,7 +2358,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2543,6 +2649,8 @@ export interface FrontstageDeactivatedEventArgs {
 // @public
 export class FrontstageDef {
     // (undocumented)
+    addFloatingContentControl(contentControl?: ContentControl): void;
+    // (undocumented)
     get applicationData(): any | undefined;
     // (undocumented)
     get bottomCenter(): ZoneDef | undefined;
@@ -2574,7 +2682,11 @@ export class FrontstageDef {
     dockPopoutWidgetContainer(widgetContainerId: string): void;
     // @beta
     dockWidgetContainer(widgetId: string): void;
+    // (undocumented)
+    dropFloatingContentControl(contentControl?: ContentControl): void;
     findWidgetDef(id: string): WidgetDef | undefined;
+    // (undocumented)
+    get floatingContentControls(): ContentControl[] | undefined;
     // @beta
     floatWidget(widgetId: string, point?: PointProps, size?: SizeProps): void;
     // (undocumented)
@@ -3180,6 +3292,8 @@ export interface InitialAppUiSettings {
     dragInteraction: boolean;
     // (undocumented)
     frameworkVersion: FrameworkVersionId;
+    // (undocumented)
+    showWidgetIcon?: boolean;
     // (undocumented)
     widgetOpacity: number;
 }
@@ -4801,6 +4915,29 @@ export const setPanelSize: (base: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly iconSpec?: boolean | import("react").ReactText | {
+                readonly type: string | import("react").JSXElementConstructor<any>;
+                readonly props: any;
+                readonly key: import("react").Key | null;
+            } | {} | {
+                readonly [Symbol.iterator]: () => Iterator<import("react").ReactNode, any, undefined>;
+            } | {
+                readonly key: import("react").Key | null;
+                readonly children: boolean | import("react").ReactText | {
+                    readonly type: string | import("react").JSXElementConstructor<any>;
+                    readonly props: any;
+                    readonly key: import("react").Key | null;
+                } | {} | {
+                    readonly [Symbol.iterator]: () => Iterator<import("react").ReactNode, any, undefined>;
+                } | any | null | undefined;
+                readonly type: string | import("react").JSXElementConstructor<any>;
+                readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
@@ -4966,6 +5103,29 @@ export const setWidgetLabel: (base: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly iconSpec?: boolean | React.ReactText | {
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+                readonly key: React.Key | null;
+            } | {} | {
+                readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+            } | {
+                readonly key: React.Key | null;
+                readonly children: boolean | React.ReactText | {
+                    readonly type: string | React.JSXElementConstructor<any>;
+                    readonly props: any;
+                    readonly key: React.Key | null;
+                } | {} | {
+                    readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+                } | any | null | undefined;
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
@@ -5112,6 +5272,29 @@ export const setWidgetState: (base: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly iconSpec?: boolean | React.ReactText | {
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+                readonly key: React.Key | null;
+            } | {} | {
+                readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+            } | {
+                readonly key: React.Key | null;
+                readonly children: boolean | React.ReactText | {
+                    readonly type: string | React.JSXElementConstructor<any>;
+                    readonly props: any;
+                    readonly key: React.Key | null;
+                } | {} | {
+                    readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+                } | any | null | undefined;
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
@@ -5322,6 +5505,29 @@ export const showWidget: (base: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly iconSpec?: boolean | React.ReactText | {
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+                readonly key: React.Key | null;
+            } | {} | {
+                readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+            } | {
+                readonly key: React.Key | null;
+                readonly children: boolean | React.ReactText | {
+                    readonly type: string | React.JSXElementConstructor<any>;
+                    readonly props: any;
+                    readonly key: React.Key | null;
+                } | {} | {
+                    readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+                } | any | null | undefined;
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
@@ -6608,6 +6814,8 @@ export class UiFramework {
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setIsUiVisible(visible: boolean): void;
+    // (undocumented)
+    static setShowWidgetIcon(value: boolean): void;
     static get settingsManager(): SettingsManager;
     // (undocumented)
     static setUiStateStorage(storage: UiStateStorage, immediateSync?: boolean): Promise<void>;
@@ -6618,6 +6826,8 @@ export class UiFramework {
     static setViewOverlayDisplay(display: boolean): void;
     // (undocumented)
     static setWidgetOpacity(opacity: number): void;
+    // (undocumented)
+    static get showWidgetIcon(): boolean;
     static get store(): Store<any>;
     static terminate(): void;
     // @internal
@@ -6728,6 +6938,9 @@ export interface UnitSystemSelectorProps {
     // (undocumented)
     selectedUnitSystemKey: UnitSystemKey;
 }
+
+// @internal (undocumented)
+export function useActiveContentControlId(): string | undefined;
 
 // @internal (undocumented)
 export function useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined;

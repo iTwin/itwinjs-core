@@ -110,15 +110,6 @@
     padding-right: $nz-footer-indicator-horizontal-padding-small;
   }
 
-  >.nz-label {
-    margin-right: $space-between-text-and-icon;
-    display: none;
-
-    &.nz-is-visible {
-      display: block;
-    }
-  }
-
   >.nz-balloon-container {
     height: 100%;
     position: relative;

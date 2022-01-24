@@ -11,7 +11,7 @@ import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3
 import {
   BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
   ImageSource, ImageSourceFormat, ImdlHeader, LinePixels, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial,
-  RenderTexture, TextureMapping, TileFormat, TileHeader, TileReadError, TileReadStatus,
+  RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -153,6 +153,8 @@ interface ImdlNamedTexture {
   bufferView: string;
   /** The format of the image data referenced by [[bufferView]]. */
   format: ImageSourceFormat;
+  /** The kind of transparency present in the texture image. Default: Mixed. */
+  transparency?: TextureTransparency;
 }
 
 /** Describes a [[DisplayParams]]. */
@@ -644,6 +646,7 @@ export class ImdlReader {
     if (!materialJson)
       return undefined;
 
+    // eslint-disable-next-line deprecation/deprecation
     const materialParams = new RenderMaterial.Params(key);
     materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
     if (materialJson.diffuse !== undefined)
@@ -670,6 +673,7 @@ export class ImdlReader {
     if (undefined !== materialJson.textureMapping)
       materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
 
+    // eslint-disable-next-line deprecation/deprecation
     return this._system.createMaterial(materialParams, this._iModel);
   }
 
@@ -761,7 +765,7 @@ export class ImdlReader {
       const texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
       const format = namedTex.format;
       const source = new ImageSource(texBytes, format);
-      return this._system.createTextureFromSource({ source, ownership, type: textureType });
+      return this._system.createTextureFromSource({ source, ownership, type: textureType, transparency: namedTex.transparency });
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend

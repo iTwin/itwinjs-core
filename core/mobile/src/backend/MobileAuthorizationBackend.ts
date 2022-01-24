@@ -42,8 +42,8 @@ export interface MobileAppAuthorizationConfiguration {
 }
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
-   * @internal
-   */
+ * @beta
+ */
 export class MobileAuthorizationBackend implements AuthorizationClient {
   protected _accessToken?: AccessToken;
   public config?: MobileAppAuthorizationConfiguration;
@@ -57,8 +57,6 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
   public constructor(config?: MobileAppAuthorizationConfiguration) {
     this.config = config;
   }
-
-  // public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
 
   /** Used to initialize the client - must be awaited before any other methods are called */
   public async initialize(config?: MobileAppAuthorizationConfiguration): Promise<void> {
@@ -137,6 +135,7 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
       });
     });
   }
+
   /**
    * Gets the URL of the service. Uses the default URL provided by client implementations.
    * If defined, the value of `IMJS_URL_PREFIX` will be used as a prefix to all urls provided

@@ -1367,6 +1367,8 @@ export enum MessageSeverity {
     // (undocumented)
     Question = 2,
     // (undocumented)
+    Success = 6,
+    // (undocumented)
     Warning = 3
 }
 
@@ -2112,11 +2114,7 @@ export class UiItemsManager {
 // @public
 export interface UiItemsProvider {
     readonly id: string;
-    onBackstageItemArbiterChange?: (item: BackstageItem, action: UiItemsApplicationAction) => void;
-    onStatusBarItemArbiterChange?: (item: CommonStatusBarItem, action: UiItemsApplicationAction) => void;
-    onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
     onUnregister?: () => void;
-    onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
     provideBackstageItems?: () => BackstageItem[];
     provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
     provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];
