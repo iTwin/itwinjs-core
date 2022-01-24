@@ -103,7 +103,7 @@ to auto-expand the category.
 
 Custom category [renderer specification](./RendererSpecification.md) that allows assigning a custom category renderer to be used
 in UI. This specification is used to set up [CategoryDescription.renderer]($presentation-common) for this category and it's up to
-the UI component to make sure appropriate renderer is used to render the it.
+the UI component to make sure appropriate renderer is used to render the category.
 
 See [Custom property category renderers](../Customization/PropertyCategoryRenderers.md) page for information on how custom categories
 are handled in our UI components.
