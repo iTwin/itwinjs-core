@@ -46,6 +46,7 @@ steps:
         print ("Executing " + command)
 
         proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
+        proc.wait()
         print (proc.returncode)
         exit(proc.returncode)
 
