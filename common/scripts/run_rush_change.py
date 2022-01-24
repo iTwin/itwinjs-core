@@ -28,5 +28,5 @@ else:
 command = "node common/scripts/install-run-rush.js change -v" + branchCmd
 print ("Executing " + command)
 
-proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
+proc = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 exit(proc.returncode)
