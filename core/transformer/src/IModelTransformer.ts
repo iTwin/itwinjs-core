@@ -199,8 +199,40 @@ export class IModelTransformer extends IModelExportHandler {
     return this._options.targetScopeElementId;
   }
 
-  /** map of (unprocessed element, referencing processed element) pairs to the partially committed element that needs the reference resolved */
+  /** map of (unprocessed element, referencing processed element) pairs to the partially committed element that needs the reference resolved
+   * @note instead of using [Dictionary]($bentley) which doesn't support Id64.Uint32Map, * we just use a nested map to implement a map of pair objects,
+   * and have some helper methods below for now */
   protected _pendingReferences = new Id64.Uint32Map<Id64.Uint32Map<PartiallyCommittedElement>>();
+
+  /** implement Map.set for this._pendingReferences */
+  private setPendingReference(unprocessedElemId: Id64String, reffingElemId: Id64String, partialElem: PartiallyCommittedElement): void {
+    let pendingRefSubmap = this._pendingReferences.getById(unprocessedElemId);
+    if (pendingRefSubmap === undefined) {
+      pendingRefSubmap = new Id64.Uint32Map();
+      this._pendingReferences.setById(unprocessedElemId, pendingRefSubmap);
+    }
+    if (pendingRefSubmap.hasById(reffingElemId))
+      throw Error("This is a bug. Pending references should be constructed uniquely and never overwritten");
+    pendingRefSubmap.setById(reffingElemId, partialElem);
+  }
+
+  /** implement Map.get for this._pendingReferences */
+  private getPendingReference(unprocessedElemId: Id64String, reffingElemId: Id64String): PartiallyCommittedElement | undefined {
+    const pendingRefSubmap = this._pendingReferences.getById(unprocessedElemId);
+    if (pendingRefSubmap !== undefined) {
+      return pendingRefSubmap.getById(reffingElemId);
+    }
+    return undefined;
+  }
+
+  /** implement Map.delete for this._pendingReferences */
+  private deletePendingReference(unprocessedElemId: Id64String, reffingElemId: Id64String): boolean {
+    const pendingRefSubmap = this._pendingReferences.getById(unprocessedElemId);
+    if (pendingRefSubmap === undefined) return false;
+    const didDelete = pendingRefSubmap.deleteById(reffingElemId);
+    if (pendingRefSubmap.size === 0) this._pendingReferences.deleteById(unprocessedElemId);
+    return didDelete;
+  }
 
   /** map of partially committed element ids to their partial commit progress */
   protected _partiallyCommittedElements = new Id64.Uint32Map<PartiallyCommittedElement>();
@@ -493,7 +525,6 @@ export class IModelTransformer extends IModelExportHandler {
    */
   private collectUnmappedReferences(element: Element) {
     const elementId = element.id;
-
     let thisPartialElem: PartiallyCommittedElement;
 
     const insertPendingReferenceFinalizer = (referencedInSource: Id64String, accessor: string) => {
@@ -506,10 +537,7 @@ export class IModelTransformer extends IModelExportHandler {
         thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
         this._partiallyCommittedElements.setById(elementId, thisPartialElem);
       }
-      if (!this._pendingReferences.hasById(referencedInSource))
-        this._pendingReferences.setById(referencedInSource, new Id64.Uint32Map());
-      if (!this._pendingReferences.getById(referencedInSource)!.hasById(elementId))
-        this._pendingReferences.getById(referencedInSource)!.setById(elementId, thisPartialElem);
+      this.setPendingReference(referencedInSource, elementId, thisPartialElem);
     };
 
     const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
@@ -616,10 +644,8 @@ export class IModelTransformer extends IModelExportHandler {
       if (this._pendingReferences.hasById(sourceElement.id)) {
         for (const [referencerId, pendingRef] of this._pendingReferences.getById(sourceElement.id)?.entriesById() ?? []) {
           pendingRef.resolvePredecessor(sourceElement.id);
-          this._pendingReferences.getById(sourceElement.id)!.deleteById(referencerId);
+          this.deletePendingReference(sourceElement.id, referencerId);
         }
-        if (this._pendingReferences.getById(sourceElement.id)?.size === 0)
-          this._pendingReferences.deleteById(sourceElement.id);
       }
       if (!this._options.noProvenance) {
         const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
