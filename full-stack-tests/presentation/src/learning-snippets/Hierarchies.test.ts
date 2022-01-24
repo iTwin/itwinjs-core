@@ -700,8 +700,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
       });
 
-      // crash in ECSQL, notified Affan
-      it.skip("uses `relatedInstances` attribute", async () => {
+      it("uses `relatedInstances` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.RelatedInstances.Ruleset
         // The ruleset contains a root nodes' specification that returns nodes for `bis.Elements` that are in
         // a category containing "a" in either `UserLabel` or `CodeValue` property.
@@ -846,8 +845,7 @@ describe("Learning Snippets", () => {
           }]);
         });
 
-        // crash in ECSQL, notified Affan
-        it.skip("uses `instanceFilter` attribute", async () => {
+        it("uses `instanceFilter` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.InstanceNodesOfSpecificClassesSpecification.InstanceFilter.Ruleset
           // The ruleset has a specification that returns nodes for `bis.ViewDefinition` instances whose
           // `CodeValue` property value ends with "View 1".
@@ -1254,8 +1252,7 @@ describe("Learning Snippets", () => {
 
       describe("ClassGroup", () => {
 
-        // needs this fix: https://bentleycs.visualstudio.com/iModelTechnologies/_git/imodel02/pullrequest/217120.
-        it.skip("uses `baseClass` attribute", async () => {
+        it("uses `baseClass` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.ClassGroup.BaseClass.Ruleset
           // The ruleset contains a root nodes rule for `bis.Element` instances and a grouping rule that puts
           // all `bis.PhysicalElement` instances into a class group.
@@ -1528,8 +1525,7 @@ describe("Learning Snippets", () => {
 
     describe("Node Artifacts", () => {
 
-      // needs this fix: https://bentleycs.visualstudio.com/iModelTechnologies/_git/imodel02/pullrequest/216669
-      it.skip("uses `condition` attribute", async () => {
+      it("uses `condition` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.NodeArtifacts.Condition.Ruleset
         // The ruleset has a root nodes rule that returns `bis.Model` nodes only if their child node
         // artifacts contain an artifact "IsSpecialChild". There's also a child nodes rule that produces
