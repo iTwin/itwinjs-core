@@ -42,6 +42,8 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { TextureHandle } from "./Texture";
 import { RenderBufferMultiSample } from "./RenderBuffer";
+import { Primitive } from "./Primitive";
+import { ShaderProgramExecutor } from "./ShaderProgram";
 
 function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -634,6 +636,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
   public abstract updateSolarShadows(context: SceneContext | undefined): void;
+  public abstract drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean): void;
 
   /** Obtain a framebuffer with a single spare RGBA texture that can be used for screen-space effect shaders. */
   public abstract get screenSpaceEffectFbo(): FrameBuffer;
@@ -652,6 +655,13 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+}
+
+// This describes what types of primitives a compositor should draw. See the `drawPrimitive` method of Compositor.
+enum PrimitiveDrawState {
+  Both,
+  Pickable,
+  NonPickable,
 }
 
 // The actual base class. Specializations are provided based on whether or not multiple render targets are supported.
@@ -684,6 +694,13 @@ abstract class Compositor extends SceneCompositor {
   protected _haveVolumeClassifier: boolean = false;
   protected _antialiasSamples: number = 1;
   protected readonly _viewProjectionMatrix = new Matrix4();
+  protected _primitiveDrawState = PrimitiveDrawState.Both; // used by drawPrimitive to decide whether a primitive needs to be drawn.
+
+  public drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean) {
+    if ((outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.NonPickable) ||
+      (!outputsToPick && this._primitiveDrawState !== PrimitiveDrawState.Pickable))
+      primitive.draw(exec);
+  }
 
   public abstract override get currentRenderTargetIndex(): number;
   public abstract override set currentRenderTargetIndex(_index: number);
@@ -2009,24 +2026,27 @@ class MRTCompositor extends Compositor {
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
       if (needAO || renderForReadPixels) {
+        if (needAO)
+          this._primitiveDrawState = PrimitiveDrawState.Pickable;
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
+        this._primitiveDrawState = PrimitiveDrawState.Both;
 
         if (this.useMsBuffers) {
           const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
           fbo.blitMsBuffersToTextures(true);
         }
-
-        if (needAO)
-          this.renderAmbientOcclusion();
       }
     });
 
     this._readPickDataFromPingPong = false;
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
-    if (!renderForReadPixels && !needAO) {
+    if (!renderForReadPixels) {
       fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, this.useMsBuffers, () => {
+        if (needAO)
+          this._primitiveDrawState = PrimitiveDrawState.NonPickable;
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
+        this._primitiveDrawState = PrimitiveDrawState.Both;
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
       if (this.useMsBuffers) {
@@ -2034,6 +2054,9 @@ class MRTCompositor extends Compositor {
         fbo.blitMsBuffersToTextures(needComposite);
       }
     }
+
+    if (needAO)
+      this.renderAmbientOcclusion();
   }
 
   protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
@@ -2247,21 +2270,27 @@ class MPCompositor extends Compositor {
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueLinear, false);
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
     if (renderForReadPixels || needAO) {
-      this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
       if (needAO)
-        this.renderAmbientOcclusion();
+        this._primitiveDrawState = PrimitiveDrawState.Pickable;
+      this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
+      this._primitiveDrawState = PrimitiveDrawState.Both;
     }
 
     this._readPickDataFromPingPong = false;
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
-    if (!renderForReadPixels && !needAO) {
+    if (!renderForReadPixels) {
       System.instance.frameBufferStack.execute(colorFbo, true, false, () => {
         this._drawMultiPassDepth = true;  // for OpaqueGeneral
+        if (needAO)
+          this._primitiveDrawState = PrimitiveDrawState.NonPickable;
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
     }
+
+    if (needAO)
+      this.renderAmbientOcclusion();
   }
 
   protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
