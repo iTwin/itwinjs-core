@@ -31,7 +31,7 @@ print ("Executing " + command)
 proc = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
 try:
   out, err = proc.communicate(timeout=60)
-except subprocess.TimeoutExpired:
+except:
   proc.kill()
   out, err = proc.communicate()
 
