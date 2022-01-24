@@ -11,7 +11,7 @@ import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64Stri
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
+  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementDrivesElement, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement,
   KnownLocations, Model, RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
@@ -520,6 +520,28 @@ export class IModelTransformer extends IModelExportHandler {
     };
   }
 
+  // (relationship.classFullName, sourceId) pairs mapping to targetId
+  private _linkTableReferencesCache = new Map<string, Id64.Uint32Map<Id64String>>();
+
+  private precacheLinkTableReferences() {
+    for (const classFullName of [
+      ElementRefersToElements.classFullName,
+      ElementDrivesElement.classFullName,
+      "ModelSelectorRefersToModel",
+    ]) {
+      const thisClassCache = new Id64.Uint32Map<Id64String>();
+      this._linkTableReferencesCache.set(classFullName, thisClassCache);
+      this.sourceDb.withPreparedStatement(
+        `SELECT SourceECInstanceId, TargetECInstanceId FROM ${classFullName}`,
+        (stmt) => {
+          while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+            thisClassCache.setById(stmt.getValue(0).getId(), stmt.getValue(1).getId());
+          }
+        }
+      );
+    }
+  }
+
   /** collect references this element has that are yet to be mapped, and if necessary create a
    * PartiallyCommittedElement for it to track resolution of unmapped references
    */
@@ -527,13 +549,20 @@ export class IModelTransformer extends IModelExportHandler {
     const elementId = element.id;
     let thisPartialElem: PartiallyCommittedElement;
 
+    if (this._linkTableReferencesCache.size === 0)
+      this.precacheLinkTableReferences();
+
+    const missingPredecessors = element.getPredecessorIds();
+    for (const id of missingPredecessors)
+      if (this.context.findTargetElementId(id) !== Id64.invalid)
+        missingPredecessors.delete(id);
+
     const insertPendingReferenceFinalizer = (referencedInSource: Id64String, accessor: string) => {
       const referenceInTarget = this.context.findTargetElementId(referencedInSource);
       if (Id64.isValid(referenceInTarget)) return;
       Logger.logTrace(loggerCategory, `Remapping not found for predecessor in property '${accessor}' of element '${referencedInSource}'`);
       if (!this._partiallyCommittedElements.hasById(elementId)) {
         // FIXME: probably to make onTransformElement work as well as possible, need to keep any transformed props from before the predecessor check
-        const missingPredecessors = new Set([...element.getPredecessorIds()].filter((id) => this.context.findTargetElementId(id) === Id64.invalid));
         thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
         this._partiallyCommittedElements.setById(elementId, thisPartialElem);
       }

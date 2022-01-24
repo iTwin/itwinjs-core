@@ -262,6 +262,38 @@ describe("Ids", () => {
     });
 
     expect(iterated.size).to.equal(set.size);
+
+    const iteratedValues = new Set<string>();
+    for (const [lo, hi] of set.values()) {
+      expect(set.has(lo, hi)).to.be.true;
+      const str = lo.toString() + hi.toString();
+      expect(iteratedValues.has(str)).to.be.false;
+      iteratedValues.add(str);
+    }
+
+    expect(iteratedValues.size).to.equal(set.size);
+
+    const iteratedIterator = new Set<string>();
+    for (const [lo, hi] of set) {
+      expect(set.has(lo, hi)).to.be.true;
+      const str = lo.toString() + hi.toString();
+      expect(iteratedIterator.has(str)).to.be.false;
+      iteratedIterator.add(str);
+    }
+
+    expect(iteratedIterator.size).to.equal(set.size);
+
+    const iteratedValuesById = new Set<string>();
+    for (const str of set.valuesById()) {
+      expect(set.hasId(str)).to.be.true;
+      const lo = Id64.getLowerUint32(str);
+      const hi = Id64.getUpperUint32(str);
+      expect(set.has(lo, hi)).to.be.true;
+      expect(iteratedValuesById.has(str)).to.be.false;
+      iteratedValuesById.add(str);
+    }
+
+    expect(iteratedValuesById.size).to.equal(set.size);
   });
 
   it("Guids", () => {

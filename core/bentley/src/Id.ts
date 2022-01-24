@@ -589,6 +589,25 @@ export namespace Id64 {
         for (const lo of entry[1])
           func(lo, entry[0]);
     }
+
+    /** Get an iterator of entries in this set by Id. */
+    public values(): IterableIterator<[number, number]> {
+      return this[Symbol.iterator]();
+    }
+
+    /** Get an iterator of entries in this set by Id. */
+    public *valuesById(): IterableIterator<string> {
+      for (const [high, lowSet] of this._map)
+        for (const low of lowSet)
+          yield Id64.fromUint32Pair(low, high);
+    }
+
+    /** Get an iterator of entries in this set. */
+    public *[Symbol.iterator](): IterableIterator<[number, number]> {
+      for (const [high, lowSet] of this._map)
+        for (const low of lowSet)
+          yield [low, high];
+    }
   }
 
   /** A specialized replacement for Map<Id64String, T> optimized for performance-critical code.
