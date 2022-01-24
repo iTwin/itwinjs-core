@@ -64,19 +64,16 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
   const displayStyleLayers = (getBackgroundMap ? displayStyle.backgroundMapLayers : displayStyle.overlayMapLayers);
   for (let layerIdx = 0; layerIdx < displayStyleLayers.length; layerIdx++) {
     const layerSettings = displayStyleLayers[layerIdx];
-    if (layerSettings instanceof ModelMapLayerSettings) {
-      // Michel: Needs work - support model map layers...
-      continue;
-    }
     const isOverlay = !getBackgroundMap;
     const layerProvider = viewport.getMapLayerImageryProvider(layerIdx, isOverlay);
+    const popSubLayers = populateSubLayers && !(layerSettings instanceof ModelMapLayerSettings);
     layers.push({
       visible: layerSettings.visible,
       name: layerSettings.name,
-      url: layerSettings.url,
+      source: layerSettings.source,
       transparency: layerSettings.transparency,
       transparentBackground: layerSettings.transparentBackground,
-      subLayers: populateSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
+      subLayers: popSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
       showSubLayers: false,
       isOverlay,
       provider: layerProvider,
@@ -285,7 +282,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     if (!activeViewport || !activeViewport.displayStyle)
       return;
 
-    const indexInDisplayStyle = activeViewport.displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+    const indexInDisplayStyle = activeViewport.displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
     if (indexInDisplayStyle < 0)
       return;
 
@@ -313,7 +310,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       const isVisible = !mapLayerSettings.visible;
 
       const displayStyle = activeViewport.displayStyle;
-      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
       if (-1 !== indexInDisplayStyle) {
         // update the display style
         displayStyle.changeMapLayerProps({ visible: isVisible }, indexInDisplayStyle, mapLayerSettings.isOverlay);
@@ -364,10 +361,10 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       else if (destination.droppableId === "backgroundMapLayers" && backgroundMapLayers)
         toMapLayer = backgroundMapLayers[destination.index];
       if (toMapLayer)
-        toIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(toMapLayer.name, toMapLayer.url, toMapLayer.isOverlay);
+        toIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(toMapLayer.name, toMapLayer.source, toMapLayer.isOverlay);
     }
 
-    const fromIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(fromMapLayer.name, fromMapLayer.url, fromMapLayer.isOverlay);
+    const fromIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(fromMapLayer.name, fromMapLayer.source, fromMapLayer.isOverlay);
     if (fromIndexInDisplayStyle < 0)
       return;
 
