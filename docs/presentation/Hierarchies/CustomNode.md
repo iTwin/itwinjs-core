@@ -36,9 +36,7 @@ The given value is often used in [a condition of another child node rule](./Chil
 [[include:Hierarchies.CustomNodeSpecification.Type.Ruleset]]
 ```
 
-```ts
-[[include:Hierarchies.CustomNodeSpecification.Type.Result]]
-```
+![Example of using "type" attribute](./media/hierarchy-with-specification-type-attribute.png)
 
 ### Attribute: `label`
 

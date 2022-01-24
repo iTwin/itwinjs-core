@@ -938,28 +938,39 @@ describe("Learning Snippets", () => {
 
         it("uses `type` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.Type.Ruleset
-          // The ruleset has a root node specification that returns a single custom node with specified parameters.
+          // The ruleset has a root node specification that returns a single custom node with specified parameters. There's
+          // also a child node rule that assigns the child based on root node's type.
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
               ruleType: RuleTypes.RootNodes,
               specifications: [{
                 specType: ChildNodeSpecificationTypes.CustomNode,
-                type: "T_MY_NODE",
-                label: "My Node",
+                type: "T_ROOT_NODE",
+                label: "My Root Node",
+              }],
+            }, {
+              ruleType: RuleTypes.ChildNodes,
+              condition: `ParentNode.Type = "T_ROOT_NODE"`,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_CHILD_NODE",
+                label: "My Child Node",
               }],
             }],
           };
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
-          // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.Type.Result
           // Verify that node with correct type is returned
-          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-          expect(nodes).to.have.lengthOf(1).and.to.containSubset([{
-            key: { type: "T_MY_NODE" },
+          const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(rootNodes).to.have.lengthOf(1).and.to.containSubset([{
+            key: { type: "T_ROOT_NODE" },
           }]);
-          // __PUBLISH_EXTRACT_END__
+          const childNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+          expect(childNodes).to.have.lengthOf(1).and.to.containSubset([{
+            key: { type: "T_CHILD_NODE" },
+          }]);
         });
 
         it("uses `label` attribute", async () => {
