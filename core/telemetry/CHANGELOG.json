@@ -1,6 +1,12 @@
 {
-  "name": "@bentley/telemetry-client",
+  "name": "@itwin/core-telemetry",
   "entries": [
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/core-telemetry_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {}
+    },
     {
       "version": "2.19.28",
       "tag": "@bentley/telemetry-client_v2.19.28",
