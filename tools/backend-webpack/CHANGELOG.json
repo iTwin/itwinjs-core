@@ -2,6 +2,18 @@
   "name": "@itwin/backend-webpack-tools",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/backend-webpack-tools_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "rename to @itwin/backend-webpack-tools"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/backend-webpack-tools_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

@@ -2,6 +2,30 @@
   "name": "@itwin/certa",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/certa_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "Updated to Electron 14"
+          },
+          {
+            "comment": "rename to @itwin/certa"
+          },
+          {
+            "comment": "Support for Node 16"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/certa_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

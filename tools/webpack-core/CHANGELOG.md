@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-webpack-tools
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Update BackendDefaultsPlugin to use new CopyStaticAssetsPlugin which will copy assets using a glob pattern
+- Upgrade target to ES2019
+- Update the CopyBentleyStaticResourcesPlugin to support the `@itwin` scope in addition to the `@bentley` scope.
+- Add node-fetch to the BackendDefaultPlugin list of ignored optional dependencies
+- rename to @itwin/core-webpack-tools
+- remove ClientRequestContext and its subclasses
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -362,7 +374,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Add function to check versions semantically
+- Add function to check versions semantically 
 - Changed the way CopyExternalsPlugin works to grab more dependencies
 
 ## 2.10.3
@@ -377,7 +389,7 @@ Fri, 08 Jan 2021 14:52:02 GMT
 
 ### Updates
 
-- Add function to check versions semantically
+- Add function to check versions semantically 
 
 ## 2.10.1
 Tue, 22 Dec 2020 00:53:38 GMT
