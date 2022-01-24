@@ -28,13 +28,13 @@ else:
 command = ["node", "common/scripts/install-run-rush.js change", "-v"] + branchCmd
 print ("Executing: " + " ".join(command))
 
-proc = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-try:
-  out, err = proc.communicate(timeout=60)
-except:
-  proc.kill()
-  out, err = proc.communicate()
+proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+# try:
+#   out, err = proc.communicate(timeout=60)
+# except:
+#   proc.kill()
+#   out, err = proc.communicate()
 
-print(out)
-print >> sys.stderr, err
+# print(out)
+# print >> sys.stderr, err
 exit(proc.returncode)
