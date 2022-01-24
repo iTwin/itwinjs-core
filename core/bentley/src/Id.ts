@@ -604,6 +604,29 @@ export namespace Id64 {
     public getById(id: Id64String): T | undefined { return this.get(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
     /** Set an entry in the map by Id. */
     public setById(id: Id64String, value: T): void { this.set(Id64.getLowerUint32(id), Id64.getUpperUint32(id), value); }
+    /** Delete an entry in the map by Id. */
+    public deleteById(id: Id64String): boolean { return this.delete(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+    /** Check for an entry in the map by Id. */
+    public hasById(id: Id64String): boolean { return this.has(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+
+    /** Get an iterator of entries in the map by Id. */
+    public *entriesById(): IterableIterator<[string, T]> {
+      for (const [high, lowSubMap] of this._map)
+        for (const [low, value] of lowSubMap)
+          yield [Id64.fromUint32Pair(low, high), value];
+    }
+
+    /** Get an iterator of keys in the map by Id. */
+    public *keysById(): IterableIterator<string> {
+      for (const [high, lowSubMap] of this._map)
+        for (const low of lowSubMap.keys())
+          yield Id64.fromUint32Pair(low, high);
+    }
+
+    /** Get an iterator of values in the map by Id. */
+    public valuesById(): IterableIterator<T> {
+      return this.values();
+    }
 
     /** Set an entry in the map by Id components. */
     public set(low: number, high: number, value: T): void {
@@ -622,6 +645,22 @@ export namespace Id64 {
       return undefined !== map ? map.get(low) : undefined;
     }
 
+    /** Check for an entry from the map by Id components. */
+    public has(low: number, high: number): boolean {
+      const map = this._map.get(high);
+      return undefined !== map ? map.has(low) : false;
+    }
+
+    /** Returns true if the item was found and removed */
+    public delete(low: number, high: number): boolean {
+      const map = this._map.get(high);
+      if (undefined === map) {
+        return false;
+      }
+      // does not delete the high map, leaves it empty
+      return map.delete(low);
+    }
+
     /** Returns true if the map contains no entries. */
     public get isEmpty(): boolean { return 0 === this._map.size; }
     /** Returns the number of entries in the map. */
@@ -638,6 +677,32 @@ export namespace Id64 {
       for (const outerEntry of this._map)
         for (const innerEntry of outerEntry[1])
           func(innerEntry[0], outerEntry[0], innerEntry[1]);
+    }
+
+    /** Get an iterator of keys in this map. */
+    public *keys(): IterableIterator<[number, number]> {
+      for (const [high, lowSubMap] of this._map)
+        for (const low of lowSubMap.keys())
+          yield [low, high];
+    }
+
+    /** Get an iterator of values in this map. */
+    public *values(): IterableIterator<T> {
+      for (const lowSubMap of this._map.values())
+        for (const value of lowSubMap.values())
+          yield value;
+    }
+
+    /** Get an iterator of entries in this map. */
+    public entries(): IterableIterator<[number, number, T]> {
+      return this[Symbol.iterator]();
+    }
+
+    /** Iterate through entries in this map. */
+    public *[Symbol.iterator](): IterableIterator<[number, number, T]> {
+      for (const [high, lowSubMap] of this._map)
+        for (const [low, value] of lowSubMap)
+          yield [low, high, value];
     }
   }
 }
