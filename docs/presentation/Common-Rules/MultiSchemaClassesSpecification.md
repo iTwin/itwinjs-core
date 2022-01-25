@@ -8,7 +8,7 @@ This specification lists ECClasses which should be targeted when creating conten
 
 | Name                                          | Required? | Type       | Default |
 | --------------------------------------------- | --------- | ---------- | ------- |
-| [`schemaName`](#attribute-schemaname)         | Yes       | `string`   | ""      |
+| [`schemaName`](#attribute-schemaname)         | Yes       | `string`   | `""`    |
 | [`classNames`](#attribute-classnames)         | Yes       | `string[]` | `[]`    |
 | [`arePolymorphic`](#attribute-arepolymorphic) | No        | `boolean`  | `false` |
 
