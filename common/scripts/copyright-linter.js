@@ -6,10 +6,13 @@ const fs = require("fs");
 const path = require("path");
 const child_process = require("child_process");
 
-function getFileNames(lintBranch) {
-  // Get name of every file changed, added, or renamed (excluding deleted files)
-  // defaults to between current branch and master, otherwise between last commit and currently
-  const diffCommand = "git diff --name-only --diff-filter=d -l0 " + (lintBranch ? "master" : "HEAD~1");
+function getFileNames(lintAll) {
+  // Default to get name of every file changed, added, or renamed (excluding deleted files) between last commit and current
+  let diffCommand = "git diff --name-only --diff-filter=d -l0 HEAD~1";
+
+  // If specified, get name of every file in repo instead
+  if (lintAll)
+    diffCommand = "git ls-files";
 
   return child_process.execSync(diffCommand)
     .toString()
@@ -45,9 +48,9 @@ const microsoftCopyrightBanner = RegExp(
   "m"
 );
 
-// If '--branch' is passed-in all files changed since main/master will be linted
+// If '--all' is passed-in all files will be linted
 // otherwise only files changed last commit and currently will be linted
-const filePaths = getFileNames(process.argv.includes("--branch"))
+const filePaths = getFileNames(process.argv.includes("--all"))
 
 if (filePaths) {
   filePaths.forEach((filePath) => {

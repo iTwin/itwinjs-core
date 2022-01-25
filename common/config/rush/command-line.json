@@ -96,18 +96,18 @@
       "allowWarningsInSuccessfulBuild": true
     },
     {
-      "name": "copyright:linter",
+      "name": "copyright:changed",
       "commandKind": "global",
-      "summary": "Run copyright linter on staged files",
-      "description": "Manually runs the new copyright linter on all files staged for commit.",
+      "summary": "Run copyright linter on modified files",
+      "description": "Manually runs the new copyright linter on all files changed since last commit.",
       "shellCommand": "node common/scripts/copyright-linter.js"
     },
     {
-      "name": "copyright:fix",
+      "name": "copyright:all",
       "commandKind": "global",
-      "summary": "Run copyright linter on branch changes",
-      "description": "Manually runs the new copyright linter on all files changed between the current branch and master.",
-      "shellCommand": "node common/scripts/copyright-linter.js --branch"
+      "summary": "Run copyright linter on all files",
+      "description": "Manually runs the new copyright linter on all files in the repository.",
+      "shellCommand": "node common/scripts/copyright-linter.js --all"
     }
   ]
 }
