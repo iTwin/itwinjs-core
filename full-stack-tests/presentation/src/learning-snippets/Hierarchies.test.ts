@@ -420,9 +420,7 @@ describe("Learning Snippets", () => {
       it("uses `hideExpression` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HideExpression.Ruleset
         // The ruleset contains a root node specification for `bis.GroupInformationModel` and `bis.PhysicalModel` nodes which
-        // are grouped by class and hidden if there's a children artifact "isTestNode". The artifact is created only
-        // for `bis.GroupInformationModel` node by its custom child node. This makes the `bis.GroupInformationModel` node replaced by
-        // its children.
+        // are grouped by class. Instance nodes of `bis.GroupInformationModel` are hidden.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -430,21 +428,15 @@ describe("Learning Snippets", () => {
             specifications: [{
               specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
               classes: { schemaName: "BisCore", classNames: ["GroupInformationModel", "PhysicalModel"], arePolymorphic: true },
-              hideExpression: `ThisNode.ChildrenArtifacts.AnyMatches(x => x.isTestNode)`,
+              hideExpression: `ThisNode.IsInstanceNode AND ThisNode.IsOfClass("GroupInformationModel", "BisCore")`,
             }],
           }, {
             ruleType: RuleTypes.ChildNodes,
-            condition: `ParentNode.IsOfClass("GroupInformationModel", "BisCore")`,
+            condition: `ParentNode.IsOfClass("Model", "BisCore")`,
             specifications: [{
               specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "test",
-              label: "Test Node",
-            }],
-            customizationRules: [{
-              ruleType: RuleTypes.NodeArtifacts,
-              items: {
-                isTestNode: `TRUE`,
-              },
+              type: "T_MY_CUSTOM_NODE",
+              label: "Custom Node",
             }],
           }],
         };
@@ -452,13 +444,31 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that only GroupInformationModel node is hidden, but PhysicalModel node - not
-        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(nodes).to.have.lengthOf(2).and.to.containSubset([{
-          key: { type: "test" },
-          label: { displayValue: "Test Node" },
+        const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        expect(rootNodes).to.have.lengthOf(2).and.to.containSubset([{
+          key: { type: StandardNodeTypes.ECClassGroupingNode },
+          label: { displayValue: "Group Model" },
         }, {
           key: { type: StandardNodeTypes.ECClassGroupingNode },
           label: { displayValue: "Physical Model" },
+        }]);
+
+        const groupModelChildren = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+        expect(groupModelChildren).to.have.lengthOf(1).and.to.containSubset([{
+          key: { type: "T_MY_CUSTOM_NODE" },
+          label: { displayValue: "Custom Node" },
+        }]);
+
+        const physicalModelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[1].key });
+        expect(physicalModelNodes).to.have.lengthOf(1).and.to.containSubset([{
+          key: { type: StandardNodeTypes.ECInstancesNode },
+          label: { displayValue: "Properties_60InstancesWithUrl2" },
+        }]);
+
+        const physicalModelChildren = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: physicalModelNodes[0].key });
+        expect(physicalModelChildren).to.have.lengthOf(1).and.to.containSubset([{
+          key: { type: "T_MY_CUSTOM_NODE" },
+          label: { displayValue: "Custom Node" },
         }]);
       });
 

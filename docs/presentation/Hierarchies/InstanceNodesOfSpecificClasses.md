@@ -101,7 +101,9 @@ Specifies an [ECExpression](./ECExpressions.md#specification) whose evaluation r
 [[include:Hierarchies.Specification.HideExpression.Ruleset]]
 ```
 
-![Example of using "hide expression" attribute](./media/hierarchy-with-specification-hideexpression-attribute.png)
+| `hideExpression` evaluates to `false`                                                                                                          | `hideExpression` evaluates to `true`                                                                                                         |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "hide expression" attribute evaluating to "false"](./media/hierarchy-with-specification-hideexpression-attribute-false.png) | ![Example of using "hide expression" attribute evaluating to "true"](./media/hierarchy-with-specification-hideexpression-attribute-true.png) |
 
 ### Attribute: `suppressSimilarAncestorsCheck`
 
