@@ -119,8 +119,9 @@ async function init() {
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
     FullStackTestIpcHandler.register();
-    ECSchemaRpcImpl.register();
   }
+
+  ECSchemaRpcImpl.register();
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
