@@ -128,7 +128,7 @@ describe("Class Registry - generated classes", () => {
     navProp: RelatedElement;
   }
 
-  class TestElementWithNavProp extends DefinitionElement implements TestElementWithNavPropProps {
+  class TestElementWithNavProp extends DefinitionElement {
     public static override get className(): string { return "TestElementWithNavProp"; }
     public navProp: RelatedElement;
     public constructor(props: TestElementWithNavPropProps, inIModel: IModelDb) {

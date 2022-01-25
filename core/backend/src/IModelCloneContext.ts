@@ -146,7 +146,7 @@ export class IModelCloneContext {
       }
     }
     const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName);
-    jsClass["onCloned"](this, sourceElement, targetElementProps);
+    jsClass["onCloned"](this, sourceElement.toJSON(), targetElementProps);
     return targetElementProps;
   }
 }
