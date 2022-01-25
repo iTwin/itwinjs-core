@@ -560,9 +560,8 @@ describe("Learning Snippets", () => {
 
       it("uses `priority` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.Priority.Ruleset
-        // The ruleset has two specifications that return nodes for `bis.PhysicalModel` and `bis.SpatialCategory`
-        // respectively. The specifications have different priorities and higher priority rule is handled
-        // first - that's the reason the `bis.SpatialCategory` node appears first in the result.
+        // This ruleset produces a list of `bis.PhysicalModel` and `bis.SpatialCategory` instances and groups them by
+        // class. "Spatial Category" group will appear first because it has been given a higher priority value.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
