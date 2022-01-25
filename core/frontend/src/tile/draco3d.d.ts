@@ -3,6 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** Type declarations based on @types/draco3d, modified to add missing PointCloud APIs and types.
+ * TODO: Submit PR to update that package.
+ */
 declare module "draco3d" {
   type TypedArray = Float32Array | Uint32Array | Uint16Array | Uint8Array | Int16Array | Int8Array;
 
