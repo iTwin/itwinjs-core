@@ -73,6 +73,9 @@ class LocalTransport extends IpcWebSocketTransport {
  *  @internal
  */
 export class LocalhostIpcApp {
+  private static _initialized = false;
+  private static _ipc: IpcWebSocketFrontend;
+
   public static buildUrlForSocket(base: URL, path = "ipc"): URL {
     const url = new URL(base);
     url.protocol = "ws";
@@ -81,8 +84,12 @@ export class LocalhostIpcApp {
   }
 
   public static async startup(opts: LocalHostIpcAppOpts) {
-    IpcWebSocket.transport = new LocalTransport(opts);
-    const ipc = new IpcWebSocketFrontend();
-    await IpcApp.startup(ipc, opts);
+    if (!this._initialized) {
+      IpcWebSocket.transport = new LocalTransport(opts);
+      this._ipc = new IpcWebSocketFrontend();
+      this._initialized = true;
+    }
+
+    await IpcApp.startup(this._ipc, opts);
   }
 }

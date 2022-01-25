@@ -62,13 +62,20 @@ class LocalTransport extends IpcWebSocketTransport {
 
 /** @internal */
 export class LocalhostIpcHost {
+  private static _initialized = false;
+  private static _socket: IpcWebSocketBackend;
+
   public static connect(connection: ws) {
     (IpcWebSocket.transport as LocalTransport).connect(connection);
   }
 
   public static async startup(opts?: { localhostIpcHost?: LocalhostIpcHostOpts, iModelHost?: IModelHostConfiguration }) {
-    IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcHost ?? {});
-    const socket = new IpcWebSocketBackend();
-    await IpcHost.startup({ ipcHost: { socket }, iModelHost: opts?.iModelHost });
+    if (!this._initialized) {
+      IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcHost ?? {});
+      this._socket = new IpcWebSocketBackend();
+      this._initialized = true;
+    }
+
+    await IpcHost.startup({ ipcHost: { socket: this._socket }, iModelHost: opts?.iModelHost });
   }
 }
