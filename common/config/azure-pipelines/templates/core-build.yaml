@@ -9,17 +9,17 @@ steps:
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
-  # - task: PythonScript@0
-  #   displayName: "rush change -v"
-  #   inputs:
-  #     workingDirectory: ${{ parameters.workingDir }}
-  #     scriptSource: filepath
-  #     scriptPath: common/scripts/run_rush_change.py
-  #     arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
-  #     failOnStderr: true
-  - script: node common/scripts/install-run-rush.js change --verify
-    displayName: Verify changelogs
-    workingDirectory: ${{ parameters.workingDir }}
+  - task: PythonScript@0
+    displayName: "rush change -v"
+    inputs:
+      workingDirectory: ${{ parameters.workingDir }}
+      scriptSource: filepath
+      scriptPath: common/scripts/run_rush_change.py
+      arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
+      failOnStderr: true
+  # - script: node common/scripts/install-run-rush.js change --verify
+  #   displayName: Verify changelogs
+  #   workingDirectory: ${{ parameters.workingDir }}
   # - script: node common/scripts/install-run-rush.js install
   #   displayName: rush install
   #   workingDirectory: ${{ parameters.workingDir }}
