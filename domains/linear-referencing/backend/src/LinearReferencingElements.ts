@@ -57,7 +57,7 @@ export abstract class LinearLocationElement extends SpatialLocationElement imple
 /** Linear Referencing Location attached to an Element not inherently Linearly Referenced.
  * @beta
  */
-export class LinearLocation extends LinearLocationElement {
+export class LinearLocation extends LinearLocationElement implements LinearlyLocatedBase {
   /** @internal */
   public static override get className(): string { return "LinearLocation"; }
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
@@ -129,7 +129,7 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
 /** Spatial Location Element that can play the role of a Referent (known location along a Linear-Element).
  * @beta
  */
-export abstract class ReferentElement extends SpatialLocationElement {
+export abstract class ReferentElement extends SpatialLocationElement implements LinearlyLocatedBase {
   /** @internal */
   public static override get className(): string { return "ReferentElement"; }
 
