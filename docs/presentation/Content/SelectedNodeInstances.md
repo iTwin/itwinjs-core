@@ -67,8 +67,8 @@ Specifies whether derived classes of `acceptableClassNames` should be included i
 
   | Selecting `BisCore.ViewDefinition` input with `acceptablePolymorphically` set to | Result                                                                                                                                      |
   | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `true`                                                                           | ![Example when selecting "View Definition" with "acceptable polymorphically"](./media/selectednodeinstances-with-spatialviewdefinition.png) |
-  | `false`                                                                          | ![Example when doing a simple "View Definition" select](./media/content-empty-table.png)                                                    |
+  | `true`                                                                           | ![Example of "acceptable polymorphically" attribute set to "true"](./media/selectednodeinstances-with-spatialviewdefinition.png) |
+  | `false`                                                                          | ![Example of "acceptable polymorphically" attribute set to "false"](./media/content-empty-table.png)                                                    |
 
 ### Attribute: `onlyIfNotHandled`
 
