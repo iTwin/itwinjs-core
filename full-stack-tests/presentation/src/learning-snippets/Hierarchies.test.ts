@@ -1012,13 +1012,11 @@ describe("Learning Snippets", () => {
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
-          // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.Description.Result
           // Verify that node with correct description is returned
           const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
           expect(nodes).to.have.lengthOf(1).and.to.containSubset([{
             description: "My node's description",
           }]);
-          // __PUBLISH_EXTRACT_END__
         });
 
         it("uses `imageId` attribute", async () => {

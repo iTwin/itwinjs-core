@@ -58,10 +58,6 @@ Specifies the value of [Node.description]($presentation-common) property, which 
 [[include:Hierarchies.CustomNodeSpecification.Description.Ruleset]]
 ```
 
-```ts
-[[include:Hierarchies.CustomNodeSpecification.Description.Result]]
-```
-
 ![Example of using "description" attribute](./media/hierarchy-with-specification-description-attribute.png)
 
 ### Attribute: `imageId`
