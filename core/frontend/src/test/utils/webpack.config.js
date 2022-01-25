@@ -55,10 +55,6 @@ function createConfig(shouldInstrument) {
             env[key] = JSON.stringify(process.env[key]);
             return env;
           }, {}),
-      }),
-      // Disable code-splitting for tests - see dynamic import in ApproximateTerrainHeights.ts.
-      new webpack.optimize.LimitChunkCountPlugin({
-        maxChunks: 1
       })
     ]
   };
