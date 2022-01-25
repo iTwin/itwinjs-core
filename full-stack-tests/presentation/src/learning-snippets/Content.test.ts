@@ -587,6 +587,482 @@ describe("Learning Snippets", () => {
 
   describe("Specifications", () => {
 
+    describe("Shared attributes", () => {
+
+      let imodel: IModelConnection;
+
+      beforeEach(async () => {
+        await initialize();
+        imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      });
+
+      afterEach(async () => {
+        await imodel.close();
+        await terminate();
+      });
+
+      it("uses `onlyIfNotHandled` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ SharedAttributes.OnlyIfNotHandled.Ruleset
+        // This ruleset defines two specifications that return content for `bis.ViewDefinition` and `bis.PhysicalModel`
+        // instances respectively.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [
+              {
+                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
+              },
+              // The following specification is defined second so it's lower in priority. Because it has `onlyIfNotHandled` attribute,
+              // it's overriden by the specification above.
+              {
+                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: true },
+                onlyIfNotHandled: true,
+              },
+            ],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that only `bis.ViewDefinition` instances are selected.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(4);
+        const field = getFieldByLabel(content!.descriptor.fields, "Category Selector");
+        content!.contentSet.forEach((record) => {
+          expect(record.displayValues[field.name]).to.be.string("Default - View");
+        });
+      });
+
+      it("uses `priority` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ SharedAttributes.Priority.Ruleset
+        // Specifications to return content for `bis.PhysicalModel` and `bis.DictionaryModel` respectively.
+        // The `bis.PhysicalModel` specification has lower priority so it's displayed after the
+        // higher priority specification.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
+              priority: 0,
+            }, {
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["DictionaryModel"] },
+              priority: 1,
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that only `bis.ViewDefinition` instances are selected.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(2);
+        const field = getFieldByLabel(content!.descriptor.fields, "Modeled Element");
+        expect(content!.contentSet[0].displayValues[field.name]).to.eq("BisCore.DictionaryModel");
+        expect(content!.contentSet[1].displayValues[field.name]).to.eq("Properties_60InstancesWithUrl2");
+      });
+
+      it("uses `relatedProperties` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ SharedAttributes.RelatedProperties.Ruleset
+        // This ruleset returns content for `bis.SpatialViewDefinition`, which includes all properties from related `bis.DisplayStyle` instances.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+              relatedProperties: [{
+                propertiesSource: {
+                  relationship: { schemaName: "BisCore", className: "ViewDefinitionUsesDisplayStyle" },
+                  direction: RelationshipDirection.Forward,
+                },
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that derived `bis.DisplayStyle` instance properties are also returned with `bis.SpatialViewDefinition` content.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(4);
+        expect(content!.descriptor.fields).to.containSubset([{
+          label: "3D Display Style",
+          nestedFields: [{ label: "Model" }, { label: "Code" }, { label: "User Label" }, { label: "Is Private" }],
+        }]
+        ).and.to.have.lengthOf(18);
+      });
+
+      it("uses `calculatedProperties` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ SharedAttributes.CalculatedProperties.Ruleset
+        // In addition to returning content for all `bis.SpatialViewDefinition` instances, this ruleset also adds a
+        // custom `Camera view direction` property to each instance.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+              calculatedProperties: [{
+                label: "Camera view direction",
+                value: "IIf (this.pitch >= 10, \"Vertical upwards\", IIf (this.pitch <= -10, \"Vertical downwards\", \"Horizontal\"))",
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that derived `bis.DisplayStyle` instance properties are also returned with `bis.SpatialViewDefinition` content.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(4);
+        expect(content!.descriptor.fields).to.containSubset([
+          { label: "Camera view direction" },
+        ]).and.to.have.lengthOf(18);
+      });
+
+      it("uses `propertyCategories` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ SharedAttributes.PropertyCategories.Ruleset
+        // This ruleset places camera-related `bis.SpatialViewDefinition` properties inside a custom category.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+              propertyCategories: [{
+                id: "camera_category",
+                label: "Camera settings",
+                autoExpand: true,
+              }],
+              propertyOverrides: [
+                { name: "EyePoint", categoryId: "camera_category" },
+                { name: "FocusDistance", categoryId: "camera_category" },
+                { name: "IsCameraOn", categoryId: "camera_category" },
+              ],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that the returned content has a custom category `Camera settings` and it contains the right properties.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.descriptor.categories).containSubset([{ label: "Camera settings" }]);
+        expect(content!.descriptor.fields).to.containSubset([{
+          label: "Eye Point",
+          category: { label: "Camera settings" },
+        }, {
+          label: "Focus Distance",
+          category: { label: "Camera settings" },
+        }, {
+          label: "Is Camera On",
+          category: { label: "Camera settings" },
+        }]);
+      });
+
+      it("uses `propertyOverrides` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ SharedAttributes.PropertyOverrides.Ruleset
+        // The specification returns content for `bis.ViewDefinition` with one
+        // overriden property label.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
+              propertyOverrides: [{ name: "Model", labelOverride: "Container Model" }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that the returned content has an overriden property label `Container Model`.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(4);
+        expect(content!.descriptor.fields).to.containSubset([
+          { label: "Category Selector" },
+          { label: "Code" },
+          { label: "Container Model" },
+          { label: "Description" },
+          { label: "Display Style" },
+          { label: "Is Private" },
+          { label: "User Label" },
+        ]).and.to.have.lengthOf(7);
+      });
+
+      it("uses `relatedInstances` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ SharedAttributes.RelatedInstances.Ruleset
+        // The specification returns content for `bis.ModelSelector` filtered by related
+        // `bis.SpatialViewDefinition` instance `Yaw` property value.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["ModelSelector"], arePolymorphic: true },
+              relatedInstances: [{
+                relationshipPath: { relationship: { schemaName: "BisCore", className: "SpatialViewDefinitionUsesModelSelector" }, direction: RelationshipDirection.Backward },
+                alias: "relatedInstance",
+              }],
+              instanceFilter: "relatedInstance.Yaw > 0",
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure only the `bis.ModelSelector` whose related SpatialViewDefinition with Yaw > 0 is returned.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(1);
+        const field = getFieldByLabel(content!.descriptor.fields, "Code");
+        expect(content!.contentSet[0].values[field.name]).to.eq("Default - View 2");
+      });
+
+    });
+
+    describe("SelectedNodeInstances", () => {
+
+      let imodel: IModelConnection;
+
+      beforeEach(async () => {
+        await initialize();
+        imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      });
+
+      afterEach(async () => {
+        await imodel.close();
+        await terminate();
+      });
+
+      it("uses `acceptableSchemaName` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ SelectedNodeInstances.AcceptableSchemaName.Ruleset
+        // The ruleset has a specification that only returns content for input class instances which
+        // are under `BisCore` schema.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              acceptableSchemaName: "BisCore",
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Ensure that only `BisCore` content instances are returned.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:SpatialViewDefinition", id: "0x25" }, { className: "Generic:GroupModel", id: "0x13" }]),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet).to.have.lengthOf(1).and.to.containSubset([{
+          classInfo: { label: "Spatial View Definition" },
+        }]);
+      });
+
+      it("uses `acceptableClassNames` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ SelectedNodeInstances.AcceptableClassNames.Ruleset
+        // The ruleset has a specification that only returns content for input class instances which
+        // are of class `bis.SpatialViewDefinition`.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              acceptableClassNames: ["SpatialViewDefinition"],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Ensure that only `bis.SpatialViewDefinition` content instances are returned.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:SpatialViewDefinition", id: "0x25" }, { className: "BisCore:DictionaryModel", id: "0x10" }]),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet).to.have.lengthOf(1).and.to.containSubset([{
+          classInfo: { label: "Spatial View Definition" },
+        }]);
+      });
+
+      it("uses `acceptablePolymorphically` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ SelectedNodeInstances.AcceptablePolymorphically.Ruleset
+        // The ruleset has a specification that returns content for `bis.ViewDefinition` input class instances
+        // and all deriving classes.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.SelectedNodeInstances,
+              acceptableClassNames: ["ViewDefinition"],
+              acceptablePolymorphically: true,
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Ensure that only content instances of `bis.ViewDefinition` and derived classes are returned.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:DictionaryModel", id: "0x10" }, { className: "BisCore:SpatialViewDefinition", id: "0x25" }]),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet).to.have.lengthOf(1);
+        expect(content!.contentSet[0].primaryKeys[0].className).to.equal("BisCore:SpatialViewDefinition");
+      });
+
+    });
+
+    describe("ContentRelatedInstances", () => {
+
+      let imodel: IModelConnection;
+
+      beforeEach(async () => {
+        await initialize();
+        imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      });
+
+      afterEach(async () => {
+        await imodel.close();
+        await terminate();
+      });
+
+      it("uses `relationshipPaths` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ ContentRelatedInstances.RelationshipPaths.Ruleset
+        // This ruleset returns content for `bis.Element` instances that are related to input `bis.Model` instances
+        // through `bis.ModelContainsElements` relationship.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [
+            {
+              ruleType: RuleTypes.Content,
+              specifications: [{
+                specType: ContentSpecificationTypes.ContentRelatedInstances,
+                relationshipPaths: [{
+                  relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                  direction: RelationshipDirection.Forward,
+                  targetClass: { schemaName: "BisCore", className: "Element" },
+                }],
+              }],
+            },
+          ],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Ensure that related `bis.Element` instances are returned.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
+          descriptor: {},
+        });
+
+        content!.contentSet.forEach((record) => {
+          expect(record.primaryKeys[0].className).to.be.oneOf(["Generic:PhysicalObject", "PCJ_TestSchema:TestClass"]);
+        });
+      });
+
+      it("uses `instanceFilter` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ ContentRelatedInstances.InstanceFilter.Ruleset
+        // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              relationshipPaths: [
+                {
+                  relationship: {
+                    schemaName: "BisCore",
+                    className: "SpatialViewDefinitionUsesModelSelector",
+                  },
+                  direction: RelationshipDirection.Backward,
+                },
+              ],
+              instanceFilter: "this.Pitch >= 0",
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that only `bis.SpatialViewDefinition` instances that have Pitch >= 0 are selected.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:ModelSelector", id: "0x30" }]),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(1);
+        expect(content!.contentSet[0].primaryKeys[0].className).to.eq("BisCore:SpatialViewDefinition");
+        const field = getFieldByLabel(content!.descriptor.fields, "Pitch");
+        expect(content!.contentSet[0].values[field.name]).to.be.not.below(0);
+      });
+
+    });
+
     describe("ContentInstancesOfSpecificClasses", () => {
 
       let imodel: IModelConnection;
@@ -630,7 +1106,7 @@ describe("Learning Snippets", () => {
 
         expect(content!.contentSet.length).to.eq(5);
         content!.contentSet.forEach((record) => {
-          expect(record.primaryKeys[0].className).to.oneOf(["BisCore:PhysicalModel", "BisCore:SpatialViewDefinition"]);
+          expect(record.primaryKeys[0].className).to.be.oneOf(["BisCore:PhysicalModel", "BisCore:SpatialViewDefinition"]);
         });
       });
 
@@ -767,270 +1243,14 @@ describe("Learning Snippets", () => {
         });
       });
 
-      it("uses `onlyIfNotHandled` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.OnlyIfNotHandled.Ruleset
-        // This ruleset defines two specifications that return content for `bis.ViewDefinition` and `bis.PhysicalModel`
-        // instances respectively.
-        const ruleset: Ruleset = {
-          id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [
-              {
-                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-                classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
-              },
-              // The following specification is defined second so it's lower in priority. Because it has `onlyIfNotHandled` attribute,
-              // it's overriden by the specification above.
-              {
-                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-                classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: true },
-                onlyIfNotHandled: true,
-              },
-            ],
-          }],
-        };
-        // __PUBLISH_EXTRACT_END__
-
-        // Ensure that only `bis.ViewDefinition` instances are selected.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
-
-        expect(content!.contentSet.length).to.eq(4);
-        const field = getFieldByLabel(content!.descriptor.fields, "Category Selector");
-        content!.contentSet.forEach((record) => {
-          expect(record.displayValues[field.name]).to.be.string("Default - View");
-        });
-      });
-
-      it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.Priority.Ruleset
-        // Specifications to return content for `bis.PhysicalModel` and `bis.DictionaryModel` respectively.
-        // The `bis.PhysicalModel` specification has lower priority so it's displayed after the
-        // higher priority specification.
-        const ruleset: Ruleset = {
-          id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
-              priority: 0,
-            }, {
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["DictionaryModel"] },
-              priority: 1,
-            }],
-          }],
-        };
-        // __PUBLISH_EXTRACT_END__
-
-        // Ensure that only `bis.ViewDefinition` instances are selected.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
-
-        expect(content!.contentSet.length).to.eq(2);
-        const field = getFieldByLabel(content!.descriptor.fields, "Modeled Element");
-        expect(content!.contentSet[0].displayValues[field.name]).to.eq("BisCore.DictionaryModel");
-        expect(content!.contentSet[1].displayValues[field.name]).to.eq("Properties_60InstancesWithUrl2");
-      });
-
-      it("uses `relatedProperties` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.RelatedProperties.Ruleset
-        // This ruleset returns content for `bis.SpatialViewDefinition`, which includes all properties from related `bis.DisplayStyle` instances.
-        const ruleset: Ruleset = {
-          id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              relatedProperties: [{
-                propertiesSource: {
-                  relationship: { schemaName: "BisCore", className: "ViewDefinitionUsesDisplayStyle" },
-                  direction: RelationshipDirection.Forward,
-                },
-              }],
-            }],
-          }],
-        };
-        // __PUBLISH_EXTRACT_END__
-
-        // Ensure that derived `bis.DisplayStyle` instance properties are also returned with `bis.SpatialViewDefinition` content.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
-
-        expect(content!.contentSet.length).to.eq(4);
-        expect(content!.descriptor.fields).to.containSubset([{
-          label: "3D Display Style",
-          nestedFields: [{ label: "Model" }, { label: "Code" }, { label: "User Label" }, { label: "Is Private" }],
-        }]
-        ).and.to.have.lengthOf(18);
-      });
-
-      it("uses `calculatedProperties` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.CalculatedProperties.Ruleset
-        // In addition to returning content for all `bis.SpatialViewDefinition` instances, this ruleset also adds a
-        // custom `Camera view direction` property to each instance.
-        const ruleset: Ruleset = {
-          id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              calculatedProperties: [{
-                label: "Camera view direction",
-                value: "IIf (this.pitch >= 10, \"Vertical upwards\", IIf (this.pitch <= -10, \"Vertical downwards\", \"Horizontal\"))",
-              }],
-            }],
-          }],
-        };
-        // __PUBLISH_EXTRACT_END__
-
-        // Ensure that derived `bis.DisplayStyle` instance properties are also returned with `bis.SpatialViewDefinition` content.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
-
-        expect(content!.contentSet.length).to.eq(4);
-        expect(content!.descriptor.fields).to.containSubset([
-          { label: "Camera view direction" },
-        ]).and.to.have.lengthOf(18);
-      });
-
-      it("uses `propertyCategories` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.PropertyCategories.Ruleset
-        // This ruleset places camera-related `bis.SpatialViewDefinition` properties inside a custom category.
-        const ruleset: Ruleset = {
-          id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              propertyCategories: [{
-                id: "camera_category",
-                label: "Camera settings",
-                autoExpand: true,
-              }],
-              propertyOverrides: [
-                { name: "EyePoint", categoryId: "camera_category" },
-                { name: "FocusDistance", categoryId: "camera_category" },
-                { name: "IsCameraOn", categoryId: "camera_category" },
-              ],
-            }],
-          }],
-        };
-        // __PUBLISH_EXTRACT_END__
-
-        // Ensure that the returned content has a custom category `Camera settings` and it contains the right properties.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
-
-        expect(content!.descriptor.categories).containSubset([{ label: "Camera settings" }]);
-        expect(content!.descriptor.fields).to.containSubset([{
-          label: "Eye Point",
-          category: { label: "Camera settings" },
-        }, {
-          label: "Focus Distance",
-          category: { label: "Camera settings" },
-        }, {
-          label: "Is Camera On",
-          category: { label: "Camera settings" },
-        }]);
-      });
-
-      it("uses `propertyOverrides` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.PropertyOverrides.Ruleset
-        // The specification returns content for `bis.ViewDefinition` with one
-        // overriden property label.
-        const ruleset: Ruleset = {
-          id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
-              propertyOverrides: [{ name: "Model", labelOverride: "Container Model" }],
-            }],
-          }],
-        };
-        // __PUBLISH_EXTRACT_END__
-
-        // Ensure that the returned content has an overriden property label `Container Model`.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
-
-        expect(content!.contentSet.length).to.eq(4);
-        expect(content!.descriptor.fields).to.containSubset([
-          { label: "Category Selector" },
-          { label: "Code" },
-          { label: "Container Model" },
-          { label: "Description" },
-          { label: "Display Style" },
-          { label: "Is Private" },
-          { label: "User Label" },
-        ]).and.to.have.lengthOf(7);
-      });
-
-      it("uses `relatedInstances` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.RelatedInstances.Ruleset
-        // The specification returns content for `bis.ModelSelector` filtered by related
-        // `bis.SpatialViewDefinition` instance `Yaw` property value.
-        const ruleset: Ruleset = {
-          id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["ModelSelector"], arePolymorphic: true },
-              relatedInstances: [{
-                relationshipPath: { relationship: { schemaName: "BisCore", className: "SpatialViewDefinitionUsesModelSelector" }, direction: RelationshipDirection.Backward },
-                alias: "relatedInstance",
-              }],
-              instanceFilter: "relatedInstance.Yaw > 0",
-            }],
-          }],
-        };
-        // __PUBLISH_EXTRACT_END__
-
-        // Ensure only the `bis.ModelSelector` whose related SpatialViewDefinition with Yaw > 0 is returned.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
-
-        expect(content!.contentSet.length).to.eq(1);
-        const field = getFieldByLabel(content!.descriptor.fields, "Code");
-        expect(content!.contentSet[0].values[field.name]).to.eq("Default - View 2");
-      });
     });
 
   });
 });
+
+function printRuleset(ruleset: Ruleset) {
+  if (process.env.PRINT_RULESETS) {
+    // eslint-disable-next-line no-console
+    console.log(JSON.stringify(ruleset, undefined, 2));
+  }
+}

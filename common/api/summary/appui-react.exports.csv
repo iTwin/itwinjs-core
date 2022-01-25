@@ -52,7 +52,6 @@ public;AppNotificationManager
 public;AppUiSettings 
 beta;areNoFeatureOverridesActive(): boolean
 public;Backstage 
-deprecated;Backstage 
 beta;BackstageActionItem 
 deprecated;BackstageActionItem 
 public;BackstageAppButton(props: BackstageAppButtonProps): JSX.Element
@@ -78,7 +77,6 @@ beta;BackstageItemUtilities
 deprecated;BackstageItemUtilities
 public;BackstageManager
 public;BackstageProps 
-deprecated;BackstageProps 
 beta;BackstageStageLauncher 
 deprecated;BackstageStageLauncher 
 public;BackstageToggledArgs
@@ -148,6 +146,11 @@ public;ContentCallback = (content: ContentProps) => void
 public;ContentControl 
 public;ContentControlActivatedEvent 
 public;ContentControlActivatedEventArgs
+public;ContentDialog(props: ContentDialogProps): JSX.Element
+public;ContentDialogChangedEvent 
+public;ContentDialogManager
+public;ContentDialogProps 
+public;ContentDialogRenderer 
 public;ContentGroup
 public;ContentGroupProps
 public;class ContentGroupProvider
@@ -161,6 +164,7 @@ public;ContentProps
 public;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
 public;ContentToolWidgetComposerProps
 public;ContentViewManager
+internal;ContentWrapper(props: ContentWrapperProps): JSX.Element
 public;CoreTools
 public;createAction
 public;createAction
@@ -221,6 +225,10 @@ beta;ExpandableSectionProps
 internal;expandWidget: (base:
 public;ExtensibleToolbarProps
 beta;featureOverridesActiveStateFunc(state: Readonly
+beta;FloatingContentControl 
+beta;FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element
+beta;FloatingViewportContentControl 
+beta;FloatingViewportContentProps
 alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
@@ -667,6 +675,7 @@ public;UiVisibilityChangedEvent
 public;UiVisibilityEventArgs
 alpha;UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element
 beta;UnitSystemSelectorProps
+internal;useActiveContentControlId(): string | undefined
 internal;useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined
 public;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
