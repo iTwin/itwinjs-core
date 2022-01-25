@@ -7,15 +7,15 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as Semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, Mutable, OpenMode } from "@itwin/core-bentley";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
-  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, GenericPhysicalMaterial,
+  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
-  SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject, SynchronizationConfigLink,
+  SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
@@ -1709,8 +1709,8 @@ describe("IModelTransformer", () => {
 
     targetDb.saveChanges();
 
-    const sourceToTargetMap = new Map<Element, Element | undefined>();
-    const targetToSourceMap = new Map<Element, Element | undefined>();
+    const sourceToTargetElemsMap = new Map<Element, Element | undefined>();
+    const targetToSourceElemsMap = new Map<Element, Element | undefined>();
     const targetElemIds = new Set<Id64String>();
 
     for await (const [sourceElemId] of sourceDb.query("SELECT ECInstanceId FROM bis.Element")) {
@@ -1719,10 +1719,10 @@ describe("IModelTransformer", () => {
       const sourceElem = sourceDb.elements.getElement(sourceElemId);
       const targetElem = targetDb.elements.tryGetElement(targetElemId);
       // expect(targetElem.toExist)
-      sourceToTargetMap.set(sourceElem, targetElem);
+      sourceToTargetElemsMap.set(sourceElem, targetElem);
       if (targetElem) {
         targetElemIds.add(targetElemId);
-        targetToSourceMap.set(targetElem, sourceElem);
+        targetToSourceElemsMap.set(targetElem, sourceElem);
         for (const [propName, prop] of Object.entries(
           sourceElem.getClassMetaData()!.properties
         ) ?? []) {
@@ -1771,6 +1771,7 @@ describe("IModelTransformer", () => {
           }
         }
         // END jsonProperties TRANSFORMATION EXCEPTIONS
+        const _eq = deepEqualWithFpTolerance(expectedSourceElemJsonProps, targetElem.jsonProperties, geometryConversionTolerance);
         expect(targetElem.jsonProperties).to.deep.equalWithFpTolerance(expectedSourceElemJsonProps, geometryConversionTolerance);
       }
     }
@@ -1778,13 +1779,19 @@ describe("IModelTransformer", () => {
     for await (const [targetElemId] of targetDb.query("SELECT ECInstanceId FROM bis.Element")) {
       if (!targetElemIds.has(targetElemId)) {
         const targetElem = targetDb.elements.getElement(targetElemId);
-        targetToSourceMap.set(targetElem, undefined);
+        targetToSourceElemsMap.set(targetElem, undefined);
       }
     }
 
-    const onlyInSourceElements = [...sourceToTargetMap].filter(([_inSource, inTarget]) => inTarget === undefined).map(([inSource]) => inSource);
-    const onlyInTargetElements = [...targetToSourceMap].filter(([_inTarget, inSource]) => inSource === undefined).map(([inTarget]) => inTarget);
-    const onlyInSourceElemImportantProps = onlyInSourceElements.map(({iModel: _removed1, id: _removed2, ...elemProps}) => elemProps);
+    const onlyInSourceElements = [...sourceToTargetElemsMap].filter(([_inSource, inTarget]) => inTarget === undefined).map(([inSource]) => inSource);
+    const onlyInTargetElements = [...targetToSourceElemsMap].filter(([_inTarget, inSource]) => inSource === undefined).map(([inTarget]) => inTarget);
+    const onlyInSourceElemImportantProps = onlyInSourceElements.map((elem) => {
+      const rawProps = { ...elem } as Partial<Mutable<Element>>;
+      delete rawProps.iModel;
+      delete rawProps.id;
+      delete rawProps.isInstanceOfEntity;
+      return rawProps;
+    });
 
     // source will have the connector external source which was not exported without the transformer option `includeSourceProvenance: true`
     expect(onlyInSourceElemImportantProps).to.deep.equal([
@@ -1815,6 +1822,46 @@ describe("IModelTransformer", () => {
       } as Partial<ExternalSourceProps>,
     ]);
     expect(onlyInTargetElements).to.have.length(0);
+
+    const sourceToTargetModelsMap = new Map<Model, Model | undefined>();
+    const targetToSourceModelsMap = new Map<Model, Model | undefined>();
+    const targetModelIds = new Set<Id64String>();
+
+    for await (const [sourceModelId] of sourceDb.query("SELECT ECInstanceId FROM bis.Model")) {
+      const targetModelId =
+        transformer.context.findTargetElementId(sourceModelId);
+      const sourceModel = sourceDb.models.getModel(sourceModelId);
+      const targetModel = targetDb.models.tryGetModel(targetModelId);
+      // expect(targetModel.toExist)
+      sourceToTargetModelsMap.set(sourceModel, targetModel);
+      if (targetModel) {
+        targetModelIds.add(targetModelId);
+        targetToSourceModelsMap.set(targetModel, sourceModel);
+        const expectedSourceModelJsonProps = { ...sourceModel.jsonProperties };
+        const _eq = deepEqualWithFpTolerance(expectedSourceModelJsonProps, targetModel.jsonProperties, geometryConversionTolerance);
+        expect(targetModel.jsonProperties).to.deep.equalWithFpTolerance(expectedSourceModelJsonProps, geometryConversionTolerance);
+      }
+    }
+
+    for await (const [targetModelId] of targetDb.query("SELECT ECInstanceId FROM bis.Model")) {
+      if (!targetModelIds.has(targetModelId)) {
+        const targetModel = targetDb.models.getModel(targetModelId);
+        targetToSourceModelsMap.set(targetModel, undefined);
+      }
+    }
+
+    const onlyInSourceModels = [...sourceToTargetModelsMap].filter(([_inSource, inTarget]) => inTarget === undefined).map(([inSource]) => inSource);
+    const onlyInTargetModels = [...targetToSourceModelsMap].filter(([_inTarget, inSource]) => inSource === undefined).map(([inTarget]) => inTarget);
+    const onlyInSourceModelImportantProps = onlyInSourceModels.map((elem) => {
+      const rawProps = { ...elem } as Partial<Mutable<Model>>;
+      delete rawProps.iModel;
+      delete rawProps.id;
+      delete rawProps.isInstanceOfEntity;
+      return rawProps;
+    });
+
+    expect(onlyInSourceModelImportantProps).to.have.length(0);
+    expect(onlyInTargetModels).to.have.length(0);
 
     sourceDb.close();
     targetDb.close();
