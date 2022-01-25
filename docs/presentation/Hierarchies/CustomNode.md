@@ -142,19 +142,19 @@ by this specification always or never have children.
 
 In case when the attribute value "lies":
 
-- When set to `Always`, the returned nodes always have `hasChildren` flag set to `true`. Requesting children for such nodes returns
+- When set to `Always`, the returned nodes always have [Node.hasChildren]($presentation-common) set to `true`. Requesting children for such nodes returns
 empty list. It's up to the UI component to handle the case of parent node saying it has children but data source not returning any.
 
-- When set to `Never`, the returned nodes always have `hasChildren` set to `false`. Requesting children for such nodes returns empty
+- When set to `Never`, the returned nodes always have [Node.hasChildren]($presentation-common) set to `false`. Requesting children for such nodes returns empty
 list even if there are child node rules that define children for it.
 
 ```ts
 [[include:Hierarchies.Specification.HasChildren.Ruleset]]
 ```
 
-```ts
-[[include:Hierarchies.Specification.HasChildren.Result]]
-```
+| Collapsed node shows it has children                                                                                                   | Expanding the node shows no children                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "has children" attribute set to "always"](./media/hierarchy-with-specification-haschildren-attribute-collapsed.png) | ![Example of using "has children" attribute set to "always"](./media/hierarchy-with-specification-haschildren-attribute-expanded.png) |
 
 ### Attribute: `nestedRules`
 

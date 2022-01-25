@@ -188,9 +188,9 @@ list even if there are child node rules that define children for it.
 [[include:Hierarchies.Specification.HasChildren.Ruleset]]
 ```
 
-```ts
-[[include:Hierarchies.Specification.HasChildren.Result]]
-```
+| Collapsed node shows it has children                                                                                                   | Expanding the node shows no children                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "has children" attribute set to "always"](./media/hierarchy-with-specification-haschildren-attribute-collapsed.png) | ![Example of using "has children" attribute set to "always"](./media/hierarchy-with-specification-haschildren-attribute-expanded.png) |
 
 ### Attribute: `relatedInstances`
 
