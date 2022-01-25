@@ -23,14 +23,14 @@ variables:
   - group: iTwin.js Integration Test Users
 
 jobs:
-  - job: Node_16_x
-    condition: succeeded()
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-      - template: templates/integration-test-steps.yaml
-        parameters:
-          Node_Version: 16.x
+  # - job: Node_16_x
+  #   condition: succeeded()
+  #   pool:
+  #     vmImage: ubuntu-latest
+  #   steps:
+  #     - template: templates/integration-test-steps.yaml
+  #       parameters:
+  #         Node_Version: 16.x
   - job: Node_14_x
     condition: succeeded()
     pool:
