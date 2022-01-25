@@ -27,10 +27,6 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
-      "name": "@bentley/itwin-client",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/react-scripts",
       "allowedCategories": [ "internal" ]
     },
@@ -420,7 +416,7 @@
     },
     {
       "name": "deep-assign",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "deep-equal",
@@ -632,7 +628,7 @@
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "lolex",
@@ -720,7 +716,7 @@
     },
     {
       "name": "qs",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "raf",
@@ -860,7 +856,7 @@
     },
     {
       "name": "superagent",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "supertest",
@@ -949,10 +945,6 @@
     {
       "name": "xmlhttprequest",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "xpath",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "yargonaut",

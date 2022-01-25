@@ -210,7 +210,7 @@ export class PrimitiveCommand {
     const program = technique.getShader(flags);
 
     if (exec.setProgram(program))
-      this.primitive.draw(exec);
+      exec.target.compositor.drawPrimitive(this.primitive, exec, program.outputsToPick);
   }
 
   public get hasFeatures(): boolean { return this.primitive.hasFeatures; }

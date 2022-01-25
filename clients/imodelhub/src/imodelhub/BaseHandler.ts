@@ -6,7 +6,8 @@
  * @module iModelHubClient
  */
 import { AccessToken } from "@itwin/core-bentley";
-import { FileHandler, RequestGlobalOptions, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
+import { RequestGlobalOptions, RequestOptions, RequestQueryOptions } from "../itwin-client/Request";
+import { FileHandler } from "../itwin-client/FileHandler";
 import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";
 import { WsgInstance } from "../wsg/ECJsonTypeMap";
 import { DefaultWsgRequestOptionsProvider, HttpRequestOptions, WsgClient, WsgRequestOptions } from "../wsg/WsgClient";

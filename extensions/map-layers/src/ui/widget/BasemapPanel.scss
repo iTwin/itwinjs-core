@@ -47,6 +47,10 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     align-items: center;
     width: 100%;
 
+    & .iui-select {
+      overflow: hidden;
+    }
+
     button.map-manager-base-item-visibility {
       border: none;
       margin-right: 4px;

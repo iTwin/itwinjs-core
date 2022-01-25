@@ -158,7 +158,7 @@ export class ViewCreator3d {
     const displayStyleProps: DisplayStyle3dProps = {
       code: Code.createEmpty(),
       model: dictionaryId,
-      classFullName: "BisCore:DisplayStyle",
+      classFullName: "BisCore:DisplayStyle3d",
       jsonProperties: {
         styles: {
           viewflags: {
