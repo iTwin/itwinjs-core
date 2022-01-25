@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { createDecoderModule } from "draco3d";
+import { createDecoderModule, DecoderModule } from "draco3d";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { OctEncodedNormal, QParams3d, QPoint3d, QPoint3dList } from "@itwin/core-common";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -20,11 +20,11 @@ export interface DecodedPointCloud {
 
 /** @internal */
 export class DracoDecoder {
-  private static _dracoDecoderModule: any;
+  private static _dracoDecoderModule?: DecoderModule;
 
-  public static readDracoPointCloud(bufferData: Uint8Array, attributeId: number, colorAttributeId?: number): undefined | DecodedPointCloud {
+  public static async readDracoPointCloud(bufferData: Uint8Array, attributeId: number, colorAttributeId?: number): Promise<undefined | DecodedPointCloud> {
     if (!DracoDecoder._dracoDecoderModule)
-      DracoDecoder._dracoDecoderModule = createDecoderModule(undefined);
+      DracoDecoder._dracoDecoderModule = await createDecoderModule();
 
     const dracoModule = DracoDecoder._dracoDecoderModule;
     const dracoDecoder = new dracoModule.Decoder();
@@ -65,9 +65,9 @@ export class DracoDecoder {
     return decodedPointCloud;
   }
 
-  public static readDracoMesh(mesh: Mesh, _primitive: any, bufferData: Uint8Array, attributes: any): Mesh | undefined {
+  public static async readDracoMesh(mesh: Mesh, _primitive: any, bufferData: Uint8Array, attributes: any): Promise<Mesh | undefined> {
     if (!DracoDecoder._dracoDecoderModule)
-      DracoDecoder._dracoDecoderModule = createDecoderModule(undefined);
+      DracoDecoder._dracoDecoderModule = await createDecoderModule();
 
     const dracoModule = DracoDecoder._dracoDecoderModule;
     const dracoDecoder = new dracoModule.Decoder();
