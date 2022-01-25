@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
 import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
-import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
+import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
 import { renderHook } from "@testing-library/react-hooks";
 import { useRulesetRegistration } from "../../presentation-components/hooks/UseRulesetRegistration";

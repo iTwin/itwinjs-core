@@ -7,12 +7,12 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@itwin/core-common";
+import { BatchType, ChangedEntities, EdgeType, ElementGeometryChange, IModelError } from "@itwin/core-common";
 import {
   BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
 } from "@itwin/core-frontend";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
+import { TestUtility } from "../TestUtility";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -23,12 +23,12 @@ function makeUpdate(id: Id64String, range?: Range3d): ElementGeometryChange { re
 function makeDelete(id: Id64String): ElementGeometryChange { return { id, type: DbOpcode.Delete }; }
 
 describe("GraphicalEditingScope", () => {
-  if (ProcessDetector.isElectronAppFrontend) {
+  if (!ProcessDetector.isMobileAppFrontend) {
     let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
-    const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
+    const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
     // Editable; BisCore version == 1.0.11
-    const newFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/planprojection.bim");
+    const newFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
 
     async function closeIModel(): Promise<void> {
       if (imodel) {
@@ -38,13 +38,13 @@ describe("GraphicalEditingScope", () => {
     }
 
     before(async () => {
-      await ElectronApp.startup();
+      await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
     });
 
     after(async () => {
       await closeIModel();
-      await ElectronApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     afterEach(async () => {
@@ -267,6 +267,7 @@ describe("GraphicalEditingScope", () => {
           priority: TileLoadPriority.Primary,
           formatVersion: 14,
           contentRange: modelRange.clone(),
+          tileScreenSize: 512,
           options: {
             allowInstancing: true,
             edgesRequired: false,
@@ -282,7 +283,7 @@ describe("GraphicalEditingScope", () => {
           },
         };
 
-        return new IModelTileTree(params, { edgesRequired: false, type: BatchType.Primary });
+        return new IModelTileTree(params, { edges: EdgeType.None, type: BatchType.Primary });
       }
 
       const expectTreeState = async (tree: IModelTileTree | IModelTileTree[], expectedState: "static" | "interactive" | "dynamic" | "disposed", expectedHiddenElementCount: number, expectedRange: Range3d) => {

@@ -9,8 +9,9 @@
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { getJson } from "@bentley/itwin-client";
+import { request } from "./request/Request";
 import { GeographicTilingScheme, QuadId } from "./tile/internal";
+import { IModelApp } from "./IModelApp";
 
 let instance: ApproximateTerrainHeights | undefined;
 
@@ -39,7 +40,11 @@ export class ApproximateTerrainHeights {
    */
   public async initialize(): Promise<void> {
     if (undefined === this._terrainHeights) {
-      this._terrainHeights = await getJson("assets/approximateTerrainHeights.json");
+      const data = await request(`${IModelApp.publicPath}assets/approximateTerrainHeights.json`, {
+        method: "GET",
+        responseType: "json",
+      });
+      this._terrainHeights = data.body;
     }
   }
 
@@ -48,8 +53,8 @@ export class ApproximateTerrainHeights {
     if (undefined === this._terrainHeights)
       return result;   // Not initialized.
 
-    let level = quadId.level - 1, column = quadId.column, row = quadId.row;
-    if (quadId.level > 6) {
+    let level = quadId.level, column = quadId.column, row = quadId.row;
+    if (level > 6) {
       column = column >> (level - 6);
       row = row >> quadId.row >> ((level - 6));
       level = 6;
@@ -99,7 +104,7 @@ export class ApproximateTerrainHeights {
       let failed = false;
       for (let j = 0; j < 4; ++j) {
         const corner = this._scratchCorners[j];
-        this._tilingScheme.cartographicToTileXY(corner, i + 1, this._scratchTileXY);    // Note level for iModelJS is Cesium+1 (our root is zero).
+        this._tilingScheme.cartographicToTileXY(corner, i, this._scratchTileXY);
         if (j === 0) {
           currentX = this._scratchTileXY.x;
           currentY = this._scratchTileXY.y;

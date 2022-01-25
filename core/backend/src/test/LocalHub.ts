@@ -32,7 +32,7 @@ interface LocalHubProps {
   readonly iModelId: GuidString;
   readonly iModelName: string;
   readonly description?: string;
-  readonly revision0?: string;
+  readonly version0?: string;
   readonly noLocks?: true;
 }
 
@@ -105,18 +105,18 @@ export class LocalHub {
     db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
     db.saveChanges();
 
-    const revision0 = arg.revision0 ?? join(IModelHost.cacheDir, "revision0.bim");
+    const version0 = arg.version0 ?? join(IModelHost.cacheDir, "version0.bim");
 
-    if (!arg.revision0) { // if they didn't supply a revision0 file, create a blank one.
-      IModelJsFs.removeSync(revision0);
-      const blank = SnapshotDb.createEmpty(revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
+    if (!arg.version0) { // if they didn't supply a version0 file, create a blank one.
+      IModelJsFs.removeSync(version0);
+      const blank = SnapshotDb.createEmpty(version0, { rootSubject: { name: arg.description ?? arg.iModelName } });
       blank.saveChanges();
       blank.close();
     }
 
-    const path = this.uploadCheckpoint({ changesetIndex: 0, localFile: revision0 });
-    if (!arg.revision0)
-      IModelJsFs.removeSync(revision0);
+    const path = this.uploadCheckpoint({ changesetIndex: 0, localFile: version0 });
+    if (!arg.version0)
+      IModelJsFs.removeSync(version0);
 
     const nativeDb = IModelDb.openDgnDb({ path }, OpenMode.ReadWrite);
     try {
@@ -294,7 +294,7 @@ export class LocalHub {
   /** Get the properties of a changeset by its index */
   public getChangesetByIndex(index: ChangesetIndex): ChangesetProps {
     if (index <= 0)
-      return { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
+      return { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
 
     return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,csId,briefcaseId FROM timeline WHERE csIndex=?", (stmt) => {
       stmt.bindInteger(1, index);
@@ -430,7 +430,8 @@ export class LocalHub {
     const index = this.getIndexFromChangeset(arg.changeset);
     const prev = this.queryPreviousCheckpoint(index);
     IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromIndex(prev)), arg.targetFile);
-    return this.getChangesetByIndex(prev).id;
+    const changeset = this.getChangesetByIndex(index);
+    return { index, id: changeset.id };
   }
 
   private copyChangeset(arg: ChangesetFileProps): ChangesetFileProps {

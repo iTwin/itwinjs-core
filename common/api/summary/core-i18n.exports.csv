@@ -1,3 +1,4 @@
 sep=;
 Release Tag;API Item
-public;I18N 
+public;ITwinLocalization 
+public;LocalizationOptions

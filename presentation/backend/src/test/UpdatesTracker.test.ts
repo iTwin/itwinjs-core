@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import * as lolex from "lolex";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { using } from "@itwin/core-bentley";
 import { IModelDb, IpcHost } from "@itwin/core-backend";
 import { PresentationIpcEvents, UpdateInfoJSON } from "@itwin/presentation-common";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 

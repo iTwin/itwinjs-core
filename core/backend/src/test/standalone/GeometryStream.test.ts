@@ -8,7 +8,7 @@ import { BentleyStatus, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, RuledSweep, SolidPrimitive, Sphere,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere,
   StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
@@ -21,7 +21,7 @@ import {
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
 import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils, Timer } from "../IModelTestUtils";
+import { IModelTestUtils, Timer } from "../";
 
 function assertTrue(expr: boolean): asserts expr {
   assert.isTrue(expr);
@@ -57,7 +57,7 @@ function createGeometryPart(geom: GeometryStreamProps, imodel: SnapshotDb): Id64
 function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dProps, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
   const elementProps = createPhysicalElementProps(seedElement, placement, geom);
   const el = imodel.elements.createElement<GeometricElement>(elementProps);
-  return imodel.elements.insertElement(el);
+  return imodel.elements.insertElement(el.toJSON());
 }
 
 function createPartElem(partId: Id64String, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement, isRelative = false): Id64String {
@@ -312,7 +312,7 @@ function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, ent
 
   const elementProps = createPhysicalElementProps(seedElement, placement);
   const testElem = imodel.elements.createElement(elementProps);
-  const newId = imodel.elements.insertElement(testElem);
+  const newId = testElem.insert();
 
   const status = imodel.elementGeometryUpdate({ elementId: newId, entryArray, isWorld });
   if (DbResult.BE_SQLITE_OK === status)
@@ -880,7 +880,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned, text transform should now be identity as it is accounted for by element's placement...
@@ -938,7 +938,7 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = imodel.elements.insertElement(testPart);
+    const partId = imodel.elements.insertElement(testPart.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -983,7 +983,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1017,7 +1017,7 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = imodel.elements.insertElement(testPart);
+    const partId = imodel.elements.insertElement(testPart.toJSON());
     imodel.saveChanges();
 
     const builder = new GeometryStreamBuilder();
@@ -1031,7 +1031,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1128,7 +1128,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1206,7 +1206,7 @@ describe("GeometryStream", () => {
 
       const partProps = createGeometryPartProps(builder.geometryStream);
       const part = imodel.elements.createElement(partProps);
-      const partId = imodel.elements.insertElement(part);
+      const partId = imodel.elements.insertElement(part.toJSON());
       imodel.saveChanges();
 
       const json = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
@@ -1301,7 +1301,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const pts: Point3d[] = [];
@@ -1375,7 +1375,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     timer.end();
 
     timer = new Timer("elementGeometryUpdate");
@@ -1418,7 +1418,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
@@ -1456,7 +1456,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const brepProps = createBRepDataProps();
@@ -1513,7 +1513,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
@@ -1547,7 +1547,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
@@ -1578,7 +1578,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
@@ -1632,7 +1632,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
@@ -1672,7 +1672,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const pts: Point3d[] = [];
@@ -1799,7 +1799,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const pts: Point3d[] = [];
@@ -1983,7 +1983,7 @@ describe("BRepGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
 
     assert.isTrue(DbResult.BE_SQLITE_OK === imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false }));
     imodel.saveChanges();
@@ -2044,7 +2044,7 @@ describe("BRepGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
 
     assert.isTrue(DbResult.BE_SQLITE_OK === imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false }));
     imodel.saveChanges();
@@ -2451,7 +2451,7 @@ describe("BRepGeometry", () => {
 
       const elementProps = createPhysicalElementProps(seedElement, { origin: Point3d.create(5, 10, 0), angles: YawPitchRollAngles.createDegrees(45, 0, 0) }, gsBuilder.geometryStream);
       const testElem = imodel.elements.createElement(elementProps);
-      const newId = imodel.elements.insertElement(testElem);
+      const newId = imodel.elements.insertElement(testElem.toJSON());
       imodel.saveChanges();
 
       // Extract and test value returned
@@ -2478,45 +2478,6 @@ describe("BRepGeometry", () => {
     } catch (error: any) {
       assert(false, error.message);
     }
-  });
-
-  it("catch solid kernel severe error - main thread", async () => {
-    const builder = new ElementGeometry.Builder();
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 1, 0), Point3d.create(-1.1, 1, 0), Point3d.create(-1, 1.1, 0)]));
-
-    // Test main thread using createBRepGeometry...
-    const onResult: BRepGeometryFunction = (_info: BRepGeometryInfo): void => { };
-
-    const createProps: BRepGeometryCreate = {
-      operation: BRepGeometryOperation.Offset,
-      entryArray: builder.entries,
-      onResult,
-      parameters: { distance: 0.25 },
-    };
-
-    // Expect exception creating sheet body from invalid loop (imprint error)...
-    expect(() => imodel.createBRepGeometry(createProps)).to.throw(Error, "Solid kernel severe error: 942");
-  });
-
-  it("catch solid kernel severe error - worker thread", async () => {
-    const builder = new ElementGeometry.Builder();
-    const loop0 = Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 1, 0), Point3d.create(-1.1, 1, 0), Point3d.create(-1, 1.1, 0)]);
-    const loop1 = Loop.create(Arc3d.createXY(Point3d.create(0, 0, 1), 0.2));
-    const solid = RuledSweep.create([loop0, loop1], true);
-    assert.isDefined(solid);
-    builder.appendGeometryQuery(solid!);
-
-    // Test worker thread using getMassProperties...
-    const result = createGeometricElemFromSeed(imodel, "0x1d", builder.entries);
-    assert.isTrue(DbResult.BE_SQLITE_OK === result.status);
-
-    const requestProps: MassPropertiesRequestProps = {
-      operation: MassPropertiesOperation.AccumulateVolumes,
-      candidates: [result.newId],
-    };
-
-    // Expect exception creating sheet body from invalid loop (imprint error)...
-    await expect(imodel.getMassProperties(requestProps)).to.be.rejectedWith(Error, "Solid kernel severe error: 942");
   });
 });
 
@@ -2547,7 +2508,7 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     const requestProps: MassPropertiesRequestProps = {
@@ -2574,7 +2535,7 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     const requestProps: MassPropertiesRequestProps = {

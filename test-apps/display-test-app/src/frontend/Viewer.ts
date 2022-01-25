@@ -29,7 +29,7 @@ import { openIModel } from "./openIModel";
 // cspell:ignore savedata topdiv savedview viewtop
 
 function saveImage(vp: Viewport) {
-  const buffer = vp.readImage(undefined, new Point2d(768, 768), true); // flip vertically...
+  const buffer = vp.readImageBuffer({ size: new Point2d(768, 768) });
   if (undefined === buffer) {
     alert("Failed to read image");
     return;
@@ -198,6 +198,10 @@ export class Viewer extends Window {
 
   private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
     super(surface, { scrollbars: true });
+
+    // Allow HTMLElements beneath viewport to be visible if background color has transparency.
+    this.contentDiv.style.backgroundColor = "transparent";
+    this.container.style.backgroundColor = "transparent";
     surface.element.appendChild(this.container);
 
     this.disableEdges = true === props.disableEdges;
@@ -463,7 +467,7 @@ export class Viewer extends Window {
     try {
       await this.resetIModel(filename);
       setTitle(this._imodel);
-    } catch (_) {
+    } catch {
       alert("Error - could not open file.");
     }
   }

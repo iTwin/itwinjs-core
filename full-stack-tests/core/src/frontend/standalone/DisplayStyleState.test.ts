@@ -6,10 +6,11 @@ import { expect } from "chai";
 import { CompressedId64Set } from "@itwin/core-bentley";
 import { Vector3d } from "@itwin/core-geometry";
 import {
-  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, PlanarClipMaskMode, PlanarClipMaskSettings,
-  SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
+  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, GroundPlane, PlanarClipMaskMode, PlanarClipMaskSettings,
+  SkyGradient, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
 } from "@itwin/core-common";
-import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@itwin/core-frontend";
+import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -24,7 +25,7 @@ describe("DisplayStyle", () => {
   };
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim");
   });
 
@@ -32,7 +33,7 @@ describe("DisplayStyle", () => {
     if (imodel)
       await imodel.close();
 
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should clone correctly", () => {
@@ -160,7 +161,12 @@ describe("DisplayStyle", () => {
     });
 
     test({ planProjections: { "0x8": { elevation: 2, transparency: 0.25, overlay: true, enforceDisplayPriority: true } } });
-    test({ environment: { sky: { display: false, twoColor: true }, ground: { display: true } } });
+    test({
+      environment: {
+        sky: { ...SkyGradient.defaults.toJSON(), display: false, twoColor: true },
+        ground: { ...GroundPlane.defaults.toJSON(), display: true },
+      },
+    });
 
     test({
       contextRealityModels: [{
@@ -235,7 +241,12 @@ describe("DisplayStyle", () => {
     });
 
     test({ planProjections: { "0x9": { elevation: 3, transparency: 0.75, overlay: true, enforceDisplayPriority: true } } });
-    test({ environment: { sky: { display: true, twoColor: true }, ground: { display: false } } });
+    test({
+      environment: {
+        sky: { ...SkyGradient.defaults.toJSON(), display: true, twoColor: true },
+        ground: { ...GroundPlane.defaults.toJSON(), display: false },
+      },
+    });
 
     test({
       contextRealityModels: [{

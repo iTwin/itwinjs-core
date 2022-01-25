@@ -65,6 +65,14 @@ export enum DepthType {
 
 const maxTexSizeAllowed = 4096; // many devices and browsers have issues with source textures larger than this
 
+// Regexes to match Intel UHD/HD 620/630 integrated GPUS that suffer from GraphicsDriverBugs.fragDepthDoesNotDisableEarlyZ.
+const buggyIntelMatchers = [
+  // Original unmasked renderer string when workaround we implemented.
+  /ANGLE \(Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
+  // New unmasked renderer string circa October 2021.
+  /ANGLE \(Intel, Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
+];
+
 /** Describes the rendering capabilities of the host system.
  * @internal
  */
@@ -265,7 +273,9 @@ export class Capabilities {
     }
 
     // Determine the maximum color-renderable attachment type.
-    const allowFloatRender = undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float");
+    // Note: iOS>=15 allows full-float rendering. However, it does not actually work on non-M1 devices. Because of this, for now we disallow full float rendering on iOS devices.
+    // ###TODO: Re-assess this after future iOS updates.
+    const allowFloatRender = (undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float")) && !ProcessDetector.isIOSBrowser;
     if (allowFloatRender && undefined !== this.queryExtensionObject("EXT_float_blend") && this.isTextureRenderable(gl, gl.FLOAT)) {
       this._maxRenderType = RenderType.TextureFloat;
     } else if (this.isWebGL2) {
@@ -290,7 +300,7 @@ export class Capabilities {
     const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
 
     this._driverBugs = {};
-    if (undefined !== unmaskedRenderer && /ANGLE \(Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/.test(unmaskedRenderer))
+    if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
 
     return {

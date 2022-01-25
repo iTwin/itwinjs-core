@@ -21,7 +21,7 @@ Not all capabilities are at the same maturity level, the key below explains the 
 
 There are two forms of iModels:
 
-1. ✔️️ Briefcase iModels synchronize with iModelHub and have a ChangeSet Timeline
+1. ✔️️ Briefcase iModels synchronize with iModelHub and have a Changeset Timeline
 2. ✔️️ [Snapshot iModels](./backend/AccessingIModels.md) are static, read-only (conceptually similar to PDF), are not synchronized, and have no timeline
 
 ### iModelHub
@@ -29,7 +29,7 @@ There are two forms of iModels:
 [iModelHub](./iModelHub/index) is the control center for Briefcase iModels and manages:
 
 - ✔️️ Authenticating access to iModels
-- ✔️️ Synchronization with the ChangeSet [Timeline](./iModelHub/index.md#the-timeline-of-changes-to-an-iModel)
+- ✔️️ Synchronization with the Changeset [Timeline](./iModelHub/index.md#the-timeline-of-changes-to-an-iModel)
 - ✔️️ [Named Versions](./iModelHub/versions.md)
 
 ### BIS Classes
@@ -188,20 +188,18 @@ Create iModels from data from external BIM/CAD/GIS/etc. applications.
 
 [iModel Connectors](.\imodel-connectors.md) read data from external formats and *connect* it into an iModel. They create ChangeSets that are sent to iModelHub.
 
-## Application and User Settings
+## User Preferences
 
-Use the [Settings API](./frontend/settings.md) to save information outside of an iModel.
+Use the [User Preference API](./frontend/preferences.md) to save information outside of an iModel.
 
-- ✔️️ User
 - ✔️️ Application
-- ✔️️ Project
+- ✔️️ iTwin
 - ✔️️ iModel
 
 Examples:
 
 - ✔️️ Saved Views
 - ✔️️ Section Definitions
-- ✔️️ User Preferences and Persistent State
 
 ## User Interface
 
@@ -344,11 +342,11 @@ Desktop and Mobile device Web browsers.
 
 ## Further Resources
 
-- [GitHub](https://github.com/imodeljs/imodeljs): the imodeljs repository along with samples.
+- [GitHub](https://github.com/iTwin/itwinjs-core): the iTwin.js Core repository.
 - [Documentation](https://www.itwinjs.org/learning/):
   - Learning articles: explaining the iTwin.js library structure and architecture.
   - BIS docs: for understanding BIS schemas and the ECSql data query language.
-  - API reference: can be used in conjunction with the imodeljs repository above to find code samples for API calls. Function/Class names can be searched within the repository to find relevant samples.
+  - API reference: can be used in conjunction with the iTwin.js Core repository above to find code samples for API calls. Function/Class names can be searched within the repository to find relevant samples.
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/imodeljs): don't forget to add the **imodeljs** tag to your question. This will make it easier for us to respond.
 - [YouTube Channel](https://www.youtube.com/channel/UCs4HxiWI4o4bzayG5QnxaIA): Informational videos for guidance and training.
 - Sample Apps: can be used as a starting point for your app.

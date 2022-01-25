@@ -10,7 +10,7 @@
 import { dispose } from "@itwin/core-bentley";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
-  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
@@ -45,6 +45,7 @@ function createTexture(handle: TextureHandle): Texture {
     handle,
     ownership: "external",
     type: RenderTexture.Type.TileSection,
+    transparency: TextureTransparency.Opaque,
   });
 }
 
@@ -240,7 +241,7 @@ abstract class SingleTextureFrameBuffer implements WebGLDisposable {
     if (!hTexture)
       return undefined;
 
-    const texture = new Texture({ type: RenderTexture.Type.TileSection, ownership: "external", handle: hTexture });
+    const texture = new Texture({ type: RenderTexture.Type.TileSection, ownership: "external", handle: hTexture, transparency: TextureTransparency.Opaque });
     if (!texture)
       return undefined;
 
@@ -360,7 +361,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     params[0] = this.insideDisplay;
     params[1] = this.outsideDisplay;
     params[2] = this._contentMode;
+    if (this._planarClipMask?.settings.invert)   // If the mask sense is inverted, negate the contentMode to indicate this to the shader.
+      params[2] = - params[2];
+
     params[3] = (this._planarClipMask?.settings.transparency === undefined) ? -1 : this._planarClipMask.settings.transparency;
+
   }
 
   public get hiliteTexture(): Texture | undefined { return undefined !== this._classifierBuffers ? this._classifierBuffers.textures.hilite : undefined; }
@@ -565,6 +570,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     const vf = target.currentViewFlags.copy({
       renderMode: RenderMode.SmoothShade,
+      wiremesh: false,
       transparency: !this.isClassifyingPointCloud, // point clouds don't support transparency.
       textures: false,
       lighting: false,

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@itwin/core-react/lib/core-react/index";
+@import "~@itwin/core-react/lib/cjs/core-react/index";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 $divider-color: $buic-background-toolbutton-stroke;
@@ -194,13 +194,6 @@ button.map-manager-item-visibility {
 
     .map-manager-add-source-button {
       margin-left: 4px;
-    }
-
-    .map-manager-select {
-      height: 2em;
-      flex: auto;
-      width: 100%;
-      min-width: 100px;
     }
 
     .map-manager-add {
@@ -480,11 +473,13 @@ button.map-manager-item-visibility {
   }
 
   .map-manager-sources {
+    margin-top: 4px;
     height: 250px;
     min-height: 60px;
 
     .map-source-list-entry {
       button.map-source-list-entry-button {
+        height: auto;
         padding: 0 4px 0 4px;
         margin: 0;
         background-color: transparent;

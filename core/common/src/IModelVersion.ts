@@ -46,18 +46,18 @@ export class IModelVersion {
    * to be applied or merged to the iModel.
    * Note that all ChangeSets up to and and including the specified ChangeSet
    * needs to be applied.
-   * If the changeSetId is an empty string, it is assumed to be the first version
+   * If the changesetId is an empty string, it is assumed to be the first version
    * before any change sets have been applied.
    */
-  public static asOfChangeSet(changeSetId: string): IModelVersion {
+  public static asOfChangeSet(changesetId: string): IModelVersion {
     const version = new IModelVersion();
 
-    if (changeSetId === "") {
+    if (changesetId === "") {
       version._first = true;
       return version;
     }
 
-    version._afterChangeSetId = changeSetId;
+    version._afterChangeSetId = changesetId;
     return version;
   }
 

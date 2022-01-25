@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as deepAssign from "deep-assign";
+import deepAssign from "deep-assign";
 import { once } from "lodash";
 import { AccessToken, GetMetaDataFunction, HttpStatus, Logger } from "@itwin/core-bentley";
-import {
-  Client, DefaultRequestOptionsProvider, request, RequestGlobalOptions, RequestOptions, RequestQueryOptions,
-  RequestTimeoutOptions, Response, ResponseError,
-} from "@bentley/itwin-client";
+import { Client, DefaultRequestOptionsProvider } from "../request/Client";
+import { request, RequestGlobalOptions, RequestOptions, RequestQueryOptions,
+  RequestTimeoutOptions, Response, ResponseError } from "../itwin-client/Request";
 import { ChunkedQueryContext } from "./ChunkedQueryContext";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { WsgClientLoggerCategory } from "./WsgLoggerCategory";
@@ -307,7 +306,6 @@ export abstract class WsgClient extends Client {
 
   /**
    * Used by clients to post strongly typed instances through standard WSG REST API
-   * @param requestContext The client request context
    * @param typedConstructor Used by clients to post a strongly typed instance through the REST API that's expected to return a standard response.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instance Strongly typed instance to be posted.
@@ -349,7 +347,6 @@ export abstract class WsgClient extends Client {
   }
 
   /** Used by clients to post multiple strongly typed instances through standard WSG REST API
-   * @param requestContext Client request context
    * @param typedConstructor Used by clients to post a strongly typed instances through the REST API that's expected to return a standard response.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param instances Strongly typed instances to be posted.
@@ -399,7 +396,6 @@ export abstract class WsgClient extends Client {
   // @todo Deserialize stream directly to the type, instead of creating an intermediate JSON object.
   /**
    * Used by clients to get strongly typed instances from standard WSG REST queries that return EC JSON instances.
-   * @param requestContext Client request context
    * @param typedConstructor Constructor function for the type
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
@@ -423,7 +419,6 @@ export abstract class WsgClient extends Client {
 
   /**
    * Used by clients to get a chunk of strongly typed instances from standard WSG REST queries that return EC JSON instances.
-   * @param requestContext Client request context
    * @param url Full path to the REST resource.
    * @param chunkedQueryContext Chunked query context.
    * @param typedConstructor Constructor function for the type

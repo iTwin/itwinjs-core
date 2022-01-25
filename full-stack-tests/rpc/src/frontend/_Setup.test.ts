@@ -5,8 +5,8 @@
 
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
-import { MobileRpcManager } from "@itwin/core-mobile/lib/MobileFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { MobileRpcManager } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
 

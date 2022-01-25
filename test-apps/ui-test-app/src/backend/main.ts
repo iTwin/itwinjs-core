@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
+import { IModelHostConfiguration } from "@itwin/core-backend";
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Presentation } from "@itwin/presentation-backend";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
 import { loggerCategory } from "../common/TestAppConfiguration";
-import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/MobileBackend";
+import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { getSupportedRpcs } from "../common/rpcs";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
@@ -24,15 +26,18 @@ import { getSupportedRpcs } from "../common/rpcs";
 
     initializeLogging();
 
+    const iModelHost = new IModelHostConfiguration();
+    iModelHost.hubAccess = new BackendIModelsAccess();
+
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {
-      await initializeElectron();
+      await initializeElectron(iModelHost);
     } else if (ProcessDetector.isIOSAppBackend) {
       await IOSHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
     } else if (ProcessDetector.isAndroidAppBackend) {
       await AndroidHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
     } else {
-      await initializeWeb();
+      await initializeWeb(iModelHost);
     }
 
     // initialize presentation-backend

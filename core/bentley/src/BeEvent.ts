@@ -6,6 +6,8 @@
  * @module Events
  */
 
+import { UnexpectedErrors } from "./UnexpectedErrors";
+
 /** A function invoked when a BeEvent is raised.
  * @public
  */
@@ -95,7 +97,11 @@ export class BeEvent<T extends Listener> {
       if (!context.listener) {
         dropped = true;
       } else {
-        context.listener.apply(context.scope, args);
+        try {
+          context.listener.apply(context.scope, args);
+        } catch (e) {
+          UnexpectedErrors.handle(e);
+        }
         if (context.once) {
           context.listener = undefined;
           dropped = true;

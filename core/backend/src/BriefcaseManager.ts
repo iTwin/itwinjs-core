@@ -16,7 +16,7 @@ import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
 } from "@itwin/core-common";
-import { TelemetryEvent } from "@bentley/telemetry-client";
+import { TelemetryEvent } from "@itwin/core-telemetry";
 import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
@@ -243,8 +243,8 @@ export class BriefcaseManager {
    * @internal
    */
   public static deleteChangeSetsFromLocalDisk(iModelId: string) {
-    const changeSetsPath = BriefcaseManager.getChangeSetsPath(iModelId);
-    BriefcaseManager.deleteFolderAndContents(changeSetsPath);
+    const changesetsPath = BriefcaseManager.getChangeSetsPath(iModelId);
+    BriefcaseManager.deleteFolderAndContents(changesetsPath);
   }
 
   /** Releases a briefcaseId from iModelHub. After this call it is illegal to generate changesets for the released briefcaseId.
@@ -345,7 +345,7 @@ export class BriefcaseManager {
     const files = IModelJsFs.readdirSync(folderPathname);
     for (const file of files) {
       const curPath = path.join(folderPathname, file);
-      const locStatus = (IModelJsFs.lstatSync(curPath)!.isDirectory) ? BriefcaseManager.deleteFolderAndContents(curPath) : BriefcaseManager.deleteFile(curPath);
+      const locStatus = (IModelJsFs.lstatSync(curPath)?.isDirectory) ? BriefcaseManager.deleteFolderAndContents(curPath) : BriefcaseManager.deleteFile(curPath);
       if (!locStatus)
         status = false;
     }
@@ -395,7 +395,7 @@ export class BriefcaseManager {
     const changesets = await IModelHost.hubAccess.downloadChangesets({
       accessToken: arg.accessToken,
       iModelId: db.iModelId,
-      range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex },
+      range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex }, // eslint-disable-line @typescript-eslint/no-non-null-assertion
       targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
     });
 
@@ -429,7 +429,7 @@ export class BriefcaseManager {
         db.nativeDb.completeCreateChangeset({ index });
         db.changeset = db.nativeDb.getCurrentChangeset();
         if (!arg.retainLocks)
-          await IModelHost.hubAccess.releaseAllLocks(db);
+          await db.locks.releaseAllLocks();
 
         return;
       } catch (err: any) {

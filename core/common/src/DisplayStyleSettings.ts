@@ -18,7 +18,6 @@ import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./Backgroun
 import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
-import { GroundPlaneProps } from "./GroundPlane";
 import { HiddenLine } from "./HiddenLine";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
@@ -27,7 +26,7 @@ import { LightSettings, LightSettingsProps } from "./LightSettings";
 import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
 import { RenderSchedule } from "./RenderSchedule";
-import { SkyBoxProps } from "./SkyBox";
+import { Environment, EnvironmentProps } from "./Environment";
 import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
@@ -63,14 +62,6 @@ export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps
 export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
   /** The Id of the model to mask. */
   modelId?: Id64String;
-}
-
-/** JSON representation of the environment setup of a [[DisplayStyle3d]].
- * @public
- */
-export interface EnvironmentProps {
-  ground?: GroundPlaneProps;
-  sky?: SkyBoxProps;
 }
 
 /** Describes the style in which monochrome color is applied by a [[DisplayStyleSettings]].
@@ -115,7 +106,7 @@ export interface DisplayStyleSettingsProps {
    * @deprecated Use DisplayStyleSettingsProps.renderTimeline.
    * @internal
    */
-  scheduleScript?: RenderSchedule.ModelTimelineProps[];
+  scheduleScript?: RenderSchedule.ScriptProps;
   /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view. */
   renderTimeline?: Id64String;
   /** The point in time reflected by the view, in UNIX seconds.
@@ -462,7 +453,7 @@ export class DisplayStyleSettings {
    * @deprecated Use onRenderTimelineChanged
    * @internal
    */
-  public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>();
+  public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ScriptProps> | undefined) => void>();
 
   /** Event raised just prior to assignment to the [[renderTimeline]] property. */
   public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
@@ -480,17 +471,17 @@ export class DisplayStyleSettings {
   public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
   public readonly onModelAppearanceOverrideChanged = new BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>();
-  /** Event raised just prior to assignment to the [[thematic]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
-  /** Event raised just prior to assignment to the [[hiddenLineSettings]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
-  /** Event raised just prior to assignment to the [[ambientOcclusionSettings]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.ambientOcclusionSettings]] property. */
   public readonly onAmbientOcclusionSettingsChanged = new BeEvent<(newSettings: AmbientOcclusion.Settings) => void>();
-  /** Event raised just prior to assignment to the [[solarShadows]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.solarShadows]] property. */
   public readonly onSolarShadowsChanged = new BeEvent<(newSettings: SolarShadowSettings) => void>();
-  /** Event raised just prior to assignment to the [[environment]] property. */
-  public readonly onEnvironmentChanged = new BeEvent<(newProps: Readonly<EnvironmentProps>) => void>();
-  /** Event raised just prior to assignment to the [[lights]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.environment]] property. */
+  public readonly onEnvironmentChanged = new BeEvent<(newEnv: Readonly<Environment>) => void>();
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.lights]] property. */
   public readonly onLightsChanged = new BeEvent<(newLights: LightSettings) => void>();
   /** Event raised just before changing the plan projection settings for a model. */
   public readonly onPlanProjectionSettingsChanged = new BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>();
@@ -638,21 +629,26 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view. */
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view.
+   * @note If this [[DisplayStyleSettings]] is associated with a [DisplayStyleState]($frontend), assigning to [[renderTimeline]] will enqueue asynchronous loading of
+   * the script from the [RenderTimeline]($backend) element; for more readable code, prefer instead to `await` [DisplayStyleState.changeRenderTimeline]($frontend).
+   */
   public get renderTimeline(): Id64String | undefined {
     return this._json.renderTimeline;
   }
   public set renderTimeline(id: Id64String | undefined) {
-    this.onRenderTimelineChanged.raiseEvent(id);
-    this._json.renderTimeline = id;
+    if (id !== this.renderTimeline) {
+      this.onRenderTimelineChanged.raiseEvent(id);
+      this._json.renderTimeline = id;
+    }
   }
 
   /** @internal @deprecated */
-  public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
+  public get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined {
     // eslint-disable-next-line deprecation/deprecation
     return this._json.scheduleScript;
   }
-  public set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined) {
+  public set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined) {
     // eslint-disable-next-line deprecation/deprecation
     this.onScheduleScriptPropsChanged.raiseEvent(props);
     // eslint-disable-next-line deprecation/deprecation
@@ -1016,6 +1012,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _ao: AmbientOcclusion.Settings;
   private _solarShadows: SolarShadowSettings;
   private _lights: LightSettings;
+  private _environment: Environment;
   private _planProjections?: Map<string, PlanProjectionSettings>;
 
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
@@ -1030,6 +1027,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
     this._solarShadows = SolarShadowSettings.fromJSON(this._json3d.solarShadows);
+    this._environment = Environment.fromJSON(this._json3d.environment);
 
     // Very long ago we used to stick MicroStation's light settings into json.sceneLights. Later we started adding the sunDir.
     // We don't want any of MicroStation's settings. We do want to preserve the sunDir if present.
@@ -1081,7 +1079,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
     assert(undefined !== props.viewflags);
 
-    props.environment = { ...this.environment };
+    props.environment = this.environment.toJSON();
     props.hline = this.hiddenLineSettings.toJSON();
     props.ao = this.ambientOcclusionSettings.toJSON();
     props.solarShadows = this.solarShadows.toJSON();
@@ -1125,7 +1123,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     super._applyOverrides(overrides);
 
     if (overrides.environment)
-      this.environment = { ...overrides.environment };
+      this.environment = Environment.fromJSON(overrides.environment);
 
     if (overrides.hline)
       this.hiddenLineSettings = HiddenLine.Settings.fromJSON(overrides.hline);
@@ -1197,14 +1195,36 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this._json3d.solarShadows = json;
   }
 
-  /** @internal */
-  public get environment(): EnvironmentProps {
-    const env = this._json3d.environment;
-    return undefined !== env ? env : {};
+  /** Controls the display of a [[SkyBox]] and [[GroundPlane]].
+   * @public
+   */
+  public get environment(): Environment {
+    return this._environment;
   }
-  public set environment(environment: EnvironmentProps) {
-    this.onEnvironmentChanged.raiseEvent(environment);
-    this._json3d.environment = environment;
+  public set environment(environment: Environment) {
+    if (environment !== this.environment) {
+      this.onEnvironmentChanged.raiseEvent(environment);
+      this._environment = environment;
+      this._json3d.environment = environment.toJSON();
+    }
+  }
+
+  /** Toggle display of the [[environment]]'s [[SkyBox]].
+   * @param display Whether to display the skybox, or `undefined` to toggle the current display.
+   */
+  public toggleSkyBox(display?: boolean): void {
+    display = display ?? this.environment.displaySky;
+    if (display !== this.environment.displaySky)
+      this.environment = this.environment.withDisplay({ sky: display });
+  }
+
+  /** Toggle display of the [[environment]]'s [[GroundPlane]].
+   * @param display Whether to display the ground plane, or `undefined` to toggle the current display.
+   */
+  public toggleGroundPlane(display?: boolean): void {
+    display = display ?? this.environment.displayGround;
+    if (display !== this.environment.displayGround)
+      this.environment = this.environment.withDisplay({ ground: display });
   }
 
   public get lights(): LightSettings {

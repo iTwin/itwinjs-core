@@ -9,6 +9,7 @@ beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode
 beta;HybridCacheConfig 
 beta;MemoryHierarchyCacheConfig 
+alpha;MultiElementPropertiesResponse
 public;MultiManagerPresentationProps 
 internal;normalizeVersion(version?: string): string
 public;Presentation

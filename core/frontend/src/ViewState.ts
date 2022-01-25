@@ -6,16 +6,16 @@
  * @module Views
  */
 
-import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { assert, BeEvent, dispose, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
   XYAndZ, XYZ, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType,
-  ModelClipGroups, Npc, RenderMaterial, RenderSchedule, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps,
-  ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
+  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
+  ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
+  ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -27,7 +27,6 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
-import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -42,6 +41,7 @@ import { ViewingSpace } from "./ViewingSpace";
 import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
+import { EnvironmentDecorations } from "./EnvironmentDecorations";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -152,6 +152,13 @@ const scratchRay = Ray3d.createZero();
 const unitRange2d = Range2d.createXYXY(0, 0, 1, 1);
 const scratchRange2d = Range2d.createNull();
 const scratchRange2dIntersect = Range2d.createNull();
+
+/** Arguments to [[ViewState.attachToViewport]].
+ * @internal
+ */
+export interface AttachToViewportArgs {
+  invalidateDecorations: () => void;
+}
 
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
@@ -390,8 +397,6 @@ export abstract class ViewState extends ElementState {
   public abstract is3d(): this is ViewState3d;
   /** Returns true if this ViewState is-a [[ViewState2d]] */
   public is2d(): this is ViewState2d { return !this.is3d(); }
-  /** Returns true if this ViewState is-a [[ViewState3d]] with the camera currently on. */
-  public isCameraEnabled(): this is ViewState3d { return this.is3d() && this.isCameraOn; }
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
   public abstract isSpatialView(): this is SpatialViewState;
   /** Returns true if this ViewState is-a [[DrawingViewState]] */
@@ -553,7 +558,7 @@ export abstract class ViewState extends ElementState {
     let origin: Point3d;
 
     // Compute root vectors along edges of view frustum.
-    if (this.isCameraEnabled()) {
+    if (this.is3d() && this.isCameraOn) {
       const camera = this.camera;
       const eyeToOrigin = Vector3d.createStartEnd(camera.eye, inOrigin); // vector from origin on backplane to eye
       viewRot.multiplyVectorInPlace(eyeToOrigin);                        // align with view coordinates.
@@ -965,7 +970,7 @@ export abstract class ViewState extends ElementState {
 
     const margin = options?.marginPercent;
 
-    if (this.isCameraEnabled()) {
+    if (this.is3d() && this.isCameraOn) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
       // the front or back of the view. For this reason, don't attempt to add any "margin" to camera views.
@@ -1092,9 +1097,13 @@ export abstract class ViewState extends ElementState {
    * false if the viewed area do does not include more than one percent of the project.
    */
   public getIsViewingProject(): boolean {
+    if (!this.isSpatialView())
+      return false;
+
     const worldToNpc = this.computeWorldToNpc();
     if (!worldToNpc || !worldToNpc.map)
       return false;
+
     const expandedRange = this.iModel.projectExtents.clone();
     expandedRange.expandInPlace(10E3);
     const corners = expandedRange.corners(scratchCorners);
@@ -1216,7 +1225,7 @@ export abstract class ViewState extends ElementState {
    * @see [[detachFromViewport]] from the inverse operation.
    * @internal
    */
-  public attachToViewport(): void {
+  public attachToViewport(_args: AttachToViewportArgs): void {
     if (this.isAttachedToViewport)
       throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
 
@@ -1273,6 +1282,7 @@ export abstract class ViewState extends ElementState {
 export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
   private readonly _modelClips: Array<RenderClipVolume | undefined> = [];
+  private _environmentDecorations?: EnvironmentDecorations;
   /** @internal */
   public static override get className() { return "ViewDefinition3d"; }
   /** True if the camera is valid. */
@@ -1311,7 +1321,7 @@ export abstract class ViewState3d extends ViewState {
     this.camera = new Camera(props.camera);
 
     // if the camera is on, make sure the eyepoint is centered.
-    if (this.isCameraEnabled())
+    if (this.is3d() && this.isCameraOn)
       this.centerEyePoint();
 
     this._details = new ViewDetails3d(this.jsonProperties);
@@ -1501,9 +1511,9 @@ export abstract class ViewState3d extends ViewState {
       }
     }
 
-    const isCameraEnabled = this.isCameraEnabled();
+    const isCameraEnabled = this.isCameraOn;
     this.lookAt({ eyePoint, targetPoint, upVector, lensAngle: this.camera.getLensAngle() });
-    if (!isCameraEnabled && this.isCameraEnabled)
+    if (!isCameraEnabled && this.isCameraOn)
       this.turnCameraOff();
 
     return eyePoint.distance(origEyePoint);
@@ -1980,22 +1990,8 @@ export abstract class ViewState3d extends ViewState {
 
   public override decorate(context: DecorateContext): void {
     super.decorate(context);
-    this.drawSkyBox(context);
-    this.drawGroundPlane(context);
-  }
-
-  /** @internal */
-  protected drawSkyBox(context: DecorateContext): void {
-    const style3d = this.getDisplayStyle3d();
-    if (!style3d.environment.sky.display)
-      return;
-
-    const vp = context.viewport;
-    const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem, vp);
-    if (undefined !== skyBoxParams) {
-      const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(skyBoxParams);
-      context.setSkyBox(skyBoxGraphic!);
-    }
+    if (this._environmentDecorations)
+      this._environmentDecorations.decorate(context);
   }
 
   /** Returns the ground elevation taken from the environment added with the global z position of this imodel. */
@@ -2008,7 +2004,7 @@ export abstract class ViewState3d extends ViewState {
   public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new Range3d();
-    if (!displayStyle.environment.ground.display)
+    if (!displayStyle.environment.displayGround)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
@@ -2043,62 +2039,6 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** @internal */
-  protected drawGroundPlane(context: DecorateContext): void {
-    const extents = this.getGroundExtents(context.viewport);
-    if (extents.isNull)
-      return;
-
-    const ground = this.getDisplayStyle3d().environment.ground;
-    if (!ground.display)
-      return;
-
-    const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
-    points[1].x = extents.high.x;
-    points[3].x = extents.low.x;
-
-    const aboveGround = this.isEyePointAbove(extents.low.z);
-    const gradient = ground.getGroundPlaneGradient(aboveGround);
-    const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
-    if (!texture)
-      return;
-
-    const matParams = new RenderMaterial.Params();
-    matParams.diffuseColor = ColorDef.white;
-    matParams.shadows = false;
-    matParams.ambient = 1;
-    matParams.diffuse = 0;
-
-    const mapParams = new TextureMapping.Params();
-    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
-    mapParams.textureMatrix = transform;
-    matParams.textureMapping = new TextureMapping(texture, mapParams);
-    const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
-    if (!material)
-      return;
-
-    const params = new GraphicParams();
-    params.lineColor = gradient.keys[0].color;
-    params.fillColor = ColorDef.white;  // Fill should be set to opaque white for gradient texture...
-    params.material = material;
-
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
-    builder.activateGraphicParams(params);
-
-    /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
-    // we will use a PolyfaceBuilder here to add the ground plane as a quad, claim the polyface, and then send that to the GraphicBuilder
-    const strokeOptions = new StrokeOptions();
-    strokeOptions.needParams = true;
-    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
-    polyfaceBuilder.toggleReversedFacetFlag();
-    const uvParams: Point2d[] = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
-    polyfaceBuilder.addQuadFacet(points, uvParams);
-    const polyface = polyfaceBuilder.claimPolyface(false);
-
-    builder.addPolyface(polyface, true);
-    context.addDecorationFromBuilder(builder);
-  }
-
-  /** @internal */
   public override getModelElevation(modelId: Id64String): number {
     const settings = this.getDisplayStyle3d().settings.getPlanProjectionSettings(modelId);
     return settings && settings.elevation ? settings.elevation : 0;
@@ -2119,7 +2059,7 @@ export abstract class ViewState3d extends ViewState {
     const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
     const viewZ = this.getRotation().rowZ();
     const center = this.getCenter();
-    const eye = this.isCameraEnabled() ? this.camera.getEyePoint() : center.plusScaled(viewZ, Constant.diameterOfEarth);
+    const eye = this.isCameraOn ? this.camera.getEyePoint() : center.plusScaled(viewZ, Constant.diameterOfEarth);
     const eyeRay = Ray3d.create(eye, viewZ);
     const fractions = new Array<number>(), points = new Array<Point3d>();
 
@@ -2160,7 +2100,7 @@ export abstract class ViewState3d extends ViewState {
     const earthCenter = this.iModel.ecefLocation?.earthCenter;
     const viewCenter = this.getCenter();
     const viewZ = this.getRotation().rowZ();
-    const eye = this.isCameraEnabled() ? this.camera.eye : viewCenter.plusScaled(viewZ, Constant.diameterOfEarth);
+    const eye = this.isCameraOn ? this.camera.eye : viewCenter.plusScaled(viewZ, Constant.diameterOfEarth);
 
     const centerToEye = earthCenter.unitVectorTo(eye);
     if (!centerToEye)
@@ -2188,6 +2128,22 @@ export abstract class ViewState3d extends ViewState {
 
     frustum.multiply(transitionTransform);
     return this.setupFromFrustum(frustum);
+  }
+
+  /** @internal */
+  public override attachToViewport(args: AttachToViewportArgs): void {
+    super.attachToViewport(args);
+
+    const removeListener = this.displayStyle.settings.onEnvironmentChanged.addListener((env) => {
+      this._environmentDecorations?.setEnvironment(env);
+    });
+
+    this._environmentDecorations = new EnvironmentDecorations(this, () => args.invalidateDecorations(), () => removeListener());
+  }
+
+  public override detachFromViewport(): void {
+    super.detachFromViewport();
+    this._environmentDecorations = dispose(this._environmentDecorations);
   }
 }
 

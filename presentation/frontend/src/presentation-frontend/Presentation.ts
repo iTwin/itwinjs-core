@@ -73,7 +73,7 @@ export class Presentation {
     if (!presentationManager) {
       const managerProps = props?.presentation ?? {};
       if (!managerProps.activeLocale) {
-        const languages = Presentation.localization.languageList();
+        const languages = Presentation.localization.getLanguageList();
         managerProps.activeLocale = (languages.length ? languages[0] : undefined);
       }
       presentationManager = PresentationManager.create(managerProps);

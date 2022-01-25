@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
+  BackstageAppButton, BackstageManager, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
   IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
-  SyncUiEventArgs, SyncUiEventDispatcher,
+  SyncUiEventDispatcher,
   UiFramework,
 } from "@itwin/appui-react";
-import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { StageUsage, StandardContentLayouts, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";
-import { getSavedViewLayoutProps } from "../../tools/UiProviderTool";
+import { getSavedViewLayoutProps } from "../../tools/ImmediateTools";
 
 export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
   /* eslint-disable react/jsx-key */
@@ -85,6 +85,8 @@ export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
 }
 
 export class FrontstageUi2 {
+  public static stageId = "ui-test-app:Ui2";
+
   private static _contentGroupProvider = new FrontstageUi2ContentGroupProvider();
   private static showCornerButtons = true;
 
@@ -96,7 +98,10 @@ export class FrontstageUi2 {
   }
 
   public static register() {
-    const cornerButton = FrontstageUi2.showCornerButtons ? <BackstageAppButton key="ui2-backstage" icon={"icon-bentley-systems"} /> : undefined;
+    // set up custom corner button where we specify icon, label, and action
+    const cornerButton = FrontstageUi2.showCornerButtons ?
+      <BackstageAppButton key="ui2-backstage" label="Toggle Ui2 Backstage" icon={"icon-bentley-systems"}
+        execute={() => BackstageManager.getBackstageToggleCommand().execute()} /> : undefined;
     const hideNavigationAid = !FrontstageUi2.showCornerButtons;
     const setUpCustomToolGroups = true;
     const applicationData = setUpCustomToolGroups ? {
@@ -114,7 +119,7 @@ export class FrontstageUi2 {
     } : undefined;
 
     const ui2StageProps: StandardFrontstageProps = {
-      id: "Ui2",
+      id: FrontstageUi2.stageId,
       version: 1.1,
       contentGroupProps: FrontstageUi2._contentGroupProvider,
       hideNavigationAid,
@@ -130,7 +135,7 @@ export class FrontstageUi2 {
   private static registerToolProviders() {
 
     // Provides standard tools for ToolWidget in ui2.0 stage
-    StandardContentToolsProvider.register({
+    StandardContentToolsProvider.register("ui2-standardContentTools", {
       horizontal: {
         clearSelection: true,
         clearDisplayOverrides: true,
@@ -139,17 +144,17 @@ export class FrontstageUi2 {
         emphasize: "element",
       },
     }, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === "Ui2";
+      return stageId === FrontstageUi2.stageId;
     });
 
     // Provides standard tools for NavigationWidget in ui2.0 stage
-    StandardNavigationToolsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === "Ui2";
+    StandardNavigationToolsProvider.register("ui2-standardNavigationTools", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === FrontstageUi2.stageId;
     });
 
     // Provides standard status fields for ui2.0 stage
-    StandardStatusbarItemsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === "Ui2";
+    StandardStatusbarItemsProvider.register("ui2-standardStatusItems", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === FrontstageUi2.stageId;
     });
 
     // Provides example widgets ui2.0 stage
@@ -162,7 +167,7 @@ export function MyCustomViewOverlay() {
   const [showOverlay, setShowOverlay] = React.useState(SampleAppIModelApp.getTestProperty() !== "HIDE");
 
   React.useEffect(() => {
-    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       if (0 === syncIdsOfInterest.length)
         return;
 

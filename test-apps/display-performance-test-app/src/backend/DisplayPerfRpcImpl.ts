@@ -8,7 +8,7 @@ import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelHost, IModelJsFs } from "@itwin/core-backend";
 import { RpcManager } from "@itwin/core-common";
-import { Reporter } from "@itwin/perf-tools/lib/Reporter";
+import { Reporter } from "@itwin/perf-tools";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
 
@@ -160,7 +160,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     }
   }
 
-  public override async finishTest() {
+  public override async terminate() {
     await IModelHost.shutdown();
 
     // Electron only

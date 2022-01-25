@@ -1,14 +1,18 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "3.0.0-dev.78",
+  "version": "3.0.0",
   "description": "iTwin.js Core Geometry library",
-  "main": "lib/core-geometry.js",
-  "typings": "lib/core-geometry",
+  "main": "lib/cjs/core-geometry.js",
+  "module": "lib/esm/core-geometry.js",
+  "typings": "lib/cjs/core-geometry",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
+  "sideEffects": false,
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
     "test": "mocha",
@@ -20,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/geometry"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/geometry"
   },
   "keywords": [
     "Bentley",
@@ -30,11 +34,7 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.78"
-  },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
@@ -51,6 +51,7 @@
     "typescript": "~4.4.0"
   },
   "dependencies": {
+    "@itwin/core-bentley": "workspace:*",
     "flatbuffers": "~1.12.0"
   },
   "nyc": {

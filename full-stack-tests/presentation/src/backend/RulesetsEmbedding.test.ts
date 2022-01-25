@@ -9,7 +9,7 @@ import { Id64 } from "@itwin/core-bentley";
 import { SnapshotDb } from "@itwin/core-backend";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { createRandomRuleset } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { initialize, terminate } from "../IntegrationTests";
 
 const RULESET_1: Ruleset = {
@@ -120,7 +120,7 @@ describe("RulesEmbedding", () => {
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", faker.random.uuid());
-    imodel.elements.updateElement(rulesetElement);
+    imodel.elements.updateElement(rulesetElement.toJSON());
 
     rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);

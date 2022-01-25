@@ -94,7 +94,7 @@ Generally there are three main classes in the [ECDbChange ECSchema](../ECDbChang
 - [InstanceChange](../ECDbChange.ecschema.md#instancechange)
 - [PropertyValueChange](../ECDbChange.ecschema.md#propertyvaluechange)
 
-Additionally the [IModelChange ECSchema](../IModelChange.ecschema.md) contains the [ChangeSet](../IModelChange.ecschema.md#changeset) ECClass that links a Change Summary to the changeset from which it was generated.
+Additionally the [IModelChange ECSchema](../IModelChange.ecschema.md) contains the [Changeset](../IModelChange.ecschema.md#changeset) ECClass that links a Change Summary to the changeset from which it was generated.
 
 The following examples will run through all of them.
 

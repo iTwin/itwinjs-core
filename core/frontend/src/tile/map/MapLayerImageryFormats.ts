@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tiles
+ * @module MapLayers
  */
 
 import { MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { RequestBasicCredentials } from "@bentley/itwin-client";
+import { RequestBasicCredentials } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
 import {
   ArcGISMapLayerImageryProvider,
@@ -16,6 +16,8 @@ import {
   BingMapsImageryLayerProvider,
   ImageryMapLayerTreeReference,
   MapBoxLayerImageryProvider,
+  MapLayerAuthenticationInfo,
+  MapLayerAuthType,
   MapLayerFormat,
   MapLayerImageryProvider,
   MapLayerSourceStatus,
@@ -25,6 +27,7 @@ import {
   WmsCapabilities,
   WmsMapLayerImageryProvider,
   WmtsCapabilities,
+  WmtsCapability,
   WmtsMapLayerImageryProvider,
 } from "../internal";
 
@@ -92,10 +95,12 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
       return { status: MapLayerSourceStatus.Valid, subLayers };
     } catch (err: any) {
       let status = MapLayerSourceStatus.InvalidUrl;
+      let authInfo: MapLayerAuthenticationInfo|undefined;
       if (err?.status === 401) {
         status = (credentials ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
+        authInfo = {authMethod: MapLayerAuthType.Basic};
       }
-      return { status };
+      return { status, authInfo};
     }
   }
 }
@@ -114,16 +119,28 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
       if (!capabilities)
         return { status: MapLayerSourceStatus.InvalidUrl };
 
-      // Only returns layer that can be published in the Google maps aligned tile tree.
+      // Only returns layer that can be published in the Google maps or WGS84 aligned tile trees.
+      let supportedTms: WmtsCapability.TileMatrixSet[]  = [];
       const googleMapsTms = capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
-      if (!googleMapsTms)
+      if (googleMapsTms) {
+        supportedTms = googleMapsTms;
+      }
+      const wsg84Tms = capabilities?.contents?.getEpsg4326CompatibleTileMatrixSet();
+      if (wsg84Tms) {
+        supportedTms = supportedTms.concat(wsg84Tms);
+      }
+
+      if (supportedTms.length === 0) {
+        // This WMTS server doesn't support either GoogleMaps or WSG84
         return { status: MapLayerSourceStatus.InvalidTileTree };
+      }
 
       let subLayerId = 0;
       capabilities?.contents?.layers.forEach((layer) => {
-        if (googleMapsTms?.some((tms) => {
+        const hasSupportedTms = supportedTms?.some((tms) => {
           return layer.tileMatrixSetLinks.some((tmls) => { return (tmls.tileMatrixSet === tms.identifier); });
-        })) {
+        });
+        if (hasSupportedTms) {
           subLayers.push({
             name: layer.identifier,
             title: layer.title ?? layer.identifier,

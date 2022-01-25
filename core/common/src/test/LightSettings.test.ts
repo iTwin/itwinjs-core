@@ -62,6 +62,12 @@ describe("LightSettings", () => {
     roundTrip({ hemisphere: { intensity: 2.5 } }, "input");
     roundTrip({ hemisphere: { intensity: -0.1 } }, undefined);
     roundTrip({ hemisphere: { intensity: 5.1 } }, { hemisphere: { intensity: 5.0 } });
+
+    roundTrip({ fresnel: { } }, undefined);
+    roundTrip({ fresnel: { intensity: 0.8, invert: false } }, { fresnel: { intensity: 0.8 } });
+    roundTrip({ fresnel: { intensity: 0, invert: true } }, { fresnel: { invert: true } });
+    roundTrip({ fresnel: { intensity: -1, invert: true } }, { fresnel: { invert: true } });
+    roundTrip({ fresnel: { intensity: 1.2, invert: true } }, "input");
   });
 
   it("should preserve sun direction", () => {

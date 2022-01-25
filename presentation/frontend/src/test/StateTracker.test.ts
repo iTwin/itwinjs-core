@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { NodeKey } from "@itwin/presentation-common";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { NodeIdentifier, StateTracker } from "../presentation-frontend/StateTracker";
 

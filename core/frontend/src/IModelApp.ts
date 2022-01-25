@@ -6,14 +6,15 @@
  * @module IModelApp
  */
 
-const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const copyrightNotice = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { AccessToken, BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
-import { EmptyLocalization, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
-import { AuthorizationClient } from "@bentley/itwin-client";
-import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
-import { TelemetryManager } from "@bentley/telemetry-client";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
+import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
+import {
+  AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
+} from "@itwin/core-common";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -29,7 +30,6 @@ import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
-import { RealityDataAccess } from "./RealityDataAccessProps";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
@@ -44,6 +44,7 @@ import * as selectTool from "./tools/SelectTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
+import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
 
@@ -71,19 +72,21 @@ export interface FrontendSecurityOptions {
  * @public
  */
 export interface IModelAppOptions {
-  /** If present, supplies the [[IModelClient]] for this session. */
+  /** If present, supplies the [[FrontendHubAccess]] for this session. */
   hubAccess?: FrontendHubAccess;
   /** If present, supplies the Id of this application. Applications must set this to the Bentley Global Product Registry Id (GPRID) for usage logging. */
   applicationId?: string;
   /** If present, supplies the version of this application. Must be set for usage logging. */
   applicationVersion?: string;
-  /** If present, supplies the [[SettingsAdmin]] for this session. */
-  settings?: SettingsAdmin;
+  /** If present, supplies the [[UserPreferencesAccess]] for this session.
+   * @beta
+   */
+  userPreferences?: UserPreferencesAccess;
   /** If present, supplies the [[ViewManager]] for this session. */
   viewManager?: ViewManager;
   /** If present, supplies Map Layer Options for this session such as Azure Access Keys
    * @beta
-  */
+   */
   mapLayerOptions?: MapLayerOptions;
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
@@ -97,7 +100,7 @@ export interface IModelAppOptions {
   accuDraw?: AccuDraw;
   /** If present, supplies the [[AccuSnap]] for this session. */
   accuSnap?: AccuSnap;
-  /** If present, supplies the [[Localization]] for this session. */
+  /** If present, supplies the [[Localization]] for this session. Defaults to [ITwinLocalization]($i18n). */
   localization?: Localization;
   /** If present, supplies the authorization information for various frontend APIs */
   authorizationClient?: AuthorizationClient;
@@ -111,13 +114,18 @@ export interface IModelAppOptions {
   tentativePoint?: TentativePoint;
   /** @internal */
   quantityFormatter?: QuantityFormatter;
-  /** @internal */
+  /** If present, supplies an implementation of the render system, or options for initializing the default render system. */
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
   realityDataAccess?: RealityDataAccess;
+  /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
+   * The path should always end with a trailing `/`.
+   * @beta
+   */
+  publicPath?: string;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -152,11 +160,11 @@ interface IModelAppForDebugger {
 }
 
 /**
- * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
+ * Global singleton that connects the user interface with the iTwin.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
  *
- * Before any interactive operations may be performed by the `@itwin/core-frontend package`, [[IModelApp.startup]] must be called.
- * Applications may customize the frontend behavior of iModel.js by supplying options to [[IModelApp.startup]].
+ * Before any interactive operations may be performed by the `@itwin/core-frontend package`, [[IModelApp.startup]] must be called and awaited.
+ * Applications may customize the frontend behavior of iTwin.js by supplying options to [[IModelApp.startup]].
  *
  * @public
  */
@@ -171,7 +179,7 @@ export class IModelApp {
   private static _notifications: NotificationManager;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
-  private static _settings: SettingsAdmin;
+  private static _userPreferences?: UserPreferencesAccess;
   private static _tentativePoint: TentativePoint;
   private static _tileAdmin: TileAdmin;
   private static _toolAdmin: ToolAdmin;
@@ -185,9 +193,13 @@ export class IModelApp {
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
+  private static _publicPath: string;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
+
+  /** Event raised just before the frontend IModelApp is to be shut down */
+  public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: AuthorizationClient;
@@ -224,10 +236,12 @@ export class IModelApp {
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
-  /** The [[Localization]] for this session. Defaults to [[EmptyLocalization]] if not provided via IModelAppOptions. */
+  /** The [[Localization]] for this session. */
   public static get localization(): Localization { return this._localization; }
-  /** The [[SettingsAdmin]] for this session. */
-  public static get settings(): SettingsAdmin { return this._settings; }
+  /** The [[UserPreferencesAccess]] for this session.
+   * @beta
+   */
+  public static get userPreferences(): UserPreferencesAccess | undefined { return this._userPreferences; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
   public static get applicationId(): string { return this._applicationId; }
   /** The version of this application. Must be set for usage logging. */
@@ -250,6 +264,10 @@ export class IModelApp {
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
+  /** The root URL for the assets 'public' folder.
+   * @beta
+   */
+  public static get publicPath() { return this._publicPath; }
   /** The [[TelemetryManager]] for this session
    * @internal
    */
@@ -300,10 +318,10 @@ export class IModelApp {
   }
 
   /**
-   * This method must be called before any iModel.js frontend services are used.
-   * In your code, somewhere before you use any iModel.js services, call [[IModelApp.startup]]. E.g.:
+   * This method must be called before any other `@itwin/core-frontend` methods are used.
+   * Somewhere in your startup code, call [[IModelApp.startup]]. E.g.:
    * ``` ts
-   * IModelApp.startup( {applicationId: myAppId, localization: myLocalization} );
+   * await IModelApp.startup( {applicationId: myAppId} );
    * ```
    * @param opts The options for configuring IModelApp
    */
@@ -313,31 +331,22 @@ export class IModelApp {
     this._initialized = true;
 
     opts = opts ?? {};
-    this._securityOptions = opts.security || {};
+    this._securityOptions = opts.security ?? {};
 
     // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
     (window as IModelAppForDebugger).iModelAppForDebugger = this;
 
-    // Initialize basic application details before log messages are sent out
-    this.sessionId = (opts.sessionId !== undefined) ? opts.sessionId : Guid.createValue();
-    this._applicationId = (opts.applicationId !== undefined) ? opts.applicationId : "2686";  // Default to product id of iModel.js
-    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "1.0.0";
+    this.sessionId = opts.sessionId ?? Guid.createValue();
+    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iTwin.js
+    this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
     this._hubAccess = opts.hubAccess;
 
     this._setupRpcRequestContext();
 
-    // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    if (opts.localization) {
-      this._localization = opts.localization;
-    } else {
-      this._localization = new EmptyLocalization();
-      Logger.logWarning("Localization", "No localization client provided. Localization will not be performed.");
-    }
-
-    // first register all the core tools. Subclasses may choose to override them.
-    const namespace = "CoreTools";
-    await this.localization.registerNamespace(namespace);
+    this._localization = opts.localization ?? new ITwinLocalization();
+    const toolsNs = "CoreTools";
+    await this.localization.initialize(["iModelJs", toolsNs]);
     [
       selectTool,
       idleTool,
@@ -345,7 +354,7 @@ export class IModelApp {
       clipViewTool,
       measureTool,
       accudrawTool,
-    ].forEach((tool) => this.tools.registerModule(tool, namespace));
+    ].forEach((tool) => this.tools.registerModule(tool, toolsNs));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
     [
@@ -361,20 +370,21 @@ export class IModelApp {
     ].forEach((module) => this.registerModuleEntities(module));
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
-
-    this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
-    this._viewManager = (opts.viewManager !== undefined) ? opts.viewManager : new ViewManager();
+    if (opts.userPreferences)
+      this._userPreferences = opts.userPreferences;
+    this._viewManager = opts.viewManager ?? new ViewManager();
     this._tileAdmin = await TileAdmin.create(opts.tileAdmin);
-    this._notifications = (opts.notifications !== undefined) ? opts.notifications : new NotificationManager();
-    this._toolAdmin = (opts.toolAdmin !== undefined) ? opts.toolAdmin : new ToolAdmin();
-    this._accuDraw = (opts.accuDraw !== undefined) ? opts.accuDraw : new AccuDraw();
-    this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
-    this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
-    this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
-    this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
+    this._notifications = opts.notifications ?? new NotificationManager();
+    this._toolAdmin = opts.toolAdmin ?? new ToolAdmin();
+    this._accuDraw = opts.accuDraw ?? new AccuDraw();
+    this._accuSnap = opts.accuSnap ?? new AccuSnap();
+    this._locateManager = opts.locateManager ?? new ElementLocateManager();
+    this._tentativePoint = opts.tentativePoint ?? new TentativePoint();
+    this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter();
+    this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._realityDataAccess = opts.realityDataAccess;
+    this._publicPath = opts.publicPath ?? "";
 
     [
       this.renderSystem,
@@ -385,13 +395,9 @@ export class IModelApp {
       this.locateManager,
       this.tentativePoint,
       this.uiAdmin,
-    ].forEach((sys) => {
-      if (sys)
-        sys.onInitialized();
-    });
+    ].forEach((sys) => sys.onInitialized());
 
-    // process async onInitialized methods
-    await this.quantityFormatter.onInitialized();
+    return this.quantityFormatter.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */
@@ -399,12 +405,17 @@ export class IModelApp {
     if (!this._initialized)
       return;
 
+    // notify listeners that this IModelApp is about to be shut down.
+    this.onBeforeShutdown.raiseEvent();
+    this.onBeforeShutdown.clear();
+
     (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
 
     this._wantEventLoop = false;
     window.removeEventListener("resize", IModelApp.requestNextAnimation);
     this.clearIntervalAnimation();
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
+    this.tools.shutdown();
     this._renderSystem = dispose(this._renderSystem);
     this._entityClasses.clear();
     this.authorizationClient = undefined;
@@ -645,27 +656,27 @@ export class IModelApp {
     const noticeCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-message" });
     if (undefined !== opts.heading) {
       if (typeof opts.heading === "string")
-        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading });
+        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading, className: "logo-card-header" });
       else
         noticeCell.appendChild(opts.heading);
     }
     if (undefined !== opts.notice) {
       if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice });
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
       else
         noticeCell.appendChild(opts.notice);
     }
     return card;
   }
 
-  /** Make the logo card for the iModel.js library itself. This card gets placed at the top of the stack.
+  /** Make the logo card for the library itself. This card gets placed at the top of the stack.
    *  @internal
    */
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
-      iconSrc: "images/about-imodeljs.svg",
-      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
-      notice: `${require("../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
+      iconSrc: `${this.publicPath}images/about-imodeljs.svg`,
+      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
+      notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
 
@@ -680,8 +691,8 @@ export class IModelApp {
     return div;
   }
 
-  /** Localize an error status from iModel.js
-   * @param status one of the status values from [[BentleyStatus]], [[IModelStatus]] or [[DbResult]]
+  /** Localize an error status
+   * @param status one of the status values from [BentleyStatus]($core-bentley), [IModelStatus]($core-bentley) or [DbResult]($core-bentley)
    * @returns a localized error message
    * @beta
    */

@@ -11,8 +11,7 @@ import * as moq from "typemoq";
 import { BeUiEvent } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Keys, KeySet, NodeKey } from "@itwin/presentation-common";
-import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 import {
   ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager,
 } from "@itwin/presentation-frontend";

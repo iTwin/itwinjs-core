@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Logger } from "@itwin/core-bentley";
-import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@itwin/core-geometry";
-import { Cartographic, Localization } from "@itwin/core-common";
+import { Cartographic } from "@itwin/core-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
   OutputMessagePriority, ScreenViewport, Tool, ViewState3d,
 } from "@itwin/core-frontend";
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@itwin/core-geometry";
 
 /*-----------------------------------------------------------------------
 This is the source for an iTwin.js Extension that displays on-screen markers
@@ -43,7 +42,7 @@ class GeoNameMarker extends Marker {
     this.labelOffset = { x: 0, y: -24 };
     this.title = props.name;
     if (props.population)
-      this.title = `${this.title} (${GeoNameExtension.localization.getLocalizedString("geoNames:misc.Population")}: ${props.population})`;
+      this.title = `${this.title} (${IModelApp.localization.getLocalizedString("geoNames:misc.Population")}: ${props.population})`;
 
     // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
     // this.htmlElement = document.createElement("div");
@@ -66,7 +65,7 @@ class GeoNameMarker extends Marker {
 
 class GeoNameMarkerSet extends MarkerSet<GeoNameMarker> {
   public override minimumClusterSize = 5;
-  protected getClusterMarker(cluster: Cluster<GeoNameMarker>): Marker { return Marker.makeFrom(cluster.markers[0], cluster, cluster.markers[0].image); }
+  protected getClusterMarker(cluster: Cluster<GeoNameMarker>): Marker { return new Marker(cluster.getClusterLocation(), cluster.markers[0].size,); }
 }
 
 export class GeoNameMarkerManager {
@@ -120,7 +119,7 @@ export class GeoNameMarkerManager {
   }
 
   private outputInfoMessage(messageKey: string) {
-    const message: string = GeoNameExtension.localization.getLocalizedString(`geoNames:messages.${messageKey}`);
+    const message: string = IModelApp.localization.getLocalizedString(`geoNames:messages.${messageKey}`);
     const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
     IModelApp.notifications.outputMessage(msgDetails);
   }
@@ -129,14 +128,19 @@ export class GeoNameMarkerManager {
   private async doCitySearch(longLatRange: Range2d, cityCount: number): Promise<GeoNameProps[] | undefined> {
     const urlTemplate = "http://api.geonames.org/citiesJSON?&north={north}&south={south}&east={east}&west={west}&lang=en&username=BentleySystems&maxRows={count}";
     const url = urlTemplate.replace("{west}", this.radiansToString(longLatRange.low.x)).replace("{south}", this.radiansToString(longLatRange.low.y)).replace("{east}", this.radiansToString(longLatRange.high.x)).replace("{north}", this.radiansToString(longLatRange.high.y)).replace("{count}", cityCount.toString());
-    const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
 
     try {
       this.outputInfoMessage("LoadingLocations");
-      const locationResponse: Response = await request(url, requestOptions);
+      let json: any = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json", // eslint-disable-line @typescript-eslint/naming-convention
+        },
+      });
+      json = json.json();
 
       const cities = new Array<GeoNameProps>();
-      for (const geoName of locationResponse.body.geonames) {
+      for (const geoName of json.geonames) {
         cities.push(geoName);
       }
       this.outputInfoMessage("LoadingComplete");
@@ -207,16 +211,13 @@ class GeoNameUpdateTool extends GeoNameTool {
 }
 
 export class GeoNameExtension {
-  private static _localization: Localization;
   private static _defaultNs = "mapLayers";
 
-  public static get localization(): Localization { return this._localization; }
-
-  public static async initialize(localization: Localization): Promise<void> {
-    await this._localization.registerNamespace(this._defaultNs);
-    IModelApp.tools.register(GeoNameOnTool, this._defaultNs, localization);
-    IModelApp.tools.register(GeoNameOffTool, this._defaultNs, localization);
-    IModelApp.tools.register(GeoNameUpdateTool, this._defaultNs, localization);
+  public static async initialize(): Promise<void> {
+    await IModelApp.localization.registerNamespace(this._defaultNs);
+    IModelApp.tools.register(GeoNameOnTool, this._defaultNs);
+    IModelApp.tools.register(GeoNameOffTool, this._defaultNs);
+    IModelApp.tools.register(GeoNameUpdateTool, this._defaultNs);
     if (undefined !== IModelApp.viewManager.selectedView)
       await GeoNameMarkerManager.show(IModelApp.viewManager.selectedView);
   }

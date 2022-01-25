@@ -32,17 +32,29 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const emphasizedElements = this.getEmphasizedElements(vp);
     if (undefined !== emphasizedElements) {
       overrides.setDefaultOverrides(this._defaultAppearance!);
-      const app = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
-      emphasizedElements.forEach((id) => { overrides.overrideElement(id, app); });
+      const appearance = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
+
+      // Avoid creating a new object per-element inside the loop
+      const args = { elementId: "", appearance };
+      for (const elementId of emphasizedElements) {
+        args.elementId = elementId;
+        overrides.override(args);
+      }
     }
 
     const overriddenElements = this.getOverriddenElements();
     if (undefined !== overriddenElements) {
       if (undefined !== this._defaultAppearance)
         overrides.setDefaultOverrides(this._defaultAppearance);
+
+      // Avoid creating a new object per-element inside the loop
+      const args = { elementId: "", appearance: FeatureAppearance.defaults };
       for (const [key, ids] of overriddenElements) {
-        const ovrApp = this.createAppearanceFromKey(key);
-        ids.forEach((id) => { overrides.overrideElement(id, ovrApp); });
+        args.appearance = this.createAppearanceFromKey(key);
+        for (const elementId of ids) {
+          args.elementId = elementId;
+          overrides.override(args);
+        }
       }
     }
 
@@ -402,7 +414,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return true;
   }
 
-  /** Set the element IDs to be always drawn normally with all other elements in the view overridden to draw using a default appearance..
+  /** Set the element IDs to be always drawn normally with all other elements in the view overridden to draw using a default appearance.
    * @param ids The IDs of the elements to always draw.
    * @param vp The viewport.
    * @param defaultAppearance Optional default appearance, uses non-locatable transparent grey if not specified.

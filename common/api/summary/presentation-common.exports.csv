@@ -33,6 +33,8 @@ public;Content
 public;ContentDescriptorRequestOptions
 public;ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentFlags
+beta;ContentInstanceKeysRequestOptions
+beta;ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentJSON
 public;ContentModifier 
@@ -105,7 +107,6 @@ beta;ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | El
 beta;ElementPropertiesPropertyItemBase 
 beta;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
 beta;ElementPropertiesRequestOptions
-beta;ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
 public;EnumerationChoice
@@ -175,6 +176,7 @@ public;IntRulesetVariable
 public;IntRulesetVariableJSON 
 public;IntsRulesetVariable 
 public;IntsRulesetVariableJSON 
+beta;isSingleElementPropertiesRequestOptions
 public;Item
 public;ItemJSON
 public;Key = Readonly
@@ -197,6 +199,7 @@ public;LabelGroupingNodeKeyJSON
 public;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
+beta;MultiElementPropertiesRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 
 public;NavigationRule = RootNodeRule | ChildNodeRule
@@ -253,6 +256,8 @@ alpha;PresentationIpcEvents
 internal;PresentationIpcInterface
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
+public;PresentationRpcResponse
+public;PresentationRpcResponseData
 public;PresentationStatus
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 
@@ -341,6 +346,8 @@ public;SelectionScope
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
 internal;SetRulesetVariableParams
+beta;SingleElementPropertiesRequestOptions
+beta;SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 public;SingleSchemaClassSpecification
 public;SortDirection
 public;SortingRule = PropertySortingRule | DisabledSortingRule

@@ -6,11 +6,11 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
+import * as moq from "typemoq";
 import { Id64 } from "@itwin/core-bentley";
 import { IpcApp } from "@itwin/core-frontend";
 import { RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 

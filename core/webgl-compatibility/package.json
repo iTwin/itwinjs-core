@@ -1,15 +1,19 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "3.0.0-dev.78",
-  "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
+  "version": "3.0.0",
+  "description": "APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.",
   "license": "MIT",
-  "main": "lib/webgl-compatibility.js",
+  "main": "lib/cjs/webgl-compatibility.js",
+  "module": "lib/esm/webgl-compatibility.js",
+  "typings": "lib/cjs/webgl-compatibility.js",
   "imodeljsSharedLibrary": true,
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "npm -s test -- --cover",
+    "cover": "npm -s test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson",
     "extract-api": "betools extract-api --entry=webgl-compatibility",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
@@ -18,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/webgl-compatibility"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/webgl-compatibility"
   },
   "keywords": [
     "Bentley",
@@ -32,11 +36,10 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.78"
+  "dependencies": {
+    "@itwin/core-bentley": "workspace:*"
   },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",

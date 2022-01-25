@@ -11,8 +11,8 @@ import {
 import {
   GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
+import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import { IModelTransformer } from "../../core-transformer";
-import { IModelTestUtils } from "@itwin/core-backend/lib/test/IModelTestUtils";
 
 describe("RenderTimeline Remap", () => {
   before(() => {
@@ -59,7 +59,7 @@ describe("RenderTimeline Remap", () => {
 
     expect(model instanceof PhysicalModel).to.be.true;
 
-    const modelId = db.models.insertModel(model);
+    const modelId = db.models.insertModel(model.toJSON());
     expect(Id64.isValidId64(modelId)).to.be.true;
     return modelId;
   }

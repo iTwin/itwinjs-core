@@ -4132,7 +4132,7 @@ describe("Schema comparison tests", () => {
       const unitB = await schemaB.getItem("UnitB") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.KoqDelta, DiagnosticType.SchemaItem, itemA, ["persistenceUnit", unitA, unitB], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.KoqDelta, DiagnosticType.SchemaItem, itemA, ["persistenceUnit", unitA.fullName, unitB.fullName], itemA.schema);
     });
 
     it("Different presentation units, diagnostic reported for each schema", async () => {
@@ -4852,7 +4852,7 @@ describe("Schema comparison tests", () => {
 
     it("Different phenomenon, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // eslint-disable-next-line dot-notation
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       bJson.items["UnitA"].phenomenon = "SchemaA.PhenomenonB";
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -4869,7 +4869,7 @@ describe("Schema comparison tests", () => {
 
     it("Different unitSystem, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // eslint-disable-next-line dot-notation
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       bJson.items["UnitA"].unitSystem = "SchemaA.UnitSystemB";
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -4886,7 +4886,7 @@ describe("Schema comparison tests", () => {
 
     it("Different definition, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // eslint-disable-next-line dot-notation
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       bJson.items["UnitA"].definition = "B";
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -4903,7 +4903,7 @@ describe("Schema comparison tests", () => {
 
     it("Different numerator, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // eslint-disable-next-line dot-notation
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       bJson.items["UnitA"].numerator = 2;
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -4920,7 +4920,7 @@ describe("Schema comparison tests", () => {
 
     it("Different offset, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // eslint-disable-next-line dot-notation
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       bJson.items["UnitA"].offset = 2;
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -4937,7 +4937,7 @@ describe("Schema comparison tests", () => {
 
     it("Different denominator, diagnostic reported", async () => {
       const bJson = getItemJsonWithUnits({});
-      // eslint-disable-next-line dot-notation
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       bJson.items["UnitA"].denominator = 2;
       const aJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);

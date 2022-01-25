@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { NodeKey } from "@itwin/presentation-common";
-import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, StateTracker } from "@itwin/presentation-frontend";
 import { TreeModelNodeInput, TreeModelSource, TreeNodeItem } from "@itwin/components-react";
 import { cleanup, renderHook } from "@testing-library/react-hooks";

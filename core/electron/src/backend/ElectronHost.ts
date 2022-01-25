@@ -8,14 +8,14 @@
 // will do the necessary `require("electron")`
 // IMPORTANT: Do not call or construct any of these imports. Otherwise, a require("electron") call will be emitted at top level.
 // Instead, use `ElectronHost.electron.<type>`
+
 import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
-import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
-import { IModelError, InternetConnectivityStatus, IpcListener, IpcSocketBackend, NativeAppAuthorizationConfiguration, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
+import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
+import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { ElectronAuthorizationBackend } from "./ElectronAuthorizationBackend";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -57,11 +57,6 @@ export interface ElectronHostOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** list of [IpcHandler]($common) classes to register */
   ipcHandlers?: (typeof IpcHandler)[];
-  /** if present, [[NativeHost.authorizationClient]] will be set to an instance of NativeAppAuthorizationBackend and will be initialized. */
-  authConfig?: NativeAppAuthorizationConfiguration;
-  /** if true, do not attempt to initialize AuthorizationClient on startup */
-  noInitializeAuthClient?: boolean;
-  applicationName?: never; // this should be supplied in NativeHostOpts
 }
 
 /** @beta */
@@ -103,9 +98,6 @@ export class ElectronHost {
   public static get ipcMain() { return this._electron.ipcMain; }
   public static get app() { return this._electron.app; }
   public static get electron() { return this._electron; }
-
-  /** @internal */
-  public static get authorization() { return IModelHost.authorizationClient as ElectronAuthorizationBackend; }
 
   private constructor() { }
 
@@ -280,13 +272,6 @@ export class ElectronHost {
       ElectronAppHandler.register();
       opts.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());
     }
-
-    const authorizationBackend = new ElectronAuthorizationBackend(opts.electronHost?.authConfig);
-    const connectivityStatus = NativeHost.checkInternetConnectivity();
-    if (opts.electronHost?.authConfig && true !== opts.electronHost?.noInitializeAuthClient && connectivityStatus === InternetConnectivityStatus.Online)
-      await authorizationBackend.initialize(opts.electronHost?.authConfig);
-
-    IModelHost.authorizationClient = authorizationBackend;
   }
 }
 

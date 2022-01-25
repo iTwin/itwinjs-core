@@ -5,13 +5,14 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { NumberInput, Toggle } from "@itwin/core-react";
-import { ViewState3d } from "@itwin/core-frontend";
+import { NumberInput } from "@itwin/core-react";
+import {  QuantityType, ViewState3d } from "@itwin/core-frontend";
 import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@itwin/core-common";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { Select, SelectOption, Slider } from "@itwin/itwinui-react";
+import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react";
+import { QuantityNumberInput } from "@itwin/imodel-components-react";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -65,17 +66,6 @@ export function MapManagerSettings() {
     { value: "ground", label: MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.ElevationTypeGround") },
   ]);
 
-  const updateMaskingSettings = React.useCallback((option: MapMaskingOption) => {
-    if (option === MapMaskingOption.AllModels) {
-      activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap } });
-    }
-    if (option === MapMaskingOption.None) {
-      activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } });
-    }
-
-    activeViewport!.invalidateRenderPlan();
-  }, [activeViewport]);
-
   const updateTerrainSettings = React.useCallback((props: TerrainProps) => {
     activeViewport!.changeBackgroundMapProps({ terrainSettings: props });
     activeViewport!.invalidateRenderPlan();
@@ -95,15 +85,44 @@ export function MapManagerSettings() {
     }
   }, [updateTerrainSettings]);
 
+  const [maskTransparency, setMaskTransparency] = React.useState(() =>
+    backgroundMapSettings.planarClipMask.transparency === undefined
+      ? undefined
+      : Math.round((backgroundMapSettings.planarClipMask.transparency) * 100) / 100);
+
+  const getNormalizedMaskTransparency = React.useCallback(() => { return (maskTransparency === undefined ? 0 : maskTransparency); }, [maskTransparency]);
+
+  const updateMaskingSettings = React.useCallback((option: MapMaskingOption) => {
+    if (option === MapMaskingOption.AllModels) {
+      activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: maskTransparency } });
+    }
+    if (option === MapMaskingOption.None) {
+      activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } });
+    }
+
+    activeViewport!.invalidateRenderPlan();
+  }, [activeViewport, maskTransparency]);
+
   const [masking, setMasking] = React.useState(() => getMapMaskingFromBackgroundMapSetting(backgroundMapSettings));
 
-  const onMaskingToggle = React.useCallback((checked: boolean) => {
+  const onMaskingToggle = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     const maskingOption = checked ? MapMaskingOption.AllModels : MapMaskingOption.None;
     updateMaskingSettings(maskingOption);
     setMasking(maskingOption);
   }, [updateMaskingSettings]);
 
-  const handleElevationChange = React.useCallback((value: number | undefined, _stringValue: string) => {
+  const [overrideMaskTransparency, setOverrideMaskTransparency] = React.useState(() => backgroundMapSettings.planarClipMask.transparency !== undefined);
+
+  const onOverrideMaskTransparencyToggle = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    const trans = checked ? getNormalizedMaskTransparency() : undefined;
+    activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: trans } });
+
+    setOverrideMaskTransparency(checked);
+  }, [activeViewport, getNormalizedMaskTransparency]);
+
+  const handleElevationChange = React.useCallback((value: number) => {
     if (value !== undefined) {
       updateBackgroundMap({ groundBias: value });
       setGroundBias(value);
@@ -117,9 +136,17 @@ export function MapManagerSettings() {
     setTransparency(newTransparency);
   }, [activeViewport]);
 
+  const handleMaskTransparencyChange = React.useCallback((values: readonly number[]) => {
+    const newTransparency = values[0] / 100;
+    activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: newTransparency } });
+    activeViewport!.invalidateRenderPlan();
+    setMaskTransparency(newTransparency);
+  }, [activeViewport]);
+
   const [applyTerrain, setApplyTerrain] = React.useState(() => backgroundMapSettings.applyTerrain);
 
-  const onToggleTerrain = React.useCallback((checked: boolean) => {
+  const onToggleTerrain = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     updateBackgroundMap({ applyTerrain: checked });
     setApplyTerrain(checked);
   }, [updateBackgroundMap]);
@@ -134,7 +161,8 @@ export function MapManagerSettings() {
   }, [updateTerrainSettings]);
 
   const [terrainOrigin, setTerrainOrigin] = React.useState(() => terrainSettings.heightOrigin);
-  const handleHeightOriginChange = React.useCallback((value: number | undefined, _stringValue: string) => {
+
+  const handleHeightOriginChange = React.useCallback((value: number) => {
     if (undefined !== value) {
       updateTerrainSettings({ heightOrigin: value });
       setTerrainOrigin(value);
@@ -142,7 +170,8 @@ export function MapManagerSettings() {
   }, [updateTerrainSettings]);
 
   const [useDepthBuffer, setUseDepthBuffer] = React.useState(() => backgroundMapSettings.useDepthBuffer);
-  const onToggleUseDepthBuffer = React.useCallback((checked: boolean) => {
+  const onToggleUseDepthBuffer = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     updateBackgroundMap({ useDepthBuffer: checked });
     setUseDepthBuffer(checked);
   }, [updateBackgroundMap]);
@@ -154,7 +183,8 @@ export function MapManagerSettings() {
   }, []);
 
   const [isLocatable, setIsLocatable] = React.useState(() => backgroundMapSettings.locatable);
-  const onLocatableToggle = React.useCallback((checked: boolean) => {
+  const onLocatableToggle = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     updateBackgroundMap({ nonLocatable: !checked });
     setIsLocatable(checked);
   }, [updateBackgroundMap]);
@@ -169,6 +199,8 @@ export function MapManagerSettings() {
   const [exaggerationLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Exaggeration"));
   const [locatableLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Locatable"));
   const [maskingLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Mask"));
+  const [overrideMaskTransparencyLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.OverrideMaskTransparency"));
+  const [maskTransparencyLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.MaskTransparency"));
 
   return (
     <>
@@ -179,19 +211,25 @@ export function MapManagerSettings() {
 
         <span className="map-manager-settings-label">{locatableLabel}</span>
         {/* eslint-disable-next-line deprecation/deprecation */}
-        <Toggle onChange={onLocatableToggle} isOn={isLocatable} />
+        <ToggleSwitch onChange={onLocatableToggle} checked={isLocatable} />
 
         <span className="map-manager-settings-label">{maskingLabel}</span>
         {/* eslint-disable-next-line deprecation/deprecation */}
-        <Toggle onChange={onMaskingToggle} isOn={masking !== MapMaskingOption.None} />
+        <ToggleSwitch onChange={onMaskingToggle} checked={masking !== MapMaskingOption.None} />
+
+        <span className="map-manager-settings-label">{overrideMaskTransparencyLabel}</span>
+        <ToggleSwitch disabled={masking === MapMaskingOption.None} onChange={onOverrideMaskTransparencyToggle} checked={overrideMaskTransparency} />
+
+        <span className="map-manager-settings-label">{maskTransparencyLabel}</span>
+        <Slider disabled={masking === MapMaskingOption.None || !overrideMaskTransparency} min={0} max={100} values={[getNormalizedMaskTransparency() * 100]} onChange={handleMaskTransparencyChange} step={1} />
 
         <>
           <span className="map-manager-settings-label">{elevationOffsetLabel}</span>
-          <NumberInput disabled={applyTerrain} value={groundBias} onChange={handleElevationChange} onKeyDown={onKeyDown} />
+          <QuantityNumberInput disabled={applyTerrain} persistenceValue={groundBias} step={1} snap quantityType={QuantityType.LengthEngineering} onChange={handleElevationChange} onKeyDown={onKeyDown}/>
 
           <span className="map-manager-settings-label">{useDepthBufferLabel}</span>
           {/* eslint-disable-next-line deprecation/deprecation */}
-          <Toggle disabled={applyTerrain} onChange={onToggleUseDepthBuffer} isOn={useDepthBuffer} />
+          <ToggleSwitch disabled={applyTerrain} onChange={onToggleUseDepthBuffer} checked={useDepthBuffer} />
         </>
 
       </div>
@@ -203,13 +241,13 @@ export function MapManagerSettings() {
 
             <span className="map-manager-settings-label">{enableLabel}</span>
             {/* eslint-disable-next-line deprecation/deprecation */}
-            <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />
+            <ToggleSwitch onChange={onToggleTerrain} checked={applyTerrain} />
 
             <span className="map-manager-settings-label">{modelHeightLabel}</span>
-            <NumberInput value={terrainOrigin} disabled={!applyTerrain} onChange={handleHeightOriginChange} onKeyDown={onKeyDown} />
+            <QuantityNumberInput disabled={!applyTerrain} persistenceValue={terrainOrigin} snap quantityType={QuantityType.LengthEngineering} onChange={handleHeightOriginChange} onKeyDown={onKeyDown}/>
 
             <span className="map-manager-settings-label">{heightOriginLabel}</span>
-            <Select options={terrainHeightOptions.current} disabled={!applyTerrain} value={heightOriginMode} onChange={handleElevationTypeSelected} />
+            <Select options={terrainHeightOptions.current} disabled={!applyTerrain} value={heightOriginMode} onChange={handleElevationTypeSelected} size="small" />
 
             <span className="map-manager-settings-label">{exaggerationLabel}</span>
             <NumberInput value={exaggeration} disabled={!applyTerrain} onChange={handleExaggerationChange} onKeyDown={onKeyDown} />

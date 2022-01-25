@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
 import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@itwin/core-geometry";
-import { ColorDef, RenderMode } from "@itwin/core-common";
+import { ColorDef, RenderMode, SkyBox } from "@itwin/core-common";
 import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
 
@@ -12,9 +12,11 @@ class GeometryDecorator {
   public readonly useCachedDecorations = true;
   private readonly _iModel: IModelConnection;
   private readonly _decorators = new Map<string, (builder: GraphicBuilder) => void>();
+  private readonly _viewIndependentOrigin?: Point3d;
 
-  public constructor(viewport: Viewport) {
+  public constructor(viewport: Viewport, viewIndependentOrigin?: Point3d) {
     this._iModel = viewport.iModel;
+    this._viewIndependentOrigin = viewIndependentOrigin;
 
     this.addSphere(0);
     this.addBox(2);
@@ -30,7 +32,11 @@ class GeometryDecorator {
     let colorIndex = 0;
     const branch = new GraphicBranch();
     for (const [key, value] of this._decorators) {
-      const builder = context.createGraphicBuilder(GraphicType.Scene, undefined, key);
+      const builder = context.createGraphic({
+        type: GraphicType.Scene,
+        pickable: { id: key },
+        viewIndependentOrigin: this._viewIndependentOrigin,
+      });
 
       const color = colors[colorIndex++];
       if (colorIndex >= colors.length)
@@ -75,7 +81,8 @@ class GeometryDecorator {
 }
 
 export function openDecorationGeometryExample(viewer: Viewer): void {
-  IModelApp.viewManager.addDecorator(new GeometryDecorator(viewer.viewport));
+  const viewIndependentOrigin = undefined; // new Point3d(4, 0, 0) -- uncomment for testing.
+  IModelApp.viewManager.addDecorator(new GeometryDecorator(viewer.viewport, viewIndependentOrigin));
 
   assert(viewer.viewport.view.is3d());
   viewer.viewport.setStandardRotation(StandardViewId.Iso);
@@ -90,12 +97,9 @@ export function openDecorationGeometryExample(viewer: Viewer): void {
     backgroundMap: true,
   });
 
-  viewer.viewport.view.getDisplayStyle3d().settings.environment = {
-    sky: {
-      display: true,
-      twoColor: true,
-      nadirColor: 0xdfefff,
-      zenithColor: 0xffefdf,
-    },
-  };
+  const settings = viewer.viewport.view.getDisplayStyle3d().settings;
+  settings.environment = settings.environment.clone({
+    displaySky: true,
+    sky: SkyBox.fromJSON({ twoColor: true, nadirColor: 0xdfefff, zenithColor: 0xffefdf }),
+  });
 }

@@ -176,7 +176,7 @@ export abstract class ViewingToolHandle {
   protected changeFocusFromDepthPoint() {
     if (undefined !== this._depthPoint) {
       const view = this.viewTool.viewport!.view;
-      if (view.isCameraEnabled())
+      if (view.is3d() && view.isCameraOn)
         view.changeFocusFromPoint(this._depthPoint); // set the focus distance to the depth point
     }
   }
@@ -797,11 +797,10 @@ export abstract class ViewManip extends ViewTool {
   public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
     const range = this.computeFitRange(viewport);
 
-    if (animateFrustumChange && (viewport.viewingGlobe || !viewport.view.getIsViewingProject())) {
-      const view3d = viewport.view as ViewState3d;
-      const cartographicCenter = view3d.rootToCartographic(range.center);
+    if (viewport.view.isSpatialView() && animateFrustumChange && (viewport.viewingGlobe || !viewport.view.getIsViewingProject())) {
+      const cartographicCenter = viewport.view.rootToCartographic(range.center);
       if (undefined !== cartographicCenter) {
-        const cartographicArea = rangeToCartographicArea(view3d, range);
+        const cartographicArea = rangeToCartographicArea(viewport.view, range);
         (async () => {
           await viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea }); // NOTE: Turns on camera...which is why we checked that it was already on...
           viewport.viewCmdTargetCenter = undefined;
@@ -1243,16 +1242,9 @@ class ViewRotate extends HandleWithInertia {
       plane.getNormalRef().setFrom(vp.view.getZVector());
       return true;
     }
-    if (super.adjustDepthPoint(isValid, vp, plane, source)) {
-      if (DepthPointSource.Geometry === source && vp instanceof ScreenViewport) {
-        // If we had hit something we might need to undo the model display transform of the hit.
-        const hitDetail = vp.picker.getHit(0);
-        if (undefined !== hitDetail && undefined !== hitDetail.modelId) {
-          vp.view.transformPointByModelDisplayTransform(hitDetail.modelId, plane.getOriginRef(), false);
-        }
-      }
+    if (super.adjustDepthPoint(isValid, vp, plane, source))
       return true;
-    }
+
     plane.getOriginRef().setFrom(this.viewTool.targetCenterWorld);
     return false;
   }
@@ -1590,7 +1582,7 @@ class ViewZoom extends ViewingToolHandle {
     vp.viewToWorld(this._anchorPtView, this._anchorPtWorld);
     this._startFrust = vp.getWorldFrustum();
 
-    if (vp.view.isCameraEnabled())
+    if (vp.view.is3d() && vp.view.isCameraOn)
       this._startEyePoint.setFrom(vp.view.getEyePoint());
 
     this.viewTool.provideToolAssistance("Zoom.Prompts.NextPoint");
@@ -1631,7 +1623,7 @@ class ViewZoom extends ViewingToolHandle {
     const frustum = this._startFrust.clone();
     const transform = Transform.createFixedPointAndMatrix(this._anchorPtWorld, Matrix3d.createScale(zoomRatio, zoomRatio, view.is3d() ? zoomRatio : 1.0));
 
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const oldEyePoint = this._startEyePoint;
       const newEyePoint = transform.multiplyPoint3d(oldEyePoint);
       const cameraOffset = Vector3d.createStartEnd(oldEyePoint, newEyePoint);
@@ -1641,8 +1633,10 @@ class ViewZoom extends ViewingToolHandle {
     frustum.transformBy(transform, frustum);
     if (ViewStatus.Success !== view.setupFromFrustum(frustum))
       return false;
-    if (view.isCameraEnabled())
+
+    if (view.is3d() && view.isCameraOn)
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
+
     return ViewStatus.Success === viewport.setupFromView();
   }
 
@@ -2009,7 +2003,7 @@ class ViewLookAndMove extends ViewNavigate {
       document.removeEventListener("pointerlockchange", this._pointerLockChangeListener, false);
       this._pointerLockChangeListener = undefined;
     }
-    if (null !== document.pointerLockElement)
+    if (null !== document.pointerLockElement && undefined !== document.exitPointerLock)
       document.exitPointerLock();
   }
 
@@ -2134,7 +2128,7 @@ class ViewLookAndMove extends ViewNavigate {
         if (pixel.distanceFraction < 0)
           continue; // No geometry at location...
 
-        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y);
+        const hitPointWorld = vp.getPixelDataWorldPoint({ pixels, x: testPoint.x, y: testPoint.y, preserveModelDisplayTransforms: true });
         if (undefined === hitPointWorld)
           continue;
 
@@ -3214,7 +3208,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
         if (elevation !== undefined)
           elevationOffset = elevation;
         return await this._doSatelliteView(viewport, oneShot, doAnimate, elevationOffset);
-      } catch (_) {
+      } catch {
       }
     }
     return true;
@@ -3268,7 +3262,7 @@ export class ViewGlobeBirdTool extends ViewTool {
         if (elevation !== undefined)
           elevationOffset = elevation;
         return await this._doBirdView(viewport, oneShot, doAnimate, elevationOffset);
-      } catch (_) {
+      } catch {
       }
     }
     return true;
@@ -3332,7 +3326,7 @@ export class ViewGlobeLocationTool extends ViewTool {
               this._globalLocation.center.height = elevationOffset;
           }
         }
-      } catch (_) {
+      } catch {
       }
     }
 
@@ -3629,7 +3623,7 @@ export class WindowAreaTool extends ViewTool {
     };
 
     let globalAlignment;
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
 

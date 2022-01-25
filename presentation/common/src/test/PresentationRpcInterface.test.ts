@@ -9,12 +9,13 @@ import { Id64String, using } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@itwin/core-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, DisplayLabelRpcRequestOptions,
-  DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, ElementPropertiesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, Paged,
-  PresentationRpcInterface, SelectionScopeRpcRequestOptions,
+  DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, Paged, PresentationRpcInterface,
+  SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
-  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
+  ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
+  SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
@@ -171,10 +172,20 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getElementProperties call", async () => {
-      const options: ElementPropertiesRpcRequestOptions = {
+      const options: SingleElementPropertiesRpcRequestOptions = {
         elementId: "0x1",
       };
       await rpcInterface.getElementProperties(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
+    });
+
+    it("forwards getContentInstanceKeys call", async () => {
+      const options: ContentInstanceKeysRpcRequestOptions = {
+        rulesetOrId: "test ruleset",
+        displayType: "test display type",
+        keys: new KeySet().toJSON(),
+      };
+      await rpcInterface.getContentInstanceKeys(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 

@@ -68,6 +68,9 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   if (!props)
     props = {};
 
+  // set up rpc interfaces
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory
   props.backendProps = props.backendProps ?? {};
@@ -76,16 +79,13 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   await IModelHost.startup();
   PresentationBackend.initialize(props.backendProps);
 
-  // set up rpc interfaces
-  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
-
   // init frontend
   if (!props.frontendApp)
     props.frontendApp = NoRenderApp;
   await props.frontendApp.startup(props.frontendAppOptions);
   const defaultFrontendProps: PresentationFrontendProps = {
     presentation: {
-      activeLocale: IModelApp.localization.languageList()[0],
+      activeLocale: IModelApp.localization.getLanguageList()[0],
     },
   };
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });

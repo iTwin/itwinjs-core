@@ -1,20 +1,22 @@
 {
   "name": "@itwin/core-webpack-tools",
-  "version": "3.0.0-dev.78",
-  "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
+  "version": "3.0.0",
+  "description": "Set of Webpack Plugins and Loaders used for building iTwin.js applications",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/webpack-core"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/webpack-core"
   },
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
   "main": "lib/plugins/index.js",
+  "typings": "lib/plugins/index",
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build",
+    "build:cjs": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
@@ -53,7 +55,7 @@
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0",
     "webpack": "4.42.0",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "chai": "^4.1.2",

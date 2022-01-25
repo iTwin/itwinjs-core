@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
 import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/webgl";
-import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
-import { TestUtility } from "./TestUtility";
+import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/webgl";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("external texture requests (#integration)", () => {
 
@@ -35,8 +35,8 @@ describe("external texture requests (#integration)", () => {
   let totalLoadTextureCalls = 0;
 
   before(async () => {
-    await IModelApp.shutdown();
-    await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
     const contextId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdByName(contextId, TestUtility.testIModelNames.smallTex);
@@ -47,7 +47,7 @@ describe("external texture requests (#integration)", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   function onExternalTextureLoaded(req: ExternalTextureRequest) {
@@ -100,7 +100,7 @@ describe("external texture requests (#integration)", () => {
     finishedTexRequests.forEach((texReq: ExternalTextureRequest) => {
       expectNoDuplicates(texReq);
       const texHandle = texReq.handle;
-      expect(texHandle.format).to.equal(GL.Texture.Format.Rgb);
+      expect(texHandle.format).to.equal(GL.Texture.Format.Rgba);
       expect(texHandle.width === 1024 || texHandle.width === 512 || texHandle.width === 256).to.be.true;
       expect(texHandle.height === 1024 || texHandle.height === 512 || texHandle.height === 256).to.be.true;
     });

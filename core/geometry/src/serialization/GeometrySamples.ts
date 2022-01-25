@@ -61,6 +61,7 @@ import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { PolyfaceData } from "../polyface/PolyfaceData";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
 
 /* eslint-disable no-console */
 /**
@@ -192,7 +193,7 @@ export class Sample {
       Range3d.createXYZ(1, 2, 3),
       Range3d.createXYZXYZ(-2, -3, 1, 200, 301, 8)];
   }
-  /** Create 5 points of a (axis aligned) rectangle with corners (x0,y0) and (x1,y1) */
+  /** Create 5 points of a (axis aligned) rectangle with corners (x0,y0) and (x0+ax, y0 + ay) */
   public static createRectangleXY(x0: number, y0: number, ax: number, ay: number, z: number = 0): Point3d[] {
     return [
       Point3d.create(x0, y0, z),
@@ -201,6 +202,11 @@ export class Sample {
       Point3d.create(x0, y0 + ay, z),
       Point3d.create(x0, y0, z),
     ];
+  }
+
+  /** Create 5 points of a (axis aligned) rectangle with corners (cx-ax,cy-ay) and (cx+ax,cy+ay) */
+  public static createCenteredRectangleXY(cx: number, cy: number, ax: number, ay: number, z: number = 0): Point3d[] {
+    return this.createRectangleXY(cx - ax, cy - ay, 2 * ax, 2 * ay, z);
   }
 
   /** Access the last point in the array. push another shifted by dx,dy,dz.
@@ -1929,6 +1935,13 @@ export class Sample {
    * * order 3 bspline
    * * order 4 bspline
    * * alternating lines and arcs
+   * * arc spline with corners
+   * * arc spline with smooth joins
+   * * interpolation curve 2 pts
+   * * interpolation curve 3 pts
+   * * interpolation curve >3 pts
+   * * integrated spiral (bloss)
+   * * direct spiral (half-cosine)
    */
   public static createCurveChainWithDistanceIndex(): CurveChainWithDistanceIndex[] {
     const pointsA = [Point3d.create(0, 0, 0), Point3d.create(1, 3, 0), Point3d.create(2, 4, 0), Point3d.create(3, 3, 0), Point3d.create(4, 0, 0)];
@@ -1950,6 +1963,47 @@ export class Sample {
         LineSegment3d.create(pointsA[0], pointsA[1]),
         Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3])!,
         LineSegment3d.create(pointsA[3], pointsA[4])))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create( // arc spline with corners
+        Arc3d.createXY(Point3d.create(5, 0), 5, AngleSweep.createStartEndDegrees(180, 0)),
+        Arc3d.createXY(Point3d.create(15, 0), 5, AngleSweep.createStartEndDegrees(180, 0)),
+        Arc3d.createXY(Point3d.create(25, 0), 5, AngleSweep.createStartEndDegrees(180, 0))))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create( // arc spline with smooth joins
+        Arc3d.createXY(Point3d.create(5, 0), 5, AngleSweep.createStartEndDegrees(180, 0)),
+        Arc3d.createXY(Point3d.create(15, 0), 5, AngleSweep.createStartEndDegrees(180, 360)),
+        Arc3d.createXY(Point3d.create(25, 0), 5, AngleSweep.createStartEndDegrees(180, 0))))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create( // 2-pt Interpolation Curve
+        InterpolationCurve3d.createCapture(
+          InterpolationCurve3dOptions.create({
+            fitPoints: [pointsA[0], pointsA[1]]}))!))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create( // 3-pt Interpolation Curve
+        InterpolationCurve3d.createCapture(
+          InterpolationCurve3dOptions.create({
+            fitPoints: [pointsA[0], pointsA[1], pointsA[2]]}))!))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(
+        InterpolationCurve3d.createCapture(
+          InterpolationCurve3dOptions.create({
+            fitPoints: pointsA,
+            startTangent: Point3d.create(1,-1),
+            endTangent: Point3d.create(-1,-1)}))!))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(
+        IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          Segment1d.create(0, 100),
+          AngleSweep.createStartEndDegrees(10, 75),
+          Segment1d.create(0, 1),
+          Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(30))),
+          "bloss")!))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(
+        DirectSpiral3d.createDirectHalfCosine(
+          Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(110))),
+          50, 350,
+          Segment1d.create(0, 1))!))!);
     return result;
   }
   /**
@@ -2440,4 +2494,5 @@ export class Sample {
       point0.push(point0[0].clone());
     return point0;
   }
+
 }

@@ -242,7 +242,7 @@ class FrameBuffers implements WebGLDisposable {
       return false;
 
     this.depthAndOrder = FrameBuffer.create([textures.depthAndOrder!], depth);
-    this.hilite = FrameBuffer.create([textures.hilite!]);
+    this.hilite = FrameBuffer.create([textures.hilite!], depth);
     this.hiliteUsingStencil = FrameBuffer.create([textures.hilite!], depth);
 
     return undefined !== this.depthAndOrder
@@ -381,11 +381,11 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     return undefined !== this.composite;
   }
 
-  public toggleOcclusion(textures: Textures): void {
+  public toggleOcclusion(textures: Textures, depth: DepthBuffer): void {
     if (undefined !== textures.occlusion) {
       assert(undefined !== textures.occlusionBlur);
       this.composite!.occlusion = textures.occlusion.getHandle();
-      this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!);
+      this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!, depth.getHandle()!);
       this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(1.0, 0.0));
       this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(0.0, 1.0));
     } else {
@@ -845,7 +845,7 @@ abstract class Compositor extends SceneCompositor {
       }
 
       this._frameBuffers.toggleOcclusion(this._textures);
-      this._geom.toggleOcclusion(this._textures);
+      this._geom.toggleOcclusion(this._textures, this._depth!);
     }
 
     // Allocate or free volume classifier-related resources if necessary.  Make sure that we have depth/stencil.
@@ -1238,6 +1238,7 @@ abstract class Compositor extends SceneCompositor {
     const top = this.target.uniforms.branch.top;
     const viewFlags = top.viewFlags.copy({
       renderMode: RenderMode.SmoothShade,
+      wiremesh: false,
       lighting: false,
       forceSurfaceDiscard: false,
       hiddenEdges: false,
@@ -1626,11 +1627,13 @@ abstract class Compositor extends SceneCompositor {
           System.instance.context.clearStencil(0);
           System.instance.context.clear(GL.BufferBit.Stencil);
         }
+
         this.target.techniques.execute(this.target, cmdsSelected, RenderPass.Classification);
         this.target.popBranch();
       });
       if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
         this._frameBuffers.altZOnly.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
+
       fbStack.execute(this._frameBuffers.volClassCreateBlend!, false, this.useMsBuffers, () => {
         this._geom.volClassSetBlend!.boundaryType = BoundaryType.Selected;
         this._geom.volClassSetBlend!.texture = this._vcAltDepthStencil!.getHandle()!; // need to attach the alt depth instead of the real one since it is bound to the frame buffer
@@ -1649,6 +1652,7 @@ abstract class Compositor extends SceneCompositor {
     if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers) {
       volClassBlendFbo.blitMsBuffersToTextures(false); // make sure the volClassBlend texture that we are about to read has been blitted
     }
+
     fbStack.execute(fboColorAndZ, false, this.useMsBuffers, () => {
       this.target.pushState(this.target.decorationsState);
       this._vcBlendRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.SrcAlpha, GL.BlendFactor.Zero, GL.BlendFactor.OneMinusSrcAlpha, GL.BlendFactor.One);

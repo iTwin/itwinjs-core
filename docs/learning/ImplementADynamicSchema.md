@@ -38,8 +38,8 @@ import {
   ISchemaChanges,
   AnyDiagnostic,
 } from "@itwin/ecschema-metadata";
-import { IModelSchemaLoader } from "@itwin/core-backend/lib/IModelSchemaLoader";
-import { MutableSchema } from "@itwin/ecschema-metadata/lib/Metadata/Schema";
+import { IModelSchemaLoader } from "@itwin/core-backend/lib/cjs/IModelSchemaLoader";
+import { MutableSchema } from "@itwin/ecschema-metadata/lib/cjs/Metadata/Schema";
 import { ItemState } from "@bentley/imodel-bridge/lib/Synchronizer";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import { DataFetcher } from "./DataFetcher";

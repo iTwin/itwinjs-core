@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
+import * as moq from "typemoq";
 import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common";
-import * as moq from "./_helpers/Mocks";
 
 describe("RegisteredRuleset", () => {
 

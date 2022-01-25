@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// Sets up a local backend to be used for testing within the iModel.js repo.
+// Sets up a local backend to be used for testing within the iTwin.js Core repo.
 
 import * as path from "path";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { Presentation as PresentationBackend } from "@itwin/presentation-backend";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { getRpcInterfaces, Settings } from "../common/Settings";
 import * as fs from "fs";
 
@@ -37,8 +39,8 @@ const settings = new Settings(process.env);
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+  hostConfig.hubAccess = new BackendIModelsAccess(iModelClient);
   await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();

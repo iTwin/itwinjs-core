@@ -44,6 +44,7 @@ export abstract class RealityTileLoader {
   public abstract loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
   public abstract getRequestChannel(tile: Tile): TileRequestChannel;
   public abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
+  public get wantDeduplicatedVertices(): boolean { return false; }
   public abstract get maxDepth(): number;
   public abstract get minDepth(): number;
   public abstract get priority(): TileLoadPriority;
@@ -61,7 +62,7 @@ export abstract class RealityTileLoader {
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     assert(data instanceof Uint8Array);
     const blob = data;
-    const streamBuffer = new ByteStream(blob.buffer);
+    const streamBuffer = ByteStream.fromUint8Array(blob);
     return this.loadTileContentFromStream(tile as RealityTile, streamBuffer, system, isCanceled);
   }
 
@@ -88,10 +89,10 @@ export abstract class RealityTileLoader {
         return { graphic };
 
       case TileFormat.B3dm:
-        reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap());
+        reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices);
         break;
       case TileFormat.I3dm:
-        reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled);
+        reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices);
         break;
       case TileFormat.Cmpt:
         const header = new CompositeTileHeader(streamBuffer);

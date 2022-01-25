@@ -9,7 +9,6 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { Localization } from '@itwin/core-common';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -86,6 +85,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly internalData?: Map<string, any>;
     readonly isFloatingStateSupported?: boolean;
     readonly isFloatingStateWindowResizable?: boolean;
+    // @deprecated
     readonly isFreeform?: boolean;
     readonly isStatusBar?: boolean;
     readonly isToolSettings?: boolean;
@@ -99,7 +99,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly tooltip?: string | ConditionalStringValue;
 }
 
-// @public
+// @public @deprecated
 export enum AbstractZoneLocation {
     // (undocumented)
     BottomLeft = 7,
@@ -249,6 +249,34 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
     abstract get quantityType(): string;
     // (undocumented)
     typename: string;
+}
+
+// @public
+export class BaseUiItemsProvider implements UiItemsProvider {
+    constructor(_providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined;
+    // (undocumented)
+    onUnregister(): void;
+    provideBackstageItems(): BackstageItem[];
+    // (undocumented)
+    protected _providerId: string;
+    // (undocumented)
+    provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
+    // (undocumented)
+    provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, _toolbarUsage: ToolbarUsage, _toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[];
+    // (undocumented)
+    provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
+    // (undocumented)
+    provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _stageAppData?: any): AbstractWidgetProps[];
+    // (undocumented)
+    unregister(): void;
 }
 
 // @public
@@ -1293,6 +1321,9 @@ export interface LinkElementsInfo {
 }
 
 // @internal
+export const loggerCategory: (obj: any) => string;
+
+// @internal
 export function matchesCamelCase(word: string, camelCaseWord: string): IMatch[] | null;
 
 // @internal (undocumented)
@@ -1335,6 +1366,8 @@ export enum MessageSeverity {
     None = 0,
     // (undocumented)
     Question = 2,
+    // (undocumented)
+    Success = 6,
     // (undocumented)
     Warning = 3
 }
@@ -1968,23 +2001,6 @@ export enum ToolbarUsage {
 }
 
 // @public
-export class UiAbstract {
-    static initialize(localization: Localization): Promise<void>;
-    static get initialized(): boolean;
-    static get localization(): Localization;
-    static get localizationNamespace(): string;
-    // @internal (undocumented)
-    static loggerCategory(obj: any): string;
-    static get messagePresenter(): MessagePresenter;
-    static set messagePresenter(mp: MessagePresenter);
-    // @internal (undocumented)
-    static get packageName(): string;
-    static terminate(): void;
-    // @internal
-    static translate(key: string | string[]): string;
-}
-
-// @public
 export class UiAdmin {
     closeDialog(_dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
@@ -2000,6 +2016,8 @@ export class UiAdmin {
     hideMenuButton(_id: string): boolean;
     hideToolbar(): boolean;
     get isFocusOnHome(): boolean;
+    static get messagePresenter(): MessagePresenter;
+    static set messagePresenter(mp: MessagePresenter);
     static readonly onGenericUiEvent: GenericUiEvent;
     // @internal (undocumented)
     onInitialized(): void;
@@ -2043,6 +2061,25 @@ export class UiError extends BentleyError {
 }
 
 // @public
+export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
+}
+
+// @public
+export class UiEventDispatcher {
+    constructor();
+    checkForAdditionalIds(): void;
+    dispatchImmediateSyncUiEvent(eventId: string): void;
+    dispatchSyncUiEvent(eventId: string): void;
+    dispatchSyncUiEvents(eventIds: string[]): void;
+    hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
+    get onSyncUiEvent(): UiSyncEvent;
+    // @internal
+    setTimeoutPeriod(period: number): void;
+    get syncEventIds(): Set<string>;
+    get timeoutPeriod(): number;
+    }
+
+// @public
 export interface UiFlags {
     allowKeyinPalette?: boolean;
 }
@@ -2053,47 +2090,11 @@ export interface UiItemProviderRegisteredEventArgs {
     providerId: string;
 }
 
-// @beta @deprecated
-export interface UiItemsApplication {
-    validateBackstageItem?: (item: BackstageItem) => {
-        updatedItem: BackstageItem;
-        action: UiItemsApplicationAction;
-    };
-    validateStatusBarItem?: (item: CommonStatusBarItem) => {
-        updatedItem: CommonStatusBarItem;
-        action: UiItemsApplicationAction;
-    };
-    validateToolbarButtonItem?: (item: CommonToolbarItem) => {
-        updatedItem: CommonToolbarItem;
-        action: UiItemsApplicationAction;
-    };
-    validateWidget?: (widget: AbstractWidgetProps) => {
-        updatedWidget: AbstractWidgetProps;
-        action: UiItemsApplicationAction;
-    };
-}
-
 // @public
 export enum UiItemsApplicationAction {
     Allow = 0,
     Disallow = 1,
     Update = 2
-}
-
-// @beta @deprecated
-export class UiItemsArbiter {
-    // @internal (undocumented)
-    static clearApplication(): void;
-    static get uiItemsApplication(): UiItemsApplication | undefined;
-    static set uiItemsApplication(app: UiItemsApplication | undefined);
-    // @internal (undocumented)
-    static updateBackstageItems(items: ReadonlyArray<BackstageItem>): ReadonlyArray<BackstageItem>;
-    // @internal (undocumented)
-    static updateStatusBarItems(items: ReadonlyArray<CommonStatusBarItem>): ReadonlyArray<CommonStatusBarItem>;
-    // @internal (undocumented)
-    static updateToolbarButtonItems(items: ReadonlyArray<CommonToolbarItem>): ReadonlyArray<CommonToolbarItem>;
-    // @internal (undocumented)
-    static updateWidgets(widgets: ReadonlyArray<AbstractWidgetProps>): ReadonlyArray<AbstractWidgetProps>;
 }
 
 // @public
@@ -2113,10 +2114,7 @@ export class UiItemsManager {
 // @public
 export interface UiItemsProvider {
     readonly id: string;
-    onBackstageItemArbiterChange?: (item: BackstageItem, action: UiItemsApplicationAction) => void;
-    onStatusBarItemArbiterChange?: (item: CommonStatusBarItem, action: UiItemsApplicationAction) => void;
-    onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
-    onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
+    onUnregister?: () => void;
     provideBackstageItems?: () => BackstageItem[];
     provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
     provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];
@@ -2141,6 +2139,16 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     reloadDialogItems(emitEvent?: boolean): void;
     get rows(): DialogRow[];
     supplyDialogItems(): DialogItem[] | undefined;
+}
+
+// @public
+export class UiSyncEvent extends UiEvent<UiSyncEventArgs> {
+}
+
+// @public
+export interface UiSyncEventArgs {
+    // (undocumented)
+    eventIds: Set<string>;
 }
 
 // @public

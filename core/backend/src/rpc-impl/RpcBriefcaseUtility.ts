@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BeDuration, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, BentleyError, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
@@ -37,7 +37,10 @@ export class RpcBriefcaseUtility {
   private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     const { activity, tokenProps } = args;
     const accessToken = activity.accessToken;
-    const iModelId = tokenProps.iModelId!;
+    if (undefined === tokenProps.iModelId)
+      throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
+
+    const iModelId = tokenProps.iModelId;
     let myBriefcaseIds: number[];
     if (args.syncMode === SyncMode.PullOnly) {
       myBriefcaseIds = [0]; // PullOnly means briefcaseId 0
@@ -62,8 +65,9 @@ export class RpcBriefcaseUtility {
                 throw new Error(); // causes delete below
               const db = await BriefcaseDb.open({ fileName });
               if (db.changeset.id !== tokenProps.changeset?.id) {
+                assert(undefined !== tokenProps.changeset);
                 const toIndex = tokenProps.changeset?.index ??
-                  (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset!.id) })).index;
+                  (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset.id) })).index;
                 await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
               }
               return db;
@@ -78,9 +82,10 @@ export class RpcBriefcaseUtility {
     }
 
     // no local briefcase available. Download one and open it.
+    assert(undefined !== tokenProps.iTwinId);
     const request: RequestNewBriefcaseArg = {
       accessToken,
-      iTwinId: tokenProps.iTwinId!,
+      iTwinId: tokenProps.iTwinId,
       iModelId,
       briefcaseId: args.syncMode === SyncMode.PullOnly ? 0 : undefined, // if briefcaseId is undefined, we'll acquire a new one.
     };
@@ -137,10 +142,17 @@ export class RpcBriefcaseUtility {
       return briefcaseDb;
     }
 
+    if (undefined === tokenProps.iModelId)
+      throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
+    if (undefined === tokenProps.iTwinId)
+      throw new IModelError(BentleyStatus.ERROR, "iTwinId is undefined.");
+    if (undefined === tokenProps.changeset)
+      throw new IModelError(BentleyStatus.ERROR, "Changeset is undefined.");
+
     const checkpoint: CheckpointProps = {
-      iModelId: tokenProps.iModelId!,
-      iTwinId: tokenProps.iTwinId!,
-      changeset: tokenProps.changeset!,
+      iModelId: tokenProps.iModelId,
+      iTwinId: tokenProps.iTwinId,
+      changeset: tokenProps.changeset,
       accessToken: activity.accessToken,
     };
 
@@ -159,7 +171,7 @@ export class RpcBriefcaseUtility {
       db = await SnapshotDb.openCheckpointV2(checkpoint);
       Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
     } catch (e) {
-      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ ...tokenProps }));
+      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ error: BentleyError.getErrorProps(e), ...tokenProps }));
 
       // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
       const request = {

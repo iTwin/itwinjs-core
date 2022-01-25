@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
-import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { I18N } from "@itwin/core-i18n";
+import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
+import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@itwin/browser-authorization";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
@@ -24,11 +24,15 @@ class MarkerHandler extends SectionMarkerHandler {
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
-    iModelApp.localization = new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" });
-    iModelApp.tileAdmin = {
-      minimumSpatialTolerance: 0,
-      cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
-    };
+    if (iModelApp.tileAdmin === undefined) {
+      iModelApp.tileAdmin = {
+        minimumSpatialTolerance: 0,
+        cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
+      };
+    } else {
+      iModelApp.tileAdmin.minimumSpatialTolerance = 0;
+      iModelApp.tileAdmin.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+    }
 
     /* eslint-disable @typescript-eslint/naming-convention */
     iModelApp.mapLayerOptions = {
@@ -47,22 +51,27 @@ export class DisplayPerfTestApp {
 
     IModelApp.animationInterval = undefined;
   }
+
+  public static async logException(ex: any, logFile?: { dir: string, name: string }): Promise<void> {
+    const errMsg = ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
+    const msg = `DPTA_EXCEPTION\n${errMsg}\n`;
+    const client = DisplayPerfRpcInterface.getClient();
+    await client.consoleLog(msg);
+    if (logFile)
+      await client.writeExternalFile(logFile.dir, logFile.name, true, msg);
+  }
 }
 
-async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
-  const scope = "openid email profile organization itwinjs";
-
+async function createOidcClient(): Promise<ElectronRendererAuthorization | BrowserAuthorizationClient> {
   if (ProcessDetector.isElectronAppFrontend) {
-    const clientId = "imodeljs-electron-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
-    const desktopClient = new NativeAppAuthorization(oidcConfiguration);
-    await desktopClient.initialize(sessionProps);
+    const desktopClient = new ElectronRendererAuthorization();
     return desktopClient;
   } else {
-    const clientId = "imodeljs-spa-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: BrowserAuthorizationClientConfiguration = { clientId, redirectUri, scope: `${scope} imodeljs-router`, responseType: "code" };
+    const oidcConfiguration: BrowserAuthorizationClientConfiguration = {
+      clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
+    };
     const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
     return browserClient;
   }
@@ -77,24 +86,11 @@ async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAu
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const oidcClient = await createOidcClient({
-    applicationId: IModelApp.applicationId,
-    applicationVersion: IModelApp.applicationVersion,
-    sessionId: IModelApp.sessionId,
-  });
+  const oidcClient = await createOidcClient();
+  await oidcClient.signIn();
 
   IModelApp.authorizationClient = oidcClient;
-  if ((await oidcClient.getAccessToken()) !== undefined)
-    return true;
-
-  const retPromise = new Promise<boolean>((resolve, _reject) => {
-    oidcClient.onAccessTokenChanged.addListener((token) => {
-      resolve(token !== "");
-    });
-  });
-
-  await oidcClient.signIn();
-  return retPromise;
+  return (await oidcClient.getAccessToken()) !== "";
 }
 
 async function main() {
@@ -108,7 +104,9 @@ async function main() {
     const runner = new TestRunner(props);
     await runner.run();
   } catch (err: any) {
-    alert(err.toString());
+    await DisplayPerfTestApp.logException(err);
+  } finally {
+    await DisplayPerfRpcInterface.getClient().terminate();
   }
 
   return IModelApp.shutdown();

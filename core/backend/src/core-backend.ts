@@ -27,6 +27,7 @@ export * from "./BackendLoggerCategory";
 export * from "./Material";
 export * from "./Model";
 export * from "./NavigationRelationship";
+export * from "./RpcBackend";
 export * from "./Schema";
 export * from "./SqliteStatement";
 export * from "./SQLiteDb";
@@ -37,10 +38,9 @@ export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
-export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
+export { CloudSqlite, IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
-export * from "./IModelHubBackend";
 export * from "./IModelSchemaLoader";
 export * from "./IpcHost";
 export * from "./NativeAppStorage";
@@ -50,6 +50,9 @@ export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./LocalhostIpcHost";
 export * from "./ElementGraphics";
+export * from "./workspace/Settings";
+export * from "./workspace/SettingsSpecRegistry";
+export * from "./workspace/Workspace";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
@@ -88,7 +91,7 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description ViewDefinitions
- * Classes for working with elements that define what appears in [views]($docs/learning/frontend/views.md).
+ * Classes for working with Elements that define what appears in [Views]($docs/learning/frontend/views.md).
  * See [the learning articles]($docs/learning/backend/createelements/#orthographicviewdefinition).
  */
 /**
@@ -163,4 +166,8 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
+ */
+/**
+ * @docs-group-description Workspace
+ * APIs for loading and using Settings and Workspace resources
  */

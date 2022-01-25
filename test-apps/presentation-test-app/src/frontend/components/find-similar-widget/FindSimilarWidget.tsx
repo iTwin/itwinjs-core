@@ -9,7 +9,7 @@ import { IModelApp } from "@itwin/core-frontend";
 import { IPresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
 import { SelectionMode, Table } from "@itwin/components-react";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line deprecation/deprecation
 const SampleTable = tableWithUnifiedSelection(Table);
 
 export interface Props {

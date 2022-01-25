@@ -36,7 +36,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     if (undefined === view) {
       try {
         view = await iModel.views.load(id);
-      } catch (_) {
+      } catch {
         // The view probably refers to a nonexistent display style or model/category selector. Replace with a default spatial view.
         // Or, we've opened a blank connection and `id` is intentionally invalid.
         // The viewport's title bar will display "UNNAMED" instead of the bad view's name.
@@ -130,9 +130,7 @@ export class ViewList extends SortedArray<ViewSpec> {
     style.backgroundColor = ColorDef.white;
 
     // turn on the skybox in the environment
-    const env = style.environment;
-    env.sky.display = true;
-    style.environment = env; // call to accessor to get the json properties to reflect the changes
+    style.environment = style.environment.withDisplay({ sky: true });
 
     return blankView;
   }

@@ -10,6 +10,7 @@ const path = require("path");
 require('jsdom-global')();
 window.Date = Date;
 document.elementFromPoint = () => null;
+window.HTMLElement.prototype.scrollIntoView = () => { };
 
 // Fill in more missing functions left out by jsdom or mocha
 performance = window.performance;
@@ -38,9 +39,7 @@ global.DOMRect.fromRect = function (rect) {
   return new DOMRect(rect.x, rect.y, rect.width, rect.height);
 };
 
-const {
-  JSDOM
-} = require('jsdom');
+const { JSDOM } = require('jsdom');
 global.DOMParser = new JSDOM().window.DOMParser;
 
 /** Enzyme mount with automatic unmount after the test. */
@@ -80,7 +79,6 @@ enzyme.configure({
 });
 chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
 
-
 // setup chai
 chai.should();
 chai.use(chaiAsPromised);
@@ -114,7 +112,7 @@ beforeEach(function () {
   }
 
   // set up snapshot name
-  const sourceFilePath = currentTest.file.replace(path.join("lib", "test"), path.join("src", "test")).replace(/\.(jsx?|tsx?)$/, "");
+  const sourceFilePath = currentTest.file.replace(path.join("lib", "cjs", "test"), path.join("src", "test")).replace(/\.(jsx?|tsx?)$/, "");
   const snapPath = sourceFilePath + ".snap";
   chaiJestSnapshot.setFilename(snapPath);
   chaiJestSnapshot.setTestName(currentTest.fullTitle());
@@ -139,3 +137,6 @@ afterEach(async () => {
     sinon.restore();
   } catch (e) { }
 });
+
+// This is required by our I18n module (specifically the i18next-http-backend package).
+global.XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;

@@ -9,11 +9,8 @@
 import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
-import { AccessToken, Logger } from "@itwin/core-bentley";
-import {
-  CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
-  UserCancelledError,
-} from "@bentley/itwin-client";
+import { AccessToken, BentleyError, GetMetaDataFunction, Logger } from "@itwin/core-bentley";
+import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
 import { MobileHost } from "./MobileHost";
 import { Base64 } from "js-base64";
 
@@ -24,11 +21,49 @@ const defined = (argumentName: string, argument?: any, allowEmpty: boolean = fal
     throw Error(`Argument ${argumentName} is null or undefined`);
 };
 
+/** Interface to cancel a request
+  * @beta
+  */
+export interface CancelRequest {
+  /** Returns true if cancel request was acknowledged */
+  cancel: () => boolean;
+}
+
+/** Error thrown when user cancelled operation
+  * @internal
+  */
+export class UserCancelledError extends BentleyError {
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
+    this.name = "User cancelled operation";
+  }
+}
+
+/** Error thrown fail to download file. ErrorNumber will correspond to HTTP error code.
+  * @internal
+  */
+export class DownloadFailed extends BentleyError {
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
+    this.name = "Fail to download file";
+  }
+}
+
+/** Error thrown when sas-url provided for download has expired
+  * @internal
+  */
+export class SasUrlExpired extends BentleyError {
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
+    this.name = "SaS url has expired";
+  }
+}
+
 /**
  * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.
  * @internal
  */
-export class MobileFileHandler implements FileHandler {
+export class MobileFileHandler {
   /** @internal */
   public agent?: https.Agent;
 
@@ -82,14 +117,13 @@ export class MobileFileHandler implements FileHandler {
 
   /**
    * Download a file from AzureBlobStorage for iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
-   * @param requestContext The client request context
    * @param downloadUrl URL to download file from.
    * @param downloadToPathname Pathname to download the file to.
    * @param fileSize Size of the file that's being downloaded.
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
-  public async downloadFile(_requestContext: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  public async downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
@@ -128,7 +162,7 @@ export class MobileFileHandler implements FileHandler {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
   }
 
-  private async uploadChunk(_requestContext: AccessToken, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
+  private async uploadChunk(_accessToken: AccessToken, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
@@ -156,13 +190,12 @@ export class MobileFileHandler implements FileHandler {
 
   /**
    * Upload a file to AzureBlobStorage for iModelHub.
-   * @param requestContext The client request context
    * @param uploadUrl URL to upload the file to.
    * @param uploadFromPathname Pathname to upload the file from.
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
-  public async uploadFile(requestContext: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
+  public async uploadFile(accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(uploadUrlString);
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     defined("uploadUrlString", uploadUrlString);
@@ -177,10 +210,11 @@ export class MobileFileHandler implements FileHandler {
       let i = 0;
       const callback: ProgressCallback = (progress: ProgressInfo) => {
         const uploaded = i * chunkSize + progress.loaded;
-        progressCallback!({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
+        if (progressCallback)
+          progressCallback({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
       };
       for (; i * chunkSize < fileSize; ++i) {
-        await this.uploadChunk(requestContext, uploadUrlString, file, i, progressCallback ? callback : undefined);
+        await this.uploadChunk(accessToken, uploadUrlString, file, i, progressCallback ? callback : undefined);
         blockList += `<Latest>${this.getBlockId(i)}</Latest>`;
       }
       blockList += "</BlockList>";

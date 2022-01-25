@@ -7,7 +7,7 @@
  */
 
 import { Transform, XAndY } from "@itwin/core-geometry";
-import { AbstractToolbarProps } from "@itwin/appui-abstract";
+import type { AbstractToolbarProps } from "@itwin/appui-abstract";
 import {
   ChangeFlags, DecorateContext, Decorator, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, TiledGraphicsProvider, ViewClipTool,
 } from "@itwin/core-frontend";
@@ -389,7 +389,7 @@ export class HyperModelingDecorator implements Decorator {
 
   private sync(): void {
     this._needSync = false;
-    if (this.viewport.view.is3d() && this.updateMarkerVisibility()) {
+    if (HyperModeling.isInitialized && this.viewport.view.is3d() && this.updateMarkerVisibility()) {
       this.markers.markDirty();
       this.viewport.invalidateCachedDecorations(this);
     }

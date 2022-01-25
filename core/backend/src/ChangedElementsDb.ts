@@ -27,6 +27,8 @@ export interface ProcessChangesetOptions {
   wantPropertyChecksums?: boolean;
   rulesetDir?: string;
   tempDir?: string;
+  wantRelationshipCaching?: boolean;
+  relationshipCacheSize?: number;
 }
 
 /** An ChangedElementsDb file
@@ -94,7 +96,6 @@ export class ChangedElementsDb implements IDisposable {
   }
 
   /** Processes a range of changesets and adds it to the changed elements cache
-   * @param requestContext The client request context
    * @param briefcase iModel briefcase to use
    * @param options Options for processing
    */
@@ -123,7 +124,6 @@ export class ChangedElementsDb implements IDisposable {
 
   /** Processes a range of changesets and adds it to the changed elements cache
    * This call will close the IModelDb object as it is required for processing and applying changesets
-   * @param requestContext The client request context
    * @param briefcase iModel briefcase to use
    * @param options options for processing
    */
@@ -150,6 +150,8 @@ export class ChangedElementsDb implements IDisposable {
       options.wantPropertyChecksums,
       options.rulesetDir,
       options.tempDir,
+      options.wantRelationshipCaching,
+      options.relationshipCacheSize
     );
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to process changesets");

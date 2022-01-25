@@ -81,6 +81,7 @@ const dtaFrontendMain = async () => {
   const tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
     enableInstancing: true,
+    enableIndexedEdges: true !== configuration.disableIndexedEdges,
   };
 
   if (configuration.disableInstancing)
@@ -144,6 +145,8 @@ const dtaFrontendMain = async () => {
 
     await uiReady; // Now wait for the HTML UI to finish loading.
     await initView(iModel);
+    if (configuration.startupMacro)
+      await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);
   } catch (reason) {
     alert(reason);
     return;

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { it } from "mocha";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
-import { I18N } from "@itwin/core-i18n";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { PrimitiveValue } from "@itwin/appui-abstract";
@@ -37,7 +37,7 @@ describe("usePresentationNodeLoader", () => {
   };
 
   before(async () => {
-    await UiComponents.initialize(new I18N());
+    await UiComponents.initialize(new ITwinLocalization());
   });
 
   after(() => {

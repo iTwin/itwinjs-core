@@ -15,12 +15,13 @@ import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, Key,
-  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
-  SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
+  FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
+  isSingleElementPropertiesRequestOptions, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged,
+  PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
-import { buildElementProperties } from "./ElementPropertiesHelper";
+import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
@@ -99,7 +100,11 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
 
-  /** A directory for Presentation hierarchy cache. Defaults to location of the iModel. */
+  /**
+   * A directory for Presentation hierarchy cache. If set, the directory must exist.
+   *
+   * The default directory depends on the iModel and the way it's opened.
+   */
   directory?: string;
 }
 
@@ -142,6 +147,15 @@ export interface ContentCacheConfig {
 export interface UnitSystemFormat {
   unitSystems: UnitSystemKey[];
   format: FormatProps;
+}
+
+/**
+ * Data structure for multiple element properties request response.
+ * @alpha
+ */
+export interface MultiElementPropertiesResponse {
+  total: number;
+  iterator: () => AsyncGenerator<ElementProperties[]>;
 }
 
 /**
@@ -300,6 +314,7 @@ export class PresentationManager {
   private _isDisposed: boolean;
   private _disposeIModelOpenedListener?: () => void;
   private _updatesTracker?: UpdatesTracker;
+  private _onManagerUsed?: () => void;
 
   /** Get / set active locale used for localizing presentation data */
   public activeLocale: string | undefined;
@@ -374,6 +389,11 @@ export class PresentationManager {
     this._isDisposed = true;
   }
 
+  /** @internal */
+  public setOnManagerUsedHandler(handler: () => void) {
+    this._onManagerUsed = handler;
+  }
+
   /** Properties used to initialize the manager */
   public get props() { return this._props; }
 
@@ -426,6 +446,15 @@ export class PresentationManager {
 
   private getRulesetIdObject(rulesetOrId: Ruleset | string): { uniqueId: string, parts: { id: string, hash?: string } } {
     if (typeof rulesetOrId === "object") {
+      if (IpcHost.isValid) {
+        // in case of native apps we don't want to enforce ruleset id uniqueness as ruleset variables
+        // are stored on a backend and creating new id will lose those variables
+        return {
+          uniqueId: rulesetOrId.id,
+          parts: { id: rulesetOrId.id },
+        };
+      }
+
       const hashedId = hash.MD5(rulesetOrId);
       return {
         uniqueId: `${rulesetOrId.id}-${hashedId}`,
@@ -584,7 +613,6 @@ export class PresentationManager {
 
   /**
    * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
-   * @param requestContext      The client request context
    * @param requestOptions      Options for the request
    * @return A promise object that returns either distinct values on success or an error string on error.
    * @public
@@ -612,18 +640,62 @@ export class PresentationManager {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined> {
-    const { elementId, ...optionsNoElementId } = requestOptions;
-    const content = await this.getContent({
-      ...optionsNoElementId,
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.PropertyPane,
-        contentFlags: ContentFlags.ShowLabels,
-      },
-      rulesetOrId: "ElementProperties",
-      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+  public async getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
+  /**
+   * Retrieves property data in simplified format for multiple elements specified by class or all element.
+   * @return An object that contains element count and AsyncGenerator to iterate over properties of those elements in batches of undefined size.
+   * @alpha
+   */
+  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<MultiElementPropertiesResponse>;
+  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined | MultiElementPropertiesResponse> {
+    if (isSingleElementPropertiesRequestOptions(requestOptions)) {
+      const { elementId, ...optionsNoElementId } = requestOptions;
+      const content = await this.getContent({
+        ...optionsNoElementId,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+      });
+      const properties = buildElementsProperties(content);
+      return properties[0];
+    }
+
+    return this.getMultipleElementProperties(requestOptions);
+  }
+
+  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<MultiElementPropertiesResponse> {
+    const { elementClasses, ...optionsNoElementClasses } = requestOptions;
+    const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
+
+    const propertiesGetter = async (className: string, ids: string[]) => buildElementsPropertiesInPages(className, ids, async (keys) => {
+      const content = await this.getContent({
+        ...optionsNoElementClasses,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys,
+      });
+      return buildElementsProperties(content);
     });
-    return buildElementProperties(content);
+
+    const ELEMENT_IDS_BATCH_SIZE = 1000;
+    return {
+      total: elementsCount,
+      async *iterator() {
+        for (const idsByClass of iterateElementIds(requestOptions.imodel, elementClasses, ELEMENT_IDS_BATCH_SIZE)) {
+          const propertiesPage: ElementProperties[] = [];
+          for (const entry of idsByClass) {
+            propertiesPage.push(...(await propertiesGetter(entry[0], entry[1])));
+          }
+          yield propertiesPage;
+        }
+      },
+    };
   }
 
   /**
@@ -686,6 +758,8 @@ export class PresentationManager {
 
   private async request<TParams extends { diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: UnitSystemKey }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
     const { requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
+    if (this._onManagerUsed)
+      this._onManagerUsed();
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const nativeRequestParams: any = {
       requestId,
@@ -876,3 +950,15 @@ const getPresentationCommonAssetsRoot = (ovr?: string | { common: string }) => {
     return ovr.common;
   return PRESENTATION_COMMON_ASSETS_ROOT;
 };
+
+const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
+async function buildElementsPropertiesInPages(className: string, ids: string[], getter: (keys: KeySet) => Promise<ElementProperties[]>) {
+  const elementProperties: ElementProperties[] = [];
+  const elementIds = [...ids];
+  while (elementIds.length > 0) {
+    const idsPage = elementIds.splice(0, ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE);
+    const keys = new KeySet(idsPage.map((id) => ({ id, className })));
+    elementProperties.push(...(await getter(keys)));
+  }
+  return elementProperties;
+}

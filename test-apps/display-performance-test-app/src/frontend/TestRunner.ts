@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
@@ -12,16 +12,16 @@ import {
 } from "@itwin/core-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
-  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
+  PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
-import { System } from "@itwin/core-frontend/lib/webgl";
+import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import * as path from "path";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
   defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
-import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -50,8 +50,24 @@ interface TestViewState {
 
 /** The result of TestRunner.runTest. */
 interface TestResult {
+  /** An ordered listing of all the tiles selected for display. */
   selectedTileIds: string;
+  /** The number of tiles selected for display. */
+  numSelectedTiles: number;
+  /** Approximate time in milliseconds before all tiles were ready for display. */
   tileLoadingTime: number;
+  /** Amount of memory requested from the GPU for the graphics of the tiles selected for display. */
+  selectedTileGpuBytes: number;
+  /** Amount of memory requested from the GPU for the graphics of all tiles in the tile trees viewed by this test.
+   * This is always at least as large as selectedTileGpuBytes and may be much larger as recently-used tiles are kept in memory
+   * for a period of time, and parent tiles' graphics are typically kept in memory for as long as their child tiles are.
+   * Therefore this may be expected to grow over time as successive tests exercise different views of the same tile trees.
+   */
+  viewedTileTreeGpuBytes: number;
+  /** Total amount of memory requested (and not yet relinquished) from the GPU by the render system, including frame buffers,
+   * textures, graphics, etc.
+   */
+  totalGpuBytes: number;
 }
 
 /** A test being executed in a viewport. */
@@ -114,8 +130,8 @@ class OverrideProvider {
     if (this._defaultOvrs)
       ovrs.setDefaultOverrides(this._defaultOvrs);
 
-    for (const [key, value] of this._elementOvrs)
-      ovrs.overrideElement(key, value);
+    for (const [elementId, appearance] of this._elementOvrs)
+      ovrs.override({ elementId, appearance });
   }
 }
 
@@ -143,6 +159,8 @@ export class TestRunner {
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
+
+    ToolAdmin.exceptionHandler = async (ex) => this.onException(ex);
   }
 
   /** Run all the tests. */
@@ -150,6 +168,29 @@ export class TestRunner {
     const msg = `View Log,  Model Base Location: ${this.curConfig.iModelLocation}\n  format: Time_started  ModelName  [ViewName]`;
     await this.logToConsole(msg);
     await this.logToFile(msg, { noAppend: true });
+
+    let needRestart = this.curConfig.requiresRestart(new TestConfig({})); // If current config differs from default, restart
+    const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
+    if (!this.curConfig.useDisjointTimer) {
+      const ext = this.curConfig.renderOptions?.disabledExtensions;
+      renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
+      needRestart = true;
+    }
+    if (IModelApp.initialized && needRestart)
+      await IModelApp.shutdown();
+    if (needRestart) {
+      const realityDataClientOptions: RealityDataClientOptions = {
+        /** API Version. v1 by default */
+        // version?: ApiVersion;
+        /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+        baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+      };
+      await DisplayPerfTestApp.startup({
+        renderSys: renderOptions,
+        tileAdmin: this.curConfig.tileProps,
+        realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
+      });
+    }
 
     // Run all the tests
     for (const set of this._testSets)
@@ -167,7 +208,12 @@ export class TestRunner {
 
   private async runTestSet(set: TestSetProps): Promise<void> {
     let needRestart = this._config.push(set);
-
+    const realityDataClientOptions: RealityDataClientOptions = {
+      /** API Version. v1 by default */
+      // version?: ApiVersion;
+      /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+    };
     // Perform all the tests for this iModel. If the iModel name contains an asterisk,
     // treat it as a wildcard and run tests for each iModel that matches the given wildcard.
     for (const testProps of set.tests) {
@@ -179,10 +225,15 @@ export class TestRunner {
         await IModelApp.shutdown();
 
       if (!IModelApp.initialized) {
+        const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
+        if (!this.curConfig.useDisjointTimer) {
+          const ext = this.curConfig.renderOptions?.disabledExtensions;
+          renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
+        }
         await DisplayPerfTestApp.startup({
-          renderSys: this.curConfig.renderOptions,
+          renderSys: renderOptions,
           tileAdmin: this.curConfig.tileProps,
-          realityDataAccess: new RealityDataAccessClient(),
+          realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         });
       }
 
@@ -215,9 +266,13 @@ export class TestRunner {
 
       await this.logTest();
 
-      const result = await this.runTest(context);
-      if (result)
-        await this.logToFile(result.selectedTileIds, { noNewLine: true });
+      try {
+        const result = await this.runTest(context);
+        if (result)
+          await this.logToFile(result.selectedTileIds, { noNewLine: true });
+      } catch (ex) {
+        await this.onException(ex);
+      }
     }
   }
 
@@ -378,7 +433,7 @@ export class TestRunner {
           }
         }
       } catch (err: any) {
-        await this.logError(err.toString());
+        await DisplayPerfTestApp.logException(err, { dir: this.curConfig.outputPath, name: this._logFileName });
       }
     }
 
@@ -485,9 +540,18 @@ export class TestRunner {
     viewport.renderFrame();
     timer.stop();
 
+    const selectedTiles = getSelectedTileStats(viewport);
     return {
       tileLoadingTime: timer.current.milliseconds,
-      selectedTileIds: formatSelectedTileIds(viewport),
+      selectedTileIds: selectedTiles.ids,
+      numSelectedTiles: selectedTiles.count,
+      selectedTileGpuBytes: selectedTiles.gpuBytes,
+      viewedTileTreeGpuBytes: calcGpuBytes((stats) => viewport.collectStatistics(stats)),
+      totalGpuBytes: calcGpuBytes((stats) => {
+        viewport.target.renderSystem.collectStatistics(stats);
+        viewport.target.collectStatistics(stats);
+        viewport.iModel.tiles.forEachTreeOwner((owner) => owner.tileTree?.collectStatistics(stats));
+      }),
     };
   }
 
@@ -663,8 +727,6 @@ export class TestRunner {
 
     await DisplayPerfRpcInterface.getClient().finishCsv(renderData, this.curConfig.outputPath, this.curConfig.outputName, this.curConfig.csvFormat);
     await this.logToConsole("Tests complete. Press Ctrl-C to exit.");
-
-    return DisplayPerfRpcInterface.getClient().finishTest();
   }
 
   private async saveCsv(row: Map<string, number | string>): Promise<void> {
@@ -780,8 +842,13 @@ export class TestRunner {
 
     rowData.set("Test Name", this.getTestName(test));
     rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
-    if (!this._minimizeOutput)
+    if (!this._minimizeOutput) {
       rowData.set("Tile Loading Time", test.tileLoadingTime);
+      rowData.set("Num Selected Tiles", test.numSelectedTiles);
+      rowData.set("Selected Tile GPU MB", test.selectedTileGpuBytes / (1024 * 1024));
+      rowData.set("Tile Tree GPU MB", test.viewedTileTreeGpuBytes / (1024 * 1024));
+      rowData.set("Total GPU MB", test.totalGpuBytes / (1024 * 1024));
+    }
 
     const setGpuData = (name: string) => {
       if (name === "CPU Total Time")
@@ -829,8 +896,7 @@ export class TestRunner {
     let totalTime: number;
     if (rowData.get("Finish GPU Queue")) { // If we can't collect GPU data, get non-interactive total time with 'Finish GPU Queue' time
       totalTime = Number(rowData.get("CPU Total Time")) + Number(rowData.get("Finish GPU Queue"));
-      rowData.set("Non-Interactive Total Time", totalTime);
-      rowData.set("Non-Interactive FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
+      rowData.set("GPU Total Time", totalTime);
     }
 
     // Get these values from the timings.actualFps -- timings.actualFps === timings.cpu, unless in readPixels mode
@@ -844,19 +910,33 @@ export class TestRunner {
     }
 
     rowData.delete("Total Time");
-    totalRenderTime /= timings.actualFps.length;
+    totalRenderTime /= timings.actualFps.length; // ie the CPU Total Time
     totalTime /= timings.actualFps.length;
-    const totalGpuTime = Number(rowData.get("GPU-Total"));
-    if (totalGpuTime) {
-      const gpuBound = totalGpuTime > totalRenderTime;
-      const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalRenderTime);
+    const disjointTimerUsed = rowData.get("GPU-Total") !== undefined;
+    const totalGpuTime = Number(disjointTimerUsed ? rowData.get("GPU-Total") : rowData.get("GPU Total Time"));
+    const gpuTolerance = disjointTimerUsed ? 2 : 3;
+    const gpuBound = (totalGpuTime - totalRenderTime) > gpuTolerance;
+    const cpuBound = disjointTimerUsed ? (((totalRenderTime - totalGpuTime) > gpuTolerance) && (totalRenderTime > 2)) : !gpuBound;
+    let boundBy = "";
+    if (totalRenderTime < 2 && !gpuBound) // ie total cpu time < 2ms && !gpuBound
+      boundBy = "unmeasurable";
+    else if (!gpuBound && !cpuBound)
+      boundBy = "unknown";
+    else if (gpuBound)
+      boundBy = "gpu";
+    else
+      boundBy = "CPU";
+    if ((1000.0 / totalTime) > 59) // ie actual fps > 60fps - 1fps tolerance
+      boundBy += " (vsync)";
+    const totalCpuTime = totalRenderTime > 2 ? totalRenderTime : 2; // add 2ms lower bound to cpu total time for tolerance
+    const effectiveFps = 1000.0 / (totalGpuTime > totalCpuTime ? totalGpuTime : totalCpuTime);
+    if (disjointTimerUsed) {
+      rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed));
       rowData.delete("GPU-Total");
-      rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed)); // Change the name of this column & change column order
-      rowData.set("Bound By", gpuBound ? (effectiveFps < 60.0 ? "gpu" : "gpu ?") : "cpu *");
-      rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalRenderTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
-      rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
     }
-
+    rowData.set("Bound By", boundBy);
+    rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalCpuTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
+    rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
     rowData.set("Actual Total Time", totalTime.toFixed(fixed));
     rowData.set("Actual FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
 
@@ -962,6 +1042,13 @@ export class TestRunner {
       await savePng(this.getImageName(test, `type_${pixStr}_`), canvas);
     }
   }
+
+  private async onException(ex: any): Promise<void> {
+    // We need to log here so it gets written to the file.
+    await DisplayPerfTestApp.logException(ex, { dir: this.curConfig.outputPath, name: this._logFileName });
+    if ("terminate" === this.curConfig.onException)
+      await DisplayPerfRpcInterface.getClient().terminate();
+  }
 }
 
 function removeOptsFromString(input: string, ignore: string[] | string | undefined): string {
@@ -1064,6 +1151,9 @@ function getTileProps(props: TileAdmin.Props): string {
       case "disableMagnification":
         if (props[key]) tilePropsStr += "-mag";
         break;
+      case "enableIndexedEdges":
+        if (!props[key]) tilePropsStr += "-idxEdg";
+        break;
     }
   }
 
@@ -1157,6 +1247,7 @@ const viewFlagsPropsStrings = {
   grid: "+grid",
   whiteOnWhiteReversal: "+wow",
   acsTriad: "+acsTriad",
+  wiremesh: "+wm",
 };
 
 function getViewFlagsString(test: TestCase): string {
@@ -1214,22 +1305,32 @@ function matchRule(strToTest: string, rule: string) {
   return new RegExp(`^${rule.split("*").map(escapeRegex).join(".*")}$`).test(strToTest);
 }
 
-/* A formatted string containing the Ids of all the tiles that were selected for display by the last call to waitForTilesToLoad(), of the format:
- *  Selected Tiles:
- *    TreeId1: tileId1,tileId2,...
- *    TreeId2: tileId1,tileId2,...
- *    ...
- * Sorted by tree Id and then by tile Id so that the output is consistent from run to run unless the set of selected tiles changed between runs.
- */
-function formatSelectedTileIds(vp: ScreenViewport): string {
-  let formattedSelectedTileIds = "Selected tiles:\n";
+interface SelectedTileStats {
+  /* A formatted string containing the Ids of all the tiles that were selected for display by the last call to waitForTilesToLoad(), of the format:
+   *  Selected Tiles:
+   *    TreeId1: tileId1,tileId2,...
+   *    TreeId2: tileId1,tileId2,...
+   *    ...
+   * Sorted by tree Id and then by tile Id so that the output is consistent from run to run unless the set of selected tiles changed between runs.
+   */
+  ids: string;
+  /** The number of selected tiles. */
+  count: number;
+  /** The number of bytes of memory allocated to the GPU for the selected tiles' graphics. */
+  gpuBytes: number;
+}
 
+function getSelectedTileStats(vp: ScreenViewport): SelectedTileStats {
+  let formattedSelectedTileIds = "Selected tiles:\n";
+  let count = 0;
+  const mem = new RenderMemory.Statistics();
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
   for (const viewport of [vp, ...vp.view.secondaryViewports]) {
     const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
     if (!selected)
       continue;
 
+    count += selected.size;
     for (const tile of selected) {
       const treeId = tile.tree.id;
       let tileIds = dict.get(treeId);
@@ -1237,6 +1338,7 @@ function formatSelectedTileIds(vp: ScreenViewport): string {
         dict.set(treeId, tileIds = new SortedArray<string>((lhs, rhs) => lhs.localeCompare(rhs)));
 
       tileIds.insert(tile.contentId);
+      tile.collectStatistics(mem);
     }
   }
 
@@ -1246,7 +1348,17 @@ function formatSelectedTileIds(vp: ScreenViewport): string {
     formattedSelectedTileIds = `${formattedSelectedTileIds}${line}\n`;
   }
 
-  return formattedSelectedTileIds;
+  return {
+    ids: formattedSelectedTileIds,
+    count,
+    gpuBytes: mem.totalBytes,
+  };
+}
+
+function calcGpuBytes(func: (stats: RenderMemory.Statistics) => void): number {
+  const stats = new RenderMemory.Statistics();
+  func(stats);
+  return stats.totalBytes;
 }
 
 async function savePng(fileName: string, canvas: HTMLCanvasElement): Promise<void> {

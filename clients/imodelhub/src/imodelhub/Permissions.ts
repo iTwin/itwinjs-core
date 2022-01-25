@@ -55,7 +55,6 @@ export class PermissionHandler {
   /**
    * Get user permissions of an specified iModel.
    * Use [[PermissionHandler.getContextPermissions]] to check CONNECT context level permissions.
-   * @param requestContext The client request context.
    * @param imodelId Id of the specified iModel.
    */
   public async getiModelPermissions(accessToken: AccessToken, imodelId: GuidString): Promise<IModelPermissions> {

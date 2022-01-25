@@ -376,6 +376,9 @@ export interface IUnifiedSelectionComponent {
     readonly selectionHandler?: SelectionHandler;
 }
 
+// @internal (undocumented)
+export const PRESENTATION_TREE_NODE_KEY = "__presentation-components/key";
+
 // @public
 export enum PresentationComponentsLoggerCategory {
     Content = "presentation-components.Content",

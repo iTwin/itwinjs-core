@@ -11,7 +11,7 @@ import { Table } from "@itwin/components-react";
 import { useDisposable } from "@itwin/core-react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line deprecation/deprecation
 const SampleTable = tableWithUnifiedSelection(Table);
 
 export interface GridWidgetProps {

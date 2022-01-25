@@ -9,12 +9,52 @@ import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import { GraphicType, PickableGraphicOptions } from "../render/GraphicBuilder";
+import {GraphicBranch} from "../core-frontend";
 
 /** A simple configurable box decorator for tests.
  * @internal
  */
 export class BoxDecorator {
-  public constructor(public readonly vp: ScreenViewport, public readonly color: ColorDef, public readonly pickable?: PickableGraphicOptions, public readonly placement?: Transform, private _shapePoints?: Point3d[]) {
+  public viewport: ScreenViewport;
+  public color: ColorDef;
+  public pickable?: PickableGraphicOptions;
+  public placement?: Transform;
+  public points: Point3d[];
+  public viewIndependentOrigin?: Point3d;
+  public branchTransform?: Transform;
+
+  public constructor(options: {
+    viewport: ScreenViewport;
+    color: ColorDef;
+    pickable?: PickableGraphicOptions;
+    placement?: Transform;
+    points?: Point3d[];
+    viewIndependentOrigin?: Point3d;
+    branchTransform?: Transform;
+  }) {
+    this.viewport = options.viewport;
+    this.color = options.color;
+    this.pickable = options.pickable;
+    this.placement = options.placement;
+    this.viewIndependentOrigin = options.viewIndependentOrigin;
+    this.branchTransform = options.branchTransform;
+
+    if (options.points) {
+      this.points = options.points;
+    } else {
+      const w = 0.5;
+      const h = 0.5;
+      this.points = [
+        new Point3d(0, 0, 0),
+        new Point3d(w, 0, 0),
+        new Point3d(w, h, 0),
+        new Point3d(0, h, 0),
+        new Point3d(0, 0, 0),
+      ];
+
+      this.viewport.npcToWorldArray(this.points);
+    }
+
     IModelApp.viewManager.addDecorator(this);
   }
 
@@ -23,28 +63,24 @@ export class BoxDecorator {
   }
 
   public decorate(context: DecorateContext): void {
-    if (undefined === this._shapePoints) {
-      const w = 0.5;
-      const h = 0.5;
-      this._shapePoints = [
-        new Point3d(0, 0, 0),
-        new Point3d(w, 0, 0),
-        new Point3d(w, h, 0),
-        new Point3d(0, h, 0),
-        new Point3d(0, 0, 0),
-      ];
-      this.vp.npcToWorldArray(this._shapePoints);
-    }
-
     const builder = context.createGraphic({
       placement: this.placement,
       type: GraphicType.Scene,
       pickable: this.pickable,
+      viewIndependentOrigin: this.viewIndependentOrigin,
     });
 
     builder.setSymbology(this.color, this.color, 1);
-    builder.addShape(this._shapePoints);
-    context.addDecorationFromBuilder(builder);
+    builder.addShape(this.points);
+
+    let graphic = builder.finish();
+    if (this.branchTransform) {
+      const branch = new GraphicBranch();
+      branch.add(graphic);
+      graphic = context.createBranch(branch, this.branchTransform);
+    }
+
+    context.addDecoration(GraphicType.Scene, graphic);
   }
 }
 

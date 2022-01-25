@@ -56,6 +56,20 @@ export class HyperModeling {
   private static _markerConfig: SectionMarkerConfig = {};
   private static _graphicsConfig: SectionGraphicsConfig = {};
 
+  private static shutdown() {
+    this.resources = undefined;
+    this._markerHandler = undefined;
+    this._markerConfig = {};
+    this._graphicsConfig = {};
+  }
+
+  /** Returns whether the hypermodeling package is initialized.
+   * @see [[HyperModeling.initialize]] to initialize the package.
+   */
+  public static get isInitialized(): boolean {
+    return undefined !== this.resources;
+  }
+
   /** Invoke this method to initialize the hypermodeling package for use. You *must* await the result before using any of this package's APIs.
    * Typically an application would invoke this after [IModelApp.startup]($frontend), e.g.,
    * ```ts
@@ -63,6 +77,7 @@ export class HyperModeling {
    *  await HyperModeling.initialize();
    * ```
    * Calling this method again after the first initialization behaves the same as calling [[HyperModeling.replaceConfiguration]].
+   * @note The hypermodeling package will be reset to uninitialized after [IModelApp.shutdown]($frontend) is invoked.
    * @see [[replaceConfiguration]] and [[updateConfiguration]] to modify the configuration after initialization.
    */
   public static async initialize(config?: HyperModelingConfig): Promise<void> {
@@ -71,14 +86,17 @@ export class HyperModeling {
       return;
     }
 
+    // clean up if we're being shut down
+    IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
+
     const namespace = "HyperModeling";
     await IModelApp.localization.registerNamespace(namespace);
 
     const loadImages = [
-      tryImageElementFromUrl("section-marker.svg"),
-      tryImageElementFromUrl("detail-marker.svg"),
-      tryImageElementFromUrl("elevation-marker.svg"),
-      tryImageElementFromUrl("plan-marker.svg"),
+      tryImageElementFromUrl(`${IModelApp.publicPath}section-marker.svg`),
+      tryImageElementFromUrl(`${IModelApp.publicPath}detail-marker.svg`),
+      tryImageElementFromUrl(`${IModelApp.publicPath}elevation-marker.svg`),
+      tryImageElementFromUrl(`${IModelApp.publicPath}plan-marker.svg`),
     ];
 
     const images = await Promise.all(loadImages);
@@ -92,7 +110,7 @@ export class HyperModeling {
       },
     };
 
-    registerTools(namespace, IModelApp.localization);
+    registerTools(namespace);
     this.replaceConfiguration(config);
   }
 
@@ -174,7 +192,7 @@ export class HyperModeling {
     try {
       const nRows = await imodel.queryRowCount("SELECT ECInstanceId FROM bis.SectionDrawingLocation LIMIT 1");
       return nRows > 0;
-    } catch (_) {
+    } catch {
       // An iModel with a version of BisCore older than 1.0.11 will produce an expected "table not found" on the SectionDrawingLocation ECClass.
       return false;
     }

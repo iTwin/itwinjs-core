@@ -24,6 +24,7 @@ export class StyleUniforms {
   private readonly _monoRgb = FloatRgb.fromColorDef(this._monoColor);
   private _wantWoWReversal = true;
   private _wowReversalSettings = WhiteOnWhiteReversalSettings.fromJSON();
+  private _bgIntensity = 0;
 
   public syncKey = 0;
 
@@ -45,6 +46,7 @@ export class StyleUniforms {
     this._bgRgba.setColorDef(bgColor);
     this._bgRgb.setColorDef(bgColor);
     this._wantWoWReversal = this._wowReversalSettings.ignoreBackgroundColor || this._bgRgb.isWhite;
+    this._bgIntensity = this._bgRgb.red * 0.3 + this._bgRgb.green * 0.59 + this._bgRgb.blue * 0.11;
   }
 
   public changeBackgroundColor(bgColor: ColorDef): void {
@@ -71,6 +73,10 @@ export class StyleUniforms {
   public bindMonochromeRgb(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       this._monoRgb.bind(uniform);
+  }
+
+  public get backgroundIntensity(): number {
+    return this._bgIntensity;
   }
 
   public get backgroundTbgr(): number {

@@ -1,14 +1,15 @@
 {
   "name": "@itwin/core-electron",
-  "version": "3.0.0-dev.78",
+  "version": "3.0.0",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <15.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
   },
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "tsc 1>&2",
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
     "extract-api": "betools extract-api --entry=__DOC_ONLY__",
@@ -18,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/core-electron"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/core-electron"
   },
   "keywords": [
     "Bentley",
@@ -30,22 +31,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.78",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.78",
-    "@itwin/core-common": "workspace:^3.0.0-dev.78",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.78",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.78",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.78",
+    "@itwin/core-backend": "workspace:^3.0.0",
+    "@itwin/core-bentley": "workspace:^3.0.0",
+    "@itwin/core-common": "workspace:^3.0.0",
+    "@itwin/core-frontend": "workspace:^3.0.0",
+    "@itwin/presentation-common": "workspace:^3.0.0",
     "electron": "^14.0.0"
   },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@types/node": "14.14.31",
     "electron": "^14.0.0",

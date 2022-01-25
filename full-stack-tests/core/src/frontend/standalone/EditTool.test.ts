@@ -5,10 +5,10 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { EditTools } from "@itwin/editor-frontend";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { EditTools } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
+import { TestUtility } from "../TestUtility";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -34,11 +34,11 @@ class TestEditTool1 extends PrimitiveTool {
   }
 }
 
-if (ProcessDetector.isElectronAppFrontend) {
+if (!ProcessDetector.isMobileAppFrontend) {
   describe("EditTools", () => {
 
     before(async () => {
-      await ElectronApp.startup();
+      await TestUtility.startFrontend(undefined, undefined, true);
       const namespace = "TestApp";
       await IModelApp.localization.registerNamespace(namespace);
       IModelApp.tools.register(TestEditTool1, namespace);
@@ -48,7 +48,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     after(async () => {
       await iModel.close();
-      await ElectronApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     it("should start edit commands", async () => {

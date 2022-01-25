@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { Content, Item, RulesetsFactory } from "@itwin/presentation-common";
-import { createTestContentDescriptor, createTestSimpleContentField } from "@itwin/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomRuleset } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { createRandomRuleset, createTestContentDescriptor, createTestSimpleContentField } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { TypeConverter, TypeConverterManager } from "@itwin/components-react";
 import {
   DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider,

@@ -5,10 +5,11 @@
 import { Point3d } from "@itwin/core-geometry";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef, FontMap, FontType } from "@itwin/core-common";
 import {
-  CompassMode, createRenderPlanFromViewport, IModelApp, IModelConnection, MockRender, PanViewTool,
+  CompassMode, createRenderPlanFromViewport, IModelApp, IModelConnection, PanViewTool,
   RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync,
 } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
+import { TestUtility } from "../TestUtility";
 
 // cSpell:ignore calibri subcats subcat pmcv ovrs
 
@@ -29,7 +30,7 @@ describe("Viewport", () => {
   const viewDiv2 = createViewDiv();
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel2 = await SnapshotConnection.openFile("test2.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
@@ -39,7 +40,7 @@ describe("Viewport", () => {
   after(async () => {
     if (imodel) await imodel.close();
     if (imodel2) await imodel2.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("Viewport", async () => {

@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@itwin/core-bentley";
-import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
   TileTreeReference,
 } from "@itwin/core-frontend";
-import { MeshArgs } from "@itwin/core-frontend/lib/render-primitives";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/webgl";
+import { MeshArgs } from "@itwin/core-frontend/lib/cjs/render-primitives";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
+import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
+import { TestUtility } from "../../TestUtility";
 import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -129,13 +130,13 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
   before(async () => {
-    await IModelApp.startup({ renderSys: { doIdleWork: false } });
+    await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     await imodel0.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("expect rendersystem disposal to trigger disposal of textures cached in id-map", async () => {
@@ -175,7 +176,7 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    await IModelApp.startup({ renderSys: { doIdleWork: false } });
+    await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
 
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
@@ -184,7 +185,7 @@ describe("Disposal of WebGL Resources", () => {
   after(async () => {
     await imodel0.close();
     await imodel1.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   // ###TODO: Update TileIO.data.ts for new tile format...
@@ -206,8 +207,15 @@ describe("Disposal of WebGL Resources", () => {
 
     // Get a render graphic from tile reader
     const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel0);
-    const stream = new ByteStream(TILE_DATA_1_1.triangles.bytes.buffer);
-    const reader = ImdlReader.create(stream, model.iModel, model.id, model.is3d, system);
+    const stream = ByteStream.fromUint8Array(TILE_DATA_1_1.triangles.bytes);
+    const reader = ImdlReader.create({
+      stream,
+      iModel: model.iModel,
+      modelId: model.id,
+      is3d: model.is3d,
+      system,
+    });
+
     expect(reader).not.to.be.undefined;
     const readerRes = await reader!.read();
     const tileGraphic = readerRes.graphic!;

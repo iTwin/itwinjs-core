@@ -6,7 +6,7 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
-import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@itwin/core-common';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
 import { AuxCoordSystemProps } from '@itwin/core-common';
@@ -26,21 +26,21 @@ import { ChangedElements } from '@itwin/core-common';
 import { ChangedModels } from '@itwin/core-common';
 import { ChangedValueState } from '@itwin/core-common';
 import { ChangeOpCode } from '@itwin/core-common';
-import { ChangeSet } from '@bentley/imodelhub-client';
 import { ChangesetFileProps } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
+import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
 import { ChannelRootAspectProps } from '@itwin/core-common';
 import { ClipVector } from '@itwin/core-geometry';
+import { CloudSqlite } from '@bentley/imodeljs-native';
 import { CloudStorageContainerDescriptor } from '@itwin/core-common';
 import { CloudStorageContainerUrl } from '@itwin/core-common';
 import { CloudStorageProvider } from '@itwin/core-common';
 import { Code } from '@itwin/core-common';
-import { CodeProps } from '@itwin/core-common';
 import { CodeScopeProps } from '@itwin/core-common';
 import { CodeScopeSpec } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
@@ -56,6 +56,7 @@ import { DisplayStyle3dSettingsProps } from '@itwin/core-common';
 import { DisplayStyleProps } from '@itwin/core-common';
 import { DisplayStyleSettings } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
+import { ECSqlReader } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
@@ -98,7 +99,6 @@ import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
-import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelError } from '@itwin/core-common';
@@ -107,20 +107,21 @@ import { IModelRpcProps } from '@itwin/core-common';
 import { IModelStatus } from '@itwin/core-bentley';
 import { IModelTileTreeProps } from '@itwin/core-common';
 import { IModelVersion } from '@itwin/core-common';
-import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@itwin/core-geometry';
 import { InformationPartitionElementProps } from '@itwin/core-common';
 import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
+import { JSONSchema } from '@itwin/core-bentley';
+import { JSONSchemaType } from '@itwin/core-bentley';
+import { JSONSchemaTypeName } from '@itwin/core-bentley';
 import { LightLocationProps } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LineStyleProps } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
-import { Lock } from '@bentley/imodelhub-client';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
@@ -131,13 +132,13 @@ import { ModelLoadProps } from '@itwin/core-common';
 import { ModelProps } from '@itwin/core-common';
 import { ModelSelectorProps } from '@itwin/core-common';
 import { Mutable } from '@itwin/core-bentley';
-import { NativeAppAuthorizationConfiguration } from '@itwin/core-common';
 import { NativeAppNotifications } from '@itwin/core-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@itwin/core-common';
 import { NavigationValue } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
 import { OpenMode } from '@itwin/core-bentley';
+import { Optional } from '@itwin/core-bentley';
 import * as os from 'os';
 import { OverriddenBy } from '@itwin/core-common';
 import { PhysicalElementProps } from '@itwin/core-common';
@@ -150,10 +151,8 @@ import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
-import { QueryLimit } from '@itwin/core-common';
-import { QueryPriority } from '@itwin/core-common';
-import { QueryQuota } from '@itwin/core-common';
-import { QueryResponse } from '@itwin/core-common';
+import { QueryBinder } from '@itwin/core-common';
+import { QueryOptions } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
@@ -189,7 +188,7 @@ import { SubCategoryAppearance } from '@itwin/core-common';
 import { SubCategoryProps } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
-import { TelemetryManager } from '@bentley/telemetry-client';
+import { TelemetryManager } from '@itwin/core-telemetry';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
@@ -213,6 +212,7 @@ import { ViewFlags } from '@itwin/core-common';
 import { ViewQueryParams } from '@itwin/core-common';
 import { ViewStateLoadProps } from '@itwin/core-common';
 import { ViewStateProps } from '@itwin/core-common';
+import * as ws from 'ws';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
 import { YawPitchRollAngles } from '@itwin/core-geometry';
@@ -224,7 +224,7 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
 
 // @beta (undocumented)
 export class AliCloudStorageService extends CloudStorageService {
-    constructor(credentials: CloudStorageServiceCredentials);
+    constructor(credentials: AliCloudStorageServiceCredentials);
     // (undocumented)
     id: CloudStorageProvider;
     // (undocumented)
@@ -233,6 +233,16 @@ export class AliCloudStorageService extends CloudStorageService {
     obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, _clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
+}
+
+// @beta (undocumented)
+export interface AliCloudStorageServiceCredentials {
+    // (undocumented)
+    accessKeyId: string;
+    // (undocumented)
+    accessKeySecret: string;
+    // (undocumented)
+    region: string;
 }
 
 // @public
@@ -244,7 +254,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
 }
 
 // @public
-export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
+export abstract class AuxCoordSystem extends DefinitionElement {
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -255,7 +265,7 @@ export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoo
 }
 
 // @public
-export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
+export class AuxCoordSystem2d extends AuxCoordSystem {
     constructor(props: AuxCoordSystem2dProps, iModel: IModelDb);
     // (undocumented)
     angle: number;
@@ -267,7 +277,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
 }
 
 // @public
-export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
+export class AuxCoordSystem3d extends AuxCoordSystem {
     constructor(props: AuxCoordSystem3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -291,7 +301,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
 
 // @beta (undocumented)
 export class AzureBlobStorage extends CloudStorageService {
-    constructor(credentials: CloudStorageServiceCredentials);
+    constructor(credentials: AzureBlobStorageCredentials);
     // (undocumented)
     ensureContainer(name: string): Promise<void>;
     // (undocumented)
@@ -302,44 +312,52 @@ export class AzureBlobStorage extends CloudStorageService {
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
 }
 
+// @beta (undocumented)
+export interface AzureBlobStorageCredentials {
+    // (undocumented)
+    accessKey: string;
+    // (undocumented)
+    account: string;
+}
+
 // @beta
 export interface BackendHubAccess {
     // @internal
-    acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
-    acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
-    createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
-    deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void>;
-    downloadChangeset(arg: ChangesetArg & {
+    acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
+    acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
+    createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
+    deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
+    downloadChangeset: (arg: ChangesetArg & {
         targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps>;
-    downloadChangesets(arg: ChangesetRangeArg & {
+    }) => Promise<ChangesetFileProps>;
+    downloadChangesets: (arg: ChangesetRangeArg & {
         targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps[]>;
+    }) => Promise<ChangesetFileProps[]>;
     // @internal
-    downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
+    downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     // @internal
-    downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
-    getChangesetFromNamedVersion(arg: IModelIdArg & {
+    downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+    getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
-    }): Promise<ChangesetProps>;
-    getChangesetFromVersion(arg: IModelIdArg & {
+    }) => Promise<ChangesetProps>;
+    getChangesetFromVersion: (arg: IModelIdArg & {
         version: IModelVersion;
-    }): Promise<ChangesetProps>;
-    getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
-    getMyBriefcaseIds(arg: IModelIdArg): Promise<BriefcaseId[]>;
-    pushChangeset(arg: IModelIdArg & {
+    }) => Promise<ChangesetProps>;
+    getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
+    getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
+    pushChangeset: (arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
-    }): Promise<ChangesetIndex>;
+    }) => Promise<ChangesetIndex>;
     // @internal
-    queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
-    queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
-    queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
-    queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
+    queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
+    queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
+    queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
+    queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
     // @internal
-    queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
     // @internal
-    releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
-    releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
+    releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
+    releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 }
 
 // @public
@@ -365,6 +383,49 @@ export enum BackendLoggerCategory {
     PromiseMemoizer = "core-backend.PromiseMemoizer",
     Relationship = "core-backend.Relationship",
     Schemas = "core-backend.Schemas"
+}
+
+// @internal
+export class BaseSettings implements Settings {
+    // (undocumented)
+    addDictionary(dictionaryName: string, priority: SettingsPriority, settings: SettingDictionary): void;
+    // (undocumented)
+    addFile(fileName: LocalFileName, priority: SettingsPriority): void;
+    // (undocumented)
+    addJson(dictionaryName: string, priority: SettingsPriority, settingsJson: string): void;
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    dropDictionary(dictionaryName: DictionaryName, raiseEvent?: boolean): boolean;
+    // (undocumented)
+    getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
+    // (undocumented)
+    getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
+    // (undocumented)
+    getBoolean(name: SettingName, defaultValue: boolean): boolean;
+    // (undocumented)
+    getBoolean(name: SettingName): boolean | undefined;
+    // (undocumented)
+    getNumber(name: SettingName, defaultValue: number): number;
+    // (undocumented)
+    getNumber(name: SettingName): number | undefined;
+    // (undocumented)
+    getObject<T extends object>(name: SettingName, defaultValue: T): T;
+    // (undocumented)
+    getObject<T extends object>(name: SettingName): T | undefined;
+    // (undocumented)
+    getSetting<T extends SettingType>(name: SettingName, defaultValue?: T): T | undefined;
+    // (undocumented)
+    getString(name: SettingName, defaultValue: string): string;
+    // (undocumented)
+    getString(name: SettingName): string | undefined;
+    inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[];
+    // (undocumented)
+    readonly onSettingsChanged: BeEvent<() => void>;
+    // (undocumented)
+    resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
+    // (undocumented)
+    protected verifyPriority(_priority: SettingsPriority): void;
 }
 
 // @public
@@ -457,14 +518,14 @@ export class BriefcaseManager {
     }
 
 // @public
-export abstract class Callout extends DetailingSymbol implements CalloutProps {
+export abstract class Callout extends DetailingSymbol {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
 }
 
 // @public
-export class Category extends DefinitionElement implements CategoryProps {
+export class Category extends DefinitionElement {
     // @internal
     constructor(props: CategoryProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -487,7 +548,7 @@ export class CategoryOwnsSubCategories extends ElementOwnsChildElements {
 }
 
 // @public
-export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
+export class CategorySelector extends DefinitionElement {
     // @internal
     constructor(props: CategorySelectorProps, iModel: IModelDb);
     categories: Id64String[];
@@ -595,7 +656,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
 }
 
 // @internal (undocumented)
-export type CheckPointArg = DownloadRequest;
+export type CheckpointArg = DownloadRequest;
 
 // @internal (undocumented)
 export class CheckpointManager {
@@ -641,6 +702,8 @@ export class ClassRegistry {
     static unregisterClassesFrom(schema: typeof Schema): void;
 }
 
+export { CloudSqlite }
+
 // @beta (undocumented)
 export abstract class CloudStorageService {
     // (undocumented)
@@ -660,16 +723,6 @@ export abstract class CloudStorageService {
     terminate(): void;
     // (undocumented)
     abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
-}
-
-// @beta (undocumented)
-export interface CloudStorageServiceCredentials {
-    // (undocumented)
-    accessKey: string;
-    // (undocumented)
-    account: string;
-    // (undocumented)
-    service: "azure" | "alicloud" | "external";
 }
 
 // @internal (undocumented)
@@ -716,6 +769,15 @@ export interface ComputeProjectExtentsOptions {
     reportOutliers?: boolean;
 }
 
+// @beta
+export type ContainerNameOrId = {
+    containerName: WorkspaceContainerName;
+    containerId?: never;
+} | {
+    containerId: WorkspaceContainerId;
+    containerName?: never;
+};
+
 // @alpha
 export interface CrashReportingConfig {
     crashDir: string;
@@ -750,7 +812,7 @@ export interface CreateNewIModelProps extends IModelNameArg {
     // (undocumented)
     readonly noLocks?: true;
     // (undocumented)
-    readonly revision0?: LocalFileName;
+    readonly version0?: LocalFileName;
 }
 
 // @public
@@ -762,7 +824,7 @@ export class DefinitionContainer extends DefinitionSet {
 }
 
 // @public
-export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
+export abstract class DefinitionElement extends InformationContentElement {
     // @internal
     constructor(props: DefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -825,7 +887,7 @@ export class DevTools {
     static stats(): DevToolsStats;
     static versions(): {
         application: string;
-        iModelJs: any;
+        iTwinJs: any;
     };
 }
 
@@ -878,8 +940,11 @@ export class DictionaryModel extends DefinitionModel {
     static get className(): string;
 }
 
+// @beta
+export type DictionaryName = string;
+
 // @public
-export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
+export abstract class DisplayStyle extends DefinitionElement {
     // @internal
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -908,7 +973,7 @@ export class DisplayStyle2d extends DisplayStyle {
     }
 
 // @public
-export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps {
+export class DisplayStyle3d extends DisplayStyle {
     // @internal
     constructor(props: DisplayStyle3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1050,6 +1115,8 @@ export class ECDb implements IDisposable {
     clearStatementCache(): void;
     closeDb(): void;
     createDb(pathName: string): void;
+    // @beta
+    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     dispose(): void;
     // @internal
     getCachedStatementCount(): number;
@@ -1061,14 +1128,12 @@ export class ECDb implements IDisposable {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
-    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
-    queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
-    // @internal
-    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
+    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
+    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
     resetSqliteCache(size: number): void;
-    restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
-    saveChanges(changeSetName?: string): void;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
+    saveChanges(changesetName?: string): void;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
@@ -1101,6 +1166,8 @@ export class ECSchemaXmlContext {
     constructor();
     // (undocumented)
     addSchemaPath(searchPath: string): void;
+    // (undocumented)
+    get nativeContext(): IModelJsNative.ECSchemaXmlContext;
     // (undocumented)
     readSchemaFromXmlFile(filePath: string): any;
     // (undocumented)
@@ -1238,8 +1305,31 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     next(): IteratorResult<ECSqlValue>;
 }
 
+// @beta
+export class EditableWorkspaceDb extends ITwinWorkspaceDb {
+    addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
+    addString(rscName: WorkspaceResourceName, val: string): void;
+    // (undocumented)
+    static cloneVersion(oldVersion: WorkspaceDbVersion, newVersion: WorkspaceDbVersion, cloudProps: CloudSqlite.ContainerAccessProps): Promise<void>;
+    // (undocumented)
+    close(): void;
+    create(): void;
+    getBlobWriter(rscName: WorkspaceResourceName): IModelJsNative.BlobIO;
+    // (undocumented)
+    open(): void;
+    removeBlob(rscName: WorkspaceResourceName): void;
+    removeFile(rscName: WorkspaceResourceName): void;
+    removeString(rscName: WorkspaceResourceName): void;
+    updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
+    updateString(rscName: WorkspaceResourceName, val: string): void;
+    // (undocumented)
+    upload(cloudProps: CloudSqlite.TransferProps): Promise<void>;
+    }
+
 // @public
-export class Element extends Entity implements ElementProps {
+export class Element extends Entity {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1321,7 +1411,7 @@ export class Element extends Entity implements ElementProps {
 }
 
 // @public
-export class ElementAspect extends Entity implements ElementAspectProps {
+export class ElementAspect extends Entity {
     // @internal
     constructor(props: ElementAspectProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1345,7 +1435,7 @@ export class ElementAspect extends Entity implements ElementAspectProps {
 }
 
 // @beta
-export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
+export class ElementDrivesElement extends Relationship {
     // @internal
     constructor(props: ElementDrivesElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1354,6 +1444,8 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
     priority: number;
     status: number;
+    // (undocumented)
+    toJSON(): ElementDrivesElementProps;
 }
 
 // @beta
@@ -1450,7 +1542,7 @@ export class EmbeddedFileLink extends LinkElement {
 }
 
 // @public
-export class Entity implements EntityProps {
+export class Entity {
     // @internal
     constructor(props: EntityProps, iModel: IModelDb);
     // @internal
@@ -1462,11 +1554,11 @@ export class Entity implements EntityProps {
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
     iModel: IModelDb;
+    readonly isInstanceOfEntity: true;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
     get schemaName(): string;
-    // @internal (undocumented)
     toJSON(): EntityProps;
 }
 
@@ -1632,7 +1724,7 @@ export class ExternalSource extends InformationReferenceElement {
 }
 
 // @public
-export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
+export class ExternalSourceAspect extends ElementMultiAspect {
     // @internal
     constructor(props: ExternalSourceAspectProps, iModel: IModelDb);
     checksum?: string;
@@ -1761,7 +1853,7 @@ export class FunctionalComposite extends FunctionalBreakdownElement {
 }
 
 // @public
-export abstract class FunctionalElement extends RoleElement implements FunctionalElementProps {
+export abstract class FunctionalElement extends RoleElement {
     // @internal
     constructor(props: FunctionalElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1863,7 +1955,7 @@ export class GenericSchema extends Schema {
 }
 
 // @public
-export abstract class GeometricElement extends Element implements GeometricElementProps {
+export abstract class GeometricElement extends Element {
     // @internal
     constructor(props: GeometricElementProps, iModel: IModelDb);
     // (undocumented)
@@ -1878,12 +1970,11 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     is2d(): this is GeometricElement2d;
     is3d(): this is GeometricElement3d;
     abstract get placement(): Placement2d | Placement3d;
-    // @internal (undocumented)
     toJSON(): GeometricElementProps;
 }
 
 // @public
-export abstract class GeometricElement2d extends GeometricElement implements GeometricElement2dProps {
+export abstract class GeometricElement2d extends GeometricElement {
     // @internal
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1906,7 +1997,7 @@ export class GeometricElement2dHasTypeDefinition extends TypeDefinition {
 }
 
 // @public
-export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
+export abstract class GeometricElement3d extends GeometricElement {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1929,7 +2020,7 @@ export class GeometricElement3dHasTypeDefinition extends TypeDefinition {
 }
 
 // @public
-export class GeometricModel extends Model implements GeometricModelProps {
+export class GeometricModel extends Model {
     // @internal
     constructor(props: GeometricModelProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1940,7 +2031,7 @@ export class GeometricModel extends Model implements GeometricModelProps {
 }
 
 // @public
-export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
+export abstract class GeometricModel2d extends GeometricModel {
     // @internal
     constructor(props: GeometricModel2dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1951,7 +2042,7 @@ export abstract class GeometricModel2d extends GeometricModel implements Geometr
 }
 
 // @public
-export abstract class GeometricModel3d extends GeometricModel implements GeometricModel3dProps {
+export abstract class GeometricModel3d extends GeometricModel {
     // @internal
     constructor(props: GeometricModel3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1964,7 +2055,7 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
 }
 
 // @public
-export class GeometryPart extends DefinitionElement implements GeometryPartProps {
+export class GeometryPart extends DefinitionElement {
     // @internal
     constructor(props: GeometryPartProps, iModel: IModelDb);
     // (undocumented)
@@ -2126,27 +2217,24 @@ export abstract class IModelDb extends IModel {
     close(): void;
     get codeSpecs(): CodeSpecs;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
-    // (undocumented)
-    protected _concurrentQueryStats: {
-        resetTimerHandle: any;
-        logTimerHandle: any;
-        lastActivityTime: number;
-        dispose: () => void;
-    };
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     // @alpha
     createBRepGeometry(createProps: BRepGeometryCreate): DbResult;
+    // @beta
+    createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): void;
+    // @beta
+    deleteSettingDictionary(name: string): void;
     // @alpha
     elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
     // @alpha
     elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult;
     // (undocumented)
     readonly elements: IModelDb.Elements;
-    // (undocumented)
+    // @internal (undocumented)
     embedFont(prop: FontProps): FontProps;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
@@ -2208,14 +2296,12 @@ export abstract class IModelDb extends IModel {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
-    query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
+    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
-    queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
-    // @internal
-    queryRows(sessionId: string, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
+    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     querySchemaVersion(schemaName: string): string | undefined;
     // @alpha
     queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
@@ -2226,13 +2312,15 @@ export abstract class IModelDb extends IModel {
     get relationships(): Relationships;
     // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
-    restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
     restartTxnSession(): void;
     // @internal (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
+    // @beta
+    saveSettingDictionary(name: string, dict: SettingDictionary): void;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
@@ -2247,6 +2335,10 @@ export abstract class IModelDb extends IModel {
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    get workspace(): Workspace;
+    // @internal (undocumented)
+    protected _workspace: Workspace;
 }
 
 // @public (undocumented)
@@ -2339,11 +2431,13 @@ export class IModelHost {
     static set applicationId(id: string);
     static get applicationVersion(): string;
     static set applicationVersion(version: string);
+    // @beta
+    static get appWorkspace(): Workspace;
     // (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
-    static get cacheDir(): string;
+    static get cacheDir(): LocalDirName;
     // @internal
     static get compressCachedTiles(): boolean;
     // (undocumented)
@@ -2381,25 +2475,25 @@ export class IModelHost {
     static startup(configuration?: IModelHostConfiguration): Promise<void>;
     // @alpha (undocumented)
     static readonly telemetry: TelemetryManager;
-    // @beta
-    static tileCacheService: CloudStorageService;
+    // @internal
+    static tileCacheService?: CloudStorageService;
     // @internal
     static get tileContentRequestTimeout(): number;
     // @internal
     static get tileTreeRequestTimeout(): number;
     // @internal (undocumented)
-    static tileUploader: CloudStorageTileUploader;
+    static tileUploader?: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
     }
 
 // @public
 export class IModelHostConfiguration {
-    appAssetsDir?: string;
-    cacheDir?: string;
+    appAssetsDir?: LocalDirName;
+    // @beta
+    authorizationClient?: AuthorizationClient;
+    cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;
-    // (undocumented)
-    concurrentQuery: Config;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
     // @internal
@@ -2408,7 +2502,8 @@ export class IModelHostConfiguration {
     static defaultLogTileSizeThreshold: number;
     // @internal
     static defaultTileRequestTimeout: number;
-    imodelClient?: IModelClient;
+    // @beta
+    hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold: number;
     // @internal
@@ -2416,82 +2511,15 @@ export class IModelHostConfiguration {
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
-    tileCacheCredentials?: CloudStorageServiceCredentials;
+    tileCacheAzureCredentials?: AzureBlobStorageCredentials;
+    // @beta
+    tileCacheService?: CloudStorageService;
     // @internal
     tileContentRequestTimeout: number;
     // @internal
     tileTreeRequestTimeout: number;
-}
-
-// @internal (undocumented)
-export class IModelHubBackend {
-    // (undocumented)
-    static acquireLocks(arg: BriefcaseDbArg & {
-        locks: LockProps[];
-    }): Promise<void>;
-    // (undocumented)
-    static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number>;
-    // (undocumented)
-    static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
-    // (undocumented)
-    static deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void>;
-    // (undocumented)
-    static downloadChangeset(arg: ChangesetArg & {
-        targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps>;
-    static downloadChangesets(arg: ChangesetRangeArg & {
-        targetDir: LocalDirName;
-    }): Promise<ChangesetFileProps[]>;
-    // (undocumented)
-    static downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
-    // (undocumented)
-    static downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
-    // (undocumented)
-    static getChangesetFromNamedVersion(arg: IModelIdArg & {
-        versionName: string;
-    }): Promise<ChangesetProps>;
-    // (undocumented)
-    static getChangesetFromVersion(arg: IModelIdArg & {
-        version: IModelVersion;
-    }): Promise<ChangesetProps>;
-    // (undocumented)
-    static getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
-    // (undocumented)
-    static getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
-    // (undocumented)
-    static get iModelClient(): IModelClient;
-    // (undocumented)
-    static get isUsingIModelBankClient(): boolean;
-    // (undocumented)
-    static pushChangeset(arg: IModelIdArg & {
-        changesetProps: ChangesetFileProps;
-    }): Promise<ChangesetIndex>;
-    // (undocumented)
-    static queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
-    // (undocumented)
-    static queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
-    // (undocumented)
-    static queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
-    static queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
-    // (undocumented)
-    static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
-    // (undocumented)
-    static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
-    // (undocumented)
-    static releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
-    // (undocumented)
-    static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
-    static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
-    // (undocumented)
-    static setIModelClient(client?: IModelClient): void;
-    // (undocumented)
-    static toChangeSetProps(cs: ChangeSet): ChangesetProps;
-    // (undocumented)
-    static toHubLock(arg: BriefcaseDbArg, reqLock: LockProps): Lock;
-    // (undocumented)
-    static toHubLocks(arg: BriefcaseDbArg & {
-        locks: LockProps[];
-    }): Lock[];
+    // @beta
+    workspace?: WorkspaceOpts;
 }
 
 // @public
@@ -2573,7 +2601,7 @@ export abstract class InformationModel extends Model {
 }
 
 // @public
-export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
+export abstract class InformationPartitionElement extends InformationContentElement {
     // @internal
     constructor(props: InformationPartitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2612,6 +2640,9 @@ export abstract class InformationReferenceElement extends InformationContentElem
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @internal (undocumented)
+export function initializeRpcBackend(): void;
 
 // @beta
 export interface InstanceChange {
@@ -2674,6 +2705,85 @@ export interface ITwinIdArg {
     readonly iTwinId: GuidString;
 }
 
+// @internal (undocumented)
+export class ITwinWorkspace implements Workspace {
+    constructor(settings: Settings, opts?: WorkspaceOpts);
+    // (undocumented)
+    addContainer(toAdd: ITwinWorkspaceContainer): void;
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    readonly containerDir: LocalDirName;
+    // (undocumented)
+    getContainer(props: WorkspaceContainerProps): WorkspaceContainer;
+    // (undocumented)
+    getWorkspaceDb(props: WorkspaceDbProps): Promise<WorkspaceDb>;
+    // (undocumented)
+    loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
+    // (undocumented)
+    resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
+    // (undocumented)
+    readonly settings: Settings;
+}
+
+// @internal (undocumented)
+export class ITwinWorkspaceContainer implements WorkspaceContainer {
+    constructor(workspace: ITwinWorkspace, id: WorkspaceContainerId);
+    // (undocumented)
+    addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    get dirName(): string;
+    // (undocumented)
+    dropWorkspaceDb(toDrop: WorkspaceDb): void;
+    // (undocumented)
+    readonly filesDir: LocalDirName;
+    // (undocumented)
+    getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerName">): Promise<WorkspaceDb>;
+    // (undocumented)
+    readonly id: WorkspaceContainerId;
+    // (undocumented)
+    purgeContainerFiles(): void;
+    // (undocumented)
+    readonly workspace: ITwinWorkspace;
+    }
+
+// @beta
+export class ITwinWorkspaceDb implements WorkspaceDb {
+    constructor(dbName: WorkspaceDbName, container: WorkspaceContainer);
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    readonly container: WorkspaceContainer;
+    // (undocumented)
+    readonly dbName: WorkspaceDbName;
+    // (undocumented)
+    getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
+    getBlobReader(rscName: WorkspaceResourceName): IModelJsNative.BlobIO;
+    // (undocumented)
+    getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
+    // (undocumented)
+    getString(rscName: WorkspaceResourceName): string | undefined;
+    // (undocumented)
+    get isOpen(): boolean;
+    // (undocumented)
+    localFile: LocalFileName;
+    // (undocumented)
+    protected static noLeadingOrTrailingSpaces(name: string, msg: string): void;
+    // (undocumented)
+    readonly onClosed: BeEvent<() => void>;
+    // (undocumented)
+    open(): void;
+    // (undocumented)
+    queryFileResource(rscName: WorkspaceResourceName): {
+        localFileName: string;
+        info: IModelJsNative.EmbedFileQuery;
+    } | undefined;
+    // (undocumented)
+    readonly sqliteDb: SQLiteDb;
+    }
+
 // @public
 export class KnownLocations {
     static get nativeAssetsDir(): string;
@@ -2682,7 +2792,7 @@ export class KnownLocations {
 }
 
 // @internal
-export class LightLocation extends SpatialLocationElement implements LightLocationProps {
+export class LightLocation extends SpatialLocationElement {
     constructor(props: LightLocationProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
@@ -2690,7 +2800,7 @@ export class LightLocation extends SpatialLocationElement implements LightLocati
 }
 
 // @public
-export class LineStyle extends DefinitionElement implements LineStyleProps {
+export class LineStyle extends DefinitionElement {
     // @internal
     constructor(props: LineStyleProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2875,12 +2985,20 @@ export class LinkPartition extends InformationPartitionElement {
 // @internal (undocumented)
 export class LocalhostIpcHost {
     // (undocumented)
+    static connect(connection: ws): void;
+    // (undocumented)
     static startup(opts?: {
-        localhostIpcHost?: {
-            socketPort?: number;
-        };
+        localhostIpcHost?: LocalhostIpcHostOpts;
         iModelHost?: IModelHostConfiguration;
     }): Promise<void>;
+}
+
+// @internal (undocumented)
+export interface LocalhostIpcHostOpts {
+    // (undocumented)
+    noServer?: boolean;
+    // (undocumented)
+    socketPort?: number;
 }
 
 // @beta
@@ -2894,8 +3012,10 @@ export class LockConflict extends IModelError {
 
 // @beta
 export interface LockControl {
-    acquireExclusiveLock(ids: Id64Arg): Promise<void>;
-    acquireSharedLock(ids: Id64Arg): Promise<void>;
+    acquireLocks(arg: {
+        shared?: Id64Arg;
+        exclusive?: Id64Arg;
+    }): Promise<void>;
     // @internal
     checkExclusiveLock(id: Id64String, type: string, operation: string): void;
     // @internal
@@ -2933,7 +3053,7 @@ export class MetaDataRegistry {
     }
 
 // @public
-export class Model extends Entity implements ModelProps {
+export class Model extends Entity {
     // @internal
     constructor(props: ModelProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2993,7 +3113,7 @@ export class Model extends Entity implements ModelProps {
 }
 
 // @public
-export class ModelSelector extends DefinitionElement implements ModelSelectorProps {
+export class ModelSelector extends DefinitionElement {
     // @internal
     constructor(props: ModelSelectorProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3006,31 +3126,6 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     models: Id64String[];
     // @internal (undocumented)
     toJSON(): ModelSelectorProps;
-}
-
-// @internal (undocumented)
-export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
-    protected constructor(config?: NativeAppAuthorizationConfiguration);
-    // (undocumented)
-    protected _accessToken: AccessToken;
-    // (undocumented)
-    config?: NativeAppAuthorizationConfiguration;
-    // (undocumented)
-    expireSafety: number;
-    // (undocumented)
-    getAccessToken(): Promise<AccessToken>;
-    // (undocumented)
-    initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
-    // (undocumented)
-    issuerUrl?: string;
-    // (undocumented)
-    protected abstract refreshToken(): Promise<AccessToken>;
-    // (undocumented)
-    setAccessToken(token: AccessToken): void;
-    // (undocumented)
-    abstract signIn(): Promise<void>;
-    // (undocumented)
-    abstract signOut(): Promise<void>;
 }
 
 // @public
@@ -3062,13 +3157,10 @@ export class NativeHost {
     // (undocumented)
     static get applicationName(): string;
     static get appSettingsCacheDir(): string;
-    // @internal (undocumented)
-    static get authorization(): NativeAppAuthorizationBackend;
     static checkInternetConnectivity(): InternetConnectivityStatus;
     // (undocumented)
     static get isValid(): boolean;
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
-    static readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // @internal
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
@@ -3289,6 +3381,8 @@ export interface ProcessChangesetOptions {
     // (undocumented)
     filterSpatial?: boolean;
     // (undocumented)
+    relationshipCacheSize?: number;
+    // (undocumented)
     rulesetDir?: string;
     // (undocumented)
     rulesetId: string;
@@ -3300,6 +3394,8 @@ export interface ProcessChangesetOptions {
     wantParents?: boolean;
     // (undocumented)
     wantPropertyChecksums?: boolean;
+    // (undocumented)
+    wantRelationshipCaching?: boolean;
 }
 
 // @public
@@ -3327,7 +3423,7 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 }
 
 // @public
-export class Relationship extends Entity implements RelationshipProps {
+export class Relationship extends Entity {
     // @internal
     constructor(props: RelationshipProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3364,7 +3460,7 @@ export class Relationships {
 }
 
 // @public
-export class RenderMaterialElement extends DefinitionElement implements RenderMaterialProps {
+export class RenderMaterialElement extends DefinitionElement {
     // @internal
     constructor(props: RenderMaterialProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3424,7 +3520,7 @@ export class RenderTimeline extends InformationRecordElement {
 }
 
 // @public
-export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
+export class RepositoryLink extends UrlLink {
     // @internal
     constructor(props: RepositoryLinkProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3458,6 +3554,13 @@ export class RoleModel extends Model {
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @public
+export class RpcTrace {
+    static get currentActivity(): RpcActivity | undefined;
+    static get expectCurrentActivity(): RpcActivity;
+    static run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
+    }
 
 // @public
 export class Schema {
@@ -3525,8 +3628,114 @@ export class SectionDrawingModel extends DrawingModel {
 // @internal
 export function setMaxEntitiesPerEvent(max: number): number;
 
+// @beta
+export type SettingDictionary = SettingObject;
+
+// @beta
+export interface SettingInspector<T> {
+    // (undocumented)
+    dictionary: DictionaryName;
+    // (undocumented)
+    priority: number;
+    // (undocumented)
+    value: T;
+}
+
+// @beta
+export type SettingName = string;
+
+// @beta
+export interface SettingObject {
+    // (undocumented)
+    [name: string]: SettingType;
+}
+
+// @beta
+export type SettingResolver<T> = (val: T, dict: DictionaryName, priority: SettingsPriority) => T | undefined;
+
+// @beta
+export interface Settings {
+    addDictionary(dictionaryName: DictionaryName, priority: SettingsPriority, settings: SettingDictionary): void;
+    addFile(fileName: LocalFileName, priority: SettingsPriority): void;
+    addJson(dictionaryName: DictionaryName, priority: SettingsPriority, settingsJson: string): void;
+    // @internal (undocumented)
+    close(): void;
+    dropDictionary(dictionaryName: DictionaryName): void;
+    getArray<T extends SettingType>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
+    // (undocumented)
+    getArray<T extends SettingType>(settingName: SettingName): Array<T> | undefined;
+    getBoolean(settingName: SettingName, defaultValue: boolean): boolean;
+    // (undocumented)
+    getBoolean(settingName: SettingName, defaultValue?: boolean): boolean | undefined;
+    getNumber(settingName: SettingName, defaultValue: number): number;
+    // (undocumented)
+    getNumber(settingName: SettingName): number | undefined;
+    getObject<T extends object>(settingName: SettingName, defaultValue: T): T;
+    // (undocumented)
+    getObject<T extends object>(settingName: SettingName): T | undefined;
+    getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
+    getString(settingName: SettingName, defaultValue: string): string;
+    // (undocumented)
+    getString(settingName: SettingName, defaultValue?: string): string | undefined;
+    inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[];
+    readonly onSettingsChanged: BeEvent<() => void>;
+    resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
+    // (undocumented)
+    resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue: T): T;
+}
+
+// @beta
+export interface SettingsGroupSpec {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly extensionId?: string;
+    // (undocumented)
+    readonly groupName: string;
+    // (undocumented)
+    readonly order?: number;
+    // (undocumented)
+    readonly properties: {
+        [name: string]: SettingSpec;
+    };
+    // (undocumented)
+    readonly title?: string;
+}
+
+// @beta
+export interface SettingSpec extends Readonly<JSONSchema> {
+    readonly enumItemLabels?: string[];
+    readonly multilineEdit?: true;
+    // (undocumented)
+    type: JSONSchemaTypeName | JSONSchemaTypeName[];
+}
+
+// @beta
+export enum SettingsPriority {
+    application = 200,
+    defaults = 100,
+    iModel = 500,
+    iTwin = 400,
+    organization = 300
+}
+
+// @beta
+export class SettingsSpecRegistry {
+    static addFile(fileName: string): string[];
+    static addGroup(settingsGroup: SettingsGroupSpec | SettingsGroupSpec[]): string[];
+    static addJson(settingSpecJson: string): string[];
+    static readonly allSpecs: Map<string, SettingSpec>;
+    static readonly onSpecsChanged: BeEvent<() => void>;
+    static removeGroup(groupName: string): void;
+    // @internal
+    static reset(): void;
+    }
+
+// @beta
+export type SettingType = JSONSchemaType;
+
 // @public
-export class Sheet extends Document implements SheetProps {
+export class Sheet extends Document {
     // @internal
     constructor(props: SheetProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3545,7 +3754,7 @@ export class Sheet extends Document implements SheetProps {
 }
 
 // @public
-export class SheetBorderTemplate extends Document implements SheetBorderTemplateProps {
+export class SheetBorderTemplate extends Document {
     // @internal
     constructor(props: SheetBorderTemplateProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3563,7 +3772,7 @@ export class SheetModel extends GraphicalModel2d {
 }
 
 // @public
-export class SheetTemplate extends Document implements SheetTemplateProps {
+export class SheetTemplate extends Document {
     // @internal
     constructor(props: SheetTemplateProps, iModel: IModelDb);
     // (undocumented)
@@ -3681,7 +3890,7 @@ export abstract class SpatialModel extends GeometricModel3d {
 }
 
 // @public
-export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
+export class SpatialViewDefinition extends ViewDefinition3d {
     // @internal
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3835,7 +4044,7 @@ export class SubCategory extends DefinitionElement {
 }
 
 // @public
-export class Subject extends InformationReferenceElement implements SubjectProps {
+export class Subject extends InformationReferenceElement {
     // @internal
     constructor(props: SubjectProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4062,7 +4271,7 @@ export class TxnManager {
 }
 
 // @public
-export abstract class TypeDefinitionElement extends DefinitionElement implements TypeDefinitionElementProps {
+export abstract class TypeDefinitionElement extends DefinitionElement {
     // @internal
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4080,7 +4289,7 @@ export interface UpdateModelOptions extends ModelProps {
 }
 
 // @public
-export class UrlLink extends LinkElement implements UrlLinkProps {
+export class UrlLink extends LinkElement {
     // @internal
     constructor(props: UrlLinkProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4104,16 +4313,13 @@ export class V1CheckpointManager {
     static getFolder(iModelId: GuidString): LocalDirName;
     }
 
-// @beta
+// @internal
 export interface V2CheckpointAccessProps {
-    // (undocumented)
-    readonly auth: string;
-    // (undocumented)
-    readonly container: string;
-    readonly dbAlias: string;
-    // (undocumented)
+    readonly accountName: string;
+    readonly containerId: string;
+    readonly dbName: string;
+    readonly sasToken: AccessToken;
     readonly storageType: string;
-    readonly user: string;
 }
 
 // @internal
@@ -4134,7 +4340,7 @@ export interface ValidationError {
 }
 
 // @public
-export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
+export class ViewAttachment extends GraphicalElement2d {
     constructor(props: ViewAttachmentProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -4145,14 +4351,14 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
 }
 
 // @public
-export class ViewAttachmentLabel extends DetailingSymbol implements ViewAttachmentLabelProps {
+export class ViewAttachmentLabel extends DetailingSymbol {
     constructor(props: ViewAttachmentLabelProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
 }
 
 // @public
-export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
+export abstract class ViewDefinition extends DefinitionElement {
     // @internal
     protected constructor(props: ViewDefinitionProps, iModel: IModelDb);
     categorySelectorId: Id64String;
@@ -4178,7 +4384,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
 }
 
 // @public
-export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2dProps {
+export class ViewDefinition2d extends ViewDefinition {
     // @internal
     constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     angle: Angle;
@@ -4196,7 +4402,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
 }
 
 // @public
-export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
+export abstract class ViewDefinition3d extends ViewDefinition {
     // @internal
     constructor(props: ViewDefinition3dProps, iModel: IModelDb);
     angles: YawPitchRollAngles;
@@ -4225,6 +4431,84 @@ export class WebMercatorModel extends SpatialModel {
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @beta
+export interface Workspace {
+    close(): void;
+    readonly containerDir: LocalDirName;
+    // (undocumented)
+    getContainer(props: WorkspaceContainerProps): WorkspaceContainer;
+    getWorkspaceDb(props: WorkspaceDbProps): Promise<WorkspaceDb>;
+    loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
+    resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
+    readonly settings: Settings;
+}
+
+// @beta
+export interface WorkspaceContainer {
+    // @internal (undocumented)
+    addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
+    close(): void;
+    // (undocumented)
+    readonly dirName: LocalDirName;
+    dropWorkspaceDb(container: WorkspaceDb): void;
+    readonly filesDir: LocalDirName;
+    // (undocumented)
+    getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerName">): Promise<WorkspaceDb>;
+    // (undocumented)
+    readonly id: WorkspaceContainerId;
+    // (undocumented)
+    readonly workspace: Workspace;
+}
+
+// @beta
+export type WorkspaceContainerId = string;
+
+// @beta
+export type WorkspaceContainerName = string;
+
+// @beta
+export type WorkspaceContainerProps = ContainerNameOrId & {
+    cloudProps?: CloudSqlite.TransferProps;
+};
+
+// @beta
+export interface WorkspaceDb {
+    // (undocumented)
+    readonly container: WorkspaceContainer;
+    readonly dbName: WorkspaceDbName;
+    getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
+    // @internal (undocumented)
+    getBlobReader(rscName: WorkspaceResourceName): IModelJsNative.BlobIO;
+    getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
+    getString(rscName: WorkspaceResourceName): string | undefined;
+    readonly localFile: LocalDirName;
+    readonly onClosed: BeEvent<() => void>;
+}
+
+// @beta
+export type WorkspaceDbName = string;
+
+// @beta
+export type WorkspaceDbProps = WorkspaceContainerProps & {
+    dbName: WorkspaceDbName;
+};
+
+// @beta
+export type WorkspaceDbVersion = string;
+
+// @beta
+export interface WorkspaceOpts {
+    containerDir?: LocalDirName;
+}
+
+// @beta
+export type WorkspaceResourceName = string;
+
+// @beta
+export type WorkspaceResourceProps = WorkspaceDbProps & {
+    rscName: WorkspaceResourceName;
+};
 
 
 // (No @packageDocumentation comment for this package)

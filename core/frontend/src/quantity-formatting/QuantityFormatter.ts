@@ -8,11 +8,12 @@
 
 import { BeUiEvent } from "@itwin/core-bentley";
 import {
-  Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider, UnitSystemKey,
+  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion,
+  UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { BasicUnitsProvider } from "./BasicUnitsProvider";
+import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
 
@@ -30,6 +31,39 @@ export type QuantityTypeArg = QuantityType | string;
  * @beta
  */
 export type QuantityTypeKey = string;
+
+/** String used to uniquely identify a UnitProp.
+ * @beta
+ */
+export type UnitNameKey = string;
+
+/**
+ * Class that contains alternate Unit Labels. These labels are used when parsing strings to quantities.
+ * One use case is to allow a "^", which is easily input, to be used to specify "°".
+ * @internal
+ */
+export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider {
+  private _alternateLabelRegistry = new Map<UnitNameKey, Set<string>>();
+
+  public addAlternateLabels(key: UnitNameKey, ...labels: string[]) {
+    [...labels].forEach((value) => this._alternateLabelRegistry.get(key)?.add(value));
+  }
+
+  constructor(defaultAlternates?: Map<UnitNameKey, Set<string>>) {
+    if (defaultAlternates) {
+      this._alternateLabelRegistry = defaultAlternates;
+    }
+  }
+
+  public getAlternateUnitLabels(unit: UnitProps): string[] | undefined {
+    const key: UnitNameKey = unit.name;
+    const labels = this._alternateLabelRegistry.get(key);
+    if (labels)
+      return [...labels.values()];
+
+    return undefined;
+  }
+}
 
 /** Function to return a QuantityTypeKey given either a QuantityType or a string
  * @beta
@@ -121,7 +155,7 @@ export interface QuantityTypeDefinition {
   /** Generate a [FormatterSpec]$(core-quantity) that will be called to format values.*/
   generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
   /** Generate a [ParserSpec]$(core-quantity) that will be called to parse a string into a quantity value.*/
-  generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
+  generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider, alternateUnitLabelsProvider?: AlternateUnitLabelsProvider) => Promise<ParserSpec>;
 }
 
 /** CustomQuantityTypeDefinition interface is used to define a Custom quantity type that can be registered with the [[QuantityFormatter]].
@@ -164,14 +198,14 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
     if (!this._label) {
       this._label = IModelApp.localization.getLocalizedString(this._labelKey);
     }
-    return this._label;
+    return this._label ?? "";
   }
 
   public get description(): string {
     if (!this._description) {
       this._description = IModelApp.localization.getLocalizedString(this._descriptionKey);
     }
-    return this._description;
+    return this._description ?? this.label;
   }
 
   public getDefaultFormatPropsBySystem(requestedSystem: UnitSystemKey): FormatProps {
@@ -202,9 +236,9 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
     return FormatterSpec.create(format.name, format, unitsProvider, this.persistenceUnit);
   }
 
-  public async generateParserSpec(formatProps: FormatProps, unitsProvider: UnitsProvider) {
+  public async generateParserSpec(formatProps: FormatProps, unitsProvider: UnitsProvider, alternateUnitLabelsProvider?: AlternateUnitLabelsProvider) {
     const format = await Format.createFromJSON(this.key, unitsProvider, formatProps);
-    return ParserSpec.create(format, unitsProvider, this.persistenceUnit);
+    return ParserSpec.create(format, unitsProvider, this.persistenceUnit, alternateUnitLabelsProvider);
   }
 }
 
@@ -295,6 +329,7 @@ export interface UnitFormattingSettingsProvider {
  */
 export class QuantityFormatter implements UnitsProvider {
   private _unitsProvider: UnitsProvider = new BasicUnitsProvider();
+  private _alternateUnitLabelsRegistry = new AlternateUnitLabelsRegistry(getDefaultAlternateUnitLabels());
   protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
   protected _activeUnitSystem: UnitSystemKey = "imperial";
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
@@ -302,7 +337,7 @@ export class QuantityFormatter implements UnitsProvider {
   protected _overrideFormatPropsByUnitSystem = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
   protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
 
-  /** set the settings provider and if not imodel specific initialize setting for user. */
+  /** Set the settings provider and if not iModel specific initialize setting for user. */
   public async setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider) {
     this._unitFormattingSettingsProvider = provider;
     if (!provider.maintainOverridesPerIModel)
@@ -429,7 +464,7 @@ export class QuantityFormatter implements UnitsProvider {
 
   private async loadFormatAndParserSpec(quantityTypeDefinition: QuantityTypeDefinition, formatProps: FormatProps) {
     const formatterSpec = await quantityTypeDefinition.generateFormatterSpec(formatProps, this.unitsProvider);
-    const parserSpec = await quantityTypeDefinition.generateParserSpec(formatProps, this.unitsProvider);
+    const parserSpec = await quantityTypeDefinition.generateParserSpec(formatProps, this.unitsProvider, this.alternateUnitLabelsProvider);
     this._activeFormatSpecsByType.set(quantityTypeDefinition.key, formatterSpec);
     this._activeParserSpecsByType.set(quantityTypeDefinition.key, parserSpec);
   }
@@ -503,6 +538,20 @@ export class QuantityFormatter implements UnitsProvider {
 
   public get quantityTypesRegistry() {
     return this._quantityTypeRegistry;
+  }
+
+  public get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider {
+    return this._alternateUnitLabelsRegistry;
+  }
+
+  /**
+   * Add one or more alternate labels for a unit - these labels are used during string parsing.
+   * @param key UnitNameKey which comes from `UnitProps.name`
+   * @param labels one or more unit labels
+   */
+  public addAlternateLabels(key: UnitNameKey, ...labels: string[]) {
+    this._alternateUnitLabelsRegistry.addAlternateLabels(key, ...labels);
+    this.onUnitsProviderChanged.emit();
   }
 
   public get unitsProvider() {

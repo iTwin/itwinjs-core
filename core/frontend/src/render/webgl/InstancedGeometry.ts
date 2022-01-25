@@ -156,31 +156,31 @@ export class InstanceBuffers extends InstanceData {
     stats.addInstances(bytesUsed);
   }
 
+  private static extendTransformedRange(tfs: Float32Array, i: number, range: Range3d, x: number, y: number, z: number) {
+    range.extendXYZ(tfs[i + 3] + tfs[i + 0] * x + tfs[i + 1] * y + tfs[i + 2] * z,
+      tfs[i + 7] + tfs[i + 4] * x + tfs[i + 5] * y + tfs[i + 6] * z,
+      tfs[i + 11] + tfs[i + 8] * x + tfs[i + 9] * y + tfs[i + 10] * z);
+  }
+
   public static computeRange(reprRange: Range3d, tfs: Float32Array, rtcCenter: Point3d, out?: Range3d): Range3d {
     const range = out ?? new Range3d();
 
     const numFloatsPerTransform = 3 * 4;
     assert(0 === tfs.length % (3 * 4));
 
-    const tf = Transform.createIdentity();
-    const r = new Range3d();
     for (let i = 0; i < tfs.length; i += numFloatsPerTransform) {
-      tf.setFromJSON({
-        origin: [tfs[i + 3], tfs[i + 7], tfs[i + 11]],
-        matrix: [
-          [tfs[i + 0], tfs[i + 1], tfs[i + 2]],
-          [tfs[i + 4], tfs[i + 5], tfs[i + 6]],
-          [tfs[i + 8], tfs[i + 9], tfs[i + 10]],
-        ],
-      });
-
-      reprRange.clone(r);
-      tf.multiplyRange(r, r);
-      range.extendRange(r);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.low.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.low.y, reprRange.high.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.high.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.low.x, reprRange.high.y, reprRange.high.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.low.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.low.y, reprRange.high.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.high.y, reprRange.low.z);
+      this.extendTransformedRange(tfs, i, range, reprRange.high.x, reprRange.high.y, reprRange.high.z);
     }
 
-    const rtcTransform = Transform.createTranslation(rtcCenter);
-    rtcTransform.multiplyRange(range, range);
+    range.low.addInPlace(rtcCenter);
+    range.high.addInPlace(rtcCenter);
 
     return range.clone(out);
   }
@@ -278,6 +278,7 @@ export class InstancedGeometry extends CachedGeometry {
   public override get asSurface() { return this._repr.asSurface; }
   public override get asEdge() { return this._repr.asEdge; }
   public override get asSilhouette() { return this._repr.asSilhouette; }
+  public override get asIndexedEdge() { return this._repr.asIndexedEdge; }
 
   public get renderOrder() { return this._repr.renderOrder; }
   public override get isLitSurface() { return this._repr.isLitSurface; }
@@ -292,7 +293,7 @@ export class InstancedGeometry extends CachedGeometry {
   public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
   public override get supportsThematicDisplay() { return this._repr.supportsThematicDisplay; }
 
-  public getRenderPass(target: Target) { return this._repr.getRenderPass(target); }
+  public override getPass(target: Target) { return this._repr.getPass(target); }
   public override wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }
   public override getLineCode(params: ShaderProgramParams) { return this._repr.getLineCode(params); }
   public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }

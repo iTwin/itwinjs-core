@@ -178,7 +178,6 @@ export class UserStatisticsHandler {
   }
 
   /** Get [[UserStatistics]].
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried [[UserStatistics]] or select different data from them.
    * @returns Array of [[UserStatistics]] for users matching the query.
@@ -289,7 +288,6 @@ export class UserInfoHandler {
   }
 
   /** Get the information on users who have accessed the iModel.
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried users or select different data from them.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)

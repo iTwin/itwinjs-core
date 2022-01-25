@@ -14,7 +14,6 @@ import { HSVColor } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { InputProps } from '@itwin/itwinui-react';
-import { Localization } from '@itwin/core-common';
 import { Matrix3d } from '@itwin/core-geometry';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
@@ -28,7 +27,7 @@ import { ScreenViewport } from '@itwin/core-frontend';
 import { StandardViewId } from '@itwin/core-frontend';
 import { TentativePoint } from '@itwin/core-frontend';
 import { TypeEditor } from '@itwin/components-react';
-import { UiEvent } from '@itwin/core-react';
+import { UiEvent } from '@itwin/appui-abstract';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
 import { Vector3d } from '@itwin/core-geometry';
@@ -175,8 +174,7 @@ export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResu
 export interface ColorPickerDialogProps {
     // (undocumented)
     color: ColorDef;
-    colorInputType?: "HSL" | "RGB";
-    // (undocumented)
+    colorInputType?: "hsl" | "rgb" | "hex";
     colorPresets?: ColorDef[];
     // (undocumented)
     dialogTitle: string;
@@ -186,10 +184,10 @@ export interface ColorPickerDialogProps {
     onOkResult: (selectedColor: ColorDef) => void;
 }
 
-// @public
+// @public @deprecated
 export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface ColorPickerPanelProps {
     // (undocumented)
     activeColor: ColorDef;
@@ -207,7 +205,7 @@ export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | n
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     captureClicks?: boolean;
     colorDefs?: ColorDef[];
-    colorInputType?: "HSL" | "RGB";
+    colorInputType?: "hsl" | "rgb" | "hex";
     disabled?: boolean;
     hideCloseButton?: boolean;
     initialColor: ColorDef;
@@ -1043,9 +1041,8 @@ export enum TimelineScale {
 
 // @public
 export class UiIModelComponents {
-    static initialize(localization?: Localization): Promise<void>;
+    static initialize(): Promise<void>;
     static get initialized(): boolean;
-    static get localization(): Localization;
     static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
@@ -1088,17 +1085,7 @@ export interface ViewIdChangedEventArgs {
 }
 
 // @public
-export class ViewportComponent extends React.Component<ViewportProps, ViewportState> {
-    constructor(props: ViewportProps);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentDidUpdate(prevProps: ViewportProps): Promise<void>;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function ViewportComponent(props: ViewportProps): JSX.Element;
 
 // @public
 export class ViewportComponentEvents {

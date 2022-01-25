@@ -7,24 +7,24 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
-import { ElectronApp } from "@itwin/core-electron/lib/ElectronFrontend";
 import { callFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import { TestUtility } from "../TestUtility";
 
-if (ProcessDetector.isElectronAppFrontend) {
+if (!ProcessDetector.isMobileAppFrontend) {
   describe("Model change monitoring", () => {
     let imodel: BriefcaseConnection;
 
     before(async () => {
-      await ElectronApp.startup();
+      await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
     });
 
     after(async () => {
-      await ElectronApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     beforeEach(async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/planprojection.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
       imodel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
     });
 

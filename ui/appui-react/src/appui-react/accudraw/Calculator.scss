@@ -1,0 +1,87 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/index";
+
+$button-size: 36px;
+$button-operator-size: $button-size+10px;
+
+.uifw-position-popup.uifw-calculator-host {
+  background-color: $buic-background-window;
+}
+
+.uifw-calculator {
+  max-width: 173px;
+
+  &:focus {
+    border-color: transparent;
+    outline: 0px;
+  }
+
+  >.uifw-calculator-top {
+    margin-bottom: 8px;
+
+    >.uifw-calculator-top-input {
+      width: 100%;
+    }
+
+    input {
+      text-align: right;
+      color: $buic-text-color;
+      background-color: $buic-background-control;
+      cursor: default;
+    }
+  }
+
+  >.uifw-calculator-button-grid {
+    display: grid;
+    grid-template-columns: $button-size $button-size $button-size $button-operator-size;
+    grid-gap: 6px;
+    gap: 6px;
+    justify-items: end;
+
+    .uifw-calculator-item {
+      width: $button-size;
+      height: $button-size;
+    }
+  }
+
+  >.uifw-calculator-bottom-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0;
+
+    >.uifw-calculator-large-button {
+      width: 70px;
+      font-size: 20px;
+    }
+
+    >.uifw-calculator-cancel-button {
+
+      &,
+      &:active,
+      &:focus {
+        border: none;
+        background-color: $uicore-gray;
+        color: $uicore-white;
+      }
+
+      &:hover {
+        background-color: $uicore-gray-5;
+        color: $uicore-white;
+      }
+
+    }
+  }
+
+  .uifw-calculator-button-svg {
+    width: 100%;
+    height: 18px;
+  }
+
+  .uifw-calculator-large-font {
+    font-size: 22px;
+  }
+
+}

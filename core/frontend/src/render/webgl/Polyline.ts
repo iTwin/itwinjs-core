@@ -9,7 +9,7 @@
 import { dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@itwin/core-common";
-import { PolylineParams } from "../primitives/VertexTable";
+import { PolylineParams } from "../primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
@@ -17,7 +17,7 @@ import { ShaderProgramParams } from "./DrawCommand";
 import { LineCode } from "./LineCode";
 import { GL } from "./GL";
 import { BuffersContainer } from "./AttributeBuffers";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -77,27 +77,29 @@ export class PolylineGeometry extends LUTGeometry {
 
   public override get polylineBuffers(): PolylineBuffers | undefined { return this._buffers; }
 
-  private _computeEdgePass(target: Target, colorInfo: ColorInfo): RenderPass {
+  private _computeEdgePass(target: Target, colorInfo: ColorInfo): Pass {
     const vf = target.currentViewFlags;
     if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges)
-      return RenderPass.None;
+      return "none";
 
     // Only want to return Translucent for edges if rendering in Wireframe mode ###TODO: what about overrides?
     const isTranslucent: boolean = RenderMode.Wireframe === vf.renderMode && vf.transparency && colorInfo.hasTranslucency;
-    return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
+    return isTranslucent ? "translucent" : "opaque-linear";
   }
 
-  public getRenderPass(target: Target): RenderPass {
+  public override getPass(target: Target): Pass {
     const vf = target.currentViewFlags;
     if (this.isEdge) {
       let pass = this._computeEdgePass(target, this.lut.colorInfo);
       // Only display the outline in wireframe if Fill is off...
-      if (RenderPass.None !== pass && this.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.fill)
-        pass = RenderPass.None;
+      if ("none" !== pass && this.isOutlineEdge && RenderMode.Wireframe === vf.renderMode && vf.fill)
+        pass = "none";
+
       return pass;
     }
+
     const isTranslucent: boolean = vf.transparency && this.lut.colorInfo.hasTranslucency;
-    return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
+    return isTranslucent ? "translucent" : "opaque-linear";
   }
 
   public get techniqueId(): TechniqueId { return TechniqueId.Polyline; }

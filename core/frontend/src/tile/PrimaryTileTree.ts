@@ -9,13 +9,15 @@
 import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
 import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
+  BatchType, compareIModelTileTreeIds, EdgeType, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString,
+  PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { AnimationNodeId } from "../render/GraphicBranch";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
-import { RenderScheduleState } from "../RenderScheduleState";
+import { formatAnimationBranchId, RenderScheduleState } from "../RenderScheduleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { SceneContext } from "../ViewContext";
 import { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
@@ -63,7 +65,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
     const options = {
-      edgesRequired: treeId.edgesRequired,
+      edgesRequired: EdgeType.None !== treeId.edges,
       allowInstancing: undefined === treeId.animationId && !treeId.enforceDisplayPriority && !treeId.sectionCut && !id.forceNoInstancing,
       is3d: id.is3d,
       batchType: BatchType.Primary,
@@ -127,17 +129,21 @@ export function disposeTileTreesForGeometricModels(modelIds: Set<Id64String>, iM
 class PrimaryTreeReference extends TileTreeReference {
   public readonly view: ViewState;
   public readonly model: GeometricModelState;
+  /** Chiefly for debugging - disables iteration of this reference in SpatialModelRefs to e.g. omit the reference from the scene. */
+  public deactivated = false;
   protected _viewFlagOverrides: ViewFlagOverrides;
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
   private readonly _sectionClip?: StringifiedClipVector;
   private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
   private _forceNoInstancing: boolean;
+  protected readonly _animationTransformNodeId?: number;
 
-  public constructor(view: ViewState, model: GeometricModelState, planProjection: boolean, transformNodeId?: number, sectionClip?: StringifiedClipVector) {
+  public constructor(view: ViewState, model: GeometricModelState, planProjection: boolean, transformNodeId: number | undefined, sectionClip?: StringifiedClipVector) {
     super();
     this.view = view;
     this.model = model;
+    this._animationTransformNodeId = transformNodeId;
 
     this._sectionClip = sectionClip;
     this._viewFlagOverrides = { ...model.jsonProperties.viewFlagOverrides };
@@ -159,7 +165,7 @@ class PrimaryTreeReference extends TileTreeReference {
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
-      treeId: this.createTreeId(view, model.id, transformNodeId),
+      treeId: this.createTreeId(view, model.id),
       isPlanProjection: planProjection,
       forceNoInstancing: this._forceNoInstancing,
     };
@@ -178,6 +184,10 @@ class PrimaryTreeReference extends TileTreeReference {
       if (Math.abs(sx - sy) > Geometry.smallMetricDistance || Math.abs(sx - sz) > Geometry.smallMetricDistance)
         this._forceNoInstancing = true;
     }
+  }
+
+  protected override getAnimationTransformNodeId() {
+    return this._animationTransformNodeId ?? AnimationNodeId.Untransformed;
   }
 
   protected override getViewFlagOverrides(_tree: TileTree) {
@@ -217,7 +227,7 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   public get treeOwner(): TileTreeOwner {
-    const newId = this.createTreeId(this.view, this._id.modelId, this._id.treeId.animationTransformNodeId);
+    const newId = this.createTreeId(this.view, this._id.modelId);
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || this._forceNoInstancing !== this._id.forceNoInstancing) {
       this._id = {
         modelId: this._id.modelId,
@@ -233,7 +243,7 @@ class PrimaryTreeReference extends TileTreeReference {
     return this._owner;
   }
 
-  protected createTreeId(view: ViewState, modelId: Id64String, animationTransformNodeId: number | undefined): PrimaryTileTreeId {
+  protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
     if (this._sectionClip) {
       // We do this each time in case the ClipStyle's overrides are modified.
       // ###TODO: can we avoid that? Event listeners maybe?
@@ -252,9 +262,10 @@ class PrimaryTreeReference extends TileTreeReference {
 
     const renderMode = this._viewFlagOverrides.renderMode ?? view.viewFlags.renderMode;
     const visibleEdges = this._viewFlagOverrides.visibleEdges ?? view.viewFlags.visibleEdges;
-    const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode;
+    const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
+    const edges = edgesRequired ? (IModelApp.tileAdmin.enableIndexedEdges ? EdgeType.Indexed : EdgeType.NonIndexed) : EdgeType.None;
     const sectionCut = this._sectionClip?.clipString;
-    return { type: BatchType.Primary, edgesRequired, animationId, animationTransformNodeId, sectionCut };
+    return { type: BatchType.Primary, edges, animationId, sectionCut };
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
@@ -269,19 +280,40 @@ class PrimaryTreeReference extends TileTreeReference {
 
 /** @internal */
 export class AnimatedTreeReference extends PrimaryTreeReference {
+  private readonly _branchId: string;
+
+  public constructor(view: ViewState, model: GeometricModelState, transformNodeId: number) {
+    super(view, model, false, transformNodeId);
+    this._branchId = formatAnimationBranchId(model.id, transformNodeId);
+  }
+
   protected override computeBaseTransform(tree: TileTree): Transform {
     const tf = super.computeBaseTransform(tree);
     const style = this.view.displayStyle;
     const script = style.scheduleScript;
-    if (undefined === script || undefined === this._id.treeId.animationTransformNodeId)
+    if (undefined === script || undefined === this._animationTransformNodeId)
       return tf;
 
     const timePoint = style.settings.timePoint ?? script.duration.low;
-    const animTf = script.getTransform(this._id.modelId, this._id.treeId.animationTransformNodeId, timePoint);
+    const animTf = script.getTransform(this._id.modelId, this._animationTransformNodeId, timePoint);
     if (animTf)
       animTf.multiplyTransformTransform(tf, tf);
 
     return tf;
+  }
+
+  public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    const animBranch = context.viewport.target.animationBranches?.branchStates.get(this._branchId);
+    if (animBranch && animBranch.omit)
+      return undefined;
+
+    const args = super.createDrawArgs(context);
+    if (args?.tree && undefined !== this._animationTransformNodeId) {
+      assert(args.tree instanceof IModelTileTree);
+      args.boundingRange = args.tree.getTransformNodeRange(this._animationTransformNodeId);
+    }
+
+    return args;
   }
 }
 
@@ -355,7 +387,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   }
 
   protected override createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
-    const id = super.createTreeId(view, modelId, undefined);
+    const id = super.createTreeId(view, modelId);
     const settings = this.getSettings();
     if (undefined !== settings && settings.enforceDisplayPriority)
       id.enforceDisplayPriority = true;
@@ -369,7 +401,7 @@ function isPlanProjection(view: ViewState, model: GeometricModelState): boolean 
   return undefined !== model3d && model3d.isPlanProjection;
 }
 
-function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: StringifiedClipVector | undefined): TileTreeReference {
+function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: StringifiedClipVector | undefined): PrimaryTreeReference {
   if (false !== IModelApp.renderSystem.options.planProjections && isPlanProjection(view, model))
     return new PlanProjectionTreeReference(view as ViewState3d, model, sectionCut);
 
@@ -377,7 +409,7 @@ function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: 
 }
 
 /** @internal */
-export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference {
+export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference {
   return createTreeRef(view, model, undefined);
 }
 
@@ -410,7 +442,7 @@ class MaskTreeReference extends TileTreeReference {
     return this._owner;
   }
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edgesRequired: false };
+    return { type: BatchType.Primary, edges: EdgeType.None };
   }
 }
 
@@ -424,9 +456,11 @@ export function createMaskTreeReference(view: ViewState, model: GeometricModelSt
  */
 export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   /** Supplies an iterator over all of the [[TileTreeReference]]s. */
-  readonly [Symbol.iterator]: () => Iterator<TileTreeReference>;
+  [Symbol.iterator](): Iterator<TileTreeReference>;
   /** Requests that the set of [[TileTreeReference]]s be updated to match the current state of the view, e.g., after the model selector's contents have changed. */
-  readonly update: () => void;
+  update(): void;
+  /** @see SpatialViewState.setTileTreeReferencesDeactivated. */
+  setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
@@ -444,9 +478,9 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
   /** The TileTreeReference representing the model's primary content. */
   private readonly _modelRef: TileTreeReference;
   /** TileTreeReferences representing nodes transformed by the view's schedule script. */
-  private readonly _animatedRefs: TileTreeReference[] = [];
+  private readonly _animatedRefs: PrimaryTreeReference[] = [];
   /** TileTreeReference providing cut geometry intersecting the view's clip volume. */
-  private _sectionCutRef?: TileTreeReference;
+  private _sectionCutRef?: PrimaryTreeReference;
   /** Whether `this._modelRef` is a [[PrimaryTreeReference]] (as opposed to, e.g., a reality model tree reference). */
   private readonly _isPrimaryRef: boolean;
 
@@ -456,11 +490,14 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
   }
 
   public *[Symbol.iterator](): Iterator<TileTreeReference> {
-    yield this._modelRef;
-    for (const animated of this._animatedRefs)
-      yield animated;
+    if (!this._primaryRef || !this._primaryRef.deactivated)
+      yield this._modelRef;
 
-    if (this._sectionCutRef)
+    for (const animated of this._animatedRefs)
+      if (!animated.deactivated)
+        yield animated;
+
+    if (this._sectionCutRef && !this._sectionCutRef.deactivated)
       yield this._sectionCutRef;
   }
 
@@ -473,7 +510,7 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
     const nodeIds = script?.getTransformNodeIds(ref.model.id);
     if (nodeIds)
       for (const nodeId of nodeIds)
-        this._animatedRefs.push(new AnimatedTreeReference(ref.view, ref.model, false, nodeId));
+        this._animatedRefs.push(new AnimatedTreeReference(ref.view, ref.model, nodeId));
   }
 
   public updateSectionCut(clip: StringifiedClipVector | undefined): void {
@@ -490,6 +527,26 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       clip = undefined;
 
     this._sectionCutRef = clip ? createTreeRef(ref.view, ref.model, clip) : undefined;
+  }
+
+  public setDeactivated(deactivated: boolean | undefined, which: "all" | "animated" | "primary" | "section" | number[]): void {
+    if (typeof which !== "string") {
+      for (const index of which)
+        if (this._animatedRefs[index])
+          this._animatedRefs[index].deactivated = deactivated ?? !this._animatedRefs[index].deactivated;
+
+      return;
+    }
+
+    if (("all" === which || "primary" === which) && this._primaryRef)
+      this._primaryRef.deactivated = deactivated ?? !this._primaryRef.deactivated;
+
+    if (("all" === which || "section" === which) && this._sectionCutRef)
+      this._sectionCutRef.deactivated = deactivated ?? !this._sectionCutRef.deactivated;
+
+    if (("all" === which || "animated" === which))
+      for (const ref of this._animatedRefs)
+        ref.deactivated = deactivated ?? !ref.deactivated;
   }
 
   private get _primaryRef(): PrimaryTreeReference | undefined {
@@ -525,6 +582,21 @@ class SpatialRefs implements SpatialTileTreeReferences {
     for (const modelRef of this._refs.values())
       for (const ref of modelRef)
         yield ref;
+  }
+
+  public setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean, refs: "all" | "animated" | "primary" | "section" | number[]): void {
+    if (undefined === modelIds) {
+      for (const model of this._refs.values())
+        model.setDeactivated(deactivated, refs);
+
+      return;
+    }
+
+    if (typeof modelIds === "string")
+      modelIds = [modelIds];
+
+    for (const modelId of modelIds)
+      this._refs.get(modelId)?.setDeactivated(deactivated, refs);
   }
 
   private load(): void {

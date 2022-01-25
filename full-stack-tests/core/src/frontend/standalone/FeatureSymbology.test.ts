@@ -2,12 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import {
-  ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride, ViewDefinitionProps, ViewFlags,
+  ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride, ViewDefinitionProps,
+  ViewFlags,
 } from "@itwin/core-common";
-import { FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
-import { assert, expect } from "chai";
+import { FeatureSymbology, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 class Overrides extends FeatureSymbology.Overrides {
   public constructor(view?: ViewState) { super(view); }
@@ -32,7 +34,7 @@ describe("FeatureSymbology.Overrides", () => {
   let viewState: SpatialViewState;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
@@ -47,7 +49,7 @@ describe("FeatureSymbology.Overrides", () => {
   after(async () => {
     if (imodel)
       await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("constructor with ViewState parameter works as expected", () => {
@@ -178,7 +180,7 @@ describe("FeatureSymbology.Overrides", () => {
     overrides = new Overrides();
     appearance = FeatureAppearance.fromJSON(props);
     overrides.setAlwaysDrawn(elementId);
-    overrides.overrideModel(id, modelApp);
+    overrides.override({ modelId: id, appearance: modelApp });
     appearance = overrides.getFeatureAppearance(feature, id);
     assert.isTrue(appearance!.equals(modelApp), "if elementId in alwaysDrawn set and overrides has Model corresponding to id, then appearance will be set to the ModelApp");
 
@@ -186,7 +188,7 @@ describe("FeatureSymbology.Overrides", () => {
     appearance = FeatureAppearance.fromJSON(props);
     modelApp = FeatureAppearance.fromJSON(badModelProps);
     overrides.setAlwaysDrawn(elementId);
-    overrides.overrideModel(id, modelApp);
+    overrides.override({ modelId: id, appearance: modelApp });
     appearance = overrides.getFeatureAppearance(feature, id);
     assert.isUndefined(appearance, "if appearance is set from model app and that app has an invalid transparency value, then getFeatureAppearance returns false");
     // NOTE: The above assertion appears to have assumed that getFeatureAppearance() returns undefined because it rejects the "invalid" transparency value.
@@ -194,7 +196,7 @@ describe("FeatureSymbology.Overrides", () => {
 
     overrides = new Overrides();
     appearance = FeatureAppearance.fromJSON(props);
-    overrides.overrideElement(elementId, elemApp);
+    overrides.override({ elementId, appearance: elemApp });
     overrides.setAlwaysDrawn(elementId);
     appearance = overrides.getFeatureAppearance(feature, id);
     assert.isTrue(appearance!.equals(elemApp), "if elementId in alwaysDrawn set and overrides has Element corresponding to id but not Model nor SubCategory, then the app is set to the elemApp");
@@ -202,26 +204,26 @@ describe("FeatureSymbology.Overrides", () => {
     overrides = new Overrides(viewState);
     appearance = FeatureAppearance.fromJSON(props);
     overrides.setVisibleSubCategory(subCategoryId);
-    overrides.overrideSubCategory(subCategoryId, subCatApp);
+    overrides.override({ subCategoryId, appearance: subCatApp });
     appearance = overrides.getFeatureAppearance(feature, id);
     assert.isTrue(appearance!.equals(subCatApp), "if subCategoryId is in visible set and SubCategoryApp is found, absent element or model apps, the result app is equal to the app extended by the subCategoryApp");
 
     overrides = new Overrides(viewState);
     appearance = FeatureAppearance.fromJSON(props);
     modelApp = FeatureAppearance.fromJSON(modelProps);
-    overrides.overrideModel(id, modelApp);
+    overrides.override({ modelId: id, appearance: modelApp });
     overrides.setVisibleSubCategory(subCategoryId);
-    overrides.overrideSubCategory(subCategoryId, subCatApp);
+    overrides.override({ subCategoryId, appearance: subCatApp });
     appearance = overrides.getFeatureAppearance(feature, id);
     let expected = subCatApp.extendAppearance(modelApp);
     assert.isTrue(appearance!.equals(expected), "if subCat and modelApp are found then the appearance is the extension of the subCatApp with the ModelApp");
     overrides = new Overrides(viewState);
     appearance = FeatureAppearance.fromJSON(props);
     modelApp = FeatureAppearance.fromJSON(modelProps);
-    overrides.overrideModel(id, modelApp);
-    overrides.overrideElement(elementId, elemApp);
+    overrides.override({ modelId: id, appearance: modelApp });
+    overrides.override({ elementId, appearance: elemApp });
     overrides.setVisibleSubCategory(subCategoryId);
-    overrides.overrideSubCategory(subCategoryId, subCatApp);
+    overrides.override({ subCategoryId, appearance: subCatApp });
     appearance = overrides.getFeatureAppearance(feature, id);
     expected = elemApp.extendAppearance(modelApp);
     expected = subCatApp.extendAppearance(expected);

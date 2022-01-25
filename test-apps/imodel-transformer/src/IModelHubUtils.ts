@@ -4,37 +4,72 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:words buddi urlps
 
-import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { ElectronAuthorizationBackend } from "@itwin/core-electron/lib/ElectronBackend";
-import { Version } from "@bentley/imodelhub-client";
-import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg } from "@itwin/core-backend";
+import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
+import { AccessTokenAdapter, BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { IModelsClient, NamedVersion } from "@itwin/imodels-client-authoring";
+
+export class IModelTransformerTestAppHost {
+  public static iModelClient?: IModelsClient;
+
+  public static async startup(): Promise<void> {
+    const iModelHost = new IModelHostConfiguration();
+    IModelTransformerTestAppHost.iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    iModelHost.hubAccess = new BackendIModelsAccess(IModelTransformerTestAppHost.iModelClient);
+
+    const opt = {
+      electronHost: {
+        developmentServer: process.env.NODE_ENV === "development",
+      },
+      nativeHost: {
+        applicationName: "imodel-transformer-test-app",
+      },
+      iModelHost,
+    };
+
+    await ElectronHost.startup(opt);
+  }
+
+  private static _authClient: ElectronMainAuthorization | undefined;
+
+  /** Similar to get `IModelHost.authorizationClient.getAccessToken()` but lazily
+   * initializes auth, so users aren't prompted to sign in unless a hub-accessing feature is used.
+   * If we didn't do it lazily, we'd have to sign in conditionally ahead of time which makes
+   * it difficult for typescript to reason about whether the accessToken is valid or not
+   */
+  public static async acquireAccessToken(): Promise<AccessToken> {
+    if (!this._authClient) {
+      assert(
+        process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID !== undefined,
+        "An online-only interaction was requested, but the required environment variables haven't been configured\n"
+        + "Please see the .env.template file on how to set up environment variables."
+      );
+      return new Promise<AccessToken>(async (resolve, reject) => {
+        const client = await ElectronMainAuthorization.create({
+          clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+          redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+          scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+        });
+        this._authClient = client;
+
+        ElectronMainAuthorization.onUserStateChanged.addOnce((token) => {
+          if (token !== "") {
+            resolve(token);
+          } else {
+            reject(new Error("Failed to sign in"));
+          }
+        });
+        this._authClient.signIn().catch((err) => reject(err));
+      });
+    }
+    return this._authClient.getAccessToken();
+  }
+}
 
 export namespace IModelHubUtils {
-
-  export async function getAccessToken(): Promise<AccessToken> {
-    return signIn();
-  }
-
-  async function signIn(): Promise<AccessToken> {
-    const client = new ElectronAuthorizationBackend();
-    await client.initialize({
-      clientId: "imodeljs-electron-test",
-      redirectUri: "http://localhost:3000/signin-callback",
-      scope: "openid email profile organization itwinjs",
-    });
-    return new Promise<AccessToken>((resolve, reject) => {
-      NativeHost.onAccessTokenChanged.addListener((token) => {
-        if (token !== "") {
-          resolve(token);
-        } else {
-          reject(new Error("Failed to sign in"));
-        }
-      });
-      client.signIn().catch((error: Error) => reject(error));
-    });
-  }
-
   export function setHubEnvironment(arg?: string): void {
     process.env.IMJS_URL_PREFOX = `${"prod" === arg ? "" : arg}-`;
   }
@@ -66,9 +101,11 @@ export namespace IModelHubUtils {
   }
 
   /** Call the specified function for each (named) Version of the specified iModel. */
-  export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: Version) => void): Promise<void> {
-    const namedVersions = await IModelHubBackend.iModelClient.versions.get(accessToken, iModelId);
-    for (const namedVersion of namedVersions) {
+  export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: NamedVersion) => void): Promise<void> {
+    if (!IModelTransformerTestAppHost.iModelClient)
+      throw new Error("IModelTransformerTestAppHost.startup has not been called.");
+
+    for await (const namedVersion of IModelTransformerTestAppHost.iModelClient.namedVersions.getRepresentationList({iModelId, authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken)})) {
       func(namedVersion);
     }
   }

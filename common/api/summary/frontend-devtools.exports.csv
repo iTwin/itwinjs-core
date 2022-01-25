@@ -17,6 +17,7 @@ beta;AttachWmtsMapLayerByUrlTool
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
+beta;ChangeBackgroundColorTool 
 beta;ChangeCameraTool 
 beta;ChangeEmphasisSettingsTool 
 beta;ChangeFlashSettingsTool 
@@ -124,6 +125,7 @@ beta;parseBoolean(arg: string | undefined): boolean | undefined
 beta;parseToggle(arg: string | undefined): string | boolean | undefined
 beta;class PlanarMaskBaseTool 
 beta;ProjectExtentsDecoration
+beta;QueryScheduleScriptTool 
 alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
@@ -167,6 +169,8 @@ beta;SetRealityModelTransparencyTool
 beta;SharpenEffect 
 beta;SharpnessEffect 
 beta;ShowTileVolumesTool 
+beta;SkyCubeTool 
+beta;SkySphereTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
@@ -205,6 +209,7 @@ beta;ToggleSkyboxTool
 beta;ToggleTerrainTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
+beta;ToggleTileTreeReferencesTool 
 beta;ToggleToolTipsTool 
 beta;ToggleViewAttachmentBoundariesTool 
 beta;ToggleViewAttachmentClipShapesTool 

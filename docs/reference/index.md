@@ -21,7 +21,6 @@ The iTwin.js library is organized into the following separately downloadable [np
   - ($markup)
 - Backend
   - ($backend)
-  - ($backend-itwin-client)
   - ($transformer)
 - ($common)
 - ($ecschema-metadata)
@@ -29,15 +28,6 @@ The iTwin.js library is organized into the following separately downloadable [np
 - ($i18n)
 - ($bentley)
 - ($geometry)
-
-## iTwin.js Client Packages
-
-- ($itwin-registry-client)
-- ($frontend-authorization-client)
-- ($imodelhub-client)
-- ($itwin-client)
-- ($product-settings-client)
-- ($reality-data-client)
 
 ## iTwin.js UI Packages
 

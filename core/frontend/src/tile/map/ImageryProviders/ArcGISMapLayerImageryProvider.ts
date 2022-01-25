@@ -6,20 +6,18 @@
  * @module Tiles
  */
 
-import { Dictionary, IModelStatus } from "@itwin/core-bentley";
-import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@itwin/core-common";
-import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
+import { Cartographic, ImageSource, IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
+import { getJson, request, RequestOptions, Response } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 import { ScreenViewport } from "../../../Viewport";
 import {
-  ArcGisErrorCode, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
+  ArcGisErrorCode, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
   MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId,
 } from "../../internal";
 
 // eslint-disable-next-line prefer-const
 let doToolTips = true;
-const scratchQuadId = new QuadId(0, 0, 0);
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
@@ -28,7 +26,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   private _copyrightText = "Copyright";
   private _querySupported = false;
   private _tileMapSupported = false;
-  private _availabilityMap = new Dictionary<QuadId, boolean>((lhs: QuadId, rhs: QuadId) => lhs.compare(rhs));
+  private _tileMap: ArcGISTileMap|undefined;
   public serviceJson: any;
   constructor(settings: MapLayerSettings) {
     super(settings, false);
@@ -93,7 +91,6 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
               const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
               IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
             }
-
           }
 
           return undefined;
@@ -108,50 +105,24 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       return undefined;
     }
   }
-  protected override _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
-    if (!this._tileMapSupported || tile.quadId.level < Math.max(4, this.minimumZoomLevel)) {
-      resolveChildren();
+  protected override _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
+    const childIds = this.getPotentialChildIds(tile);
+    if (!this._tileMap || tile.quadId.level < Math.max(4, this.minimumZoomLevel-1)) {
+      resolveChildren(childIds);
       return;
     }
 
-    const quadId = tile.quadId;
-    let availability;
-    if (undefined !== (availability = this._availabilityMap.get(tile.quadId))) {
-      if (availability)
-        resolveChildren();
+    if (this._tileMap) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this._tileMap.getChildrenAvailability(childIds).then((availability) => {
+        const availableChildIds = new Array<QuadId>();
+        for (let i = 0; i < availability.length; i++)
+          if (availability[i])
+            availableChildIds.push(childIds[i]);
 
-      return;
+        resolveChildren (availableChildIds);
+      });
     }
-
-    const row = quadId.row * 2;
-    const column = quadId.column * 2;
-    const level = quadId.level + 1;
-    const queryDim = Math.min(1 << level, 32), queryDimHalf = queryDim / 2;
-    const queryRow = Math.max(0, row - queryDimHalf);
-    const queryColumn = Math.max(0, column - queryDimHalf);
-
-    getJson(`${this._settings.url}/tilemap/${level}/${queryRow}/${queryColumn}/${queryDim}/${queryDim}?f=json`).then((json) => {
-      availability = true;
-      if (Array.isArray(json.data)) {
-        let index = 0;
-        const data = json.data;
-        for (let iCol = 0; iCol < queryDim; iCol++) {
-          for (let iRow = 0; iRow < queryDim; iRow++) {
-            scratchQuadId.level = quadId.level;
-            scratchQuadId.column = (queryColumn + iCol) / 2;
-            scratchQuadId.row = (queryRow + iRow) / 2;
-            if (0 === quadId.compare(scratchQuadId))
-              availability = data[index];
-            this._availabilityMap.set(scratchQuadId, data[index++]);
-          }
-        }
-      }
-      if (availability)
-        resolveChildren();
-
-    }).catch((_error) => {
-      resolveChildren();
-    });
   }
 
   private isEpsg3857Compatible(tileInfo: any) {
@@ -170,6 +141,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     if (json !== undefined) {
       this.serviceJson = json;
       if (json.capabilities) {
+
         this._querySupported = json.capabilities.indexOf("Query") >= 0;
         this._tileMapSupported = json.capabilities.indexOf("Tilemap") >= 0;
       }
@@ -180,6 +152,12 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
             ;
         }
       }
+
+      // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
+      if (this._usesCachedTiles && this._tileMapSupported) {
+        this._tileMap = new ArcGISTileMap(this._settings.url, json.tileInfo?.lods?.length);
+      }
+
       const footprintJson = await ArcGisUtilities.getFootprintJson(this._settings.url, this.getRequestAuthorization());
       if (undefined !== footprintJson && undefined !== footprintJson.featureCollection && Array.isArray(footprintJson.featureCollection.layers)) {
         for (const layer of footprintJson.featureCollection.layers) {

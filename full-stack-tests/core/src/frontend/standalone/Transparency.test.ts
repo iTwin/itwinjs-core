@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d } from "@itwin/core-geometry";
 import {
-  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
+  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
-import {
-  DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport,
-} from "@itwin/core-frontend";
+import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import { TestUtility } from "../TestUtility";
 
 interface GraphicOptions {
   color: ColorDef;
@@ -18,6 +17,7 @@ interface GraphicOptions {
   priority?: number;
   pickableId?: string;
   material?: RenderMaterial;
+  generateEdges?: boolean;
 }
 
 class TransparencyDecorator {
@@ -42,12 +42,12 @@ class TransparencyDecorator {
   }
 
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides): void {
-    for (const [id, app] of this._symbologyOverrides)
-      overrides.overrideElement(id, app);
+    for (const [elementId, appearance] of this._symbologyOverrides)
+      overrides.override({ elementId, appearance });
   }
 
-  public overrideTransparency(id: string, transparency: number): void {
-    this._symbologyOverrides.set(id, FeatureAppearance.fromTransparency(transparency));
+  public overrideTransparency(id: string, transparency: number, viewDependent?: boolean): void {
+    this._symbologyOverrides.set(id, FeatureAppearance.fromTransparency(transparency, viewDependent));
   }
 
   public ignoreMaterial(id: string): void {
@@ -75,7 +75,7 @@ class TransparencyDecorator {
       viewport: vp,
       pickable: opts.pickableId ? { id: opts.pickableId } : undefined,
       wantNormals: false,
-      generateEdges: false,
+      generateEdges: true === opts.generateEdges,
     });
 
     builder.activateGraphicParams(gfParams);
@@ -90,7 +90,7 @@ describe("Transparency", async () => {
   let decorator: TransparencyDecorator;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
@@ -98,7 +98,7 @@ describe("Transparency", async () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   beforeEach(() => {
@@ -142,18 +142,28 @@ describe("Transparency", async () => {
   }
 
   function expectColor(vp: TestViewport, color: ColorDef): void {
-    const colors = vp.readUniqueColors();
-    expect(colors.length).to.equal(1);
-    const actual = colors.array[0];
-    const expected = color.colors;
+    expectColors(vp, [color]);
+  }
 
-    expectComponent(actual.r, expected.r);
-    expectComponent(actual.g, expected.g);
-    expectComponent(actual.b, expected.b);
+  function expectColors(vp: TestViewport, expectedColors: ColorDef[]): void {
+    const actualColors = vp.readUniqueColors();
+    expect(actualColors.length).to.equal(expectedColors.length);
+    for (let i = 0; i < actualColors.length; i++) {
+      const actual = actualColors.array[i];
+      const expected = expectedColors[i].colors;
+
+      expectComponent(actual.r, expected.r);
+      expectComponent(actual.g, expected.g);
+      expectComponent(actual.b, expected.b);
+    }
   }
 
   function expectTransparency(vp: TestViewport, color: ColorDef): void {
-    expectColor(vp, multiplyAlpha(color));
+    expectTransparencies(vp, [color]);
+  }
+
+  function expectTransparencies(vp: TestViewport, colors: ColorDef[]): void {
+    expectColors(vp, colors.map((x) => multiplyAlpha(x)));
   }
 
   it("should blend with background color", async () => {
@@ -218,9 +228,14 @@ describe("Transparency", async () => {
     if (undefined !== alpha)
       bytes.push(alpha);
 
+    // ###TODO test Mixed transparency.
+    const transparency = undefined !== alpha && alpha < 255 ? TextureTransparency.Translucent : TextureTransparency.Opaque;
     const img = ImageBuffer.create(new Uint8Array(bytes), fmt, 1);
-    // eslint-disable-next-line deprecation/deprecation
-    const texture = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next));
+    const texture = IModelApp.renderSystem.createTexture({
+      type: RenderTexture.Type.Normal,
+      image: { source: img, transparency },
+    });
+
     expect(texture).not.to.be.undefined;
     return texture!;
   }
@@ -427,5 +442,36 @@ describe("Transparency", async () => {
     await testCase(ColorDef.green, 1, createMaterial(1, createBlueTexture()), ColorDef.black);
 
     await testCase(ColorDef.green, 0.75, createMaterial(0.9, createBlueTexture(0x7f)), ColorDef.blue.withTransparency(0xdf));
+  });
+
+  it("symbology override applies regardless of render mode and view flags unless explicitly specified", async () => {
+    const pickableId = imodel.transientIds.next;
+    for (let iTransp = 0; iTransp < 2; iTransp++) {
+      for (let iViewDep = 0; iViewDep < 2; iViewDep++) {
+        const viewDep = iViewDep > 0;
+        const transp = iTransp > 0;
+        for (const renderMode of [RenderMode.SmoothShade, RenderMode.SolidFill, RenderMode.HiddenLine]) {
+          await test(
+            (vp) => {
+              vp.viewFlags = vp.viewFlags.with("transparency", transp).withRenderMode(renderMode);
+              if (vp.displayStyle.settings.is3d())
+                vp.displayStyle.settings.hiddenLineSettings = vp.displayStyle.settings.hiddenLineSettings.override({ transThreshold: 1});
+
+              decorator.add(vp, { color: ColorDef.green, pickableId, generateEdges: true });
+              decorator.overrideTransparency(pickableId, 0.5, viewDep);
+            },
+            (vp) => {
+              // NB: the edges are drawing outside the viewport, so we're only testing surface color+transparency.
+              const expectTransparent = !viewDep || (transp && RenderMode.HiddenLine !== renderMode && RenderMode.SolidFill !== renderMode);
+              let color = RenderMode.HiddenLine === renderMode ? ColorDef.black : ColorDef.green;
+              if (expectTransparent)
+                color = color.withTransparency(0x7f);
+
+              expectTransparency(vp, color);
+            }
+          );
+        }
+      }
+    }
   });
 });

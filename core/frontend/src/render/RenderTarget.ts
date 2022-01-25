@@ -11,7 +11,7 @@ import { Point2d, XAndY } from "@itwin/core-geometry";
 import { Frustum, ImageBuffer, SpatialClassifier } from "@itwin/core-common";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
+import { ReadImageBufferArgs, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { IModelConnection } from "../IModelConnection";
 import { CanvasDecoration } from "./CanvasDecoration";
@@ -60,6 +60,10 @@ export interface RenderTargetDebugControl {
   displayRealityTileRanges: boolean;
   logRealityTiles: boolean;
   freezeRealityTiles: boolean;
+  /** Obtain a summary of the render commands required to draw the scene currently displayed.
+   * Each entry specifies  the type of command and the number of such commands required by the current scene.
+   */
+  getRenderCommands(): Array<{ name: string, count: number }>;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
@@ -127,8 +131,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** `rect` is specified in *CSS* pixels. */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
-  /** `_rect` is specified in *CSS* pixels. */
+  /** @deprecated use readImageBuffer */
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
+  public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
   public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
 

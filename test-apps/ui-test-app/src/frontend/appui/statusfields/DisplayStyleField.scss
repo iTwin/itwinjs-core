@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@itwin/core-react/lib/core-react/style/breakpoints";
+@import "~@itwin/core-react/lib/cjs/core-react/style/breakpoints";
 @import "~@itwin/itwinui-css/scss/style/typography";
-@import "~@itwin/appui-layout-react/lib/appui-layout-react/footer/variables";
+@import "~@itwin/appui-layout-react/lib/cjs/appui-layout-react/footer/variables";
 
 .uifw-statusFields-displayStyle {
   $font-size-medium: $iui-font-size-small;

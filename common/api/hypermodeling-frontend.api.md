@@ -38,6 +38,7 @@ export class HyperModeling {
     static get graphicsConfig(): SectionGraphicsConfig;
     static initialize(config?: HyperModelingConfig): Promise<void>;
     static isEnabledForViewport(viewport: ScreenViewport): boolean;
+    static get isInitialized(): boolean;
     static isSupportedForIModel(imodel: IModelConnection): Promise<boolean>;
     static get markerConfig(): SectionMarkerConfig;
     static get markerHandler(): SectionMarkerHandler;
@@ -198,7 +199,7 @@ export class SectionMarker extends Marker {
 
 // @internal
 export class SectionMarkerCluster extends Marker {
-    constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: Promise<MarkerImage>);
+    constructor(location: XYAndZ, size: XAndY, cluster: Cluster<SectionMarker>, image: MarkerImage | Promise<MarkerImage> | undefined);
     drawFunc(ctx: CanvasRenderingContext2D): void;
     // (undocumented)
     onMouseButton(_ev: BeButtonEvent): boolean;

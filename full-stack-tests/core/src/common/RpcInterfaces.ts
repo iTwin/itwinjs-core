@@ -8,15 +8,6 @@ import {
   WipRpcInterface,
 } from "@itwin/core-common";
 
-export interface CloudEnvProps {
-  iModelBank?: {
-    url: string;
-  };
-  iModelHub?: {
-    region: string;
-  };
-}
-
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "TestRpcInterface";
   public static interfaceVersion = "1.1.1";
@@ -30,10 +21,16 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async executeTest(_iModelRpcProps: IModelRpcProps, _testName: string, _params: any): Promise<any> {
     return this.forward(arguments);
   }
-  public async getCloudEnv(): Promise<CloudEnvProps> {
+  public async purgeCheckpoints(_iModelId: string): Promise<void> {
     return this.forward(arguments);
   }
-  public async purgeCheckpoints(_iModelId: string): Promise<void> {
+  public async purgeStorageCache(): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async beginOfflineScope(): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async endOfflineScope(): Promise<void> {
     return this.forward(arguments);
   }
 }

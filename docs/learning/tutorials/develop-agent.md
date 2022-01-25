@@ -8,7 +8,7 @@
 - Choose "Service" application type.
   - Select necessary API associations
   - Be sure to save the secret somewhere safe - it is only shown once
-- [Clone agent-starter repo](https://github.com/imodeljs/agent-starter)
+- [Clone agent-starter repo](https://github.com/iTwin/agent-starter)
 - If you do not have access to an iModel, follow one of our tutorials to [create an iModel]($docs/learning/tutorials/index.md)
 - Add `{client_id}@apps.imsoidc.bentley.com` as a project participant of your test iModel using the "[My sample iModels](https://developer.bentley.com/my-imodels/)" page.
 
@@ -50,6 +50,6 @@
 
 ## Next Steps
 
-- Read the [README](https://github.com/imodeljs/agent-starter/blob/master/README.md) for some more info
+- Read the [README](https://github.com/iTwin/agent-starter/blob/master/README.md) for some more info
 - Implement custom functionality in the agent to fit a business use case
 - Watch our [Jump Start - Creating an Agent tutorial](https://www.youtube.com/watch?v=1E2srOoxc4I&t=46s) which explains in more detail how the agent-sample works

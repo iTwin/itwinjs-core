@@ -11,6 +11,9 @@ interface RandomEntityProps extends EntityProps {
   type: string;
 }
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomEntityProps = (): EntityProps => {
   const props: RandomEntityProps = {
     classFullName: faker.random.word(),
@@ -20,4 +23,7 @@ export const createRandomEntityProps = (): EntityProps => {
   return props;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomTransientId = () => Id64.fromLocalAndBriefcaseIds(123, 0xffffff);

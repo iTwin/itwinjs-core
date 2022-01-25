@@ -45,6 +45,10 @@ export class Version extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
   public changeSetId?: string;
 
+  /** Index of the [[ChangeSet]] that the named Version was created for. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetIndex")
+  public changeSetIndex?: number;
+
   /** Set to true, if named Version is hidden. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Hidden")
   public hidden?: boolean;
@@ -162,7 +166,6 @@ export class VersionHandler {
   }
 
   /** Get the named [[Version]]s of an iModel. Returned Versions are ordered from the latest [[ChangeSet]] to the oldest.
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param query Optional query object to filter the queried Versions or select different data from them.
    * @returns Versions that match the query.
@@ -179,7 +182,6 @@ export class VersionHandler {
   }
 
   /** Create a named [[Version]] of an iModel.
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param changeSetId Id of the [[ChangeSet]] to create a named Version for. Empty ChangeSet id can be provided to create iModel's baseline version.
    * @param name Name of the new named Version.
@@ -208,7 +210,6 @@ export class VersionHandler {
   }
 
   /** Update the named [[Version]] of an iModel. Only the description can be changed when updating the named Version.
-   * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param version Named version to update.
    * @returns Updated Version instance from iModelHub.
