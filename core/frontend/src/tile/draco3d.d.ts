@@ -60,27 +60,28 @@ declare module "draco3d" {
   export interface Decoder {
     DecodeBufferToMesh(buffer: DecoderBuffer, mesh: Mesh): Status;
     DecodeBufferToPointCloud(buffer: DecoderBuffer, pointCloud: PointCloud): Status;
+
     GetAttributeByUniqueId: (mesh: PointCloud, id: number) => Attribute;
     GetFaceFromMesh: (mesh: Mesh, index: number, array: DracoArray) => number;
     GetTrianglesUInt16Array: (mesh: Mesh, byteLength: number, ptr: number) => void;
     GetTrianglesUInt32Array: (mesh: Mesh, byteLength: number, ptr: number) => void;
     GetAttributeDataArrayForAllPoints: (
-      mesh: Mesh,
+      mesh: PointCloud,
       attribute: Attribute,
       type: DataType,
       byteLength: number,
       ptr: number
     ) => void;
-    GetAttributeFloatForAllPoints: (mesh: Mesh, attribute: Attribute, array: DracoArray) => void;
-    GetAttributeInt8ForAllPoints: (mesh: Mesh, attribute: Attribute, array: DracoArray) => void;
-    GetAttributeInt16ForAllPoints: (mesh: Mesh, attribute: Attribute, array: DracoArray) => void;
-    GetAttributeInt32ForAllPoints: (mesh: Mesh, attribute: Attribute, array: DracoArray) => void;
+    GetAttributeFloatForAllPoints: (mesh: PointCloud, attribute: Attribute, array: DracoArray) => void;
+    GetAttributeInt8ForAllPoints: (mesh: PointCloud, attribute: Attribute, array: DracoArray) => void;
+    GetAttributeInt16ForAllPoints: (mesh: PointCloud, attribute: Attribute, array: DracoArray) => void;
+    GetAttributeInt32ForAllPoints: (mesh: PointCloud, attribute: Attribute, array: DracoArray) => void;
     GetAttributeUInt8ForAllPoints: (mesh: PointCloud, attribute: Attribute, array: DracoArray) => void;
-    GetAttributeUInt16ForAllPoints: (mesh: Mesh, attribute: Attribute, array: DracoArray) => void;
-    GetAttributeUInt32ForAllPoints: (mesh: Mesh, attribute: Attribute, array: DracoArray) => void;
+    GetAttributeUInt16ForAllPoints: (mesh: PointCloud, PointCloud: Attribute, array: DracoArray) => void;
+    GetAttributeUInt32ForAllPoints: (mesh: PointCloud, attribute: Attribute, array: DracoArray) => void;
     GetEncodedGeometryType: (buffer: DecoderBuffer) => GeometryType;
-    GetAttributeId: (mesh: Mesh, attributeType: number) => number;
-    GetAttribute: (mesh: Mesh, id: number) => Attribute;
+    GetAttributeId: (mesh: PointCloud, attributeType: number) => number;
+    GetAttribute: (mesh: PointCloud, id: number) => Attribute;
   }
 
   export interface DecoderBuffer {
