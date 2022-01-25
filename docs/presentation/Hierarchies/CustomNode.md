@@ -109,7 +109,7 @@ Specifies whether the node created through this specification should be hidden i
 
 > **Default value:** `""`
 
-Specifies an [ECExpression](./ECExpressions.md#specification) whose evaluation result tells whether node should be displayed or hidden (and its children showed instead).
+When specified [ECExpression](./ECExpressions.md#specification) evaluates to `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
 
 ```ts
 [[include:Hierarchies.Specification.HideExpression.Ruleset]]
