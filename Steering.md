@@ -1,6 +1,6 @@
 # iTwin.js Steering Committee Charter 
 
-The goal of the iTwin.js Steering Committee is to ensure that iTwin.js meets the needs of its users. The Steering Committee represents the voice of the user and works with iTwin.js maintainers to help guide development efforts towards solving problems for iTwin.js community. 
+The goal of the iTwin.js Steering Committee is to ensure that iTwin.js meets the needs of its users. The Steering Committee represents the voice of the user and works with iTwin.js maintainers to help guide development efforts towards solving problems for the iTwin.js community. 
 
 ## Responsibilities 
 
