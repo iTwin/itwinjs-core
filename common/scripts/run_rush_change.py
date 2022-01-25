@@ -4,15 +4,12 @@ srcBranch = sys.argv[1]
 targetBranch = srcBranch
 
 # Second param, is the build reason which will be used to determine the target branch.
-#   If the build reason is a PR, the target branch changes.
-# buildReason = sys.argv[2]
-buildReason = "PullRequest"
+# If the build reason is a PR, the target branch changes.
+buildReason = sys.argv[2]
 
 if buildReason == "PullRequest":
     # Third param, is the target branch of the PR
     targetBranch = sys.argv[3]
-
-targetBranch = "master"
 
 print ("Current branch: " + srcBranch)
 print ("Target branch: " + targetBranch)
