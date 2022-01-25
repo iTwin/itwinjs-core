@@ -16,7 +16,7 @@ import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
-  EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps,
+  EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps,
   GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
   IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps,
   ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, RpcActivity,
@@ -257,16 +257,16 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Add a new font name/type to the font table for this iModel and return its FontId.
+   * Add a new font name/type to the FontMap for this iModel and return its FontId.
    * @param name The name of the font to add
-   * @param type The type of the font. If undefined, font is TrueType.
+   * @param type The type of the font. Default is TrueType.
    * @returns The FontId for the newly added font. If a font by that name/type already exists, this method does not fail, it returns the existing Id.
    * @note This is generally intended to be used by administrators establishing the set of fonts available for an iModel during
-   * project setup. It requires a writeable iModel with the schema lock held. On success, the font table is changed and the current transaction must be
+   * project setup. It requires a writeable iModel with the schema lock held. On success, the FontMap is updated and the current transaction must be
    * committed for the change to become permanent. Then, push a changeset so that other briefcases can use the font.
    * @beta
    */
-  public addNewFont(name: string, type?: FontType): number {
+  public addNewFont(name: string, type?: FontType): FontId {
     this.locks.checkExclusiveLock(IModel.repositoryModelId, "schema", "addNewFont");
     this.clearFontMap();
     return this.nativeDb.addNewFont({ name, type: type ?? FontType.TrueType });

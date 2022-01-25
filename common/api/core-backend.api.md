@@ -76,6 +76,7 @@ import { ExternalSourceAttachmentProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentRole } from '@itwin/core-common';
 import { ExternalSourceProps } from '@itwin/core-common';
 import { FilePropertyProps } from '@itwin/core-common';
+import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
@@ -2213,7 +2214,7 @@ export abstract class IModelDb extends IModel {
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
     // @beta
-    addNewFont(name: string, type?: FontType): number;
+    addNewFont(name: string, type?: FontType): FontId;
     // @internal
     protected beforeClose(): void;
     // @internal
