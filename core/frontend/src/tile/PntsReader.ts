@@ -18,7 +18,7 @@ import { RenderSystem } from "../render/RenderSystem";
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
  */
-export async function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined> {
+export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined {
   const header = new PntsHeader(stream);
 
   if (!header.isValid)
@@ -37,15 +37,14 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   const dracoPointExtension = featureValue.extensions ? featureValue.extensions["3DTILES_draco_point_compression"] : undefined;
   const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
   if (dracoPointExtension && dracoPointExtension.byteLength !== undefined && dracoPointExtension.byteOffset !== undefined && dracoPointExtension.properties?.POSITION !== undefined) {
-    // ###TODO: Do draco decompression in web worker?
-    const draco = (await import("./DracoDecoder")).DracoDecoder;
+    return undefined; // Defer Draco decompression until web workers implementation.
+    /*
     const bufferData = new Uint8Array(stream.arrayBuffer, dataOffset + dracoPointExtension.byteOffset, dracoPointExtension.byteLength);
-    const decoded = draco.readDracoPointCloud(bufferData, dracoPointExtension.properties?.POSITION, dracoPointExtension.properties?.RGB);
+    const decoded = DracoDecoder.readDracoPointCloud(bufferData, dracoPointExtension.properties?.POSITION, dracoPointExtension.properties?.RGB);
     if (decoded) {
       qPoints = decoded.qPoints;
       qParams = decoded.qParams;
-      colors = decoded.colors;
-    }
+      colors = decoded.colors; */
   } else {
     if (undefined === featureValue.POSITION_QUANTIZED ||
       undefined === featureValue.QUANTIZED_VOLUME_OFFSET ||
