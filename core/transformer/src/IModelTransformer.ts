@@ -618,7 +618,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @note A subclass can override this method to provide custom transform behavior.
    */
   public onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps {
-    const targetModelProps: ModelProps = this.context.cloneModel(sourceModel);
+    const targetModelProps: ModelProps = sourceModel.toJSON();
     targetModelProps.modeledElement.id = targetModeledElementId;
     targetModelProps.id = targetModeledElementId;
     targetModelProps.parentModel = this.context.findTargetElementId(targetModelProps.parentModel!);
