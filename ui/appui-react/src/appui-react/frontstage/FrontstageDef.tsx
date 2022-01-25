@@ -38,6 +38,7 @@ import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { setImmediate } from "timers";
 import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
 import { BentleyStatus } from "@itwin/core-bentley";
+import { ContentDialogManager } from "../dialog/ContentDialogManager";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -85,6 +86,7 @@ export class FrontstageDef {
   private _timeTracker: TimeTracker = new TimeTracker();
   private _nineZoneState?: NineZoneState;
   private _contentGroupProvider?: ContentGroupProvider;
+  private _floatingContentControls?: ContentControl[];
 
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
@@ -94,6 +96,7 @@ export class FrontstageDef {
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
   public get version(): number { return this._version; }
   public get contentGroupProvider(): ContentGroupProvider | undefined { return this._contentGroupProvider; }
+  public get floatingContentControls() { return this._floatingContentControls; }
 
   public get topLeft(): ZoneDef | undefined { return this._topLeft; }
   public get topCenter(): ZoneDef | undefined { return this._topCenter; }
@@ -300,6 +303,11 @@ export class FrontstageDef {
 
     this._isStageClosing = true; // this keeps widgets in child windows from automatically re-docking
     UiFramework.childWindowManager.closeAllChildWindows();
+
+    if (this._floatingContentControls) {
+      ContentDialogManager.closeAll();
+      this._floatingContentControls = undefined;
+    }
 
     await this._onDeactivated();
     this._isStageClosing = false;
@@ -566,14 +574,41 @@ export class FrontstageDef {
     return widgetControls;
   }
 
+  public addFloatingContentControl(contentControl?: ContentControl) {
+    // istanbul ignore next
+    if (!contentControl)
+      return;
+    if (!this._floatingContentControls)
+      this._floatingContentControls = new Array<ContentControl>();
+
+    this._floatingContentControls.push(contentControl);
+    ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
+  }
+
+  public dropFloatingContentControl(contentControl?: ContentControl) {
+    // istanbul ignore next
+    if (!contentControl || !this._floatingContentControls)
+      return;
+
+    const index = this._floatingContentControls.indexOf(contentControl);
+    // istanbul ignore else
+    if (index > -1) {
+      this._floatingContentControls.splice(index, 1);
+      ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
+    }
+  }
+
   /** Gets the list of [[ContentControl]]s */
   public get contentControls(): ContentControl[] {
+    const contentControls = new Array<ContentControl>();
     // istanbul ignore else
     if (this.contentGroup) {
-      return this.contentGroup.getContentControls();
-    } else {
-      return [];
+      contentControls.push(...this.contentGroup.getContentControls());
     }
+    if (this._floatingContentControls) {
+      contentControls.push(...this._floatingContentControls);
+    }
+    return contentControls;
   }
 
   /** Initializes a FrontstageDef from FrontstageProps
@@ -683,13 +718,12 @@ export class FrontstageDef {
    *  @internal
    */
   public getPanelCurrentState(panelDef: StagePanelDef): [StagePanelState, number] {
-    // istanbul ignore else
+    // istanbul ignore next
     if (this.nineZoneState) {
       const side = toPanelSide(panelDef.location);
       const panel = this.nineZoneState.panels[side];
-      if (panel) {
+      if (panel)
         return [panel.collapsed ? StagePanelState.Minimized : StagePanelState.Open, panel.size ?? 0];
-      }
       return [StagePanelState.Off, 0];
     }
     return [panelDef.defaultState, panelDef.defaultSize ?? 0];
