@@ -12,6 +12,8 @@ if buildReason == "PullRequest":
     # Third param, is the target branch of the PR
     targetBranch = sys.argv[3]
 
+targetBranch = "master"
+
 print ("Current branch: " + srcBranch)
 print ("Target branch: " + targetBranch)
 
