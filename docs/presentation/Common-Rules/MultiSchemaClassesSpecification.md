@@ -6,11 +6,11 @@ This specification lists ECClasses which should be targeted when creating conten
 
 ## Attributes
 
-| Name                                          | Required? | Type                                                                  | Default |
-| --------------------------------------------- | --------- | --------------------------------------------------------------------- | ------- |
-| [`schemaName`](#attribute-schemaname)         | Yes       | `string`                                                              |   ""    |
-| [`classNames`](#attribute-classnames)         | Yes       | `string[]`                                                            |  `[]`   |
-| [`arePolymorphic`](#attribute-arepolymorphic) | No        | `boolean`                                                             | `false` |
+| Name                                          | Required? | Type       | Default |
+| --------------------------------------------- | --------- | ---------- | ------- |
+| [`schemaName`](#attribute-schemaname)         | Yes       | `string`   | `""`    |
+| [`classNames`](#attribute-classnames)         | Yes       | `string[]` | `[]`    |
+| [`arePolymorphic`](#attribute-arepolymorphic) | No        | `boolean`  | `false` |
 
 ### Attribute: `schemaName`
 
