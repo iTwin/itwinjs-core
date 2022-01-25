@@ -642,6 +642,9 @@ export class IModelTransformer extends IModelExportHandler {
       } else {
         throw new IModelError(IModelStatus.BadRequest, "Not all deferred elements could be processed");
       }
+    } else {
+      // process deferred relationships since if their sources+targets were deferred, they may not have been processed
+      await this.processRelationships(ElementRefersToElements.classFullName);
     }
   }
 
