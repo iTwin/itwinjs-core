@@ -5,7 +5,8 @@ targetBranch = srcBranch
 
 # Second param, is the build reason which will be used to determine the target branch.
 #   If the build reason is a PR, the target branch changes.
-buildReason = sys.argv[2]
+# buildReason = sys.argv[2]
+buildReason = "PullRequest"
 
 if buildReason == "PullRequest":
     # Third param, is the target branch of the PR
