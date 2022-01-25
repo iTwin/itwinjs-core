@@ -76,7 +76,9 @@ Specifies whether nodes created through this specification should be hidden if t
 [[include:Hierarchies.Specification.HideIfNoChildren.Ruleset]]
 ```
 
-![Example of using "hide if no children" attribute](./media/hierarchy-with-specification-hideifnochildren-attribute.png)
+| `hideIfNoChildren: false`                                                                                                                     | `hideIfNoChildren: true`                                                                                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "hide if no children" attribute set to "false"](./media/hierarchy-with-specification-hideifnochildren-attribute-false.png) | ![Example of using "hide if no children" attribute set to "true"](./media/hierarchy-with-specification-hideifnochildren-attribute-true.png) |
 
 ### Attribute: `hideExpression`
 
