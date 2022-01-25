@@ -4,8 +4,5 @@
 *--------------------------------------------------------------------------------------------*/
 
 declare module "draco3d" {
-
   export function createDecoderModule(dracoDecoderModule: any, ...args: any[]): any;
-
 }
-

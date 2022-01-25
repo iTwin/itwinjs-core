@@ -65,7 +65,6 @@
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",
-    "@types/draco3d": "^1.4.1",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",

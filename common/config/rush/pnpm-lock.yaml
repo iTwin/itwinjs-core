@@ -531,7 +531,6 @@ importers:
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
-      '@types/draco3d': ^1.4.1
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -586,7 +585,6 @@ importers:
       '@types/chai': 4.3.0
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
-      '@types/draco3d': 1.4.1
       '@types/lodash': 4.14.178
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -8381,10 +8379,6 @@ packages:
     resolution: {integrity: sha512-nnVQSgRVuZ/843oAfhA25eRSNzUFcBPk/LOiw5gm8mD9/X7CNcbRkQu/OsjCewO8+VIYfPxUnXvPEVGenw14+w==}
     dependencies:
       '@types/trusted-types': 2.0.2
-    dev: true
-
-  /@types/draco3d/1.4.1:
-    resolution: {integrity: sha512-gXeVdWXN9zlx+nlaNEsFcxQSZxI574h3iwjsram2I/l/gpFYBe1KwXUR3xnFglD3cQ26/aeGiNBtSd8Muer5xQ==}
     dev: true
 
   /@types/enzyme/3.9.3:
