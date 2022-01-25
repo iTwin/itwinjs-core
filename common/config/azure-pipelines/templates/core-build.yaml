@@ -17,7 +17,7 @@ steps:
   #     scriptPath: common/scripts/run_rush_change.py
   #     arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
   #     failOnStderr: true
-  - script: node common/scripts/install-run-rush.js change --verify
+  - script: rush change --verify
     displayName: Verify changelogs
     workingDirectory: ${{ parameters.workingDir }}
   # - script: node common/scripts/install-run-rush.js install
