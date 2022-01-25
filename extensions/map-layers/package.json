@@ -49,7 +49,7 @@
     "@itwin/core-react": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/imodel-components-react": "workspace:*",
-    "@itwin/itwinui-css": "^0.37.0",
+    "@itwin/itwinui-css": "0.44.1",
     "@itwin/itwinui-react": "~1.28.0",
     "@itwin/presentation-common": "workspace:*",
     "@testing-library/react": "^12.0.0",
