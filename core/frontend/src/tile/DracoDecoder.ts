@@ -5,21 +5,29 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { createDecoderModule, Decoder, DecoderModule, Mesh as DracoMesh, PointCloud as DracoPointCloud } from "draco3d";
+import type { Decoder, DecoderModule, Mesh as DracoMesh, PointCloud as DracoPointCloud } from "draco3d";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { OctEncodedNormal, QParams3d, QPoint3d, QPoint3dList } from "@itwin/core-common";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
 import { assert } from "@itwin/core-bentley";
 
+/** Representation of a point cloud decoded by [[DracoDecoder.readPointCloud]].
+ * @internal
+ */
 export interface DecodedPointCloud {
   qParams: QParams3d;
   qPoints: Uint16Array;
   colors?: Uint8Array;
 }
 
+// The draco3d.DecoderModule. Lazily initialized by the first call to [[DracoDecoder.create]].
+// In fact, the import of the entire draco3d package is deferred until that time.
 let decoderModule: DecoderModule | undefined;
 
+/** Provides the ability to decode draco-compressed point clouds and meshes.
+ * @internal
+ */
 export class DracoDecoder {
   private readonly _module: DecoderModule;
 
