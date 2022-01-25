@@ -94,7 +94,7 @@ export class DracoDecoder {
     }
   }
 
-  public readDracoMesh(mesh: Mesh, _primitive: DracoMesh, bufferData: Uint8Array, attributes: any): Mesh | undefined {
+  public readDracoMesh(mesh: Mesh, bufferData: Uint8Array, attributes: any): Mesh | undefined {
     try {
       const dracoModule = this._module;
       const dracoDecoder = new dracoModule.Decoder();
