@@ -19,7 +19,7 @@ export interface LocalhostIpcHostOpts {
 
 class LocalTransport extends IpcWebSocketTransport {
   private _server: ws.Server | undefined;
-  private _connections: Set<ws> = new Set();
+  private _connections: Map<ws, number> = new Map();
 
   public constructor(opts: LocalhostIpcHostOpts) {
     super();
@@ -31,17 +31,19 @@ class LocalTransport extends IpcWebSocketTransport {
   }
 
   public send(message: IpcWebSocketMessage): void {
-    this._connections.forEach((connection) => {
+    this._connections.forEach((last, connection) => {
+      message.sequence = last + 1;
+      this._connections.set(connection, message.sequence);
       const parts = this.serialize(message);
       parts.forEach((part) => connection.send(part));
     });
   }
 
   public connect(connection: ws) {
-    this._connections.add(connection);
+    this._connections.set(connection, -1);
 
     connection.on("message", async (data) => {
-      const message = await this.notifyIncoming(data);
+      const message = await this.notifyIncoming(data, connection);
       if (IpcWebSocketMessage.skip(message)) {
         return;
       }
@@ -53,6 +55,7 @@ class LocalTransport extends IpcWebSocketTransport {
 
     connection.on("close", () => {
       this._connections.delete(connection);
+      this.notifyClose(connection);
     });
   }
 }
