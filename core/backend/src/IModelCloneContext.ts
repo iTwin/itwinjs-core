@@ -116,6 +116,7 @@ export class IModelCloneContext {
    * @internal
    */
   public importFont(sourceFontNumber: number): void {
+    this.targetDb.clearFontMap(); // so it will be reloaded with new font info
     this._nativeContext.importFont(sourceFontNumber);
   }
 
