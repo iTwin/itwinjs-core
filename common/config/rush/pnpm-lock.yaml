@@ -3254,7 +3254,7 @@ importers:
       recursive-readdir: ^2.2.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.0
-      typedoc: ^0.22.7
+      typedoc: ^0.22.11
       typedoc-plugin-merge-modules: ^3.0.2
       typescript: ~4.4.0
       wtfnode: ^0.9.1
@@ -3271,8 +3271,8 @@ importers:
       recursive-readdir: 2.2.2
       rimraf: 3.0.2
       tree-kill: 1.2.2
-      typedoc: 0.22.10_typescript@4.4.4
-      typedoc-plugin-merge-modules: 3.1.0_typedoc@0.22.10
+      typedoc: 0.22.11_typescript@4.4.4
+      typedoc-plugin-merge-modules: 3.1.0_typedoc@0.22.11
       typescript: 4.4.4
       wtfnode: 0.9.1
       yargs: 16.2.0
@@ -6833,12 +6833,12 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@bentley/itwin-client/3.0.0-dev.148_061f4cf0864554505984cff340919d13:
+  /@bentley/itwin-client/3.0.0-dev.148_672459f70795e85f63fd29f79bac8341:
     resolution: {integrity: sha512-Y8eF6h88rZHB0uTaWeAqMvSGY/4mH/32xB71H4JILtm3aBCjwaJVQ+1NRCR3RZgCr2yoaZz27kqJKnqwZlbeaw==}
     peerDependencies:
       '@itwin/core-bentley': ^3.0.0-dev.148
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.178
+      '@itwin/core-bentley': 3.0.0-dev.185
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -7275,12 +7275,12 @@ packages:
   /@itwin/browser-authorization/0.4.0:
     resolution: {integrity: sha512-oDHnF7b2VYxfVt7h/azX2wDDi08kLeuyISAvMjxvjOH5GyQmsVAUwMa2diGQolIPNCBTW/v9Z+/bRNgMePd06A==}
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.178
+      '@itwin/core-bentley': 3.0.0-dev.185
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.0.0-dev.182:
-    resolution: {integrity: sha512-1jU7gJ0NaK7DeLjGWrf0uWqo9sLn2Ptjzwendbq+STx0SWoJmR7vykriKqK7nhOACZs8f90ghfoOP+yH+eKqAA==}
+  /@itwin/certa/3.1.0-dev.8:
+    resolution: {integrity: sha512-uvIalBtaXxjpdrlGmcUaMmDCQbu3qQlyYVOkm597WF+Ivn1l4P0an2M9XaYEQHlj3a9Y2nsQxdj+KgAmBSc2pg==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7302,8 +7302,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.0.0-dev.182_electron@14.2.4:
-    resolution: {integrity: sha512-1jU7gJ0NaK7DeLjGWrf0uWqo9sLn2Ptjzwendbq+STx0SWoJmR7vykriKqK7nhOACZs8f90ghfoOP+yH+eKqAA==}
+  /@itwin/certa/3.1.0-dev.8_electron@14.2.4:
+    resolution: {integrity: sha512-uvIalBtaXxjpdrlGmcUaMmDCQbu3qQlyYVOkm597WF+Ivn1l4P0an2M9XaYEQHlj3a9Y2nsQxdj+KgAmBSc2pg==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7327,25 +7327,25 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@itwin/core-bentley/3.0.0-dev.178:
-    resolution: {integrity: sha512-YVwC9JzG4vWl0PU3I8oh1LYSfg7qFRSWef6tc/UetA9rCoLZYOAKswlEXyzzCIMMMpyGu8N61XsMQCZCIuD5Nw==}
+  /@itwin/core-bentley/3.0.0-dev.185:
+    resolution: {integrity: sha512-W+R80ZFC+d+0bXp7wGht7oDuCou2l/gHHP+uvy0lZUY3WnPq71LCAKpCzrUVcGusM41bCumoavWnW/xGAt/0hg==}
     dev: false
 
-  /@itwin/core-bentley/3.0.0-dev.182:
-    resolution: {integrity: sha512-3g5YOHkcxqEuUqNwntjuUDxyqE9dqjlrIW5+crN5L0gB+z3cLL8sP3cpE/1uEc1DXPt9t8Zi7w5nSp37yrTlzw==}
+  /@itwin/core-bentley/3.1.0-dev.8:
+    resolution: {integrity: sha512-i77u4wxTY7WxyqiIZ0NdBNWuRZ7xs7qN7Dk95xU7IqBmT65G7J8p4jtE85Q0hg8o5MD5/8BLghm2p4lwUYafjA==}
 
-  /@itwin/core-geometry/3.0.0-dev.178:
-    resolution: {integrity: sha512-8dPrZQFFWeKptHOAGDBSqozreR3Sfm56f2FhSfZuPCZoQtg21AWvITgBk3JdqyqMSOhYqS4iaiO6rbBE6Y3uRQ==}
+  /@itwin/core-geometry/3.0.0-dev.185:
+    resolution: {integrity: sha512-UQvZdMaSraChiEudZxYJkC/cCWskHqmLLN9IB2iG83MYwYGJ9zrehjolh+ZAch261IRmBJ8E85P8HfRIvndIeA==}
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.178
+      '@itwin/core-bentley': 3.0.0-dev.185
       flatbuffers: 1.12.0
     dev: false
 
   /@itwin/electron-authorization/0.6.0:
     resolution: {integrity: sha512-sY6cjtfz625KnDm1sU+e8n8Ir1rTNWjVXKtgOIss7UnBKmqvSjwVn35oorVrZI5xhoKTglWbpJhqytx7uD6ZfA==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.148_061f4cf0864554505984cff340919d13
-      '@itwin/core-bentley': 3.0.0-dev.178
+      '@bentley/itwin-client': 3.0.0-dev.148_672459f70795e85f63fd29f79bac8341
+      '@itwin/core-bentley': 3.0.0-dev.185
       '@openid/appauth': 1.3.1
       keytar: 7.7.0
       open: 8.4.0
@@ -7476,8 +7476,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.182
-      '@itwin/core-bentley': 3.0.0-dev.182
+      '@itwin/certa': 3.1.0-dev.8
+      '@itwin/core-bentley': 3.1.0-dev.8
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7491,8 +7491,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0_electron@14.2.4:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.182_electron@14.2.4
-      '@itwin/core-bentley': 3.0.0-dev.182
+      '@itwin/certa': 3.1.0-dev.8_electron@14.2.4
+      '@itwin/core-bentley': 3.1.0-dev.8
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7517,7 +7517,7 @@ packages:
     peerDependencies:
       '@itwin/core-common': rc
     dependencies:
-      '@itwin/core-geometry': 3.0.0-dev.178
+      '@itwin/core-geometry': 3.0.0-dev.185
       axios: 0.24.0
     transitivePeerDependencies:
       - debug
@@ -7526,7 +7526,7 @@ packages:
   /@itwin/service-authorization/0.4.0:
     resolution: {integrity: sha512-IGyES+Dra8S/SaeiAFo7NKllVTF3gwMlPMic7Hyd7GLq3xySRLmuO3UlfzphNgHDquYmU7u0tE6gGaQzp6y4Lg==}
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.178
+      '@itwin/core-bentley': 3.0.0-dev.185
       openid-client: 4.9.1
     dev: false
 
@@ -10364,6 +10364,7 @@ packages:
 
   /bindings/1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
+    requiresBuild: true
     dependencies:
       file-uri-to-path: 1.0.0
     optional: true
@@ -13314,6 +13315,7 @@ packages:
 
   /file-uri-to-path/1.0.0:
     resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
+    requiresBuild: true
     optional: true
 
   /filesize/6.1.0:
@@ -16347,8 +16349,8 @@ packages:
     dependencies:
       object-visit: 1.0.1
 
-  /marked/3.0.8:
-    resolution: {integrity: sha512-0gVrAjo5m0VZSJb4rpL59K1unJAMb/hm8HRXqasD8VeC8m91ytDPMritgFSlKonfdt+rRYYpP/JfLxgIX8yoSw==}
+  /marked/4.0.10:
+    resolution: {integrity: sha512-+QvuFj0nGgO970fySghXGmuw+Fd0gD2x3+MqCWLIPf5oxdv1Ka6b2q+z9RP01P/IaKPMEramy+7cNy/Lw8c3hw==}
     engines: {node: '>= 12'}
     hasBin: true
     dev: false
@@ -16812,6 +16814,7 @@ packages:
 
   /nan/2.15.0:
     resolution: {integrity: sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==}
+    requiresBuild: true
     optional: true
 
   /nanoid/2.1.11:
@@ -20123,8 +20126,8 @@ packages:
     dev: true
     optional: true
 
-  /shiki/0.9.15:
-    resolution: {integrity: sha512-/Y0z9IzhJ8nD9nbceORCqu6NgT9X6I8Fk8c3SICHI5NbZRLdZYFaB233gwct9sU0vvSypyaL/qaKvzyQGJBZSw==}
+  /shiki/0.10.0:
+    resolution: {integrity: sha512-iczxaIYeBFHTFrQPb9DVy2SKgYxC4Wo7Iucm7C17cCh2Ge/refnvHscUOxM85u57MfLoNOtjoEFUWt9gBexblA==}
     dependencies:
       jsonc-parser: 3.0.0
       vscode-oniguruma: 1.6.1
@@ -21434,16 +21437,16 @@ packages:
   /typedarray/0.0.6:
     resolution: {integrity: sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=}
 
-  /typedoc-plugin-merge-modules/3.1.0_typedoc@0.22.10:
+  /typedoc-plugin-merge-modules/3.1.0_typedoc@0.22.11:
     resolution: {integrity: sha512-DAHDZD+KG3mRm+hJFAMh/pO98CQ3W/BFA81FzWpc1kos66mLRIa7QVO30yBREkZNZMsTA7fgGEjEN2GO2cgi3A==}
     peerDependencies:
       typedoc: 0.21.x || 0.22.x
     dependencies:
-      typedoc: 0.22.10_typescript@4.4.4
+      typedoc: 0.22.11_typescript@4.4.4
     dev: false
 
-  /typedoc/0.22.10_typescript@4.4.4:
-    resolution: {integrity: sha512-hQYZ4WtoMZ61wDC6w10kxA42+jclWngdmztNZsDvIz7BMJg7F2xnT+uYsUa7OluyKossdFj9E9Ye4QOZKTy8SA==}
+  /typedoc/0.22.11_typescript@4.4.4:
+    resolution: {integrity: sha512-pVr3hh6dkS3lPPaZz1fNpvcrqLdtEvXmXayN55czlamSgvEjh+57GUqfhAI1Xsuu/hNHUT1KNSx8LH2wBP/7SA==}
     engines: {node: '>= 12.10.0'}
     hasBin: true
     peerDependencies:
@@ -21451,9 +21454,9 @@ packages:
     dependencies:
       glob: 7.2.0
       lunr: 2.3.9
-      marked: 3.0.8
+      marked: 4.0.10
       minimatch: 3.0.4
-      shiki: 0.9.15
+      shiki: 0.10.0
       typescript: 4.4.4
     dev: false
 
