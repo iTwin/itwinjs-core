@@ -11,11 +11,11 @@ def determineDistTag(currentVer, latestVer, previousVer):
 
     print ("Branch name: " + branchName + "\nCurrent version: " + currentVer + "\nLatest version: " + latestVer + "\nPrevious version: " + previousVer)
 
-    # The most common case is the tag will be a nightly tag
+  # The most common case is the tag will be a nightly tag
   if mainBranch in branchName:
     distTag = "nightly"
   elif "release/" in branchName:
-    # print ("On a release branch")
+    print ("On a release branch")
 
     # Parse current version
     currentDevVer = -1
@@ -25,8 +25,8 @@ def determineDistTag(currentVer, latestVer, previousVer):
     currentMajorVer, currentMinorVer, currentPatchVer = currentVer.split(".")
     currentMajorVer, currentMinorVer, currentPatchVer = int(currentMajorVer), int(currentMinorVer), int(currentPatchVer)
 
+    # Parse latest version
     if (latestVer != ""):
-      # Parse latest version
       latestDevVer = -1
       if ("-" in latestVer):
         latestVer, latestDevVer = latestVer.split("-")
@@ -34,8 +34,8 @@ def determineDistTag(currentVer, latestVer, previousVer):
       latestMajorVer, latestMinorVer, latestPatchVer = latestVer.split(".")
       latestMajorVer, latestMinorVer, latestPatchVer = int(latestMajorVer), int(latestMinorVer), int(latestPatchVer)
 
+    # Parse previous version
     if (previousVer != ""):
-      # Parse previous version
       previousDevVer = -1
       if ("-" in previousVer):
         previousVer, previousDevVer = previousVer.split("-")
@@ -54,28 +54,32 @@ def determineDistTag(currentVer, latestVer, previousVer):
         if (currentMajorVer < latestMajorVer):
           if (previousVer == ""):
             # Latest major version is greater than current major version and no version is tagged 'previous' for this package,
-            # assign previous tag to this release.
+            # assign 'previous' tag to this release.
             distTag = "previous"
           else:
             if (currentMajorVer > previousMajorVer):
+              # Assign 'previous' tag to release on newer major version than previous version (this will happen when a new
+              # major version is released, and this package is the first minor version/patch release on the old major version)
               distTag = "previous"
             elif (currentMajorVer == previousMajorVer):
               if (currentMinorVer >= previousMinorVer):
-                # Give previous tag to newer minor or patch release of old major version
+                # Assign previous tag to newer minor or patch release of previous major version
                 distTag = "previous"
         elif (currentMajorVer > latestMajorVer):
+          # First new major version release
           distTag = "latest"
         else:
-          # If current minor version < latest, don't add dist tag
+          # If current minor version < 'latest', don't add dist tag (this shouldn't ever happen)
           if (currentMinorVer > latestMinorVer):
+            # Assign 'latest' tag to new minor release
             distTag = "latest"
           elif (currentMinorVer == latestMinorVer):
-            # Major/Minor versions are equal, give latest tag if new patch or first release
+            # Major/Minor versions are equal, assign 'latest' tag if new patch or first release
             if (currentPatchVer > latestPatchVer):
-              # Give latest tag if new patch
+              # Assign 'latest' tag if new patch
               distTag = "latest"
             elif (currentPatchVer == latestPatchVer and latestDevVer != -1):
-              # Give latest tag if first non rc release of package
+              # Assign 'latest' tag if first non rc release of package
               distTag = "latest"
 
   if distTag is None:
