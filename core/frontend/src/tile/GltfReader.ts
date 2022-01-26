@@ -1820,6 +1820,30 @@ export abstract class GltfReader {
   }
 
   protected async resolveResources(): Promise<void> {
+    const promises: Array<Promise<void>> = [];
+
+    // Load any external images and buffers.
+    promises.push(this._resolveResources());
+
+    // If any mesh uses draco decoding, create a decoder.
+    for (const node of this.traverseScene()) {
+      for (const meshId of getNodeMeshIds(node)) {
+        const mesh = this._meshes[meshId];
+        if (mesh?.primitives) {
+          for (const primitive of mesh.primitives) {
+            if (primitive.extensions?.KHR_draco_mesh_compression) {
+              promises.push(DracoDecoder.create().then((decoder) => { this._dracoDecoder = decoder; }));
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    await Promise.all(promises);
+  }
+
+  private async _resolveResources(): Promise<void> {
     // ###TODO traverse the scene nodes to find resources referenced by them, instead of resolving everything - some resources may not
     // be required for the scene.
     const promises: Array<Promise<void>> = [];
