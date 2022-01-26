@@ -279,6 +279,9 @@ export class Format extends BaseFormat {
   public async fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
     this.loadFormatProperties(jsonObj);
 
+    if (isCustomFormatProps(jsonObj))
+      this._customProps = jsonObj.custom;
+
     if (undefined !== jsonObj.composite) { // optional
       this._units = new Array<[UnitProps, string | undefined]>();
       if (jsonObj.composite.includeZero !== undefined) {

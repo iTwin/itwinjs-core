@@ -7,9 +7,10 @@
  */
 
 import {
-  BadUnit, BasicUnit, UnitConversion, UnitExtraData, UnitProps, UnitsProvider,
+  BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider,
 } from "@itwin/core-quantity";
 import { UnitNameKey } from "./QuantityFormatter";
+import { UNIT_EXTRA_DATA } from "./UnitsData";
 
 // cSpell:ignore ussurvey USCUSTOM
 
@@ -131,7 +132,7 @@ interface UnitDefinition {
  */
 export function getDefaultAlternateUnitLabels() {
   const altDisplayLabelsMap = new Map<UnitNameKey, Set<string>>();
-  for (const entry of UNIT_DATA) {
+  for (const entry of UNIT_EXTRA_DATA) {
     if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
       altDisplayLabelsMap.set(entry.name, new Set<string>(entry.altDisplayLabels));
     }
