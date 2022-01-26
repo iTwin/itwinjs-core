@@ -24,6 +24,7 @@ import {
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
+  assertIdentityTransformation,
   ClassCounter, deepEqualWithFpTolerance, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
@@ -1694,10 +1695,6 @@ describe("IModelTransformer", () => {
   });
 
   it.only("local test", async () => {
-    // TODO: figure out why geometry serialized is not identical
-    // looks like there are some precision issues in some of the geometry. Not sure why the precision is not deterministic
-    // it's the same geometry stream, no?
-    const geometryConversionTolerance = 1e-10; // FIXME: why is it nondeterministic from the same geometry blob?
     const sourceDb = SnapshotDb.openFile("/tmp/bad-relationships-source.bim");
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
@@ -1709,159 +1706,44 @@ describe("IModelTransformer", () => {
 
     targetDb.saveChanges();
 
-    const sourceToTargetElemsMap = new Map<Element, Element | undefined>();
-    const targetToSourceElemsMap = new Map<Element, Element | undefined>();
-    const targetElemIds = new Set<Id64String>();
-
-    for await (const [sourceElemId] of sourceDb.query("SELECT ECInstanceId FROM bis.Element")) {
-      const targetElemId =
-        transformer.context.findTargetElementId(sourceElemId);
-      const sourceElem = sourceDb.elements.getElement(sourceElemId);
-      const targetElem = targetDb.elements.tryGetElement(targetElemId);
-      // expect(targetElem.toExist)
-      sourceToTargetElemsMap.set(sourceElem, targetElem);
-      if (targetElem) {
-        targetElemIds.add(targetElemId);
-        targetToSourceElemsMap.set(targetElem, sourceElem);
-        for (const [propName, prop] of Object.entries(
-          sourceElem.getClassMetaData()!.properties
-        ) ?? []) {
-          if (prop.isNavigation) {
-            let relationTargetInSourceId!: Id64String;
-            let relationTargetInTargetId!: Id64String;
-            expect(sourceElem.classFullName).to.equal(targetElem.classFullName);
-            // some custom handled classes make it difficult to inspect the element props directly with the metadata prop name, so we do this instead
-            const sql = `SELECT ${propName}.Id from ${sourceElem.classFullName} WHERE ECInstanceId=:id`;
-            sourceDb.withPreparedStatement(sql, (stmt) => {
-              stmt.bindId("id", sourceElemId);
-              stmt.step();
-              relationTargetInSourceId = stmt.getValue(0).getId() ?? Id64.invalid;
-            });
-            targetDb.withPreparedStatement(sql, (stmt) => {
-              stmt.bindId("id", targetElemId);
-              expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
-              relationTargetInTargetId = stmt.getValue(0).getId() ?? Id64.invalid;
-            });
-            const mappedRelationTargetInTargetId = transformer.context.findTargetElementId(relationTargetInSourceId);
-            expect(relationTargetInTargetId).to.equal(mappedRelationTargetInTargetId);
-          } else {
-            expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
-              sourceElem.asAny[propName],
-              geometryConversionTolerance,
-            );
-          }
-        }
-        const expectedSourceElemJsonProps = { ...sourceElem.jsonProperties };
-
-        // START jsonProperties TRANSFORMATION EXCEPTIONS
-        // the transformer does not propagate source channels which are stored in Subject.jsonProperties.Subject.Job
-        if (sourceElem instanceof Subject) {
-          if (sourceElem.jsonProperties?.Subject?.Job) {
-            if (!expectedSourceElemJsonProps.Subject)
-              expectedSourceElemJsonProps.Subject = {};
-            expectedSourceElemJsonProps.Subject.Job = undefined;
-          }
-        }
-        if (sourceElem instanceof DisplayStyle3d) {
-          if (sourceElem.jsonProperties?.styles?.environment?.sky?.image?.texture === Id64.invalid) {
-            delete expectedSourceElemJsonProps.styles.environment.sky.image.texture;
-          }
-          if (!sourceElem.jsonProperties?.styles?.environment?.sky?.twoColor) {
-            expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
-          }
-        }
-        // END jsonProperties TRANSFORMATION EXCEPTIONS
-        const _eq = deepEqualWithFpTolerance(expectedSourceElemJsonProps, targetElem.jsonProperties, geometryConversionTolerance);
-        expect(targetElem.jsonProperties).to.deep.equalWithFpTolerance(expectedSourceElemJsonProps, geometryConversionTolerance);
-      }
-    }
-
-    for await (const [targetElemId] of targetDb.query("SELECT ECInstanceId FROM bis.Element")) {
-      if (!targetElemIds.has(targetElemId)) {
-        const targetElem = targetDb.elements.getElement(targetElemId);
-        targetToSourceElemsMap.set(targetElem, undefined);
-      }
-    }
-
-    const onlyInSourceElements = [...sourceToTargetElemsMap].filter(([_inSource, inTarget]) => inTarget === undefined).map(([inSource]) => inSource);
-    const onlyInTargetElements = [...targetToSourceElemsMap].filter(([_inTarget, inSource]) => inSource === undefined).map(([inTarget]) => inTarget);
-    const onlyInSourceElemImportantProps = onlyInSourceElements.map((elem) => {
-      const rawProps = { ...elem } as Partial<Mutable<Element>>;
-      delete rawProps.iModel;
-      delete rawProps.id;
-      delete rawProps.isInstanceOfEntity;
-      return rawProps;
-    });
-
-    // source will have the connector external source which was not exported without the transformer option `includeSourceProvenance: true`
-    expect(onlyInSourceElemImportantProps).to.deep.equal([
+    await assertIdentityTransformation(
+      sourceDb,
+      targetDb,
+      transformer,
+      // source will have the connector external source which was not exported without the transformer option `includeSourceProvenance: true`
       {
-        code: new Code({ spec: IModelDb.repositoryModelId, scope: IModelDb.repositoryModelId }),
-        description: "syncFile-test",
-        federationGuid: "bdf85257-884e-4006-8ac4-c04b9e0d35dd",
-        jsonProperties: { synchronizationConfigLink: { } },
-        lastSuccessfulRun: undefined,
-        model: IModelDb.repositoryModelId,
-        parent: undefined,
-        url: "iTwin Synchronizer",
-        userLabel: "syncFile-test",
-      } as Partial<SynchronizationConfigLinkProps>,
-      {
-        code: Code.createEmpty(),
-        model: IModelDb.repositoryModelId,
-        connectorName: "Civil",
-        connectorVersion: "10.8.0.15",
-        federationGuid: "cd1649f1-e494-4a76-9aa5-6339d9f0266f",
-        jsonProperties: {},
-        parent: undefined,
-        repository: {
-          id: "0x20000000004",
-          relClassName: "BisCore:ExternalSourceIsInRepository",
-        },
-        userLabel: "Default",
-      } as Partial<ExternalSourceProps>,
-    ]);
-    expect(onlyInTargetElements).to.have.length(0);
-
-    const sourceToTargetModelsMap = new Map<Model, Model | undefined>();
-    const targetToSourceModelsMap = new Map<Model, Model | undefined>();
-    const targetModelIds = new Set<Id64String>();
-
-    for await (const [sourceModelId] of sourceDb.query("SELECT ECInstanceId FROM bis.Model")) {
-      const targetModelId =
-        transformer.context.findTargetElementId(sourceModelId);
-      const sourceModel = sourceDb.models.getModel(sourceModelId);
-      const targetModel = targetDb.models.tryGetModel(targetModelId);
-      // expect(targetModel.toExist)
-      sourceToTargetModelsMap.set(sourceModel, targetModel);
-      if (targetModel) {
-        targetModelIds.add(targetModelId);
-        targetToSourceModelsMap.set(targetModel, sourceModel);
-        const expectedSourceModelJsonProps = { ...sourceModel.jsonProperties };
-        const _eq = deepEqualWithFpTolerance(expectedSourceModelJsonProps, targetModel.jsonProperties, geometryConversionTolerance);
-        expect(targetModel.jsonProperties).to.deep.equalWithFpTolerance(expectedSourceModelJsonProps, geometryConversionTolerance);
+        expectedElemsOnlyInSource: [
+          {
+            code: new Code({
+              spec: IModelDb.repositoryModelId,
+              scope: IModelDb.repositoryModelId,
+            }),
+            description: "syncFile-test",
+            federationGuid: "bdf85257-884e-4006-8ac4-c04b9e0d35dd",
+            jsonProperties: { synchronizationConfigLink: {} },
+            lastSuccessfulRun: undefined,
+            model: IModelDb.repositoryModelId,
+            parent: undefined,
+            url: "iTwin Synchronizer",
+            userLabel: "syncFile-test",
+          } as Partial<SynchronizationConfigLinkProps>,
+          {
+            code: Code.createEmpty(),
+            model: IModelDb.repositoryModelId,
+            connectorName: "Civil",
+            connectorVersion: "10.8.0.15",
+            federationGuid: "cd1649f1-e494-4a76-9aa5-6339d9f0266f",
+            jsonProperties: {},
+            parent: undefined,
+            repository: {
+              id: "0x20000000004",
+              relClassName: "BisCore:ExternalSourceIsInRepository",
+            },
+            userLabel: "Default",
+          } as Partial<ExternalSourceProps>,
+        ],
       }
-    }
-
-    for await (const [targetModelId] of targetDb.query("SELECT ECInstanceId FROM bis.Model")) {
-      if (!targetModelIds.has(targetModelId)) {
-        const targetModel = targetDb.models.getModel(targetModelId);
-        targetToSourceModelsMap.set(targetModel, undefined);
-      }
-    }
-
-    const onlyInSourceModels = [...sourceToTargetModelsMap].filter(([_inSource, inTarget]) => inTarget === undefined).map(([inSource]) => inSource);
-    const onlyInTargetModels = [...targetToSourceModelsMap].filter(([_inTarget, inSource]) => inSource === undefined).map(([inTarget]) => inTarget);
-    const onlyInSourceModelImportantProps = onlyInSourceModels.map((elem) => {
-      const rawProps = { ...elem } as Partial<Mutable<Model>>;
-      delete rawProps.iModel;
-      delete rawProps.id;
-      delete rawProps.isInstanceOfEntity;
-      return rawProps;
-    });
-
-    expect(onlyInSourceModelImportantProps).to.have.length(0);
-    expect(onlyInTargetModels).to.have.length(0);
+    );
 
     sourceDb.close();
     targetDb.close();

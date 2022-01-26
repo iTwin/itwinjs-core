@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Assertion, util } from "chai";
+import { assert, Assertion, expect, util } from "chai";
 import * as path from "path";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, Mutable } from "@itwin/core-bentley";
 import { Schema } from "@itwin/ecschema-metadata";
 import { Geometry, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
@@ -215,6 +215,179 @@ export class IModelTransformerTestUtils {
     assert.throws(() => IModelTestUtils.querySubjectId(iModelDb, "A"), Error);
     assert.throws(() => IModelTestUtils.querySubjectId(iModelDb, "B"), Error);
   }
+}
+
+export async function assertIdentityTransformation(
+  sourceDb: IModelDb,
+  targetDb: IModelDb,
+  transformer: IModelTransformer,
+  { expectedElemsOnlyInSource = [] }: { expectedElemsOnlyInSource?: Partial<ElementProps>[] } = {}
+) {
+  const geometryConversionTolerance = 1e-10;
+
+  const sourceToTargetElemsMap = new Map<Element, Element | undefined>();
+  const targetToSourceElemsMap = new Map<Element, Element | undefined>();
+  const targetElemIds = new Set<Id64String>();
+
+  for await (const [sourceElemId] of sourceDb.query(
+    "SELECT ECInstanceId FROM bis.Element"
+  )) {
+    const targetElemId = transformer.context.findTargetElementId(sourceElemId);
+    const sourceElem = sourceDb.elements.getElement(sourceElemId);
+    const targetElem = targetDb.elements.tryGetElement(targetElemId);
+    // expect(targetElem.toExist)
+    sourceToTargetElemsMap.set(sourceElem, targetElem);
+    if (targetElem) {
+      targetElemIds.add(targetElemId);
+      targetToSourceElemsMap.set(targetElem, sourceElem);
+      for (const [propName, prop] of Object.entries(
+        sourceElem.getClassMetaData()!.properties
+      ) ?? []) {
+        if (prop.isNavigation) {
+          let relationTargetInSourceId!: Id64String;
+          let relationTargetInTargetId!: Id64String;
+          expect(sourceElem.classFullName).to.equal(targetElem.classFullName);
+          // some custom handled classes make it difficult to inspect the element props directly with the metadata prop name
+          // so we query the prop instead of the checking for the property on the element
+          const sql = `SELECT ${propName}.Id from ${sourceElem.classFullName} WHERE ECInstanceId=:id`;
+          sourceDb.withPreparedStatement(sql, (stmt) => {
+            stmt.bindId("id", sourceElemId);
+            stmt.step();
+            relationTargetInSourceId = stmt.getValue(0).getId() ?? Id64.invalid;
+          });
+          targetDb.withPreparedStatement(sql, (stmt) => {
+            stmt.bindId("id", targetElemId);
+            expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
+            relationTargetInTargetId = stmt.getValue(0).getId() ?? Id64.invalid;
+          });
+          const mappedRelationTargetInTargetId =
+            transformer.context.findTargetElementId(relationTargetInSourceId);
+          expect(relationTargetInTargetId).to.equal(
+            mappedRelationTargetInTargetId
+          );
+        } else {
+          expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
+            sourceElem.asAny[propName],
+            geometryConversionTolerance
+          );
+        }
+      }
+      const expectedSourceElemJsonProps = { ...sourceElem.jsonProperties };
+
+      // START jsonProperties TRANSFORMATION EXCEPTIONS
+      // the transformer does not propagate source channels which are stored in Subject.jsonProperties.Subject.Job
+      if (sourceElem instanceof Subject) {
+        if (sourceElem.jsonProperties?.Subject?.Job) {
+          if (!expectedSourceElemJsonProps.Subject)
+            expectedSourceElemJsonProps.Subject = {};
+          expectedSourceElemJsonProps.Subject.Job = undefined;
+        }
+      }
+      if (sourceElem instanceof DisplayStyle3d) {
+        if (
+          sourceElem.jsonProperties?.styles?.environment?.sky?.image
+            ?.texture === Id64.invalid
+        ) {
+          delete expectedSourceElemJsonProps.styles.environment.sky.image
+            .texture;
+        }
+        if (!sourceElem.jsonProperties?.styles?.environment?.sky?.twoColor) {
+          expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
+        }
+      }
+      // END jsonProperties TRANSFORMATION EXCEPTIONS
+      const _eq = deepEqualWithFpTolerance(
+        expectedSourceElemJsonProps,
+        targetElem.jsonProperties,
+        geometryConversionTolerance
+      );
+      expect(targetElem.jsonProperties).to.deep.equalWithFpTolerance(
+        expectedSourceElemJsonProps,
+        geometryConversionTolerance
+      );
+    }
+  }
+
+  for await (const [targetElemId] of targetDb.query(
+    "SELECT ECInstanceId FROM bis.Element"
+  )) {
+    if (!targetElemIds.has(targetElemId)) {
+      const targetElem = targetDb.elements.getElement(targetElemId);
+      targetToSourceElemsMap.set(targetElem, undefined);
+    }
+  }
+
+  const onlyInSourceElements = [...sourceToTargetElemsMap]
+    .filter(([_inSource, inTarget]) => inTarget === undefined)
+    .map(([inSource]) => inSource);
+  const onlyInTargetElements = [...targetToSourceElemsMap]
+    .filter(([_inTarget, inSource]) => inSource === undefined)
+    .map(([inTarget]) => inTarget);
+  const elementsOnlyInSourceAsInvariant = onlyInSourceElements.map((elem) => {
+    const rawProps = { ...elem } as Partial<Mutable<Element>>;
+    delete rawProps.iModel;
+    delete rawProps.id;
+    delete rawProps.isInstanceOfEntity;
+    return rawProps;
+  });
+
+  expect(elementsOnlyInSourceAsInvariant).to.deep.equal(expectedElemsOnlyInSource);
+  expect(onlyInTargetElements).to.have.length(0);
+
+  const sourceToTargetModelsMap = new Map<Model, Model | undefined>();
+  const targetToSourceModelsMap = new Map<Model, Model | undefined>();
+  const targetModelIds = new Set<Id64String>();
+
+  for await (const [sourceModelId] of sourceDb.query(
+    "SELECT ECInstanceId FROM bis.Model"
+  )) {
+    const targetModelId =
+      transformer.context.findTargetElementId(sourceModelId);
+    const sourceModel = sourceDb.models.getModel(sourceModelId);
+    const targetModel = targetDb.models.tryGetModel(targetModelId);
+    // expect(targetModel.toExist)
+    sourceToTargetModelsMap.set(sourceModel, targetModel);
+    if (targetModel) {
+      targetModelIds.add(targetModelId);
+      targetToSourceModelsMap.set(targetModel, sourceModel);
+      const expectedSourceModelJsonProps = { ...sourceModel.jsonProperties };
+      const _eq = deepEqualWithFpTolerance(
+        expectedSourceModelJsonProps,
+        targetModel.jsonProperties,
+        geometryConversionTolerance
+      );
+      expect(targetModel.jsonProperties).to.deep.equalWithFpTolerance(
+        expectedSourceModelJsonProps,
+        geometryConversionTolerance
+      );
+    }
+  }
+
+  for await (const [targetModelId] of targetDb.query(
+    "SELECT ECInstanceId FROM bis.Model"
+  )) {
+    if (!targetModelIds.has(targetModelId)) {
+      const targetModel = targetDb.models.getModel(targetModelId);
+      targetToSourceModelsMap.set(targetModel, undefined);
+    }
+  }
+
+  const onlyInSourceModels = [...sourceToTargetModelsMap]
+    .filter(([_inSource, inTarget]) => inTarget === undefined)
+    .map(([inSource]) => inSource);
+  const onlyInTargetModels = [...targetToSourceModelsMap]
+    .filter(([_inTarget, inSource]) => inSource === undefined)
+    .map(([inTarget]) => inTarget);
+  const modelsOnlyInSourceAsInvariant = onlyInSourceModels.map((elem) => {
+    const rawProps = { ...elem } as Partial<Mutable<Model>>;
+    delete rawProps.iModel;
+    delete rawProps.id;
+    delete rawProps.isInstanceOfEntity;
+    return rawProps;
+  });
+
+  expect(modelsOnlyInSourceAsInvariant).to.have.length(0);
+  expect(onlyInTargetModels).to.have.length(0);
 }
 
 export class TransformerExtensiveTestScenario {
