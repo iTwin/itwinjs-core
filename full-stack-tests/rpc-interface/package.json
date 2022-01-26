@@ -62,7 +62,7 @@
     "@itwin/express-server": "workspace:*",
     "@itwin/imodels-access-backend": "~0.3.0",
     "@itwin/presentation-backend": "workspace:*",
-    "@itwin/projects-client": "^0.3.0",
+    "@itwin/projects-client": "^0.4.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
