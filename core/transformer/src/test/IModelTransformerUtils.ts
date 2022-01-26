@@ -411,6 +411,7 @@ export async function assertIdentityTransformation(
     const relTargetInTarget = transformer.context.findTargetElementId(relInSource.TargetECInstanceId);
     expect(relTargetInTarget).to.not.equal(Id64.invalid);
     const relInTarget = targetRelationships.get(makeRelationKey({ SourceECInstanceId: relSourceInTarget, TargetECInstanceId: relTargetInTarget }));
+    expect(relInTarget).not.to.be.undefined;
     // this won't work if it has navigation properties (or any remapped property)
     const makeRelInvariant = ({ SourceECInstanceId: _1, TargetECInstanceId: _2, ECClassId: _3, ECInstanceId: _4, ...rel }: any) => rel;
     expect(makeRelInvariant(relInSource)).to.deep.equal(makeRelInvariant(relInTarget));
