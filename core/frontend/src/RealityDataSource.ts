@@ -121,6 +121,7 @@ export namespace RealityDataSource {
     };
     return orbitGtBlob;
   }
+  /** @internal - Is used by "fdt attach cesium asset" keyin*/
   export function createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey {
     const id = getCesiumAssetUrl(osmAssetId,requestKey);
     return {provider: RealityDataProvider.CesiumIonAsset, format: RealityDataFormat.ThreeDTile, id};
