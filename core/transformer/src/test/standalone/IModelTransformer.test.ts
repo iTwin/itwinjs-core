@@ -1828,6 +1828,8 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
+  // this will throw "Bad Request: Not all deferred elements could be processed"
+  // it is skipped until the entire element deferral mechanism will be replaced with a cycle-handling implementation
   it.skip("IModelTransformer handles generated class nav property cycle", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "NavPropCycleSource.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropPredecessors" } });
