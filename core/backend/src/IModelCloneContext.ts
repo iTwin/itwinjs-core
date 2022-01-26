@@ -6,13 +6,12 @@
  * @module iModels
  */
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel, ModelProps, PropertyMetaData, RelatedElement } from "@itwin/core-common";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
-import { Model } from "./Model";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -147,14 +146,8 @@ export class IModelCloneContext {
       }
     }
     const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName);
+    // eslint-disable-next-line @typescript-eslint/dot-notation
     jsClass["onCloned"](this, sourceElement.toJSON(), targetElementProps);
     return targetElementProps;
-  }
-
-  /** Clone the specified source Model into ModelProps for the target iModel.
-   * @internal
-   */
-  public cloneModel(sourceModel: Model): ModelProps {
-    return this._nativeContext.cloneModel(sourceModel.id);
   }
 }
