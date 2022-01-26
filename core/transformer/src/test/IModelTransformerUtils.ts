@@ -18,7 +18,7 @@ import {
 import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import {
   Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
-  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, SkyBoxImageProps, SkyBoxImageType,
+  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
@@ -389,6 +389,31 @@ export async function assertIdentityTransformation(
 
   expect(modelsOnlyInSourceAsInvariant).to.have.length(0);
   expect(onlyInTargetModels).to.have.length(0);
+
+  const makeRelationKey = (rel: any) => `${rel.SourceECInstanceId}\x00${rel.TargetECInstanceId}`;
+  const query: Parameters<IModelDb["query"]> = ["SELECT * FROM bis.ElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }];
+  const sourceRelationships = new Map<string, any>();
+  for await (const row of sourceDb.query(...query)) {
+    sourceRelationships.set(makeRelationKey(row), row);
+  }
+
+  const targetRelationships = new Map<string, any>();
+  for await (const row of targetDb.query(...query)) {
+    targetRelationships.set(makeRelationKey(row), row);
+  }
+
+  /* eslint-disable @typescript-eslint/naming-convention */
+  for (const relInSource of sourceRelationships.values()) {
+    const relSourceInTarget = transformer.context.findTargetElementId(relInSource.SourceECInstanceId);
+    expect(relSourceInTarget).to.not.equal(Id64.invalid);
+    const relTargetInTarget = transformer.context.findTargetElementId(relInSource.TargetECInstanceId);
+    expect(relTargetInTarget).to.not.equal(Id64.invalid);
+    const relInTarget = targetRelationships.get(makeRelationKey({ SourceECInstanceId: relSourceInTarget, TargetECInstanceId: relTargetInTarget }));
+    // this won't work if it has navigation properties (or any remapped property)
+    const makeRelInvariant = ({ SourceECInstanceId: _1, TargetECInstanceId: _2, ECClassId: _3, ECInstanceId: _4, ...rel }: any) => rel;
+    expect(makeRelInvariant(relInSource)).to.deep.equal(makeRelInvariant(relInTarget));
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 export class TransformerExtensiveTestScenario {
