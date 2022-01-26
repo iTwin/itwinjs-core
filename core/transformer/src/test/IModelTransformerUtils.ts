@@ -18,7 +18,7 @@ import {
 import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import {
   Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
-  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, SkyBoxImageType,
+  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, SkyBoxImageProps, SkyBoxImageType,
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
@@ -63,8 +63,8 @@ Assertion.addMethod("equalWithFpTolerance", function equalWithFpTolerance(expect
     isDeep
       ? deepEqualWithFpTolerance(expected, actual, tolerance)
       : isAlmostEqualNumber(expected, actual, tolerance),
-    `expected ${isDeep ? "deep members of " : " "}#{exp} to not be within ${tolerance} of #{act}`,
-    `expected ${isDeep ? "deep members of " : " "}#{exp} to be within ${tolerance} of #{act}`,
+    `expected ${isDeep ? "deep equality of " : " "}#{exp} and #{act} with a tolerance of ${tolerance}`,
+    `expected ${isDeep ? "deep inequality of " : " "}#{exp} and #{act} with a tolerance of ${tolerance}`,
     expected,
     actual
   );
@@ -272,7 +272,8 @@ export async function assertIdentityTransformation(
           );
         }
       }
-      const expectedSourceElemJsonProps = { ...sourceElem.jsonProperties };
+      const quickClone = (obj: any) => JSON.parse(JSON.stringify(obj));
+      const expectedSourceElemJsonProps = quickClone(sourceElem.jsonProperties);
 
       // START jsonProperties TRANSFORMATION EXCEPTIONS
       // the transformer does not propagate source channels which are stored in Subject.jsonProperties.Subject.Job
@@ -283,20 +284,20 @@ export async function assertIdentityTransformation(
           expectedSourceElemJsonProps.Subject.Job = undefined;
         }
       }
-      if (sourceElem instanceof DisplayStyle3d) {
-        if (
-          sourceElem.jsonProperties?.styles?.environment?.sky?.image
-            ?.texture === Id64.invalid
-        ) {
-          delete expectedSourceElemJsonProps.styles.environment.sky.image
-            .texture;
-        }
-        if (!sourceElem.jsonProperties?.styles?.environment?.sky?.twoColor) {
+      if (sourceElem instanceof DisplayStyle3d && expectedSourceElemJsonProps.styles?.environment?.sky) {
+        const sky = expectedSourceElemJsonProps.styles.environment.sky;
+        const image = sky.image;
+        if (sky.image?.texture === Id64.invalid)
+          delete image.texture;
+        if (!sky.image)
+          sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
+        if (!sky.twoColor)
           expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
-        }
+        if (sky.file === "")
+          delete sky.file;
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
-      const _eq = deepEqualWithFpTolerance(
+      const _eq = deepEqualWithFpTolerance( // kept for conditional breakpoints
         expectedSourceElemJsonProps,
         targetElem.jsonProperties,
         geometryConversionTolerance
