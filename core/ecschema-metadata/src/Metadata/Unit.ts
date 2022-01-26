@@ -64,7 +64,7 @@ export class Unit extends SchemaItem {
   /**
    * @alpha
    */
-   public static isUnit(object: any): object is Unit {
+  public static isUnit(object: any): object is Unit {
     return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.Unit;
   }
 

@@ -29,7 +29,6 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
-import { BasicUnitsProvider } from "./quantity-formatting/BasicUnitsProvider";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";

@@ -71,7 +71,6 @@ export class BasicUnitsProvider implements UnitsProvider {
     return undefined;
   }
 
-
   /** Find a unit given the unit's unique name. */
   public async findUnitByName(unitName: string): Promise<UnitProps> {
     const unitDataEntry = this.findUnitDefinition(unitName);
