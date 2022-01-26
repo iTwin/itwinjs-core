@@ -318,13 +318,13 @@ export async function assertIdentityTransformation(
     }
   }
 
-  const onlyInSourceElements = [...sourceToTargetElemsMap]
+  const onlyInSourceElements = new Map([...sourceToTargetElemsMap]
     .filter(([_inSource, inTarget]) => inTarget === undefined)
-    .map(([inSource]) => inSource);
-  const onlyInTargetElements = [...targetToSourceElemsMap]
+    .map(([inSource]) => [inSource.id, inSource]));
+  const onlyInTargetElements = new Map([...targetToSourceElemsMap]
     .filter(([_inTarget, inSource]) => inSource === undefined)
-    .map(([inTarget]) => inTarget);
-  const elementsOnlyInSourceAsInvariant = onlyInSourceElements.map((elem) => {
+    .map(([inTarget]) => [inTarget.id, inTarget]));
+  const elementsOnlyInSourceAsInvariant = [...onlyInSourceElements.values()].map((elem) => {
     const rawProps = { ...elem } as Partial<Mutable<Element>>;
     delete rawProps.iModel;
     delete rawProps.id;
@@ -404,6 +404,8 @@ export async function assertIdentityTransformation(
 
   /* eslint-disable @typescript-eslint/naming-convention */
   for (const relInSource of sourceRelationships.values()) {
+    const isOnlyInSource = onlyInSourceElements.has(relInSource.SourceECInstanceId) && onlyInSourceElements.has(relInSource.TargetECInstanceId);
+    if (isOnlyInSource) continue;
     const relSourceInTarget = transformer.context.findTargetElementId(relInSource.SourceECInstanceId);
     expect(relSourceInTarget).to.not.equal(Id64.invalid);
     const relTargetInTarget = transformer.context.findTargetElementId(relInSource.TargetECInstanceId);
