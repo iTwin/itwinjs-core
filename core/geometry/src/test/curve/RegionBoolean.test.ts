@@ -435,6 +435,23 @@ describe("RegionBoolean", () => {
       GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningLineStringApproach");
         expect(ck.getNumErrors()).equals(0);
         });
+
+    // Near-tangency union from MS Bug#716145. TODO: CURRENTLY FAILS.
+    it.skip("NearTangencyUnion", () => {
+      const ck = new Checker();
+      const allGeometry: GeometryQuery[] = [];
+      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/areaBoolean/AreaBoolean.716145.Inputs.imjs", "utf8"))) as AnyRegion[];
+      exerciseAreaBooleans([inputs[0]], [inputs[1]], ck, allGeometry, 0, 0);
+      GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangencyUnion");
+
+      // explicitly verify known output
+      const result = RegionOps.regionBooleanXY(inputs[0], inputs[1], RegionBinaryOpType.Union);
+      const output = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/areaBoolean/AreaBoolean.716145.Output.imjs", "utf8"))) as AnyRegion;
+      if (output !== undefined && result !== undefined)
+        ck.testTrue(output.isAlmostEqual(result), "Area Boolean union result as expected");
+
+      expect(ck.getNumErrors()).equals(0);
+    });
   });
 
   /**
