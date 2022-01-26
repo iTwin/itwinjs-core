@@ -1930,6 +1930,9 @@ export class Cluster<T extends Marker> {
     get position(): Point3d;
 }
 
+// @beta
+export type CollectTileStatus = "accept" | "reject" | "continue";
+
 // @alpha (undocumented)
 export enum CompassMode {
     // (undocumented)
@@ -3473,6 +3476,11 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     get treeModelId(): Id64String;
 }
 
+// @beta
+export interface GeometryTileTreeReference extends TileTreeReference {
+    collectTileGeometry: (collector: TileGeometryCollector) => void;
+}
+
 // @internal
 export class GeoServices {
     constructor(iModel: IModelConnection);
@@ -3828,6 +3836,8 @@ export abstract class GltfReader {
     }, accessorName: string): GltfBufferData | undefined;
     // (undocumented)
     protected readFeatureIndices(_json: any): number[] | undefined;
+    // (undocumented)
+    readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals?: boolean, needParams?: boolean): RealityTileGeometry;
     // (undocumented)
     protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult;
     // (undocumented)
@@ -5848,10 +5858,6 @@ export class MapTile extends RealityTile {
     // (undocumented)
     freeMemory(): void;
     // (undocumented)
-    get geometry(): RenderRealityMeshGeometry | undefined;
-    // (undocumented)
-    protected _geometry?: RenderRealityMeshGeometry;
-    // (undocumented)
     getClipShape(): Point3d[];
     // (undocumented)
     getContentClip(): ClipVector | undefined;
@@ -5911,6 +5917,10 @@ export class MapTile extends RealityTile {
     quadId: QuadId;
     // (undocumented)
     readonly rectangle: MapCartoRectangle;
+    // (undocumented)
+    get renderGeometry(): RenderTerrainGeometry | undefined;
+    // (undocumented)
+    protected _renderGeometry?: RenderTerrainGeometry;
     selectSecondaryTiles(args: TileDrawArgs, context: TraversalSelectionContext): void;
     // (undocumented)
     setContent(content: TerrainTileContent): void;
@@ -5971,6 +5981,8 @@ export class MapTileLoader extends RealityTileLoader {
     // (undocumented)
     loadChildren(_tile: RealityTile): Promise<Tile[] | undefined>;
     // (undocumented)
+    loadPolyfaces(): Polyface[] | undefined;
+    // (undocumented)
     loadTileContent(tile: MapTile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent>;
     // (undocumented)
     get maxDepth(): number;
@@ -6022,7 +6034,7 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     createGlobeChild(params: TileParams, quadId: QuadId, _rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, heightRange?: Range1d): MapTile;
     // (undocumented)
-    createPlanarChild(params: RealityTileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile;
+    createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile;
     // (undocumented)
     doCreateGlobeChildren(tile: Tile): boolean;
     // (undocumented)
@@ -6086,6 +6098,8 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     pointAboveEllipsoid(point: Point3d): boolean;
     // (undocumented)
+    produceGeometry?: boolean;
+    // (undocumented)
     sourceTilingScheme: MapTilingScheme;
     // (undocumented)
     terrainExaggeration: number;
@@ -6108,6 +6122,8 @@ export class MapTileTreeReference extends TileTreeReference {
     clearLayers(): void;
     // (undocumented)
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
+    // (undocumented)
+    protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined;
     // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
@@ -7906,7 +7922,10 @@ export class RealityModelTileTree extends RealityTileTree {
 // @internal (undocumented)
 export namespace RealityModelTileTree {
     // (undocumented)
-    export function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined, deduplicateVertices: boolean): Promise<TileTree | undefined>;
+    export function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined, opts?: {
+        deduplicateVertices?: boolean;
+        produceGeometry?: boolean;
+    }): Promise<TileTree | undefined>;
     // (undocumented)
     export abstract class Reference extends TileTreeReference {
         constructor(props: RealityModelTileTree.ReferenceBaseProps);
@@ -7972,6 +7991,8 @@ export namespace RealityModelTileTree {
     // (undocumented)
     export interface ReferenceProps extends ReferenceBaseProps {
         // (undocumented)
+        produceGeometry?: boolean;
+        // (undocumented)
         requestAuthorization?: string;
         // (undocumented)
         url?: string;
@@ -8006,6 +8027,8 @@ export class RealityTile extends Tile {
     // (undocumented)
     get channel(): TileRequestChannel;
     // (undocumented)
+    collectTileGeometry(collector: TileGeometryCollector): void;
+    // (undocumented)
     computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number;
     // (undocumented)
     computeVisibilityFactor(args: TileDrawArgs): number;
@@ -8013,6 +8036,10 @@ export class RealityTile extends Tile {
     disposeContents(): void;
     // (undocumented)
     forceSelectRealityTile(): boolean;
+    // (undocumented)
+    get geometry(): RealityTileGeometry | undefined;
+    // (undocumented)
+    protected _geometry?: RealityTileGeometry;
     // (undocumented)
     getContentClip(): ClipVector | undefined;
     // (undocumented)
@@ -8078,10 +8105,18 @@ export class RealityTile extends Tile {
     // (undocumented)
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
     // (undocumented)
+    setContent(content: RealityTileContent): void;
+    // (undocumented)
     readonly transformToRoot?: Transform;
     // (undocumented)
     get unprojectedGraphic(): RenderGraphic | undefined;
     }
+
+// @internal (undocumented)
+export interface RealityTileContent extends TileContent {
+    // (undocumented)
+    geometry?: RealityTileGeometry;
+}
 
 // @internal (undocumented)
 export class RealityTileDrawArgs extends TileDrawArgs {
@@ -8094,9 +8129,15 @@ export class RealityTileDrawArgs extends TileDrawArgs {
     get worldToViewMap(): Map4d;
     }
 
+// @alpha
+export interface RealityTileGeometry {
+    // (undocumented)
+    polyfaces?: Polyface[];
+}
+
 // @internal
 export abstract class RealityTileLoader {
-    constructor();
+    constructor(_produceGeometry?: boolean | undefined);
     // (undocumented)
     protected get _batchType(): BatchType;
     // (undocumented)
@@ -8118,9 +8159,9 @@ export abstract class RealityTileLoader {
     // (undocumented)
     protected get _loadEdges(): boolean;
     // (undocumented)
-    loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent>;
+    loadGeometryFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent>;
     // (undocumented)
-    loadTileContentFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent>;
+    loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<RealityTileContent>;
     // (undocumented)
     abstract get maxDepth(): number;
     // (undocumented)
@@ -8197,6 +8238,7 @@ export class RealityTileTree extends TileTree {
     cartesianRange: Range3d;
     // (undocumented)
     cartesianTransitionDistance: number;
+    collectTileGeometry(collector: TileGeometryCollector): void;
     // (undocumented)
     protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]): void;
     // (undocumented)
@@ -8266,6 +8308,29 @@ export interface RealityTileTreeParams extends TileTreeParams {
     // (undocumented)
     readonly yAxisUp?: boolean;
 }
+
+// @internal
+export class RealityTreeReference extends RealityModelTileTree.Reference {
+    constructor(props: RealityModelTileTree.ReferenceProps);
+    // (undocumented)
+    addLogoCards(cards: HTMLTableElement): void;
+    // (undocumented)
+    addToScene(context: SceneContext): void;
+    // (undocumented)
+    get castsShadows(): boolean;
+    // (undocumented)
+    createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
+    // (undocumented)
+    protected _createGeometryTreeReference(): GeometryTileTreeReference;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
+    // (undocumented)
+    protected get _isLoadingComplete(): boolean;
+    // (undocumented)
+    protected _rdSourceKey: RealityDataSourceKey;
+    // (undocumented)
+    get treeOwner(): TileTreeOwner;
+    }
 
 // @internal
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
@@ -8576,14 +8641,6 @@ export abstract class RenderPlanarClassifier implements IDisposable {
     abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
 }
 
-// @internal (undocumented)
-export abstract class RenderRealityMeshGeometry implements IDisposable, RenderMemory.Consumer {
-    // (undocumented)
-    abstract collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
-    abstract dispose(): void;
-}
-
 // @internal
 export class RenderScheduleState extends RenderSchedule.ScriptReference {
     // (undocumented)
@@ -8688,9 +8745,9 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined;
     // @internal (undocumented)
-    createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined;
+    createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderTerrainGeometry | undefined;
     // @internal (undocumented)
-    createRealityMeshGraphic(_params: RealityMeshGraphicParams): RenderGraphic | undefined;
+    createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined;
@@ -8900,6 +8957,16 @@ export interface RenderTargetDebugControl {
     readonly shadowFrustum: Frustum | undefined;
     // (undocumented)
     vcSupportIntersectingVolumes: boolean;
+}
+
+// @internal (undocumented)
+export abstract class RenderTerrainGeometry implements IDisposable, RenderMemory.Consumer {
+    // (undocumented)
+    abstract collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    abstract dispose(): void;
+    // (undocumented)
+    abstract get transform(): Transform | undefined;
 }
 
 // @internal
@@ -10254,6 +10321,8 @@ export class TentativePoint {
 // @internal (undocumented)
 export class TerrainDisplayOverrides {
     // (undocumented)
+    produceGeometry?: boolean;
+    // (undocumented)
     wantNormals?: boolean;
     // (undocumented)
     wantSkirts?: boolean;
@@ -10315,7 +10384,7 @@ export class TerrainTexture {
 export interface TerrainTileContent extends TileContent {
     // (undocumented)
     terrain?: {
-        geometry?: RenderRealityMeshGeometry;
+        renderGeometry?: RenderTerrainGeometry;
         mesh?: TerrainMeshPrimitive;
     };
 }
@@ -10818,6 +10887,26 @@ export class TileDrawArgs {
     get worldToViewMap(): Map4d;
 }
 
+// @beta
+export class TileGeometryCollector {
+    constructor(options: TileGeometryCollectorOptions);
+    addMissingTile(tile: Tile): void;
+    collectTile(tile: Tile): CollectTileStatus;
+    get isAllGeometryLoaded(): boolean;
+    markLoading(): void;
+    protected readonly _options: TileGeometryCollectorOptions;
+    readonly polyfaces: Polyface[];
+    requestMissingTiles(): void;
+}
+
+// @beta
+export interface TileGeometryCollectorOptions {
+    chordTolerance: number;
+    range: Range3d;
+    transform?: Transform;
+    user: TileUser;
+}
+
 // @public
 export enum TileGraphicType {
     BackgroundMap = 0,
@@ -11033,6 +11122,8 @@ export abstract class TileTree {
     protected _clipVolume?: RenderClipVolume;
     // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
+    // @beta
+    collectTileGeometry(_collector: TileGeometryCollector): void;
     readonly contentRange?: ElementAlignedBox3d;
     countTiles(): number;
     dispose(): void;
@@ -11111,9 +11202,17 @@ export abstract class TileTreeReference {
     get castsShadows(): boolean;
     // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
+    // @beta
+    collectTileGeometry?: (collector: TileGeometryCollector) => void;
+    // @beta
+    protected _collectTileGeometry(collector: TileGeometryCollector): void;
     protected computeTransform(tree: TileTree): Transform;
     computeWorldContentRange(): ElementAlignedBox3d;
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
+    // @beta
+    createGeometryTreeReference(): GeometryTileTreeReference | undefined;
+    // @beta
+    protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined;
     decorate(_context: DecorateContext): void;
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     draw(args: TileDrawArgs): void;
@@ -11772,8 +11871,6 @@ export type UnitNameKey = string;
 // @internal (undocumented)
 export class UpsampledMapTile extends MapTile {
     // (undocumented)
-    get geometry(): RenderRealityMeshGeometry | undefined;
-    // (undocumented)
     get isEmpty(): boolean;
     // (undocumented)
     get isLoading(): boolean;
@@ -11789,7 +11886,9 @@ export class UpsampledMapTile extends MapTile {
     get loadableTile(): RealityTile;
     // (undocumented)
     markUsed(args: TileDrawArgs): void;
-}
+    // (undocumented)
+    get renderGeometry(): RenderTerrainGeometry | undefined;
+    }
 
 // @beta
 export interface UserPreferencesAccess {

@@ -141,8 +141,9 @@ export interface RenderSystemDebugControl {
 }
 
 /** @internal */
-export abstract class RenderRealityMeshGeometry implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderTerrainGeometry implements IDisposable, RenderMemory.Consumer {
   public abstract dispose(): void;
+  public abstract get transform(): Transform | undefined;
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
@@ -417,7 +418,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined { return undefined; }
+  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderTerrainGeometry | undefined { return undefined; }
   /** @internal */
   public createRealityMeshGraphic(_params: RealityMeshGraphicParams): RenderGraphic | undefined { return undefined; }
   /** @internal */

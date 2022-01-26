@@ -48,6 +48,7 @@ import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { MacroTool } from "./MacroTools";
+import { TerrainDrapeTool } from "./TerrainDrapeTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -312,6 +313,7 @@ export class DisplayTestApp {
       SVTSelectionTool,
       SyncViewportFrustaTool,
       SyncViewportsTool,
+      TerrainDrapeTool,
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
