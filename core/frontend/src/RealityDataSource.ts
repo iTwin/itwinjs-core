@@ -10,7 +10,7 @@ import { AccessToken, BentleyStatus, GuidString, Logger } from "@itwin/core-bent
 import { IModelError, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
-import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
+import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumAssetUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
 
 /**
  * This interface provide methods used to access a reality data from a reality data provider
@@ -120,6 +120,10 @@ export namespace RealityDataSource {
       sasToken,
     };
     return orbitGtBlob;
+  }
+  export function createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey {
+    const id = getCesiumAssetUrl(osmAssetId,requestKey);
+    return {provider: RealityDataProvider.CesiumIonAsset, format: RealityDataFormat.ThreeDTile, id};
   }
   /** Return an instance of a RealityDataSource from a source key.
    * There will aways be only one reality data RealityDataSource for a corresponding reality data source key.
@@ -294,6 +298,12 @@ class RealityDataSourceImpl implements RealityDataSource {
       if (this.key.id === CesiumIonAssetProvider.osmBuildingId) {
         this._tilesetUrl = getCesiumOSMBuildingsUrl();
         this._isUrlResolved = true;
+      } else {
+        const parsedId = CesiumIonAssetProvider.parseCesiumUrl(this.key.id);
+        if (parsedId) {
+          this._tilesetUrl = getCesiumAssetUrl(parsedId.id, parsedId.key);
+          this._isUrlResolved = true;
+        }
       }
     }
     return this._tilesetUrl;
