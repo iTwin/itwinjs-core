@@ -33,11 +33,12 @@ export interface FontProps {
  */
 export interface FontMapProps { fonts: FontProps[] }
 
-/** A FontMap holds the table of known font names available in an iModel.
- * Within the GeometryStream of an Element, a specific font is referenced by an FontId that is local to the iModel.
- * This table maps FontIds to FontProps.
+/**
+ * A FontMap holds the set of font names available in an iModel.
+ * Within the GeometryStream of an Element, a specific font is referenced by its FontId that is local to the iModel.
+ * This class maps FontIds to FontProps.
  * @note The font map is generally established when the iModel is first created to specify the set of fonts available
- * for editors. Adding new entries requires that the schema lock is held.
+ * for editors. Adding new entries requires that the schema lock be held.
  * @public
  */
 export class FontMap {

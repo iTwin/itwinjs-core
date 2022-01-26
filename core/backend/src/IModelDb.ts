@@ -261,9 +261,7 @@ export abstract class IModelDb extends IModel {
    * @param name The name of the font to add
    * @param type The type of the font. Default is TrueType.
    * @returns The FontId for the newly added font. If a font by that name/type already exists, this method does not fail, it returns the existing Id.
-   * @note This is generally intended to be used by administrators establishing the set of fonts available for an iModel during
-   * project setup. It requires a writeable iModel with the schema lock held. On success, the FontMap is updated and the current transaction must be
-   * committed for the change to become permanent. Then, push a changeset so that other briefcases can use the font.
+   * @see [FontId and FontMap]($docs/learning/backend/Fonts.md#fontid-and-fontmap)
    * @beta
    */
   public addNewFont(name: string, type?: FontType): FontId {

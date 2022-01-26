@@ -27,3 +27,7 @@ Can now be expressed as follows (note no IModelConnection is required):
     textureMapping: { texture, weight: 0.25 },
   });
 ```
+
+## Font Workspaces
+
+It is now possible to store and load fonts from a Font Workspace. See [Fonts]($docs/learning/backend/Fonts.md) for more details.
