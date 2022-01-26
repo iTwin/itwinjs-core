@@ -27,6 +27,7 @@ import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimi
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
+import { DracoDecoder } from "./DracoDecoder";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -161,6 +162,15 @@ interface GltfMeshPrimitive extends GltfProperty {
        * line segments is implied.
        */
       indices?: GltfId;
+    };
+    /** The [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md) extension
+     * allows glTF to support geometry compressed with Draco geometry compression.
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    KHR_draco_mesh_compression?: {
+      bufferView: GltfId;
+      // TEXCOORD_0, POSITION, etc
+      attributes: { [k: string]: number | undefined };
     };
   };
 }
@@ -688,8 +698,8 @@ export class GltfReaderProps {
 }
 
 /** The GltfMeshData contains the raw GLTF mesh data. If the data is suitable to create a [[RealityMesh]] directly, basically in the quantized format produced by
-  * ContextCapture, then a RealityMesh is created directly from this data.  Otherwise, the mesh primitive is populated from the raw data and a MeshPrimitive
-  * is generated.   The MeshPrimitve path is much less efficient but should be rarely used.
+  * ContextCapture, then a RealityMesh is created directly from this data. Otherwise, the mesh primitive is populated from the raw data and a MeshPrimitive
+  * is generated. The MeshPrimitve path is much less efficient but should be rarely used.
   *
   * @internal
   */
@@ -885,6 +895,7 @@ export abstract class GltfReader {
   protected readonly _sceneNodes: GltfId[];
   protected _computedContentRange?: ElementAlignedBox3d;
   private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) => compareTextureKeys(lhs, rhs));
+  private _dracoDecoder?: DracoDecoder;
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -1439,14 +1450,28 @@ export abstract class GltfReader {
     }
 
     if (primitive.extensions?.KHR_draco_mesh_compression) {
-      return undefined; // Defer Draco decompression until web workers implementation.
-      /*
+      if (!this._dracoDecoder)
+        return undefined;
+
+      // ###TODO: Move draco decoding to web worker?
       const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
       const bufferView = this._bufferViews[dracoExtension.bufferView];
-      if (undefined === bufferView) return undefined;
-      const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
+      if (!bufferView || !bufferView.byteLength)
+        return undefined;
 
-      return DracoDecoder.readDracoMesh(mesh, primitive, bufferData, dracoExtension.attributes); */
+      let bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
+      if (!bufferData)
+        return undefined;
+
+      const offset = bufferView.byteOffset ?? 0;
+      bufferData = bufferData.subarray(offset, offset + bufferView.byteLength);
+      const dracoMesh = this._dracoDecoder.readMesh(mesh.primitive, bufferData, dracoExtension.attributes);
+      if (dracoMesh) {
+        mesh.primitive = dracoMesh;
+        return mesh;
+      } else {
+        return undefined;
+      }
     }
 
     this.readBatchTable(mesh.primitive, primitive);

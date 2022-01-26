@@ -94,8 +94,11 @@ export class DracoDecoder {
     }
   }
 
-  public readDracoMesh(mesh: Mesh, bufferData: Uint8Array, attributes: any): Mesh | undefined {
+  public readMesh(mesh: Mesh, bufferData: Uint8Array, attributes: { [k: string]: number | undefined }): Mesh | undefined {
     try {
+      if (undefined === attributes["POSITION"])
+        return undefined;
+
       const dracoModule = this._module;
       const dracoDecoder = new dracoModule.Decoder();
 
@@ -112,13 +115,17 @@ export class DracoDecoder {
       if (!decodingStatus.ok() || dracoGeometry.ptr === 0)
         return undefined;
 
-      if (!this.decodeTriangles(mesh, dracoGeometry, dracoDecoder) || !this.decodeVertices(mesh.points, dracoGeometry, dracoDecoder, attributes.POSITION))
+      if (!this.decodeTriangles(mesh, dracoGeometry, dracoDecoder) || !this.decodeVertices(mesh.points, dracoGeometry, dracoDecoder, attributes["POSITION"]))
         return undefined;
 
-      this.decodeUVParams(mesh.uvParams, dracoGeometry, dracoDecoder, attributes.TEXCOORD_0);
-      this.decodeNormals(mesh.normals, dracoGeometry, dracoDecoder, attributes.NORMAL);
-      if (attributes._BATCHID !== undefined && mesh.features !== undefined)
-        this.decodeBatchIds(mesh.features, dracoGeometry, dracoDecoder, attributes._BATCHID);
+      if (undefined !== attributes["TEXCOORD_0"] && !this.decodeUVParams(mesh.uvParams, dracoGeometry, dracoDecoder, attributes["TEXCOORD_0"]))
+        return undefined;
+
+      if (undefined !== attributes["NORMAL"] && !this.decodeNormals(mesh.normals, dracoGeometry, dracoDecoder, attributes["NORMAL"]))
+        return undefined;
+
+      if (attributes["_BATCHID"] !== undefined && mesh.features !== undefined)
+        this.decodeBatchIds(mesh.features, dracoGeometry, dracoDecoder, attributes["_BATCHID"]);
 
       dracoModule.destroy(dracoGeometry);
       dracoModule.destroy(dracoDecoder);
