@@ -135,6 +135,7 @@ export interface GeometryPartInstanceProps {
 /** Flags applied to the entire contents of a [[GeometryStreamProps]].
  * @see GeometryStreamHeaderProps
  * @public
+ * @extensionApi
  */
 export enum GeometryStreamFlags {
   /** No flags. */

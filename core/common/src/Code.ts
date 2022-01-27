@@ -62,6 +62,7 @@ export class Code implements CodeProps {
 /** Names of the internal BIS CodeSpecs. These names match those specified by the native library.
  * For other domains, the best practice is to include the domain name or alias as part of the CodeSpec name to ensure global uniqueness.
  * @public
+ * @extensionApi
  * @see [CodeSpec]($docs/bis/intro/codes.md#codespec)
  */
 export enum BisCodeSpec {

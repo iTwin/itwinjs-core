@@ -14,6 +14,7 @@ import { TerrainProps, TerrainSettings } from "./TerrainSettings";
  * @see [[BackgroundMapProps]]
  * @see [[DisplayStyleSettingsProps]]
  * @public
+ * @extensionApi
  */
 export enum GlobeMode {
   /** Display Earth as 3d ellipsoid */

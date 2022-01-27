@@ -8,6 +8,7 @@
 
 /** The type of a font.
  * @public
+ * @extensionApi
  */
 export enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
 

@@ -10,6 +10,7 @@ import { Id64Array } from "@itwin/core-bentley";
 
 /** Describes the level of detail with which to report each geometric primitive in a [[GeometrySummaryRequestProps]].
  * @public
+ * @extensionApi
  */
 export enum GeometrySummaryVerbosity {
   /** Simply output the type of geometry as a string. */

@@ -13,6 +13,7 @@ import { TextureImageSpec } from "./RenderTexture";
 /** Supported types of [[SkyBox]] images.
  * @see [[SkyBoxImageProps]].
  * @public
+ * @extensionApi
  */
 export enum SkyBoxImageType {
   /** No image, indicating a [[SkyGradient]] should be displayed. */

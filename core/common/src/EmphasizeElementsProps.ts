@@ -14,6 +14,7 @@ import { FeatureAppearanceProps } from "./FeatureSymbology";
  * @see [EmphasizeElements]($frontend)
  * @see [[AppearanceOverrideProps]]
  * @public
+ * @extensionApi
  */
 export enum FeatureOverrideType {
   /** Override color only. */

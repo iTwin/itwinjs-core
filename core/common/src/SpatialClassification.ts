@@ -11,6 +11,7 @@ import { assert, Id64String } from "@itwin/core-bentley";
 /** Describes how a [[SpatialClassifier]] affects the display of classified geometry - that is, geometry intersecting
  * the classifier.
  * @public
+ * @extensionApi
  */
 export enum SpatialClassifierInsideDisplay {
   /** The geometry is not displayed. */
@@ -28,6 +29,7 @@ export enum SpatialClassifierInsideDisplay {
 /** Describes how a [[SpatialClassifier]] affects the display of unclassified geometry - that is, geometry not intersecting
  * the classifier.
  * @public
+ * @extensionApi
  */
 export enum SpatialClassifierOutsideDisplay {
   /** The geometry is not displayed. */

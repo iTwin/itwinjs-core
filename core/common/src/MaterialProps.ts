@@ -25,6 +25,7 @@ export type Point2dProps = number[];
 
 /** Describes the units in which a [[TextureMapProps]]' scale is expressed.
  * @public
+ * @extensionApi
  */
 export enum TextureMapUnits {
   /** Indicates the scale has no units. */

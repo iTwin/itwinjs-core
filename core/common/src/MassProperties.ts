@@ -11,6 +11,7 @@ import { XYZProps } from "@itwin/core-geometry";
 
 /** Specify whether to accumulate volumes, areas, or lengths for the supplied elements.
  * @public
+ * @extensionApi
  */
 export enum MassPropertiesOperation {
   /** Return lengths for open paths and planar regions. */

@@ -158,6 +158,7 @@ export interface PhysicalElementProps extends GeometricElement3dProps {
 
 /** An enumeration of the different types of [SectionDrawing]($backend)s.
  * @public
+ * @extensionApi
  */
 export enum SectionType {
   Section = 3,
@@ -442,6 +443,7 @@ export interface LightLocationProps extends GeometricElement3dProps {
 
 /** The *rank* for a Category
  * @public
+ * @extensionApi
  */
 export enum Rank {
   /** This category is predefined by the system */

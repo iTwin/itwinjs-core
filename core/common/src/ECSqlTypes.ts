@@ -11,6 +11,7 @@ import { assert, Id64String } from "@itwin/core-bentley";
 /** Describes the different data types an ECSQL value can be of.
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
+ * @extensionApi
  */
 export enum ECSqlValueType {
   // do not change the values of the enum as it must match its counterpart in the addon
@@ -67,6 +68,7 @@ export interface NavigationBindingValue {
  * See also
  * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  * @public
+ * @extensionApi
  */
 export enum ChangeOpCode {
   Insert = 1,
@@ -81,6 +83,7 @@ export enum ChangeOpCode {
  * See also
  * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  * @public
+ * @extensionApi
  */
 export enum ChangedValueState {
   AfterInsert = 1,
@@ -92,6 +95,7 @@ export enum ChangedValueState {
 /** Defines the ECSQL system properties.
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
+ * @extensionApi
  */
 export enum ECSqlSystemProperty {
   ECInstanceId,

@@ -13,6 +13,7 @@ import { AxisAlignedBox3dProps } from "./geometry/Placement";
 
 /** Bitflags describing which aspects of an [Element]($backend) changed as part of a [[ChangedElements]].
  * @public
+ * @extensionApi
  */
 export enum TypeOfChange {
   /** A property in the element changed */

@@ -39,6 +39,7 @@ export interface TerrainProps {
 /** Correction modes for terrain height
  * @see [[TerrainProps]]
  * @public
+ * @extensionApi
  */
 export enum TerrainHeightOriginMode {
   /** Height value indicates the geodetic height of the IModel origin (also referred to as ellipsoidal or GPS height) */

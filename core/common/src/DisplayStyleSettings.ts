@@ -66,6 +66,7 @@ export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
 
 /** Describes the style in which monochrome color is applied by a [[DisplayStyleSettings]].
  * @public
+ * @extensionApi
  */
 export enum MonochromeMode {
   /** The color of the geometry is replaced with the monochrome color. e.g., if monochrome color is white, the geometry will be white. */

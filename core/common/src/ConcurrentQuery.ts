@@ -13,6 +13,7 @@ import { Point2d, Point3d } from "@itwin/core-geometry";
  * [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
  *
  * @public
+ * @extensionApi
  */
 export enum QueryRowFormat {
   /** Each row is an object in which each non-null column value can be accessed by its name as defined in the ECSql.
@@ -131,7 +132,7 @@ export class QueryOptionsBuilder {
   public setSuppressLogErrors(val: boolean) { this._options.suppressLogErrors = val; return this; }
   public setConvertClassIdsToNames(val: boolean) { this._options.convertClassIdsToClassNames = val; return this; }
   public setLimit(val: QueryLimit) { this._options.limit = val; return this; }
-  public setRowFormat(val: QueryRowFormat){ this._options.rowFormat = val; return this; }
+  public setRowFormat(val: QueryRowFormat) { this._options.rowFormat = val; return this; }
 }
 /** @beta */
 export class BlobOptionsBuilder {

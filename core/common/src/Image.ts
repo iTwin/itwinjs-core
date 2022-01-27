@@ -10,6 +10,7 @@
  * The format determines how many bytes are allocated for each pixel in the buffer and the semantics of each byte.
  * @see [[ImageBuffer.getNumBytesPerPixel]]
  * @public
+ * @extensionApi
  */
 export enum ImageBufferFormat {
   /** RGBA format - 4 bytes per pixel. */
@@ -100,6 +101,7 @@ export function nextHighestPowerOfTwo(num: number): number {
 
 /** The format of an ImageSource.
  * @public
+ * @extensionApi
  */
 export enum ImageSourceFormat {
   /** Image data is stored with JPEG compression. */

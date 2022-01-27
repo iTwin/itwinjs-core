@@ -10,6 +10,7 @@ import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
 /** Enumerates the types of map imagery that can be supplied by a [[BackgroundMapProvider]].
  * @public
+ * @extensionApi
  */
 export enum BackgroundMapType {
   Street = 1,

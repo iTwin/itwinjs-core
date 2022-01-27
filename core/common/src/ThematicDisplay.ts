@@ -14,6 +14,7 @@ import { Gradient } from "./Gradient";
 /** A thematic gradient mode used to generate and apply a thematic effect to a scene.
  * @see [[ThematicGradientSettings.mode]]
  * @public
+ * @extensionApi
  */
 export enum ThematicGradientMode {
   /** Apply a smooth color gradient to the scene. */
@@ -29,7 +30,9 @@ export enum ThematicGradientMode {
 /** A color scheme used to generate the colors of a thematic gradient within an applied range.
  * @see [[ThematicGradientSettings.colorScheme]]
  * @see [[ThematicDisplay.range]]
- * @public */
+ * @public
+ * @extensionApi
+ */
 export enum ThematicGradientColorScheme {
   /** A color gradient scheme that represents a blue-to-red gradation. */
   BlueRed = 0,
@@ -94,7 +97,7 @@ export class ThematicGradientSettings {
   public static get contentRange(): number { return 1.0 - 2.0 * ThematicGradientSettings.margin; }
   public static get contentMax(): number { return 1.0 - ThematicGradientSettings.margin; }
 
-  public static readonly defaults = new ThematicGradientSettings({ });
+  public static readonly defaults = new ThematicGradientSettings({});
 
   private static _defaultCustomKeys = [[0.0, 255, 255, 255], [1.0, 0, 0, 0]];
 
@@ -190,7 +193,7 @@ export class ThematicGradientSettings {
   }
 
   public toJSON(): ThematicGradientSettingsProps {
-    const props: ThematicGradientSettingsProps = { };
+    const props: ThematicGradientSettingsProps = {};
     if (ThematicGradientMode.Smooth !== this.mode)
       props.mode = this.mode;
 
@@ -358,6 +361,7 @@ export class ThematicDisplaySensorSettings {
 
 /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry.
  * @public
+ * @extensionApi
  */
 export enum ThematicDisplayMode {
   /** The color gradient will be mapped to surface geometry and point clouds based on world height in meters. */
