@@ -172,6 +172,7 @@ declare global {
 
 /** Payload for the [[Viewport.onFlashedIdChanged]] event indicating Ids of the currently- and/or previously-flashed objects.
  * @public
+ * @extensionApi
  */
 export type OnFlashedIdChangedEventArgs = {
   readonly current: Id64String;

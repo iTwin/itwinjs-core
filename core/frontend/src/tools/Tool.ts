@@ -17,10 +17,16 @@ import { IModelApp } from "../IModelApp";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type ToolType = typeof Tool;
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type ToolList = ToolType[];
 
 /** @public */
@@ -793,6 +799,7 @@ export interface ParsedKeyin {
 
 /** The result type of [[ToolRegistry.parseKeyin]].
  * @public
+ * @extensionApi
  */
 export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
 

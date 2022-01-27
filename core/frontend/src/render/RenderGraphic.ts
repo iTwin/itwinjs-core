@@ -42,5 +42,6 @@ export abstract class RenderGraphicOwner extends RenderGraphic {
 
 /** An array of [[RenderGraphic]]s.
  * @public
+ * @extensionApi
  */
 export type GraphicList = RenderGraphic[];

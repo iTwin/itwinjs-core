@@ -28,6 +28,7 @@ export enum TextureTransparency {
 /** A key that uniquely identifies a [RenderTexture]($common) in the context of an [[IModelConnection]], used for caching.
  * @see [[TextureCacheOwnership]].
  * @public
+ * @extensionApi
  */
 export type TextureCacheKey = string | Gradient.Symb;
 
@@ -52,12 +53,14 @@ export interface TextureCacheOwnership {
  * texture is responsible for calling its `dispose` method when it is no longer needed.
  * @see [[CreateTextureArgs.ownership]]
  * @public
+ * @extensionApi
  */
 export type TextureOwnership = TextureCacheOwnership | "external";
 
 /** An object from which a [RenderTexture]($common) can be created.
  * @see [[TextureImage.source]]
  * @public
+ * @extensionApi
  */
 export type TextureImageSource = HTMLImageElement | ImageBuffer; // ###TODO | HTMLCanvasElement etc
 

@@ -23,6 +23,7 @@ export enum FlashMode {
 /** Options used to construct or clone a [[FlashSettings]]. All properties are mutable and optional; those left undefined receive their default
  * values.
  * @public
+ * @extensionApi
  */
 export type FlashSettingsOptions = Mutable<Partial<FlashSettings>>;
 

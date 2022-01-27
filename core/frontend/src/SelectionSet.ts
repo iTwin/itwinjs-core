@@ -74,6 +74,7 @@ export interface SelectReplaceEvent {
  *  }
  *  ```
  * @public
+ * @extensionApi
  */
 export type SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent;
 

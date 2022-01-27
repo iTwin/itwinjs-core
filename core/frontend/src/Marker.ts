@@ -21,16 +21,26 @@ import { ViewRect } from "./ViewRect";
 
 /** The types that may be used for Markers
  * @public
+ * @extensionApi
  */
 export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap;
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type MarkerFillStyle = string | CanvasGradient | CanvasPattern;
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
 function getMinScaleViewW(vp: Viewport): number {

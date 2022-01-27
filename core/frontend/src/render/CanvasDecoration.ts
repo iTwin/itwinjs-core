@@ -59,5 +59,6 @@ export interface CanvasDecoration {
 
 /** An array of [[CanvasDecoration]]s.
  * @public
+ * @extensionApi
  */
 export type CanvasDecorationList = CanvasDecoration[];
