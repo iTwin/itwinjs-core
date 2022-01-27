@@ -426,57 +426,53 @@ describe("Learning Snippets", () => {
 
       it("uses `hideExpression` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HideExpression.Ruleset
-        // The ruleset contains a root node specification for `bis.GroupInformationModel` and `bis.PhysicalModel` nodes which
-        // are grouped by class. Instance nodes of `bis.GroupInformationModel` are hidden.
+        // The ruleset contains root node specifications for two custom nodes which are only
+        // displayed if they have children. One of them has children and the other - not, so
+        // only one of them is displayed
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
             ruleType: RuleTypes.RootNodes,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["GroupInformationModel", "PhysicalModel"], arePolymorphic: true },
-              hideExpression: `ThisNode.IsInstanceNode AND ThisNode.IsOfClass("GroupInformationModel", "BisCore")`,
+              specType: ChildNodeSpecificationTypes.CustomNode,
+              type: "2d",
+              label: "2d Elements",
+              hideExpression: `ThisNode.HasChildren = FALSE`,
+            }, {
+              specType: ChildNodeSpecificationTypes.CustomNode,
+              type: "3d",
+              label: "3d Elements",
+              hideExpression: `ThisNode.HasChildren = FALSE`,
             }],
           }, {
             ruleType: RuleTypes.ChildNodes,
-            condition: `ParentNode.IsOfClass("Model", "BisCore")`,
+            condition: `ParentNode.Type = "2d"`,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_MY_CUSTOM_NODE",
-              label: "Custom Node",
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["GeometricElement2d"], arePolymorphic: true },
+            }],
+          }, {
+            ruleType: RuleTypes.ChildNodes,
+            condition: `ParentNode.Type = "3d"`,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true },
             }],
           }],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // Verify that only GroupInformationModel node is hidden, but PhysicalModel node - not
+        // Verify that only 3d elements' custom node is loaded
         const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(rootNodes).to.have.lengthOf(2).and.to.containSubset([{
-          key: { type: StandardNodeTypes.ECClassGroupingNode },
-          label: { displayValue: "Group Model" },
-        }, {
-          key: { type: StandardNodeTypes.ECClassGroupingNode },
-          label: { displayValue: "Physical Model" },
+        expect(rootNodes).to.have.lengthOf(1).and.to.containSubset([{
+          key: { type: "3d" },
+          label: { displayValue: "3d Elements" },
+          hasChildren: true,
         }]);
 
-        const groupModelChildren = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
-        expect(groupModelChildren).to.have.lengthOf(1).and.to.containSubset([{
-          key: { type: "T_MY_CUSTOM_NODE" },
-          label: { displayValue: "Custom Node" },
-        }]);
-
-        const physicalModelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[1].key });
-        expect(physicalModelNodes).to.have.lengthOf(1).and.to.containSubset([{
-          key: { type: StandardNodeTypes.ECInstancesNode },
-          label: { displayValue: "Properties_60InstancesWithUrl2" },
-        }]);
-
-        const physicalModelChildren = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: physicalModelNodes[0].key });
-        expect(physicalModelChildren).to.have.lengthOf(1).and.to.containSubset([{
-          key: { type: "T_MY_CUSTOM_NODE" },
-          label: { displayValue: "Custom Node" },
-        }]);
+        const element3dNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+        expect(element3dNodes).to.not.be.empty;
       });
 
       it("uses `suppressSimilarAncestorsCheck` attribute", async () => {
