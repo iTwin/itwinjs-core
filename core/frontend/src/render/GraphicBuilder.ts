@@ -81,6 +81,7 @@ export enum GraphicType {
  * For example, to prevent graphics produced by [[readElementGraphics]] from being hilited when their corresponding element is in the [[SelectionSet]],
  * pass `{ noHilite: true }` to [[readElementGraphics]].
  * @public
+ * @extensionApi
  */
 export interface BatchOptions {
   /** Identifies the [[Tile]] associated with the batch, chiefly for debugging purposes.
@@ -99,6 +100,7 @@ export interface BatchOptions {
 
 /** Options used as part of [[GraphicBuilderOptions]] to describe a pickable [[RenderGraphic]].
  * @public
+ * @extensionApi
  */
 export interface PickableGraphicOptions extends BatchOptions {
   /** Unique identifier for the graphic.
@@ -111,6 +113,7 @@ export interface PickableGraphicOptions extends BatchOptions {
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
  * @see [[CustomGraphicBuilderOptions]] to create a graphic builder unassociated with any [[Viewport]].
  * @public
+ * @extensionApi
  */
 export interface GraphicBuilderOptions {
   /** The type of graphic to produce. */
@@ -154,6 +157,7 @@ export interface GraphicBuilderOptions {
  * Default values for [[GraphicBuilderOptions.wantNormals]] and [[GraphicBuilderOptions.generateEdges]] will be determined by the viewport's [ViewFlags]($common).
  * The [[GraphicBuilder.iModel]] will be set to the viewport's [[IModelConnection]].
  * @public
+ * @extensionApi
  */
 export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
   /** The viewport in which the resultant [[RenderGraphic]] is to be drawn. */
@@ -171,6 +175,7 @@ export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
  * For [[GraphicType.ViewOverlay]] and [[GraphicType.ViewBackground]], which already define their geometry in pixels, the chord tolerance should typically be 1.
  * @see [[CustomGraphicBuilderOptions.computeChordTolerance]].
  * @public
+ * @extensionApi
  */
 export interface ComputeChordToleranceArgs {
   /** The graphic builder being used to produce the graphics. */
@@ -184,6 +189,7 @@ export interface ComputeChordToleranceArgs {
  * This is primarily useful when the same graphic is to be saved and reused for display in multiple viewports and for which a chord tolerance can be computed
  * independently of each viewport's [Frustum]($common).
  * @public
+ * @extensionApi
  */
 export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
   /** Optionally, the IModelConnection with which the graphic is associated. */

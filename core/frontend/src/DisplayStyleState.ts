@@ -34,6 +34,7 @@ export class TerrainDisplayOverrides {
 /** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
  * @see [[DisplayStyleState.setOSMBuildingDisplay]].
  * @public
+ * @extensionApi
  */
 export interface OsmBuildingDisplayOptions {
   /** If defined, enables or disables display of the buildings by attaching or detaching the OpenStreetMap Buildings reality model. */

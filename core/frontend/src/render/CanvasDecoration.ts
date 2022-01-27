@@ -13,6 +13,7 @@ import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
  * [2d canvas](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) on top of a ScreenViewport.
  * CanvasDecorations may be pickable by implementing [[pick]].
  * @public
+ * @extensionApi
  */
 export interface CanvasDecoration {
   /**

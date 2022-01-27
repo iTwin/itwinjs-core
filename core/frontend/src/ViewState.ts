@@ -46,6 +46,7 @@ import { EnvironmentDecorations } from "./EnvironmentDecorations";
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
  * @public
+ * @extensionApi
  */
 export interface ExtentLimits {
   /** The smallest allowed extent in any dimension. */

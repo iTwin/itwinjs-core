@@ -93,6 +93,7 @@ export class BeButtonState {
 
 /** Properties for constructing a BeButtonEvent
  * @public
+ * @extensionApi
  */
 export interface BeButtonEventProps {
   /** The point for this event, in world coordinates.
@@ -219,6 +220,7 @@ export class BeButtonEvent implements BeButtonEventProps {
 
 /** Properties for initializing a BeTouchEvent
  * @public
+ * @extensionApi
  */
 export interface BeTouchEventProps extends BeButtonEventProps {
   touchEvent: TouchEvent;
@@ -286,6 +288,7 @@ export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
 
 /** Properties for constructing a BeWheelEvent
  * @public
+ * @extensionApi
  */
 export interface BeWheelEventProps extends BeButtonEventProps {
   wheelDelta?: number;
@@ -766,6 +769,7 @@ export enum KeyinParseError {
 
 /** Possible errors form [[ToolRegistry.parseKeyin]].
  * @public
+ * @extensionApi
  */
 export interface ParseKeyinError {
   /** Union discriminator for [[ParseKeyinResult]]. */
@@ -776,6 +780,7 @@ export interface ParseKeyinError {
 
 /** Successful result from [[ToolRegistry.parseKeyin]].
  * @public
+ * @extensionApi
  */
 export interface ParsedKeyin {
   /** Union discriminator for [[ParseKeyinResult]]. */

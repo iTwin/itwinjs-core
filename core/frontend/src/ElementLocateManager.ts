@@ -118,7 +118,10 @@ export class LocateResponse {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export interface HitListHolder {
   setHitList(list: HitList<HitDetail> | undefined): void;
 }

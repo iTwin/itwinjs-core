@@ -25,6 +25,7 @@ import { SpatialViewState } from "./SpatialViewState";
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
+ * @extensionApi
 */
 export interface ViewCreator3dOptions {
   /** Turn [[Camera]] on when generating the view. */

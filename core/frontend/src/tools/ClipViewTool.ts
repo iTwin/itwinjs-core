@@ -31,6 +31,7 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 
 /** An object that can react to a view's clip being changed by tools or modify handles.
  * @public
+ * @extensionApi
  */
 export interface ViewClipEventHandler {
   /** Add newly created clip geometry to selection set and show modify controls. */

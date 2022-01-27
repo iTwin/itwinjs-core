@@ -27,6 +27,7 @@ import { ViewState, ViewState2d } from "./ViewState";
 
 /** Options for creating a [[ViewState2d]] via [[ViewCreator2d]].
  *  @public
+ * @extensionApi
 */
 export interface ViewCreator2dOptions {
   /** Aspect ratio of [[Viewport]]. Required to fit contents of the model in the initial state of the view. */

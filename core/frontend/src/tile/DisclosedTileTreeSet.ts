@@ -12,6 +12,7 @@ import { TileTree } from "./internal";
 /** Interface adopted by an object that contains references to [[TileTree]]s, to expose those trees.
  * @see [[DisclosedTileTreeSet]].
  * @public
+ * @extensionApi
  */
 export interface TileTreeDiscloser {
   /** Add all [[TileTree]]s referenced by this object to the set. */

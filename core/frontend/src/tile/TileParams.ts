@@ -12,6 +12,7 @@ import { Tile } from "./internal";
 /**
  * Parameters used to construct a [[Tile]].
  * @public
+ * @extensionApi
  */
 export interface TileParams {
   /** This tile's parent tile, if any.

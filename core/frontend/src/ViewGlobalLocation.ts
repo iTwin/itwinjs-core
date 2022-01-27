@@ -14,6 +14,7 @@ import { ViewState3d } from "./ViewState";
 
 /** Describes a rectangular area of the earth using cartographic data structures.
  * @public
+ * @extensionApi
  */
 export interface GlobalLocationArea { southwest: Cartographic, northeast: Cartographic }
 
@@ -21,6 +22,7 @@ export interface GlobalLocationArea { southwest: Cartographic, northeast: Cartog
  * The viewed area of the location can be optionally specified.
  * The center of the location is specified with the center position.
  * @public
+ * @extensionApi
  */
 export interface GlobalLocation { center: Cartographic, area?: GlobalLocationArea }
 

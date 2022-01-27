@@ -29,6 +29,7 @@ const scratchMatrix4d = Matrix4d.createIdentity();
 
 /** Parameters used to construct [[TileDrawArgs]].
  * @public
+ * @extensionApi
  */
 export interface TileDrawArgParams {
   /** Context for the scene into which the tiles are to be rendered. */

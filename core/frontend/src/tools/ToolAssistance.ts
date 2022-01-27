@@ -64,6 +64,7 @@ export enum ToolAssistanceInputMethod {
 
 /** Tool Assistance image keyboard keys
  * @public
+ * @extensionApi
  */
 export interface ToolAssistanceKeyboardInfo {
   /** Text for keys to display */
@@ -74,6 +75,7 @@ export interface ToolAssistanceKeyboardInfo {
 
 /** Interface used to describe a Tool Assistance instruction.
  * @public
+ * @extensionApi
  */
 export interface ToolAssistanceInstruction {
   /** Name of icon WebFont entry, or if specifying an SVG symbol, use "svg:" prefix to imported symbol Id.
@@ -92,6 +94,7 @@ export interface ToolAssistanceInstruction {
 
 /** Interface used to describe a Tool Assistance section with a label and a set of instructions.
  * @public
+ * @extensionApi
  */
 export interface ToolAssistanceSection {
   /** Instructions in the section. */
@@ -102,6 +105,7 @@ export interface ToolAssistanceSection {
 
 /** Interface used to describe Tool Assistance for a tool's state.
  * @public
+ * @extensionApi
  */
 export interface ToolAssistanceInstructions {
   /** The main instruction. */

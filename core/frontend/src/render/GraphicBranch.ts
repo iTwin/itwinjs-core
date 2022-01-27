@@ -120,6 +120,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
 
 /** Options passed to [[RenderSystem.createGraphicBranch]].
  * @public
+ * @extensionApi
  */
 export interface GraphicBranchOptions {
   /** Clip applied to the graphics in the branch. */

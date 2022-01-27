@@ -65,6 +65,7 @@ import { FlashSettings } from "./FlashSettings";
 
 /** Interface for drawing [[Decorations]] into, or on top of, a [[ScreenViewport]].
  * @public
+ * @extensionApi
  */
 export interface ViewportDecorator {
   /** Override to enable cached decorations for this decorator.
@@ -109,6 +110,7 @@ export enum DepthPointSource {
 
 /** Options to control behavior of [[Viewport.pickDepthPoint]].
  * @public
+ * @extensionApi
  */
 export interface DepthPointOptions {
   /** If true, geometry with the "non-locatable" flag set will not be selected. */
@@ -122,6 +124,7 @@ export interface DepthPointOptions {
 /** The minimum and maximum values for the z-depth of a rectangle of screen space.
  * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0.
  * @public
+ * @extensionApi
  */
 export interface DepthRangeNpc {
   /** The value closest to the back. */
@@ -132,6 +135,7 @@ export interface DepthRangeNpc {
 
 /** Options to allow changing the view rotation with zoomTo methods.
  * @public
+ * @extensionApi
  */
 export interface ZoomToOptions {
   /** Set view rotation from standard view identifier. */
@@ -144,6 +148,7 @@ export interface ZoomToOptions {
 
 /** Options for changing the viewed Model of a 2d view via [[Viewport.changeViewedModel2d]]
  * @public
+ * @extensionApi
  */
 export interface ChangeViewedModel2dOptions {
   /** If true, perform a "fit view" operation after changing to the new 2d model. */
@@ -3281,6 +3286,7 @@ function _clear2dCanvas(canvas: HTMLCanvasElement) {
 /** Options supplied when creating an [[OffScreenViewport]].
  * @see [[OffScreenViewport.create]].
  * @public
+ * @extensionApi
  */
 export interface OffScreenViewportOptions {
   /** The view to be drawn in the viewport. */

@@ -25,6 +25,7 @@ export enum SelectionSetEventType {
 
 /** Passed to [[SelectionSet.onChanged]] event listeners when elements are added to the selection set.
  * @public
+ * @extensionApi
  */
 export interface SelectAddEvent {
   type: SelectionSetEventType.Add;
@@ -36,6 +37,7 @@ export interface SelectAddEvent {
 
 /** Passed to [[SelectionSet.onChanged]] event listeners when elements are removed from the selection set.
  * @public
+ * @extensionApi
  */
 export interface SelectRemoveEvent {
   /** The type of operation that produced this event. */
@@ -48,6 +50,7 @@ export interface SelectRemoveEvent {
 
 /** Passed to [[SelectionSet.onChanged]] event listeners when elements are simultaneously added to and removed from the selection set.
  * @public
+ * @extensionApi
  */
 export interface SelectReplaceEvent {
   type: SelectionSetEventType.Replace;

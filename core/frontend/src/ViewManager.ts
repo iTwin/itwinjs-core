@@ -19,6 +19,7 @@ import { System } from "./render/webgl/System";
 /** Interface for drawing [[Decorations]] into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].
  * Decorators generate [[Decorations]].
  * @public
+ * @extensionApi
  */
 export interface Decorator extends ViewportDecorator {
   /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator.
@@ -62,6 +63,7 @@ export interface Decorator extends ViewportDecorator {
 
 /** Argument for [[ViewManager.onSelectedViewportChanged]]
  * @public
+ * @extensionApi
  */
 export interface SelectedViewportChangedArgs {
   current?: ScreenViewport;

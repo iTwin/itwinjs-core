@@ -86,6 +86,7 @@ export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | num
  * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure the limit at startup.
  * @see [[GpuMemoryLimit]] for a description of how the available limits and how they are imposed.
  * @public
+ * @extensionApi
  */
 export interface GpuMemoryLimits {
   /** Limits applied to clients running on mobile devices. Defaults to "default" if undefined. */

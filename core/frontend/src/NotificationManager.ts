@@ -101,6 +101,7 @@ export enum MessageBoxValue {
 
 /** Describes the behavior of a tooltip created using [[NotificationManager.openToolTip]].
  * @public
+ * @extensionApi
  */
 export interface ToolTipOptions {
   duration?: BeDuration;

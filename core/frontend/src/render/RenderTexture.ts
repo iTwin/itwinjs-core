@@ -35,6 +35,7 @@ export type TextureCacheKey = string | Gradient.Symb;
  * which point it will be disposed.
  * @see [[TextureOwnership]]
  * @public
+ * @extensionApi
  */
 export interface TextureCacheOwnership {
   /** The iModel on which the texture will be cached. */
@@ -63,6 +64,7 @@ export type TextureImageSource = HTMLImageElement | ImageBuffer; // ###TODO | HT
 /** Describes the image from which to create a [RenderTexture]($common).
  * @see [[CreateTextureArgs.image]]
  * @public
+ * @extensionApi
  */
 export interface TextureImage {
   /** The object that supplies the texture image. */
@@ -75,6 +77,7 @@ export interface TextureImage {
 
 /** Arguments supplied to [[RenderSystem.createTexture]] to create a [RenderTexture]($common).
  * @public
+ * @extensionApi
  */
 export interface CreateTextureArgs {
   /** The type of texture to create. Default: [RenderTexture.Type.Normal]($common). */
@@ -92,6 +95,7 @@ export interface CreateTextureArgs {
 
 /** Arguments supplied to [[RenderSystem.createTextureFromSource]].
  * @public
+ * @extensionApi
  */
 export interface CreateTextureFromSourceArgs {
   /** The type of texture to create. Default: [RenderTexture.Type.Normal]($common). */
