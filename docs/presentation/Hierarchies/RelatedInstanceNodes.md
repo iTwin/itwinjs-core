@@ -56,7 +56,7 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 
 > **Default value:** `false`
 
-Specifies whether instance nodes created through this specification should be hidden and instead their children should be returned.
+When `true`, instances nodes produced by this specification are omitted and their children appear one hierarchy level higher. **Note:** only instance nodes are hidden - grouping nodes are not affected by this attribute.
 
 ```ts
 [[include:Hierarchies.Specification.HideNodesInHierarchy.Ruleset]]
