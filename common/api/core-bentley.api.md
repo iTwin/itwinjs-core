@@ -224,7 +224,7 @@ export enum ChangeSetStatus {
 
 // @beta
 export namespace ClassUtils {
-    export function isProperSubclassOf<SuperClass extends new (..._: any[]) => InstanceType<SuperClass>, SubClass extends new (..._: any[]) => InstanceType<SubClass>>(subclass: SubClass | SuperClass, superclass: SuperClass): subclass is SuperClass;
+    export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass;
 }
 
 // @public
