@@ -18,7 +18,7 @@ import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } fro
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
 
 /** A base Format class with shared properties and functionality between quantity and ecschema-metadata Format classes
- * @internal
+ * @beta
  */
 export class BaseFormat {
   private _name = "";
