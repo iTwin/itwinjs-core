@@ -1058,6 +1058,42 @@ describe("Learning Snippets", () => {
           // __PUBLISH_EXTRACT_END__
         });
 
+        it("uses `hideNodesInHierarchy` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.HideNodesInHierarchy.Ruleset
+          // The ruleset contains a root node specification for `bis.PhysicalModel` nodes which are grouped by class and hidden. This
+          // means class grouping nodes are displayed, but instance nodes are hidden and instead their children are displayed. The
+          // children are determined by another rule.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "parent",
+                label: "Parent",
+                hideNodesInHierarchy: true,
+              }],
+            }, {
+              ruleType: RuleTypes.ChildNodes,
+              condition: `ParentNode.Type = "parent"`,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "child",
+                label: "Child",
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // Verify the Parent node is not displayed
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes).to.have.lengthOf(1).and.to.containSubset([{
+            key: { type: "child" },
+            label: { displayValue: "Child" },
+          }]);
+        });
+
       });
 
       describe("CustomQueryInstanceNodesSpecification", () => {

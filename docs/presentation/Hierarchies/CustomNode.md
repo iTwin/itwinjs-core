@@ -82,12 +82,12 @@ to decide what to do with it.
 When `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
 
 ```ts
-[[include:Hierarchies.Specification.HideNodesInHierarchy.Ruleset]]
+[[include:Hierarchies.CustomNodeSpecification.HideNodesInHierarchy.Ruleset]]
 ```
 
-| `hideNodesInHierarchy: false`                                                                                                                         | `hideNodesInHierarchy: true`                                                                                                                        |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ![Example of using "hide nodes in hierarchy" attribute set to "false"](./media/hierarchy-with-specification-hidenodesinhierarchy-attribute-false.png) | ![Example of using "hide nodes in hierarchy" attribute set to "true"](./media/hierarchy-with-specification-hidenodesinhierarchy-attribute-true.png) |
+| `hideNodesInHierarchy: false`                                                                                                                                   | `hideNodesInHierarchy: true`                                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "hide nodes in hierarchy" attribute set to "false"](./media/hierarchy-with-customnodespecification-hidenodesinhierarchy-attribute-false.png) | ![Example of using "hide nodes in hierarchy" attribute set to "true"](./media/hierarchy-with-customnodespecification-hidenodesinhierarchy-attribute-true.png) |
 
 ### Attribute: `hideIfNoChildren`
 
