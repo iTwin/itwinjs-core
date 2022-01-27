@@ -1299,7 +1299,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.2.0
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -1321,7 +1321,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.2.1
+      '@itwin/oidc-signin-tool': 3.2.2_electron@14.2.4
       '@types/chai': 4.3.0
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -1342,7 +1342,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.2.0
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/projects-client': ^0.4.0
       '@itwin/service-authorization': ^0.6.1
       '@types/chai': ^4.1.4
@@ -1371,7 +1371,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.2.1
+      '@itwin/oidc-signin-tool': 3.2.2
       '@types/chai': 4.3.0
       '@types/chai-as-promised': 7.1.4
       '@types/fs-extra': 4.0.12
@@ -1526,7 +1526,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodels-access-backend': ~0.3.0
       '@itwin/imodels-client-authoring': ~0.3.0
-      '@itwin/oidc-signin-tool': ^3.2.0
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/perf-tools': workspace:*
       '@itwin/projects-client': ^0.4.0
       '@types/chai': ^4.1.4
@@ -1558,7 +1558,7 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/imodels-access-backend': 0.3.1
       '@itwin/imodels-client-authoring': 0.3.1
-      '@itwin/oidc-signin-tool': 3.2.1
+      '@itwin/oidc-signin-tool': 3.2.2
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@itwin/projects-client': 0.4.0
       azurite: 3.15.0
@@ -1608,7 +1608,7 @@ importers:
       '@itwin/imodels-access-frontend': ~0.3.0
       '@itwin/imodels-client-authoring': ~0.3.0
       '@itwin/imodels-client-management': ~0.3.0
-      '@itwin/oidc-signin-tool': ^3.2.0
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/projects-client': ^0.4.0
       '@itwin/reality-data-client': ^0.7.0
       '@types/chai': ^4.1.4
@@ -1664,7 +1664,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.2.1
+      '@itwin/oidc-signin-tool': 3.2.2_electron@14.2.4
       '@itwin/projects-client': 0.4.0
       '@types/chai': 4.3.0
       '@types/chai-as-promised': 7.1.4
@@ -1704,7 +1704,7 @@ importers:
       '@itwin/imodels-access-backend': ~0.3.0
       '@itwin/imodels-access-frontend': ~0.3.0
       '@itwin/imodels-client-management': ~0.3.0
-      '@itwin/oidc-signin-tool': ^3.2.0
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.4.0
@@ -1743,7 +1743,7 @@ importers:
       '@itwin/imodels-access-backend': 0.3.1
       '@itwin/imodels-access-frontend': 0.3.1
       '@itwin/imodels-client-management': 0.3.1
-      '@itwin/oidc-signin-tool': 3.2.1
+      '@itwin/oidc-signin-tool': 3.2.2
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.6
@@ -1788,7 +1788,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.2.0
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -1845,7 +1845,7 @@ importers:
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
-      '@itwin/oidc-signin-tool': 3.2.1
+      '@itwin/oidc-signin-tool': 3.2.2
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -1974,7 +1974,7 @@ importers:
       '@itwin/imodels-access-frontend': ~0.3.0
       '@itwin/imodels-client-authoring': ~0.3.0
       '@itwin/imodels-client-management': ~0.3.0
-      '@itwin/oidc-signin-tool': ^3.2.0
+      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2015,7 +2015,7 @@ importers:
       '@itwin/imodels-access-frontend': 0.3.1
       '@itwin/imodels-client-authoring': 0.3.1
       '@itwin/imodels-client-management': 0.3.1
-      '@itwin/oidc-signin-tool': 3.2.1
+      '@itwin/oidc-signin-tool': 3.2.2
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/service-authorization': 0.6.1
@@ -7256,6 +7256,54 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
+  /@itwin/certa/3.0.0:
+    resolution: {integrity: sha512-nCRUIsCEOyIwbbUeN3tX/at7g7ezhn38xaUa5Y9wmrxIB1goBmkk1p1FpKdJJlxmUinQsyKR65lGuS9WseUF6w==}
+    hasBin: true
+    peerDependencies:
+      electron: ^14.0.0
+    peerDependenciesMeta:
+      electron:
+        optional: true
+    dependencies:
+      detect-port: 1.3.0
+      express: 4.17.2
+      jsonc-parser: 2.0.3
+      lodash: 4.17.21
+      mocha: 8.4.0
+      puppeteer: 5.3.1
+      source-map-support: 0.5.21
+      uuid: 7.0.3
+      yargs: 16.2.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  /@itwin/certa/3.0.0_electron@14.2.4:
+    resolution: {integrity: sha512-nCRUIsCEOyIwbbUeN3tX/at7g7ezhn38xaUa5Y9wmrxIB1goBmkk1p1FpKdJJlxmUinQsyKR65lGuS9WseUF6w==}
+    hasBin: true
+    peerDependencies:
+      electron: ^14.0.0
+    peerDependenciesMeta:
+      electron:
+        optional: true
+    dependencies:
+      detect-port: 1.3.0
+      electron: 14.2.4
+      express: 4.17.2
+      jsonc-parser: 2.0.3
+      lodash: 4.17.21
+      mocha: 8.4.0
+      puppeteer: 5.3.1
+      source-map-support: 0.5.21
+      uuid: 7.0.3
+      yargs: 16.2.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+    dev: true
+
   /@itwin/core-bentley/3.0.0:
     resolution: {integrity: sha512-tfFM6lKVtjUMrQM/amHrEgJRtIhpqI5bGMtX8MwM9bBeH3hLGY8eTA8A7ReflWmUky+gHhpvN3TGsC7VLqqrIw==}
     dev: false
@@ -7400,19 +7448,38 @@ packages:
       react-transition-group: 4.4.2_react@17.0.2
     dev: true
 
-  /@itwin/oidc-signin-tool/3.2.1:
-    resolution: {integrity: sha512-HI4M3UrPalLvfWp1SW6v2om9pegkhYg/tA0bVjYJ3mYsadO/qJQoNtJ1CKpRMPP2ZBhBV/WVWmt6OoA3HyjRfQ==}
+  /@itwin/oidc-signin-tool/3.2.2:
+    resolution: {integrity: sha512-2tBDo+J4ORxTdHJf76zmpoGOq/l3RzlY3ofoxEQo4d+8b454gcHkxFQA9r/7xOF8qN+dOBaG/P60ZWsB3D/qug==}
     peerDependencies:
       '@itwin/core-bentley': ^3.0.0
     dependencies:
+      '@itwin/certa': 3.0.0
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
       puppeteer: 5.3.1
     transitivePeerDependencies:
       - bufferutil
+      - electron
       - supports-color
       - utf-8-validate
+
+  /@itwin/oidc-signin-tool/3.2.2_electron@14.2.4:
+    resolution: {integrity: sha512-2tBDo+J4ORxTdHJf76zmpoGOq/l3RzlY3ofoxEQo4d+8b454gcHkxFQA9r/7xOF8qN+dOBaG/P60ZWsB3D/qug==}
+    peerDependencies:
+      '@itwin/core-bentley': ^3.0.0
+    dependencies:
+      '@itwin/certa': 3.0.0_electron@14.2.4
+      dotenv: 10.0.0
+      dotenv-expand: 5.1.0
+      openid-client: 4.9.1
+      puppeteer: 5.3.1
+    transitivePeerDependencies:
+      - bufferutil
+      - electron
+      - supports-color
+      - utf-8-validate
+    dev: true
 
   /@itwin/projects-client/0.4.0:
     resolution: {integrity: sha512-BQf/tnmpyexm8crEP5RJIjEptjNEvqTl0f96uTBXbcQdcrpWEzK9EBYtLrM6GI5/c1rTTQXYR0SuMBjZ9USqHQ==}
@@ -12029,7 +12096,6 @@ packages:
     dependencies:
       address: 1.1.2
       debug: 2.6.9
-    dev: false
 
   /devtools-protocol/0.0.799653:
     resolution: {integrity: sha512-t1CcaZbvm8pOlikqrsIM9GOa7Ipp07+4h/q9u0JXBWjPCjHdBl9KkddX87Vv9vBHoBGtwV79sYQNGnQM6iS5gg==}
@@ -15765,7 +15831,6 @@ packages:
 
   /jsonc-parser/2.0.3:
     resolution: {integrity: sha512-WJi9y9ABL01C8CxTKxRRQkkSpY/x2bo4Gy0WuiZGrInxQqgxQpvkBCLNcDYcHOSdhx4ODgbFcgAvfL49C+PHgQ==}
-    dev: false
 
   /jsonc-parser/3.0.0:
     resolution: {integrity: sha512-fQzRfAbIBnR0IQvftw9FJveWiHp72Fg20giDrHz6TdfB12UH/uue0D3hm57UB5KgAVuniLMCaS8P1IMj9NR7cA==}
@@ -21733,7 +21798,6 @@ packages:
   /uuid/7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
     hasBin: true
-    dev: false
 
   /uuid/8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
