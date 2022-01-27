@@ -49,10 +49,10 @@ SELECT [e].[ECClassId], [e].[ECInstanceId]
 
 The specification contains an ECSQL query which is used to query for instances.
 
-| Name    | Required? | Type                             | Meaning                                                     |
-| ------- | --------- | -------------------------------- | ----------------------------------------------------------- |
-| `class` | Yes       | `SingleSchemaClassSpecification` | Specification of ECClass whose instances the query returns. |
-| `query` | Yes       | `string`                         | Specifies the search ECSQL query.                           |
+| Name    | Required? | Type                             | Meaning                                                                                                                                                                                                                                             |
+| ------- | --------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `query` | Yes       | `string`                         | Specifies the search ECSQL query.                                                                                                                                                                                                                   |
+| `class` | Yes       | `SingleSchemaClassSpecification` | Specification of ECClass whose instances the query returns. The specification may also point to a base class of instances returned by the query. If the query returns instances that are not of this class, they aren't included in the result set. |
 
 ```ts
 [[include:Hierarchies.CustomQueryInstanceNodesSpecification.StringQuerySpecification.Ruleset]]
@@ -67,10 +67,10 @@ The specification specifies the name of the parent node instance property whose 
 > **Precondition:** can be used only if parent node is ECInstance node. If there is no immediate parent instance node, the rules engine walks
 > up the hierarchy until it finds one. If that fails, this specification has no effect.
 
-| Name                 | Required? | Type                             | Meaning                                                                                                                                                        |
-| -------------------- | --------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `class`              | Yes       | `SingleSchemaClassSpecification` | Specification of ECClass whose instances the query returns.                                                                                                    |
-| `parentPropertyName` | Yes       | `string`                         | Specifies name of the parent instance property whose value contains the ECSQL query. **Warning:** the property whose name is specified must be of string type. |
+| Name                 | Required? | Type                             | Meaning                                                                                                                                                                                                                                             |
+| -------------------- | --------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `parentPropertyName` | Yes       | `string`                         | Specifies name of the parent instance property whose value contains the ECSQL query. **Warning:** the property whose name is specified must be of string type.                                                                                      |
+| `class`              | Yes       | `SingleSchemaClassSpecification` | Specification of ECClass whose instances the query returns. The specification may also point to a base class of instances returned by the query. If the query returns instances that are not of this class, they aren't included in the result set. |
 
 ```ts
 [[include:Hierarchies.CustomQueryInstanceNodesSpecification.ECPropertyValueQuerySpecification.Ruleset]]
