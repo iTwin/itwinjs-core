@@ -318,13 +318,15 @@ export class CurveFactory {
       initialSection.center.setFrom(currentCenter);
       vector0.setFrom(sectionData.vector0);
       vector90.setFrom(sectionData.vector90);
-    } else {
+    } else if (typeof sectionData === "number" || Point3d.isXAndY(sectionData)) {
       const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
       const length90 = (typeof sectionData === "number") ? sectionData : sectionData.y;
       const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
       baseFrame.columnX(vector0).scaleInPlace(length0);
       baseFrame.columnY(vector90).scaleInPlace(length90);
       initialSection = Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360());
+    } else {
+      return [];
     }
     arcs.push(initialSection);
 
