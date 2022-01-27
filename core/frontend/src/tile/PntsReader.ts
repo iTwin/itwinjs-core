@@ -6,9 +6,10 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64String, utf8ToString } from "@itwin/core-bentley";
+import { ByteStream, Id64String, Logger, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
@@ -86,7 +87,9 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
     }
 
     return { points, params, colors: colors instanceof Uint8Array ? colors : undefined };
-  } catch (_) {
+  } catch (err) {
+    Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded point cloud");
+    Logger.logException(FrontendLoggerCategory.Render, err);
     return undefined;
   }
 }

@@ -3337,6 +3337,7 @@ export enum FrontendLoggerCategory {
     Package = "core-frontend",
     // @alpha
     RealityData = "core-frontend.RealityData",
+    Render = "core-frontend.Render",
     Request = "core-frontend.Request"
 }
 
