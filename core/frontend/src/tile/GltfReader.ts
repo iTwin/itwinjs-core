@@ -27,6 +27,7 @@ import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimi
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
+import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -138,6 +139,12 @@ interface GltfChildOfRootProperty extends GltfProperty {
   name?: string;
 }
 
+interface DracoMeshCompression {
+  bufferView: GltfId;
+  // TEXCOORD_0, POSITION, etc
+  attributes: { [k: string]: number | undefined };
+}
+
 /** A unit of geometry belonging to a [[GltfMesh]]. */
 interface GltfMeshPrimitive extends GltfProperty {
   /** Maps the name of each mesh attribute semantic to the Id of the [[GltfAccessor]] providing the attribute's data. */
@@ -166,11 +173,7 @@ interface GltfMeshPrimitive extends GltfProperty {
      * allows glTF to support geometry compressed with Draco geometry compression.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    KHR_draco_mesh_compression?: {
-      bufferView: GltfId;
-      // TEXCOORD_0, POSITION, etc
-      attributes: { [k: string]: number | undefined };
-    };
+    KHR_draco_mesh_compression?: DracoMeshCompression;
   };
 }
 
@@ -894,6 +897,7 @@ export abstract class GltfReader {
   protected readonly _sceneNodes: GltfId[];
   protected _computedContentRange?: ElementAlignedBox3d;
   private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) => compareTextureKeys(lhs, rhs));
+  private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -1823,29 +1827,29 @@ export abstract class GltfReader {
     // Load any external images and buffers.
     const resolveResources = this._resolveResources();
 
-    // If any mesh uses draco decoding, create a decoder.
-    /*
-    let needDraco = false;
-    loop:
+    // If any meshes are draco-compressed, dynamically load the decoder module and then decode the meshes.
+    const dracoMeshes: DracoMeshCompression[] = [];
+
     for (const node of this.traverseScene()) {
       for (const meshId of getNodeMeshIds(node)) {
         const mesh = this._meshes[meshId];
-        if (mesh?.primitives) {
-          for (const primitive of mesh.primitives) {
-            if (primitive.extensions?.KHR_draco_mesh_compression) {
-              needDraco = true;
-              break loop;
-            }
-          }
-        }
+        if (mesh?.primitives)
+          for (const primitive of mesh.primitives)
+            if (primitive.extensions?.KHR_draco_mesh_compression)
+              dracoMeshes.push(primitive.extensions.KHR_draco_mesh_compression);
       }
     }
 
-    if (needDraco)
-      await Promise.all([ resolveResources, DracoDecoder.create().then((decoder) => { this._dracoDecoder = decoder; }) ]);
-    else
-    */
+    if (dracoMeshes.length === 0)
+      return resolveResources;
+
+    try {
+      const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
       await resolveResources;
+      await Promise.all(dracoMeshes.map((x) => this.decodeDracoMesh(x, dracoLoader)));
+    } catch (_) {
+      //
+    }
   }
 
   private async _resolveResources(): Promise<void> {
@@ -1869,6 +1873,22 @@ export abstract class GltfReader {
       await Promise.all(promises);
     } catch (_) {
     }
+  }
+
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
+    const bv = this._bufferViews[ext.bufferView];
+    if (!bv || !bv.byteLength)
+      return;
+
+    let buf = this._buffers[bv.buffer]?.resolvedBuffer;
+    if (!buf)
+      return;
+
+    const offset = bv.byteOffset ?? 0;
+    buf = buf.subarray(offset, offset + bv.byteLength);
+    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
+    if (mesh)
+      this._dracoMeshes.set(ext, mesh);
   }
 
   private resolveUrl(uri: string): string | undefined {
