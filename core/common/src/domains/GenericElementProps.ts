@@ -8,7 +8,10 @@
 
 import { GeometricElement2dProps, RelatedElementProps } from "../ElementProps";
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export interface ViewAttachmentLabelProps extends GeometricElement2dProps {
   viewAttachment?: RelatedElementProps;
 }

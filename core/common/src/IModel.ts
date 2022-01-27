@@ -72,6 +72,7 @@ export interface EcefLocationProps {
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
  * @public
+ * @extensionApi
  */
 export interface RootSubjectProps {
   /** The name of the root subject. */

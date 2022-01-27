@@ -40,6 +40,7 @@ export enum TextureMapUnits {
 
 /** As part of a [[RenderMaterialAssetProps]], describes how to map a [[RenderTexture]]'s image to the triangles of a mesh to which the material is applied.
  * @public
+ * @extensionApi
  */
 export interface TextureMapProps {
   /** Angle in degrees to rotate texture when applying; defaults to 0.0 if undefined */
@@ -64,6 +65,7 @@ export interface TextureMapProps {
 
 /** Describes the graphical properties of a [RenderMaterialElement]($backend) as part of a [[RenderMaterialProps]].
  * @public
+ * @extensionApi
  */
 export interface RenderMaterialAssetProps {
   /** If true, this material has a fill/diffuse color; if undefined, defaults to false */
@@ -110,6 +112,7 @@ export interface RenderMaterialAssetProps {
 /** Properties that define a [RenderMaterialElement]($backend).
  * @see [[RenderMaterial]] for the representation used by the display system.
  * @public
+ * @extensionApi
  */
 export interface RenderMaterialProps extends DefinitionElementProps {
   /** The name of a palette that can be used to categorize multiple materials. */

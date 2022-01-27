@@ -18,6 +18,7 @@ export type TerrainProviderName = "CesiumWorldTerrain";
  * @see [[DisplayStyleSettingsProps]]
  * @see [[BackgroundMapProps]]
  * @public
+ * @extensionApi
  */
 export interface TerrainProps {
   /** Identifies the provider currently only CesiumWorldTerrain is supported. */

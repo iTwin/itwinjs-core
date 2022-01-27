@@ -118,6 +118,7 @@ export interface LocalBriefcaseProps {
 
 /** Properties for downloading a briefcase to a local file, from iModelHub.
  * @public
+ * @extensionApi
  */
 export interface RequestNewBriefcaseProps {
   /** iTwin that the iModel belongs to. */

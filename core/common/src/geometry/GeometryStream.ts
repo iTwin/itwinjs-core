@@ -419,6 +419,7 @@ export class GeometryStreamBuilder {
 
 /** Represents a text string within a GeometryStream.
  * @public
+ * @extensionApi
  */
 export interface TextStringPrimitive {
   type: "textString";

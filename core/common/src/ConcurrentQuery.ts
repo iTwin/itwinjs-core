@@ -32,6 +32,7 @@ export enum QueryRowFormat {
 /**
  * Specify limit or range of rows to return
  * @public
+ * @extensionApi
  * */
 export interface QueryLimit {
   /** Number of rows to return */
@@ -60,6 +61,7 @@ export interface DbRuntimeStats {
 /**
  * Quota hint for the query.
  * @public
+ * @extensionApi
  * */
 export interface QueryQuota {
   /** Max time allowed in seconds. This is hint and may not be honoured but help in prioritize request */
@@ -87,6 +89,7 @@ export interface BaseReaderOptions {
 /**
  * ECSql query config
  * @public
+ * @extensionApi
  * */
 export interface QueryOptions extends BaseReaderOptions {
   /**

@@ -25,6 +25,7 @@ export interface EntityProps {
 
 /** Specifies the source and target elements of a [[Relationship]] instance.
  * @public
+ * @extensionApi
  */
 export interface SourceAndTarget {
   sourceId: Id64String;
@@ -33,6 +34,7 @@ export interface SourceAndTarget {
 
 /** Properties that are common to all types of link table ECRelationships
  * @public
+ * @extensionApi
  */
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }

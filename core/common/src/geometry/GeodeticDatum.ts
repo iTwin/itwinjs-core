@@ -12,6 +12,7 @@ import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
 
 /** Holds 3 components of a Positional Vector rotation definition in arc seconds
  *  @public
+ *  @extensionApi
  */
 export interface XyzRotationProps {
   /** X rotation component in arc second */

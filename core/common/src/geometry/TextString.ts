@@ -11,6 +11,7 @@ import { Point3d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRol
 /** Properties for a TextString class.
  * @see [[GeometryStreamEntryProps]]
  * @public
+ * @extensionApi
  */
 export interface TextStringProps {
   /** text string */

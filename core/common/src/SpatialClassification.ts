@@ -42,6 +42,7 @@ export enum SpatialClassifierOutsideDisplay {
 
 /** JSON representation of a [[SpatialClassifierFlags]].
  * @public
+ * @extensionApi
  */
 export interface SpatialClassifierFlagsProps {
   /** @see [[SpatialClassifierFlags.inside]]. */
@@ -112,6 +113,7 @@ export class SpatialClassifierFlags {
 
 /** JSON representation of a [[SpatialClassifier]].
  * @public
+ * @extensionApi
  */
 export interface SpatialClassifierProps {
   /** @see [[SpatialClassifier.modelId]]. */
@@ -209,6 +211,7 @@ export class SpatialClassifier {
 /** An object that can store the JSON representation of a list of [[SpatialClassifier]]s.
  * @see [[SpatialClassifiers]].
  * @public
+ * @extensionApi
  */
 export interface SpatialClassifiersContainer {
   /** The list of classifiers. */

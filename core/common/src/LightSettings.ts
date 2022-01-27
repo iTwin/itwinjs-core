@@ -20,6 +20,7 @@ function extractIntensity(value: number | undefined, defaultValue: number) {
  * It will cast shadows if it is above the world XY plane and if the shadows view flag is enabled for the view.
  * By default, the solar light is only applied when shadows are enabled, but can be set to be applied unconditionally.
  * @public
+ * @extensionApi
  */
 export interface SolarLightProps {
   /** Intensity of the light, typically in [0..1] but can range up to 5. Default: 1.0 */

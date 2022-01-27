@@ -284,6 +284,7 @@ export class HorizontalCRS implements HorizontalCRSProps {
 
 /** Vertical Geographic Coordinate reference System definition
  * @public
+ * @extensionApi
  */
 export interface VerticalCRSProps {
   /** Vertical CRS Key name.

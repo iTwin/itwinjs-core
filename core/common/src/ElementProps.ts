@@ -18,6 +18,7 @@ import { SubCategoryAppearance } from "./SubCategoryAppearance";
 
 /** Properties of a NavigationProperty.
  * @public
+ * @extensionApi
  */
 export interface RelatedElementProps {
   /** The Id of the element to which this element is related. */
@@ -175,6 +176,7 @@ export enum SectionType {
 
 /** Properties that define a [SectionDrawing]($backend).
  * @public
+ * @extensionApi
  */
 export interface SectionDrawingProps extends ElementProps {
   /** The type of section used to generate the drawing. Default: Section. */
@@ -198,6 +200,7 @@ export interface SectionDrawingProps extends ElementProps {
 
 /** Properties that define a [SectionDrawingLocation]($backend)
  * @public
+ * @extensionApi
  */
 export interface SectionDrawingLocationProps extends GeometricElement3dProps {
   /** The [ViewDefinition]($backend) to which this location refers. */
@@ -224,6 +227,7 @@ export interface GeometryPartProps extends ElementProps {
 
 /** Properties for a [ViewAttachment]($backend)
  * @public
+ * @extensionApi
  */
 export interface ViewAttachmentProps extends GeometricElement2dProps {
   view: RelatedElementProps;
@@ -246,6 +250,7 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
 
 /** Properties of a [Subject]($backend)
  * @public
+ * @extensionApi
  */
 export interface SubjectProps extends ElementProps {
   description?: string;
@@ -270,6 +275,7 @@ export interface SheetTemplateProps extends ElementProps {
 
 /** Properties of a [Sheet]($backend).
  * @public
+ * @extensionApi
  */
 export interface SheetProps extends ElementProps {
   width?: number;
@@ -289,6 +295,7 @@ export interface DefinitionElementProps extends ElementProps {
 
 /** Properties of a [TypeDefinitionElement]($backend)
  * @public
+ * @extensionApi
  */
 export interface TypeDefinitionElementProps extends DefinitionElementProps {
   recipe?: RelatedElementProps;
@@ -330,6 +337,7 @@ export interface DisplayStyleLoadProps {
 /** Options controlling which properties are included or excluded when querying [[RenderTimelineProps]].
  * @see [[ElementLoadOptions.renderTimeline]].
  * @public
+ * @extensionApi
  */
 export interface RenderTimelineLoadProps {
   /** If true, the lists of element Ids in the schedule script will be empty.
@@ -485,6 +493,7 @@ export interface CategoryProps extends DefinitionElementProps {
 
 /** Parameters of a [SubCategory]($backend)
  * @public
+ * @extensionApi
  */
 export interface SubCategoryProps extends DefinitionElementProps {
   appearance?: SubCategoryAppearance.Props;
@@ -493,6 +502,7 @@ export interface SubCategoryProps extends DefinitionElementProps {
 
 /** Parameters of a [UrlLink]($backend)
  * @public
+ * @extensionApi
  */
 export interface UrlLinkProps extends ElementProps {
   description?: string;
@@ -501,6 +511,7 @@ export interface UrlLinkProps extends ElementProps {
 
 /** Parameters of a [RepositoryLink]($backend)
  * @public
+ * @extensionApi
  */
 export interface RepositoryLinkProps extends UrlLinkProps {
   repositoryGuid?: GuidString;
@@ -516,6 +527,7 @@ export interface SynchronizationConfigLinkProps extends UrlLinkProps {
 
 /** Wire format describing a [RenderTimeline]($backend).
  * @public
+ * @extensionApi
  */
 export interface RenderTimelineProps extends ElementProps {
   /** An optional human-readable description of the timeline. */

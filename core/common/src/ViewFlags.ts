@@ -50,6 +50,7 @@ export enum RenderMode {
  * those of the corresponding [[ViewFlags]] properties, making usage of this type in code error-prone.
  * Prefer to use [[ViewFlagsProperties]] unless you need to work directly with the persistence format.
  * @public
+ * @extensionApi
  */
 export interface ViewFlagProps {
   /** If true, don't display geometry of class [[GeometryClass.Construction]]. */
