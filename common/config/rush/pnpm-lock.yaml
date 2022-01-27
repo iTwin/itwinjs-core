@@ -544,7 +544,6 @@ importers:
       chai-as-promised: ^7
       cpx2: ^3.0.0
       deep-assign: ^2.0.0
-      draco3d: ^1.5.0
       eslint: ^7.11.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
@@ -567,7 +566,6 @@ importers:
       '@loaders.gl/core': 3.1.6
       '@loaders.gl/draco': 3.1.6
       deep-assign: 2.0.0
-      draco3d: 1.5.0
       fuse.js: 3.6.1
       lodash: 4.17.21
       qs: 6.10.3
@@ -12376,10 +12374,6 @@ packages:
 
   /draco3d/1.4.1:
     resolution: {integrity: sha512-9Rxonc70xiovBC+Bq1h57SNZIHzWTibU1VfIGp5z3Xx8dPtv4yT5uGhiH7P5uvJRR2jkrvHafRxR7bTANkvfpg==}
-    dev: false
-
-  /draco3d/1.5.0:
-    resolution: {integrity: sha512-8ESjH7o5xju1nfSvcS2A9vIbwSRQ3yYY0Yv7SFhNszsq4FlN4LGZuxNc3YfAPcg0AddaK0dE5AES3w1JoGeViA==}
     dev: false
 
   /drange/1.1.1:

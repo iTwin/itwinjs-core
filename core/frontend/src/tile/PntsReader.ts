@@ -14,7 +14,6 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { DracoDecoder } from "./DracoDecoder";
 
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
@@ -39,6 +38,8 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
 
   if (dracoPointExtension && dracoPointExtension.byteLength !== undefined && dracoPointExtension.byteOffset !== undefined && dracoPointExtension.properties?.POSITION !== undefined) {
+    return undefined;
+    /*
     // ###TODO: Move draco decoding to web worker?
     const bufferData = new Uint8Array(stream.arrayBuffer, dataOffset + dracoPointExtension.byteOffset, dracoPointExtension.byteLength);
     const decoder = await DracoDecoder.create();
@@ -48,6 +49,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
       qParams = decoded.qParams;
       colors = decoded.colors;
     }
+    */
   } else {
     if (undefined === featureValue.POSITION_QUANTIZED ||
       undefined === featureValue.QUANTIZED_VOLUME_OFFSET ||

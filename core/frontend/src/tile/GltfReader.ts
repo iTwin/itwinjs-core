@@ -27,7 +27,6 @@ import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimi
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
-import { DracoDecoder } from "./DracoDecoder";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -895,7 +894,6 @@ export abstract class GltfReader {
   protected readonly _sceneNodes: GltfId[];
   protected _computedContentRange?: ElementAlignedBox3d;
   private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) => compareTextureKeys(lhs, rhs));
-  private _dracoDecoder?: DracoDecoder;
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -1449,6 +1447,7 @@ export abstract class GltfReader {
       }
     }
 
+    /*
     if (primitive.extensions?.KHR_draco_mesh_compression) {
       if (!this._dracoDecoder)
         return undefined;
@@ -1473,6 +1472,7 @@ export abstract class GltfReader {
         return undefined;
       }
     }
+    */
 
     this.readBatchTable(mesh.primitive, primitive);
 
@@ -1824,6 +1824,7 @@ export abstract class GltfReader {
     const resolveResources = this._resolveResources();
 
     // If any mesh uses draco decoding, create a decoder.
+    /*
     let needDraco = false;
     loop:
     for (const node of this.traverseScene()) {
@@ -1843,6 +1844,7 @@ export abstract class GltfReader {
     if (needDraco)
       await Promise.all([ resolveResources, DracoDecoder.create().then((decoder) => { this._dracoDecoder = decoder; }) ]);
     else
+    */
       await resolveResources;
   }
 
