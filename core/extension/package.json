@@ -16,7 +16,8 @@
     "docs": "",
     "lint": "",
     "// lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": ""
+    "test": "",
+    "generate:types": "node ./codeGen/generate-type-files.js ['@itwin/core-frontend','core/frontend'] ['@itwin/core-common','core/common']"
   },
   "keywords": [
     "Bentley",
@@ -49,8 +50,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/imodeljs-recommended"
   }
 }
