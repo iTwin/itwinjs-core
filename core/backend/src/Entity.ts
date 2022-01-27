@@ -88,7 +88,7 @@ export class Entity {
   public static get protectedOperations(): string[] { return []; }
 
   /** get */
-  public static is(otherClass: typeof Entity): boolean { return ClassUtils.isSubclassOf(otherClass, this); }
+  public static is(otherClass: typeof Entity): boolean { return ClassUtils.isSubclassOf(this, otherClass); }
 }
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
