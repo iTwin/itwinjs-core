@@ -15,12 +15,14 @@ export type LocalDirName = string;
 /** A string that identifies a changeset.
  * @note this string is *not* a Guid. It is generated internally based on the content of the changeset.
  * @public
+ * @extensionApi
  */
 export type ChangesetId = string;
 
 /** The index of a changeset, assigned by iModelHub.
  * @note 0 means "before the first changeset." Values less than 0 are invalid.
  * @public
+ * @extensionApi
  */
 export type ChangesetIndex = number;
 
@@ -38,6 +40,7 @@ export interface ChangesetIdWithIndex { readonly index?: ChangesetIndex, readonl
 
 /** either changeset index, id, or both
 * @public
+ * @extensionApi
 */
 export type ChangesetIndexOrId = ChangesetIndexAndId | { readonly index: ChangesetIndex, readonly id?: never } | { readonly id: ChangesetId, readonly index?: never };
 

@@ -113,13 +113,25 @@ export class Tweens {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type TweenCallback = (obj: any) => void;
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type UpdateCallback = (obj: any, t: number) => void;
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type EasingFunction = (k: number) => number;
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type InterpolationFunction = (v: any, k: number) => number;
 
 /** A Tween for interpolating values of an object. Instances of this class are owned by a `Tweens` group.

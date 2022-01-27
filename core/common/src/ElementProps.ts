@@ -129,7 +129,10 @@ export interface Placement2dProps {
   bbox?: LowAndHighXY;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type PlacementProps = Placement2dProps | Placement3dProps;
 
 /** determine if this is Placement2dProps

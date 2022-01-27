@@ -14,12 +14,14 @@ import { TextureMapping } from "./TextureMapping";
  * the second to green, and the third to blue.
  * @see usage in [[RenderMaterialAssetProps]].
  * @public
+ * @extensionApi
  */
 export type RgbFactorProps = number[];
 
 /** A 2d point specified as an array of 2 numbers [x, y].
  * @see usage in [[TextureMapProps]].
  * @public
+ * @extensionApi
  */
 export type Point2dProps = number[];
 

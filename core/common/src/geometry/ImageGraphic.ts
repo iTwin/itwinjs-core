@@ -11,6 +11,7 @@ import { Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
 
 /** JSON representation of the 4 corners of an [[ImageGraphicProps]]. @see [[ImageGraphicCorners]].
  * @public
+ * @extensionApi
  */
 export type ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps];
 

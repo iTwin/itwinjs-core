@@ -73,7 +73,10 @@ export interface DeletedElementGeometryChange {
   readonly id: Id64String;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
 /** Represents a change to the geometry of a [GeometricElement]($backend), as exposed by [[ModelGeometryChanges.elements]].

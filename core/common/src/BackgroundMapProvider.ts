@@ -21,6 +21,7 @@ export enum BackgroundMapType {
 /** Enumerates a set of supported [[BackgroundMapProvider]]s that can provide map imagery.
  * @note To access imagery from such a provider, an API key must be supplied via [IModelAppOptions.mapLayerOptions]($frontend).
  * @public
+ * @extensionApi
  */
 export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 

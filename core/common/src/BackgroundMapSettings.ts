@@ -81,6 +81,7 @@ export interface DeprecatedBackgroundMapProps {
 
 /** Persistent JSON representation of a [[BackgroundMapSettings]].
  * @public
+ * @extensionApi
  */
 export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof DeprecatedBackgroundMapProps> & DeprecatedBackgroundMapProps;
 

@@ -528,11 +528,13 @@ export class ViewFlags {
 /** A type containing all of the properties of [[ViewFlags]] with none of the methods and with the `readonly` modifiers removed.
  * @see [[ViewFlags.create]], [[ViewFlags.copy]], and [[ViewFlags.override]] for methods accepting an object of this type.
  * @public
+ * @extensionApi
  */
 export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
 /** A type that describes how to override selected properties of a [[ViewFlags]].
  * @see [[ViewFlags.override]] to apply the overrides to a ViewFlags object.
  * @public
+ * @extensionApi
  */
 export type ViewFlagOverrides = Partial<ViewFlagsProperties>;

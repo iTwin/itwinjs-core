@@ -48,5 +48,6 @@ export interface ChangedEntities {
  *  }
  * ```
  * @public
+ * @extensionApi
  */
 export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;

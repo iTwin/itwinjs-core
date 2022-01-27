@@ -13,6 +13,7 @@ import { IModelVersionProps } from "./IModelVersion";
 
 /** The Id assigned to a briefcase by iModelHub, or [[BriefcaseIdValue.Unassigned]] .
  * @public
+ * @extensionApi
  */
 export type BriefcaseId = number;
 

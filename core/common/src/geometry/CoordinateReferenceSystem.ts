@@ -13,6 +13,7 @@ import { Carto2DDegrees, Carto2DDegreesProps, Projection, ProjectionProps } from
 import { AdditionalTransform, AdditionalTransformProps } from "./AdditionalTransform";
 /** This type indicates possible linear and angular units supported.
  *  @public
+ *  @extensionApi
 */
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 

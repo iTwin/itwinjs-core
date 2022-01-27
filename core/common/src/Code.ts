@@ -11,6 +11,7 @@ import { IModel } from "./IModel";
 
 /** The props that hold the identity of the object defining the uniqueness scope for a set of Code values.
  * @public
+ * @extensionApi
  */
 export type CodeScopeProps = Id64String | GuidString;
 

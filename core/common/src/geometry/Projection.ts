@@ -14,6 +14,7 @@ import { Geometry } from "@itwin/core-geometry";
  *  with units as degrees.
  *  All other projection indicated a projected CRS.
  *  @public
+ *  @extensionApi
  */
 export type ProjectionMethod =
   "None" |
@@ -147,11 +148,13 @@ export class AffineTransform implements AffineTransformProps {
 /** Type used in the definition of UTM Zoning projection. This projection only requires a zone number and
  *  the hemisphere North or South.
  *  @public
+ *  @extensionApi
  */
 export type HemisphereEnum = "South" | "North";
 
 /** The type to define the three zones of the Danish System 34 projections.
  *  @public
+ * @extensionApi
  */
 export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
 

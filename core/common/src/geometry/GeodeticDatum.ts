@@ -65,6 +65,7 @@ export class XyzRotation implements XyzRotationProps {
 
 /** Type indicating the geodetic transformation method
  *  @public
+ *  @extensionApi
  */
 export type GeodeticTransformMethod =
   "None" |
@@ -184,6 +185,7 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
 
 /** Type indicating the file format of the grid files.
  *  @public
+ *  @extensionApi
  */
 export type GridFileFormat =
   "NONE" |
@@ -197,6 +199,7 @@ export type GridFileFormat =
 
 /** type to indicate the grid file application direction.
  *  @public
+ *  @extensionApi
  */
 export type GridFileDirection = "Direct" | "Inverse";
 

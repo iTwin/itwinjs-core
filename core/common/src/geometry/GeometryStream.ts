@@ -181,6 +181,7 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
 
 /** A [[GeometricElement]]'s GeometryStream is represented by an array of [[GeometryStreamEntryProps]].
  * @public
+ * @extensionApi
  */
 export type GeometryStreamProps = GeometryStreamEntryProps[];
 
@@ -468,6 +469,7 @@ export interface GeometryPrimitive {
 
 /** Union of all possible geometric primitive types that may appear within a GeometryStream.
  * @public
+ * @extensionApi
  */
 export type GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive;
 

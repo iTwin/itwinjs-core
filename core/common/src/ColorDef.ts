@@ -20,6 +20,7 @@ const scratchUInt32 = new Uint32Array(scratchBytes.buffer);
 
 /** An unsigned 32-bit integer in 0xTTBBGGRR format
  * @public
+ * @extensionApi
  */
 export type ColorDefProps = number;
 
