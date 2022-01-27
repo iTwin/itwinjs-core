@@ -11,6 +11,7 @@ import { Angle, AngleProps, Point3d, XYAndZ, XYZProps } from "@itwin/core-geomet
 
 /** JSON representation of a [[Camera]].
  * @public
+ * @extensionApi
  */
 export interface CameraProps {
   lens: AngleProps;

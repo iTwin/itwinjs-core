@@ -28,6 +28,7 @@ export enum FeatureOverrideType {
 /** JSON representation of an appearance override in an [[EmphasizeElementsProps]].
  * @see [EmphasizeElements]($frontend).
  * @public
+ * @extensionApi
  */
 export interface AppearanceOverrideProps {
   /** Whether to override color, transparency, or both. */
@@ -40,6 +41,7 @@ export interface AppearanceOverrideProps {
 
 /** JSON representation of an [EmphasizeElements]($frontend).
  * @public
+ * @extensionApi
  */
 export interface EmphasizeElementsProps {
   /** @see [EmphasizeElements.getNeverDrawnElements]($frontend) */

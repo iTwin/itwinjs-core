@@ -37,6 +37,7 @@ export enum ECSqlValueType {
  * It is returned from ECSQL SELECT statements for navigation properties.
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
+ * @extensionApi
  */
 export interface NavigationValue {
   /** ECInstanceId of the related instance */
@@ -48,6 +49,7 @@ export interface NavigationValue {
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
+ * @extensionApi
  */
 export interface NavigationBindingValue {
   /** ECInstanceId of the related instance */

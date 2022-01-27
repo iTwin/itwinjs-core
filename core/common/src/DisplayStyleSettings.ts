@@ -40,6 +40,7 @@ import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./White
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
  * @public
+ * @extensionApi
  */
 export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Props {
   /** The Id of the [[SubCategory]] whose appearance is to be overridden. */
@@ -49,6 +50,7 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
 /** A [[FeatureAppearanceProps]] applied to a specific model to override its appearance within the context of a [DisplayStyle]($backend).
  * @see [[DisplayStyleSettingsProps.modelOvr]].
  * @public
+ * @extensionApi
  */
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
   /** The Id of the model whose appearance is to be overridden. */
@@ -58,6 +60,7 @@ export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps
 /** A [[PlanarClipMaskProps]] associated with a specific reality model.
  * @see [[DisplayStyleSettingsProps.planarClipOvr]].
  * @public
+ * @extensionApi
  */
 export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
   /** The Id of the model to mask. */
@@ -83,6 +86,7 @@ export enum MonochromeMode {
  * as members of `jsonProperties.styles`.
  * @see [[DisplayStyleSettings]].
  * @public
+ * @extensionApi
  */
 export interface DisplayStyleSettingsProps {
   viewflags?: ViewFlagProps;
@@ -140,6 +144,7 @@ export interface DisplayStyleSettingsProps {
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
  * @see [[DisplayStyle3dSettings]].
  * @public
+ * @extensionApi
  */
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   /** Settings controlling display of skybox and ground plane. */
@@ -165,6 +170,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
 
 /** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]].
  * @public
+ * @extensionApi
  */
 export interface DisplayStyleProps extends DefinitionElementProps {
   /** Display styles store their settings in a `styles` property within [[ElementProps.jsonProperties]]. */
@@ -175,6 +181,7 @@ export interface DisplayStyleProps extends DefinitionElementProps {
 
 /** JSON representation of a [[DisplayStyle3d]] or [[DisplayStyle3dState]].
  * @public
+ * @extensionApi
  */
 export interface DisplayStyle3dProps extends DisplayStyleProps {
   /** Display styles store their settings in a `styles` property within [[ElementProps.jsonProperties]]. */
@@ -188,6 +195,7 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
  * when creating display style overrides intended for use with a specific iModel or iTwin, but should be omitted when creating general-purpose display style overrides intended
  * for use with any iModel or iTwin. This is the default behavior if no more specific options are provided.
  * @public
+ * @extensionApi
  */
 export interface DisplayStyleOverridesOptions {
   /** Serialize all settings. Applying the resultant [[DisplayStyleSettingsProps]] will produce a [[DisplayStyleSettings]] identical to the original settings. */
@@ -389,6 +397,7 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
 
 /** Options supplied when constructing a [[DisplayStyleSettings]].
  * @public
+ * @extensionApi
  */
 export interface DisplayStyleSettingsOptions {
   /** A function that instantiates a [[ContextRealityModel]] to be stored in [[DisplayStyleSettings.contextRealityModels]]. */

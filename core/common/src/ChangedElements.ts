@@ -33,6 +33,7 @@ export enum TypeOfChange {
  * Each index for those arrays refer to the same element, e.g. to get the class Id of
  * the element given by element Id changedElements.elements[index], you can use changedElements.classIds[index].
  * @public
+ * @extensionApi
  */
 export interface ChangedElements {
   /** Ids of elements that changed */

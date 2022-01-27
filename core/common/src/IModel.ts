@@ -55,6 +55,7 @@ export interface IModelRpcProps extends IModelRpcOpenProps {
  * possibly offset in altitude by the terrain elevation above the ellipsoid but other general 3D coordinate systems
  * can be defined.
  * @public
+ * @extensionApi
  */
 export interface EcefLocationProps {
   /** The Origin of an iModel on the earth in ECEF coordinates */
@@ -192,7 +193,10 @@ export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
  */
 export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export interface FilePropertyProps {
   readonly namespace: string;
   readonly name: string;

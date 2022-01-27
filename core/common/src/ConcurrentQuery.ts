@@ -70,7 +70,8 @@ export interface QueryQuota {
 /**
  * Config for all request made to concurrent query engine.
  * @public
- * */
+ * @extensionApi
+ */
 export interface BaseReaderOptions {
   /** Determine priority of this query default to 0, used as hint and can be overriden by backend. */
   priority?: number;

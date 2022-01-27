@@ -72,6 +72,7 @@ export type ProjectionMethod =
  *  Y1 = b1*X + b2*Y + translationY
  *  An affine representing no transformation will have: a1 = 1.0, a2 = 0.0, b1 = 0.0, b2 = 1.0.
  *  @public
+ *  @extensionApi
  */
 export interface AffineTransformProps {
   /** The X post translation */
@@ -157,6 +158,7 @@ export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
 /** This class encapsulates the projection of the CRS. The projection relies on a projection method
  *  and a set of projection parameters specific to projection method selected.
  *  @public
+ *  @extensionApi
  */
 export interface ProjectionProps {
   /** The projection method. */
@@ -398,6 +400,7 @@ export class Projection implements ProjectionProps {
 
 /** A 2D cartographic point in degrees
  *  @public
+ *  @extensionApi
  */
 export interface Carto2DDegreesProps {
   /** Latitude value in degrees */

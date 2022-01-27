@@ -23,6 +23,7 @@ export enum GeometrySummaryVerbosity {
 
 /** Describes what information to include in a [[GeometrySummaryRequestProps]].
  * @public
+ * @extensionApi
  */
 export interface GeometrySummaryOptions {
   /** If true, include detailed description of each symbology change (e.g., output material Id, line/fill color, etc). */
@@ -40,6 +41,7 @@ export interface GeometrySummaryOptions {
 /** Describes the elements for which to generate an array of geometry summaries and the options controlling the contents of each summary.
  * @see [IModelConnection.getGeometrySummary]($frontend).
  * @public
+ * @extensionApi
  */
 export interface GeometrySummaryRequestProps {
   /** The Ids of the elements whose geometry is to be summarized. This can include the Ids of [GeometricElement]($backend)s and [GeometryPart]($backend)s.

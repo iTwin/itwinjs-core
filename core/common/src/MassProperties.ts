@@ -24,6 +24,7 @@ export enum MassPropertiesOperation {
 
 /** Information required to request mass properties for elements from the front end to the back end.
  * @public
+ * @extensionApi
  */
 export interface MassPropertiesRequestProps {
   operation: MassPropertiesOperation;
@@ -32,6 +33,7 @@ export interface MassPropertiesRequestProps {
 
 /** Information returned from the back end to the front end holding the result of the mass properties calculation.
  * @public
+ * @extensionApi
  */
 export interface MassPropertiesResponseProps {
   status: BentleyStatus;

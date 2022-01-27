@@ -55,6 +55,7 @@ export interface ViewStateLoadProps {
 
 /** Properties that define a ModelSelector
  * @public
+ * @extensionApi
  */
 export interface ModelSelectorProps extends DefinitionElementProps {
   models: Id64Array;
@@ -62,6 +63,7 @@ export interface ModelSelectorProps extends DefinitionElementProps {
 
 /** Properties that define a CategorySelector
  * @public
+ * @extensionApi
  */
 export interface CategorySelectorProps extends DefinitionElementProps {
   categories: Id64Array;
@@ -124,7 +126,10 @@ export interface ViewDefinition2dProps extends ViewDefinitionProps {
   angle: AngleProps;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export interface AuxCoordSystemProps extends ElementProps {
   type?: number;
   description?: string;
@@ -132,6 +137,7 @@ export interface AuxCoordSystemProps extends ElementProps {
 
 /**  Properties of AuxCoordSystem2d
  * @public
+ * @extensionApi
  */
 export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
   /** Origin of the AuxCoordSystem2d */
@@ -142,6 +148,7 @@ export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
 
 /** Properties of AuxCoordSystem3d
  * @public
+ * @extensionApi
  */
 export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
   /** Origin of the AuxCoordSystem3d */

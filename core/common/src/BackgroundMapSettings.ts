@@ -26,6 +26,7 @@ export enum GlobeMode {
 /** In-memory JSON representation of a [[BackgroundMapSettings]].
  * @see [[PersistentBackgroundMapProps]] for the persistent JSON representation.
  * @public
+ * @extensionApi
  */
 export interface BackgroundMapProps {
   /** The elevation of the map in meters relative the WGS84 ellipsoid. Default value: 0. */
@@ -61,6 +62,7 @@ export interface BackgroundMapProps {
  * These properties are omitted from [[BackgroundMapProps]] as they are no longer part of the API, but are included in
  * [[PersistentBackgroundMapProps]] because they remain part of the persistence format.
  * @public
+ * @extensionApi
  */
 export interface DeprecatedBackgroundMapProps {
   /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider".

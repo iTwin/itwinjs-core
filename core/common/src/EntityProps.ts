@@ -12,6 +12,7 @@ import { RelatedElement } from "./ElementProps";
 
 /** The properties of an [Entity]($backend) as they are read/stored from/to the iModel.
  * @public
+ * @extensionApi
  */
 export interface EntityProps {
   /** The full name of the [ECClass]($docs/bis/intro/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
@@ -38,6 +39,7 @@ export interface RelationshipProps extends EntityProps, SourceAndTarget {
 
 /** Parameters for performing a query on [Entity]($backend) classes.
  * @public
+ * @extensionApi
  */
 export interface EntityQueryParams {
   /** The sql className, in the form "Schema.ClassName", of the class to search. */

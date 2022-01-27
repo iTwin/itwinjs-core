@@ -14,11 +14,13 @@ export enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
 
 /** The properties of a Font. This includes a iModel local id, the font type, and the font name.
  * @public
+ * @extensionApi
  */
 export interface FontProps { id: number, type: FontType, name: string }
 
 /** The properties of a FontMap
  * @public
+ * @extensionApi
  */
 export interface FontMapProps { fonts: FontProps[] }
 

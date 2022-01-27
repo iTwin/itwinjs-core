@@ -18,6 +18,7 @@ export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree"
 
 /** The extent in latitude, longitude bounds where a horizontal CRS is applicable
  *  @public
+ *  @extensionApi
 */
 export interface HorizontalCRSExtentProps {
   /** The South West point in latitude and longitude in degrees for the user-defined extent of the CRS */
@@ -76,6 +77,7 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
 
 /** Horizontal Geographic Coordinate Reference System definition
  *  @public
+ *  @extensionApi
  */
 export interface HorizontalCRSProps {
   /** The identifier of the horizontal CRS as stored in the dictionary or the service database */
@@ -339,6 +341,7 @@ export class VerticalCRS implements VerticalCRSProps {
  *  additional transformation.
  *  @see [[GeographicCRS]].
  *  @public
+ *  @extensionApi
  */
 export interface GeographicCRSProps {
   /** The horizontal portion of the geographic coordinate reference system. */

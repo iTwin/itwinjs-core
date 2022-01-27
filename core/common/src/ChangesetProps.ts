@@ -26,11 +26,13 @@ export type ChangesetIndex = number;
 
 /** Both the index and Id of a changeset
  * @public
+ * @extensionApi
  */
 export interface ChangesetIndexAndId { readonly index: ChangesetIndex, readonly id: ChangesetId }
 
 /** The Id and optionally the index of a changeset
  * @public
+ * @extensionApi
  */
 export interface ChangesetIdWithIndex { readonly index?: ChangesetIndex, readonly id: ChangesetId }
 
@@ -83,6 +85,7 @@ export interface ChangesetFileProps extends ChangesetProps {
 /**
  * A range of changesets
  * @public
+ * @extensionApi
  */
 export interface ChangesetRange {
   /** index of the first changeset */

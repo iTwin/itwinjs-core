@@ -16,6 +16,7 @@ export type CodeScopeProps = Id64String | GuidString;
 
 /** The wire format for a Code
  * @public
+ * @extensionApi
  */
 export interface CodeProps {
   spec: Id64String;

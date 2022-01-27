@@ -137,6 +137,7 @@ export class SolarLight {
 /** Wire format for the ambient light associated with a [[LightSettingsProps]].
  * Ambient light applies equally to all surfaces in the scene.
  * @public
+ * @extensionApi
  */
 export interface AmbientLightProps {
   /** The color of the light. Black is treated as a special case, indicating that the surface's own diffuse color should be used. */
@@ -200,6 +201,7 @@ export class AmbientLight {
  * They are often used to simulate outdoor reflection of light from the ground and sky, so the colors often match the ground and sky colors
  * of the [[SkyBox]].
  * @public
+ * @extensionApi
  */
 export interface HemisphereLightsProps {
   /** The color of the downward-facing light. Default: (143, 205, 255). */
@@ -275,6 +277,7 @@ export class HemisphereLights {
 
 /** JSON representation of a [[FresnelSettings]].
  * @public
+ * @extensionApi
  */
 export interface FresnelSettingsProps {
   /** @see [[FresnelSettings.intensity]].
@@ -336,7 +339,7 @@ export class FresnelSettings {
   /** Create a new FresnelSettings.
    * @note Intensity values less than zero will be set to zero.
    */
-  public static create(intensity=0, invert=false): FresnelSettings {
+  public static create(intensity = 0, invert = false): FresnelSettings {
     return this.fromJSON({ intensity, invert });
   }
 
@@ -347,7 +350,7 @@ export class FresnelSettings {
     if (0 === this.intensity && !this.invert)
       return undefined;
 
-    const props: FresnelSettingsProps = { };
+    const props: FresnelSettingsProps = {};
     if (0 !== this.intensity)
       props.intensity = this.intensity;
 
@@ -385,6 +388,7 @@ export class FresnelSettings {
  * Light intensities are typically expressed in [0..1] but can be as large as 5.
  * @see [[DisplayStyle3dSettingsProps]]
  * @public
+ * @extensionApi
  */
 export interface LightSettingsProps {
   /** A white portrait light affixed to the camera and pointing directly forward into the scene. */

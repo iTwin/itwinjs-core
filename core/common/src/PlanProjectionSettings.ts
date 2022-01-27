@@ -8,6 +8,7 @@
 
 /** Wire format describing [[PlanProjectionSettings]].
  * @public
+ * @extensionApi
  */
 export interface PlanProjectionSettingsProps {
   /** If defined, the absolute height in meters at which to display the model. */

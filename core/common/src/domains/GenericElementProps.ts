@@ -13,7 +13,10 @@ export interface ViewAttachmentLabelProps extends GeometricElement2dProps {
   viewAttachment?: RelatedElementProps;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export interface CalloutProps extends GeometricElement2dProps {
   drawingModel?: RelatedElementProps;
 }

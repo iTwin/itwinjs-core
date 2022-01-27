@@ -92,6 +92,7 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
 
 /** Properties of a local briefcase file, returned by [BriefcaseManager.getCachedBriefcases]($backend) and [BriefcaseManager.downloadBriefcase]($backend)
  * @public
+ * @extensionApi
  */
 export interface LocalBriefcaseProps {
   /** Full path of local file. */

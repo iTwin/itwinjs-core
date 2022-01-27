@@ -73,6 +73,7 @@ export enum ElementGeometryOpcode {
 /** Describes an entry in a geometry stream as an op-code plus the binary flatbuffer representation of the associated data.
  * @see [[FlatBufferGeometryStream]].
  * @public
+ * @extensionApi
  */
 export interface ElementGeometryDataEntry {
   /** The type of this entry. */

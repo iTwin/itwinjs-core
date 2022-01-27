@@ -28,6 +28,7 @@ export interface RelatedElementProps {
 
 /** Properties of an [Element]($docs/bis/intro/element-fundamentals)
  * @public
+ * @extensionApi
  */
 export interface ElementProps extends EntityProps {
   /** The Id of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
@@ -96,6 +97,7 @@ export class TypeDefinition extends RelatedElement {
 
 /** Properties of a [GeometricElement]($backend)
  * @public
+ * @extensionApi
  */
 export interface GeometricElementProps extends ElementProps {
   /** The id of the category for this geometric element. */
@@ -108,6 +110,7 @@ export interface GeometricElementProps extends ElementProps {
 
 /** Properties of a [[Placement3d]]
  * @public
+ * @extensionApi
  */
 export interface Placement3dProps {
   origin: XYZProps;
@@ -117,6 +120,7 @@ export interface Placement3dProps {
 
 /** Properties of a [[Placement2d]]
  * @public
+ * @extensionApi
  */
 export interface Placement2dProps {
   origin: XYProps;
@@ -143,6 +147,7 @@ export function isPlacement3dProps(props: PlacementProps): props is Placement3dP
 
 /** Properties that define a [GeometricElement3d]($backend)
  * @public
+ * @extensionApi
  */
 export interface GeometricElement3dProps extends GeometricElementProps {
   placement?: Placement3dProps;
@@ -151,6 +156,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 
 /** Properties that define a [PhysicalElement]($backend)
  * @public
+ * @extensionApi
  */
 export interface PhysicalElementProps extends GeometricElement3dProps {
   physicalMaterial?: RelatedElementProps;
@@ -200,6 +206,7 @@ export interface SectionDrawingLocationProps extends GeometricElement3dProps {
 
 /** Properties that define a [GeometricElement2d]($backend)
  * @public
+ * @extensionApi
  */
 export interface GeometricElement2dProps extends GeometricElementProps {
   placement?: Placement2dProps;
@@ -208,6 +215,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
 
 /** Properties of a [GeometryPart]($backend)
  * @public
+ * @extensionApi
  */
 export interface GeometryPartProps extends ElementProps {
   geom?: GeometryStreamProps;
@@ -273,6 +281,7 @@ export interface SheetProps extends ElementProps {
 
 /** Properties of a [DefinitionElement]($backend)
  * @public
+ * @extensionApi
  */
 export interface DefinitionElementProps extends ElementProps {
   isPrivate?: boolean;
@@ -287,6 +296,7 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
 
 /** Properties of a [PhysicalType]($backend)
  * @public
+ * @extensionApi
  */
 export interface PhysicalTypeProps extends TypeDefinitionElementProps {
   /** The [PhysicalMaterial]($backend) that makes up this physical type. */
@@ -295,6 +305,7 @@ export interface PhysicalTypeProps extends TypeDefinitionElementProps {
 
 /** Properties of a [InformationPartitionElement]($backend)
  * @public
+ * @extensionApi
  */
 export interface InformationPartitionElementProps extends ElementProps {
   description?: string;
@@ -303,6 +314,7 @@ export interface InformationPartitionElementProps extends ElementProps {
 /** Options controlling which properties are included or excluded when querying [[DisplayStyleProps]].
  * @see [[ViewStateLoadProps]] and [[ElementLoadOptions]].
  * @public
+ * @extensionApi
  */
 export interface DisplayStyleLoadProps {
   /** If true, the lists of element Ids in the display style's schedule script will be empty.
@@ -329,6 +341,7 @@ export interface RenderTimelineLoadProps {
 /** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
  * [IModelDb.Elements.getElementProps]($backend) and [IModelConnection.Elements.loadProps]($frontend).
  * @public
+ * @extensionApi
  */
 export interface ElementLoadOptions {
   /** If true, include the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
@@ -348,6 +361,7 @@ export interface ElementLoadOptions {
 
 /** Parameters to specify what element to load for functions like [IModelDb.Elements.getElementProps]($backend).
  * @public
+ * @extensionApi
  */
 export interface ElementLoadProps extends ElementLoadOptions {
   id?: Id64String;
@@ -357,6 +371,7 @@ export interface ElementLoadProps extends ElementLoadOptions {
 
 /** Properties of an [ElementAspect]($backend)
  * @public
+ * @extensionApi
  */
 export interface ElementAspectProps extends EntityProps {
   element: RelatedElementProps;
@@ -364,6 +379,7 @@ export interface ElementAspectProps extends EntityProps {
 
 /** Properties of an [ExternalSourceAspect]($backend) that stores synchronization information for an element originating from an external source.
  * @public
+ * @extensionApi
  */
 export interface ExternalSourceAspectProps extends ElementAspectProps {
   /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source. */
@@ -419,6 +435,7 @@ export interface ExternalSourceAttachmentProps extends ElementProps {
 
 /** Properties of an [ChannelRootAspect]($backend) that identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
  * @public
+ * @extensionApi
  */
 export interface ChannelRootAspectProps extends ElementAspectProps {
   /** The owner of the channel */
@@ -427,6 +444,7 @@ export interface ChannelRootAspectProps extends ElementAspectProps {
 
 /** Properties of a [LineStyle]($backend)
  * @public
+ * @extensionApi
  */
 export interface LineStyleProps extends DefinitionElementProps {
   description?: string;
@@ -458,6 +476,7 @@ export enum Rank {
 
 /** Parameters of a [Category]($backend)
  * @public
+ * @extensionApi
  */
 export interface CategoryProps extends DefinitionElementProps {
   rank?: Rank;

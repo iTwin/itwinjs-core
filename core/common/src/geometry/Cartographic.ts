@@ -13,6 +13,7 @@ import { assert } from "@itwin/core-bentley";
 
 /** The JSON representation of a Cartographic object.
  * @public
+ * @extensionApi
  **/
 export interface CartographicProps {
   /** The longitude, specified in radians. */
