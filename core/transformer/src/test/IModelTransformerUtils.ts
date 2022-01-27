@@ -397,9 +397,9 @@ export async function assertIdentityTransformation(
     sourceRelationships.set(makeRelationKey(row), row);
   }
 
-  const targetRelationships = new Map<string, any>();
+  const targetRelationshipQueue = new Map<string, any>();
   for await (const row of targetDb.query(...query)) {
-    targetRelationships.set(makeRelationKey(row), row);
+    targetRelationshipQueue.set(makeRelationKey(row), row);
   }
 
   /* eslint-disable @typescript-eslint/naming-convention */
@@ -410,13 +410,17 @@ export async function assertIdentityTransformation(
     expect(relSourceInTarget).to.not.equal(Id64.invalid);
     const relTargetInTarget = transformer.context.findTargetElementId(relInSource.TargetECInstanceId);
     expect(relTargetInTarget).to.not.equal(Id64.invalid);
-    const relInTarget = targetRelationships.get(makeRelationKey({ SourceECInstanceId: relSourceInTarget, TargetECInstanceId: relTargetInTarget }));
+    const relInTargetKey = makeRelationKey({ SourceECInstanceId: relSourceInTarget, TargetECInstanceId: relTargetInTarget });
+    const relInTarget = targetRelationshipQueue.get(relInTargetKey);
     expect(relInTarget).not.to.be.undefined;
     // this won't work if it has navigation properties (or any remapped property)
     const makeRelInvariant = ({ SourceECInstanceId: _1, TargetECInstanceId: _2, ECClassId: _3, ECInstanceId: _4, ...rel }: any) => rel;
     expect(makeRelInvariant(relInSource)).to.deep.equal(makeRelInvariant(relInTarget));
+    targetRelationshipQueue.delete(relInTargetKey);
   }
   /* eslint-enable @typescript-eslint/naming-convention */
+
+  expect(targetRelationshipQueue.size).to.equal(0);
 }
 
 export class TransformerExtensiveTestScenario {

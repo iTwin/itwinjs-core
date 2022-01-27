@@ -1619,9 +1619,9 @@ describe("IModelTransformer", () => {
             <Class class="TestEntity"/>
           </Target>
         </ECRelationshipClass>
-        <ECEntityClass typeName="TestElementWithNavProp" description="A test domain class that has a base and mixin applied to it.">
+        <ECEntityClass typeName="TestElementWithNavProp">
           <BaseClass>bis:DefinitionElement</BaseClass>
-          <ECNavigationProperty propertyName="navProp" relationshipName="ElemRel" direction="Forward" displayLabel="Horizontal Alignment" />
+          <ECNavigationProperty propertyName="navProp" relationshipName="ElemRel" direction="Forward" />
         </ECEntityClass>
       </ECSchema>`
     );
@@ -1694,56 +1694,33 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.skip("local test", async () => {
-    const sourceDb = SnapshotDb.openFile("/tmp/bad-relationships-source.bim");
+  it("exhaustive identity transform", async () => {
+    const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformSource.bim");
+    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
 
-    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
+    // previously there was a bug where json display properties of models would not be transformed. This should expose that
+    const [physicalModelId] = sourceDb.queryEntityIds({ from: "BisCore.PhysicalModel", limit: 1 });
+    const physicalModel = sourceDb.models.getModel(physicalModelId);
+    physicalModel.jsonProperties.formatter.fmtFlags.linPrec = 100;
+    physicalModel.update();
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
-    const transformer = new IModelTransformer(sourceDb, targetDb, { loadSourceGeometry: true });
+    const transformer = new IModelTransformer(sourceDb, targetDb);
     await transformer.processSchemas();
     await transformer.processAll();
 
     targetDb.saveChanges();
 
-    await assertIdentityTransformation(
-      sourceDb,
-      targetDb,
-      transformer,
-      // source will have the connector external source which was not exported without the transformer option `includeSourceProvenance: true`
-      {
-        expectedElemsOnlyInSource: [
-          {
-            code: new Code({
-              spec: IModelDb.repositoryModelId,
-              scope: IModelDb.repositoryModelId,
-            }),
-            description: "syncFile-test",
-            federationGuid: "bdf85257-884e-4006-8ac4-c04b9e0d35dd",
-            jsonProperties: { synchronizationConfigLink: {} },
-            lastSuccessfulRun: undefined,
-            model: IModelDb.repositoryModelId,
-            parent: undefined,
-            url: "iTwin Synchronizer",
-            userLabel: "syncFile-test",
-          } as Partial<SynchronizationConfigLinkProps>,
-          {
-            code: Code.createEmpty(),
-            model: IModelDb.repositoryModelId,
-            connectorName: "Civil",
-            connectorVersion: "10.8.0.15",
-            federationGuid: "cd1649f1-e494-4a76-9aa5-6339d9f0266f",
-            jsonProperties: {},
-            parent: undefined,
-            repository: {
-              id: "0x20000000004",
-              relClassName: "BisCore:ExternalSourceIsInRepository",
-            },
-            userLabel: "Default",
-          } as Partial<ExternalSourceProps>,
-        ],
-      }
-    );
+    await assertIdentityTransformation(sourceDb, targetDb, transformer);
+
+    const physicalModelInTargetId = transformer.context.findTargetElementId(physicalModelId);
+    const physicalModelInTarget = targetDb.models.getModel(physicalModelInTargetId);
+    expect(physicalModelInTarget.jsonProperties.formatter.fmtFlags.linPrec).to.equal(100);
 
     sourceDb.close();
     targetDb.close();
