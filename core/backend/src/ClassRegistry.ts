@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { ClassUtils, DbResult, Id64, Id64Set, IModelStatus, Logger } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Set, IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { Element } from "./Element";
@@ -86,7 +86,7 @@ export class ClassRegistry {
       .filter(([_propName, prop]) => prop.isNavigation)
       .map(([propName, _prop]) => propName);
 
-    if (ClassUtils.isProperSubclassOf(generatedClass, Element)) {
+    if (generatedClass.is(Element)) {
       Object.defineProperty(
         generatedClass.prototype,
         "collectPredecessorIds",

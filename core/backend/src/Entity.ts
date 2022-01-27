@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { ClassUtils, Id64, Id64String } from "@itwin/core-bentley";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
@@ -86,6 +86,9 @@ export class Entity {
 
   /** @internal */
   public static get protectedOperations(): string[] { return []; }
+
+  /** get */
+  public static is(otherClass: typeof Entity): boolean { return ClassUtils.isSubclassOf(otherClass, this); }
 }
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
