@@ -1595,7 +1595,7 @@ export class CurveFactory {
     static createLineSpiralArcSpiralLine(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, lengthA: number, lengthB: number, arcRadius: number): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLine(spiralType: IntegratedSpiralTypeName, startPoint: Point3d, shoulderPoint: Point3d, targetPoint: Point3d): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLineWithSpiralLength(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, spiralLength: number): GeometryQuery[] | undefined;
-    static createMiteredPipeSections(centerline: IndexedXYZCollection, radius: number): Arc3d[];
+    static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[];
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
     static planePlaneIntersectionRay(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Ray3d | undefined;
@@ -4272,8 +4272,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform?: Transform): void;
     addLinearSweep(surface: LinearSweep): void;
     addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d): void;
-    // (undocumented)
-    addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, radius: number, numFacetAround?: number): void;
+    addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d, numFacetAround?: number): void;
     addPolygon(points: Point3d[], numPointsToUse?: number): void;
     addPolygonGrowableXYZArray(points: GrowableXYZArray): void;
     addQuadFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]): void;
