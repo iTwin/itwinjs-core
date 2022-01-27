@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, utf8ToString } from "@itwin/core-bentley";
+import { ByteStream, Id64String, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -14,7 +14,6 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import type { DracoLoader } from "@loaders.gl/draco";
 
 /** Schema for the [3DTILES_draco_point_compression](https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_draco_point_compression) extension. */
 interface DracoPointCloud {
@@ -22,13 +21,13 @@ interface DracoPointCloud {
   byteOffset: number;
   /** Each specifies the Id of a compressed attribute. */
   properties: {
-    POSITION?: number;
-    RGB?: number;
-    RGBA?: number;
-    NORMAL?: number;
-    BATCH_ID?: number;
+    POSITION?: number; // eslint-disable-line @typescript-eslint/naming-convention
+    RGB?: number; // eslint-disable-line @typescript-eslint/naming-convention
+    RGBA?: number; // eslint-disable-line @typescript-eslint/naming-convention
+    NORMAL?: number; // eslint-disable-line @typescript-eslint/naming-convention
+    BATCH_ID?: number; // eslint-disable-line @typescript-eslint/naming-convention
     /** This is not in the spec but is present in sample data in Cesium's git repository. */
-    COLOR_0?: number;
+    COLOR_0?: number; // eslint-disable-line @typescript-eslint/naming-convention
   };
 }
 
@@ -45,13 +44,13 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
     if (mesh.topology !== "point-list")
       return undefined;
 
-    const pos = mesh.attributes["POSITION"]?.value;
+    const pos = mesh.attributes.POSITION?.value;
     if (!pos || (pos.length % 3) !== 0)
       return undefined;
 
-    let colors = mesh.attributes["RGB"]?.value ?? mesh.attributes["COLOR_0"]?.value;
+    let colors = mesh.attributes.RGB?.value ?? mesh.attributes.COLOR_0?.value;
     if (!colors) {
-      const rgba = mesh.attributes["RGBA"]?.value;
+      const rgba = mesh.attributes.RGBA?.value;
       if (rgba && (rgba.length % 4) === 0) {
         // We currently don't support alpha channel for point clouds - strip it.
         colors = new Uint8Array(3 * rgba.length / 4);
@@ -93,11 +92,11 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
 }
 
 interface PntsProps {
-  POSITION_QUANTIZED?: { byteOffset: number; };
-  QUANTIZED_VOLUME_OFFSET?: number[]; // 3-component vector
-  QUANTIZED_VOLUME_SCALE?: number[]; // 3-component vector
-  POINTS_LENGTH?: number;
-  RGB?: { byteOffset: number; };
+  POSITION_QUANTIZED?: { byteOffset: number }; // eslint-disable-line @typescript-eslint/naming-convention
+  QUANTIZED_VOLUME_OFFSET?: number[]; // eslint-disable-line @typescript-eslint/naming-convention
+  QUANTIZED_VOLUME_SCALE?: number[]; // eslint-disable-line @typescript-eslint/naming-convention
+  POINTS_LENGTH?: number; // eslint-disable-line @typescript-eslint/naming-convention
+  RGB?: { byteOffset: number }; // eslint-disable-line @typescript-eslint/naming-convention
 }
 
 function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): PointCloudProps | undefined {

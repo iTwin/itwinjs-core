@@ -1520,7 +1520,7 @@ export abstract class GltfReader {
     if (!indices || (indices.length % 3) !== 0)
       return false;
 
-    const pos = draco.attributes["POSITION"]?.value;
+    const pos = draco.attributes.POSITION?.value;
     if (!pos || (pos.length % 3) !== 0)
       return false;
 
@@ -1548,7 +1548,7 @@ export abstract class GltfReader {
       mesh.points.add(pt);
     }
 
-    const normals = draco.attributes["NORMAL"]?.value;
+    const normals = draco.attributes.NORMAL?.value;
     if (normals && (normals.length % 3) === 0) {
       const vec = Vector3d.createZero();
       for (let i = 0; i < normals.length; i += 3) {
@@ -1557,12 +1557,12 @@ export abstract class GltfReader {
       }
     }
 
-    const uvs = draco.attributes["TEXCOORD_0"]?.value;
+    const uvs = draco.attributes.TEXCOORD_0?.value;
     if (uvs && (uvs.length & 2) === 0)
       for (let i = 0; i < uvs.length; i += 2)
         mesh.uvParams.push(new Point2d(uvs[i], uvs[i + 1]));
 
-    const batchIds = draco.attributes["_BATCHID"]?.value;
+    const batchIds = draco.attributes._BATCHID?.value;
     if (batchIds && mesh.features) {
       const featureIndices = [];
       for (const batchId of batchIds)
@@ -1886,7 +1886,7 @@ export abstract class GltfReader {
 
     try {
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
-      await Promise.all(dracoMeshes.map((x) => this.decodeDracoMesh(x, dracoLoader)));
+      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
     } catch (_) {
       //
     }
