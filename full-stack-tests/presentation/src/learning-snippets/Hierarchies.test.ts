@@ -375,46 +375,53 @@ describe("Learning Snippets", () => {
 
       it("uses `hideIfNoChildren` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HideIfNoChildren.Ruleset
-        // The ruleset contains a root node specification for `bis.Model` nodes which are grouped by class and only
-        // displayed if they have children. The child nodes rule is created only for `bis.PhysicalModel` nodes, so only
-        // that type of models are displayed at the root level.
+        // The ruleset contains root node specifications for two custom nodes which are only
+        // displayed if they have children. One of them has children and the other - not, so
+        // only one of them is displayed
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
             ruleType: RuleTypes.RootNodes,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
+              specType: ChildNodeSpecificationTypes.CustomNode,
+              type: "2d",
+              label: "2d Elements",
+              hideIfNoChildren: true,
+            }, {
+              specType: ChildNodeSpecificationTypes.CustomNode,
+              type: "3d",
+              label: "3d Elements",
               hideIfNoChildren: true,
             }],
           }, {
             ruleType: RuleTypes.ChildNodes,
-            condition: `ParentNode.IsOfClass("PhysicalModel", "BisCore")`,
+            condition: `ParentNode.Type = "2d"`,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "child",
-              label: "Child",
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["GeometricElement2d"], arePolymorphic: true },
+            }],
+          }, {
+            ruleType: RuleTypes.ChildNodes,
+            condition: `ParentNode.Type = "3d"`,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true },
             }],
           }],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // Verify that only PhysicalModel is displayed
-        const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(classGroupingNodes).to.have.lengthOf(1).and.to.containSubset([{
-          label: { displayValue: "Physical Model" },
+        // Verify that only 3d elements' custom node is loaded
+        const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        expect(rootNodes).to.have.lengthOf(1).and.to.containSubset([{
+          key: { type: "3d" },
+          label: { displayValue: "3d Elements" },
+          hasChildren: true,
         }]);
 
-        const modelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[0].key });
-        expect(modelNodes).to.have.lengthOf(1).and.to.containSubset([{
-          label: { displayValue: "Properties_60InstancesWithUrl2" },
-        }]);
-
-        const customNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: modelNodes[0].key });
-        expect(customNodes).to.have.lengthOf(1).and.to.containSubset([{
-          label: { displayValue: "Child" },
-        }]);
+        const element3dNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+        expect(element3dNodes).to.not.be.empty;
       });
 
       it("uses `hideExpression` attribute", async () => {
