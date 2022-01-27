@@ -1032,9 +1032,9 @@ export abstract class GltfReader {
     return { polyfaces };
   }
 
-  private graphicFromMeshData(gltfMesh: GltfMeshData, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams) {
+  private graphicFromMeshData(gltfMesh: GltfMeshData, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     if (!gltfMesh.points || !gltfMesh.pointRange)
-      return;
+      return gltfMesh.primitive.getGraphics(meshGraphicArgs, this._system, instances);
 
     const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
