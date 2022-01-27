@@ -24,6 +24,7 @@ import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
+import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
@@ -1451,32 +1452,9 @@ export abstract class GltfReader {
       }
     }
 
-    /*
-    if (primitive.extensions?.KHR_draco_mesh_compression) {
-      if (!this._dracoDecoder)
-        return undefined;
-
-      // ###TODO: Move draco decoding to web worker?
-      const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
-      const bufferView = this._bufferViews[dracoExtension.bufferView];
-      if (!bufferView || !bufferView.byteLength)
-        return undefined;
-
-      let bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
-      if (!bufferData)
-        return undefined;
-
-      const offset = bufferView.byteOffset ?? 0;
-      bufferData = bufferData.subarray(offset, offset + bufferView.byteLength);
-      const dracoMesh = this._dracoDecoder.readMesh(mesh.primitive, bufferData, dracoExtension.attributes);
-      if (dracoMesh) {
-        mesh.primitive = dracoMesh;
-        return mesh;
-      } else {
-        return undefined;
-      }
-    }
-    */
+    const draco = primitive.extensions?.KHR_draco_mesh_compression;
+    if (draco)
+      return this.readDracoMeshPrimitive(mesh.primitive, draco) ? mesh : undefined;
 
     this.readBatchTable(mesh.primitive, primitive);
 
@@ -1531,6 +1509,69 @@ export abstract class GltfReader {
     }
 
     return mesh;
+  }
+
+  private readDracoMeshPrimitive(mesh: Mesh, ext: DracoMeshCompression): boolean {
+    const draco = this._dracoMeshes.get(ext);
+    if (!draco || "triangle-list" !== draco.topology)
+      return false;
+
+    const indices = draco.indices?.value;
+    if (!indices || (indices.length % 3) !== 0)
+      return false;
+
+    const pos = draco.attributes["POSITION"]?.value;
+    if (!pos || (pos.length % 3) !== 0)
+      return false;
+
+    // ###TODO: I have yet to see a draco-encoded mesh with interleaved attributes. Currently not checking.
+    const triangle = new Triangle();
+    for (let i = 0; i < indices.length; i += 3) {
+      triangle.setIndices(indices[i], indices[i + 1], indices[i + 2]);
+      mesh.addTriangle(triangle);
+    }
+
+    let posRange: Range3d;
+    const bbox = draco.header?.boundingBox;
+    if (bbox) {
+      posRange = Range3d.createXYZXYZ(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
+    } else {
+      posRange = Range3d.createNull();
+      for (let i = 0; i < pos.length; i += 3)
+        posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
+    }
+
+    mesh.points.params.setFromRange(posRange);
+    const pt = Point3d.createZero();
+    for (let i = 0; i < pos.length; i += 3) {
+      pt.set(pos[i], pos[i + 1], pos[i + 2]);
+      mesh.points.add(pt);
+    }
+
+    const normals = draco.attributes["NORMAL"]?.value;
+    if (normals && (normals.length % 3) === 0) {
+      const vec = Vector3d.createZero();
+      for (let i = 0; i < normals.length; i += 3) {
+        vec.set(normals[i], normals[i + 1], normals[i + 2]);
+        mesh.normals.push(OctEncodedNormal.fromVector(vec));
+      }
+    }
+
+    const uvs = draco.attributes["TEXCOORD_0"]?.value;
+    if (uvs && (uvs.length & 2) === 0)
+      for (let i = 0; i < uvs.length; i += 2)
+        mesh.uvParams.push(new Point2d(uvs[i], uvs[i + 1]));
+
+    const batchIds = draco.attributes["_BATCHID"]?.value;
+    if (batchIds && mesh.features) {
+      const featureIndices = [];
+      for (const batchId of batchIds)
+        featureIndices.push(batchId);
+
+      mesh.features.setIndices(featureIndices);
+    }
+
+    return true;
   }
 
   private deduplicateVertices(mesh: GltfMeshData): boolean {
@@ -1825,7 +1866,7 @@ export abstract class GltfReader {
 
   protected async resolveResources(): Promise<void> {
     // Load any external images and buffers.
-    const resolveResources = this._resolveResources();
+    await this._resolveResources();
 
     // If any meshes are draco-compressed, dynamically load the decoder module and then decode the meshes.
     const dracoMeshes: DracoMeshCompression[] = [];
@@ -1841,11 +1882,10 @@ export abstract class GltfReader {
     }
 
     if (dracoMeshes.length === 0)
-      return resolveResources;
+      return;
 
     try {
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
-      await resolveResources;
       await Promise.all(dracoMeshes.map((x) => this.decodeDracoMesh(x, dracoLoader)));
     } catch (_) {
       //
