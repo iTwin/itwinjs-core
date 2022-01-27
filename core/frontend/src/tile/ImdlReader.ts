@@ -44,6 +44,7 @@ export interface ImdlReaderResult extends IModelTileContent {
  * @param is3d True if the graphics are 3d.
  * @param options Options customizing how [Feature]($common)s within the graphic can be resymbolized; or false if you don't want to produce a batch.
  * @public
+ * @extensionApi REAL
  */
 export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(bytes.buffer);

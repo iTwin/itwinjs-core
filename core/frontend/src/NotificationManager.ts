@@ -109,6 +109,7 @@ export interface ToolTipOptions {
 
 /** Describes a message to be displayed to the user.
  * @public
+ * @extensionApi REAL
  */
 export class NotifyMessageDetails {
   public displayTime = BeDuration.fromSeconds(5);

@@ -92,7 +92,10 @@ export class LocateOptions {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi REAL
+ */
 export class LocateResponse {
   public snapStatus = SnapStatus.Success;
   public reason?: string;

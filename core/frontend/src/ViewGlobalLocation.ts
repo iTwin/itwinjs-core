@@ -57,6 +57,7 @@ export function metersToRange(inputMeters: number, minimumOutput: number = 500, 
 
 /** Queries the actual elevation of a cartographic point on the globe (using Bing elevation services)
  * @public
+ * @extensionApi REAL
  */
 export async function queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise<number> {
   const bingElevationProvider = new BingElevationProvider();

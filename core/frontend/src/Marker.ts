@@ -55,6 +55,7 @@ function getMinScaleViewW(vp: Viewport): number {
  * Markers draw on top of all scene graphics, and show visual cues about locations of interest.
  * @see [Markers]($docs/learning/frontend/Markers)
  * @public
+ * @extensionApi REAL
  */
 export class Marker implements CanvasDecoration {
   protected _scaleFactor?: Point2d;
@@ -304,6 +305,7 @@ export class Marker implements CanvasDecoration {
 /** A cluster of one or more Markers that overlap one another in the view. The cluster's screen position is taken from its first entry.
  * Clusters also have a Marker themselves, that represents the whole group. The cluster marker isn't created until all entries have been added.
  * @public
+ * @extensionApi REAL
  */
 export class Cluster<T extends Marker> {
   public readonly markers: T[];

@@ -43,6 +43,7 @@ export type ColorDefProps = number;
  *  const semiTransparentBlue = ColorDef.blue.withTransparency(100);
  * ```
  * @public
+ * @extensionApi REAL
  */
 export class ColorDef {
   private readonly _tbgr: number;

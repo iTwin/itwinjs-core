@@ -3096,6 +3096,7 @@ export enum ContextRotationId { Top, Front, Left, Bottom, Back, Right, View, Fac
  * through keyboard shortcuts.
  * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)*
  * @public
+ * @extensionApi REAL
  */
 export class AccuDrawHintBuilder {
   private _flagOrigin = false;
