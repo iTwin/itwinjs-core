@@ -16,6 +16,7 @@ import { Tile, TileContent, TileRequestChannel, TileTree } from "./internal";
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile.requestContent]] to obtain the raw content and
  * [[Tile.readContent]] to convert the result into a [[RenderGraphic]]. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
  * @public
+ * @extensionApi
  */
 export class TileRequest {
   /** The requested tile. While the request is pending or active, `tile.request` points back to this TileRequest. */

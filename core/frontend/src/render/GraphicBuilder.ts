@@ -215,6 +215,7 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
  * So, for example, if you pass an array of points to addLineString(), you should not subsequently modify that array.
  *
  * @public
+ * @extensionApi
  */
 export abstract class GraphicBuilder {
   /** The local coordinate system transform applied to this builder's geometry.

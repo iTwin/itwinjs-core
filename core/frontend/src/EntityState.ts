@@ -12,6 +12,7 @@ import { IModelConnection } from "./IModelConnection";
 
 /** The "state" of an Entity as represented in a web browser. Every subclass of EntityState handles one BIS class.
  * @public
+ * @extensionApi
  */
 export class EntityState implements EntityProps {
   /** The name of the BIS schema for this class.
@@ -75,6 +76,7 @@ export class EntityState implements EntityProps {
 
 /** The "state" of an Element as represented in a web browser.
  * @public
+ * @extensionApi
  */
 export class ElementState extends EntityState implements ElementProps {
   /** @internal */

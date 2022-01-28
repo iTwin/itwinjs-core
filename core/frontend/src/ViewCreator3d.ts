@@ -48,6 +48,7 @@ export interface ViewCreator3dOptions {
  * const defaultView = await viewCreator.createDefaultView({skyboxOn: true});
  * ```
  * @public
+ * @extensionApi
  */
 export class ViewCreator3d {
 

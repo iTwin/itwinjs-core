@@ -45,6 +45,7 @@ export interface OsmBuildingDisplayOptions {
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]].
  * @public
+ * @extensionApi
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
@@ -725,6 +726,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
 /** A display style that can be applied to 2d views.
  * @public
+ * @extensionApi
  */
 export class DisplayStyle2dState extends DisplayStyleState {
   /** @internal */
@@ -745,6 +747,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
 /** A [[DisplayStyleState]] that can be applied to spatial views.
  * @public
+ * @extensionApi
  */
 export class DisplayStyle3dState extends DisplayStyleState {
   /** @internal */

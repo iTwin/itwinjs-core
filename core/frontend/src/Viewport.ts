@@ -229,6 +229,7 @@ export interface GetPixelDataWorldPointArgs {
  *
  * @see [[ViewManager]]
  * @public
+ * @extensionApi
  */
 export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
@@ -2630,6 +2631,7 @@ export abstract class Viewport implements IDisposable {
  *    5b. Otherwise, it is disposed of by invoking its dispose() method directly.
  * ```
  * @public
+ * @extensionApi
  */
 export class ScreenViewport extends Viewport {
   /** Settings that may be adjusted to control the way animations are applied to a [[ScreenViewport]] by methods like
@@ -3305,6 +3307,7 @@ export interface OffScreenViewportOptions {
  * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImage]] and [[Viewport.readImageToCanvas]])
  * without drawing to the screen.
  * @public
+ * @extensionApi
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;

@@ -17,6 +17,7 @@ import { Viewport } from "../Viewport";
  * The marker is used to allow tiles to be discarded after they become disused by any viewport, via [[Tile.prune]].
  * @see [[Tile.usageMarker]].
  * @public
+ * @extensionApi
  */
 export class TileUsageMarker {
   private _timePoint = BeTimePoint.now();

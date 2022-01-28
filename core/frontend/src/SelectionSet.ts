@@ -177,6 +177,7 @@ class HilitedElementIds extends HilitedIds {
  * @see [[IModelConnection.hilited]] for the HiliteSet associated with an iModel.
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
  * @public
+ * @extensionApi
  */
 export class HiliteSet {
   private readonly _elements: HilitedElementIds;
@@ -241,6 +242,7 @@ export class HiliteSet {
  * Selected elements are displayed with a customizable hilite effect within a [[Viewport]].
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
  * @public
+ * @extensionApi
  */
 export class SelectionSet {
   private _elements = new Set<string>();

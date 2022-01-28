@@ -51,6 +51,7 @@ export enum SnapStatus {
 
 /** Options that customize the way element location (i.e. *picking*) works.
  * @public
+ * @extensionApi
  */
 export class LocateOptions {
   /** If true, also test graphics from view decorations. */
@@ -131,7 +132,10 @@ export interface HitListHolder {
   setHitList(list: HitList<HitDetail> | undefined): void;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export class ElementPicker {
   public viewport?: Viewport;
   public readonly pickPointWorld = new Point3d();
@@ -275,7 +279,10 @@ export class ElementPicker {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export class ElementLocateManager {
   public hitList?: HitList<HitDetail>;
   public currHit?: HitDetail;

@@ -159,6 +159,7 @@ export class NotifyMessageDetails {
 
 /** Specifies the details of an activity message to be displayed to the user.
  * @public
+ * @extensionApi
  */
 export class ActivityMessageDetails {
   public wasCancelled = false;
@@ -182,6 +183,7 @@ export class ActivityMessageDetails {
  * Implementations of the NotificationManager may present the information in different ways. For example, in
  * non-interactive sessions, these messages may be saved to a log file or simply discarded.
  * @public
+ * @extensionApi
  */
 export class NotificationManager implements MessagePresenter {
   public readonly toolTipLocation = new Point2d();

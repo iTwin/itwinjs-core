@@ -234,6 +234,7 @@ export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams
  * coordinate with the RenderSystem on the application's behalf.
  * @see [[IModelApp.renderSystem]].
  * @public
+ * @extensionApi
  */
 export abstract class RenderSystem implements IDisposable {
   /** Options used to initialize the RenderSystem. These are primarily used for feature-gating.

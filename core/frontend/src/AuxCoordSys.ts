@@ -59,6 +59,7 @@ const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
 
 /** The state of an AuxCoordSystem element in the frontend
  * @public
+ * @extensionApi
  */
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
   /** @internal */
@@ -299,6 +300,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
 /** The state of an AuxCoordSystem2d element in the frontend
  * @public
+ * @extensionApi
  */
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
   /** @internal */
@@ -333,6 +335,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
 
 /** The state of an AuxCoordSystem3d element in the frontend
  * @public
+ * @extensionApi
  */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
   /** @internal */
@@ -376,6 +379,7 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
 
 /** The state of an AuxCoordSystemSpatial element in the frontend
  * @public
+ * @extensionApi
  */
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
   /** @internal */

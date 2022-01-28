@@ -101,6 +101,7 @@ export interface GpuMemoryLimits {
  * @see [[IModelApp.tileAdmin]] to access the instance of the TileAdmin.
  * @see [[TileAdmin.Props]] to configure the TileAdmin at startup.
  * @public
+ * @extensionApi
  */
 export class TileAdmin {
   private _versionInfo?: TileVersionInfo;

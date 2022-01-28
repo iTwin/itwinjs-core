@@ -46,6 +46,7 @@ export enum TileTreeLoadStatus {
  * overridden instead to customize the behavior. For example, [[selectTiles]] should not be overridden; instead, override the[[_selectTiles]] method
  * that it calls.
  * @public
+ * @extensionApi
  */
 export abstract class TileTree {
   private _isDisposed = false;

@@ -67,6 +67,7 @@ export interface TileDrawArgParams {
  * @see [[TileTree.selectTiles]]
  * @see [[TileTree.draw]]
  * @public
+ * @extensionApi
  */
 export class TileDrawArgs {
   /** Transform to the location in iModel coordinates at which the tiles are to be drawn. */

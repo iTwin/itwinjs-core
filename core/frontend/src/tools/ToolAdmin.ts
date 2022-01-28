@@ -302,6 +302,7 @@ interface ToolEvent {
 
 /** Controls the operation of [[Tool]]s, administering the current [[ViewTool]], [[PrimitiveTool]], and [[IdleTool]] and forwarding events to the appropriate tool.
  * @public
+ * @extensionApi
  */
 export class ToolAdmin {
   public markupView?: ScreenViewport;

@@ -331,6 +331,7 @@ export class Cluster<T extends Marker> {
 /** A *set* of Markers that are logically related, such that they *cluster* when they overlap one another in screen space.
  * In that case, a *cluster marker* is drawn instead of the overlapping Markers.
  * @public
+ * @extensionApi
  */
 export abstract class MarkerSet<T extends Marker> {
   private _viewport?: ScreenViewport;

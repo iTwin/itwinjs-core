@@ -58,6 +58,7 @@ const scratchFrustum = new Frustum();
  * Several public [[Tile]] methods carry a warning that they should **not** be overridden by subclasses; typically a protected method exists that can be overridden instead.
  * For example, [[loadChildren]] should not be overridden, but it calls [[_loadChildren]], which must be overridden because it is abstract.
  * @public
+ * @extensionApi
  */
 export abstract class Tile {
   private _state: TileState = TileState.NotReady;

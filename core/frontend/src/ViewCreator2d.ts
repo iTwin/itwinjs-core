@@ -48,6 +48,7 @@ export interface ViewCreator2dOptions {
  *   const view = await viewCreator.createViewForModel(models[0].id!);
  * ```
  * @public
+ * @extensionApi
  */
 export class ViewCreator2d {
 

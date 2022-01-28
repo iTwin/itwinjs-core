@@ -87,6 +87,7 @@ export interface ToolTipProvider {
  *
  * The ViewManager controls the render loop, which causes the contents of each registered [[Viewport]] to update on the screen.
  * @public
+ * @extensionApi
  */
 export class ViewManager implements Iterable<ScreenViewport> {
   public inDynamicsMode = false;

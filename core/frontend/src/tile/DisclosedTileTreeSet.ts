@@ -21,6 +21,7 @@ export interface TileTreeDiscloser {
 
 /** A set of [[TileTree]]s disclosed by a set of objects implementing [[TileTreeDiscloser]], used to collect references to tile trees in use by those objects.
  * @public
+ * @extensionApi
  */
 export class DisclosedTileTreeSet implements Iterable<TileTree> {
   private readonly _processed = new Set<TileTreeDiscloser>();

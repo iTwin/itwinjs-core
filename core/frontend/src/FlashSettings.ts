@@ -38,6 +38,7 @@ export type FlashSettingsOptions = Mutable<Partial<FlashSettings>>;
  * @see [[Viewport.flashSettings]] to customize the flash behavior for a viewport.
  * @see [[Viewport.hilite]] to customize the hilite color used by [[FlashMode.Hilite]].
  * @public
+ * @extensionApi
  */
 export class FlashSettings {
   /** The duration in seconds over which the flash effect increases from zero to [[maxIntensity]], in [0..10].

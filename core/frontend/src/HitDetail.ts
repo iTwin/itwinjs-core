@@ -109,6 +109,7 @@ export enum HitDetailType {
 /** A HitDetail stores the result when locating geometry displayed in a view.
  * It holds an approximate location on an element (or decoration) from a *pick*.
  * @public
+ * @extensionApi
  */
 export class HitDetail {
   private readonly _iModel?: IModelConnection;
@@ -196,6 +197,7 @@ export class HitDetail {
 /** A SnapDetail is generated from the result of a snap request. In addition to the HitDetail about the reason the element was *picked*,
  * it holds the *exact* point on the element from the snapping logic, plus additional information that varies with the type of element and snap mode.
  * @public
+ * @extensionApi
  */
 export class SnapDetail extends HitDetail {
   /** A sprite to show the user the type of snap performed */
@@ -348,7 +350,10 @@ export class SnapDetail extends HitDetail {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export class IntersectDetail extends SnapDetail {
   public constructor(from: SnapDetail, heat: SnapHeat = SnapHeat.None, snapPoint: XYZProps, public readonly otherPrimitive: CurvePrimitive, public readonly otherId: string) {
     super(from, SnapMode.Intersection, heat, snapPoint);
@@ -383,6 +388,7 @@ export class IntersectDetail extends SnapDetail {
 /** The result of a "locate" is a sorted list of objects that satisfied the search criteria (a HitList). Earlier hits in the list
  * are somehow *better* than those later on.
  * @public
+ * @extensionApi
  */
 export class HitList<T extends HitDetail> {
   public hits: T[] = [];
