@@ -100,7 +100,7 @@ describe("Class Registry", () => {
   });
 });
 
-describe.only("Class Registry - generated classes", () => {
+describe("Class Registry - generated classes", () => {
   let imodel: SnapshotDb;
   const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
 
