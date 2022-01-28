@@ -161,7 +161,8 @@ export class IModelCloneContext {
       targetElementProps.code = Code.createEmpty();
     }
     const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName);
-    jsClass["onCloned"](this, sourceElement, targetElementProps);
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    jsClass["onCloned"](this, sourceElement.toJSON(), targetElementProps);
     return targetElementProps;
   }
 }

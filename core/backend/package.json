@@ -104,17 +104,6 @@
           "allowProtectedClassPropertyAccess": true
         }
       ]
-    },
-    "overrides": [
-      {
-        "files": [
-          "*.test.ts",
-          "**/test/**/*.ts"
-        ],
-        "rules": {
-          "@typescript-eslint/no-non-null-assertion": "off"
-        }
-      }
-    ]
+    }
   }
 }
