@@ -6,8 +6,8 @@ It can be useful in some applications to take iModels and their linear concept o
 *branching*, where an iModel diverges into two separate iModels after a changeset, allowing each to have new distinct changes and
 a distinct history. Typically, one of them is referred to as the *master iModel*, and the other the *branch iModel*,
 with the master iModel being the one that existed before the branch was created from it.
-Importantly, these branches can often be used to updates to one branch iModel while the master iModel
-can received updates from other contexts. Usually the intention is to move the changes in the branch iModel's history back into
+Importantly, these branches can often be used to make updates to one branch iModel while the master iModel
+can receive updates from other contexts. Usually the intention is to move the changes in the branch iModel's history back into
 the master iModel. It can also be useful to update a branch with changes that the master received since their divergence.
 
 ## Provenance
