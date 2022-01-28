@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@ungap/url-search-params": "^0.1.2",
-    "flatbuffers": "~1.12.0",
+    "flatbuffers": "~2.0.4",
     "semver": "^5.5.0",
     "js-base64": "^3.6.1"
   },
