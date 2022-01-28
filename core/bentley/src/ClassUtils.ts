@@ -7,11 +7,10 @@
  */
 
 /** Utility functions for working with JavaScript's concept of classes.
- * @beta
+ * @internal
  */
 export namespace ClassUtils {
   /** Check if class `subclass` is a different class from `superclass` but extends from `superclass`
-   * @internal
    * @param subclass the class that may be a subclass of `superclass`
    * @param superclass the class that may be a base class of `subclass`
    * @returns whether `subclass` is a proper subclass of `superclass`
@@ -24,11 +23,10 @@ export namespace ClassUtils {
     return subclass.prototype instanceof superclass;
   }
 
-  /** Check if class `subclass` is a different class from `superclass` but extends from `superclass`
-   * @internal
+  /** Check if class `subclass` is `superclass` or extends from `superclass`
    * @param subclass the class that may be a subclass of `superclass`
    * @param superclass the class that may be a base class of `subclass`
-   * @returns whether `subclass` is a proper subclass of `superclass`
+   * @returns whether `subclass` is a subclass of `superclass`
    */
   export function isSubclassOf<
     SuperClass extends new (..._: any[]) => any,

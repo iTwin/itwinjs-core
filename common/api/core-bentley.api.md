@@ -222,7 +222,7 @@ export enum ChangeSetStatus {
     WrongDgnDb = 90130
 }
 
-// @beta
+// @internal
 export namespace ClassUtils {
     export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass;
     export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
