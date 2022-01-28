@@ -42,10 +42,6 @@ export * from "./UtilityTypes";
  * Classes for working with SQLite databases. SQLite underlies IModelDb and ECDb - see [Executing ECSQL]($docs/learning/ECSQL.md)
  */
 /**
- * @docs-group-description ClassUtils
- * Utility functions for working with JavaScript's concept of classes.
- */
-/**
  * @docs-group-description Errors
  * Classes for working with errors.
  */
