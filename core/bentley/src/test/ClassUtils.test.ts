@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ClassUtils } from "../ClassUtils";
+import * as ClassUtils from "../ClassUtils";
 
 type Extends<T, Base> = T extends Base ? true : false;
 
