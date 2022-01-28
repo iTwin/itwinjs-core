@@ -6,9 +6,10 @@
  * @module Schema
  */
 
-import { DbResult, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { EntityMetaData, IModelError } from "@bentley/imodeljs-common";
+import { DbResult, Id64, Id64Set, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { EntityMetaData, IModelError, RelatedElement } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
+import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 
@@ -80,6 +81,30 @@ export class ClassRegistry {
     const generatedClass = class extends superclass { public static override get className() { return className; } };
     // the above line creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
+
+    const navigationProps = Object.entries(entityMetaData.properties)
+      .filter(([_propName, prop]) => prop.isNavigation)
+      .map(([propName, _prop]) => propName);
+
+    if (generatedClass.is(Element)) {
+      Object.defineProperty(
+        generatedClass.prototype,
+        "collectPredecessorIds",
+        {
+          value(this: typeof generatedClass, predecessorIds: Id64Set) {
+            // first prototype of `this` is the current class, second is its superclass
+            const superImpl: Element["collectPredecessorIds"] = Object.getPrototypeOf(Object.getPrototypeOf(this)).collectPredecessorIds;
+            // we know it is valid because `generatedClass.is(Element)` and generatedClass is defined here so it can't be Element itself
+            superImpl.call(this, predecessorIds);
+            for (const navProp of navigationProps) {
+              const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
+              if (!relatedElem || !Id64.isValid(relatedElem.id)) continue;
+              predecessorIds.add(relatedElem.id);
+            }
+          },
+        }
+      );
+    }
 
     // if the schema is a proxy for a domain with behavior, throw exceptions for all protected operations
     if (schema.missingRequiredBehavior) {
