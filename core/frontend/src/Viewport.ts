@@ -88,6 +88,7 @@ export interface ViewportDecorator {
 
 /** Source of depth point returned by [[Viewport.pickDepthPoint]].
  * @public
+ * @extensionApi
  */
 export enum DepthPointSource {
   /** Depth point from geometry within specified radius of pick point */
@@ -158,6 +159,7 @@ export interface ChangeViewedModel2dOptions {
 /** Describes an undo or redo event for a [[Viewport]].
  * @see [[Viewport.onViewUndoRedo]].
  * @public
+ * @extensionApi
  */
 export enum ViewUndoEvent { Undo = 0, Redo = 1 }
 

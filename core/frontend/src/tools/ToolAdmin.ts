@@ -32,10 +32,16 @@ import {
 import { ToolSettings } from "./ToolSettings";
 import { ViewTool } from "./ViewTool";
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum StartOrResume { Start = 1, Resume = 2 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 } // eslint-disable-line no-restricted-syntax

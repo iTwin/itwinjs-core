@@ -15,6 +15,7 @@ import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
 /** Describes the type and behavior of a [[NotifyMessageDetails]].
  * @public
+ * @extensionApi
  */
 export enum OutputMessageType {
   /** Temporary message box displays at the top or bottom of the screen then disappears automatically. */
@@ -31,6 +32,7 @@ export enum OutputMessageType {
 
 /** Classifies a [[NotifyMessageDetails]] by its level of importance.
  * @public
+ * @extensionApi
  */
 export enum OutputMessagePriority {
   None = 0,
@@ -43,6 +45,7 @@ export enum OutputMessagePriority {
 
 /** Describes the alert behavior of a [[NotifyMessageDetails]].
  * @public
+ * @extensionApi
  */
 export enum OutputMessageAlert {
   None = 0,
@@ -52,6 +55,7 @@ export enum OutputMessageAlert {
 
 /** Reason for ending the activity message via endActivityMessage
  * @public
+ * @extensionApi
  */
 export enum ActivityMessageEndReason {
   Completed = 0,
@@ -60,6 +64,7 @@ export enum ActivityMessageEndReason {
 
 /** Describes the set of buttons displayed in a message box opened using [[NotificationManager.openMessageBox]].
  * @public
+ * @extensionApi
  */
 export enum MessageBoxType {
   OkCancel,
@@ -72,6 +77,7 @@ export enum MessageBoxType {
 
 /** Describes the icon displayed in a messagebox opened using [[NotificationManager.openMessageBox]].
  * @public
+ * @extensionApi
  */
 export enum MessageBoxIconType {
   NoSymbol = 0,   // Means Don't draw Symbol
@@ -83,6 +89,7 @@ export enum MessageBoxIconType {
 
 /** Describes the possible return values produced when the user clicks a button in a messagebox opened using [[NotificationManager.openMessageBox]].
  * @public
+ * @extensionApi
  */
 export enum MessageBoxValue {
   Apply = 1,

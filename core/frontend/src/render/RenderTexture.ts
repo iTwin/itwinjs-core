@@ -15,6 +15,7 @@ import { IModelConnection } from "../IModelConnection";
  * If this information is known, it should be supplied when creating a texture for more efficient rendering.
  * @see [[TextureImage.transparency]].
  * @public
+ * @extensionApi
  */
 export enum TextureTransparency {
   /** All pixels are either 100% opaque or 100% transparent. */

@@ -1901,6 +1901,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
 /** Event types for ViewClipDecorationProvider.onActiveClipChanged \
  * @public
+ * @extensionApi
  */
 export enum ClipEventType { New, NewPlane, Modify, Clear }
 

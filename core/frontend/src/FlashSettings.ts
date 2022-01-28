@@ -10,6 +10,7 @@ import { BeDuration, Mutable } from "@itwin/core-bentley";
 
 /** As part of [[FlashSettings]], describes how geometry is flashed.
  * @public
+ * @extensionApi
  */
 export enum FlashMode {
   /** The color of the geometry is mixed with the hilite color. */

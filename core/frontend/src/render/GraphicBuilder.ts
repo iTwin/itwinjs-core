@@ -23,6 +23,7 @@ import { GraphicPrimitive } from "./GraphicPrimitive";
  *  - Within a [[GraphicList]], each [[RenderGraphic]] is rendered in the order in which it appears in the list; and
  *  - Within a single [[RenderGraphic]], each geometric primitive is rendered in the ordered in which it was added to the GraphicBuilder.
  * @public
+ * @extensionApi
  */
 export enum GraphicType {
   /**

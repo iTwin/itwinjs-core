@@ -19,7 +19,10 @@ import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum ACSType {
   None = 0,
   Rectangular = 1,
@@ -27,7 +30,10 @@ export enum ACSType {
   Spherical = 3,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum ACSDisplayOptions {
   None = 0, // used for testing individual bits.
   Active = (1 << 0),

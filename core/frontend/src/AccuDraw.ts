@@ -3084,6 +3084,7 @@ export class AccuDraw {
 
 /** Specify the rotation to return from [[AccuDrawHintBuilder.getContextRotation]].
  * @public
+ * @extensionApi
  */
 export enum ContextRotationId { Top, Front, Left, Bottom, Back, Right, View, Face }
 

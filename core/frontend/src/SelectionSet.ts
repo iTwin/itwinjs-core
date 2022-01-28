@@ -11,6 +11,7 @@ import { IModelConnection } from "./IModelConnection";
 
 /** Identifies the type of changes made to the [[SelectionSet]] to produce a [[SelectionSetEvent]].
  * @public
+ * @extensionApi
  */
 export enum SelectionSetEventType {
   /** Elements have been added to the set. */

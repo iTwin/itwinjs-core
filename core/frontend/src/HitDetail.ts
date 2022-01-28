@@ -15,7 +15,10 @@ import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum SnapMode {
   Nearest = 1,
   NearestKeypoint = 1 << 1,
@@ -26,7 +29,10 @@ export enum SnapMode {
   Intersection = 1 << 6,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum SnapHeat {
   None = 0,
   NotInRange = 1,   // "of interest", but out of range
@@ -35,6 +41,7 @@ export enum SnapHeat {
 
 /** The procedure that generated this Hit.
  * @public
+ * @extensionApi
  */
 export enum HitSource {
   None = 0,
@@ -51,6 +58,7 @@ export enum HitSource {
 /** What was being tested to generate this hit. This is not the element or
  * GeometricPrimitive that generated the Hit, it is an indication of whether it is an edge or interior hit.
  * @public
+ * @extensionApi
  */
 export enum HitGeomType {
   None = 0,
@@ -63,6 +71,7 @@ export enum HitGeomType {
 
 /** Classification of GeometricPrimitive that generated the Hit.
  * @public
+ * @extensionApi
  */
 export enum HitParentGeomType {
   None = 0,
@@ -73,7 +82,10 @@ export enum HitParentGeomType {
   Text = 5,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum HitPriority {
   WireEdge = 0,
   PlanarEdge = 1,
@@ -84,7 +96,10 @@ export enum HitPriority {
   Unknown = 6,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum HitDetailType {
   Hit = 1,
   Snap = 2,

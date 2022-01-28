@@ -19,6 +19,7 @@ import { Tile, TileDrawArgs, TileLoadPriority, TileTreeParams } from "./internal
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
  * @see [[TileTreeOwner]].
  * @public
+ * @extensionApi
  */
 export enum TileTreeLoadStatus {
   /** No attempt to load the tile tree has yet been made. */

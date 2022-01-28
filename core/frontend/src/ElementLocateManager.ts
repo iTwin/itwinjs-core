@@ -17,6 +17,7 @@ import { ViewRect } from "./ViewRect";
 
 /** The possible actions for which a locate filter can be called.
  * @public
+ * @extensionApi
  */
 export enum LocateAction {
   Identify = 0,
@@ -26,13 +27,17 @@ export enum LocateAction {
 /** Values to return from a locate filter.
  * Return `Reject` to indicate the element is unacceptable.
  * @public
+ * @extensionApi
  */
 export enum LocateFilterStatus {
   Accept = 0,
   Reject = 1,
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum SnapStatus {
   Success = 0,
   Aborted = 1,

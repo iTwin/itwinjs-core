@@ -19,6 +19,7 @@ import { DisclosedTileTreeSet, TileDrawArgs, TileTree, TileTreeLoadStatus, TileT
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
  * @public
+ * @extensionApi
  */
 export enum TileGraphicType {
   /** Rendered behind all other geometry without depth. */

@@ -29,10 +29,16 @@ export type ToolType = typeof Tool;
  */
 export type ToolList = ToolType[];
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum BeButton { Data = 0, Reset = 1, Middle = 2 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum CoordinateLockOverrides {
   None = 0,
   ACS = 1 << 1,
@@ -42,6 +48,7 @@ export enum CoordinateLockOverrides {
 
 /** The *source* that generated an event.
  * @public
+ * @extensionApi
  */
 export enum InputSource {
   /** Source not defined */
@@ -54,6 +61,7 @@ export enum InputSource {
 
 /** The *source* that generated a coordinate.
  * @public
+ * @extensionApi
  */
 export enum CoordSource {
   /** Event was created by an action from the user */
@@ -68,6 +76,7 @@ export enum CoordSource {
 
 /** Numeric mask for a set of modifier keys (control, shift, and alt).
  * @public
+ * @extensionApi
  */
 export enum BeModifierKeys { None = 0, Control = 1 << 0, Shift = 1 << 1, Alt = 1 << 2 }
 
@@ -452,7 +461,10 @@ export class Tool {
   }
 }
 
-/** @public */
+/**
+ * @public
+ * @extensionApi
+ */
 export enum EventHandled { No = 0, Yes = 1 }
 
 /** A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
@@ -749,6 +761,7 @@ export abstract class InputCollector extends InteractiveTool {
 
 /** The result type of [[ToolRegistry.parseAndRun]].
  * @public
+ * @extensionApi
  */
 export enum ParseAndRunResult {
   /** The tool's `parseAndRun` method was invoked and returned `true`. */
@@ -765,6 +778,7 @@ export enum ParseAndRunResult {
 
 /** Possible errors resulting from [[ToolRegistry.parseKeyin]].
  * @public
+ * @extensionApi
  */
 export enum KeyinParseError {
   /** No registered tool matching the keyin was found. */

@@ -12,6 +12,7 @@ import { Viewport } from "../Viewport";
  * @see [[ScreenSpaceEffectBuilder.addUniform]] to define a uniform variable.
  * @see [[Uniform]] to set the value of a uniform variable.
  * @public
+ * @extensionApi
  */
 export enum UniformType {
   /** GLSL `bool`. */
@@ -31,6 +32,7 @@ export enum UniformType {
 /** The underlying data types that can be used for varying variables in screen-space effect shaders.
  * @see [[ScreenSpaceEffectBuilder.addVarying]] to define a varying variable.
  * @public
+ * @extensionApi
  */
 export enum VaryingType {
   /** GLSL `float`. */

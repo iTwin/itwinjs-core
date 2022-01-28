@@ -12,6 +12,7 @@ import { CoreTools } from "./Tool";
 
 /** Tool Assistance known images
  * @public
+ * @extensionApi
  */
 export enum ToolAssistanceImage {
   /** When Keyboard is specified, ToolAssistanceInstruction.keyboardInfo should be set. */
@@ -52,6 +53,7 @@ export enum ToolAssistanceImage {
 
 /** Input Method for Tool Assistance instruction
  * @public
+ * @extensionApi
  */
 export enum ToolAssistanceInputMethod {
   /** Instruction applies to both touch & mouse input methods */
