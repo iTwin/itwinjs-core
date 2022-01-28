@@ -3337,6 +3337,7 @@ export enum FrontendLoggerCategory {
     Package = "core-frontend",
     // @alpha
     RealityData = "core-frontend.RealityData",
+    Render = "core-frontend.Render",
     Request = "core-frontend.Request"
 }
 
@@ -7832,7 +7833,7 @@ export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
 }
 
 // @internal
-export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
+export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined>;
 
 // @beta
 export interface RealityDataSource {

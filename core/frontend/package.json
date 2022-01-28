@@ -92,6 +92,8 @@
   "dependencies": {
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
+    "@loaders.gl/core": "^3.1.6",
+    "@loaders.gl/draco": "^3.1.6",
     "deep-assign": "^2.0.0",
     "fuse.js": "^3.3.0",
     "lodash": "^4.17.10",
