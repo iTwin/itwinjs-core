@@ -37,9 +37,10 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     }
 
     // from the template url, construct the tile url.
-    let url: string = this._baseUrl.concat(zoomLevel.toString());
-    url = url.concat("/").concat(column.toString()).concat("/").concat(row.toString());
-    url = url.concat(`.jpg80?${this._settings.accessKey.key}=${this._settings.accessKey.value}`);
+    // format: {baseUrl}/{tileSize}/{level}/{column}/{row}?access_token={token}
+    let url: string = this._baseUrl.concat(this.tileWidth.toString());
+    url = url.concat(`/${zoomLevel.toString()}/${column.toString()}/${row.toString()}`);
+    url = url.concat(`?${this._settings.accessKey.key}=${this._settings.accessKey.value}`);
 
     return url;
   }
