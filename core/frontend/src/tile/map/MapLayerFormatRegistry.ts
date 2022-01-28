@@ -72,14 +72,8 @@ export class MapLayerFormatRegistry {
   }
   public createImageryProvider(layerSettings: MapLayerSettings): MapLayerImageryProvider | undefined {
     const format = this._formats.get(layerSettings.formatId);
-    let formatId = layerSettings.formatId;
-
-    // Workaround: remap "MapboxImagery" -> "Mapbox"
-    if (layerSettings.formatId === "MapboxImagery") {
-      formatId = "Mapbox";
-    }
-    if (this._configOptions[formatId] !== undefined) {
-      const keyValuePair = this._configOptions[formatId]!;
+    if (this._configOptions[layerSettings.formatId] !== undefined) {
+      const keyValuePair = this._configOptions[layerSettings.formatId]!;
       const key: MapLayerKey = { key: keyValuePair.key, value: keyValuePair.value };
       layerSettings = layerSettings.clone({ accessKey: key });
     }
