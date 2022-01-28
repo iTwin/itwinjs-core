@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Migrated from deprecated MapBox api.",
+      "comment": "Fixed MapBox imagery failing to display.",
       "type": "none"
     }
   ],
