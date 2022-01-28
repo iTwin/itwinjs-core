@@ -597,6 +597,7 @@ export class IModelTransformer extends IModelExportHandler {
       const targetIds = refsCache.getById(elementId);
       for (const targetId of targetIds?.valuesById() ?? []) {
         insertPendingReferenceFinalizer(targetId, relName);
+        // FIXME: each rel instance needs to be checked itself for navigation properties, since that is also possible
       }
     }
   }
