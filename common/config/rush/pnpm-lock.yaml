@@ -202,7 +202,6 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': ^4.1.4
-      '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/semver': ^5.5.0
@@ -227,7 +226,6 @@ importers:
       '@itwin/core-geometry': link:../geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.3.0
-      '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/semver': 5.5.0
@@ -640,7 +638,6 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': ^4.1.4
-      '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
@@ -659,7 +656,6 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.3.0
-      '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.6
@@ -7287,8 +7283,8 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.1.0-dev.14:
-    resolution: {integrity: sha512-atIQ2hHLMg2EROJmEcN/G8hwVcikOzMe64/gWvTV3My9q+9Z5sdvEGCulxVj8NhcZFORntayhUOzP+LGmn684g==}
+  /@itwin/certa/3.1.0-dev.15:
+    resolution: {integrity: sha512-WSO1myYRVm+fmilp7+pE2Xwq3hsXQyqKy+TrOrLSNBd0dIEz6mblVlEUYAGgo8xf6yeUv4pgX++vZSTRFRIbww==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7310,8 +7306,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.1.0-dev.14_electron@14.2.4:
-    resolution: {integrity: sha512-atIQ2hHLMg2EROJmEcN/G8hwVcikOzMe64/gWvTV3My9q+9Z5sdvEGCulxVj8NhcZFORntayhUOzP+LGmn684g==}
+  /@itwin/certa/3.1.0-dev.15_electron@14.2.4:
+    resolution: {integrity: sha512-WSO1myYRVm+fmilp7+pE2Xwq3hsXQyqKy+TrOrLSNBd0dIEz6mblVlEUYAGgo8xf6yeUv4pgX++vZSTRFRIbww==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7339,8 +7335,8 @@ packages:
     resolution: {integrity: sha512-W+R80ZFC+d+0bXp7wGht7oDuCou2l/gHHP+uvy0lZUY3WnPq71LCAKpCzrUVcGusM41bCumoavWnW/xGAt/0hg==}
     dev: false
 
-  /@itwin/core-bentley/3.1.0-dev.14:
-    resolution: {integrity: sha512-pbeGVBLgLkuAjx6N1Z4NOJlq2OkKZj7Zeiw/YbeJm3jq2dS7HmVmK1w7nynPnc8fBuw2lydEZx7oukBhZdKL9Q==}
+  /@itwin/core-bentley/3.1.0-dev.15:
+    resolution: {integrity: sha512-0c1G1ecBJiFnqbdU9NsLvuKRSMJvWGSSk0Pz0UXaBfK/OmtM1xsyISy4bGAys02mZVGZees9BjEO3M3pkbdxSg==}
 
   /@itwin/core-geometry/3.0.0-dev.185:
     resolution: {integrity: sha512-UQvZdMaSraChiEudZxYJkC/cCWskHqmLLN9IB2iG83MYwYGJ9zrehjolh+ZAch261IRmBJ8E85P8HfRIvndIeA==}
@@ -7486,8 +7482,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.1.0-dev.14
-      '@itwin/core-bentley': 3.1.0-dev.14
+      '@itwin/certa': 3.1.0-dev.15
+      '@itwin/core-bentley': 3.1.0-dev.15
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7501,8 +7497,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0_electron@14.2.4:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.1.0-dev.14_electron@14.2.4
-      '@itwin/core-bentley': 3.1.0-dev.14
+      '@itwin/certa': 3.1.0-dev.15_electron@14.2.4
+      '@itwin/core-bentley': 3.1.0-dev.15
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -8438,10 +8434,6 @@ packages:
 
   /@types/file-saver/2.0.5:
     resolution: {integrity: sha512-zv9kNf3keYegP5oThGLaPk8E081DFDuwfqjtiTzm6PoxChdJ1raSuADf2YGCVIyrSynLrgc8JWv296s7Q7pQSQ==}
-    dev: true
-
-  /@types/flatbuffers/1.10.0:
-    resolution: {integrity: sha512-7btbphLrKvo5yl/5CC2OCxUSMx1wV1wvGT1qDXkSt7yi00/YW7E8k6qzXqJHsp+WU0eoG7r6MTQQXI9lIvd0qA==}
     dev: true
 
   /@types/fs-extra/4.0.12:

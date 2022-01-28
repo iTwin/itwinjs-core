@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Serialization
  */
-import { flatbuffers } from "flatbuffers";
+import * as flatbuffers from "flatbuffers";
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 // cspell:word flatbuffers
