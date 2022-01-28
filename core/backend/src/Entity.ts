@@ -87,7 +87,10 @@ export class Entity {
   /** @internal */
   public static get protectedOperations(): string[] { return []; }
 
-  /** get */
+  /** return whether this Entity class is a subclass of another Entity class
+   * @note the subclass-ness is checked according to JavaScript inheritance, to check the underlying raw EC class's
+   * inheritance, you can use [ECClass.is]($ecschema-metadata)
+   */
   public static is(otherClass: typeof Entity): boolean { return ClassUtils.isSubclassOf(this, otherClass); }
 }
 
