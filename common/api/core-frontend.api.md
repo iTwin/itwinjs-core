@@ -5706,7 +5706,7 @@ export interface MapLayerOptions {
     // (undocumented)
     BingMaps?: MapLayerKey;
     // (undocumented)
-    MapBoxImagery?: MapLayerKey;
+    MapboxImagery?: MapLayerKey;
 }
 
 // @internal
