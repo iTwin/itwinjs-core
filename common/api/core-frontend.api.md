@@ -7855,6 +7855,8 @@ export interface RealityDataSource {
 
 // @beta
 export namespace RealityDataSource {
+    // @internal
+    export function createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey;
     // @alpha
     export function createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
     // @alpha

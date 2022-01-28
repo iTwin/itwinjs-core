@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@itwin/core-common";
-import { getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
+import { ContextRealityModelProps, FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@itwin/core-common";
+import { getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, RealityDataSource, Tool, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -271,7 +271,10 @@ export class AttachCesiumAssetTool extends Tool {
     if (vp === undefined)
       return false;
 
-    const props = { tilesetUrl: getCesiumAssetUrl(assetId, requestKey) };
+    const accessKey = requestKey ? requestKey : IModelApp.tileAdmin.cesiumIonKey ? IModelApp.tileAdmin.cesiumIonKey : "";
+    const rdSourceKey = RealityDataSource.createCesiumIonAssetKey(assetId, accessKey);
+    const props: ContextRealityModelProps = { rdSourceKey, tilesetUrl: getCesiumAssetUrl(assetId, accessKey) };
+
     vp.displayStyle.attachRealityModel(props);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`));
     return true;
