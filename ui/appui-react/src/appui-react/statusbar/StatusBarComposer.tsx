@@ -74,8 +74,8 @@ export function DockedStatusBarItem(props: StatusBarItemProps) {
     <div
       data-item-id={props.itemId}
       data-item-type="status-bar-item"
-      data-item-location={`${props.section}`}
-      data-item-priority={`${props.itemPriority}`}
+      data-item-location={props.section}
+      data-item-priority={props.itemPriority}
       data-item-providerid={props.providerId}
       className={className}
       ref={ref}

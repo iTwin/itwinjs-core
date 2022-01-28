@@ -55,8 +55,8 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
       <li
         data-item-id={this.props.itemId}
         data-item-type="backstage-item"
-        data-item-group-priority={`${this.props.groupPriority}`}
-        data-item-priority={`${this.props.itemPriority}`}
+        data-item-group-priority={this.props.groupPriority}
+        data-item-priority={this.props.itemPriority}
         data-item-providerid={this.props.providerId}
         className={className}
         onClick={this.props.onClick}

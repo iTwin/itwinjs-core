@@ -75,7 +75,7 @@ export function GroupTool(props: GroupToolProps) {
       onPointerUp={handlePointerUp}
       data-item-id={props.item.id}
       data-item-type="popup-tool-panel-item"
-      data-item-priority={`${props.item.itemPriority}`}
+      data-item-priority={props.item.itemPriority}
       data-item-providerid={props.item.providerId}
       ref={ref}
       style={props.style}

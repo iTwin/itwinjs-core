@@ -149,8 +149,8 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
       <button
         data-item-id={props.itemId}
         data-item-type="action-tool-button"
-        data-item-group-priority={`${props.groupPriority}`}
-        data-item-priority={`${props.itemPriority}`}
+        data-item-group-priority={props.groupPriority}
+        data-item-priority={props.itemPriority}
         data-item-providerid={props.providerId}
         ref={targetRef}
         onPointerDown={handlePointerDown}
