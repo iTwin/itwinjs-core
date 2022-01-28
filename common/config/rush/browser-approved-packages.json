@@ -255,6 +255,14 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@loaders.gl/core",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@loaders.gl/draco",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
     },
@@ -433,6 +441,10 @@
     {
       "name": "dotenv-expand",
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
+    },
+    {
+      "name": "draco3d",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "electron",
