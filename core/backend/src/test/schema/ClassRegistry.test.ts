@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import * as sinon from "sinon";
 import * as path from "path";
 import { BisCodeSpec, Code, DefinitionElementProps, ElementAspectProps, EntityMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import {
@@ -251,7 +252,7 @@ describe.only("Class Registry - generated classes", () => {
   it("should not override custom registered schema class implementations of collectPredecessorIds", async () => {
     const testImplPredecessorId = "TEST-INVALID-ID";
     class MyTestElementWithNavProp extends TestElementWithNavProp {
-      protected override collectPredecessorIds(predecessorIds: Id64Set) {
+      public override collectPredecessorIds(predecessorIds: Id64Set) {
         super.collectPredecessorIds(predecessorIds);
         predecessorIds.add(testImplPredecessorId);
       }
@@ -262,7 +263,9 @@ describe.only("Class Registry - generated classes", () => {
     MyTestGeneratedClasses.registerSchema();
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const ActualTestElementWithNavProp = imodel.getJsClass<typeof Element>(TestElementWithNavProp.classFullName);
+    const ActualTestElementWithNavProp = imodel.getJsClass<typeof MyTestElementWithNavProp>(TestElementWithNavProp.classFullName);
+
+    const testElementWithNavPropCollectPredecessorsSpy = sinon.spy(ActualTestElementWithNavProp.prototype, "collectPredecessorIds");
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const ActualDerivedWithNavProp = imodel.getJsClass<typeof Element>(DerivedWithNavProp.classFullName);
@@ -297,6 +300,9 @@ describe.only("Class Registry - generated classes", () => {
       [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplPredecessorId].filter((x) => x !== undefined)
     );
 
+    expect(testElementWithNavPropCollectPredecessorsSpy.called).to.be.true;
+    testElementWithNavPropCollectPredecessorsSpy.resetHistory();
+
     const derivedElemWithNavProp = new ActualDerivedWithNavProp({
       classFullName: DerivedWithNavProp.classFullName,
       navProp: {
@@ -318,6 +324,11 @@ describe.only("Class Registry - generated classes", () => {
     ).to.have.members(
       [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplPredecessorId, testEntity2Id].filter((x) => x !== undefined)
     );
+    // explicitly check we called the super function
+    // (we already know its implementation was called, because testImplPredecessorId is in the derived call's result)
+    expect(testElementWithNavPropCollectPredecessorsSpy.called).to.be.true;
+
+    sinon.restore();
   });
 });
 
