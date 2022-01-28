@@ -4,7 +4,6 @@ exports[`WidgetContent should render 1`] = `
 <div
   class="nz-widget-content"
   data-item-id="w1"
-  data-item-provider-id="stage"
   data-item-type="widget-content"
 >
   Content
@@ -15,7 +14,6 @@ exports[`WidgetContent should render w/o frontstage 1`] = `
 <div
   class="nz-widget-content"
   data-item-id="unknown"
-  data-item-provider-id="stage"
   data-item-type="widget-content"
 />
 `;
@@ -24,7 +22,6 @@ exports[`WidgetContent should render w/o widgetDef 1`] = `
 <div
   class="nz-widget-content"
   data-item-id="unknown"
-  data-item-provider-id="stage"
   data-item-type="widget-content"
 />
 `;

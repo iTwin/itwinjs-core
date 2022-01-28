@@ -31,7 +31,7 @@ export interface ToolbarButtonItemProps extends CommonProps {
   badge?: React.ReactNode;
   /** If true add a gap before button. Default to false. */
   addGroupSeparator?: boolean;
-  /** value added to DOM element as a data attribute to hold name of items provider or "stage" if defined in `FrontstageProvider` */
+  /** value added to DOM element as a data attribute to hold name of items provider. If specified in `FrontstageProvider` then this will be undefined */
   providerId?: string;
   /** value added to DOM element as a data attribute, shows 0 is undefined */
   itemPriority?: number;
@@ -55,9 +55,9 @@ export const ToolbarButtonItem = React.memo<React.FC<ToolbarButtonItemProps>>(
       <button
         data-item-id={props.itemId}
         data-item-type="action-tool-button"
-        data-item-group-priority={`${props.groupPriority??0}`}
-        data-item-priority={`${props.itemPriority??0}`}
-        data-item-providerid={props.providerId??"stage"}
+        data-item-group-priority={`${props.groupPriority}`}
+        data-item-priority={`${props.itemPriority}`}
+        data-item-providerid={props.providerId}
         disabled={props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
         onClick={props.onClick}
         onKeyDown={props.onKeyDown}
