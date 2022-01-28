@@ -680,38 +680,43 @@ describe("Learning Snippets", () => {
 
       it("uses `hasChildren` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HasChildren.Ruleset
-        // The ruleset contains a root nodes' specification that returns `bis.PhysicalModel` nodes
-        // with `hasChildren: "Always"` attribute. This makes the produced model nodes have the
-        // `hasChildren: true` attribute, but requesting children for them returns nothing.
+        // The ruleset contains a root nodes' specification that returns a single "My Root Node" node.
+        // There's also a child nodes' specification that produces children for the root node. Generally,
+        // before returning the root node, the library would have to query for children to check if the
+        // root node has them or not. However, the `hasChildren: "Always"` attribute makes that unnecessary.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
             ruleType: RuleTypes.RootNodes,
             specifications: [{
-              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-              classes: [{ schemaName: "BisCore", classNames: ["PhysicalModel"] }],
+              specType: ChildNodeSpecificationTypes.CustomNode,
+              type: "T_ROOT_NODE",
+              label: "My Root Node",
               hasChildren: "Always",
+            }],
+          }, {
+            ruleType: RuleTypes.ChildNodes,
+            condition: `ParentNode.Type="T_ROOT_NODE"`,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: [{ schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true }],
             }],
           }],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // Verify that model nodes have `hasChildren` flag, but return no child nodes
-        const classGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(classGroupingNodes).to.have.lengthOf(1).and.to.containSubset([{
+        // Verify that the custom node has `hasChildren` flag and children
+        const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        expect(rootNodes).to.have.lengthOf(1).and.to.containSubset([{
+          key: { type: "T_ROOT_NODE" },
+          hasChildren: true,
+        }]);
+
+        const modelClassGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
+        expect(modelClassGroupingNodes).to.have.lengthOf(1).and.to.containSubset([{
           key: { type: StandardNodeTypes.ECClassGroupingNode },
-          hasChildren: true,
         }]);
-
-        const modelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: classGroupingNodes[0].key });
-        expect(modelNodes).to.have.lengthOf(1).and.to.containSubset([{
-          key: { type: StandardNodeTypes.ECInstancesNode },
-          hasChildren: true,
-        }]);
-
-        const modelChildren = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: modelNodes[0].key });
-        expect(modelChildren).to.be.empty;
       });
 
       it("uses `relatedInstances` attribute", async () => {
