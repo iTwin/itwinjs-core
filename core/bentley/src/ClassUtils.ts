@@ -11,6 +11,7 @@
  */
 export namespace ClassUtils {
   /** Check if class `subclass` is a different class from `superclass` but extends from `superclass`
+   * @internal
    * @param subclass the class that may be a subclass of `superclass`
    * @param superclass the class that may be a base class of `subclass`
    * @returns whether `subclass` is a proper subclass of `superclass`
@@ -24,6 +25,7 @@ export namespace ClassUtils {
   }
 
   /** Check if class `subclass` is a different class from `superclass` but extends from `superclass`
+   * @internal
    * @param subclass the class that may be a subclass of `superclass`
    * @param superclass the class that may be a base class of `subclass`
    * @returns whether `subclass` is a proper subclass of `superclass`
