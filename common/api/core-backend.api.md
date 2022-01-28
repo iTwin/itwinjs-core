@@ -1556,6 +1556,7 @@ export class Entity {
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
     iModel: IModelDb;
+    static is(otherClass: typeof Entity): boolean;
     readonly isInstanceOfEntity: true;
     // @internal (undocumented)
     static get protectedOperations(): string[];
