@@ -33,4 +33,7 @@ export enum FrontendLoggerCategory {
    * @alpha
    */
   RealityData = "core-frontend.RealityData",
+
+  /** The logger category used for creating and displaying graphics. */
+  Render = "core-frontend.Render",
 }
