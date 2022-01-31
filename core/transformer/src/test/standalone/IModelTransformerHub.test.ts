@@ -448,7 +448,7 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetBranch2State2, changesetBranch2State0);
 
       // make changes to Branch2
-      const delta23 = [7, 8]; // insert 7 and 8
+      const delta23 = [7, 8]; // insert 7 (without any updates), and 8
       const state3 = [1, 2, -3, 4, 5, 6, 7, 8];
       maintainPhysicalObjects(branchDb2, delta23);
       assertPhysicalObjects(branchDb2, state3);
@@ -461,7 +461,6 @@ describe("IModelTransformerHub", () => {
       const state3Master = [1, 2, -3, 4, 5, 6, 7, 9];
       maintainPhysicalObjects(masterDb, delta3Master);
       assertPhysicalObjects(masterDb, state3Master);
-      assertPhysicalObjectUpdated(masterDb, 7);
       await saveAndPushChanges(masterDb, "State2 -> State3M");
       const changesetMasterState3M = masterDb.changeset.id;
       assert.notEqual(changesetMasterState3M, changesetMasterState2);
@@ -474,6 +473,7 @@ describe("IModelTransformerHub", () => {
       await branch2ToMaster.processChanges(accessToken, changesetBranch2State3);
       branch2ToMaster.dispose();
       assertPhysicalObjects(masterDb, state3Merged); // source wins conflicts
+      assertPhysicalObjectUpdated(masterDb, 7); // if it was updated, then the master version of it won
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
       await saveAndPushChanges(masterDb, "State3M -> State3");
       const changesetMasterState3 = masterDb.changeset.id;
