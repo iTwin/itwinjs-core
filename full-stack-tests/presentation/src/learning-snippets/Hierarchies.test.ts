@@ -1067,9 +1067,8 @@ describe("Learning Snippets", () => {
 
         it("uses `hideNodesInHierarchy` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.HideNodesInHierarchy.Ruleset
-          // The ruleset contains a root node specification for `bis.PhysicalModel` nodes which are grouped by class and hidden. This
-          // means class grouping nodes are displayed, but instance nodes are hidden and instead their children are displayed. The
-          // children are determined by another rule.
+          // This ruleset produces a hierarchy that consists of two custom nodes. The parent node is hidden by
+          // `hideNodesInHierarchy` attribute, thus its child appears one hierarchy level higher.
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
