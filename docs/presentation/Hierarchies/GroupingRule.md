@@ -118,6 +118,8 @@ Specification of the base ECClass to group by. If specified, allows grouping by 
 [[include:Hierarchies.Grouping.ClassGroup.BaseClass.Ruleset]]
 ```
 
+![Example of using "base class" attribute](./media/hierarchy-grouping-with-baseclass-attribute.png)
+
 #### Attribute: `createGroupForSingleItem`
 
 > **Default value:** `false`
