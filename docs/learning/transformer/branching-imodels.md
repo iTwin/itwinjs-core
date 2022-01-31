@@ -85,11 +85,15 @@ forward synchronizations.
 
 ### Synchronization conflicts
 
-*Synchronization conflicts*, where the two distinct iModels in the synchronization have conflicting changes, are
-*source authoritative* in the transformer. The default transformer always resolves conflicts with the source winning.
-An element identified within the target as being from the source will be updated to match the source.
-As such, it is up to the user of the transformer to check whether the element has been changed in both and handle any perceived conflicts.
-Some data in the iModel follows more specific rules for conflicts:
+Conflicts during a transformation are resolved in favor of the element which was modified most recently.
+Elements in transformations are considered in conflict when their [code](/bis/intro/codes) is the same
+(after remapping the [CodeSpec](/bis/intro/codes/#codespec) and [CodeScope](/learning/core-common/codes/code/#codescope-property)).
+In total, the target's properties will be updated to match the source's if the source has a later LastMod time.
+
+You can override the method [`IModelTransformer.hasElementChanged`](/reference/core-transformer/imodels/imodeltransformer/haselementchanged/)
+in your transformer implementation to use more specific logic for determining if an element should be considered changed.
+
+Some other data in the iModel follows more specific rules for conflicts:
 
 - [ECSchemas](/bis/ec/ec-schema/) are not merged automatically, they will not be inserted into the target
   if the same version already exists in it.
@@ -97,11 +101,8 @@ Some data in the iModel follows more specific rules for conflicts:
 
 <!-- (see [dynamic schemas](/docs/bis/intro/schema-customization.md#Dynamic-Schema-Minor-Change-Considerations)) -->
 
-Synchronization conflicts are not to be confused with concurrency conflicts which are handled by the
+Synchronization conflicts are not to be confused with concurrent edit conflicts which are handled by the
 [ConcurrencyControl API](/learning/backend/concurrencycontrol).
-Normally while editing an iModel, conflicts of local and remote changes are handled by the
-
-When working with iModels [`startBulkMode`](/reference/imodeljs-backend/imodels/concurrencycontrol/startbulkmode/) for
 
 ## Synchronization examples
 
