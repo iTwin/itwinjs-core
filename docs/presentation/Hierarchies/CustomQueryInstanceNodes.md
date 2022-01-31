@@ -38,9 +38,7 @@ are 2 types of supported query specifications:
 The queries used in the specifications **must** return `ECClassId` and `ECInstanceId` columns, e.g.:
 
 ```SQL
-SELECT [e].[ECClassId], [e].[ECInstanceId]
-  FROM [bis].[Element] e
- WHERE [e].[Parent].[Id] = 0x123
+SELECT e.ECClassId, e.ECInstanceId FROM bis.Element e WHERE e.Parent.Id = 0x123
 ```
 
 > **Note:** sorting and grouping happens **after** results of multiple query specifications are aggregated.
