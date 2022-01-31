@@ -42,7 +42,7 @@ Specification of ECClass which should be grouped using this rule.
 
 > **Default value:** `""`
 
-Specifies an ECExpression that allows applying grouping based on evaluation result, e.g. by some property of the parent node.
+An ECExpression that results in a boolean value. If specified, the grouping rule applies only to instance nodes that cause the condition to evaluate to `true`.
 
 ```ts
 [[include:Hierarchies.Grouping.Condition.Ruleset]]
