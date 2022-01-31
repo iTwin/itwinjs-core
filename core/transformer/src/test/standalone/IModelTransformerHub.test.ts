@@ -457,8 +457,8 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetBranch2State3, changesetBranch2State2);
 
       // make conflicting changes to master
-      const delta3Master = [{7:2}, 9]; // insert 7 and update it so it conflicts with the branch, insert 9 too
-      const state3Master = [1, 2, -3, 4, 5, 6, {7:2}, 9];
+      const delta3Master = [7, 7, 9]; // insert 7 and update it so it conflicts with the branch, insert 9 too
+      const state3Master = [1, 2, -3, 4, 5, 6, 7, 7, 9];
       maintainPhysicalObjects(masterDb, delta3Master);
       assertPhysicalObjects(masterDb, state3Master);
       assertPhysicalObjectUpdated(masterDb, 7);
@@ -470,7 +470,7 @@ describe("IModelTransformerHub", () => {
       const branch2ToMaster = new IModelTransformer(branchDb2, masterDb, {
         isReverseSynchronization: true, // provenance stored in source/branch
       });
-      const state3Merged = [1, 2, -3, 4, 5, 6, {7:2}, 8, 9];
+      const state3Merged = [1, 2, -3, 4, 5, 6, 7, 7, 8, 9];
       await branch2ToMaster.processChanges(accessToken, changesetBranch2State3);
       branch2ToMaster.dispose();
       assertPhysicalObjects(masterDb, state3Merged); // source wins conflicts
@@ -579,31 +579,15 @@ describe("IModelTransformerHub", () => {
     await briefcaseDb.pushChanges({ accessToken, description });
   }
 
-  /** this shorthand enables you to quickly demonstrate trivial deletes, updates, and inserts
-   * @example given state {};             [7] means insert an object named 7
-   * @example given state {1:5,2:4};      [1] means update object named 1 by incrementing, leading to state {1:6,2:4}
-   * @example given state {1:1,2:1,3:1};  [-2] means delete object 2
-   * @example given state {};             [{3:5}] means insert object 3 with a value of 5
-   * @example given state {3:6};          [{3:5}] means update object 3 to a value of 5
-   * @example given state {3:6};          [{-3:5}] is invalid, you can't delete and update at the same time
-   * @example given state {};             [{1:2, 5:2}] is invalid, you can only do one explicit update per explicit update object
-  */
-  type PhysicalObjectDeltaShorthand = number | Record<number, number>;
-  type ModelDelta = PhysicalObjectDeltaShorthand[];
-
   function populateMaster(iModelDb: IModelDb, numbers: number[]): void {
     SpatialCategory.insert(iModelDb, IModel.dictionaryId, "SpatialCategory", new SubCategoryAppearance());
     PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "PhysicalModel");
     maintainPhysicalObjects(iModelDb, numbers);
   }
 
-  function assertPhysicalObjects(iModelDb: IModelDb, numbers: ModelDelta): void {
+  function assertPhysicalObjects(iModelDb: IModelDb, numbers: number[]): void {
     let numPhysicalObjects = 0;
-    for (const delta of numbers) {
-      const [n, _maybeExplicitState] =
-        typeof delta === "number"
-          ? [delta, undefined]
-          : Object.entries(delta).map(([k, v]) => [+k, v])[0];
+    for (const n of numbers) {
       if (n > 0) { // negative "n" value means element was deleted
         ++numPhysicalObjects;
       }
@@ -636,28 +620,29 @@ describe("IModelTransformerHub", () => {
     });
   }
 
-  function maintainPhysicalObjects(iModelDb: IModelDb, delta: ModelDelta): void {
+  function maintainPhysicalObjects(iModelDb: IModelDb, numbers: number[]): void {
     const modelId = iModelDb.elements.queryElementIdByCode(PhysicalPartition.createCode(iModelDb, IModel.rootSubjectId, "PhysicalModel"))!;
     const categoryId = iModelDb.elements.queryElementIdByCode(SpatialCategory.createCode(iModelDb, IModel.dictionaryId, "SpatialCategory"))!;
-    for (const change of delta) {
-      maintainPhysicalObject(iModelDb, modelId, categoryId, change);
+    for (const n of numbers) {
+      maintainPhysicalObject(iModelDb, modelId, categoryId, n);
     }
   }
 
-  function maintainPhysicalObject(iModelDb: IModelDb, modelId: Id64String, categoryId: Id64String, delta: PhysicalObjectDeltaShorthand): Id64String {
-    const [n, maybeExplicitState] =
-      typeof delta === "number"
-        ? [delta, undefined]
-        : Object.entries(delta).map(([k, v]) => [+k, v])[0];
+  function maintainPhysicalObject(iModelDb: IModelDb, modelId: Id64String, categoryId: Id64String, n: number): Id64String {
     if (n > 0) { // positive "n" value means insert or update
-      let physicalObjectId = getPhysicalObjectId(iModelDb, n);
-      const isUpdate = Id64.isValidId64(physicalObjectId);
-      if (!isUpdate) { // if element does not exist, insert it
+      const physicalObjectId = getPhysicalObjectId(iModelDb, n);
+      if (Id64.isValidId64(physicalObjectId)) { // if element exists, update it
+        const physicalObject = iModelDb.elements.getElement(physicalObjectId, PhysicalObject);
+        const numTimesUpdated: number = physicalObject.jsonProperties?.updated ?? 0;
+        physicalObject.jsonProperties.updated = 1 + numTimesUpdated;
+        physicalObject.update();
+        return physicalObjectId;
+      } else { // if element does not exist, insert it
         const physicalObjectProps: PhysicalElementProps = {
           classFullName: PhysicalObject.classFullName,
           model: modelId,
           category: categoryId,
-          code: new Code({ scope: IModelDb.rootSubjectId, spec: IModelDb.rootSubjectId, value: n.toString() }),
+          code: Code.createEmpty(),
           userLabel: n.toString(),
           geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
           placement: {
@@ -665,16 +650,8 @@ describe("IModelTransformerHub", () => {
             angles: YawPitchRollAngles.createDegrees(0, 0, 0),
           },
         };
-        physicalObjectId = iModelDb.elements.insertElement(physicalObjectProps);
+        return iModelDb.elements.insertElement(physicalObjectProps);
       }
-      // if element is being updated (can be implicit or explicit)
-      if (isUpdate || maybeExplicitState) {
-        const physicalObject = iModelDb.elements.getElement(physicalObjectId, PhysicalObject);
-        const numTimesUpdated = physicalObject.jsonProperties?.updated ?? 0;
-        physicalObject.jsonProperties.updated = maybeExplicitState ?? 1 + numTimesUpdated;
-        physicalObject.update();
-      }
-      return physicalObjectId;
     } else { // negative "n" value means delete
       const physicalObjectId = getPhysicalObjectId(iModelDb, -n);
       iModelDb.elements.deleteElement(physicalObjectId);
