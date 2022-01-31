@@ -458,7 +458,7 @@ describe("IModelTransformerHub", () => {
 
       // make conflicting changes to master
       const delta3Master = [7, 7, 9]; // insert 7 and update it so it conflicts with the branch, insert 9 too
-      const state3Master = [1, 2, -3, 4, 5, 6, 7, 7, 9];
+      const state3Master = [1, 2, -3, 4, 5, 6, 7, 9];
       maintainPhysicalObjects(masterDb, delta3Master);
       assertPhysicalObjects(masterDb, state3Master);
       assertPhysicalObjectUpdated(masterDb, 7);
@@ -470,7 +470,7 @@ describe("IModelTransformerHub", () => {
       const branch2ToMaster = new IModelTransformer(branchDb2, masterDb, {
         isReverseSynchronization: true, // provenance stored in source/branch
       });
-      const state3Merged = [1, 2, -3, 4, 5, 6, 7, 7, 8, 9];
+      const state3Merged = [1, 2, -3, 4, 5, 6, 7, 8, 9];
       await branch2ToMaster.processChanges(accessToken, changesetBranch2State3);
       branch2ToMaster.dispose();
       assertPhysicalObjects(masterDb, state3Merged); // source wins conflicts
@@ -483,7 +483,7 @@ describe("IModelTransformerHub", () => {
       // make change directly on Master
       const delta34 = [6, -7]; // update 6, delete 7
       const state4 = [1, 2, -3, 4, 5, 6, -7, 8, 9];
-      maintainPhysicalObjects(masterDb, delta34);
+      maintainPhysicalObjects(masterDb, delta34); // 7 wasn't deleted
       assertPhysicalObjects(masterDb, state4);
       await saveAndPushChanges(masterDb, "State3 -> State4");
       const changesetMasterState4 = masterDb.changeset.id;
@@ -500,7 +500,7 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetBranch1State4, changesetBranch1State2);
 
       const masterDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
-      assert.equal(masterDbChangesets.length, 3);
+      assert.equal(masterDbChangesets.length, 4);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeset of masterDbChangesets) {
         assert.isDefined(masterDbChangeset.id);
@@ -642,7 +642,7 @@ describe("IModelTransformerHub", () => {
           classFullName: PhysicalObject.classFullName,
           model: modelId,
           category: categoryId,
-          code: Code.createEmpty(),
+          code: new Code({ spec: IModelDb.rootSubjectId, scope: IModelDb.rootSubjectId, value: n.toString() }),
           userLabel: n.toString(),
           geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
           placement: {
