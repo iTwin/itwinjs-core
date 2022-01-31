@@ -208,8 +208,7 @@ Ranges into which the grouping values are divided. Instances are grouped by valu
 | `imageId`   | No        | `string` | [`imageId` of the property group specification](#attribute-imageid) | Identifier of an image to use for the grouping node.                    |
 | `label`     | No        | `string` | `"{from value} - {to value}"`                                       | Grouping node's label. May be [localized](../Advanced/Localization.md). |
 
-Both `fromValue` and `toValue` are inclusive, but a single value never falls into more than 2 ranges - the first range that fits the value is assigned to it and no other
-range is used, even if it matches the value. The ranges are evaluated at the order of their definition.
+Range [`fromValue`, `toValue`] is inclusive on both sides. If a value falls into more than one range, the first listed range that contains the value is chosen.
 
 ```ts
 [[include:Hierarchies.Grouping.PropertyGroup.Ranges.Ruleset]]
