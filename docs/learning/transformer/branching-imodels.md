@@ -4,18 +4,20 @@
 
 It can be useful in some applications to take iModels and their linear concept of history, and introduce the concept of
 *branching*, where an iModel diverges into two separate iModels after a changeset, allowing each to have new distinct changes and
-a distinct history. Typically, one of them is referred to as the *master iModel*, and the other the *branch iModel*,
+a distinct history. Typically, one of them is referred to as the *master iModel*, and the other as the *branch iModel*,
 with the master iModel being the one that existed before the branch was created from it.
 Importantly, these branches can often be used to make updates to one branch iModel while the master iModel
-can receive updates from other contexts. Usually the intention is to move the changes in the branch iModel's history back into
-the master iModel. It can also be useful to update a branch with changes that the master received since their divergence.
+can receive updates from other contexts. Usually the intention is to move the changes in the branch's history back into
+the master. It can also be useful to update a branch with changes that the master received since their divergence,
+to keep them synchronized.
 
 ## Provenance
 
 *Provenance* is the tracking of where an entity originated from in an iModel. All connectors
 store provenance as they connect entities from some source format into an iModel. The [IModelTransformer]($transformer) will
-also store provenance as it makes changes to a target; provenance will be used during synchronizations to identify which element
-in the branch came from the master in order to merge and append changes.
+also store provenance as it makes changes to a target; provenance will be used during
+[synchronizations](#synchronization-implementing-branching) to identify which elements
+in the branch correspond to those in the master, in order to find conflicts in changes.
 
 The [IModelTransformer]($transformer) has several options defined in the [IModelTransformOptions]($transformer) type
 that configure what provenance is stored, and particular configurations are required for performing each branching operation
@@ -45,13 +47,13 @@ the forward synchronizations from master and one for reverse synchronizations fr
 ### Provenance, element Ids, and federation guids
 
 When correlating elements between branches, it is important to know how to tell which elements correspond to each other.
-Element Ids are [local to an iModel briefcase](/learning/common/id64), and transformations do not preserve them. However, federation guids
+Element Ids are [local to an iModel](/learning/common/id64), and transformations do not preserve them. However, federation guids
 (globally-unique-identifiers) are preserved. Neither are a substitute for provenance.
 Only provenance can correctly correlate all elements between branches and must be used for any comparisons between them unless restrictions are
 used.
 
 Generally, it is not possible to map elements between iModels without provenance, because there is not always a one-to-one relationship of
-elements between iModels. It is possible, for example, for a transformation to involve operations such as "splitting" an existing element
+elements between iModels. It is possible, for example, that a transformation involves operations such as "splitting" an existing element
 into multiple different elements. In that case, federation guids and element Ids cannot be used to correlate the new multiple elements to the
 original one since they must be unique so it is impossible for the multiple elements to share an Id.
 
@@ -60,7 +62,7 @@ original one since they must be unique so it is impossible for the multiple elem
 The process of transferring change history between iModels is called *synchronization*, and is implemented by the
 [IModelTransformer]($transformer) to support branching concepts.
 
-- *First Synchronization* is the initialization of a new iModel as a branch iModel for some existing "master" iModel.
+- *First Synchronization* is the initialization of a new iModel as a branch iModel for some existing master iModel.
   The initialization can filter the master iModel arbitrarily using other transformation techniques.
 - *Synchronization*, or *Forward Synchronization*, is the transfer of iModel changes from a master iModel to an existing branch iModel.
 - *Reverse Synchronization* is the transfer of iModel changes from a branch iModel back to the master iModel from which it was created.
@@ -86,19 +88,16 @@ forward synchronizations.
 ### Synchronization conflicts
 
 Conflicts during a transformation are resolved in favor of the element which was modified most recently, as stored in the `LastMod` property
-of an element.  Elements in transformations are considered in conflict when their [code](/bis/intro/codes) is the same
-(after remapping the [CodeSpec](/bis/intro/codes/#codespec) and [CodeScope](/learning/core-common/codes/code/#codescope-property)).
+of an element.  Elements in transformations are considered in conflict when their [code](/bis/intro/codes) is the same.
 
-You can override the method [`IModelTransformer.hasElementChanged`](/reference/core-transformer/imodels/imodeltransformer/haselementchanged/)
+You can override the method [`IModelTransformer.hasElementChanged`]($transformer)
 in your transformer implementation to use more specific logic for determining if an element should be considered changed.
 
 Some other data in the iModel follows more specific rules for conflicts:
 
-- [ECSchemas](/bis/ec/ec-schema/) are not merged automatically, they will not be inserted into the target
-  if the same version already exists in it.
-- File properties<!--missing documentation--> are not carried over through transformations
-
+- [ECSchemas](/bis/ec/ec-schema/) will not be inserted into the target if the same version already exists in it
 <!-- (see [dynamic schemas](/docs/bis/intro/schema-customization.md#Dynamic-Schema-Minor-Change-Considerations)) -->
+- File properties<!--missing documentation--> are not carried over through transformations
 
 Synchronization conflicts are not to be confused with concurrent edit conflicts which are handled by the
 [ConcurrencyControl API](/learning/backend/concurrencycontrol).
