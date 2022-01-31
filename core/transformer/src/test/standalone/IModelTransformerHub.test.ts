@@ -330,7 +330,7 @@ describe("IModelTransformerHub", () => {
     }
   });
 
-  it.only("should merge changes made on a branch back to master", async () => {
+  it("should merge changes made on a branch back to master", async () => {
     // create and push master IModel
     const masterIModelName = "Master";
     const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
