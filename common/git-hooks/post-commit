@@ -17,7 +17,7 @@ if $(node ./common/scripts/copyright-linter.js) ; then
   if [ "$(git diff --name-only HEAD)" != "" ]; then
   # the linter succeeded and changes were made, add them to the previous commit
   # may be empty if all previous changes were to the linter headers
-  git commit -a --amend --allow-empty
+  git commit -a -q --amend --allow-empty
   fi
 else
   linterFailed=1

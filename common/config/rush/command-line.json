@@ -96,7 +96,7 @@
       "allowWarningsInSuccessfulBuild": true
     },
     {
-      "name": "copyright:changed",
+      "name": "copyright",
       "commandKind": "global",
       "summary": "Run copyright linter on modified files",
       "description": "Manually runs the new copyright linter on all files changed since last commit.",
