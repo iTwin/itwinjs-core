@@ -33,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@itwin/imodels-access-backend": "~0.3.0",
-    "@itwin/imodels-access-frontend": "~0.3.0",
-    "@itwin/imodels-client-authoring": "~0.3.0",
-    "@itwin/imodels-client-management": "~0.3.0",
+    "@itwin/imodels-access-backend": "^1.0.1",
+    "@itwin/imodels-access-frontend": "^1.0.1",
+    "@itwin/imodels-client-authoring": "^1.0.1",
+    "@itwin/imodels-client-management": "^1.0.1",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -60,9 +60,9 @@
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
     "@itwin/express-server": "workspace:*",
-    "@itwin/imodels-access-backend": "~0.3.0",
+    "@itwin/imodels-access-backend": "^1.0.1",
     "@itwin/presentation-backend": "workspace:*",
-    "@itwin/projects-client": "^0.4.0",
+    "@itwin/projects-client": "^0.6.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
