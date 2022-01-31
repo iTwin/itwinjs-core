@@ -8,7 +8,7 @@ It allows to define these types of groupings:
 
 - Group by base class.
 - Group by any property of the class by a common value or a range of values.
-- Group multiple instances with the same label in to one ECInstance node. This can be used in cases when these instances represent the same object for the user.
+- Group multiple instances with the same label into one ECInstance node. This can be used in cases when these instances represent the same object for the user.
 
 The rule works in conjunction with other grouping options available in [hierarchy specifications](./ChildNodeRule.md#attribute-specifications): `groupByClass` and `groupByLabel`. All grouping rules are
 applied in this priority:
