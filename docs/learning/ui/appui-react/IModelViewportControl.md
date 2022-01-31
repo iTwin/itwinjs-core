@@ -11,8 +11,8 @@ In addition to connecting to the iModelConnection property from the AppUi Redux 
 * featureOptions: A map of options to set the state of optional features in the view. For example, to enable automatic display of a timeline component for models containing a schedule script. This is the property you can use to turn on the animation timelines in the [DefaultViewOverlay]($appui-react).
 * bgColor: If there is no ViewState or IModelConnection defined for the Viewport, defining this optional prop allows you to set the background color.
 * alwaysUseSuppliedViewState: Always use the state passed in via the viewState property above.
-* supplyViewOverlay: A React node or a function to supply a react node to display as an overlay for the viewport.
-* deferNodeInitialization:Don't initialize the React node until the first React node is needed.
+* supplyViewOverlay: A ReactNode or a function to supply a ReactNode to display as an overlay for the viewport.
+* deferNodeInitialization:Don't initialize the ReactNode until the first ReactNode is needed.
 
 ### DefaultViewOverlay
 
