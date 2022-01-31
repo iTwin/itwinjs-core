@@ -76,7 +76,7 @@ Controls the order in which specifications are handled — specification with hi
 
 > **Default value:** `false`
 
-Tells the library that the rule should only be handled if no other grouping rule was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+Specifies whether this rule should be ignored if another rule was handled before as determined by rule priorities. This provides a mechanism for defining a fallback rule.
 
 ```ts
 [[include:Hierarchies.OnlyIfNotHandled.Ruleset]]
