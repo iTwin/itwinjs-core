@@ -680,10 +680,9 @@ describe("Learning Snippets", () => {
 
       it("uses `hasChildren` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HasChildren.Ruleset
-        // The ruleset contains a root nodes' specification that returns a single "My Root Node" node.
-        // There's also a child nodes' specification that produces children for the root node. Generally,
-        // before returning the root node, the library would have to query for children to check if the
-        // root node has them or not. However, the `hasChildren: "Always"` attribute makes that unnecessary.
+        // This ruleset produces a hierarchy of a single root node that hosts a list of `Model` instances. Assuming all
+        // iModels contain at least one model, the result of this ruleset can be computed quicker by setting
+        // `hasChildren` attribute to `"Always"`.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
