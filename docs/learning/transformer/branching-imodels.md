@@ -85,10 +85,9 @@ forward synchronizations.
 
 ### Synchronization conflicts
 
-Conflicts during a transformation are resolved in favor of the element which was modified most recently.
-Elements in transformations are considered in conflict when their [code](/bis/intro/codes) is the same
+Conflicts during a transformation are resolved in favor of the element which was modified most recently, as stored in the `LastMod` property
+of an element.  Elements in transformations are considered in conflict when their [code](/bis/intro/codes) is the same
 (after remapping the [CodeSpec](/bis/intro/codes/#codespec) and [CodeScope](/learning/core-common/codes/code/#codescope-property)).
-In total, the target's properties will be updated to match the source's if the source has a later LastMod time.
 
 You can override the method [`IModelTransformer.hasElementChanged`](/reference/core-transformer/imodels/imodeltransformer/haselementchanged/)
 in your transformer implementation to use more specific logic for determining if an element should be considered changed.
