@@ -64,7 +64,7 @@ A list of ECSchema requirements that need to be met for the rule to be used. See
 
 > **Default value:** `1000`
 
-Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
+Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
 
 ```ts
 [[include:Hierarchies.Priority.Ruleset]]
