@@ -41,8 +41,7 @@ Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecif
 
 > **Default value:** `[]`
 
-Specifications for classes whose instances should be omitted from the result set. Specifying an empty array or classes that do not derive from classes in
-the [`classes` attribute](#attribute-classes) makes this attribute a no-op.
+Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that prevents specified ECClasses and subclasses from being selected by [`classes` attribute](#attribute-classes).
 
 ```ts
 [[include:Hierarchies.InstanceNodesOfSpecificClassesSpecification.ExcludedClasses.Ruleset]]
