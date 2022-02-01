@@ -2,10 +2,7 @@
 
 > TypeScript type: [RelatedInstanceNodesSpecification]($presentation-common).
 
-> **Precondition:** can be used only if parent node is ECInstance node. If there is no immediate parent instance node, the rules engine walks
-> up the hierarchy until it finds one. If that fails, this specification has no effect.
-
-Returns nodes for instances related to parent instance node.
+Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined by traversing the hierarchy upwards until an ECInstance node is encountered.
 
 ## Attributes
 
