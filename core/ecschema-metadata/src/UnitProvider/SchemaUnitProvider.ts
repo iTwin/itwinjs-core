@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
 import { UnitConversion, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { SchemaContext } from "../Context";
 import { SchemaItem } from "../Metadata/SchemaItem";
