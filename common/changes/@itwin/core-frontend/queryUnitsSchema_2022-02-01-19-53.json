@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "ui-test-app now utilizes the SchemaUnitProvider class from @itwin/ecschema-metadata to retrieve unit definitions.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
