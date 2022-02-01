@@ -2018,14 +2018,15 @@ class MRTCompositor extends Compositor {
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
-    // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
-    this._readPickDataFromPingPong = true;
-
     const needComposite = CompositeFlags.None !== compositeFlags;
     const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
-
     const fbStack = System.instance.frameBufferStack;
-    fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, this.useMsBuffers, () => {
+
+    // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels() or ambient occlusion).
+    let fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
+    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
+    fbStack.execute(fbo, true, useMsBuffers, () => {
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
       if (needAO || renderForReadPixels) {
@@ -2034,10 +2035,8 @@ class MRTCompositor extends Compositor {
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
         this._primitiveDrawState = PrimitiveDrawState.Both;
 
-        if (this.useMsBuffers) {
-          const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+        if (useMsBuffers)
           fbo.blitMsBuffersToTextures(true);
-        }
       }
     });
 
@@ -2045,17 +2044,16 @@ class MRTCompositor extends Compositor {
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
     if (!renderForReadPixels) {
-      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, this.useMsBuffers, () => {
+      fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
+      fbStack.execute(fbo, true, useMsBuffers, () => {
         if (needAO)
           this._primitiveDrawState = PrimitiveDrawState.NonPickable;
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this._primitiveDrawState = PrimitiveDrawState.Both;
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
-      if (this.useMsBuffers) {
-        const fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
+      if (useMsBuffers)
         fbo.blitMsBuffersToTextures(needComposite);
-      }
     }
 
     if (needAO)
@@ -2063,8 +2061,10 @@ class MRTCompositor extends Compositor {
   }
 
   protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
-    this._readPickDataFromPingPong = true;
-    System.instance.frameBufferStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, RenderPass.OpaqueLayers === pass && this.useMsBuffers, () => {
+    const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const useMsBuffers = RenderPass.OpaqueLayers === pass && fbo.isMultisampled && this.useMsBuffers;
+    this._readPickDataFromPingPong = !useMsBuffers;
+    System.instance.frameBufferStack.execute(fbo, true, useMsBuffers, () => {
       this.drawPass(commands, pass, true);
     });
 
@@ -2116,7 +2116,7 @@ class MRTCompositor extends Compositor {
 
   protected pingPong() {
     if (this._fbos.opaqueAll!.isMultisampled && this.useMsBuffers) {
-      // If we are multisampling we can just blit the FeatureId and DepthAndOrder buffers to their textures.
+      // If we are multisampling we can just blit the FeatureId and DepthAndOrder MS buffers to their textures.
       this._fbos.opaqueAll!.blitMsBuffersToTextures(false, 1);
       this._fbos.opaqueAll!.blitMsBuffersToTextures(false, 2);
     } else {
