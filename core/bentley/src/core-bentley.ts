@@ -8,6 +8,7 @@ export * from "./AsyncMutex";
 export * from "./BeEvent";
 export * from "./BentleyError";
 export * from "./BentleyLoggerCategory";
+export * from "./ErrorCategory";
 export * from "./BeSQLite";
 export * from "./ByteStream";
 export * from "./Compare";
