@@ -29,8 +29,7 @@ Returns nodes for instances of specific ECClasses.
 
 ### Attribute: `classes`
 
-Specifications for classes whose instances should be returned. Either a single or an array of specifications may be specified for this attribute. Specifying an empty array
-makes the whole specification a no-op.
+Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that specify which ECClasses need to be selected to form the result.
 
 ```ts
 [[include:Hierarchies.InstanceNodesOfSpecificClassesSpecification.Classes.Ruleset]]
