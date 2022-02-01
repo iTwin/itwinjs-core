@@ -28,6 +28,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
     scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
 
   });
+  await authClient.signInSilent();
   iModelHost.authorizationClient = authClient;
 
   await ElectronHost.startup({ electronHost, iModelHost });
