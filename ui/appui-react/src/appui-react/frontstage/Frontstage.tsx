@@ -175,6 +175,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
+    // istanbul ignore else
     if (this._isMounted)
       this.setState({ isUiVisible: args.visible });
   };
@@ -558,6 +559,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   public override componentDidUpdate(prevProps: WidgetContentRendererProps) {
+    // istanbul ignore next
     if (!this._isMounted)
       return;
     if (this.props.isHidden !== prevProps.isHidden) {
@@ -613,7 +615,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   };
 
   private _handleToolActivatedEvent = () => {
-    if (this.props.toolSettingsMode === undefined || !this._isMounted )
+    if (this.props.toolSettingsMode === undefined || !this._isMounted)
       return;
     // force update when tool is activated
     this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));

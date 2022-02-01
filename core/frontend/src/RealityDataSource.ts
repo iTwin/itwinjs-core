@@ -5,12 +5,12 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { getJson, request, RequestOptions } from "@bentley/itwin-client";
+import { request, RequestOptions } from "./request/Request";
 import { AccessToken, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import { IModelError, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
-import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAccessTokenAndEndpointUrl } from "./tile/internal";
+import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumAssetUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
 
 /**
  * This interface provide methods used to access a reality data from a reality data provider
@@ -68,7 +68,7 @@ export namespace RealityDataSource {
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
       const provider = RealityDataProvider.CesiumIonAsset;
       // Keep url hidden and use a dummy id
-      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: "OSMBuildings" };
+      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: CesiumIonAssetProvider.osmBuildingId };
       return cesiumIonAssetKey;
     }
 
@@ -97,10 +97,10 @@ export namespace RealityDataSource {
   /** @alpha - OrbitGtBlobProps is alpha */
   export function createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
     const format = inputFormat ? inputFormat : RealityDataFormat.OPC;
-    if(orbitGtBlob.blobFileName && orbitGtBlob.blobFileName.toLowerCase().startsWith("http")) {
-      return RealityDataSource.createKeyFromBlobUrl(orbitGtBlob.blobFileName,inputProvider,format);
+    if (orbitGtBlob.blobFileName && orbitGtBlob.blobFileName.toLowerCase().startsWith("http")) {
+      return RealityDataSource.createKeyFromBlobUrl(orbitGtBlob.blobFileName, inputProvider, format);
     } else if (orbitGtBlob.rdsUrl) {
-      return RealityDataSource.createKeyFromUrl(orbitGtBlob.rdsUrl,inputProvider,format);
+      return RealityDataSource.createKeyFromUrl(orbitGtBlob.rdsUrl, inputProvider, format);
     }
     const provider = inputProvider ? inputProvider : RealityDataProvider.OrbitGtBlob;
     const id = `${orbitGtBlob.accountName}:${orbitGtBlob.containerName}:${orbitGtBlob.blobFileName}:?${orbitGtBlob.sasToken}`;
@@ -112,7 +112,7 @@ export namespace RealityDataSource {
       return undefined;
     const splitIds = rdSourceKey.id.split(":");
     const sasTokenIndex = rdSourceKey.id.indexOf(":?");
-    const sasToken = rdSourceKey.id.substr(sasTokenIndex+2);
+    const sasToken = rdSourceKey.id.substr(sasTokenIndex + 2);
     const orbitGtBlob: OrbitGtBlobProps = {
       accountName: splitIds[0],
       containerName: splitIds[1],
@@ -120,6 +120,11 @@ export namespace RealityDataSource {
       sasToken,
     };
     return orbitGtBlob;
+  }
+  /** @internal - Is used by "fdt attach cesium asset" keyin*/
+  export function createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey {
+    const id = getCesiumAssetUrl(osmAssetId,requestKey);
+    return {provider: RealityDataProvider.CesiumIonAsset, format: RealityDataFormat.ThreeDTile, id};
   }
   /** Return an instance of a RealityDataSource from a source key.
    * There will aways be only one reality data RealityDataSource for a corresponding reality data source key.
@@ -138,7 +143,6 @@ export namespace RealityDataSource {
 * @beta
 */
 class RealityDataSourceImpl implements RealityDataSource {
-  private static _realityDataSources = new Map<string, RealityDataSource>();
   public readonly key: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
   private _tilesetUrl: string | undefined;
@@ -154,7 +158,7 @@ class RealityDataSourceImpl implements RealityDataSource {
    */
   protected constructor(props: RealityDataSourceProps) {
     this.key = props.sourceKey;
-    this._isUrlResolved=false;
+    this._isUrlResolved = false;
   }
 
   /** Construct a new reality data source.
@@ -167,7 +171,7 @@ class RealityDataSourceImpl implements RealityDataSource {
    * Create an instance of this class from a source key and iTwin context/
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    const rdSource = new RealityDataSourceImpl({sourceKey});
+    const rdSource = new RealityDataSourceImpl({ sourceKey });
     let tilesetUrl: string | undefined;
     try {
       await rdSource.queryRealityData(iTwinId);
@@ -175,22 +179,12 @@ class RealityDataSourceImpl implements RealityDataSource {
     } catch (e) {
     }
 
-    return (tilesetUrl !== undefined) ? rdSource: undefined;
+    return (tilesetUrl !== undefined) ? rdSource : undefined;
   }
   /** Return an instance of a RealityDataSource from a source key.
-   * There will aways be only one reality data connection for a corresponding reality data source key.
    */
   public static async fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    // search to see if it was already created
-    const rdSourceKeyString = RealityDataSourceKey.convertToString(rdSourceKey);
-    let rdSource = RealityDataSourceImpl._realityDataSources.get(rdSourceKeyString);
-    if (rdSource)
-      return rdSource;
-    // If not already in our list, create and add it to our list before returing it.
-    rdSource = await RealityDataSourceImpl.createFromKey(rdSourceKey,  iTwinId);
-    if (rdSource)
-      RealityDataSourceImpl._realityDataSources.set(rdSourceKeyString,rdSource);
-    return rdSource;
+    return RealityDataSourceImpl.createFromKey(rdSourceKey, iTwinId);
   }
   public get isContextShare(): boolean {
     return (this.key.provider === RealityDataProvider.ContextShare);
@@ -271,9 +265,13 @@ class RealityDataSourceImpl implements RealityDataSource {
   public async getRealityDataTileJson(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
     const url = await realityData.getBlobUrl(accessToken, name);
 
-    const data = await getJson(url.toString());
-    return data;
+    const data = await request(url.toString(), {
+      method: "GET",
+      responseType: "json",
+    });
+    return data.body;
   }
+
   /**
    * This method returns the URL to access the actual 3d tiles from the service provider.
    * @returns string containing the URL to reality data.
@@ -289,13 +287,25 @@ class RealityDataSourceImpl implements RealityDataSource {
         const resolvedITwinId = iTwinId ? iTwinId : rdSourceKey.iTwinId;
 
         this._tilesetUrl = await IModelApp.realityDataAccess.getRealityDataUrl(resolvedITwinId, rdSourceKey.id);
-        this._isUrlResolved=true;
+        this._isUrlResolved = true;
       } catch (e) {
         const errMsg = `Error getting URL from ContextShare using realityDataId=${rdSourceKey.id} and iTwinId=${iTwinId}`;
         Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
       }
-    } else if (this.key.provider === RealityDataProvider.TilesetUrl || this.key.provider === RealityDataProvider.CesiumIonAsset) {
+    } else if (this.key.provider === RealityDataProvider.TilesetUrl) {
       this._tilesetUrl = this.key.id;
+    } else if (this.key.provider === RealityDataProvider.CesiumIonAsset) {
+      this._tilesetUrl = this.key.id;
+      if (this.key.id === CesiumIonAssetProvider.osmBuildingId) {
+        this._tilesetUrl = getCesiumOSMBuildingsUrl();
+        this._isUrlResolved = true;
+      } else {
+        const parsedId = CesiumIonAssetProvider.parseCesiumUrl(this.key.id);
+        if (parsedId) {
+          this._tilesetUrl = getCesiumAssetUrl(parsedId.id, parsedId.key);
+          this._isUrlResolved = true;
+        }
+      }
     }
     return this._tilesetUrl;
   }
@@ -357,7 +367,7 @@ class RealityDataSourceImpl implements RealityDataSource {
     const useRds = this.isContextShare && token !== undefined;
     const tileUrl = this._baseUrl + name;
 
-    if (useRds  && this.realityData) {
+    if (useRds && this.realityData) {
       return this.getRealityDataTileContent(token, tileUrl, this.realityData);
     }
 

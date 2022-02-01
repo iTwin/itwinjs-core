@@ -9,7 +9,8 @@
 import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@itwin/core-common";
-import { request, RequestOptions } from "@bentley/itwin-client";
+import { MessageSeverity } from "@itwin/appui-abstract";
+import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -67,32 +68,46 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey
   }
 }
 
+let notifiedTerrainError = false;
+
+// Notify - once per session - of failure to obtain Cesium terrain provider.
+function notifyTerrainError(detailedDescription?: string): void {
+  if (notifiedTerrainError)
+    return;
+
+  notifiedTerrainError = true;
+  IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`BackgroundMap.CannotObtainTerrain`), detailedDescription);
+}
+
 /** @internal */
 export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
-  let layers;
-
   const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
-  if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url)
+  if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
+    notifyTerrainError(IModelApp.localization.getLocalizedString(`BackgroundMap.MissingCesiumToken`));
     return undefined;
+  }
 
+  let layers;
   try {
     const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
     const layerResponse = await request(layerUrl, layerRequestOptions);
     if (undefined === layerResponse) {
-      assert(false);
+      notifyTerrainError();
       return undefined;
     }
-    layers = layerResponse.body;
 
+    layers = layerResponse.body;
   } catch (error) {
-    assert(false);
+    notifyTerrainError();
     return undefined;
   }
+
   if (undefined === layers.tiles || undefined === layers.version) {
-    assert(false);
+    notifyTerrainError();
     return undefined;
   }
+
   const tilingScheme = new GeographicTilingScheme();
   let tileAvailability;
   if (undefined !== layers.available) {
@@ -199,7 +214,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     assert(data instanceof Uint8Array);
     assert(tile instanceof MapTile);
     const blob = data;
-    const streamBuffer = new ByteStream(blob.buffer);
+    const streamBuffer = ByteStream.fromUint8Array(blob);
     const center = nextPoint3d64FromByteStream(streamBuffer);
     const quadId = QuadId.createFromContentId(tile.contentId);
     const skirtHeight = this.getLevelMaximumGeometricError(quadId.level + 1) * 10.0;  // Add 1 to level to restore height calculation to before the quadId level was from root. (4326 unification)

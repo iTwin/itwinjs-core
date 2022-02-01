@@ -80,6 +80,7 @@ public;lowerBound
 public;LRUCache
 public;LRUDictionary
 public;LRUMap
+public;MarkRequired
 public;Mutable
 public;MutableCompressedId64Set 
 public;NonFunctionPropertiesOf
@@ -88,6 +89,7 @@ public;ObservableSet
 beta;OneAtATimeAction
 public;OnUnexpectedError = (error: any) => void
 public;OpenMode
+public;Optional
 public;OrderedComparator
 public;OrderedId64Array 
 public;OrderedId64Iterable = Iterable

@@ -51,11 +51,11 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
   protected override get wantAccuSnap(): boolean { return true; }
   protected override get wantDynamics(): boolean { return true; }
 
-  protected get allowJoin(): boolean { return this.isControlDown; } // These could be tool settings...
+  protected get allowJoin(): boolean { return this.isControlDown; }
   protected get allowClosure(): boolean { return this.isControlDown; }
   protected get allowSimplify(): boolean { return true; }
 
-  protected get wantSmartRotation(): boolean { return this.isContinueExistingPath; }
+  protected get wantSmartRotation(): boolean { return this.isContinueExistingPath || this.isControlDown; }
   protected get wantPickableDynamics(): boolean { return false; }
   protected get wantJoin(): boolean { return this.allowJoin; }
   protected get wantClosure(): boolean { return this.isContinueExistingPath && this.allowClosure; }
@@ -1193,72 +1193,34 @@ export class CreateArcTool extends CreateOrContinuePathTool {
 
     const syncData: DialogPropertySyncItem[] = [];
 
-    if (!this.useRadius) {
-      this.radiusProperty.displayValue = (this.radiusProperty.description as LengthDescription).format(this.radius);
-      this.radiusProperty.isDisabled = !this.useRadius;
+    if (!this.useRadius)
       syncData.push(this.radiusProperty.syncItem);
-    }
 
-    if (!this.useSweep) {
-      this.sweepProperty.displayValue = (this.sweepProperty.description as AngleDescription).format(this.sweep);
-      this.sweepProperty.isDisabled = !this.useSweep;
+    if (!this.useSweep)
       syncData.push(this.sweepProperty.syncItem);
-    }
 
     if (0 !== syncData.length)
       this.syncToolSettingsProperties(syncData);
   }
 
-  private syncRadiusState(): void {
-    this.radiusProperty.displayValue = (this.radiusProperty.description as LengthDescription).format(this.radius);
-    this.radiusProperty.isDisabled = !this.useRadius;
-    this.syncToolSettingsProperties([this.radiusProperty.syncItem]);
-  }
-
-  private syncSweepState(): void {
-    this.sweepProperty.displayValue = (this.sweepProperty.description as AngleDescription).format(this.sweep);
-    this.sweepProperty.isDisabled = !this.useSweep;
-    this.syncToolSettingsProperties([this.sweepProperty.syncItem]);
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    if (property === this.useRadiusProperty)
+      return this.radiusProperty;
+    else if (property === this.useSweepProperty)
+      return this.sweepProperty;
+    return undefined;
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (this.methodProperty.name === updatedValue.propertyName) {
-      this.methodProperty.value = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.methodProperty.item);
-      await this.onReinitialize();
-      return true;
-    } else if (updatedValue.propertyName === this.useRadiusProperty.name) {
-      this.useRadius = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useRadiusProperty.item);
-      this.syncRadiusState();
-      return true;
-    } else if (updatedValue.propertyName === this.useSweepProperty.name) {
-      this.useSweep = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useSweepProperty.item);
-      this.syncSweepState();
-      return true;
-    } else if (updatedValue.propertyName === this.radiusProperty.name) {
-      if (!updatedValue.value.value) {
-        this.syncRadiusState(); // force UI to redisplay last valid value
-        return false;
-      }
-      this.radius = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.radiusProperty.item);
-      // If radius is changed when creating arc by start/center after center has been defined, back up a step to defined a new center point...
-      if (ArcMethod.StartCenter === this.method && this.useRadius && 2 === this.accepted.length)
-        await this.onUndoPreviousStep();
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
 
-      return true;
-    } else if (updatedValue.propertyName === this.sweepProperty.name) {
-      if (!updatedValue.value.value) {
-        this.syncSweepState(); // force UI to redisplay last valid value
-        return false;
-      }
-      this.sweep = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.sweepProperty.item);
-      return true;
-    }
-    return false;
+    if (this.methodProperty.name === updatedValue.propertyName)
+      await this.onReinitialize();
+    else if (updatedValue.propertyName === this.radiusProperty.name && ArcMethod.StartCenter === this.method && this.useRadius && 2 === this.accepted.length)
+      await this.onUndoPreviousStep(); // If radius is changed when creating arc by start/center after center has been defined, back up a step to defined a new center point...
+
+    return true;
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
@@ -1288,28 +1250,10 @@ export class CreateArcTool extends CreateOrContinuePathTool {
       return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
-    const methodValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
-    if (undefined !== methodValue)
-      this.methodProperty.dialogItemValue = methodValue;
-
-    const radiusValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.radiusProperty.name);
-    if (undefined !== radiusValue)
-      this.radiusProperty.dialogItemValue = radiusValue;
-
-    const useRadiusValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.useRadiusProperty.name);
-    if (undefined !== useRadiusValue)
-      this.useRadiusProperty.dialogItemValue = useRadiusValue;
+    this.initializeToolSettingPropertyValues([this.methodProperty, this.radiusProperty, this.useRadiusProperty, this.sweepProperty, this.useSweepProperty]);
 
     if (!this.radius)
       this.useRadius = false;
-
-    const useSweepValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.useSweepProperty.name);
-    if (undefined !== useSweepValue)
-      this.useSweepProperty.dialogItemValue = useSweepValue;
-
-    const sweepValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.sweepProperty.name);
-    if (undefined !== sweepValue)
-      this.sweepProperty.dialogItemValue = sweepValue;
 
     if (!this.sweep)
       this.useSweep = false;
@@ -1365,18 +1309,18 @@ export class CreateArcTool extends CreateOrContinuePathTool {
 
     // Update current session values so keyin args are picked up for tool settings/restart...
     if (undefined !== arcMethod)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.methodProperty.name, value: { value: arcMethod } });
+      this.saveToolSettingPropertyValue(this.methodProperty, { value: arcMethod });
 
     if (undefined !== arcRadius) {
       if (0.0 !== arcRadius)
-        IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.radiusProperty.name, value: { value: arcRadius } });
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.useRadiusProperty.name, value: { value: 0.0 !== arcRadius } });
+        this.saveToolSettingPropertyValue(this.radiusProperty, { value: arcRadius });
+      this.saveToolSettingPropertyValue(this.useRadiusProperty, { value: 0.0 !== arcRadius });
     }
 
     if (undefined !== arcSweep) {
       if (0.0 !== arcSweep)
-        IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.sweepProperty.name, value: { value: arcSweep } });
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.useSweepProperty.name, value: { value: 0.0 !== arcSweep } });
+        this.saveToolSettingPropertyValue(this.sweepProperty, { value: arcSweep });
+      this.saveToolSettingPropertyValue(this.useSweepProperty, { value: 0.0 !== arcSweep });
     }
 
     return this.run();
@@ -1531,47 +1475,23 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     if (this.useRadius)
       return;
 
-    const syncData: DialogPropertySyncItem[] = [];
-
-    if (!this.useRadius) {
-      this.radiusProperty.displayValue = (this.radiusProperty.description as LengthDescription).format(this.radius);
-      this.radiusProperty.isDisabled = !this.useRadius;
-      syncData.push(this.radiusProperty.syncItem);
-    }
-
-    if (0 !== syncData.length)
-      this.syncToolSettingsProperties(syncData);
-  }
-
-  private syncRadiusState(): void {
-    this.radiusProperty.displayValue = (this.radiusProperty.description as LengthDescription).format(this.radius);
-    this.radiusProperty.isDisabled = !this.useRadius;
     this.syncToolSettingsProperties([this.radiusProperty.syncItem]);
   }
 
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return (property === this.useRadiusProperty ? this.radiusProperty : undefined);
+  }
+
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (this.methodProperty.name === updatedValue.propertyName) {
-      this.methodProperty.value = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.methodProperty.item);
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (this.methodProperty.name === updatedValue.propertyName)
       await this.onReinitialize();
-      return true;
-    } else if (updatedValue.propertyName === this.useRadiusProperty.name) {
-      this.useRadius = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useRadiusProperty.item);
-      this.syncRadiusState();
-      if (CircleMethod.Center === this.method && this.useRadius && 0 === this.accepted.length)
-        await this.onReinitialize();
-      return true;
-    } else if (updatedValue.propertyName === this.radiusProperty.name) {
-      if (!updatedValue.value.value) {
-        this.syncRadiusState(); // force UI to redisplay last valid value
-        return false;
-      }
-      this.radius = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.radiusProperty.item);
-      return true;
-    }
-    return false;
+    else if (updatedValue.propertyName === this.useRadiusProperty.name && CircleMethod.Center === this.method && this.useRadius && 0 === this.accepted.length)
+      await this.onReinitialize();
+
+    return true;
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
@@ -1619,17 +1539,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
       return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
-    const methodValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
-    if (undefined !== methodValue)
-      this.methodProperty.dialogItemValue = methodValue;
-
-    const radiusValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.radiusProperty.name);
-    if (undefined !== radiusValue)
-      this.radiusProperty.dialogItemValue = radiusValue;
-
-    const useRadiusValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.useRadiusProperty.name);
-    if (undefined !== useRadiusValue)
-      this.useRadiusProperty.dialogItemValue = useRadiusValue;
+    this.initializeToolSettingPropertyValues([this.methodProperty, this.radiusProperty, this.useRadiusProperty]);
 
     if (!this.radius)
       this.useRadius = false;
@@ -1672,12 +1582,12 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
 
     // Update current session values so keyin args are picked up for tool settings/restart...
     if (undefined !== circleMethod)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.methodProperty.name, value: { value: circleMethod } });
+      this.saveToolSettingPropertyValue(this.methodProperty, { value: circleMethod });
 
     if (undefined !== circleRadius) {
       if (0.0 !== circleRadius)
-        IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.radiusProperty.name, value: { value: circleRadius } });
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.useRadiusProperty.name, value: { value: 0.0 !== circleRadius } });
+        this.saveToolSettingPropertyValue(this.radiusProperty, { value: circleRadius });
+      this.saveToolSettingPropertyValue(this.useRadiusProperty, { value: 0.0 !== circleRadius });
     }
 
     return this.run();
@@ -1876,27 +1786,12 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     return { format: "flatbuffer", data: builder.entries };
   }
 
-  private syncRadiusState(): void {
-    this.radiusProperty.displayValue = (this.radiusProperty.description as LengthDescription).format(this.radius);
-    this.radiusProperty.isDisabled = !this.useRadius;
-    this.syncToolSettingsProperties([this.radiusProperty.syncItem]);
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return (property === this.useRadiusProperty ? this.radiusProperty : undefined);
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.useRadiusProperty.name) {
-      this.useRadius = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useRadiusProperty.item);
-      this.syncRadiusState();
-    } else if (updatedValue.propertyName === this.radiusProperty.name) {
-      if (!updatedValue.value.value) {
-        this.syncRadiusState(); // force UI to redisplay last valid value
-        return false;
-      }
-      this.radius = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.radiusProperty.item);
-      return true;
-    }
-    return false;
+    return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
@@ -1921,13 +1816,7 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
       return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
-    const radiusValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.radiusProperty.name);
-    if (undefined !== radiusValue)
-      this.radiusProperty.dialogItemValue = radiusValue;
-
-    const useRadiusValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.useRadiusProperty.name);
-    if (undefined !== useRadiusValue)
-      this.useRadiusProperty.dialogItemValue = useRadiusValue;
+    this.initializeToolSettingPropertyValues([this.radiusProperty, this.useRadiusProperty]);
 
     if (!this.radius)
       this.useRadius = false;
@@ -1957,8 +1846,8 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     // Update current session values so keyin args are picked up for tool settings/restart...
     if (undefined !== cornerRadius) {
       if (0.0 !== cornerRadius)
-        IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.radiusProperty.name, value: { value: cornerRadius } });
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.useRadiusProperty.name, value: { value: 0.0 !== cornerRadius } });
+        this.saveToolSettingPropertyValue(this.radiusProperty, { value: cornerRadius });
+      this.saveToolSettingPropertyValue(this.useRadiusProperty, { value: 0.0 !== cornerRadius });
     }
 
     return this.run();
@@ -1987,9 +1876,15 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
 
   protected override provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void {
     const nPts = this.accepted.length;
-    const mainMsg = CoreTools.translate(0 === nPts ? "ElementSet.Prompts.StartPoint" : (1 === nPts ? "ElementSet.Prompts.EndPoint" : "ElementSet.Inputs.AdditionalPoint"));
+    let mainMsg;
+
+    if (CreateCurvePhase.DefineOther === this._tangentPhase)
+      mainMsg = CoreTools.translate(0 === nPts ? "ElementSet.Prompts.StartPoint" : "ElementSet.Inputs.AdditionalPoint");
+    else
+      mainMsg = EditTools.translate(CreateCurvePhase.DefineStart === this._tangentPhase ? "CreateBCurve.Prompts.StartTangent" : "CreateBCurve.Prompts.EndTangent") ;
+
     const leftMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
-    const rightMsg = CoreTools.translate(nPts > 1 ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel");
+    const rightMsg = CoreTools.translate(CreateCurvePhase.DefineOther === this._tangentPhase && nPts >= this.requiredPointCount ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel");
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
@@ -2203,12 +2098,14 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
             await this.updateCurveAndContinuationData(ev, false, CreateCurvePhase.DefineEnd);
             this._tangentPhase = (undefined === fitCurve.options.startTangent ? CreateCurvePhase.DefineStart : CreateCurvePhase.DefineEnd);
             IModelApp.toolAdmin.updateDynamics();
+            this.setupAndPromptForNextAction();
             return false;
 
           case CreateCurvePhase.DefineStart:
             fitCurve.options.startTangent = undefined; // Not accepted, compute default start tangent...
             this._tangentPhase = CreateCurvePhase.DefineEnd;
             IModelApp.toolAdmin.updateDynamics();
+            this.setupAndPromptForNextAction();
             return false;
 
           case CreateCurvePhase.DefineEnd:
@@ -2224,31 +2121,14 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     return true;
   }
 
-  private syncOrderState(): void {
-    this.orderProperty.displayValue = (this.orderProperty.description as LengthDescription).format(this.order);
-    this.syncToolSettingsProperties([this.orderProperty.syncItem]);
-  }
-
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (this.methodProperty.name === updatedValue.propertyName) {
-      this.methodProperty.value = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.methodProperty.item);
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (this.methodProperty.name === updatedValue.propertyName)
       await this.onReinitialize();
-      return true;
-    } else if (updatedValue.propertyName === this.orderProperty.name) {
-      if (!updatedValue.value.value) {
-        this.syncOrderState(); // force UI to redisplay last valid value
-        return false;
-      }
-      this.order = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.orderProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.tangentsProperty.name) {
-      this.tangents = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.tangentsProperty.item);
-      return true;
-    }
-    return false;
+
+    return true;
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
@@ -2272,17 +2152,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
       return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
-    const methodValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
-    if (undefined !== methodValue)
-      this.methodProperty.dialogItemValue = methodValue;
-
-    const orderValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.orderProperty.name);
-    if (undefined !== orderValue)
-      this.orderProperty.dialogItemValue = orderValue;
-
-    const tangentsValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.tangentsProperty.name);
-    if (undefined !== tangentsValue)
-      this.tangentsProperty.dialogItemValue = tangentsValue;
+    this.initializeToolSettingPropertyValues([this.methodProperty, this.orderProperty, this.tangentsProperty]);
 
     return true;
   }
@@ -2327,13 +2197,13 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
 
     // Update current session values so keyin args are picked up for tool settings/restart...
     if (undefined !== bcurveMethod)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.methodProperty.name, value: { value: bcurveMethod } });
+      this.saveToolSettingPropertyValue(this.methodProperty, { value: bcurveMethod });
 
     if (undefined !== bcurveOrder)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.orderProperty.name, value: { value: bcurveOrder } });
+      this.saveToolSettingPropertyValue(this.orderProperty, { value: bcurveOrder });
 
     if (undefined !== bcurveTangents)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.tangentsProperty.name, value: { value: bcurveTangents } });
+      this.saveToolSettingPropertyValue(this.tangentsProperty, { value: bcurveTangents });
 
     return this.run();
   }

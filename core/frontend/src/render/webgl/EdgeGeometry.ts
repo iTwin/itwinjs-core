@@ -17,7 +17,7 @@ import { ColorInfo } from "./ColorInfo";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -68,7 +68,7 @@ export class EdgeGeometry extends MeshGeometry {
   protected _wantWoWReversal(_target: Target): boolean { return true; }
   protected override _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
   public get techniqueId(): TechniqueId { return TechniqueId.Edge; }
-  public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
+  public override getPass(target: Target) { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
   public override getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
   public get endPointAndQuadIndices(): BufferHandle { return this._endPointAndQuadIndices; }
@@ -153,7 +153,7 @@ export class PolylineEdgeGeometry extends MeshGeometry {
   protected override _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
   public override getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
   public get techniqueId(): TechniqueId { return TechniqueId.Polyline; }
-  public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
+  public override getPass(target: Target) { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
   public override get polylineBuffers(): PolylineBuffers { return this._buffers; }
 

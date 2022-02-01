@@ -32,22 +32,18 @@
     "editor/lineHeight": 11,
     "workspace/container/alias": [
         {
-            "name": "default-fonts",
-            "id": "fonts-01"
+            "name": "Public Data",
+            "id": "public-data-1"
         },
         {
             "name": "gcs-data",
             "id": "gcsdata-01"
         }
     ],
-    "workspace/fontList": [
+    "workspace/fontDbs": [
         {
-            "fontName": "Helvetica.ttf",
-            "container": "default-fonts"
-        },
-        {
-            "fontName": "Roboto-Regular.ttf",
-            "container": "default-fonts"
+            "containerName": "Public Data",
+            "dbName": "fonts"
         }
     ],
     "editor/tokenColorCustomizations": {

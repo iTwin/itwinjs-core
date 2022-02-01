@@ -23,7 +23,6 @@
     "cover": "npm run -s test"
   },
   "dependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/components-react": "workspace:*",
     "@itwin/core-backend": "workspace:*",
@@ -34,7 +33,7 @@
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/core-react": "workspace:*",
-    "@itwin/oidc-signin-tool": "3.0.0-dev.110",
+    "@itwin/oidc-signin-tool": "3.0.0",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-components": "workspace:*",
@@ -73,7 +72,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/react": "17.0.31",
+    "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.0",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",

@@ -9,7 +9,8 @@
 import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
 import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
+  BatchType, compareIModelTileTreeIds, EdgeType, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString,
+  PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -64,7 +65,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
     const options = {
-      edgesRequired: treeId.edgesRequired,
+      edgesRequired: EdgeType.None !== treeId.edges,
       allowInstancing: undefined === treeId.animationId && !treeId.enforceDisplayPriority && !treeId.sectionCut && !id.forceNoInstancing,
       is3d: id.is3d,
       batchType: BatchType.Primary,
@@ -262,8 +263,9 @@ class PrimaryTreeReference extends TileTreeReference {
     const renderMode = this._viewFlagOverrides.renderMode ?? view.viewFlags.renderMode;
     const visibleEdges = this._viewFlagOverrides.visibleEdges ?? view.viewFlags.visibleEdges;
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
+    const edges = edgesRequired ? (IModelApp.tileAdmin.enableIndexedEdges ? EdgeType.Indexed : EdgeType.NonIndexed) : EdgeType.None;
     const sectionCut = this._sectionClip?.clipString;
-    return { type: BatchType.Primary, edgesRequired, animationId, sectionCut };
+    return { type: BatchType.Primary, edges, animationId, sectionCut };
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
@@ -440,7 +442,7 @@ class MaskTreeReference extends TileTreeReference {
     return this._owner;
   }
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edgesRequired: false };
+    return { type: BatchType.Primary, edges: EdgeType.None };
   }
 }
 

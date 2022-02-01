@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/imodel-components-react",
+      "comment": "whitespace change",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/imodel-components-react"
+}

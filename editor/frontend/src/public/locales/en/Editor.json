@@ -61,6 +61,10 @@
       "Method": {
         "ControlPoints": "Control Points",
         "ThroughPoints": "Through Points"
+      },
+      "Prompts": {
+        "StartTangent": "Define start tangent",
+        "EndTangent": "Define end tangent"
       }
     },
     "CreateCircle": {
@@ -117,11 +121,20 @@
     },
     "ThickenSheets": {
       "keyin": "editor thicken sheets",
-      "flyover": "Thicken selected sheets into solids"
+      "flyover": "Thicken selected sheets into solids",
+      "Label": {
+        "FrontDistance": "Front Distance",
+        "BackDistance": "Back Distance"
+      }
     },
     "CutSolids": {
       "keyin": "editor cut solids",
-      "flyover": "Cut solids by open path or planar region"
+      "flyover": "Cut solids by open path or planar region",
+      "Label": {
+        "Depth": "Depth",
+        "BothDirections": "Both Directions",
+        "Outside": "Outside"
+      }
     },
     "EmbossSolids": {
       "keyin": "editor emboss solids",
@@ -129,7 +142,17 @@
     },
     "ImprintSolids": {
       "keyin": "editor imprint solids",
-      "flyover": "Imprint offset edges or another element on a solid"
+      "flyover": "Imprint offset edges or another element on a solid",
+      "Label": {
+        "Method": "Method",
+        "Distance": "Distance",
+        "Extend": "Extend"
+      },
+      "Method": {
+        "Element": "Element",
+        "Edges": "Edges",
+        "Points": "Points"
+      }
     },
     "SweepAlongPath": {
       "keyin": "editor sweep path",
@@ -141,31 +164,101 @@
     },
     "OffsetFaces": {
       "keyin": "editor offset faces",
-      "flyover": "Offset faces of surfaces and solids"
+      "flyover": "Offset faces of surfaces and solids",
+      "Label": {
+        "AddSmooth": "Add Smooth Faces",
+        "Distance": "Distance"
+      }
     },
     "HollowFaces": {
       "keyin": "editor hollow faces",
-      "flyover": "Hollow solids by offsetting faces"
+      "flyover": "Hollow solids by offsetting faces",
+      "Label": {
+        "ShellThickness": "Shell Thickness",
+        "FaceThickness": "Face Thickness"
+      }
     },
     "SweepFaces": {
       "keyin": "editor sweep faces",
-      "flyover": "Sweep planar curves, surfaces, or faces of solids"
+      "flyover": "Sweep planar curves, surfaces, or faces of solids",
+      "Label": {
+        "AddSmooth": "Add Smooth Faces",
+        "Distance": "Distance"
+      }
     },
     "SpinFaces": {
       "keyin": "editor spin faces",
-      "flyover": "Spin planar curves, surfaces, or faces of solids"
+      "flyover": "Spin planar curves, surfaces, or faces of solids",
+      "Label": {
+        "Angle": "Sweep Angle"
+      }
     },
     "RoundEdges": {
       "keyin": "editor round edges",
-      "flyover": "Round edges of solids and surfaces"
+      "flyover": "Round edges of solids and surfaces",
+      "Label": {
+        "Radius": "Radius",
+        "AddSmooth": "Add Smooth Edges"
+      }
     },
     "ChamferEdges": {
       "keyin": "editor chamfer edges",
-      "flyover": "Chamfer edges of solids and surfaces"
+      "flyover": "Chamfer edges of solids and surfaces",
+      "Label": {
+        "Method": "Method",
+        "Length": "Length",
+        "LeftDistance": "Left Distance",
+        "RightDistance": "Right Distance",
+        "Angle": "Angle"
+      },
+      "Method": {
+        "Length": "Length",
+        "Distances": "Distances",
+        "DistanceAngle": "Distance/Angle",
+        "AngleDistance": "Angle/Distance"
+      }
     },
     "DeleteSubEntities": {
       "keyin": "editor delete subentities",
       "flyover": "Delete faces and edges of solids and surfaces"
+    },
+    "LocateSubEntities": {
+      "Identify": {
+        "Face": "Identify face",
+        "Edge": "Identify edge",
+        "Vertex": "Identity vertex",
+        "FaceEdge": "Identify face or edge",
+        "FaceVertex": "Identify face or vertex",
+        "EdgeVertex": "Identify edge or vertex",
+        "FaceEdgeVertex": "Identity face, edge, or vertex"
+      },
+      "IdentifyAdditional": {
+        "Face": "Identify additional faces",
+        "Edge": "Identify additional edges",
+        "Vertex": "Identity additional vertices",
+        "FaceEdge": "Identify additional faces or edges",
+        "FaceVertex": "Identify additional faces or vertices",
+        "EdgeVertex": "Identify additional edges or vertices",
+        "FaceEdgeVertex": "Identity additional faces, edges, or vertices"
+      },
+      "Accept": {
+        "Face": "Accept face",
+        "Edge": "Accept edge",
+        "Vertex": "Accept vertex",
+        "FaceEdge": "Accept face or edge",
+        "FaceVertex": "Accept face or vertex",
+        "EdgeVertex": "Accept edge or vertex",
+        "FaceEdgeVertex": "Accept face, edge, or vertex"
+      },
+      "AcceptNext": {
+        "Face": "Accept next face",
+        "Edge": "Accept next edge",
+        "Vertex": "Accept next vertex",
+        "FaceEdge": "Accept next face or edge",
+        "FaceVertex": "Accept next face or vertex",
+        "EdgeVertex": "Accept next edge or vertex",
+        "FaceEdgeVertex": "Accept next face, edge, or vertex"
+      }
     },
     "UndoAll": {
       "keyin": "editor undo all",

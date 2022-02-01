@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module MapLayers
+ */
 
 import { compareStrings } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import {
   BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
 } from "@itwin/core-common";
-import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
+import { getJson, RequestBasicCredentials } from "../../request/Request";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 

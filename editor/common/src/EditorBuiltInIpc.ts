@@ -8,7 +8,7 @@
 
 import { CompressedId64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { AngleProps, Matrix3dProps, Range1dProps, Range3dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
-import { ColorDefProps, EcefLocationProps, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
+import { ColorDefProps, EcefLocationProps, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";
 
 /** @alpha */
@@ -16,24 +16,6 @@ export const editorBuiltInCmdIds = {
   cmdBasicManipulation: "basicManipulation",
   cmdSolidModeling: "solidModeling",
 };
-
-/** @alpha */
-export interface FlatBufferGeometricElementData {
-  /** The geometry stream data */
-  entryArray: ElementGeometryDataEntry[];
-  /** Whether entries are supplied local to placement transform or in world coordinates */
-  isWorld?: boolean;
-  /** If true, create geometry that displays oriented to face the camera */
-  viewIndependent?: boolean;
-}
-
-/** @alpha */
-export interface FlatBufferGeometryPartData {
-  /** The geometry stream data */
-  entryArray: ElementGeometryDataEntry[];
-  /** If true, create geometry part with 2d geometry */
-  is2dPart?: boolean;
-}
 
 /** @alpha */
 export interface FlatBufferGeometryFilter {
@@ -59,27 +41,27 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
 
   /** Create and insert a new geometric element.
    * @param props Properties for the new [GeometricElement]($backend)
-   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]].
+   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]] or [[GeometricElementProps.elementGeometryBuilderParams]].
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String>;
+  insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
 
   /** Create and insert a new geometry part element.
    * @param props Properties for the new [GeometryPart]($backend)
-   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometryPartProps.geom]].
+   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometryPartProps.geom]] or [[GeometryPartProps.elementGeometryBuilderParams]].
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String>;
+  insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
 
   /** Update an existing geometric element.
    * @param propsOrId Properties or element id to update for an existing [GeometricElement]($backend)
-   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]].
+   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]] or [[GeometricElementProps.elementGeometryBuilderParams]].
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to update the element
    */
-  updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void>;
+  updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: ElementGeometryBuilderParams): Promise<void>;
 
   /** Request geometry from an existing element. Because a GeometryStream can be large and may contain information
    * that is not always useful to frontend code, filter options are provided to restrict what GeometryStreams are returned.
@@ -514,6 +496,8 @@ export interface CutProps {
   targetPoint?: XYZProps;
   /** Hint point on tool for auto direction and closure options. Identifies outside of profile closure to keep material for. */
   toolPoint?: XYZProps;
+  /** Whether to keep the cutting profile or delete it */
+  keepProfile?: true;
 }
 
 /** @alpha */
@@ -528,12 +512,14 @@ export enum EmbossDirectionMode {
 
 /** @alpha */
 export interface EmbossProps {
-  /** The element to use as the cutting profile, must be planar region or sheet body */
+  /** The element to use in creating a pad or pocket, must be planar region or sheet body */
   profile: Id64String;
   /** Emboss direction, determines which side of profile normal material is added on. Default EmbossDirectionMode.Forward */
   direction?: EmbossDirectionMode;
   /** Hint point on target for auto direction. */
   targetPoint?: XYZProps;
+  /** Whether to keep the emboss profile or delete it */
+  keepProfile?: true;
 }
 
 /** @alpha */
@@ -548,6 +534,8 @@ export interface ImprintProps {
   distance?: number;
   /* Whether to extend an open curve (or tool surface) to ensure that it splits the face. */
   extend?: true;
+  /** Whether to keep the imprint element or delete it */
+  keepProfile?: true;
 }
 
 /** @alpha */
@@ -566,11 +554,13 @@ export interface SweepPathProps {
   scale?: number;
   /** The profile point to scale about, required when applying scale. */
   scalePoint?: XYZProps;
+  /** Whether to keep the path element or delete it */
+  keepPath?: true;
 }
 
 /** @alpha */
 export interface LoftProps {
-  /** The elements to use as tool profile curves. Target element is first profile curve. */
+  /** The tool cross sections (planar paths and regions) to loft through. */
   tools: Id64String | Id64String[];
   /** An optional set of guide curves for controlling the loft. */
   guides?: Id64String | Id64String[];
@@ -580,6 +570,10 @@ export interface LoftProps {
   orderCurves?: true;
   /** true to orient curve directions and normals. */
   orientCurves?: true;
+  /** Whether to keep the profile elements or delete them */
+  keepTools?: true;
+  /** Whether to keep the guide elements or delete them */
+  keepGuides?: true;
 }
 
 /** @alpha */

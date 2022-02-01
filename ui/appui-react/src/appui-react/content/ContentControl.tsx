@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
-import { UiEvent } from "@itwin/core-react";
+import { UiEvent } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 
 /** ControlControl Activated Event Args interface.
@@ -95,4 +95,14 @@ export class ContentControl extends ConfigurableUiControl {
     return "";
   }
 
+}
+
+/**
+ * @beta
+ */
+export class FloatingContentControl extends ContentControl {
+  constructor(uniqueId: string, name: string, node: React.ReactNode) {
+    super(new ConfigurableCreateInfo(name, uniqueId, name), undefined);
+    this._reactNode = node;
+  }
 }

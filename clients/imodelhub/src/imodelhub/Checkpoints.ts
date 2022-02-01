@@ -7,7 +7,8 @@
  */
 
 import { AccessToken, GuidString, Logger, PerfLogger } from "@itwin/core-bentley";
-import { CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
+import { CancelRequest, FileHandler } from "../itwin-client/FileHandler";
+import { ProgressCallback } from "../itwin-client/Request";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgQuery } from "../wsg/WsgQuery";
@@ -49,6 +50,10 @@ export class Checkpoint extends WsgInstance {
   /** Id of the last [[ChangeSet]] that was merged into this checkpoint file. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.MergedChangeSetId")
   public mergedChangeSetId?: string;
+
+  /** Index of the last [[ChangeSet]] that was merged into this checkpoint file. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.MergedChangeSetIndex")
+  public mergedChangeSetIndex?: number;
 
   /** Date when this checkpoint file was created. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatedDate")

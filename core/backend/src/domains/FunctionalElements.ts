@@ -63,7 +63,7 @@ export class FunctionalModel extends RoleModel {
 /** A FunctionalElement captures functional requirements that will ultimately be fulfilled by a PhysicalElement.
  * @public
  */
-export abstract class FunctionalElement extends RoleElement implements FunctionalElementProps {
+export abstract class FunctionalElement extends RoleElement {
   /** @internal */
   public static override get className(): string { return "FunctionalElement"; }
   /** @internal */

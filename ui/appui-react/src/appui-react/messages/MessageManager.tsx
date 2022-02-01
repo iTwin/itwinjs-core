@@ -14,8 +14,8 @@ import {
   ActivityMessageDetails, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, OutputMessageAlert, OutputMessagePriority,
   OutputMessageType, ToolAssistanceInstructions, ToolTipOptions,
 } from "@itwin/core-frontend";
-import { MessageSeverity } from "@itwin/appui-abstract";
-import { MessageContainer, UiEvent } from "@itwin/core-react";
+import { MessageSeverity, UiEvent } from "@itwin/appui-abstract";
+import { MessageContainer } from "@itwin/core-react";
 import { ConfigurableUiActionId } from "../configurableui/state";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { StandardMessageBox } from "../dialog/StandardMessageBox";
@@ -372,7 +372,10 @@ export class MessageManager {
 
     switch (details.priority) {
       case OutputMessagePriority.None:
-        severity = MessageSeverity.None;
+        severity = MessageSeverity.Success;
+        break;
+      case OutputMessagePriority.Success:
+        severity = MessageSeverity.Success;
         break;
       case OutputMessagePriority.Info:
         severity = MessageSeverity.Information;
@@ -398,6 +401,9 @@ export class MessageManager {
     switch (details.priority) {
       case OutputMessagePriority.None:
         iconType = MessageBoxIconType.NoSymbol;
+        break;
+      case OutputMessagePriority.Success:
+        iconType = MessageBoxIconType.Success;
         break;
       case OutputMessagePriority.Info:
         iconType = MessageBoxIconType.Information;

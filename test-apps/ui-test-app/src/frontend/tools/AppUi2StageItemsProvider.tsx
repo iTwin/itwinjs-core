@@ -36,6 +36,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "LeftStart1",
           label: "Start1",
+          icon: "icon-app-1",
           canPopout: true,
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Left Start1 widget</h2>,
@@ -46,6 +47,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           id: "LeftStart2",
           label: "Start2",
           canPopout: true,
+          icon: "icon-app-2",
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Left Start2 widget</h2>,
           isFloatingStateSupported: true,
@@ -56,6 +58,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "LeftMiddle1",
           label: "Middle1",
+          icon: "icon-smiley-happy",
           canPopout: false,
           getWidgetContent: () => <h2>Left Middle1 widget</h2>,
           isFloatingStateSupported: true,
@@ -64,6 +67,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "LeftMiddle2",
           label: "Middle2",
+          icon: "icon-smiley-sad",
           defaultState: WidgetState.Open,
           canPopout: true,
           getWidgetContent: () => <h2>Left Middle2 widget</h2>,
@@ -75,6 +79,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "LeftEnd1",
           label: "End1",
+          icon: "icon-smiley-happy-very",
           canPopout: true,
           getWidgetContent: () => <h2>Left  End1 widget</h2>,
           isFloatingStateSupported: true,
@@ -83,6 +88,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "LeftEnd2",
           label: "End2",
+          icon: "icon-smiley-sad-very",
           canPopout: true,
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Left End2 widget</h2>,
@@ -101,6 +107,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightStart1",
           label: "Start1",
+          icon: "icon-text-align-text-align-left",
           canPopout: true,
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Right Start1 widget</h2>,
@@ -110,6 +117,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightStart2",
           label: "Start2",
+          icon: "icon-text-align-text-align-right",
           canPopout: true,
           defaultState: WidgetState.Hidden,
           getWidgetContent: () => <h2>Right Start2 widget</h2>,
@@ -121,6 +129,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightMiddle1",
           label: "Middle1",
+          icon: "icon-text-align-text-align-center",
           canPopout: false,
           getWidgetContent: () => <h2>Right Middle1 widget</h2>,
           isFloatingStateSupported: true,
@@ -129,6 +138,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightMiddle2",
           label: "Middle2",
+          icon: "icon-text-align-text-align-justify",
           defaultState: WidgetState.Open,
           canPopout: true,
           getWidgetContent: () => <h2>Right Middle2 widget</h2>,
@@ -140,6 +150,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightEnd1",
           label: "End1",
+          icon: "icon-user",
           canPopout: true,
           getWidgetContent: () => <h2>Right  End1 widget</h2>,
           isFloatingStateSupported: true,
@@ -148,6 +159,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         {
           id: "RightEnd2",
           label: "End2",
+          icon: "icon-users",
           canPopout: true,
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Right End2 widget</h2>,

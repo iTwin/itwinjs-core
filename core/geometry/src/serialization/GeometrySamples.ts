@@ -1990,14 +1990,14 @@ export class Sample {
             fitPoints: pointsA,
             startTangent: Point3d.create(1,-1),
             endTangent: Point3d.create(-1,-1)}))!))!);
-/*    result.push(CurveChainWithDistanceIndex.createCapture(  // TODO: comment out until fix bloss exerciseClosestPt bug (1)
+    result.push(CurveChainWithDistanceIndex.createCapture(
       Path.create(
         IntegratedSpiral3d.createRadiusRadiusBearingBearing(
           Segment1d.create(0, 100),
           AngleSweep.createStartEndDegrees(10, 75),
           Segment1d.create(0, 1),
           Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(30))),
-          "bloss")!))!); */
+          "bloss")!))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
       Path.create(
         DirectSpiral3d.createDirectHalfCosine(

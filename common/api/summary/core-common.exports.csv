@@ -186,11 +186,14 @@ beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
+alpha;EdgeType
 internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
 alpha;ElementGeometry
+alpha;ElementGeometryBuilderParams
+alpha;ElementGeometryBuilderParamsForPart
 public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 public;ElementGeometryChange
 public;ElementGeometryDataEntry
@@ -198,7 +201,6 @@ alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
 alpha;ElementGeometryInfo
 public;ElementGeometryOpcode
 alpha;ElementGeometryRequest
-alpha;ElementGeometryUpdate
 public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
@@ -292,14 +294,9 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;GlbHeader 
 public;GlobeMode
-internal;GltfBufferData
-internal;GltfBufferView
-internal;GltfConstants
-internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
-internal;GltfDataType
-internal;GltfHeader 
-internal;GltfMeshMode
+internal;GltfChunk
 internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
@@ -694,6 +691,7 @@ public;TextureMapping
 public;TextureMapProps
 public;TextureMapUnits
 public;TextureProps 
+public;TextureTransparency
 public;ThematicDisplay
 public;ThematicDisplayMode
 public;ThematicDisplayProps
@@ -733,6 +731,7 @@ public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
+internal;TypedGltfChunk = GltfChunk &
 public;TypeOfChange
 public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void
