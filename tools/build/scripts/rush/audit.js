@@ -37,12 +37,21 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // for development dependencies only.
   // All security issues should be addressed asap.
   const excludedAdvisories = [
-    "GHSA-ww39-953v-wcq6", // https://github.com/advisories/GHSA-ww39-953v-wcq6. path to vulnerability @bentley/backend-application-insights>webpack>watchpack>watchpack-chokidar2>chokidar>glob-parent and @bentley/imodeljs-backend>cpx>chokidar>glob-parent
-    "GHSA-33f9-j839-rf8h", // https://github.com/advisories/GHSA-33f9-j839-rf8h. path to vulnerability @bentley/extension-webpack>react-dev-utils>immer
-    "GHSA-c36v-fmgq-m8hx", // https://github.com/advisories/GHSA-c36v-fmgq-m8hx. path to vulnerability @bentley/extension-webpack>react-dev-utils>immer
-    "GHSA-4jqc-8m5r-9rpr", // https://github.com/advisories/GHSA-4jqc-8m5r-9rpr. path to vulnerability @bentley/backend-application-insights>webpack>micromatch>snapdragon>base>cache-base>set-value
-    "GHSA-whgm-jr23-g3j9", // https://github.com/advisories/GHSA-whgm-jr23-g3j9. path to vulnerability @bentley/map-layers>@bentley/react-scripts>@pmmmwh/react-refresh-webpack-plugin>ansi-html
-    "GHSA-w5p7-h5w8-2hfq", // https://github.com/advisories/GHSA-w5p7-h5w8-2hfq. path to vulnerability ninezone-test-app>react-markdown>remark-parse>trim. Ignored, test app dependency.
+    "GHSA-8p5q-j9m2-g8wr", // https://github.com/advisories/GHSA-8p5q-j9m2-g8wr
+    "GHSA-ww39-953v-wcq6", // https://github.com/advisories/GHSA-ww39-953v-wcq6
+    "GHSA-8v27-2fg9-7h62", // https://github.com/advisories/GHSA-8v27-2fg9-7h62
+    "GHSA-33f9-j839-rf8h", // https://github.com/advisories/GHSA-33f9-j839-rf8h
+    "GHSA-c36v-fmgq-m8hx", // https://github.com/advisories/GHSA-c36v-fmgq-m8hx
+    "GHSA-4jqc-8m5r-9rpr", // https://github.com/advisories/GHSA-4jqc-8m5r-9rpr
+    "GHSA-whgm-jr23-g3j9", // https://github.com/advisories/GHSA-whgm-jr23-g3j9
+    "GHSA-5v2h-r2cx-5xgj", // https://github.com/advisories/GHSA-5v2h-r2cx-5xgj
+    "GHSA-rrrm-qjm4-v8hf", // https://github.com/advisories/GHSA-rrrm-qjm4-v8hf
+    "GHSA-whgm-jr23-g3j9", // https://github.com/advisories/GHSA-whgm-jr23-g3j9
+    "GHSA-r683-j2x4-v87g", // https://github.com/advisories/GHSA-r683-j2x4-v87g
+    "GHSA-74fj-2j2h-c42q", // https://github.com/advisories/GHSA-74fj-2j2h-c42q
+    "GHSA-4rq4-32rv-6wp6", // https://github.com/advisories/GHSA-4rq4-32rv-6wp6
+    "GHSA-w5p7-h5w8-2hfq", // https://github.com/advisories/GHSA-w5p7-h5w8-2hfq
+    "GHSA-wpg7-2c88-r8xv", // https://github.com/advisories/GHSA-wpg7-2c88-r8xv
   ];
 
   let shouldFailBuild = false;
@@ -58,7 +67,6 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
 
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
       if (!excludedAdvisories.includes(advisory.github_advisory_id) && (severity === "HIGH" || severity === "CRITICAL")) {
-        console.log(advisory.github_advisory_id);
         logBuildError(message);
         shouldFailBuild = true;
       } else if (excludedAdvisories.includes(advisory.github_advisory_id) || severity === "MODERATE") // Only warn on MODERATE severity items
