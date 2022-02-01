@@ -33,17 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@itwin/imodels-access-backend": "^1.0.0",
-    "@itwin/imodels-access-frontend": "^1.0.0",
-    "@itwin/imodels-client-authoring": "^1.0.0",
-    "@itwin/imodels-client-management": "^1.0.0",
-=======
     "@itwin/imodels-access-backend": "^1.0.1",
     "@itwin/imodels-access-frontend": "^1.0.1",
     "@itwin/imodels-client-authoring": "^1.0.1",
     "@itwin/imodels-client-management": "^1.0.1",
->>>>>>> 298f79ef7a (update deps on external client pkgs (#3101))
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -67,11 +60,7 @@
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
     "@itwin/express-server": "workspace:*",
-<<<<<<< HEAD
-    "@itwin/imodels-access-backend": "^1.0.0",
-=======
     "@itwin/imodels-access-backend": "^1.0.1",
->>>>>>> 298f79ef7a (update deps on external client pkgs (#3101))
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/projects-client": "^0.6.0",
     "@types/chai": "^4.1.4",
