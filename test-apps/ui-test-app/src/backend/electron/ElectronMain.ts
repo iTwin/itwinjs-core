@@ -38,6 +38,7 @@ export async function initializeElectron(opts?: IModelHostConfiguration) {
     opt.iModelHost.authorizationClient = authClient;
 
   await ElectronHost.startup(opt);
+  await authClient.signInSilent();
   EditCommandAdmin.registerModule(editorBuiltInCommands);
 
   // Handle custom keyboard shortcuts

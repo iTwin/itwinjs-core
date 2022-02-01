@@ -53,6 +53,7 @@ export async function initializeBackend() {
       },
       iModelHost,
     });
+    await authClient.signInSilent();
   } else
     await IModelHost.startup(iModelHost);
 }

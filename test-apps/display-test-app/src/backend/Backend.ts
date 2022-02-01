@@ -201,6 +201,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     await authClient.signInSilent();
     opts.iModelHost.authorizationClient = authClient;
     await ElectronHost.startup(opts);
+    await authClient.signInSilent();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
   } else if (ProcessDetector.isIOSAppBackend) {
     await IOSHost.startup(opts);

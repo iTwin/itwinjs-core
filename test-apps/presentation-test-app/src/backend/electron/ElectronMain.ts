@@ -32,6 +32,7 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
   iModelHost.authorizationClient = authClient;
 
   await ElectronHost.startup({ electronHost, iModelHost });
+  await authClient.signInSilent();
   await ElectronHost.openMainWindow();
 
   // __PUBLISH_EXTRACT_END__
