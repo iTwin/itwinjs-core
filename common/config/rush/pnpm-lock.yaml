@@ -537,6 +537,8 @@ importers:
       '@itwin/core-telemetry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/webgl-compatibility': workspace:*
+      '@loaders.gl/core': ^3.1.6
+      '@loaders.gl/draco': ^3.1.6
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
@@ -570,6 +572,8 @@ importers:
     dependencies:
       '@itwin/core-i18n': link:../i18n
       '@itwin/core-telemetry': link:../telemetry
+      '@loaders.gl/core': 3.1.7
+      '@loaders.gl/draco': 3.1.7
       deep-assign: 2.0.0
       fuse.js: 3.6.1
       lodash: 4.17.21
@@ -7308,8 +7312,8 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.1.0-dev.13:
-    resolution: {integrity: sha512-6xWl/e4Q/4G7ZhJjxOIQpNterJwqImALZssjgFzOuF8eXcVr35VnlQXN/mzEqh7sSfePMTmqjcb1TEIpUya/tA==}
+  /@itwin/certa/3.1.0-dev.15:
+    resolution: {integrity: sha512-WSO1myYRVm+fmilp7+pE2Xwq3hsXQyqKy+TrOrLSNBd0dIEz6mblVlEUYAGgo8xf6yeUv4pgX++vZSTRFRIbww==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7331,8 +7335,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.1.0-dev.13_electron@14.2.4:
-    resolution: {integrity: sha512-6xWl/e4Q/4G7ZhJjxOIQpNterJwqImALZssjgFzOuF8eXcVr35VnlQXN/mzEqh7sSfePMTmqjcb1TEIpUya/tA==}
+  /@itwin/certa/3.1.0-dev.15_electron@14.2.4:
+    resolution: {integrity: sha512-WSO1myYRVm+fmilp7+pE2Xwq3hsXQyqKy+TrOrLSNBd0dIEz6mblVlEUYAGgo8xf6yeUv4pgX++vZSTRFRIbww==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7360,8 +7364,8 @@ packages:
     resolution: {integrity: sha512-W+R80ZFC+d+0bXp7wGht7oDuCou2l/gHHP+uvy0lZUY3WnPq71LCAKpCzrUVcGusM41bCumoavWnW/xGAt/0hg==}
     dev: false
 
-  /@itwin/core-bentley/3.1.0-dev.13:
-    resolution: {integrity: sha512-OkLLaAxFxkwFAToyWoeAGQfD0D4cGXfWJEfKNMBYNN8zHNK/+n90r78vPjxKvWcOH3V4zR5OMEdvW5gKFoBpIg==}
+  /@itwin/core-bentley/3.1.0-dev.15:
+    resolution: {integrity: sha512-0c1G1ecBJiFnqbdU9NsLvuKRSMJvWGSSk0Pz0UXaBfK/OmtM1xsyISy4bGAys02mZVGZees9BjEO3M3pkbdxSg==}
 
   /@itwin/core-geometry/3.0.0-dev.185:
     resolution: {integrity: sha512-UQvZdMaSraChiEudZxYJkC/cCWskHqmLLN9IB2iG83MYwYGJ9zrehjolh+ZAch261IRmBJ8E85P8HfRIvndIeA==}
@@ -7507,8 +7511,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.1.0-dev.13
-      '@itwin/core-bentley': 3.1.0-dev.13
+      '@itwin/certa': 3.1.0-dev.15
+      '@itwin/core-bentley': 3.1.0-dev.15
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7522,8 +7526,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0_electron@14.2.4:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.1.0-dev.13_electron@14.2.4
-      '@itwin/core-bentley': 3.1.0-dev.13
+      '@itwin/certa': 3.1.0-dev.15_electron@14.2.4
+      '@itwin/core-bentley': 3.1.0-dev.15
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7751,6 +7755,46 @@ packages:
     resolution: {integrity: sha512-oeaetlodcqVsiZDxnEcqsbs+sXBkASxua0mXs5OXuPQXz3/wdPTMlxwfQ4z2HKcOik3S9voW3QJkp/KLWDhvRQ==}
     dev: false
 
+  /@loaders.gl/core/3.1.7:
+    resolution: {integrity: sha512-mJRAIFZB1PBQ6ed7RhIIL9Sr7RDHwbof//5W2wVz1xyiMwyDMyIN41PNGX06oYwZMEnN2cel8HLpexr5kShH7A==}
+    dependencies:
+      '@babel/runtime': 7.16.7
+      '@loaders.gl/loader-utils': 3.1.7
+      '@loaders.gl/worker-utils': 3.1.7
+      '@probe.gl/log': 3.5.0
+      probe.gl: 3.5.0
+    dev: false
+
+  /@loaders.gl/draco/3.1.7:
+    resolution: {integrity: sha512-FAKSGJgwlVYelX2Wx2JJDuWBbfsw/r3z7ZKg5PTOM+6LMkI+ffIBBP/rt/kF19Fy+dmBhG9HmV5SGfSFVKfFIA==}
+    dependencies:
+      '@babel/runtime': 7.16.7
+      '@loaders.gl/loader-utils': 3.1.7
+      '@loaders.gl/schema': 3.1.7
+      '@loaders.gl/worker-utils': 3.1.7
+      draco3d: 1.4.1
+    dev: false
+
+  /@loaders.gl/loader-utils/3.1.7:
+    resolution: {integrity: sha512-bovBX/RUakwh/R51eRzVIFMgr/FcSyf02Guaouz+OXgNl0ngzu8i+B5lFDVUoYG6rhfmuMIDcpiEdgnPTXtU4A==}
+    dependencies:
+      '@babel/runtime': 7.16.7
+      '@loaders.gl/worker-utils': 3.1.7
+      '@probe.gl/stats': 3.5.0
+    dev: false
+
+  /@loaders.gl/schema/3.1.7:
+    resolution: {integrity: sha512-BSMvXQGHzyB/dHMxwgriII1bXR4nSSHh+vljnyyGTeiprg5OZ7SylyDYtwsZ5T4e4EBzF1St+NrTQ+sm95M0mw==}
+    dependencies:
+      '@types/geojson': 7946.0.8
+    dev: false
+
+  /@loaders.gl/worker-utils/3.1.7:
+    resolution: {integrity: sha512-OkE2xg/CrEAD0Vl59UGerL5D4n3bcafNpNO7nTebq9HRxmbCp0ngt/nyiHDsrHcovAdK/cNWWFtknoaZHQX3Tg==}
+    dependencies:
+      '@babel/runtime': 7.16.7
+    dev: false
+
   /@microsoft/api-extractor-model/7.7.2:
     resolution: {integrity: sha512-USwWUPV3YLS8ZOS11vFh3nzEWXC2d8OZJ6CGp0nRnCXtbqmKqAq4Jg9J5gs1PCemo7JQEbzbHGGwycC0DbRJqw==}
     dependencies:
@@ -7890,6 +7934,25 @@ packages:
 
   /@popperjs/core/2.11.2:
     resolution: {integrity: sha512-92FRmppjjqz29VMJ2dn+xdyXZBrMlE42AV6Kq6BwjWV7CNUW1hs2FtxSNLQE+gJhaZ6AAmYuO9y8dshhcBl7vA==}
+
+  /@probe.gl/env/3.5.0:
+    resolution: {integrity: sha512-YdlpZZshhyYxvWDBmZ5RIW2pTR14Pw4p9czMlt/v7F6HbFzWfAdmH7q6xVwFRYxUpQLwhWensWyv4aFysiWl4g==}
+    dependencies:
+      '@babel/runtime': 7.16.7
+    dev: false
+
+  /@probe.gl/log/3.5.0:
+    resolution: {integrity: sha512-nW/qz2X1xY08WU/TsmJP6/6IPNcaY5fS/vLjpC4ahJuE2Mezga4hGM/R2X5JWE/nkPc+BsC5GnAnD13rwAxS7g==}
+    dependencies:
+      '@babel/runtime': 7.16.7
+      '@probe.gl/env': 3.5.0
+    dev: false
+
+  /@probe.gl/stats/3.5.0:
+    resolution: {integrity: sha512-IH2M+F3c8HR1DTroBARePUFG7wIewumtKA0UFqx51Z7S4hKrD60wFbpMmg0AcF4FvHAXMBoC+kYi1UKW9XbAOw==}
+    dependencies:
+      '@babel/runtime': 7.16.7
+    dev: false
 
   /@react-dnd/asap/4.0.0:
     resolution: {integrity: sha512-0XhqJSc6pPoNnf8DhdsPHtUhRzZALVzYMTzRwV4VI6DJNJ/5xxfL9OQUwb8IH5/2x7lSf7nAZrnzUD+16VyOVQ==}
@@ -8470,6 +8533,10 @@ packages:
     dependencies:
       '@types/node': 14.14.31
     dev: true
+
+  /@types/geojson/7946.0.8:
+    resolution: {integrity: sha512-1rkryxURpr6aWP7R786/UQOkJ3PcpQiWkAXBmdWc7ryFWqN6a4xfK7BtjXvFBKO9LjQ+MWQSWxYeZX1OApnArA==}
+    dev: false
 
   /@types/glob/5.0.37:
     resolution: {integrity: sha512-ATA/xrS7CZ3A2WCPVY4eKdNpybq56zqlTirnHhhyOztZM/lPxJzusOBI3BsaXbu6FrUluqzvMlI4sZ6BDYMlMg==}
@@ -12326,6 +12393,10 @@ packages:
 
   /dottie/2.0.2:
     resolution: {integrity: sha512-fmrwR04lsniq/uSr8yikThDTrM7epXHBAAjH9TbeH3rEA8tdCO7mRzB9hdmdGyJCxF8KERo9CITcm3kGuoyMhg==}
+    dev: false
+
+  /draco3d/1.4.1:
+    resolution: {integrity: sha512-9Rxonc70xiovBC+Bq1h57SNZIHzWTibU1VfIGp5z3Xx8dPtv4yT5uGhiH7P5uvJRR2jkrvHafRxR7bTANkvfpg==}
     dev: false
 
   /drange/1.1.1:
@@ -18655,6 +18726,15 @@ packages:
       react-is: 17.0.2
     dev: true
 
+  /probe.gl/3.5.0:
+    resolution: {integrity: sha512-KWj8u0PNytr/rVwcQFcN7O8SK7n/ITOsUZ91l4fSX95oHhKvVCI7eadrzFUzFRlXkFfBWpMWZXFHITsHHHUctw==}
+    dependencies:
+      '@babel/runtime': 7.16.7
+      '@probe.gl/env': 3.5.0
+      '@probe.gl/log': 3.5.0
+      '@probe.gl/stats': 3.5.0
+    dev: false
+
   /process-nextick-args/2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
 
@@ -18786,6 +18866,7 @@ packages:
   /puppeteer/5.3.1:
     resolution: {integrity: sha512-YTM1RaBeYrj6n7IlRXRYLqJHF+GM7tasbvrNFx6w1S16G76NrPq7oYFKLDO+BQsXNtS8kW2GxWCXjIMPvfDyaQ==}
     engines: {node: '>=10.18.1'}
+    deprecated: Version no longer supported. Upgrade to @latest
     requiresBuild: true
     dependencies:
       debug: 4.3.3
