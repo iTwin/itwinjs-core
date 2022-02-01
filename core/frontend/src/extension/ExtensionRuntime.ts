@@ -12,7 +12,7 @@ import {
   BackgroundFill, BackgroundMapType, BatchType, BisCodeSpec, BriefcaseIdValue, ChangedValueState, ChangeOpCode, ChangesetType, ColorByName, ColorDef, CommonLoggerCategory,
   ECSqlSystemProperty, ECSqlValueType, ElementGeometryOpcode, FeatureOverrideType, FillDisplay, FillFlags, FontType, GeoCoordStatus, GeometryClass, GeometryStreamFlags,
   GeometrySummaryVerbosity, GlobeMode, GridOrientationType, HSVConstants, ImageBufferFormat, ImageSourceFormat, LinePixels, MassPropertiesOperation, MonochromeMode,
-  Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank, RenderMode, SectionType, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode,
+  Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank, RenderMode, SectionType, SkyBoxImageType, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode,
   TerrainHeightOriginMode, TextureMapUnits, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, TxnAction, TypeOfChange,
 } from "@itwin/core-common";
 import { ExtensionImpl } from "./ExtensionImpl";
@@ -91,7 +91,7 @@ const getExtensionApi = (id: string) => {
       CommonLoggerCategory, ECSqlSystemProperty, ECSqlValueType, ElementGeometryOpcode, FeatureOverrideType, FillDisplay, FillFlags, FontType,
       GeoCoordStatus, GeometryClass, GeometryStreamFlags, GeometrySummaryVerbosity, GlobeMode, GridOrientationType, HSVConstants, ImageBufferFormat,
       ImageSourceFormat, LinePixels, MassPropertiesOperation, MonochromeMode, Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank,
-      RenderMode, SectionType,
+      RenderMode, SectionType, SkyBoxImageType,
       SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode, TerrainHeightOriginMode, TextureMapUnits,
       ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, TxnAction, TypeOfChange,
     },
