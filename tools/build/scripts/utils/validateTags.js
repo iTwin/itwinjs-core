@@ -25,6 +25,10 @@ const validTags = [
   "deprecated",
   "internal",
   "public",
+
+  // Following flags are added for internal Extension tooling (public-extension-api)
+  "extensionApi",
+  "preview",
 ];
 
 function validateTags(path) {

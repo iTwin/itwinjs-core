@@ -45,7 +45,9 @@ export interface ChangesetIdWithIndex { readonly index?: ChangesetIndex, readonl
 export type ChangesetIndexOrId = ChangesetIndexAndId | { readonly index: ChangesetIndex, readonly id?: never } | { readonly id: ChangesetId, readonly index?: never };
 
 /** Value to indicate whether a changeset contains schema changes or not
- * @public */
+ * @public
+ * @extensionApi
+ */
 export enum ChangesetType {
   /** changeset does *not* contain schema changes. */
   Regular = 0,

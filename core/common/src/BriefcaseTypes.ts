@@ -19,6 +19,7 @@ export type BriefcaseId = number;
 
 /** Values of [[BriefcaseId]] that have special meaning.
  * @public
+ * @extensionApi
  */
 export enum BriefcaseIdValue {
   /** Indicates an invalid/illegal BriefcaseId */
@@ -49,6 +50,7 @@ export enum BriefcaseIdValue {
 
 /** Whether a briefcase is editable or may only accept incoming changesets from iModelHub
  * @public
+ * @extensionApi
  */
 export enum SyncMode {
   /** Use a fixed version (i.e. a checkpoint). See [CheckpointManager]($backend) for preferred approach to using checkpoint files. */
