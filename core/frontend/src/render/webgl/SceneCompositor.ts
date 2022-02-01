@@ -2025,7 +2025,7 @@ class MRTCompositor extends Compositor {
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels() or ambient occlusion).
     let fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
     const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
-    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly
+    this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
     fbStack.execute(fbo, true, useMsBuffers, () => {
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
