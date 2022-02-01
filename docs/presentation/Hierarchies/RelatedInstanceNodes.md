@@ -109,7 +109,7 @@ Specifies whether similar ancestor nodes' checking should be suppressed when cre
 
 > **Default value:** `1000`
 
-Changes the order of specifications. Higher number means the specification is handled first. If priorities are equal, the specifications are handled in the order they're defined.
+Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
 
 ```ts
 [[include:Hierarchies.Specification.Priority.Ruleset]]
