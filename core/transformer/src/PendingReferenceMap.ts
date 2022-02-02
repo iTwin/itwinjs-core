@@ -22,7 +22,7 @@ export class PendingReference implements PendingReferenceProps {
   public toKey(): string {
     return `${this.isModelRef ? "1" : "0"}${this.referencer}\x00${this.referenced}`;
   }
-  private static keyPattern = /(?<isModelRef>)0|1)(?<referencer>0x[0-9a-f])\x00(?<referenced>0x[0-9a-f])/;
+  private static keyPattern = /(?<isModelRef>0|1)(?<referencer>0x[0-9a-f])\x00(?<referenced>0x[0-9a-f])/;
   public static fromKey(key: string): PendingReference {
     const match = this.keyPattern.exec(key);
     if (match === null || match.groups === undefined)
@@ -52,16 +52,18 @@ export class PendingReferenceMap<T> implements Map<PendingReferenceProps, T> {
     return referencers;
   }
 
-  private static promoteRef(ref: PendingReferenceProps | PendingReference): asserts ref is PendingReference {
-    Object.setPrototypeOf(ref, PendingReference);
+  private static promoteRef(ref: PendingReferenceProps | PendingReference): PendingReference {
+    if (ref instanceof PendingReference)
+      return ref;
+    return new PendingReference(ref);
   }
 
   /// Map implementation
 
   public clear(): void { this._map.clear(); }
   public delete(ref: PendingReferenceProps): boolean {
-    PendingReferenceMap.promoteRef(ref);
-    const deleteResult = this._map.delete(ref.toKey());
+    const promotedRef = PendingReferenceMap.promoteRef(ref);
+    const deleteResult = this._map.delete(promotedRef.toKey());
     const referencers = this._referencedToReferencers.get(ref.referenced);
     if (referencers !== undefined)
       referencers.delete(ref.referencer);
@@ -72,16 +74,16 @@ export class PendingReferenceMap<T> implements Map<PendingReferenceProps, T> {
       callbackfn.call(thisArg, val, PendingReference.fromKey(key), this);
   }
   public get(ref: PendingReferenceProps): T | undefined {
-    PendingReferenceMap.promoteRef(ref);
-    return this._map.get(ref.toKey());
+    const promotedRef = PendingReferenceMap.promoteRef(ref);
+    return this._map.get(promotedRef.toKey());
   }
   public has(ref: PendingReferenceProps): boolean {
-    PendingReferenceMap.promoteRef(ref);
-    return this._map.has(ref.toKey());
+    const promotedRef = PendingReferenceMap.promoteRef(ref);
+    return this._map.has(promotedRef.toKey());
   }
   public set(ref: PendingReferenceProps, value: T): this {
-    PendingReferenceMap.promoteRef(ref);
-    this._map.set(ref.toKey(), value);
+    const promotedRef = PendingReferenceMap.promoteRef(ref);
+    this._map.set(promotedRef.toKey(), value);
     let referencers = this._referencedToReferencers.get(ref.referenced);
     if (referencers === undefined) {
       referencers = new Set();

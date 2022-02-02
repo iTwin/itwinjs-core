@@ -530,7 +530,6 @@ export class IModelTransformer extends IModelExportHandler {
    */
   private collectUnmappedReferences(element: Element) {
     const elementId = element.id;
-    let thisPartialElem: PartiallyCommittedElement;
 
     if (this._linkTableReferencesCaches.size === 0)
       this.precacheLinkTableReferences();
@@ -538,22 +537,39 @@ export class IModelTransformer extends IModelExportHandler {
     /** see [[PartiallyCommittedElement._missingPredecessors]] */
     const missingPredecessors = new Set<string>();
     for (const predecessorId of element.getPredecessorIds()) {
-      if (this.context.findTargetElementId(predecessorId) !== Id64.invalid)
+      const isSubModeled = this.sourceDb.models.tryGetSubModel(predecessorId) !== undefined;
+      const elementAlreadyMapped = this.context.findTargetElementId(predecessorId) !== Id64.invalid;
+      const modelAlreadyMapped = isSubModeled && this.context.findTargetModelId(predecessorId) !== Id64.invalid;
+      if(!elementAlreadyMapped)
         missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
-      const predecessorSubModel = this.sourceDb.models.getSubModel(predecessorId);
-      if (predecessorSubModel !== undefined)
+      if (!modelAlreadyMapped)
         missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
     }
 
-    const insertPendingReferenceFinalizer = (referencedInSource: Id64String, accessor: string) => {
-      const referenceInTarget = this.context.findTargetElementId(referencedInSource);
-      if (Id64.isValid(referenceInTarget)) return;
-      Logger.logTrace(loggerCategory, `Remapping not found for predecessor in property '${accessor}' of element '${referencedInSource}'`);
+    // FIXME: temporary
+    const findReferenceReadiness = (id: Id64String): "model" | "element" | "none" => {
+      const idInTarget = this.context.findTargetElementId(id);
+      if (Id64.invalid === idInTarget) "none";
+      const isSubModeled = this.sourceDb.models.tryGetSubModel(id);
+      if (isSubModeled) {
+        const modelInTarget = this.targetDb.models.tryGetModelProps(idInTarget) !== undefined;
+        if (!modelInTarget) return "element";
+      }
+      return "model";
+    };
+
+    let thisPartialElem: PartiallyCommittedElement;
+    const insertPendingReferenceFinalizer = (referenced: Id64String, accessor: string) => {
+      const referenceReadiness = findReferenceReadiness(referenced);
+      if (referenceReadiness === "model") return;
+      Logger.logTrace(loggerCategory, `Remapping not found for predecessor in property '${accessor}' of element '${referenced}'`);
       if (!this._partiallyCommittedElements.hasById(elementId)) {
         thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
         this._partiallyCommittedElements.setById(elementId, thisPartialElem);
       }
-      this._pendingReferences.set({referenced: referencedInSource, referencer: elementId, isModelRef: false}, thisPartialElem);
+      this._pendingReferences.set({referenced, referencer: elementId, isModelRef: false}, thisPartialElem);
+      if (referenceReadiness === "element")
+        this._pendingReferences.set({referenced, referencer: elementId, isModelRef: true}, thisPartialElem);
     };
 
     const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
@@ -627,12 +643,7 @@ export class IModelTransformer extends IModelExportHandler {
           }
           const alreadyExported = this.context.findTargetElementId(id) !== Id64.invalid;
           if (alreadyExported) return;
-          if (referenceKey === "models")
-            await this.exporter.exportModel(id);
-          else if (referenceKey === "model")
-            await this.exporter.exportModel(id);
-          else
-            await this.exporter.exportElement(id);
+          await this.exporter.exportElement(id); // FIXME: but what if it's submodeled...?
         }));
       }
 
