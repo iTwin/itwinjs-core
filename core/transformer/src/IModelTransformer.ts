@@ -24,6 +24,7 @@ import { HandlerResponse, IModelExporter, IModelExportHandler } from "./IModelEx
 import { IModelImporter } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import lodashGet = require("lodash.get");
+import { PendingReferenceMap } from "./PendingReferenceMap";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
@@ -113,13 +114,18 @@ export interface IModelTransformOptions {
 /** a container for tracking the state of a partially committed element and finalizing it when it's ready to be fully committed */
 class PartiallyCommittedElement {
   public constructor(
-    public missingPredecessors: Id64Set,
-    private _onComplete: () => void,
+    /** a set of "model|element ++ ID64" pairs, e.g. `model0x11` or `element0x12` */
+    private _missingPredecessors: Set<string>,
+    private _onComplete: () => void
   ) {}
   /** returns whether it completed the partial element */
-  public resolvePredecessor(predecessor: Id64String) {
-    this.missingPredecessors.delete(predecessor);
-    if (this.missingPredecessors.size === 0) this._onComplete();
+  public resolvePredecessor(id: Id64String, isModelRef: boolean) {
+    const key = PartiallyCommittedElement.makePredecessorKey(id, isModelRef);
+    this._missingPredecessors.delete(key);
+    if (this._missingPredecessors.size === 0) this._onComplete();
+  }
+  public static makePredecessorKey(id: Id64String, isModelRef: boolean) {
+    return `${isModelRef ? "model" : "element"}${id}`;
   }
 }
 
@@ -202,37 +208,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** map of (unprocessed element, referencing processed element) pairs to the partially committed element that needs the reference resolved
    * @note instead of using [Dictionary]($bentley) which doesn't support Id64.Uint32Map, * we just use a nested map to implement a map of pair objects,
    * and have some helper methods below for now */
-  protected _pendingReferences = new Id64.Uint32Map<Id64.Uint32Map<PartiallyCommittedElement>>();
-
-  /** implement Map.set for this._pendingReferences */
-  private setPendingReference(unprocessedElemId: Id64String, reffingElemId: Id64String, partialElem: PartiallyCommittedElement): void {
-    let pendingRefSubmap = this._pendingReferences.getById(unprocessedElemId);
-    if (pendingRefSubmap === undefined) {
-      pendingRefSubmap = new Id64.Uint32Map();
-      this._pendingReferences.setById(unprocessedElemId, pendingRefSubmap);
-    }
-    if (pendingRefSubmap.hasById(reffingElemId))
-      throw Error("This is a bug. Pending references should be constructed uniquely and never overwritten");
-    pendingRefSubmap.setById(reffingElemId, partialElem);
-  }
-
-  /** implement Map.get for this._pendingReferences */
-  private getPendingReference(unprocessedElemId: Id64String, reffingElemId: Id64String): PartiallyCommittedElement | undefined {
-    const pendingRefSubmap = this._pendingReferences.getById(unprocessedElemId);
-    if (pendingRefSubmap !== undefined) {
-      return pendingRefSubmap.getById(reffingElemId);
-    }
-    return undefined;
-  }
-
-  /** implement Map.delete for this._pendingReferences */
-  private deletePendingReference(unprocessedElemId: Id64String, reffingElemId: Id64String): boolean {
-    const pendingRefSubmap = this._pendingReferences.getById(unprocessedElemId);
-    if (pendingRefSubmap === undefined) return false;
-    const didDelete = pendingRefSubmap.deleteById(reffingElemId);
-    if (pendingRefSubmap.size === 0) this._pendingReferences.deleteById(unprocessedElemId);
-    return didDelete;
-  }
+  protected _pendingReferences = new PendingReferenceMap<PartiallyCommittedElement>();
 
   /** map of partially committed element ids to their partial commit progress */
   protected _partiallyCommittedElements = new Id64.Uint32Map<PartiallyCommittedElement>();
@@ -559,21 +535,25 @@ export class IModelTransformer extends IModelExportHandler {
     if (this._linkTableReferencesCaches.size === 0)
       this.precacheLinkTableReferences();
 
-    const missingPredecessors = element.getPredecessorIds();
-    for (const id of missingPredecessors)
-      if (this.context.findTargetElementId(id) !== Id64.invalid)
-        missingPredecessors.delete(id);
+    /** see [[PartiallyCommittedElement._missingPredecessors]] */
+    const missingPredecessors = new Set<string>();
+    for (const predecessorId of element.getPredecessorIds()) {
+      if (this.context.findTargetElementId(predecessorId) !== Id64.invalid)
+        missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
+      const predecessorSubModel = this.sourceDb.models.getSubModel(predecessorId);
+      if (predecessorSubModel !== undefined)
+        missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
+    }
 
     const insertPendingReferenceFinalizer = (referencedInSource: Id64String, accessor: string) => {
       const referenceInTarget = this.context.findTargetElementId(referencedInSource);
       if (Id64.isValid(referenceInTarget)) return;
       Logger.logTrace(loggerCategory, `Remapping not found for predecessor in property '${accessor}' of element '${referencedInSource}'`);
       if (!this._partiallyCommittedElements.hasById(elementId)) {
-        // FIXME: probably to make onTransformElement work as well as possible, need to keep any transformed props from before the predecessor check
         thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
         this._partiallyCommittedElements.setById(elementId, thisPartialElem);
       }
-      this.setPendingReference(referencedInSource, elementId, thisPartialElem);
+      this._pendingReferences.set({referenced: referencedInSource, referencer: elementId, isModelRef: false}, thisPartialElem);
     };
 
     const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
@@ -694,11 +674,13 @@ export class IModelTransformer extends IModelExportHandler {
       }
       this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
       // now that we've mapped this elem we can fix unmapped references to it
-      if (this._pendingReferences.hasById(sourceElement.id)) {
-        for (const [referencerId, pendingRef] of this._pendingReferences.getById(sourceElement.id)?.entriesById() ?? []) {
-          pendingRef.resolvePredecessor(sourceElement.id);
-          this.deletePendingReference(sourceElement.id, referencerId);
-        }
+      for (const referencer of this._pendingReferences.getReferencers(sourceElement.id)) {
+        const isModelRef = false; // we're in onExportElement so no
+        const key = {referencer, referenced: sourceElement.id, isModelRef};
+        const pendingRef = this._pendingReferences.get(key);
+        if (!pendingRef) continue;
+        pendingRef.resolvePredecessor(sourceElement.id, isModelRef);
+        this._pendingReferences.delete(key);
       }
       if (!this._options.noProvenance) {
         const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
@@ -733,6 +715,14 @@ export class IModelTransformer extends IModelExportHandler {
     const targetModeledElementId: Id64String = this.context.findTargetElementId(sourceModel.id);
     const targetModelProps: ModelProps = this.onTransformModel(sourceModel, targetModeledElementId);
     this.importer.importModel(targetModelProps);
+    for (const referencer of this._pendingReferences.getReferencers(sourceModel.id)) {
+      const isModelRef = true; // we're in onExportModel so yes
+      const key = { referencer, referenced: sourceModel.id, isModelRef };
+      const pendingRef = this._pendingReferences.get(key);
+      if (!pendingRef) continue;
+      pendingRef.resolvePredecessor(sourceModel.id, isModelRef);
+      this._pendingReferences.delete(key);
+    }
   }
 
   /** Override of [IModelExportHandler.onDeleteModel]($transformer) that is called when [IModelExporter]($transformer) detects that a [Model]($backend) has been deleted from the source iModel. */
