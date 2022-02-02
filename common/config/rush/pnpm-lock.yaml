@@ -1802,6 +1802,7 @@ importers:
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
+      '@types/chai-string': ^1.4.1
       '@types/chai-subset': 1.3.1
       '@types/cpx2': npm:@types/cpx@1.5.0
       '@types/deep-equal': ^1
@@ -1817,6 +1818,7 @@ importers:
       chai: ^4.1.2
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
+      chai-string: ^1.5.0
       chai-subset: 1.6.0
       cpx2: ^3.0.0
       cross-env: ^5.1.4
@@ -1861,6 +1863,7 @@ importers:
       '@types/chai': 4.3.0
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
+      '@types/chai-string': 1.4.2
       '@types/chai-subset': 1.3.1
       '@types/cpx2': /@types/cpx/1.5.0
       '@types/deep-equal': 1.0.1
@@ -1873,6 +1876,7 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
+      chai-string: 1.5.0_chai@4.3.4
       chai-subset: 1.6.0
       cpx2: 3.0.2
       deep-equal: 1.1.1
@@ -8357,7 +8361,6 @@ packages:
     resolution: {integrity: sha512-ld/1hV5qcPRGuwlPdvRfvM3Ka/iofOk2pH4VkasK4b1JJP1LjNmWWn0LsISf6RRzyhVOvs93rb9tM09e+UuF8Q==}
     dependencies:
       '@types/chai': 4.3.0
-    dev: true
 
   /@types/chai-subset/1.3.1:
     resolution: {integrity: sha512-Aof+FLfWzBPzDgJ2uuBuPNOBHVx9Siyw4vmOcsMgsuxX1nfUWSlzpq4pdvQiaBgGjGS7vP/Oft5dpJbX4krT1A==}

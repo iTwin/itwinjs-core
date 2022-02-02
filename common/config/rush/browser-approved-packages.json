@@ -368,7 +368,7 @@
     },
     {
       "name": "chai-string",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "chai-subset",

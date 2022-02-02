@@ -6,6 +6,7 @@ const chai = require("chai");
 const faker = require("faker");
 const chaiJestSnapshot = require("chai-jest-snapshot");
 const chaiAsPromised = require("chai-as-promised");
+const chaiString = require("chai-string");
 const jsdom = require("jsdom");
 
 console.log(`Backend PID: ${process.pid}`);
@@ -24,6 +25,7 @@ m._load = (request, parent, isMain) => {
 
 chai.use(chaiJestSnapshot);
 chai.use(chaiAsPromised);
+chai.use(chaiString);
 
 faker.seed(1);
 
