@@ -52,6 +52,7 @@
       "packageName": "@bentley/imodelbank-client",
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
