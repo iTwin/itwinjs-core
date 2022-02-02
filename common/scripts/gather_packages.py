@@ -1,16 +1,12 @@
 import sys, os, glob, re, subprocess
 import shutil
 
-def determineDistTag(currentVer, latestVer, previousVer):
-  ## The master branch is the only one that should get the 'nightly' release tag
+def determineDistTag(branchName, currentVer, latestVer, previousVer):
+  # The master branch is the only one that should get the 'nightly' release tag
   mainBranch = "master"
+  print ("Branch name: " + branchName + "\nCurrent version: " + currentVer + "\nLatest version: " + latestVer + "\nPrevious version: " + previousVer)
 
   distTag = None
-  if len(sys.argv) == 4:
-    branchName = sys.argv[3]
-
-    print ("Branch name: " + branchName + "\nCurrent version: " + currentVer + "\nLatest version: " + latestVer + "\nPrevious version: " + previousVer)
-
   # The most common case is the tag will be a nightly tag
   if mainBranch in branchName:
     distTag = "nightly"
@@ -82,15 +78,14 @@ def determineDistTag(currentVer, latestVer, previousVer):
               # Assign 'latest' tag if first non rc release of package
               distTag = "latest"
 
-  if distTag is None:
-    return
+  return distTag
 
-  print ("Setting dist tag " + distTag)
-  print ("##vso[build.addbuildtag]dist-tag " + distTag)
-  print ("##vso[task.setvariable variable=isRelease;isSecret=false;isOutput=true;]true")
-
+## Validate arguments
+if len(sys.argv) != 4:
+  sys.exit("Invalid number of arguments to script provided.\nExpected: 3\nReceived: {0}".format(len(sys.argv) - 1))
 artifactStagingDir = os.path.realpath(sys.argv[1])
 sourcesDirectory = os.path.realpath(sys.argv[2])
+branchName = sys.argv[3]
 
 ## Setup
 stagingDir = os.path.join(artifactStagingDir, "imodeljs", "packages")
@@ -149,9 +144,35 @@ for artifact in artifactPaths:
     print("No version found for dist-tag 'previous'")
 
 if packagesToPublish:
-  determineDistTag(localVer, latestVer, previousVer)
+  branchName = sys.argv[4]
+  distTag = determineDistTag(localVer, latestVer, previousVer)
+  if distTag is not None:
+    print ("Setting dist tag " + distTag)
+    print ("##vso[build.addbuildtag]dist-tag " + distTag)
+    print ("##vso[task.setvariable variable=isRelease;isSecret=false;isOutput=true;]true")
+
   print ("There are packages to publish.")
   print ("##vso[build.addbuildtag]package-release")
   print ("##vso[task.setvariable variable=isRelease;isSecret=false;isOutput=true;]true")
 else:
   print ("All packages are up-to-date.")
+
+## Tests
+# print("nightly" == determineDistTag("master", "3.1.0-dev.0", "3.0.0", "2.19.28"))
+# print("nightly" == determineDistTag("master", "3.1.0-dev.0", "3.0.0", ""))
+# print("nightly" == determineDistTag("master", "3.1.0-dev.0", "", ""))
+# print("nightly" == determineDistTag("master", "", "", ""))
+# print(None == determineDistTag("release/3.1.x", "3.1.0", "3.2.1", "2.19.24"))
+# print("previous" == determineDistTag("release/2.19.x", "2.19.25", "3.2.1", "2.19.24"))
+# print("latest" == determineDistTag("release/3.2.x", "3.2.1", "3.1.0", "2.19.24"))
+# print("latest" == determineDistTag("release/3.1.x", "3.1.1", "3.1.0", "2.19.24"))
+# print("rc" == determineDistTag("release/3.1.x", "3.1.1-dev.0", "3.1.0", "2.19.24"))
+# print(None == determineDistTag("release/2.18.x", "2.18.4", "3.1.0", "2.19.24"))
+# print(None == determineDistTag("release/3.0.x", "3.0.1", "3.1.0", "2.19.24"))
+# print("latest" == determineDistTag("release/2.19.x", "2.19.27", "2.19.26", ""))
+# print("previous" == determineDistTag("release/3.0.x", "3.0.1", "4.0.0", ""))
+# print(None == determineDistTag("release/3.0.x", "3.0.1", "3.1.0", ""))
+# print("latest" == determineDistTag("release/3.0.x", "3.0.0", "", ""))
+# print("rc" == determineDistTag("release/3.0.x", "3.0.0-dev.0", "", ""))
+# print("latest" == determineDistTag("release/3.0.x", "3.0.0", "3.0.0-dev.0", ""))
+# print("latest" == determineDistTag("release/3.0.x", "3.0.0", "3.0.0-dev.0", "2.19.26"))
