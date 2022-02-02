@@ -496,110 +496,37 @@ export class IModelTransformer extends IModelExportHandler {
     };
   }
 
-  // (relationship.classFullName, sourceId) pairs mapping to all targets
-  private _linkTableReferencesCaches = new Map<string, Id64.Uint32Map<Id64.Uint32Set>>();
-
-  private precacheLinkTableReferences() {
-    for (const classFullName of [
-      ElementRefersToElements.classFullName,
-      ElementDrivesElement.classFullName,
-      "BisCore:ModelSelectorRefersToModels",
-    ]) {
-      const thisClassCache = new Id64.Uint32Map<Id64.Uint32Set>();
-      this._linkTableReferencesCaches.set(classFullName, thisClassCache);
-      this.sourceDb.withPreparedStatement(
-        `SELECT SourceECInstanceId, TargetECInstanceId FROM ${classFullName}`,
-        (stmt) => {
-          while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-            const sourceId = stmt.getValue(0).getId();
-            const targetId = stmt.getValue(1).getId();
-            let thisSourceCache = thisClassCache.getById(sourceId);
-            if (thisSourceCache === undefined) {
-              thisSourceCache = new Id64.Uint32Set();
-              thisClassCache.setById(sourceId, thisSourceCache);
-            }
-            thisSourceCache.addId(targetId);
-          }
-        }
-      );
-    }
-  }
-
   /** collect references this element has that are yet to be mapped, and if necessary create a
    * PartiallyCommittedElement for it to track resolution of unmapped references
    */
   private collectUnmappedReferences(element: Element) {
-    const elementId = element.id;
-
-    // if (this._linkTableReferencesCaches.size === 0)
-    //   this.precacheLinkTableReferences();
-
-    const missingPredecessors = new Set<string>();
-
-    // FIXME: temporary
-    const findReferenceReadiness = (id: Id64String): "model" | "element" | "none" => {
+    // FIXME: gross
+    const findReferenceReadiness = (id: Id64String): "done" | "no-model" | "none" => {
       const idInTarget = this.context.findTargetElementId(id);
       if (Id64.invalid === idInTarget) "none";
       const isSubModeled = this.sourceDb.models.tryGetSubModel(id);
       if (isSubModeled) {
         const modelInTarget = this.targetDb.models.tryGetModelProps(idInTarget) !== undefined;
-        if (!modelInTarget) return "element";
+        if (!modelInTarget) return "no-model";
       }
-      return "model";
+      return "done";
     };
 
-    let thisPartialElem: PartiallyCommittedElement;
-    const insertPendingReferenceFinalizer = (referenced: Id64String, referenceReadiness: ReturnType<typeof findReferenceReadiness>) => {
-      if (referenceReadiness === "model") return;
-      Logger.logTrace(loggerCategory, `Remapping not found for predecessor '${referenced}' of element '${elementId}'`);
-      if (!this._partiallyCommittedElements.hasById(elementId)) {
-        thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
-        this._partiallyCommittedElements.setById(elementId, thisPartialElem);
-      }
-      this._pendingReferences.set({referenced, referencer: elementId, isModelRef: false}, thisPartialElem);
-      if (referenceReadiness === "element")
-        this._pendingReferences.set({referenced, referencer: elementId, isModelRef: true}, thisPartialElem);
-    };
+    const missingPredecessors = new Set<string>();
+    const thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
 
-    /** see [[PartiallyCommittedElement._missingPredecessors]] */
     for (const predecessorId of element.getPredecessorIds()) {
       const referenceReadiness = findReferenceReadiness(predecessorId);
-      if (referenceReadiness === "model") continue;
-      insertPendingReferenceFinalizer(predecessorId, referenceReadiness);
+      if (referenceReadiness === "done") continue;
+      Logger.logTrace(loggerCategory, `Remapping not found for predecessor '${predecessorId}' of element '${element.id}'`);
+      if (!this._partiallyCommittedElements.hasById(element.id))
+        this._partiallyCommittedElements.setById(element.id, thisPartialElem);
       missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
-      if (referenceReadiness === "element") continue;
-      insertPendingReferenceFinalizer(predecessorId, referenceReadiness);
+      this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: true}, thisPartialElem);
+      if (referenceReadiness === "no-model") continue;
       missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
+      this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: false}, thisPartialElem);
     }
-
-    /*
-    const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
-    const navigationProps = Object.entries(entityMetaData.properties)
-      .filter(([_propName, prop]) => prop.isNavigation)
-      .map(([propName, _prop]) => propName);
-
-    // insert a pending reference for every nav prop
-    for (const navProp of navigationProps) {
-      if (!(navProp in element)) {
-        Logger.logWarning(loggerCategory, `element (${element.id}) is missing exactly named json prop '${navProp}' in its metadata`);
-        continue;
-      }
-      const navPropValInSource: RelatedElement | undefined = (element as any)[navProp]; // cast to any since subclass can have any extensions
-      if (!navPropValInSource || !Id64.isValid(navPropValInSource.id)) continue;
-      insertPendingReferenceFinalizer(navPropValInSource?.id, navProp);
-    }
-
-    // FIXME: need to test nav prop pointing to a model
-
-    // insert a pending reference for every link table relationship where this is the source
-    for (const [relName, refsCache] of this._linkTableReferencesCaches) {
-      const targetIds = refsCache.getById(elementId);
-      for (const targetId of targetIds?.valuesById() ?? []) {
-        insertPendingReferenceFinalizer(targetId, relName);
-        // FIXME: each rel instance needs to be checked itself for navigation properties, since that is also possible
-      }
-    }
-    */
   }
 
   /** Cause the specified Element and its child Elements (if applicable) to be exported from the source iModel and imported into the target iModel.
