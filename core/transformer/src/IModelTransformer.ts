@@ -531,20 +531,10 @@ export class IModelTransformer extends IModelExportHandler {
   private collectUnmappedReferences(element: Element) {
     const elementId = element.id;
 
-    if (this._linkTableReferencesCaches.size === 0)
-      this.precacheLinkTableReferences();
+    // if (this._linkTableReferencesCaches.size === 0)
+    //   this.precacheLinkTableReferences();
 
-    /** see [[PartiallyCommittedElement._missingPredecessors]] */
     const missingPredecessors = new Set<string>();
-    for (const predecessorId of element.getPredecessorIds()) {
-      const isSubModeled = this.sourceDb.models.tryGetSubModel(predecessorId) !== undefined;
-      const elementAlreadyMapped = this.context.findTargetElementId(predecessorId) !== Id64.invalid;
-      const modelAlreadyMapped = isSubModeled && this.context.findTargetModelId(predecessorId) !== Id64.invalid;
-      if(!elementAlreadyMapped)
-        missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
-      if (!modelAlreadyMapped)
-        missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
-    }
 
     // FIXME: temporary
     const findReferenceReadiness = (id: Id64String): "model" | "element" | "none" => {
@@ -559,10 +549,9 @@ export class IModelTransformer extends IModelExportHandler {
     };
 
     let thisPartialElem: PartiallyCommittedElement;
-    const insertPendingReferenceFinalizer = (referenced: Id64String, accessor: string) => {
-      const referenceReadiness = findReferenceReadiness(referenced);
+    const insertPendingReferenceFinalizer = (referenced: Id64String, referenceReadiness: ReturnType<typeof findReferenceReadiness>) => {
       if (referenceReadiness === "model") return;
-      Logger.logTrace(loggerCategory, `Remapping not found for predecessor in property '${accessor}' of element '${referenced}'`);
+      Logger.logTrace(loggerCategory, `Remapping not found for predecessor '${referenced}' of element '${elementId}'`);
       if (!this._partiallyCommittedElements.hasById(elementId)) {
         thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
         this._partiallyCommittedElements.setById(elementId, thisPartialElem);
@@ -572,6 +561,18 @@ export class IModelTransformer extends IModelExportHandler {
         this._pendingReferences.set({referenced, referencer: elementId, isModelRef: true}, thisPartialElem);
     };
 
+    /** see [[PartiallyCommittedElement._missingPredecessors]] */
+    for (const predecessorId of element.getPredecessorIds()) {
+      const referenceReadiness = findReferenceReadiness(predecessorId);
+      if (referenceReadiness === "model") continue;
+      insertPendingReferenceFinalizer(predecessorId, referenceReadiness);
+      missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
+      if (referenceReadiness === "element") continue;
+      insertPendingReferenceFinalizer(predecessorId, referenceReadiness);
+      missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
+    }
+
+    /*
     const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
     const navigationProps = Object.entries(entityMetaData.properties)
       .filter(([_propName, prop]) => prop.isNavigation)
@@ -598,6 +599,7 @@ export class IModelTransformer extends IModelExportHandler {
         // FIXME: each rel instance needs to be checked itself for navigation properties, since that is also possible
       }
     }
+    */
   }
 
   /** Cause the specified Element and its child Elements (if applicable) to be exported from the source iModel and imported into the target iModel.
