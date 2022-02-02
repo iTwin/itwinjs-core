@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Functions that fit a view to a volume accept an optional MarginOptions specifying how tightly to fit.",
+      "comment": "Functions that fit a view to a volume now accept an optional MarginOptions specifying how tightly to fit.",
       "type": "none"
     }
   ],
