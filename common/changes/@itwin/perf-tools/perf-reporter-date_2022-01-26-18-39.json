@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/perf-tools",
+      "comment": "Add ability to set the Date for a reported entry",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/perf-tools"
+}

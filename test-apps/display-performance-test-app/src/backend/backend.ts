@@ -44,6 +44,7 @@ export async function initializeBackend() {
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
     });
+    await authClient.signInSilent();
     iModelHost.authorizationClient = authClient;
     await ElectronHost.startup({
       electronHost: {
