@@ -144,8 +144,7 @@ for artifact in artifactPaths:
     print("No version found for dist-tag 'previous'")
 
 if packagesToPublish:
-  branchName = sys.argv[4]
-  distTag = determineDistTag(localVer, latestVer, previousVer)
+  distTag = determineDistTag(branchName, localVer, latestVer, previousVer)
   if distTag is not None:
     print ("Setting dist tag " + distTag)
     print ("##vso[build.addbuildtag]dist-tag " + distTag)
