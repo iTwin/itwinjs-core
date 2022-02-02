@@ -37,6 +37,8 @@ import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { PointStreamXYZHandlerBase, VariantPointDataStream } from "../../geometry3d/PointStreaming";
 import { MultiLineStringDataVariant } from "../../topology/Triangulation";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
+import { Geometry } from "../../Geometry";
 
 /* eslint-disable no-console */
 
@@ -436,23 +438,110 @@ describe("RegionBoolean", () => {
         expect(ck.getNumErrors()).equals(0);
         });
 
-    // Near-tangency union from MS Bug#716145. TODO: CURRENTLY FAILS.
-    it.skip("NearTangencyUnion", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/areaBoolean/AreaBoolean.716145.Inputs.imjs", "utf8"))) as AnyRegion[];
-      exerciseAreaBooleans([inputs[0]], [inputs[1]], ck, allGeometry, 0, 0);
-      GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "NearTangencyUnion");
-
-      // explicitly verify known output
-      const result = RegionOps.regionBooleanXY(inputs[0], inputs[1], RegionBinaryOpType.Union);
-      const output = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/areaBoolean/AreaBoolean.716145.Output.imjs", "utf8"))) as AnyRegion;
-      if (output !== undefined && result !== undefined)
-        ck.testTrue(output.isAlmostEqual(result), "Area Boolean union result as expected");
-
-      expect(ck.getNumErrors()).equals(0);
+        // Near-tangency union from MS Bug#716145. TODO: CURRENTLY FAILS.
+  it.only("NearTangencyUnion", () => {
+    testSelectedTangencySubsets(false, 0, [], [11,12], "TwoArcSubSets");
+    testSelectedTangencySubsets(true, 0, [2,3,4,7,8], [], "FullPolygon");
+    testSelectedTangencySubsets(true, [1,2,3,4,1], [2,3,4,7,8], [], "UpperSymmetricQuad");
+    testSelectedTangencySubsets(false, [4,5,6,7,4], [-1], [], "LowerRightLobeQuadA");
+    testSelectedTangencySubsets(false, [3,5,6,8,3], [-1], [], "LowerRightLobeQuadB");
     });
-  });
+});
+
+function testSelectedTangencySubsets(
+  doImmediateFullBoolean: boolean,
+  linestringSimplification: number | number[],
+  arcSimplificationIndices: number [],
+  adjacentArcBaseIndices: number[],
+  outputFileSuffix: string) {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/areaBoolean/AreaBoolean.716145.Inputs.imjs", "utf8"))) as AnyRegion[];
+  // const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/areaBoolean/AreaBoolean.716145.RemoveShortSegment.imjs", "utf8"))) as AnyRegion[];
+  let x0 = 0;
+  let y0 = 0;
+  const delta = 150;
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
+  x0 += 3 * delta;
+  if (inputs[0] instanceof Loop && inputs[0].children[0] instanceof LineString3d) {
+    inputs[0].children[0] = simplifyLineString(inputs[0].children[0], linestringSimplification);
+  }
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
+  captureShiftedClones(allGeometry, inputs, x0, y0, delta, 0);
+  if (doImmediateFullBoolean) {
+    exerciseAreaBooleans([inputs[0]], [inputs[1]], ck, allGeometry, 0, 0);
+}
+  x0 += 4 * delta;
+  // Extract each arc (with closure chord) as an independent parameter..
+  const loop = inputs[1];
+//    const indicesToTest = [2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8];
+  const ex = 0.01;
+  const ey = 0.0;
+  if (loop instanceof Loop) {
+    for (const index of arcSimplificationIndices) {
+      y0 = 0;
+      x0 += 5 * delta;
+      if (index < 0) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
+        const result = RegionOps.regionBooleanXY(inputs[0], inputs[1], RegionBinaryOpType.Union);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y0 + delta);
+        continue;
+      }
+      const child = loop.children[index];
+      if (child instanceof Arc3d && !child.sweep.isFullCircle) {
+        y0 += delta * 2;
+        const segment1 = LineSegment3d.create(child.endPoint(), child.startPoint());
+        const arc1 = child.clone();
+        const loop1 = Loop.create(arc1, segment1);
+        captureShiftedClones(allGeometry, [inputs[0], loop1], x0, y0, delta, 0);
+        y0 += delta;
+        const result1 = RegionOps.regionBooleanXY(inputs[0], loop1, RegionBinaryOpType.Union);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, result1, x0, y0);
+        const tryShifted = false;
+        if (tryShifted) {
+          loop1.tryTranslateInPlace(ex, ey);
+          const result2 = RegionOps.regionBooleanXY(inputs[0], loop1, RegionBinaryOpType.Union);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, result2, x0 + delta, y0);
+        }
+      } else if (child instanceof LineSegment3d) {
+        const a = child.curveLength();
+        console.log({ segment: IModelJson.Writer.toIModelJson(child), a });
+      }
+    }
+  }
+  if (adjacentArcBaseIndices.length > 0){
+      x0 += 5 * delta;
+        y0 = 0;
+        // Extract each arc (with closure chord) as an independent parameter..
+        if (loop instanceof Loop) {
+          const n = loop.children.length;
+          for (const i0 of adjacentArcBaseIndices) {
+            if (i0 >= n || i0 < 0)
+              continue;
+            const i1 = (i0 + 1) % n;
+            if (loop.children[i0] instanceof Arc3d && loop.children[i1] instanceof Arc3d) {
+              const arc0 = loop.children[i0];
+              const arc1 = loop.children[i1];
+              // Do these two consecutive arcs join with tangency ?
+              const tangent0 = arc0.fractionToPointAndUnitTangent(1);
+              const tangent1 = arc1.fractionToPointAndUnitTangent(0);
+              console.log({ d: tangent0.origin.distance(tangent1.origin) });
+              if (tangent0.direction.angleTo(tangent1.direction).degrees < 0.1) {
+                y0 += delta;
+                const segment1 = LineSegment3d.create(arc1.endPoint(), arc0.startPoint());
+                const loop1 = Loop.create(arc0, arc1, segment1);
+                captureShiftedClones(allGeometry, [inputs[0], loop1], x0, y0, delta, 0);
+                y0 += delta;
+                const result1 = RegionOps.regionBooleanXY(inputs[0], loop1, RegionBinaryOpType.Union);
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, result1, x0, y0);
+              }
+            }
+          }
+        }
+      }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", `NearTangencyUnion${  outputFileSuffix}`);
+  expect(ck.getNumErrors()).equals(0);
+}
 
   /**
  *
@@ -940,4 +1029,29 @@ class SectionDataParser extends PointStreamXYZHandlerBase {
       }
     }
   }
+}
+
+function captureShiftedClones(allGeometry: GeometryQuery[], newGeometry: GeometryQuery[], x0: number, y0: number, dx: number, dy: number) {
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, newGeometry, x0, y0);
+  for (const g of newGeometry) {
+    x0 += dx;
+    y0 += dy;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g, x0, y0);
+  }
+
+}
+function simplifyLineString(ls: LineString3d, select: number | number[]): LineString3d {
+  if (Array.isArray(select)) {
+    const points = [];
+    for (const index of select)
+      points.push(ls.pointAt(index));
+    return LineString3d.create(points);
+  } else if (select === 1) {
+    // Return a quad that includes a critical vertex for tangency problems
+    const smallLineString = LineString3d.create(ls.pointAt(0), ls.pointAt(5), ls.pointAt(7), ls.pointAt(8), ls.pointAt(0));
+    return smallLineString;
+  } else if (select === 2) {
+    return LineString3d.create(PolylineOps.compressByChordError(ls.points, Geometry.smallMetricDistance));
+  }
+return ls;
 }
