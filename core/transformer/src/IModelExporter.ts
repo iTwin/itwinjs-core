@@ -570,7 +570,6 @@ export class IModelExporter {
     // the order and `await`ing of calls beyond here is depended upon by the IModelTransformer for a current bug workaround
     if (this.shouldExportElement(element)) {
       await this.handler.onExportElement(element, isUpdate);
-      await this.ensureCoreAsyncHandlerAwaitedHack; // eslint-disable-line deprecation/deprecation
       await this.trackProgress();
       await this.exportElementAspects(elementId);
       return this.exportChildElements(elementId);
@@ -583,8 +582,8 @@ export class IModelExporter {
    * ```ts
    * class MyIModelTransformer {
    *   onExportElement(sourceElement) {
-   *     doStuff();
    *     super.onExportElement(sourceElement); // does not return or await the super call which may be a promise
+   *     doStuff(); // this may rely on the result of incomplete code!
    *   }
    * }
    * ```
@@ -602,7 +601,7 @@ export class IModelExporter {
    * class with an explicit promise return type on one of the handlers, it must be awaited
    * @deprecated as a mark to remove this the next time we can make a breaking change
    */
-  public ensureCoreAsyncHandlerAwaitedHack: Promise<any> | undefined;
+  private _ensureCoreAsyncHandlerAwaitedHack: Promise<any> | undefined;
 
   /** Export the child elements of the specified element from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.

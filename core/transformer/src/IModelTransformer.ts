@@ -592,6 +592,8 @@ export class IModelTransformer extends IModelExportHandler {
       insertPendingReferenceFinalizer(navPropValInSource?.id, navProp);
     }
 
+    // FIXME: need to test nav prop pointing to a model
+
     // insert a pending reference for every link table relationship where this is the source
     for (const [relName, refsCache] of this._linkTableReferencesCaches) {
       const targetIds = refsCache.getById(elementId);
@@ -645,7 +647,12 @@ export class IModelTransformer extends IModelExportHandler {
           }
           const alreadyExported = this.context.findTargetElementId(id) !== Id64.invalid;
           if (alreadyExported) return;
-          await this.exporter.exportElement(id);
+          if (referenceKey === "models")
+            await this.exporter.exportModel(id);
+          else if (referenceKey === "model")
+            await this.exporter.exportModel(id);
+          else
+            await this.exporter.exportElement(id);
         }));
       }
 
@@ -703,11 +710,7 @@ export class IModelTransformer extends IModelExportHandler {
       }
     };
 
-    const resultPromise = asyncImpl();
-    // see [IModelExporter.ensureCoreAsyncHandlerAwaitedHack]($transformer)
-    // eslint-disable-next-line @typescript-eslint/dot-notation, deprecation/deprecation
-    this.exporter["ensureCoreAsyncHandlerAwaitedHack"] = resultPromise;
-    return resultPromise;
+    return asyncImpl();
   }
 
   /** Override of [IModelExportHandler.onDeleteElement]($transformer) that is called when [IModelExporter]($transformer) detects that an Element has been deleted from the source iModel.

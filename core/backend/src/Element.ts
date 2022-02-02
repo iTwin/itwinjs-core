@@ -370,7 +370,7 @@ export class Element extends Entity implements ElementProps {
    * @note any property listed here must be added to the predecessor ids in [[collectPredecessorIds]]
    * @beta
    */
-  public static requiredReferenceKeys: string[] = ["parent", "model"];
+  public static readonly requiredReferenceKeys: ReadonlyArray<string> = ["parent", "model"];
 
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
@@ -459,7 +459,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     predecessorIds.add(this.category);
     // TODO: GeometryPartIds?
   }
-  public static override requiredReferenceKeys = [...super.requiredReferenceKeys, "category"];
+  public static override readonly requiredReferenceKeys = [...super.requiredReferenceKeys, "category"];
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.

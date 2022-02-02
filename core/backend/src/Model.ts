@@ -94,6 +94,14 @@ export class Model extends Entity implements ModelProps {
     return val;
   }
 
+  /** A *required reference* is an element that had to be inserted before this element could have been inserted.j
+   * This is the list of property paths on this element that store references to those elements
+   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces requires references.
+   * @note any property listed here must be added to the predecessor ids in [[collectPredecessorIds]]
+   * @beta
+   */
+  public static readonly requiredReferenceKeys: ReadonlyArray<string> = ["parent", "model"];
+
   /** Called before a new Model is inserted.
    * @note throw an exception to disallow the insert
    * @note If you override this method, you must call super.

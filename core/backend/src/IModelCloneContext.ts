@@ -91,6 +91,17 @@ export class IModelCloneContext {
     return this._nativeContext.findElementId(sourceElementId);
   }
 
+  /** Look up a target ModelId from the source ModelId.
+   * @returns the target ModelId or [Id64.invalid]($bentley) if a mapping not found.
+   */
+  public findTargetModelId(sourceModelId: Id64String): Id64String {
+    const idInTarget = this.findTargetElementId(sourceModelId);
+    if (Id64.invalid === idInTarget) return Id64.invalid;
+    const modelExists = this.targetDb.models.tryGetModelProps(idInTarget) !== undefined;
+    if (!modelExists) return Id64.invalid;
+    return idInTarget;
+  }
+
   /** Filter out geometry entries in the specified SubCategory from GeometryStreams in the target iModel.
    * @note It is not possible to filter out a *default* SubCategory. A request to do so will be ignored.
    * @see [SubCategory.isDefaultSubCategory]($backend)
