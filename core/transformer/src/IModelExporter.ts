@@ -715,10 +715,10 @@ class ChangedInstanceIds {
     changesets.forEach((changeset): void => {
       const changesetPath = changeset.pathname;
       const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
-      if (undefined !== statusOrResult.error) {
+      if (statusOrResult.error) {
         throw new IModelError(statusOrResult.error.status, "Error processing changeset");
       }
-      if ("" !== statusOrResult.result) {
+      if (statusOrResult.result && statusOrResult?.result !== "") {
         const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
         changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
         changedInstanceIds.model.addFromJson(result.model);

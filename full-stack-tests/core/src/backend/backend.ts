@@ -97,6 +97,7 @@ async function init() {
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
     });
+    await authClient.signInSilent();
     iModelHost.authorizationClient = authClient;
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
     await authClient.signInSilent();
