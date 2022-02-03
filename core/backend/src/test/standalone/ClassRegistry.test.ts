@@ -116,6 +116,7 @@ describe("Class Registry - generated classes", () => {
 
   after(() => {
     imodel?.close();
+    ClassRegistry.unregisterClassesFrom(TestGeneratedClasses);
   });
 
   interface TestEntityProps extends DefinitionElementProps {
@@ -331,6 +332,7 @@ describe("Class Registry - generated classes", () => {
     expect(testElementWithNavPropCollectPredecessorsSpy.called).to.be.true;
 
     sinon.restore();
+    ClassRegistry.unregisterClassesFrom(MyTestGeneratedClasses);
   });
 });
 
