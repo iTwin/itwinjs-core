@@ -3,14 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, IModelDb, IModelHost, PhysicalModel, PhysicalObject, PhysicalPartition, RepositoryLink, SpatialCategory } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, IModelDb, IModelHost, PhysicalModel, PhysicalObject, PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import * as path from "path";
+import * as fs from "fs";
 import { AccessToken } from "@itwin/core-bentley";
 import { Code, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { IModelTransformer } from "@itwin/core-transformer";
 import { HubMock } from "@itwin/core-backend/lib/cjs/test/HubMock";
-import { HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
+import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { KnownTestLocations } from "./IModelTestUtils";
 
 // some json will be required later, but we don't want an eslint-disable line in the example code, so just disable for the file
 /* eslint-disable @typescript-eslint/no-var-requires */
@@ -30,6 +32,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
     iTwinId: myITwinId,
     iModelName: "my-branch-imodel",
     version0: masterDb.pathName,
+    noLocks: true, // you may prefer locks for your application
   });
 
   // download and open the new branch
@@ -147,7 +150,7 @@ async function arbitraryEdit(db: BriefcaseDb, myAccessToken: AccessToken, descri
     category: spatialCategoryId,
     code: new Code({ spec: IModelDb.rootSubjectId, scope: IModelDb.rootSubjectId, value: `${arbitraryEdit.editCounter}` }),
     userLabel: `${arbitraryEdit.editCounter}`,
-    geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+    geom: BackendTestUtils.createBox(Point3d.create(1, 1, 1)),
     placement: {
       origin: Point3d.create(arbitraryEdit.editCounter, arbitraryEdit.editCounter, 0),
       angles: YawPitchRollAngles.createDegrees(0, 0, 0),
@@ -155,6 +158,7 @@ async function arbitraryEdit(db: BriefcaseDb, myAccessToken: AccessToken, descri
   };
   arbitraryEdit.editCounter++;
   db.elements.insertElement(physicalObjectProps);
+  db.saveChanges();
   await db.pushChanges({
     accessToken: myAccessToken,
     description,
@@ -167,9 +171,17 @@ namespace arbitraryEdit {
 }
 
 describe("IModelBranchingOperations", () => {
+  const version0Path = path.join(KnownTestLocations.outputDir, "branching-ops.bim");
 
-  before(async () => HubMock.startup("IModelBranchingOperations"));
-  after(() => HubMock.shutdown());
+  before(async () => {
+    HubMock.startup("IModelBranchingOperations");
+    if (!fs.existsSync(version0Path))
+      SnapshotDb.createEmpty(version0Path, { rootSubject: { name: "branching-ops" }});
+  });
+
+  after(() => {
+    HubMock.shutdown();
+  });
 
   it("run branching operations", async () => {
     const myAccessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
@@ -177,7 +189,8 @@ describe("IModelBranchingOperations", () => {
     const masterIModelId = await IModelHost.hubAccess.createNewIModel({
       iTwinId: myITwinId,
       iModelName: "my-branch-imodel",
-      version0: path.join(__dirname, "assets", "test.bim"),
+      version0: version0Path,
+      noLocks: true,
     });
     const { masterDb, branchDb } = await initializeBranch(myITwinId, masterIModelId, myAccessToken);
     await arbitraryEdit(masterDb, myAccessToken, "edit master");
