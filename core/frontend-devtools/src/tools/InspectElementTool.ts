@@ -142,12 +142,13 @@ export class InspectElementTool extends PrimitiveTool {
       let str = await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
       if (this._explodeParts) {
         const regex = /^part id: (0x[a-f0-9]+)/gm;
-        request.elementIds = [];
+        const partIds = new Set<string>();
         let match;
         while (null !== (match = regex.exec(str)))
-          request.elementIds.push(match[1]);
+          partIds.add(match[1]);
 
-        if (request.elementIds.length > 0) {
+        if (partIds.size > 0) {
+          request.elementIds = Array.from(partIds);
           str += `\npart ids: ${JSON.stringify(request.elementIds)}\n`;
           str += await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
         }
