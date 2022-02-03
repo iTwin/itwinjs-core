@@ -108,7 +108,7 @@ export class AmbientOcclusionEditor {
       id: "viewAttr_AOTexelStepSize",
       min: "1.0",
       step: "0.005",
-      max: "5.0",
+      max: "50.0",
       value: "0.0",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.texelStepSize = parseFloat(slider.value);
