@@ -21,7 +21,7 @@ describe("QuantityFormatter", () => {
   });
 
   beforeEach(async () => {
-    imodel = await SnapshotConnection.openFile("testUnits.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await SnapshotConnection.openFile("testIModel.bim"); // relative path resolved by BackendTestAssetResolver
     const schemaLocater = new ECSchemaRpcLocater(imodel);
     context = new SchemaContext();
     context.addLocater(schemaLocater);
