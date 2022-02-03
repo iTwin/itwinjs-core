@@ -52,7 +52,7 @@
     },
     {
       "name": "@itwin/browser-authorization",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/build-tools",

@@ -48,7 +48,7 @@
     "@itwin/core-react": "workspace:*",
     "@itwin/components-react": "workspace:*",
     "@itwin/imodel-components-react": "workspace:*",
-    "@itwin/electron-authorization": "^0.7.0",
+    "@itwin/electron-authorization": "^0.8.2",
     "@itwin/itwinui-css": "0.44.1",
     "@itwin/itwinui-react": "1.29.3",
     "react": "^17.0.0",

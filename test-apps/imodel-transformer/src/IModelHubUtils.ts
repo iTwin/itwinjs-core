@@ -53,9 +53,10 @@ export class IModelTransformerTestAppHost {
           redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
           scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
         });
+        await client.signInSilent();
         this._authClient = client;
 
-        ElectronMainAuthorization.onUserStateChanged.addOnce((token) => {
+        ElectronMainAuthorization.onUserStateChanged.addOnce((token: AccessToken) => {
           if (token !== "") {
             resolve(token);
           } else {
