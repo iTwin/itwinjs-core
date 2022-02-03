@@ -4,6 +4,7 @@
 
 ```ts
 
+import * as express from 'express';
 import { RpcConfiguration } from '@itwin/core-common';
 import { Server } from 'http';
 import { WebAppRpcProtocol } from '@itwin/core-common';
@@ -12,7 +13,7 @@ import { WebAppRpcProtocol } from '@itwin/core-common';
 export class IModelJsExpressServer {
     constructor(protocol: WebAppRpcProtocol, config?: IModelJsExpressServerConfig);
     // (undocumented)
-    protected _app: import("express").Application;
+    protected _app: express.Application;
     // (undocumented)
     protected _configureHeaders(): void;
     // (undocumented)

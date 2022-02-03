@@ -258,7 +258,7 @@ public;RectangleProps
 public;RenderPropsArgs
 public;ResizableContainerObserver({ onResize, children }:
 internal;ResizeObserver: ResizeObserverType
-internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
+internal;ResizeObserverType = typeof ResizeObserverPolyfill.default
 public;ScrollPositionMaintainer 
 public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 

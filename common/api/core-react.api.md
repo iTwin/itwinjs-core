@@ -31,6 +31,7 @@ import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import * as ReactAutosuggest from 'react-autosuggest';
 import { RelativePosition } from '@itwin/appui-abstract';
+import * as ResizeObserverPolyfill from 'resize-observer-polyfill';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { ToggleSwitchProps } from '@itwin/itwinui-react';
 import { ValueType } from 'react-select/src/types';
@@ -1742,7 +1743,7 @@ export function ResizableContainerObserver({ onResize, children }: {
 export const ResizeObserver: ResizeObserverType;
 
 // @internal (undocumented)
-export type ResizeObserverType = typeof import("resize-observer-polyfill").default;
+export type ResizeObserverType = typeof ResizeObserverPolyfill.default;
 
 // @public
 export class ScrollPositionMaintainer implements IDisposable {
