@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Web IPC fix (when reloading frontend).",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

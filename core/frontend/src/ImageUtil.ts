@@ -6,7 +6,6 @@
  * @module Rendering
  */
 
-import { ProcessDetector } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { ViewRect } from "./ViewRect";
@@ -274,19 +273,15 @@ export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha
  * @beta
  */
 export function openImageDataUrlInNewWindow(url: string, title?: string): void {
-  if (ProcessDetector.isElectronAppFrontend) {
-    window.open(url, title);
-  } else {
-    const win = window.open();
-    if (null === win)
-      return;
+  const win = window.open();
+  if (null === win)
+    return;
 
-    const div = win.document.createElement("div");
-    div.innerHTML = `<img src='${url}'/>`;
-    win.document.body.append(div);
-    if (undefined !== title)
-      win.document.title = title;
-  }
+  const div = win.document.createElement("div");
+  div.innerHTML = `<img src='${url}'/>`;
+  win.document.body.append(div);
+  if (undefined !== title)
+    win.document.title = title;
 }
 
 /** Determine the maximum [[ViewRect]] that can be fitted and centered in specified ViewRect given a required aspect ratio.

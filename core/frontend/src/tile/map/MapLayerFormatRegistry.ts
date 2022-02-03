@@ -43,7 +43,7 @@ export interface MapLayerOptions {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   AzureMaps?: MapLayerKey;
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  MapBoxImagery?: MapLayerKey;
+  MapboxImagery?: MapLayerKey;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   BingMaps?: MapLayerKey;
   [format: string]: MapLayerKey | undefined;

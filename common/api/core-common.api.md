@@ -4604,7 +4604,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
     getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
     static readonly interfaceName = "IModelReadRpcInterface";
     static interfaceVersion: string;
@@ -4903,8 +4903,6 @@ export namespace IpcWebSocketMessage {
     // (undocumented)
     export function internal(): IpcWebSocketMessage;
     // (undocumented)
-    export function next(): number;
-    // (undocumented)
     export function skip(message: IpcWebSocketMessage): boolean;
 }
 
@@ -4927,7 +4925,9 @@ export enum IpcWebSocketMessageType {
 // @internal (undocumented)
 export abstract class IpcWebSocketTransport {
     // (undocumented)
-    protected notifyIncoming(data: any): Promise<IpcWebSocketMessage>;
+    protected notifyClose(connection: any): void;
+    // (undocumented)
+    protected notifyIncoming(data: any, connection: any): Promise<IpcWebSocketMessage>;
     // (undocumented)
     abstract send(message: IpcWebSocketMessage): void;
     // (undocumented)
