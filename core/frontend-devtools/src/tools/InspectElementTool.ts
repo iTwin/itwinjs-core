@@ -37,6 +37,7 @@ export class InspectElementTool extends PrimitiveTool {
   private _modal = false;
   private _useSelection = false;
   private _doCopy = false;
+  private _explodeParts = false;
 
   constructor(options?: GeometrySummaryOptions, elementIds?: Id64String[]) {
     super();
@@ -138,7 +139,20 @@ export class InspectElementTool extends PrimitiveTool {
     };
     let messageDetails: NotifyMessageDetails;
     try {
-      const str = await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
+      let str = await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
+      if (this._explodeParts) {
+        const regex = /^part id: (0x[a-f0-9]+)/gm;
+        request.elementIds = [];
+        let match;
+        while (null !== (match = regex.exec(str)))
+          request.elementIds.push(match[1]);
+
+        if (request.elementIds.length > 0) {
+          str += `\npart ids: ${JSON.stringify(request.elementIds)}\n`;
+          str += await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
+        }
+      }
+
       if (this._doCopy)
         copyStringToClipboard(str);
 
@@ -213,6 +227,8 @@ export class InspectElementTool extends PrimitiveTool {
     const doCopy = args.getBoolean("c");
     if (undefined !== doCopy)
       this._doCopy = doCopy;
+
+    this._explodeParts = true === args.getBoolean("e");
 
     return this.run();
   }
