@@ -2,8 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module QuantityFormatting
+ */
 
-// Additional data like alternate display label not found in Units Schema
+/**
+ * Additional unit data such alternate display label not found in the Units Schema
+ */
 export const UNIT_EXTRA_DATA = [
   // Angles ( base unit radian )
   { name: "Units.RAD", altDisplayLabels: ["radian"] },
