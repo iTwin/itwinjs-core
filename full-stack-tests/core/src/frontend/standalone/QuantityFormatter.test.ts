@@ -28,7 +28,8 @@ describe("QuantityFormatter", () => {
   });
 
   afterEach(async () => {
-    await imodel.close();
+    if (undefined !== imodel)
+      await imodel.close();
   });
 
   it("QuantityFormatter initialized properly using units schema from iModel", async () => {
