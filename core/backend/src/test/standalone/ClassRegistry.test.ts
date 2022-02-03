@@ -7,11 +7,10 @@ import * as sinon from "sinon";
 import * as path from "path";
 import { BisCodeSpec, Code, DefinitionElementProps, ElementAspectProps, EntityMetaData, RelatedElement, RelatedElementProps } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, DefinitionElement, IModelDb, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+  BackendRequestContext, DefinitionElement, Element, IModelDb, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { Id64Set } from "@bentley/bentleyjs-core";

@@ -9,9 +9,17 @@
 import { DbResult, Id64, Id64Set, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { EntityMetaData, IModelError, RelatedElement } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
-import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
+
+
+// the following import causes a cyclic dependency in 2.19.x, but not 3.x from which this change was backported
+// import { Element } from "./Element";
+// as such, the module import done lazily here to avoid the cyclic dependency without moving things around
+let _Element: typeof import("./Element").Element | undefined;
+function getElementJsClass() {
+  return _Element ??= require("./Element").Element;
+}
 
 /** The mapping between a BIS class name (in the form "schema:class") and its JavaScript constructor function
  * @public
@@ -86,7 +94,7 @@ export class ClassRegistry {
       .filter(([_propName, prop]) => prop.isNavigation)
       .map(([propName, _prop]) => propName);
 
-    if (generatedClass.is(Element)) {
+    if (generatedClass.is(getElementJsClass())) {
       Object.defineProperty(
         generatedClass.prototype,
         "collectPredecessorIds",
