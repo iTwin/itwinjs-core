@@ -562,6 +562,10 @@ export class QuantityFormatter implements UnitsProvider {
     this.onUnitsProviderChanged.emit();
   }
 
+  public resetToUseInternalUnitsProvider() {
+    this.unitsProvider = new BasicUnitsProvider();
+  }
+
   public async registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean) {
     if (!replace && this._quantityTypeRegistry.has(entry.key))
       return false;
