@@ -1453,8 +1453,8 @@ export abstract class CurveChain extends CurveCollection {
 export class CurveChainWireOffsetContext {
     constructor();
     static applyBasePoints(cp: CurvePrimitive | undefined, startPoint: Point3d | undefined, endPoint: Point3d | undefined): CurvePrimitive | undefined;
-    static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;
-    static createSingleOffsetPrimitiveXY(g: CurvePrimitive, distanceLeft: number): CurvePrimitive | CurvePrimitive[] | undefined;
+    static constructCurveXYOffset(curves: Path | Loop, offsetDistance: number | JointOptions, strokeOptions?: StrokeOptions | undefined): CurveCollection | undefined;
+    static createSingleOffsetPrimitiveXY(g: CurvePrimitive, offsetDistance: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     }
 
 // @public
@@ -3034,7 +3034,8 @@ export interface IStrokeHandler {
 
 // @public
 export class JointOptions {
-    constructor(leftOffsetDistance: number, minArcDegrees?: number, maxChamferDegrees?: number);
+    constructor(leftOffsetDistance: number, minArcDegrees?: number, maxChamferDegrees?: number, preserveEllipticalArcs?: boolean);
+    clone(): JointOptions;
     static create(leftOffsetDistanceOrOptions: number | JointOptions): JointOptions;
     // (undocumented)
     leftOffsetDistance: number;
@@ -3043,6 +3044,8 @@ export class JointOptions {
     minArcDegrees: number;
     needArc(theta: Angle): boolean;
     numChamferPoints(theta: Angle): number;
+    preserveEllipticalArcs: boolean;
+    setFrom(other: JointOptions): void;
 }
 
 // @public
@@ -3704,6 +3707,15 @@ export class NumberArray {
     static maxAbsTwo(a1: number, a2: number): number;
     static preciseSum(data: number[]): number;
     static sum(data: number[] | Float64Array): number;
+}
+
+// @public
+export class OffsetOptions {
+    constructor(offsetDistance: number, preserveEllipticalArcs?: boolean, strokeOptions?: StrokeOptions);
+    static create(offsetDistanceOrOptions: number | OffsetOptions): OffsetOptions;
+    leftOffsetDistance: number;
+    preserveEllipticalArcs: boolean;
+    strokeOptions: StrokeOptions;
 }
 
 // @public
@@ -4973,7 +4985,7 @@ export class RegionOps {
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
     // @alpha
     static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[]): SignedLoops[];
-    static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;
+    static constructCurveXYOffset(curves: Path | Loop, offsetDistance: number | JointOptions, strokeOptions?: StrokeOptions | undefined): CurveCollection | undefined;
     static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
     static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap?: boolean, consolidateAdjacentPrimitives?: boolean): CurveCollection | undefined;
     static curveArrayRange(data: any, worldToLocal?: Transform): Range3d;
@@ -5367,6 +5379,7 @@ export class StrokeOptions {
     applyMinStrokesPerPrimitive(minCount: number): number;
     applyTolerancesToArc(radius: number, sweepRadians?: number): number;
     chordTol?: number;
+    clone(): StrokeOptions;
     static createForCurves(): StrokeOptions;
     static createForFacets(): StrokeOptions;
     defaultCircleStrokes: number;

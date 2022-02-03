@@ -14,7 +14,7 @@ import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
+import { JointOptions, PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -42,6 +42,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
 import * as fs from "fs";
+import { StrokeOptions } from "../../core-geometry";
 
 const diegoPathA = [
   {
@@ -634,6 +635,15 @@ function curveLength(source: AnyCurve): number {
   return 0.0;
 }
 
+function testOffset(allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, jointOptions: JointOptions, strokeOptions: StrokeOptions): boolean {
+  const offsetCurve = RegionOps.constructCurveXYOffset(baseCurve, jointOptions, strokeOptions);
+  if (offsetCurve === undefined)
+    return false;
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurve, delta.x, delta.y);
+  delta.y += 2 * jointOptions.leftOffsetDistance + offsetCurve.range().yLength();
+  return true;
+}
+
 describe("CloneSplitCurves", () => {
   it("PathSplits", () => {
     const allGeometry: GeometryQuery[] = [];
@@ -812,10 +822,37 @@ describe("CloneSplitCurves", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "ChainAndOffset");
-
     expect(ck.getNumErrors()).equals(0);
-
   });
+
+  it.only("OffsetCurves", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    const delta = Point2d.createZero();
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/offsetCurve.imjs", "utf8"))) as CurveChain[];
+    const jointOptions = new JointOptions(0.5);
+    jointOptions.preserveEllipticalArcs = true;   // TEMPORARY restriction, uncomment ellipse lines below when finish B-spline offset code
+    const strokeOptions = new StrokeOptions();
+    for (const chain of inputs) {
+      if (chain instanceof Path || chain instanceof Loop) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, delta.x, delta.y);
+        delta.y += chain.range().yLength();
+        const jo = jointOptions.clone();
+        const so = strokeOptions.clone();
+        ck.testTrue(testOffset(allGeometry, delta, chain, jo, so));  // defaults
+        jo.setFrom(jointOptions); jo.leftOffsetDistance *= -1;
+        ck.testTrue(testOffset(allGeometry, delta, chain, jo, so));  // right offset
+        // jo.setFrom(jointOptions); jo.preserveEllipticalArcs = true;
+        // ck.testTrue(testOffset(allGeometry, delta, chain, jo, so));  // preserve ellipses
+
+        delta.x += 2 * chain.range().xLength();
+        delta.y = 0;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "OffsetCurves");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("InOutSplits", () => {
     const allGeometry: GeometryQuery[] = [];
     const ck = new Checker();
