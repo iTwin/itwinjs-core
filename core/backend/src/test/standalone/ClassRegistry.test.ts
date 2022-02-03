@@ -171,7 +171,6 @@ describe("Class Registry - generated classes", () => {
     }
   }
 
-  // if a single inherited class is not generated, the entire hierarchy is considered not-generated
   it("should only generate automatic collectPredecessorIds implementations for generated classes", async () => {
     await imodel.importSchemas(new BackendRequestContext(), [testSchemaPath]); // will throw an exception if import fails
 
