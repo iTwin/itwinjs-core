@@ -107,117 +107,19 @@ Synchronization conflicts are not to be confused with concurrent edit conflicts 
 ### Creating a branch (First Synchronization)
 
 ```ts
-// download and open master
-const masterDbProps = await BriefcaseManager.downloadBriefcase({
-  accessToken: myAccessToken,
-  iTwinId: myITwinId,
-  iModelId: masterIModelId
-});
-const masterDb = await BriefcaseDb.open({ fileName: masterDbProps.fileName });
-
-// create a duplicate of master as a good starting point for our branch
-const branchIModelId = await IModelHost.hubAccess.createNewIModel({
-  iTwinId: myITwinId,
-  iModelName: "my-branch-imodel",
-  version0: masterDb.pathName
-});
-
-// download and open the new branch
-const branchDbProps = await BriefcaseManager.downloadBriefcase({
-  accessToken: myAccessToken,
-  iTwinId: myITwinId,
-  iModelId: branchIModelId
-});
-const branchDb = await BriefcaseDb.open({ fileName: branchDbProps.fileName });
-
-// create an external source and owning repository link to use as our *Target Scope Element* for future synchronizations
-const masterLinkRepoId = new RepositoryLink({
-  classFullName: RepositoryLink.classFullName,
-  code: RepositoryLink.createCode(branchDb, IModelDb.repositoryModelId, "example-code-value"),
-  model: IModelDb.repositoryModelId,
-  url: "https://wherever-you-got-your-imodel.net",
-  format: "iModel",
-  repositoryGuid: masterDb.iModelId,
-  description: "master iModel repository"
-}, branchDb).insert();
-
-const masterExternalSourceId = new ExternalSource({
-  classFullName: ExternalSource.classFullName,
-  model: IModelDb.rootSubjectId,
-  code: Code.createEmpty(),
-  repository: new ExternalSourceIsInRepository(masterLinkRepoId),
-  connectorName: "iModel Transformer",
-  connectorVersion: require("@itwin/core-transformer/package.json").version,
-}, branchDb).insert();
-
-// initialize the branch provenance
-const branchInitializer = new IModelTransformer(masterDb, newBranchDb, {
-  // tells the transformer that we have a raw copy of a source and the target should receive
-  // provenance from the source that is necessary for performing synchronizations in the future
-  wasSourceIModelCopiedToTarget: true,
-  // store the synchronization provenance in the scope of our representation of the external source, master
-  targetScopeElementId: masterExternalSourceId,
-});
-await branchInitializer.processAll();
-branchInitializer.dispose();
-
-
-// save+push our changes to whatever hub we're using
-const description = "initialized branch iModel"
-branchDb.saveChanges(description);
-await branchDb.pushChanges({
-  accessToken: myAccessToken,
-  description,
-});
+[[include:IModelBranchingOperations_initialize]]
 ```
 
 ### Update branch with master changes (Forward Synchronization)
 
 ```ts
-// we assume masterDb and branchDb have already been opened (see the first example)
-const masterExternalSourceId = branchDb.elements.queryElementIdByCode(
-  RepositoryLink.createCode(masterDb, IModelDb.repositoryModelId, "example-code-value"),
-);
-const synchronizer = new IModelTransformer(masterDb, branchDb, {
-  // read the synchronization provenance in the scope of our representation of the external source, master
-  targetScopeElementId: masterExternalSourceId,
-});
-await synchronizer.processChanges();
-synchronizer.dispose();
-// save and push
-const description = "updated branch with recent master changes"
-branchDb.saveChanges(description);
-await branchDb.pushChanges({
-  accessToken: myAccessToken,
-  description,
-});
+[[include:IModelBranchingOperations_forwardSync]]
 ```
 
 ### Update master with branch changes (Reverse Synchronization)
 
 ```ts
-// we assume masterDb and branchDb have already been opened (see the first example)
-const masterExternalSourceId = branchDb.elements.queryElementIdByCode(
-  RepositoryLink.createCode(masterDb, IModelDb.repositoryModelId, "example-code-value"),
-);
-const reverseSynchronizer = new IModelTransformer(branchDb, masterDb, {
-  // tells the transformer that the branch provenance will be stored in the source
-  // since the synchronization direction is reversed
-  isReverseSynchronization: true,
-  // read the synchronization provenance in the scope of our representation of the external source, master
-  // "isReverseSynchronization" actually causes the provenance (and therefore the targetScopeElementId) to
-  // be searched for from the source
-  targetScopeElementId: masterExternalSourceId,
-});
-await reverseSynchronizer.processChanges();
-reverseSynchronizer.dispose();
-// save and push
-const description = "merged changes from branch into master"
-masterDb.saveChanges(description);
-await masterDb.pushChanges({
-  accessToken: myAccessToken,
-  description,
-});
+[[include:IModelBranchingOperations_reverseSync]]
 ```
 
 ### Synchronization workflow examples
