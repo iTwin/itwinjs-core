@@ -240,6 +240,7 @@ public;FilePropertyProps
 public;FillDisplay
 public;FillFlags
 public;FlatBufferGeometryStream
+public;FontId = number
 public;FontMap
 public;FontMapProps
 public;FontProps

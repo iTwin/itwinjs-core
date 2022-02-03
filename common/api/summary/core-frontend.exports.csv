@@ -454,7 +454,11 @@ public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
 internal;ReadonlyTileUserSet 
+<<<<<<< HEAD
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
+=======
+internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
+>>>>>>> 335dc708cd18c603f47f215049e0f764ca56e50b
 beta;RealityDataSource
 beta;RealityDataSource
 internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey
