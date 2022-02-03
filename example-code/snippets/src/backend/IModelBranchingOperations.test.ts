@@ -8,11 +8,11 @@ import * as path from "path";
 import * as fs from "fs";
 import { AccessToken } from "@itwin/core-bentley";
 import { Code, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { IModelTransformer } from "../../IModelTransformer";
+import { IModelTransformer } from "@itwin/core-transformer";
 import { HubMock } from "@itwin/core-backend/lib/cjs/test/HubMock";
 import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { KnownTestLocations } from "./IModelTestUtils";
 
 // some json will be required later, but we don't want an eslint-disable line in the example code, so just disable for the file
 /* eslint-disable @typescript-eslint/no-var-requires */
