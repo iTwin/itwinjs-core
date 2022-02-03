@@ -17,8 +17,11 @@ import type { Element } from "./Element"; // type import to prevent cyclic depen
 // As such, the runtime module import is done lazily here to avoid the cyclic dependency without moving things around
 /** @internal */
 class LazilyImported {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private static _Element: typeof Element | undefined;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public static get Element() {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     return this._Element ??= (require("./Element") as typeof import("./Element")).Element;
   }
 }
