@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "generated element classes now have a default implementation of collectPredecessors returning all set navigation properties",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "MichaelBelousov@users.noreply.github.com"
+}
