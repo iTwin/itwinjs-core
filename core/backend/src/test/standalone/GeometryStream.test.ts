@@ -20,7 +20,7 @@ import {
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../core-backend";
+import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils, Timer } from "../";
 
 function assertTrue(expr: boolean): asserts expr {
