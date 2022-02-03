@@ -1035,10 +1035,11 @@ describe("IModelTransformer", () => {
 
     // check if target imodel has the elements that source imodel had
     expect(targetDb.codeSpecs.hasName("MyCodeSpec")).to.be.true;
-    const drawingIdTarget = targetDb.elements.queryElementIdByCode(Drawing.createCode(targetDb, documentListModelId, "Drawing"));
-    expect(drawingIdTarget).to.not.be.undefined;
-    expect(Id64.isValidId64((drawingIdTarget as string))).to.be.true;
-    const physicalMaterialIdTarget = targetDb.elements.queryElementIdByCode(new Code({ spec: myCodeSpecId, scope: drawingId, value: "physical material" }));
+    const myCodeSpecIdTarget = targetDb.codeSpecs.getByName("MyCodeSpec").id;
+    expect(myCodeSpecIdTarget).to.not.be.undefined;
+    const drawingIdTarget = targetDb.elements.queryElementIdByCode(Drawing.createCode(targetDb, documentListModelId, "Drawing")) as string;
+    expect(Id64.isValidId64(drawingIdTarget)).to.be.true;
+    const physicalMaterialIdTarget = targetDb.elements.queryElementIdByCode(new Code({ spec: myCodeSpecIdTarget, scope: drawingIdTarget, value: "physical material" }));
     expect(physicalMaterialIdTarget).to.not.be.undefined;
     expect(Id64.isValidId64((physicalMaterialIdTarget as string))).to.be.true;
 
