@@ -6036,7 +6036,7 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     createGlobeChild(params: TileParams, quadId: QuadId, _rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, heightRange?: Range1d): MapTile;
     // (undocumented)
-    createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile;
+    createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile | undefined;
     // (undocumented)
     doCreateGlobeChildren(tile: Tile): boolean;
     // (undocumented)
@@ -6190,7 +6190,7 @@ export abstract class MapTilingScheme {
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
     // (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
@@ -8242,9 +8242,9 @@ export class RealityTileTree extends TileTree {
     cartesianRange: Range3d;
     // (undocumented)
     cartesianTransitionDistance: number;
-    collectTileGeometry(collector: TileGeometryCollector): void;
     // (undocumented)
     protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]): void;
+    collectTileGeometry(collector: TileGeometryCollector): void;
     // (undocumented)
     createTile(props: TileParams): RealityTile;
     // (undocumented)
@@ -8751,7 +8751,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderTerrainGeometry | undefined;
     // @internal (undocumented)
-    createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
+    createRealityMeshGraphic(_params: RealityMeshGraphicParams): RenderGraphic | undefined;
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined;
