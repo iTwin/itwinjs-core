@@ -5,8 +5,10 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater, SchemaJsonFileLocater } from "@itwin/ecschema-locaters";
+import type { ISchemaLocater, SchemaContext} from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, ECVersion, Schema, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import type { FileSchemaKey} from "@itwin/ecschema-locaters";
+import { SchemaFileLocater, SchemaJsonFileLocater } from "@itwin/ecschema-locaters";
 import { DOMParser } from "@xmldom/xmldom";
 import { ECSchemaXmlContext, IModelHost } from "@itwin/core-backend";
 import { ECSchemaToTs } from "./ecschema2ts";

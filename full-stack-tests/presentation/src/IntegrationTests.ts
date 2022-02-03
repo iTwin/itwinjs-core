@@ -10,14 +10,18 @@ import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
+import type { IModelAppOptions} from "@itwin/core-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { TestBrowserAuthorizationClient, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import type { TestBrowserAuthorizationClient} from "@itwin/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import type { PresentationProps as PresentationBackendProps} from "@itwin/presentation-backend";
 import {
-  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory,
 } from "@itwin/presentation-backend";
-import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
-import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
+import type { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import type { PresentationTestingInitProps} from "@itwin/presentation-testing";
+import { initialize as initializeTesting, terminate as terminateTesting } from "@itwin/presentation-testing";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {

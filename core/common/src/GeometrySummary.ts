@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Id64Array } from "@itwin/core-bentley";
+import type { Id64Array } from "@itwin/core-bentley";
 
 /** Describes the level of detail with which to report each geometric primitive in a [[GeometrySummaryRequestProps]].
  * @public

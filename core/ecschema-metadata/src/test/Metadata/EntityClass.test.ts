@@ -8,11 +8,13 @@ import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { ECClassModifier, SchemaItemType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
-import { ECClass, MutableClass } from "../../Metadata/Class";
-import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass";
+import type { ECClass, MutableClass } from "../../Metadata/Class";
+import type { MutableEntityClass } from "../../Metadata/EntityClass";
+import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
-import { RelationshipClass } from "../../Metadata/RelationshipClass";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
+import type { RelationshipClass } from "../../Metadata/RelationshipClass";
+import type { MutableSchema} from "../../Metadata/Schema";
+import { Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 

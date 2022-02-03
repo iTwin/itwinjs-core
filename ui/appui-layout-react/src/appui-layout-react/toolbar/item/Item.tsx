@@ -10,8 +10,9 @@ import "./Item.scss";
 import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { CommonProps, Size, SizeProps } from "@itwin/core-react";
-import { ToolbarItem, ToolbarItemProps } from "../Toolbar";
+import type { CommonProps, SizeProps } from "@itwin/core-react";
+import { Size } from "@itwin/core-react";
+import type { ToolbarItem, ToolbarItemProps } from "../Toolbar";
 
 /** Properties of [[Item]] component.
  * @deprecated

@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { FlashMode, FlashSettings, FlashSettingsOptions } from "../FlashSettings";
+import type { FlashSettingsOptions } from "../FlashSettings";
+import { FlashMode, FlashSettings } from "../FlashSettings";
 
 type FlashProps = Pick<FlashSettings, "duration" | "maxIntensity" | "litMode">;
 

@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Phenomenon, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
+import type { Phenomenon, SchemaKey } from "@itwin/ecschema-metadata";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 // TODO: Must add phenomenon and Unit system tests before you can do this.

@@ -6,7 +6,8 @@
  * @module UiStateStorage
  */
 
-import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "./UiStateStorage";
+import type { UiStateStorage, UiStateStorageResult} from "./UiStateStorage";
+import { UiStateStorageStatus } from "./UiStateStorage";
 
 /** A single UI State enter that is identified by namespace and setting name.
  * @public

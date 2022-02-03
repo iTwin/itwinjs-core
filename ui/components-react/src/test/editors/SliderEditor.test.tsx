@@ -8,8 +8,9 @@ import { mount, shallow } from "enzyme";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
-import {
-  BasePropertyEditorParams, PropertyEditorParamTypes, SliderEditorParams, SpecialKey, StandardEditorNames,
+import type {
+  BasePropertyEditorParams, SliderEditorParams} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, SpecialKey, StandardEditorNames,
 } from "@itwin/appui-abstract";
 import { SliderEditor } from "../../components-react/editors/SliderEditor";
 import TestUtils, { MineDataController } from "../TestUtils";

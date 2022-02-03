@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { SchemaItemType } from "../../ECObjects";
-import { PropertyCategory } from "../../Metadata/PropertyCategory";
+import type { PropertyCategory } from "../../Metadata/PropertyCategory";
 import { Schema } from "../../Metadata/Schema";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";

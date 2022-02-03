@@ -7,10 +7,11 @@ import * as sinon from "sinon";
 import * as path from "path";
 import { CloudSqlite } from "@bentley/imodeljs-native";
 import { DbResult, Guid, Logger } from "@itwin/core-bentley";
+import type { RpcActivity} from "@itwin/core-common";
 import {
-  BatchType, ContentIdProvider, defaultTileOptions, EdgeType, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
+  BatchType, ContentIdProvider, defaultTileOptions, EdgeType, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry,
 } from "@itwin/core-common";
-import { V2CheckpointAccessProps } from "../../BackendHubAccess";
+import type { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { RpcTrace } from "../../RpcBackend";

@@ -6,8 +6,8 @@
  * @module Text
  */
 
-import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import type * as React from "react";
+import type { CommonProps } from "../utils/Props";
 
 /** Properties for various text components
  * @public

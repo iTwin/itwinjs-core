@@ -5,11 +5,13 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as yargs from "yargs";
-import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import type { Id64Array, Id64String} from "@itwin/core-bentley";
+import { DbResult, Logger, LogLevel } from "@itwin/core-bentley";
 import { Angle, Geometry, Matrix3d, Point3d } from "@itwin/core-geometry";
-import {
-  ECSqlStatement, ExportGraphics, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo,
-  ExportPartInstanceInfo, ExportPartLinesInfo, IModelHost, SnapshotDb, Texture,
+import type {
+  ECSqlStatement, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo,
+  ExportPartInstanceInfo, ExportPartLinesInfo, Texture} from "@itwin/core-backend";
+import { ExportGraphics, IModelHost, SnapshotDb,
 } from "@itwin/core-backend";
 import { ColorDef, ImageSourceFormat } from "@itwin/core-common";
 

@@ -6,14 +6,16 @@
  * @module ViewDefinitions
  */
 
-import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import type { Id64Array, Id64Set, Id64String} from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, OrderedId64Iterable } from "@itwin/core-bentley";
+import type { CodeScopeProps, CodeSpec, DisplayStyle3dProps, DisplayStyle3dSettingsProps,
+  DisplayStyleProps, PlanProjectionSettingsProps, SkyBoxImageProps} from "@itwin/core-common";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
+  BisCodeSpec, Code, ColorDef, DisplayStyle3dSettings, DisplayStyleSettings, RenderSchedule, ViewFlags,
 } from "@itwin/core-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
-import { IModelCloneContext } from "./IModelCloneContext";
-import { IModelDb } from "./IModelDb";
+import type { IModelCloneContext } from "./IModelCloneContext";
+import type { IModelDb } from "./IModelDb";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.

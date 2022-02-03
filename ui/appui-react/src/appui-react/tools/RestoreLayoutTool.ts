@@ -7,7 +7,7 @@
  */
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { FrontstageDef } from "../frontstage/FrontstageDef";
+import type { FrontstageDef } from "../frontstage/FrontstageDef";
 import { UiFramework } from "../UiFramework";
 
 /**

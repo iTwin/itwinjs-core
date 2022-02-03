@@ -6,18 +6,20 @@
  * @module Elements
  */
 
-import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import type { GuidString, Id64Set, Id64String} from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
-import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData,
+import type {
+  AxisAlignedBox3d, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
-  GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps,
-  SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  GeometryStreamProps, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinitionElementProps, UrlLinkProps} from "@itwin/core-common";
+import { BisCodeSpec, Code, IModel, Placement2d,
+  Placement3d, RelatedElement, RenderSchedule,
+  SectionType, TypeDefinition,
 } from "@itwin/core-common";
 import { Entity } from "./Entity";
-import { IModelCloneContext } from "./IModelCloneContext";
-import { IModelDb } from "./IModelDb";
+import type { IModelCloneContext } from "./IModelCloneContext";
+import type { IModelDb } from "./IModelDb";
 import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 

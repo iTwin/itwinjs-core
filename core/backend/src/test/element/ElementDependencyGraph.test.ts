@@ -7,14 +7,18 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
+import type { Id64Array, Id64String} from "@itwin/core-bentley";
+import { Guid, Logger, OpenMode } from "@itwin/core-bentley";
+import type { RelatedElementProps, RelationshipProps,
+  UpgradeOptions} from "@itwin/core-common";
 import {
-  CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
-  UpgradeOptions,
+  CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
+import type { ElementDrivesElementProps} from "../../core-backend";
+import { IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
+import type { TestPhysicalObjectProps } from "../IModelTestUtils";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject } from "../IModelTestUtils";
 
 export function copyFile(newName: string, pathToCopy: string): string {
   const newPath = path.join(path.dirname(pathToCopy), newName);

@@ -7,19 +7,21 @@
  */
 
 import { assert, dispose, Id64 } from "@itwin/core-bentley";
-import { PackedFeature, PackedFeatureTable } from "@itwin/core-common";
-import { FeatureSymbology } from "../FeatureSymbology";
+import type { PackedFeature, PackedFeatureTable } from "@itwin/core-common";
+import type { FeatureSymbology } from "../FeatureSymbology";
 import { DisplayParams } from "../primitives/DisplayParams";
-import { BatchOptions } from "../GraphicBuilder";
-import { WebGLDisposable } from "./Disposable";
+import type { BatchOptions } from "../GraphicBuilder";
+import type { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";
 import { GL } from "./GL";
-import { UniformHandle } from "./UniformHandle";
+import type { UniformHandle } from "./UniformHandle";
 import { OvrFlags, TextureUnit } from "./RenderFlags";
-import { sync, SyncObserver } from "./Sync";
+import type { SyncObserver } from "./Sync";
+import { sync } from "./Sync";
 import { System } from "./System";
-import { Hilites, Target } from "./Target";
-import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
+import type { Hilites, Target } from "./Target";
+import type { Texture2DHandle} from "./Texture";
+import { Texture2DDataUpdater, TextureHandle } from "./Texture";
 
 function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): { width: number, height: number } {
   const maxSize = System.instance.capabilities.maxTextureSize;

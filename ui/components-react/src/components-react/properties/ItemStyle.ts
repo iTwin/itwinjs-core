@@ -6,7 +6,7 @@
  * @module Properties
  */
 
-import { CSSProperties } from "react";
+import type { CSSProperties } from "react";
 
 /** Converts a color value from a number to an HTML/CSS hex string */
 const colorDecimalToHex = (decimal: number) => `#${decimal.toString(16).padStart(6, "0")}`;

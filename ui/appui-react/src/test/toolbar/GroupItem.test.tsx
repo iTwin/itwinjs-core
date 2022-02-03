@@ -3,14 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ReactWrapper, shallow } from "enzyme";
+import type { ReactWrapper} from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@itwin/appui-abstract";
-import { WithOnOutsideClickProps } from "@itwin/core-react";
-import { Direction, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@itwin/appui-layout-react";
-import {
-  BaseItemState, CommandItemDef, getFirstItem, getFirstItemId, GroupButton, GroupItem, GroupItemDef, KeyboardShortcutManager, SyncUiEventDispatcher,
+import type { WithOnOutsideClickProps } from "@itwin/core-react";
+import type { WithDragInteractionProps } from "@itwin/appui-layout-react";
+import { Direction, GroupTool, GroupToolExpander, Item, NestedGroup } from "@itwin/appui-layout-react";
+import type {
+  BaseItemState} from "../../appui-react";
+import { CommandItemDef, getFirstItem, getFirstItemId, GroupButton, GroupItem, GroupItemDef, KeyboardShortcutManager, SyncUiEventDispatcher,
   ToolbarDragInteractionContext, ToolGroupPanelContext,
 } from "../../appui-react";
 import * as GroupItemModule from "../../appui-react/toolbar/GroupItem";

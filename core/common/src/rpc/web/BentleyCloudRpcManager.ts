@@ -6,13 +6,14 @@
  * @module RpcInterface
  */
 
-import { RpcInterfaceDefinition } from "../../RpcInterface";
+import type { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcRequestEvent } from "../core/RpcConstants";
-import { RpcRequest, RpcRequestEventHandler } from "../core/RpcRequest";
+import type { RpcRequestEventHandler } from "../core/RpcRequest";
+import { RpcRequest } from "../core/RpcRequest";
 import { BentleyCloudRpcProtocol } from "./BentleyCloudRpcProtocol";
-import { OpenAPIInfo } from "./OpenAPI";
+import type { OpenAPIInfo } from "./OpenAPI";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
 
 /** Initialization parameters for BentleyCloudRpcConfiguration.

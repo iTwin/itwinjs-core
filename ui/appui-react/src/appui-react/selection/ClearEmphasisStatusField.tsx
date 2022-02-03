@@ -11,7 +11,7 @@
 import * as React from "react";
 import { useActiveViewport } from "../hooks/useActiveViewport";
 import { Indicator } from "../statusfields/Indicator";
-import { StatusFieldProps } from "../statusfields/StatusFieldProps";
+import type { StatusFieldProps } from "../statusfields/StatusFieldProps";
 import { UiFramework } from "../UiFramework";
 import { HideIsolateEmphasizeActionHandler } from "./HideIsolateEmphasizeManager";
 

@@ -6,9 +6,9 @@
  * @module Item
  */
 
-import { BadgeType } from "./BadgeType";
-import { ConditionalBooleanValue } from "./ConditionalBooleanValue";
-import { ConditionalStringValue } from "./ConditionalStringValue";
+import type { BadgeType } from "./BadgeType";
+import type { ConditionalBooleanValue } from "./ConditionalBooleanValue";
+import type { ConditionalStringValue } from "./ConditionalStringValue";
 
 /** Prototype for string getter function.
  * @public

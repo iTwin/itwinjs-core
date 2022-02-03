@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { ECSchemaXmlContext, SchemaKey } from "../../ECSchemaXmlContext";
+import type { SchemaKey } from "../../ECSchemaXmlContext";
+import { ECSchemaXmlContext } from "../../ECSchemaXmlContext";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 

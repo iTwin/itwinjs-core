@@ -6,9 +6,10 @@
  * @module ContentView
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import type { IModelConnection, ScreenViewport, ViewState} from "@itwin/core-frontend";
 import {
-  DrawingViewState, IModelApp, IModelConnection, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
+  DrawingViewState, IModelApp, OrthographicViewState, SheetViewState, SpatialViewState,
 } from "@itwin/core-frontend";
 import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -16,7 +17,8 @@ import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidCon
 import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
 import { ViewUtilities } from "../utils/ViewUtilities";
-import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
+import type { SupportsViewSelectorChange } from "./ContentControl";
+import { ContentControl } from "./ContentControl";
 import { ContentViewManager } from "./ContentViewManager";
 
 /**

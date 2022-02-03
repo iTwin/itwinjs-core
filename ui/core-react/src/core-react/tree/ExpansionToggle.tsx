@@ -9,7 +9,7 @@
 import "./ExpansionToggle.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 import { UiCore } from "../UiCore";
 
 /** Properties for the [[ExpansionToggle]] component

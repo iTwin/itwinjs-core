@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
-import { ReactWrapper, shallow, ShallowWrapper } from "enzyme";
+import type { ReactWrapper, ShallowWrapper } from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ToolbarItemContext } from "@itwin/components-react";
-import { WithOnOutsideClickProps } from "@itwin/core-react";
+import type { WithOnOutsideClickProps } from "@itwin/core-react";
 import { Group, Item } from "@itwin/appui-layout-react";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 
+import type { ListItem, ListPickerPropsExtended} from "../../appui-react";
 import {
-  ExpandableSection, FrameworkVersion, ListItem, ListItemType, ListPicker, ListPickerBase, ListPickerItem, ListPickerPropsExtended, UiFramework,
+  ExpandableSection, FrameworkVersion, ListItemType, ListPicker, ListPickerBase, ListPickerItem, UiFramework,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { Provider } from "react-redux";

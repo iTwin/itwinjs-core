@@ -7,8 +7,8 @@
  */
 
 import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
-import { Observable } from "rxjs/internal/Observable";
-import { ConnectableObservable } from "rxjs/internal/observable/ConnectableObservable";
+import type { Observable } from "rxjs/internal/Observable";
+import type { ConnectableObservable } from "rxjs/internal/observable/ConnectableObservable";
 import { defer } from "rxjs/internal/observable/defer";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { mergeMap } from "rxjs/internal/operators/mergeMap";

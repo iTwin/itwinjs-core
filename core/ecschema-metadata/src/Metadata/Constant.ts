@@ -7,14 +7,14 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { ConstantProps } from "../Deserialization/JsonProps";
+import type { ConstantProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedPhenomenon } from "../Interfaces";
-import { SchemaItemKey } from "../SchemaKey";
-import { Phenomenon } from "./Phenomenon";
-import { Schema } from "./Schema";
+import type { LazyLoadedPhenomenon } from "../Interfaces";
+import type { SchemaItemKey } from "../SchemaKey";
+import type { Phenomenon } from "./Phenomenon";
+import type { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
 /**

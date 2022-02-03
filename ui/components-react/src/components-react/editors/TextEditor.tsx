@@ -9,13 +9,15 @@
 import "./TextEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import {
-  IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat,
+import type {
+  IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, PropertyValueFormat,
 } from "@itwin/appui-abstract";
 import { Icon, IconInput } from "@itwin/core-react";
-import { Input, InputProps } from "@itwin/itwinui-react";
+import type { InputProps } from "@itwin/itwinui-react";
+import { Input } from "@itwin/itwinui-react";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { UiComponents } from "../UiComponents";
 
 /** @internal */

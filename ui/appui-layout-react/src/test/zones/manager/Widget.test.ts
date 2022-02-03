@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PointProps } from "@itwin/appui-abstract";
-import { DraggedWidgetManager, DraggedWidgetManagerProps } from "../../../appui-layout-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { DraggedWidgetManagerProps } from "../../../appui-layout-react";
+import { DraggedWidgetManager } from "../../../appui-layout-react";
 
 const props: DraggedWidgetManagerProps = {
   id: 6,

@@ -8,7 +8,7 @@
 
 import { Hilite } from "@itwin/core-common";
 import { FloatRgb } from "./FloatRGBA";
-import { UniformHandle } from "./UniformHandle";
+import type { UniformHandle } from "./UniformHandle";
 import { Matrix3 } from "./Matrix";
 import { desync, sync } from "./Sync";
 

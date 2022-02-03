@@ -7,8 +7,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Matrix3, Matrix4 } from "./Matrix";
-import { SyncToken } from "./Sync";
+import type { Matrix3, Matrix4 } from "./Matrix";
+import type { SyncToken } from "./Sync";
 import { System } from "./System";
 
 const enum DataType {// eslint-disable-line no-restricted-syntax

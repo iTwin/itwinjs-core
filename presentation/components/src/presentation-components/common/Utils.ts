@@ -6,11 +6,14 @@
  * @module Core
  */
 
-import * as React from "react";
-import { Descriptor, Field, FIELD_NAMES_SEPARATOR, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
+import type * as React from "react";
+import type { Descriptor, Field, LabelCompositeValue} from "@itwin/presentation-common";
+import { FIELD_NAMES_SEPARATOR, LabelDefinition } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { IPropertyValueRenderer, PropertyValueRendererManager } from "@itwin/components-react";
+import type { Primitives, PrimitiveValue, PropertyDescription} from "@itwin/appui-abstract";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import type { IPropertyValueRenderer} from "@itwin/components-react";
+import { PropertyValueRendererManager } from "@itwin/components-react";
 import { InstanceKeyValueRenderer } from "../properties/InstanceKeyValueRenderer";
 
 const localizationNamespaceName = "PresentationComponents";

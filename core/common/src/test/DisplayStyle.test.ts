@@ -4,20 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 import { BackgroundMapType } from "../BackgroundMapProvider";
 import { GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
+import type { DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStylePlanarClipMaskProps} from "../DisplayStyleSettings";
 import {
-  DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStylePlanarClipMaskProps, DisplayStyleSettings, MonochromeMode,
+  DisplayStyle3dSettings, DisplayStyleSettings, MonochromeMode,
 } from "../DisplayStyleSettings";
 import { LinePixels } from "../LinePixels";
-import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
+import type { PlanProjectionSettingsProps } from "../PlanProjectionSettings";
+import { PlanProjectionSettings } from "../PlanProjectionSettings";
 import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
-import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
+import type { WhiteOnWhiteReversalProps} from "../WhiteOnWhiteReversalSettings";
+import { WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
 import { SkyGradient } from "../SkyBox";
 import { GroundPlane } from "../GroundPlane";
 

@@ -6,8 +6,9 @@
  * @module Core
  */
 
-import { IDisposable } from "@itwin/core-bentley";
-import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
+import type { IDisposable } from "@itwin/core-bentley";
+import type { Ruleset } from "@itwin/presentation-common";
+import { RegisteredRuleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 
 /**

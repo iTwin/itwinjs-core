@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { ClipVector } from "@itwin/core-geometry";
+import type { ClipVector } from "@itwin/core-geometry";
 
 /** An opaque representation of a clip volume applied to geometry within a [[Viewport]].
  * A RenderClipVolume is created from a [[ClipVector]] and takes ownership of that ClipVector, expecting that it will not be modified while the RenderClipVolume still references it.

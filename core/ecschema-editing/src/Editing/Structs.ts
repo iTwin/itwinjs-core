@@ -6,10 +6,11 @@
  * @module Editing
  */
 
-import { DelayedPromiseWithProps, ECClass, SchemaItemKey, SchemaItemType, SchemaKey, StructClass, StructClassProps } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { ECClass, SchemaItemKey, SchemaKey, StructClass, StructClassProps } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, SchemaItemType } from "@itwin/ecschema-metadata";
+import type { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
-import { MutableClass, MutableStructClass } from "./Mutable/MutableClass";
+import type { MutableClass, MutableStructClass } from "./Mutable/MutableClass";
 
 /**
  * @alpha A class extending ECClasses allowing you to create schema items of type StructClass.

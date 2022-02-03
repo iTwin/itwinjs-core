@@ -5,11 +5,14 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { BeEvent, Guid } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import { HierarchyRequestOptions, LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
-import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
-import { TreeNodeItem } from "@itwin/components-react";
-import { HierarchyBuilder, NodeMappingFunc } from "../presentation-testing/HierarchyBuilder";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { HierarchyRequestOptions, Node, NodeKey, Ruleset } from "@itwin/presentation-common";
+import { LabelDefinition, RegisteredRuleset } from "@itwin/presentation-common";
+import type { PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
+import type { TreeNodeItem } from "@itwin/components-react";
+import type { NodeMappingFunc } from "../presentation-testing/HierarchyBuilder";
+import { HierarchyBuilder } from "../presentation-testing/HierarchyBuilder";
 
 async function getRootNodes() {
   const root: Node = {

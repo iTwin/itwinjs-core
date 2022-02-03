@@ -12,12 +12,14 @@ import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import { withSafeArea } from "../safearea/SafeAreaContext";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import type { SyncUiEventArgs} from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
-import { TaskActivatedEventArgs, WorkflowManager } from "../workflow/Workflow";
+import type { TaskActivatedEventArgs} from "../workflow/Workflow";
+import { WorkflowManager } from "../workflow/Workflow";
 import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
+import type { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 // cspell:ignore safearea

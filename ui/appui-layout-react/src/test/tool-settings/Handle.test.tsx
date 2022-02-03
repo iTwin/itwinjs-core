@@ -5,8 +5,9 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
+import type { NineZoneDispatch} from "../../appui-layout-react";
 import {
-  DockedToolSettingsHandle, DragManager, DragManagerContext, NineZoneDispatch, NineZoneDispatchContext,
+  DockedToolSettingsHandle, DragManager, DragManagerContext, NineZoneDispatchContext,
 } from "../../appui-layout-react";
 
 describe("DockedToolSettingsHandle", () => {

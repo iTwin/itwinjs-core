@@ -7,9 +7,10 @@
  * @module Zone
  */
 
-import { WidgetDef } from "../widgets/WidgetDef";
+import type { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetHost } from "../widgets/WidgetHost";
-import { ZoneLocation, ZoneProps } from "./Zone";
+import type { ZoneProps } from "./Zone";
+import { ZoneLocation } from "./Zone";
 
 /** Zone State enum.
  * @public @deprecated

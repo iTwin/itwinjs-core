@@ -6,17 +6,21 @@
  * @module Tiles
  */
 
+import type { BeTimePoint, Id64Array, Id64String} from "@itwin/core-bentley";
 import {
-  assert, BeTimePoint, ByteStream, compareStrings, DbOpcode, Id64, Id64Array, Id64String, partitionArray, SortedArray,
+  assert, ByteStream, compareStrings, DbOpcode, Id64, partitionArray, SortedArray,
 } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
-import {
-  BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
+import type { Transform } from "@itwin/core-geometry";
+import { Range3d } from "@itwin/core-geometry";
+import type {
+  BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass} from "@itwin/core-common";
+import { TileFormat,
 } from "@itwin/core-common";
-import { RenderSystem } from "../render/RenderSystem";
+import type { RenderSystem } from "../render/RenderSystem";
 import { IModelApp } from "../IModelApp";
+import type { RootIModelTile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree} from "./internal";
 import {
-  ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
+  ImdlReader, IModelTileTree, Tile,
 } from "./internal";
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current

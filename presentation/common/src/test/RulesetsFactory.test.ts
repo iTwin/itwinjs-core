@@ -5,9 +5,10 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import {
-  ArrayTypeDescription, ClassInfo, ContentSpecificationTypes, Field, Item, NestedContentField, NestedContentValue, PrimitiveTypeDescription,
-  PropertiesField, Property, PropertyValueFormat, RelatedClassInfo, RelationshipDirection, Rule, RulesetsFactory, RuleTypes, StructTypeDescription,
+import type {
+  ArrayTypeDescription, ClassInfo, NestedContentValue, PrimitiveTypeDescription, Property, RelatedClassInfo, Rule, StructTypeDescription} from "../presentation-common";
+import { ContentSpecificationTypes, Field, Item, NestedContentField,
+  PropertiesField, PropertyValueFormat, RelationshipDirection, RulesetsFactory, RuleTypes,
 } from "../presentation-common";
 import { createTestCategoryDescription } from "./_helpers/Content";
 import { createRandomECClassInfo, createRandomId } from "./_helpers/random";

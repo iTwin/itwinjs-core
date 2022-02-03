@@ -7,16 +7,18 @@
  */
 
 import { assert, Id64} from "@itwin/core-bentley";
-import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
+import type { Point3d} from "@itwin/core-geometry";
+import { Point2d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
+import type { Environment, TextureImageSpec} from "@itwin/core-common";
 import {
-  ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
+  ColorDef, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureMapping,
 } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
-import { ViewState3d } from "./ViewState";
-import { DecorateContext } from "./ViewContext";
+import type { ViewState3d } from "./ViewState";
+import type { DecorateContext } from "./ViewContext";
 import { tryImageElementFromUrl } from "./ImageUtil";
 import { GraphicType } from "./render/GraphicBuilder";
-import { RenderSkyBoxParams } from "./render/RenderSystem";
+import type { RenderSkyBoxParams } from "./render/RenderSystem";
 
 /** @internal */
 export interface GroundPlaneDecorations {

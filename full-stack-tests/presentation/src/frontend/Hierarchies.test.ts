@@ -5,9 +5,11 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Id64, using } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import type { ECInstancesNodeKey, InstanceKey, RegisteredRuleset, Ruleset} from "@itwin/presentation-common";
 import {
-  ChildNodeSpecificationTypes, ECInstancesNodeKey, getInstancesCount, InstanceKey, KeySet, RegisteredRuleset, RelationshipDirection, Ruleset,
+  ChildNodeSpecificationTypes, getInstancesCount, KeySet, RelationshipDirection,
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";

@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { RelationshipClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import type { RelationshipClass} from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import * as Rules from "../../../Validation/ECRules";
 import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";

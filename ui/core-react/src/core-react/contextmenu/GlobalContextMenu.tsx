@@ -8,7 +8,8 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { ContextMenu, ContextMenuProps } from "./ContextMenu";
+import type { ContextMenuProps } from "./ContextMenu";
+import { ContextMenu } from "./ContextMenu";
 
 /** Properties for the [[GlobalContextMenu]] component
  * @public

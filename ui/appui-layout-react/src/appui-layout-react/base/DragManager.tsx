@@ -6,12 +6,14 @@
  * @module Base
  */
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { Point, SizeProps } from "@itwin/core-react";
-import { PanelSide } from "../widget-panels/Panel";
-import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
-import { Event, EventEmitter } from "./Event";
-import { TabState, WidgetState } from "./NineZoneState";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { SizeProps } from "@itwin/core-react";
+import { Point } from "@itwin/core-react";
+import type { PanelSide } from "../widget-panels/Panel";
+import type { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
+import type { Event} from "./Event";
+import { EventEmitter } from "./Event";
+import type { TabState, WidgetState } from "./NineZoneState";
 
 /** @internal */
 export interface DragItemDragStartArgs {

@@ -7,15 +7,17 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
-import { FeatureIndexType, FillFlags, LinePixels } from "@itwin/core-common";
-import { MeshParams } from "../primitives/VertexTable";
-import { SurfaceType } from "../primitives/SurfaceParams";
-import { RenderMemory } from "../RenderMemory";
-import { WebGLDisposable } from "./Disposable";
+import type { Point3d } from "@itwin/core-geometry";
+import type { FillFlags} from "@itwin/core-common";
+import { FeatureIndexType, LinePixels } from "@itwin/core-common";
+import type { MeshParams } from "../primitives/VertexTable";
+import type { SurfaceType } from "../primitives/SurfaceParams";
+import type { RenderMemory } from "../RenderMemory";
+import type { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";
-import { createMaterialInfo, MaterialInfo } from "./Material";
-import { Texture } from "./Texture";
+import type { MaterialInfo } from "./Material";
+import { createMaterialInfo } from "./Material";
+import type { Texture } from "./Texture";
 import { VertexLUT } from "./VertexLUT";
 
 /** @internal */

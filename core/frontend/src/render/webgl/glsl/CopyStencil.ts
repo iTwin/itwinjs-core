@@ -7,13 +7,16 @@
  */
 
 import { ColorDef, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
-import { WebGLContext } from "@itwin/webgl-compatibility";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
-import { BoundaryType, ScreenPointsGeometry, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
-import { FloatRgb, FloatRgba } from "../FloatRGBA";
+import type { ScreenPointsGeometry, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
+import { BoundaryType } from "../CachedGeometry";
+import type { FloatRgb} from "../FloatRGBA";
+import { FloatRgba } from "../FloatRGBA";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
+import type { ShaderBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import type { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
 import { TechniqueId } from "../TechniqueId";
 import { Texture2DHandle } from "../Texture";

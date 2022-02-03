@@ -6,13 +6,15 @@
  * @module Rendering
  */
 
-import { ClipVector, Point3d, Vector3d } from "@itwin/core-geometry";
-import {
-  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
-  ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
+import type { ClipVector} from "@itwin/core-geometry";
+import { Point3d, Vector3d } from "@itwin/core-geometry";
+import type {
+  AmbientOcclusion, AnalysisStyle, HiddenLine, LightSettings, RenderTexture,
+  ThematicDisplay} from "@itwin/core-common";
+import { ClipStyle, ColorDef, Frustum, GlobeMode, Hilite, MonochromeMode, Npc, ViewFlags, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import { FlashSettings } from "../FlashSettings";
-import { Viewport } from "../Viewport";
+import type { Viewport } from "../Viewport";
 
 const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();

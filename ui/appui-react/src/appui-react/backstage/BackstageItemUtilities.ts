@@ -6,9 +6,9 @@
  * @module Backstage
  */
 
-import { BackstageActionItem as UIA_BackstageActionItem, BackstageStageLauncher as UIA_BackstageStageLauncher } from "@itwin/appui-abstract";
+import type { BackstageActionItem as UIA_BackstageActionItem, BackstageStageLauncher as UIA_BackstageStageLauncher } from "@itwin/appui-abstract";
 import { PropsHelper } from "../utils/PropsHelper";
-import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
+import type { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 
 /** Used to specify the item type added to the backstage menu.
  * @beta

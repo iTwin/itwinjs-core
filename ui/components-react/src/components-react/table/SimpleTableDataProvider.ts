@@ -6,12 +6,15 @@
  * @module Table
  */
 
-import { Primitives, PropertyRecord, PropertyValueFormat, UiError } from "@itwin/appui-abstract";
+import type { Primitives, PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat, UiError } from "@itwin/appui-abstract";
 import { SortDirection } from "@itwin/core-react";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { UiComponents } from "../UiComponents";
-import { CompositeFilterDescriptorCollection, DistinctValueCollection, TableDistinctValue } from "./columnfiltering/ColumnFiltering";
-import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent } from "./TableDataProvider";
+import type { CompositeFilterDescriptorCollection, TableDistinctValue } from "./columnfiltering/ColumnFiltering";
+import { DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
+import type { ColumnDescription, MutableTableDataProvider, RowItem} from "./TableDataProvider";
+import { TableDataChangeEvent } from "./TableDataProvider";
 
 // cSpell:ignore columnfiltering
 

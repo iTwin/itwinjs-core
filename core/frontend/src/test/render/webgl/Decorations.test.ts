@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, RenderMode } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
+import type { IModelConnection } from "../../../IModelConnection";
 import { ScreenViewport } from "../../../Viewport";
 import { IModelApp } from "../../../IModelApp";
 import { SpatialViewState } from "../../../SpatialViewState";

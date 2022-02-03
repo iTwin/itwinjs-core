@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
-import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
+import type { IModelRpcProps} from "@itwin/core-common";
+import { RpcInterface, RpcManager } from "@itwin/core-common";
+import type { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 
 /***
  * Defines an RPC interface to get schema information from a given iModel context.

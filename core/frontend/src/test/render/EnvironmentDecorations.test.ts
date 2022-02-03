@@ -5,11 +5,12 @@
 
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { ColorDef, Environment, EnvironmentProps, ImageSource, ImageSourceFormat, RenderTexture, SkyBox, SkyBoxImageType } from "@itwin/core-common";
+import type { EnvironmentProps, RenderTexture} from "@itwin/core-common";
+import { ColorDef, Environment, ImageSource, ImageSourceFormat, SkyBox, SkyBoxImageType } from "@itwin/core-common";
 import { EnvironmentDecorations } from "../../EnvironmentDecorations";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { SpatialViewState } from "../../SpatialViewState";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { createBlankConnection } from "../createBlankConnection";
 

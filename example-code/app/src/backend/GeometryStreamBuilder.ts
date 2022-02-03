@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Arc3d, Point3d } from "@itwin/core-geometry";
-import { GeometryStreamBuilder, GeometryStreamProps } from "@itwin/core-common";
+import type { GeometryStreamProps } from "@itwin/core-common";
+import { GeometryStreamBuilder } from "@itwin/core-common";
 
 // __PUBLISH_EXTRACT_START__ GeometryStreamBuilder.example-code
 // Simple example of using GeometryStreamBuilder. Note how the building works with

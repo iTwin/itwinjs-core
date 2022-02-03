@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { SpatialViewState } from "../../SpatialViewState";
-import { ScreenViewport, Viewport } from "../../Viewport";
+import type { Viewport } from "../../Viewport";
+import { ScreenViewport } from "../../Viewport";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import {
-  GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
-  TileTreeOwner, TileTreeReference, TileTreeSupplier,
+import type {
+  GpuMemoryLimit, GpuMemoryLimits, TileContent, TiledGraphicsProvider, TileDrawArgs, TileRequest,
+  TileTreeOwner, TileTreeSupplier} from "../../tile/internal";
+import { Tile, TileAdmin, TileLoadPriority, TileTree, TileTreeReference,
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
 

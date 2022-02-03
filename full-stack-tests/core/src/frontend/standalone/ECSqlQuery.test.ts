@@ -5,7 +5,8 @@
 import { assert } from "chai";
 import { DbResult, ProcessDetector } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 function skipIf(cond: () => boolean, skipMsg: string, title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {

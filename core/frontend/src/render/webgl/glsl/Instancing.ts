@@ -7,10 +7,11 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
+import type { VertexShaderBuilder } from "../ShaderBuilder";
+import { VariableType } from "../ShaderBuilder";
 import { System } from "../System";
-import { UniformHandle } from "../UniformHandle";
-import { Matrix4 } from "../Matrix";
+import type { UniformHandle } from "../UniformHandle";
+import type { Matrix4 } from "../Matrix";
 import { addExtractNthBit } from "./Common";
 import { addOvrFlagConstants } from "./FeatureSymbology";
 

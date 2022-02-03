@@ -7,10 +7,11 @@
  * @module Table
  */
 
-import ReactDataGrid from "react-data-grid";
-import { DistinctValueCollection, FilterableColumn, FilterableTable } from "../columnfiltering/ColumnFiltering";
+import type ReactDataGrid from "react-data-grid";
+import type { FilterableColumn, FilterableTable } from "../columnfiltering/ColumnFiltering";
+import { DistinctValueCollection } from "../columnfiltering/ColumnFiltering";
 import { FilterableColumnBase } from "../columnfiltering/FilterableColumnBase";
-import { ColumnDescription, TableDataProvider } from "../TableDataProvider";
+import type { ColumnDescription, TableDataProvider } from "../TableDataProvider";
 
 // cSpell:ignore columnfiltering
 

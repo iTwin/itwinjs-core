@@ -7,12 +7,13 @@
  */
 
 import * as React from "react";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 import { Orientation } from "@itwin/core-react";
 import { countMatchesInString } from "../../common/countMatchesInString";
 import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
-import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../ValueRendererManager";
+import type { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
+import type { PropertyValueRendererContext} from "../ValueRendererManager";
+import { PropertyContainerType, PropertyValueRendererManager } from "../ValueRendererManager";
 
 /**
  * @internal

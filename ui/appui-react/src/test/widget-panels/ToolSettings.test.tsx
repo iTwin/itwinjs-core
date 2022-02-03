@@ -10,8 +10,9 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import type { ToolSettingsEntry} from "../../appui-react";
 import {
-  ConfigurableCreateInfo, FrontstageDef, FrontstageManager, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
+  ConfigurableCreateInfo, FrontstageDef, FrontstageManager, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsGrid,
   ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
 } from "../../appui-react";
 

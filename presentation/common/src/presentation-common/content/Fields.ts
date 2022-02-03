@@ -6,18 +6,21 @@
  * @module Content
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import type { ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelationshipPathJSON,
+  StrippedRelationshipPath} from "../EC";
 import {
-  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
-  StrippedRelationshipPath,
+  ClassInfo, RelatedClassInfo, RelationshipPath,
 } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
 import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
-import { CategoryDescription } from "./Category";
-import { EditorDescription } from "./Editor";
-import { Property, PropertyJSON } from "./Property";
-import { RendererDescription } from "./Renderer";
-import { TypeDescription } from "./TypeDescription";
+import type { CategoryDescription } from "./Category";
+import type { EditorDescription } from "./Editor";
+import type { PropertyJSON } from "./Property";
+import { Property } from "./Property";
+import type { RendererDescription } from "./Renderer";
+import type { TypeDescription } from "./TypeDescription";
 
 /**
  * Data structure for a [[Field]] serialized to JSON.

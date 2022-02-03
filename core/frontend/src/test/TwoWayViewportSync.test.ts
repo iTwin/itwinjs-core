@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { ViewFlags } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { StandardViewId } from "../StandardView";
-import { ScreenViewport } from "../Viewport";
+import type { ScreenViewport } from "../Viewport";
 import { TwoWayViewportFrustumSync, TwoWayViewportSync } from "../TwoWayViewportSync";
 import { openBlankViewport } from "./openBlankViewport";
 

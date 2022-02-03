@@ -8,11 +8,13 @@ import { mount, shallow } from "enzyme";
 import React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import {
-  IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes, SpecialKey,
+import type {
+  IconEditorParams, InputEditorSizeParams, PrimitiveValue} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, SpecialKey,
 } from "@itwin/appui-abstract";
 import { CustomNumberEditor } from "../../components-react/editors/CustomNumberEditor";
-import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import type { PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { EditorContainer } from "../../components-react/editors/EditorContainer";
 import TestUtils, { MineDataController } from "../TestUtils";
 import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 

@@ -6,15 +6,16 @@
  * @module Views
  */
 
+import type { Point4d, XYAndZ, XYZ} from "@itwin/core-geometry";
 import {
-  AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
+  AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { Frustum, GridOrientationType, Npc, NpcCorners } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { CoordSystem } from "./CoordSystem";
-import { Viewport } from "./Viewport";
+import type { Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
-import { ViewState } from "./ViewState";
+import type { ViewState } from "./ViewState";
 import { Frustum2d } from "./Frustum2d";
 import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
 

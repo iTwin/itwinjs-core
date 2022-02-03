@@ -9,10 +9,13 @@
 import "./CursorPopup.scss";
 import * as React from "react";
 import classnames from "classnames";
-import { PointProps, RelativePosition } from "@itwin/appui-abstract";
-import { CommonDivProps, CommonProps, Div, RectangleProps, Size, SizeProps } from "@itwin/core-react";
+import type { PointProps} from "@itwin/appui-abstract";
+import { RelativePosition } from "@itwin/appui-abstract";
+import type { CommonDivProps, CommonProps, RectangleProps, SizeProps } from "@itwin/core-react";
+import { Div, Size } from "@itwin/core-react";
 import { TitleBar } from "@itwin/appui-layout-react";
-import { CursorPopupFadeOutEventArgs, CursorPopupManager } from "./CursorPopupManager";
+import type { CursorPopupFadeOutEventArgs} from "./CursorPopupManager";
+import { CursorPopupManager } from "./CursorPopupManager";
 
 /** Properties for the [[CursorPopup]] React component
  * @public

@@ -7,10 +7,12 @@
  * @module iModels
  */
 
-import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import type { Id64Arg, Id64String} from "@itwin/core-bentley";
+import { DbResult, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { IModel, IModelError } from "@itwin/core-common";
-import { LockMap, LockState } from "./BackendHubAccess";
-import { BriefcaseDb, LockControl } from "./IModelDb";
+import type { LockMap} from "./BackendHubAccess";
+import { LockState } from "./BackendHubAccess";
+import type { BriefcaseDb, LockControl } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
 

@@ -8,7 +8,8 @@
  */
 
 import { saveAs } from "file-saver";
-import { GLTimerResult, IModelApp, RenderSystemDebugControl } from "@itwin/core-frontend";
+import type { GLTimerResult, RenderSystemDebugControl } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 
 /** Trace Event Format, viewable with chrome://tracing

@@ -6,11 +6,12 @@
  * @module iModelHubClient
  */
 
-import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
+import type { AccessToken, GuidString} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgQuery } from "../wsg/WsgQuery";
-import { IModelBaseHandler } from "./BaseHandler";
+import type { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { addSelectContainerAccessKey } from "./HubQuery";
 

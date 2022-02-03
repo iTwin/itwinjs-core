@@ -7,12 +7,15 @@
  */
 
 import { CallableInstance } from "callable-instance2/import";
-import InspireTree, * as Inspire from "inspire-tree";
+import type * as Inspire from "inspire-tree";
+import InspireTree from "inspire-tree";
 import { isArrayLike } from "lodash";
-import { IDisposable, using } from "@itwin/core-bentley";
+import type { IDisposable} from "@itwin/core-bentley";
+import { using } from "@itwin/core-bentley";
 import { UiError } from "@itwin/appui-abstract";
-import { CheckBoxInfo, CheckBoxState, isPromiseLike } from "@itwin/core-react";
-import { PageOptions } from "../common/PageOptions";
+import type { CheckBoxInfo} from "@itwin/core-react";
+import { CheckBoxState, isPromiseLike } from "@itwin/core-react";
+import type { PageOptions } from "../common/PageOptions";
 import { UiComponents } from "../UiComponents";
 
 // istanbul ignore file

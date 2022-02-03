@@ -7,7 +7,8 @@
  */
 
 import { BeEvent, Guid } from "@itwin/core-bentley";
-import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
+import type { Ruleset } from "@itwin/presentation-common";
+import { RegisteredRuleset } from "@itwin/presentation-common";
 
 /**
  * Presentation ruleset registry.

@@ -7,21 +7,26 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import * as React from "react";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { SelectionMode, TreeNodeItem } from "@itwin/components-react";
+import type { TreeNodeItem } from "@itwin/components-react";
+import { SelectionMode } from "@itwin/components-react";
 import { BeEvent } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@itwin/presentation-common";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import type { Node, NodeKey, NodePathElement } from "@itwin/presentation-common";
+import { KeySet, LabelDefinition } from "@itwin/presentation-common";
 import { createRandomId, deepEquals } from "@itwin/presentation-common/lib/cjs/test";
 import { PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { mockPresentationManager } from "@itwin/presentation-components/lib/cjs/test";
-import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
+import type { PresentationManager, RulesetVariablesManager, SelectionManager } from "@itwin/presentation-frontend";
+import { Presentation, SelectionChangeEvent } from "@itwin/presentation-frontend";
 import {
   HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
 } from "@itwin/presentation-testing";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../appui-react/imodel-components/models-tree/ModelsTree";
-import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
-import { VisibilityChangeListener } from "../../../appui-react/imodel-components/VisibilityTreeEventHandler";
+import type { ModelsVisibilityHandler } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
+import { ModelsTreeNodeType } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
+import type { VisibilityChangeListener } from "../../../appui-react/imodel-components/VisibilityTreeEventHandler";
 import TestUtils from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createKey, createModelNode, createSubjectNode } from "../Common";
 

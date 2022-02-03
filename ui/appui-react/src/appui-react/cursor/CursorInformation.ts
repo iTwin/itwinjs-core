@@ -6,7 +6,8 @@
  * @module Cursor
  */
 
-import { PointProps, RelativePosition, UiEvent } from "@itwin/appui-abstract";
+import type { PointProps} from "@itwin/appui-abstract";
+import { RelativePosition, UiEvent } from "@itwin/appui-abstract";
 import { Point } from "@itwin/core-react";
 
 /** Enum for Cursor Direction parts

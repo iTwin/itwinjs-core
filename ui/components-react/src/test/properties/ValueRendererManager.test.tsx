@@ -6,7 +6,8 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { IPropertyValueRenderer, PropertyValueRendererManager } from "../../components-react/properties/ValueRendererManager";
+import type { IPropertyValueRenderer} from "../../components-react/properties/ValueRendererManager";
+import { PropertyValueRendererManager } from "../../components-react/properties/ValueRendererManager";
 import { UiComponents } from "../../components-react/UiComponents";
 import TestUtils from "../TestUtils";
 

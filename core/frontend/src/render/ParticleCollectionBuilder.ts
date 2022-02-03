@@ -6,13 +6,15 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import type { Id64String } from "@itwin/core-bentley";
+import type { Matrix3d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
+import type { RenderTexture} from "@itwin/core-common";
 import {
-  ColorDef, Feature, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
+  ColorDef, Feature, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList,
 } from "@itwin/core-common";
-import { Viewport } from "../Viewport";
-import { RenderGraphic } from "./RenderGraphic";
+import type { Viewport } from "../Viewport";
+import type { RenderGraphic } from "./RenderGraphic";
 import { GraphicBranch } from "./GraphicBranch";
 import { MeshParams } from "./primitives/VertexTable";
 import { MeshArgs } from "./primitives/mesh/MeshPrimitives";

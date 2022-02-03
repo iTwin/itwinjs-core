@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ElectronTestRunner } from "./runners/electron/ElectronTestRunner";
 import { ChromeTestRunner } from "./runners/chrome/ChromeTestRunner";
-import { CertaConfig } from "./CertaConfig";
+import type { CertaConfig } from "./CertaConfig";
 import { NodeTestRunner } from "./runners/node/NodeTestRunner";
 import { relaunchForCoverage } from "./utils/CoverageUtils";
 import { startDebugger } from "./utils/SpawnUtils";

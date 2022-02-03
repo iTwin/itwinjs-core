@@ -5,8 +5,8 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { GLTimerResult, GLTimerResultCallback } from "../RenderSystem";
-import { System } from "./System";
+import type { GLTimerResult, GLTimerResultCallback } from "../RenderSystem";
+import type { System } from "./System";
 
 abstract class DisjointTimerExtension {
   public abstract get isSupported(): boolean;

@@ -6,8 +6,8 @@
  * @module Notification
  */
 
-import { NotifyMessageDetailsType } from "./ReactNotifyMessageDetails";
-import { MessageSeverity } from "@itwin/appui-abstract";
+import type { NotifyMessageDetailsType } from "./ReactNotifyMessageDetails";
+import type { MessageSeverity } from "@itwin/appui-abstract";
 import { MessageManager } from "./MessageManager";
 import { OutputMessageType } from "@itwin/core-frontend";
 

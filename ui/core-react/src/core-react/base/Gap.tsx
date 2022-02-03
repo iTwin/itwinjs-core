@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 /** Properties for the [[Gap]] component.
  * @public

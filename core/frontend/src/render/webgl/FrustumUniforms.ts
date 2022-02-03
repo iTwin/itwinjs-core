@@ -8,7 +8,7 @@
 
 import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Frustum, Npc } from "@itwin/core-common";
-import { UniformHandle } from "./UniformHandle";
+import type { UniformHandle } from "./UniformHandle";
 import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
 import { Matrix4 } from "./Matrix";
 import { desync, sync } from "./Sync";

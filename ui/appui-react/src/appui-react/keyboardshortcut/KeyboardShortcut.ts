@@ -6,11 +6,12 @@
  * @module KeyboardShortcut
  */
 
-import { ConditionalBooleanValue, FunctionKey, SpecialKey, UiError, UiSyncEventArgs } from "@itwin/appui-abstract";
+import type { UiSyncEventArgs } from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, FunctionKey, SpecialKey, UiError } from "@itwin/appui-abstract";
 import { CursorInformation } from "../cursor/CursorInformation";
-import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
+import type { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
-import { ItemProps } from "../shared/ItemProps";
+import type { ItemProps } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";

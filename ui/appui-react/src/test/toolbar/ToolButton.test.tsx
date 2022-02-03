@@ -8,7 +8,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { SelectionTool } from "@itwin/core-frontend";
 import { BadgeType } from "@itwin/appui-abstract";
-import { BaseItemState, FrontstageManager, KeyboardShortcutManager, SyncUiEventDispatcher, SyncUiEventId, ToolButton } from "../../appui-react";
+import type { BaseItemState} from "../../appui-react";
+import { FrontstageManager, KeyboardShortcutManager, SyncUiEventDispatcher, SyncUiEventId, ToolButton } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ToolButton", () => {

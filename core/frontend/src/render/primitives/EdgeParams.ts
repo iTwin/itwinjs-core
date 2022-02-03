@@ -7,8 +7,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData } from "@itwin/core-common";
-import { MeshArgs, MeshArgsEdges } from "./mesh/MeshPrimitives";
+import type { LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData } from "@itwin/core-common";
+import type { MeshArgs, MeshArgsEdges } from "./mesh/MeshPrimitives";
 import { VertexIndices } from "./VertexTable";
 import { TesselatedPolyline, wantJointTriangles } from "./PolylineParams";
 import { IModelApp } from "../../IModelApp";

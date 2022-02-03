@@ -10,16 +10,21 @@ import * as faker from "faker";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
-import { Code, ElementProps } from "@itwin/core-common";
-import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet, ViewState3d } from "@itwin/core-frontend";
+import type { Id64Arg, Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { ElementProps } from "@itwin/core-common";
+import { Code } from "@itwin/core-common";
+import type { ViewState3d } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId, ResolvablePromise, waitForAllAsyncs } from "@itwin/presentation-common/lib/cjs/test";
-import {
-  HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
+import type {
+  HiliteSet, SelectionChangeEventArgs, SelectionScopesManager} from "@itwin/presentation-frontend";
+import { Presentation, SelectionChangeEvent, SelectionChangeType, SelectionManager,
 } from "@itwin/presentation-frontend";
 import { ViewportComponent } from "@itwin/imodel-components-react";
-import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";
+import type { IUnifiedSelectionComponent} from "../../presentation-components";
+import { viewWithUnifiedSelection } from "../../presentation-components";
 import { ViewportSelectionHandler } from "../../presentation-components/viewport/WithUnifiedSelection";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

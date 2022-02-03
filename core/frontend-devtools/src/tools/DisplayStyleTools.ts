@@ -8,12 +8,14 @@
  */
 
 import { CompressedId64Set } from "@itwin/core-bentley";
+import type { DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderSchedule, RenderTimelineProps,
+  SubCategoryAppearance, ViewFlagsProperties} from "@itwin/core-common";
 import {
-  ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SkyCube, SkySphere,
-  SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
+  ColorDef, RenderMode, SkyCube, SkySphere, SubCategoryOverride, ViewFlags, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
-import {
-  DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
+import type {
+  DisplayStyle3dState, Viewport} from "@itwin/core-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool,
 } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";

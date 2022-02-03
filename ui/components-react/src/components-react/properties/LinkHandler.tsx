@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
-import { LinkElementsInfo } from "@itwin/appui-abstract";
+import type { LinkElementsInfo } from "@itwin/appui-abstract";
 import { UnderlinedButton } from "@itwin/core-react";
 
 /** Render a single anchor tag */

@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { compareStrings } from "@itwin/core-bentley";
-import { IModelTileTreeProps, ServerTimeoutError } from "@itwin/core-common";
+import type { IModelTileTreeProps} from "@itwin/core-common";
+import { ServerTimeoutError } from "@itwin/core-common";
+import type { IModelConnection, RenderSystem, TileContent, TileDrawArgs,
+  TileRequest, TileRequestChannel} from "@itwin/core-frontend";
 import {
-  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs, TileLoadPriority,
-  TileRequest, TileRequestChannel, TileTree,
+  IModelApp, overrideRequestTileTreeProps, SnapshotConnection, Tile, TileLoadPriority, TileTree,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";

@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, ColorDef } from "@itwin/core-common";
-import { BlankConnection, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { BlankConnection, SpatialViewState } from "@itwin/core-frontend";
 
 export class BlankConnectionExample {
 

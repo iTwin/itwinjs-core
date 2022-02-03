@@ -8,7 +8,8 @@
 
 import "./LoadingSpinner.scss";
 import * as React from "react";
-import { ProgressRadial, ProgressRadialProps } from "@itwin/itwinui-react";
+import type { ProgressRadialProps } from "@itwin/itwinui-react";
+import { ProgressRadial } from "@itwin/itwinui-react";
 import { SpinnerSize } from "./Spinner";
 
 /** Type for ProgressRadialProps.size

@@ -7,8 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import type { ScreenSpaceEffectBuilder, ScreenSpaceEffectSource} from "@itwin/core-frontend";
 import {
-  IModelApp, ScreenSpaceEffectBuilder, ScreenSpaceEffectSource, Tool,
+  IModelApp, Tool,
 } from "@itwin/core-frontend";
 
 /** Adds a screen-space effect to the selected viewport.

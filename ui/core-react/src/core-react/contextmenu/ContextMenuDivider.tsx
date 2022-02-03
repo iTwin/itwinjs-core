@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 /**
  * Menu Divider for [[ContextMenu]]. Inserts a line between items, used for list item grouping.

@@ -6,11 +6,11 @@
  * @module Hierarchies
  */
 import { using } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import { Omit, RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { Omit, RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
 import { PRESENTATION_TREE_NODE_KEY, PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { TreeNodeItem } from "@itwin/components-react";
+import type { TreeNodeItem } from "@itwin/components-react";
 
 /**
  * Structure that describes a Node with any indexed properties

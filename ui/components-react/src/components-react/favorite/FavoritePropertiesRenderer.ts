@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Orientation } from "@itwin/core-react";
-import { PropertyData } from "../propertygrid/PropertyDataProvider";
+import type { Orientation } from "@itwin/core-react";
+import type { PropertyData } from "../propertygrid/PropertyDataProvider";
 import { FavoritePropertyList } from "./FavoritePropertyList";
 
 /** Renderer for Favorite Property List

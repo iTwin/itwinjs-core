@@ -8,12 +8,14 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@itwin/appui-abstract";
-import { CommonProps } from "../utils/Props";
-import { ContextMenu } from "./ContextMenu";
+import type { BadgeType} from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, SpecialKey } from "@itwin/appui-abstract";
+import type { CommonProps } from "../utils/Props";
+import type { ContextMenu } from "./ContextMenu";
 import { BadgeUtilities } from "../badge/BadgeUtilities";
 import { TildeFinder } from "./TildeFinder";
-import { Icon, IconSpec } from "../icons/IconComponent";
+import type { IconSpec } from "../icons/IconComponent";
+import { Icon } from "../icons/IconComponent";
 
 /** Properties for the [[ContextMenuItem]] component
  * @public

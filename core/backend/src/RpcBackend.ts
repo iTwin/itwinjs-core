@@ -10,7 +10,8 @@
 
 import * as multiparty from "multiparty";
 import * as FormData from "form-data";
-import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
+import type { HttpServerRequest, RpcActivity} from "@itwin/core-common";
+import { BentleyStatus, IModelError, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
 import { assert, Logger } from "@itwin/core-bentley";
 

@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import type {
+  BackstageItem, CommonToolbarItem, UiItemsProvider} from "@itwin/appui-abstract";
 import {
-  BackstageItem,
-  BackstageItemUtilities, CommonToolbarItem, IconSpecUtilities, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider,
+  BackstageItemUtilities, IconSpecUtilities, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager,
 } from "@itwin/appui-abstract";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";

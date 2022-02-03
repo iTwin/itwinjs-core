@@ -6,7 +6,8 @@
  * @module Tiles
  */
 
-import { ArcGisGenerateTokenOptions, ArcGisToken, ArcGisTokenGenerator } from "../internal";
+import type { ArcGisGenerateTokenOptions, ArcGisToken} from "../internal";
+import { ArcGisTokenGenerator } from "../internal";
 
 /** @internal */
 export class ArcGisTokenManager {

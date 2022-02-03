@@ -7,8 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  CurveChain, IndexedPolyface, Loop, Path, Point3d, PolyfaceBuilder, PolyfaceQuery, Range3d, SolidPrimitive, StrokeOptions, SweepContour, Transform,
+import type {
+  CurveChain, IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform} from "@itwin/core-geometry";
+import { PolyfaceBuilder, PolyfaceQuery, StrokeOptions, SweepContour,
 } from "@itwin/core-geometry";
 import { DisplayParams } from "../DisplayParams";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../Polyface";

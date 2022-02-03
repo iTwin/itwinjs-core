@@ -6,19 +6,20 @@
  * @module Metadata
  */
 
-import { SchemaContext } from "../Context";
+import type { SchemaContext } from "../Context";
 import { SchemaReadHelper } from "../Deserialization/Helper";
 import { JsonParser } from "../Deserialization/JsonParser";
-import { SchemaProps } from "../Deserialization/JsonProps";
+import type { SchemaProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { ECClassModifier, PrimitiveType } from "../ECObjects";
+import type { ECClassModifier, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, AnySchemaItem } from "../Interfaces";
+import type { AnyClass, AnySchemaItem } from "../Interfaces";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { ECName } from "../ECName";
 import { ECClass, StructClass } from "./Class";
 import { Constant } from "./Constant";
-import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import type { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet} from "./CustomAttribute";
+import { serializeCustomAttributes } from "./CustomAttribute";
 import { CustomAttributeClass } from "./CustomAttributeClass";
 import { EntityClass } from "./EntityClass";
 import { Enumeration } from "./Enumeration";

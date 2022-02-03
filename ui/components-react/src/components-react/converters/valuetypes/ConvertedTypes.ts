@@ -6,7 +6,7 @@
  * @module TypeConverters
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
 
 /** Converted Primitives namespace
  * @public

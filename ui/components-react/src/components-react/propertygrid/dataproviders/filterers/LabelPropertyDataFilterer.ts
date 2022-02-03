@@ -6,9 +6,10 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 import { countMatchesInString } from "../../../common/countMatchesInString";
-import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
+import type { PropertyDataFilterResult} from "./PropertyDataFiltererBase";
+import { FilteredType, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
 
 /**
  * PropertyData filter which matches on any record type label and includes descendant nodes on match

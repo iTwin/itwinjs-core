@@ -8,11 +8,13 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
-import { ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d } from "@itwin/core-common";
+import type { ColorIndex, FeatureIndex, QParams3d} from "@itwin/core-common";
+import { ColorDef, FeatureIndexType, QParams2d, QPoint2d } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
-import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
-import { createSurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
+import type { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
+import type { SurfaceParams} from "./SurfaceParams";
+import { createSurfaceMaterial, SurfaceType } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
 
 /**

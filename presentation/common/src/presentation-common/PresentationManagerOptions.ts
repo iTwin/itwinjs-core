@@ -6,14 +6,14 @@
  * @module Core
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { UnitSystemKey } from "@itwin/core-quantity";
-import { SelectionInfo } from "./content/Descriptor";
-import { FieldDescriptor } from "./content/Fields";
-import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
-import { InstanceKey } from "./EC";
-import { Ruleset } from "./rules/Ruleset";
-import { RulesetVariable } from "./RulesetVariables";
+import type { Id64String } from "@itwin/core-bentley";
+import type { UnitSystemKey } from "@itwin/core-quantity";
+import type { SelectionInfo } from "./content/Descriptor";
+import type { FieldDescriptor } from "./content/Fields";
+import type { DiagnosticsOptionsWithHandler } from "./Diagnostics";
+import type { InstanceKey } from "./EC";
+import type { Ruleset } from "./rules/Ruleset";
+import type { RulesetVariable } from "./RulesetVariables";
 
 /**
  * A generic request options type used for both hierarchy and content requests.

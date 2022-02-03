@@ -6,9 +6,10 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { BatchType, Feature, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
+import type { Id64String } from "@itwin/core-bentley";
+import type { Feature, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
+import { BatchType } from "@itwin/core-common";
+import type { IModelConnection } from "../IModelConnection";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
  * @see [[Viewport.readPixels]].

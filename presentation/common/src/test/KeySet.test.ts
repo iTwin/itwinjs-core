@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { InstanceKey, Key, KeySet, PresentationError } from "../presentation-common";
+import type { InstanceKey, Key} from "../presentation-common";
+import { KeySet, PresentationError } from "../presentation-common";
 import { createTestECInstanceKey } from "./_helpers/EC";
 import {
   createRandomECInstanceId, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomEntityProps, createRandomId,

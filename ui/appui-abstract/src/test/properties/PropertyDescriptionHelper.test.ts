@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  EnumerationChoice, IconEditorParams, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams, SuppressLabelEditorParams,
+import type {
+  EnumerationChoice, IconEditorParams, RangeEditorParams, SuppressLabelEditorParams} from "../../appui-abstract";
+import { PropertyDescriptionHelper, PropertyEditorParamTypes,
 } from "../../appui-abstract";
 
 // cSpell:ignore Picklist

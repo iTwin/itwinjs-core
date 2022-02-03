@@ -6,19 +6,21 @@
  * @module WebGL
  */
 
-import { Matrix4d, Vector3d } from "@itwin/core-geometry";
-import { RenderPlan } from "../RenderPlan";
+import type { Matrix4d} from "@itwin/core-geometry";
+import { Vector3d } from "@itwin/core-geometry";
+import type { RenderPlan } from "../RenderPlan";
 import { BatchUniforms } from "./BatchUniforms";
 import { BranchUniforms } from "./BranchUniforms";
 import { FrustumUniforms, FrustumUniformType } from "./FrustumUniforms";
-import { UniformHandle } from "./UniformHandle";
+import type { UniformHandle } from "./UniformHandle";
 import { HiliteUniforms } from "./HiliteUniforms";
 import { LightingUniforms } from "./LightingUniforms";
-import { Matrix4 } from "./Matrix";
+import type { Matrix4 } from "./Matrix";
 import { ShadowUniforms } from "./ShadowUniforms";
 import { StyleUniforms } from "./StyleUniforms";
-import { desync, sync, SyncObserver, SyncToken } from "./Sync";
-import { Target } from "./Target";
+import type { SyncObserver, SyncToken } from "./Sync";
+import { desync, sync } from "./Sync";
+import type { Target } from "./Target";
 import { ThematicUniforms } from "./ThematicUniforms";
 import { ViewRectUniforms } from "./ViewRectUniforms";
 

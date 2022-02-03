@@ -6,7 +6,8 @@
  * @module Effects
  */
 
-import { Point3d, Range1d, Range3d } from "@itwin/core-geometry";
+import type { Range1d, Range3d } from "@itwin/core-geometry";
+import { Point3d } from "@itwin/core-geometry";
 
 /** Generate integer in [min, max].
  * @beta

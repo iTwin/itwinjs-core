@@ -6,15 +6,17 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import {
-  AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
+import type { Id64String } from "@itwin/core-bentley";
+import type {
+  AnyCurvePrimitive, Arc3d, Loop, Point2d, Point3d, Polyface, Range3d, SolidPrimitive} from "@itwin/core-geometry";
+import { Path, Transform,
 } from "@itwin/core-geometry";
-import { AnalysisStyle, ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
-import { RenderGraphic } from "./RenderGraphic";
-import { GraphicPrimitive } from "./GraphicPrimitive";
+import type { AnalysisStyle, ColorDef} from "@itwin/core-common";
+import { Frustum, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
+import type { IModelConnection } from "../IModelConnection";
+import type { Viewport } from "../Viewport";
+import type { RenderGraphic } from "./RenderGraphic";
+import type { GraphicPrimitive } from "./GraphicPrimitive";
 
 /**
  * Describes the type of a [[GraphicBuilder]], which defines the coordinate system in which the builder's geometry is defined and

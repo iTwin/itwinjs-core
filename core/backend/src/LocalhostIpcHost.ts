@@ -9,7 +9,7 @@
 import * as ws from "ws";
 import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcHost } from "./IpcHost";
-import { IModelHostConfiguration } from "./IModelHost";
+import type { IModelHostConfiguration } from "./IModelHost";
 
 /** @internal */
 export interface LocalhostIpcHostOpts {

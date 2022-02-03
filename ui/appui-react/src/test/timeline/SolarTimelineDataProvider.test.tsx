@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { ViewFlags } from "@itwin/core-common";
-import { DisplayStyle3dState, IModelConnection, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import type { ViewFlags } from "@itwin/core-common";
+import type { DisplayStyle3dState, IModelConnection, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { SolarTimelineDataProvider } from "../../appui-react/timeline/SolarTimelineDataProvider";
 
 describe("SolarTimelineDataProvider", () => {

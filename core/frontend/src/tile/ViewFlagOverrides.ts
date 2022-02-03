@@ -6,7 +6,8 @@
  * @module Tiles
  */
 
-import { RenderMode, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
+import type { ViewFlagOverrides} from "@itwin/core-common";
+import { RenderMode, ViewFlags } from "@itwin/core-common";
 
 /** Create ViewFlagOverrides suitable for most non-iModel tile trees (reality/map tiles).
  * @param options Customize the overrides. Any properties left unspecified use the current view settings, except white-on-white reversal is always disabled.

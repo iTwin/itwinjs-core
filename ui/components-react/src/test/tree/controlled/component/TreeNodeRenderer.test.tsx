@@ -8,9 +8,9 @@ import * as moq from "typemoq";
 import { CheckBoxState } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { TreeNodeRenderer } from "../../../../components-react/tree/controlled/component/TreeNodeRenderer";
-import { TreeActions } from "../../../../components-react/tree/controlled/TreeActions";
-import { MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
-import { ITreeImageLoader } from "../../../../components-react/tree/ImageLoader";
+import type { TreeActions } from "../../../../components-react/tree/controlled/TreeActions";
+import type { MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
+import type { ITreeImageLoader } from "../../../../components-react/tree/ImageLoader";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 describe("TreeNodeRenderer", () => {

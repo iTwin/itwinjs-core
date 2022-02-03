@@ -8,8 +8,8 @@
 
 import { Point3d } from "@itwin/core-geometry";
 import { calculateSunriseOrSunset, Cartographic, ColorByName, ColorDef } from "@itwin/core-common";
-import { IModelConnection, ScreenViewport } from "@itwin/core-frontend";
-import { SolarDataProvider } from "./interfaces";
+import type { IModelConnection, ScreenViewport } from "@itwin/core-frontend";
+import type { SolarDataProvider } from "./interfaces";
 
 const millisecPerMinute = 1000 * 60;
 const millisecPerHour = millisecPerMinute * 60;

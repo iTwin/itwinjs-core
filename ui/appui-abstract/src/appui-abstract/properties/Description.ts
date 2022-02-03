@@ -6,8 +6,9 @@
  * @module Properties
  */
 
-import {
-  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams, SuppressLabelEditorParams,
+import type {
+  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, RangeEditorParams, SuppressLabelEditorParams} from "./EditorParams";
+import { PropertyEditorParamTypes,
 } from "./EditorParams";
 import { StandardEditorNames } from "./StandardEditorNames";
 import { StandardTypeNames } from "./StandardTypeNames";

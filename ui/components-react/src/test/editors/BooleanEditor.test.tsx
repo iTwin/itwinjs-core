@@ -8,9 +8,11 @@ import { mount, shallow } from "enzyme";
 import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
+import type { PrimitiveValue} from "@itwin/appui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { BooleanEditor } from "../../components-react/editors/BooleanEditor";
-import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import type { PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { EditorContainer } from "../../components-react/editors/EditorContainer";
 import TestUtils, { MineDataController } from "../TestUtils";
 import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 

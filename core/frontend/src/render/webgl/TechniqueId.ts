@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { CompositeFlags } from "./RenderFlags";
+import type { CompositeFlags } from "./RenderFlags";
 
 /* eslint-disable no-restricted-syntax */
 

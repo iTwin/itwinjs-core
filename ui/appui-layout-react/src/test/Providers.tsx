@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
+import type {
+  NineZoneProviderProps} from "../appui-layout-react";
 import {
   createNineZoneState,
   DragManager,
   DragManagerContext,
   NineZoneProvider,
-  NineZoneProviderProps,
 } from "../appui-layout-react";
 import { Point, Rectangle, Size } from "@itwin/core-react";
 

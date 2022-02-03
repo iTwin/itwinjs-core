@@ -8,7 +8,7 @@
 
 import { Angle, Matrix3d, Point2d, Point3d, Range2d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { MapCartoRectangle } from "../internal";
 
 /** @internal */

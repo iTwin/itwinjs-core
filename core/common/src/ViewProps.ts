@@ -6,13 +6,13 @@
  * @module Views
  */
 
-import { Id64Array, Id64String } from "@itwin/core-bentley";
-import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
-import { CameraProps } from "./Camera";
-import { DisplayStyleProps } from "./DisplayStyleSettings";
-import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps } from "./ElementProps";
-import { EntityQueryParams } from "./EntityProps";
-import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
+import type { Id64Array, Id64String } from "@itwin/core-bentley";
+import type { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
+import type { CameraProps } from "./Camera";
+import type { DisplayStyleProps } from "./DisplayStyleSettings";
+import type { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps } from "./ElementProps";
+import type { EntityQueryParams } from "./EntityProps";
+import type { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
  * @see [[SectionDrawingProps]]

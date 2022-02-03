@@ -6,10 +6,10 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { ECObjectsError } from "../../Exception";
-import { Phenomenon } from "../../Metadata/Phenomenon";
+import type { Phenomenon } from "../../Metadata/Phenomenon";
 import { Schema } from "../../Metadata/Schema";
-import { Unit } from "../../Metadata/Unit";
-import { UnitSystem } from "../../Metadata/UnitSystem";
+import type { Unit } from "../../Metadata/Unit";
+import type { UnitSystem } from "../../Metadata/UnitSystem";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 

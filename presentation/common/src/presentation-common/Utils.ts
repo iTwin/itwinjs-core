@@ -8,7 +8,7 @@
 
 import * as path from "path";
 import { NodeKey } from "./hierarchy/Key";
-import { KeySet } from "./KeySet";
+import type { KeySet } from "./KeySet";
 
 /**
  * Create a type with `T` properties excluding properties listed in `K`.

@@ -6,7 +6,8 @@
 import { assert } from "chai";
 import { SchemaContext } from "../Context";
 import { SchemaGraphUtil } from "../Deserialization/SchemaGraphUtil";
-import { MutableSchema, Schema } from "../Metadata/Schema";
+import type { MutableSchema} from "../Metadata/Schema";
+import { Schema } from "../Metadata/Schema";
 import { SchemaKey } from "../SchemaKey";
 
 describe("SchemaGraphUtil tests:", () => {

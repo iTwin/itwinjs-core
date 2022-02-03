@@ -9,9 +9,10 @@
 import * as React from "react";
 import { Orientation } from "@itwin/core-react";
 import { Direction, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
-import { ItemList } from "../shared/ItemMap";
+import type { ItemList } from "../shared/ItemMap";
 import { Toolbar } from "../toolbar/Toolbar";
-import { ToolbarWidgetProps, WidgetDef } from "./WidgetDef";
+import type { ToolbarWidgetProps} from "./WidgetDef";
+import { WidgetDef } from "./WidgetDef";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
  * @deprecated

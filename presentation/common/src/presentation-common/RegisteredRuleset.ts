@@ -6,10 +6,10 @@
  * @module Core
  */
 
-import { IDisposable } from "@itwin/core-bentley";
-import { Rule } from "./rules/Rule";
-import { Ruleset, SupplementationInfo } from "./rules/Ruleset";
-import { VariablesGroup } from "./rules/Variables";
+import type { IDisposable } from "@itwin/core-bentley";
+import type { Rule } from "./rules/Rule";
+import type { Ruleset, SupplementationInfo } from "./rules/Ruleset";
+import type { VariablesGroup } from "./rules/Variables";
 
 /**
  * A ruleset that is registered in a ruleset manager.

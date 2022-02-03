@@ -6,9 +6,9 @@
  * @module RpcInterface
  */
 
-import { Readable } from "stream";
+import type { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
-import { RpcProtocol } from "./RpcProtocol";
+import type { RpcProtocol } from "./RpcProtocol";
 
 // cspell:ignore unmarshal
 

@@ -7,10 +7,13 @@
  * @module Tools
  */
 
-import { BentleyError, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@itwin/core-common";
-import {
-  BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
+import type { Id64Array, Id64String } from "@itwin/core-bentley";
+import { BentleyError, Id64 } from "@itwin/core-bentley";
+import type { GeometrySummaryOptions} from "@itwin/core-common";
+import { GeometrySummaryVerbosity, IModelReadRpcInterface } from "@itwin/core-common";
+import type {
+  BeButtonEvent, HitDetail} from "@itwin/core-frontend";
+import { CoreTools, EventHandled, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
   NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
 } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";

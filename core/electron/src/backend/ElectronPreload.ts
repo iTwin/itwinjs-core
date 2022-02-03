@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
+import type { IpcRendererEvent } from "electron";
+import { contextBridge, ipcRenderer } from "electron";
 
 /** These methods are stored on `window.itwinjs` */
 export interface ITwinElectronApi {

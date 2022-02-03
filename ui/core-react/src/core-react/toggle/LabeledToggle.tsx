@@ -9,7 +9,8 @@
 import "./LabeledToggle.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ToggleSwitch, ToggleSwitchProps } from "@itwin/itwinui-react";
+import type { ToggleSwitchProps } from "@itwin/itwinui-react";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 
 /** Properties for [[LabeledToggle]]
  * @public

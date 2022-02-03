@@ -5,16 +5,18 @@
 import { expect, should } from "chai";
 import { castDraft, produce } from "immer";
 import { Point, Rectangle } from "@itwin/core-react";
+import type { PanelSide} from "../../appui-layout-react";
 import {
   addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, addWidgetTabToFloatingPanel, createDraggedTabState, createFloatingWidgetState,
   createHorizontalPanelState, createNineZoneState, createPanelsState, createTabsState,
   createTabState, createVerticalPanelState, createWidgetState, dockWidgetContainer, findTab, floatWidget,
-  initSizeAndPositionProps, isHorizontalPanelState, NineZoneStateReducer, PanelSide, popoutWidgetToChildWindow,
+  initSizeAndPositionProps, isHorizontalPanelState, NineZoneStateReducer, popoutWidgetToChildWindow,
   removeTab, setFloatingWidgetContainerBounds, toolSettingsTabId,
 } from "../../appui-layout-react";
+import type {
+  NineZoneState} from "../../appui-layout-react/base/NineZoneState";
 import {
   convertAllPopupWidgetContainersToFloating, convertFloatingWidgetContainerToPopout, convertPopoutWidgetContainerToFloating,
-  NineZoneState,
 } from "../../appui-layout-react/base/NineZoneState";
 
 describe("isHorizontalPanelState", () => {

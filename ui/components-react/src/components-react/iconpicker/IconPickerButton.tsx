@@ -11,7 +11,8 @@ import "./IconPickerButton.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { CommonProps, Popup, SvgSprite } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Popup, SvgSprite } from "@itwin/core-react";
 
 /** Properties for the [[IconItem]] React component
  * @alpha @deprecated

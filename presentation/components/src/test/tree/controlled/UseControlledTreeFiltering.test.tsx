@@ -5,13 +5,14 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
-import { NodePathElement } from "@itwin/presentation-common";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { NodePathElement } from "@itwin/presentation-common";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
-import { AbstractTreeNodeLoaderWithProvider, TreeModelNode, TreeModelSource } from "@itwin/components-react";
+import type { AbstractTreeNodeLoaderWithProvider, TreeModelNode, TreeModelSource } from "@itwin/components-react";
 import { renderHook } from "@testing-library/react-hooks";
-import {
-  ControlledPresentationTreeFilteringProps, IPresentationTreeDataProvider, useControlledPresentationTreeFiltering,
+import type {
+  ControlledPresentationTreeFilteringProps, IPresentationTreeDataProvider} from "../../../presentation-components";
+import { useControlledPresentationTreeFiltering,
 } from "../../../presentation-components";
 import { FilteredPresentationTreeDataProvider } from "../../../presentation-components/tree/FilteredDataProvider";
 import { createRandomPropertyRecord, createRandomTreeNodeItem } from "../../_helpers/UiComponents";

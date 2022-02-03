@@ -9,27 +9,31 @@ import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
 import { CloudSqlite } from "@bentley/imodeljs-native";
-import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, using } from "@itwin/core-bentley";
-import {
-  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType,
-  GeoCoordinatesRequestProps, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
-  IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
-  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+import type { GuidString, Id64String} from "@itwin/core-bentley";
+import { DbResult, Guid, Id64, Logger, OpenMode, using } from "@itwin/core-bentley";
+import type {
+  AxisAlignedBox3d, DefinitionElementProps, DisplayStyleProps, DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
+  GeoCoordinatesRequestProps, GeographicCRSProps, GeometricElementProps, IModelCoordinatesRequestProps, MapImageryProps, ModelProps, PhysicalElementProps,
+  PointWithStatus, SpatialViewDefinitionProps, TextureMapProps, ViewDefinitionProps, ViewFlagProps} from "@itwin/core-common";
+import { BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef,
+  DisplayStyleSettings, EcefLocation, FontMap, FontType, GeographicCRS, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
+  IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SubCategoryAppearance,
+  TextureMapping, TextureMapUnits, ViewFlags,
 } from "@itwin/core-common";
+import type { GeometryQuery, XYZProps} from "@itwin/core-geometry";
 import {
-  Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
+  Geometry, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import { V2CheckpointAccessProps } from "../../BackendHubAccess";
+import type { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { V2CheckpointManager } from "../../CheckpointManager";
+import type { DisplayStyleCreationOptions, ECSqlStatement, Entity, SqliteStatement,
+  SqliteValue, ViewDefinition} from "../../core-backend";
 import {
   BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
-  DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
-  ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
+  DefinitionPartition, DictionaryModel, DisplayStyle3d, DocumentPartition, DrawingGraphic, Element,
+  ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
-  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
-  SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
+  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
 import { HubMock } from "../HubMock";

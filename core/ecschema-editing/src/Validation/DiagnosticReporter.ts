@@ -6,8 +6,8 @@
  * @module Diagnostic
  */
 
-import { Localization } from "@itwin/core-common";
-import { AnyDiagnostic } from "./Diagnostic";
+import type { Localization } from "@itwin/core-common";
+import type { AnyDiagnostic } from "./Diagnostic";
 
 import assert = require("assert");
 

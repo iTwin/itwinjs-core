@@ -7,7 +7,7 @@
  */
 
 import { BeUiEvent, Logger } from "@itwin/core-bentley";
-import { ConditionalBooleanValue } from "@itwin/appui-abstract";
+import type { ConditionalBooleanValue } from "@itwin/appui-abstract";
 import { UiCore } from "../UiCore";
 
 /** Interface used to populate a tab entry in the SettingContainer control

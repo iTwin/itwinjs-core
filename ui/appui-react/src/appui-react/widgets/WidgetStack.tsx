@@ -7,13 +7,15 @@
  */
 
 import * as React from "react";
-import { BadgeType, ConditionalStringValue, PointProps } from "@itwin/appui-abstract";
-import { BadgeUtilities, CommonProps, IconHelper, Rectangle, RectangleProps } from "@itwin/core-react";
-import {
-  DisabledResizeHandles, DraggedWidgetManagerProps, HandleMode, HorizontalAnchor, Stacked as NZ_WidgetStack, ResizeHandle, Tab, TabGroup, TabMode,
-  TabSeparator, VerticalAnchor, VerticalAnchorHelpers, WidgetZoneId,
+import type { BadgeType, ConditionalStringValue, PointProps } from "@itwin/appui-abstract";
+import type { CommonProps, RectangleProps } from "@itwin/core-react";
+import { BadgeUtilities, IconHelper, Rectangle } from "@itwin/core-react";
+import type {
+  DisabledResizeHandles, DraggedWidgetManagerProps, HorizontalAnchor, ResizeHandle, WidgetZoneId} from "@itwin/appui-layout-react";
+import { HandleMode, Stacked as NZ_WidgetStack, Tab, TabGroup, TabMode,
+  TabSeparator, VerticalAnchor, VerticalAnchorHelpers,
 } from "@itwin/appui-layout-react";
-import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
+import type { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 // cSpell:ignore Timedout

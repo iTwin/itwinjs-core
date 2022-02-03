@@ -6,7 +6,8 @@
 import { expect } from "chai";
 import { SchemaContext } from "../Context";
 import { PrimitiveType, RelationshipEnd } from "../ECObjects";
-import { ECClass, MutableClass, StructClass } from "../Metadata/Class";
+import type { ECClass, MutableClass} from "../Metadata/Class";
+import { StructClass } from "../Metadata/Class";
 import { Constant } from "../Metadata/Constant";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { EntityClass } from "../Metadata/EntityClass";

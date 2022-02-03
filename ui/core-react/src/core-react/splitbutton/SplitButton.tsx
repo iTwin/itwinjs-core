@@ -10,10 +10,12 @@ import "./SplitButton.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PopupContextMenu } from "../contextmenu/PopupContextMenu";
-import { Icon, IconSpec } from "../icons/IconComponent";
-import { CommonProps } from "../utils/Props";
+import type { IconSpec } from "../icons/IconComponent";
+import { Icon } from "../icons/IconComponent";
+import type { CommonProps } from "../utils/Props";
 import { RelativePosition, SpecialKey } from "@itwin/appui-abstract";
-import { ButtonType, getButtonTypeClassName } from "../button/Button";
+import type { ButtonType} from "../button/Button";
+import { getButtonTypeClassName } from "../button/Button";
 
 // TODO: implement
 /** @internal */

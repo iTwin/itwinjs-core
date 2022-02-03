@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { RpcManager } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 

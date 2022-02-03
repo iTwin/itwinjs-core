@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BaseTimelineDataProvider } from "../../imodel-components-react/timeline/BaseTimelineDataProvider";
-import { PlaybackSettings } from "../../imodel-components-react/timeline/interfaces";
+import type { PlaybackSettings } from "../../imodel-components-react/timeline/interfaces";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public pointerCallbackCalled = false;

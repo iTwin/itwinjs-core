@@ -9,8 +9,8 @@ import { SchemaItemType, schemaItemTypeToString } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { InvertedUnit } from "../../Metadata/InvertedUnit";
 import { Schema } from "../../Metadata/Schema";
-import { Unit } from "../../Metadata/Unit";
-import { UnitSystem } from "../../Metadata/UnitSystem";
+import type { Unit } from "../../Metadata/Unit";
+import type { UnitSystem } from "../../Metadata/UnitSystem";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */

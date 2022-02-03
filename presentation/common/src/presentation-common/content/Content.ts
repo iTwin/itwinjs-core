@@ -6,8 +6,10 @@
  * @module Content
  */
 
-import { Descriptor, DescriptorJSON } from "./Descriptor";
-import { Item, ItemJSON } from "./Item";
+import type { DescriptorJSON } from "./Descriptor";
+import { Descriptor } from "./Descriptor";
+import type { ItemJSON } from "./Item";
+import { Item } from "./Item";
 
 /**
  * Serialized [[Content]] JSON representation.

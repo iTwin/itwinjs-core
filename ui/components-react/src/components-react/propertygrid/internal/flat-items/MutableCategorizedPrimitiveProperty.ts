@@ -6,8 +6,9 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { FlatGridItemType, IMutableCategorizedPropertyItem, MutableCategorizedProperty } from "./MutableFlatGridItem";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { IMutableCategorizedPropertyItem} from "./MutableFlatGridItem";
+import { FlatGridItemType, MutableCategorizedProperty } from "./MutableFlatGridItem";
 
 /**
  * Mutable wrapper object for PropertyRecord with primitive valueFormat.

@@ -9,12 +9,14 @@
 import "./AccuDrawInputField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ItemField } from "@itwin/core-frontend";
-import { CommonProps, Icon, IconSpec, useRefs } from "@itwin/core-react";
+import type { ItemField } from "@itwin/core-frontend";
+import type { CommonProps, IconSpec} from "@itwin/core-react";
+import { Icon, useRefs } from "@itwin/core-react";
 import { isLetter, SpecialKey } from "@itwin/appui-abstract";
 import { Input } from "@itwin/itwinui-react";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldValueToUiEventArgs, FrameworkAccuDraw } from "./FrameworkAccuDraw";
+import type { AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldValueToUiEventArgs} from "./FrameworkAccuDraw";
+import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
 
 /** Properties for [[AccuDrawInputField]] component
  * @beta

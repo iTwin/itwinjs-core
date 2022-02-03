@@ -7,10 +7,10 @@
  */
 
 import { QuantityConstants } from "./Constants";
-import { Format } from "./Formatter/Format";
+import type { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
-import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
-import { ParserSpec } from "./ParserSpec";
+import type { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
+import type { ParserSpec } from "./ParserSpec";
 import { Quantity } from "./Quantity";
 
 /** Possible parser errors

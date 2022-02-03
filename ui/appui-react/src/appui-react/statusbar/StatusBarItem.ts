@@ -6,8 +6,8 @@
  * @module StatusBar
  */
 
-import * as React from "react";
-import { AbstractStatusBarCustomItem, CommonStatusBarItem } from "@itwin/appui-abstract";
+import type * as React from "react";
+import type { AbstractStatusBarCustomItem, CommonStatusBarItem } from "@itwin/appui-abstract";
 
 /** Describes the data needed to insert an item into the StatusBar.
  * @public

@@ -2,11 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PassThrough, Readable } from "stream";
+import type { Readable } from "stream";
+import { PassThrough } from "stream";
 import * as zlib from "zlib";
 import { BentleyStatus } from "@itwin/core-bentley";
-import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, IModelError } from "@itwin/core-common";
-import { CloudStorageService, CloudStorageUploadOptions } from "./CloudStorageBackend";
+import type { CloudStorageContainerDescriptor, CloudStorageContainerUrl} from "@itwin/core-common";
+import { CloudStorageProvider, IModelError } from "@itwin/core-common";
+import type { CloudStorageUploadOptions } from "./CloudStorageBackend";
+import { CloudStorageService } from "./CloudStorageBackend";
 
 /** @beta */
 export interface AliCloudStorageServiceCredentials {

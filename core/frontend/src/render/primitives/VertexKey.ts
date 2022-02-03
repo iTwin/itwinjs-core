@@ -7,8 +7,8 @@
  */
 
 import { assert, compareWithTolerance, IndexMap } from "@itwin/core-bentley";
-import { Point2d } from "@itwin/core-geometry";
-import { OctEncodedNormal, QPoint3d } from "@itwin/core-common";
+import type { Point2d } from "@itwin/core-geometry";
+import type { OctEncodedNormal, QPoint3d } from "@itwin/core-common";
 
 /** @internal */
 export interface VertexKeyProps {

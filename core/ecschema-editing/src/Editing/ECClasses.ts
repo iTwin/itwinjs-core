@@ -6,13 +6,14 @@
  * @module Editing
  */
 
-import {
-  ECClass, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
-  PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
-  StructClass, StructPropertyProps,
+import type {
+  ECClass, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
+  PrimitivePropertyProps, SchemaItemKey, StructArrayPropertyProps,
+  StructClass, StructPropertyProps} from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, PrimitiveType, SchemaItemType,
 } from "@itwin/ecschema-metadata";
-import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutableClass } from "./Mutable/MutableClass";
+import type { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { MutableClass } from "./Mutable/MutableClass";
 
 /**
  * @alpha

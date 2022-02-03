@@ -6,11 +6,11 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
-import { SingleTexturedViewportQuadGeometry } from "../CachedGeometry";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
+import type { SingleTexturedViewportQuadGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
+import type { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";

@@ -8,10 +8,12 @@
 
 import * as React from "react";
 import { BeEvent } from "@itwin/core-bentley";
-import { IModelConnection, PerModelCategoryVisibility, ViewManager, Viewport } from "@itwin/core-frontend";
+import type { IModelConnection, ViewManager, Viewport } from "@itwin/core-frontend";
+import { PerModelCategoryVisibility } from "@itwin/core-frontend";
 import { NodeKey } from "@itwin/presentation-common";
-import { TreeNodeItem, useAsyncValue } from "@itwin/components-react";
-import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
+import type { TreeNodeItem} from "@itwin/components-react";
+import { useAsyncValue } from "@itwin/components-react";
+import type { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
 
 const EMPTY_CATEGORIES_ARRAY: Category[] = [];
 

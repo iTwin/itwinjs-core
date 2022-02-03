@@ -7,10 +7,12 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import {
-  DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
+import type {
+  DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, SuppressLabelEditorParams} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes,
 } from "@itwin/appui-abstract";
-import { SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher, ToolSettingsManager } from "../../../appui-react";
+import type { SyncToolSettingsPropertiesEventArgs} from "../../../appui-react";
+import { SyncUiEventDispatcher, ToolSettingsManager } from "../../../appui-react";
 import TestUtils from "../../TestUtils";
 
 // cSpell:Ignore USELENGTH

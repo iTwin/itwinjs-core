@@ -6,7 +6,8 @@ import { assert } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-import { IModel, RepositoryLinkProps } from "@itwin/core-common";
+import type { RepositoryLinkProps } from "@itwin/core-common";
+import { IModel } from "@itwin/core-common";
 import { RepositoryLink } from "../../Element";
 import { SnapshotDb } from "../../IModelDb";
 

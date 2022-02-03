@@ -5,10 +5,12 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { render, RenderResult, waitFor } from "@testing-library/react";
+import type { RenderResult} from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import { BreadcrumbDetails, BreadcrumbPath } from "../../components-react";
-import { Table, TableProps } from "../../components-react/table/component/Table";
-import { ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../../components-react/tree/TreeDataProvider";
+import type { TableProps } from "../../components-react/table/component/Table";
+import { Table } from "../../components-react/table/component/Table";
+import type { ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../../components-react/tree/TreeDataProvider";
 import { waitForUpdate } from "../test-helpers/misc";
 import TestUtils from "../TestUtils";
 import { mockInterfaceTreeDataProvider, mockRawTreeDataProvider } from "./mockTreeDataProvider";

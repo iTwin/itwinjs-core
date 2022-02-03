@@ -6,12 +6,13 @@
  * @module Editing
  */
 
+import type { InvertedUnitProps, SchemaItemKey, SchemaKey, Unit, UnitSystem} from "@itwin/ecschema-metadata";
 import {
-  DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, InvertedUnitProps, SchemaItemKey,
-  SchemaItemType, SchemaKey, Unit, UnitSystem,
+  DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus,
+  SchemaItemType,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutableInvertedUnit } from "./Mutable/MutableInvertedUnit";
+import type { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { MutableInvertedUnit } from "./Mutable/MutableInvertedUnit";
 
 /**
  * @alpha

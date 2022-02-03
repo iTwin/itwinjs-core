@@ -8,9 +8,10 @@ import * as React from "react";
 import { Provider } from "react-redux";
 import { WidgetState } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
-import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, SelectionInfoField, SessionStateActionId, StatusBar, StatusBarWidgetControl,
-  StatusBarWidgetControlArgs, UiFramework, WidgetDef,
+import type {
+  ConfigurableCreateInfo,
+  StatusBarWidgetControlArgs} from "../../appui-react";
+import { ConfigurableUiControlType, SelectionInfoField, SessionStateActionId, StatusBar, StatusBarWidgetControl, UiFramework, WidgetDef,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 

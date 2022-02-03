@@ -9,8 +9,8 @@
 import "./Swatch.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ColorDef } from "@itwin/core-common";
-import { CommonProps } from "@itwin/core-react";
+import type { ColorDef } from "@itwin/core-common";
+import type { CommonProps } from "@itwin/core-react";
 import { getCSSColorFromDef } from "../color/getCSSColorFromDef";
 
 /** Properties for the [[LineWeightSwatch]] React component

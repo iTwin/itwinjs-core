@@ -5,16 +5,18 @@
 
 import { assert, expect } from "chai";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
-import { Code, IModel, IModelError, LocalBriefcaseProps, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
+import type { AccessToken, GuidString, Id64Arg } from "@itwin/core-bentley";
+import { Guid, Id64 } from "@itwin/core-bentley";
+import type { LocalBriefcaseProps, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
+import { Code, IModel, IModelError } from "@itwin/core-common";
 import { LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { PhysicalObject } from "../../domains/GenericElements";
-import { PhysicalElement } from "../../Element";
+import type { PhysicalElement } from "../../Element";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { ElementOwnsChildElements } from "../../NavigationRelationship";
-import { ServerBasedLocks } from "../../ServerBasedLocks";
+import type { ServerBasedLocks } from "../../ServerBasedLocks";
 import { HubMock } from "../HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 

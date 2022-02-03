@@ -5,14 +5,15 @@
 import { expect } from "chai";
 import * as React from "react";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import {
-  CategorizedPropertyItem, FlatGridItemType, IPropertyDataProvider, PrimitivePropertyRenderer, PropertyCategory, PropertyCategoryRendererManager,
-  PropertyCategoryRendererProps, PropertyData, PropertyDataChangeEvent, PropertyValueRendererManager, VirtualizedPropertyGridWithDataProvider,
+import type {
+  CategorizedPropertyItem, IPropertyDataProvider, PropertyCategory,
+  PropertyCategoryRendererProps, PropertyData} from "@itwin/components-react";
+import { FlatGridItemType, PrimitivePropertyRenderer, PropertyCategoryRendererManager, PropertyDataChangeEvent, PropertyValueRendererManager, VirtualizedPropertyGridWithDataProvider,
 } from "@itwin/components-react";
 import { Orientation } from "@itwin/core-react";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
+import type { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { createPrimitiveStringProperty } from "../_helpers/Properties";
 
 describe("Category renderer customization", () => {

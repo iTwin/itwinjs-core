@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import {
-  ColorEditorParams, DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, InputEditorSizeParams, PropertyDescription,
-  PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames, SuppressLabelEditorParams,
+import type {
+  ColorEditorParams, DialogButtonDef, DialogItem, DialogItemValue, DialogPropertySyncItem, InputEditorSizeParams, PropertyDescription, SuppressLabelEditorParams} from "@itwin/appui-abstract";
+import { DialogButtonType, DialogLayoutDataProvider,
+  PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
 
 enum ColorOptions {

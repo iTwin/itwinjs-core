@@ -7,19 +7,23 @@
  */
 
 import * as React from "react";
-import { CommonProps, FillCentered } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { FillCentered } from "@itwin/core-react";
 import { DelayedSpinner } from "../../../common/DelayedSpinner";
-import { SelectionMode } from "../../../common/selection/SelectionModes";
+import type { SelectionMode } from "../../../common/selection/SelectionModes";
 import { UiComponents } from "../../../UiComponents";
-import { HighlightableTreeProps } from "../../HighlightingEngine";
+import type { HighlightableTreeProps } from "../../HighlightingEngine";
 import { TreeImageLoader } from "../../ImageLoader";
 import { toRxjsObservable } from "../Observable";
 import { TreeEventDispatcher } from "../TreeEventDispatcher";
-import { TreeEvents } from "../TreeEvents";
-import { computeVisibleNodes, isTreeModelNode, TreeModel, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../TreeModel";
-import { ITreeNodeLoader } from "../TreeNodeLoader";
-import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
-import { RenderedItemsRange, TreeRenderer, TreeRendererProps } from "./TreeRenderer";
+import type { TreeEvents } from "../TreeEvents";
+import type { TreeModel, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../TreeModel";
+import { computeVisibleNodes, isTreeModelNode } from "../TreeModel";
+import type { ITreeNodeLoader } from "../TreeNodeLoader";
+import type { TreeNodeRendererProps } from "./TreeNodeRenderer";
+import { TreeNodeRenderer } from "./TreeNodeRenderer";
+import type { RenderedItemsRange, TreeRendererProps } from "./TreeRenderer";
+import { TreeRenderer } from "./TreeRenderer";
 
 /**
  * Properties for [[ControlledTree]]

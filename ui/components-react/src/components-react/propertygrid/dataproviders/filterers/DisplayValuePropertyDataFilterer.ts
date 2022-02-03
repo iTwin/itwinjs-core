@@ -6,9 +6,11 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import type { PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { countMatchesInString } from "../../../common/countMatchesInString";
-import { FilteredType, PropertyDataFilterResult, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
+import type { PropertyDataFilterResult} from "./PropertyDataFiltererBase";
+import { FilteredType, PropertyRecordDataFiltererBase } from "./PropertyDataFiltererBase";
 
 /**
  * Property data filterer which matches on Primitive Property Record display value text.

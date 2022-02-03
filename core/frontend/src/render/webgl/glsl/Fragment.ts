@@ -6,7 +6,8 @@
  * @module WebGL
  */
 
-import { FragmentShaderBuilder, FragmentShaderComponent, SourceBuilder, VariableType } from "../ShaderBuilder";
+import type { FragmentShaderBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, SourceBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { encodeDepthRgb } from "./Decode";
 import { addRenderPass } from "./RenderPass";

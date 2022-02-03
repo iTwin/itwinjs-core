@@ -6,10 +6,10 @@
  * @module Item
  */
 
-import { GroupItemDef } from "../toolbar/GroupItem";
-import { ActionButtonItemDef } from "./ActionButtonItemDef";
-import { CommandItemDef } from "./CommandItemDef";
-import { ToolItemDef } from "./ToolItemDef";
+import type { GroupItemDef } from "../toolbar/GroupItem";
+import type { ActionButtonItemDef } from "./ActionButtonItemDef";
+import type { CommandItemDef } from "./CommandItemDef";
+import type { ToolItemDef } from "./ToolItemDef";
 
 /** Union of all Item definitions that can be specified in a GroupItem
  * @public

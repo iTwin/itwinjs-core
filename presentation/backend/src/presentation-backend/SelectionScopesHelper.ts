@@ -6,10 +6,13 @@
  * @module Core
  */
 
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { GeometricElement, GeometricElement3d, IModelDb } from "@itwin/core-backend";
-import {
-  InstanceKey, KeySet, PresentationError, PresentationStatus, SelectionScope, SelectionScopeRequestOptions,
+import type { Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64 } from "@itwin/core-bentley";
+import type { IModelDb } from "@itwin/core-backend";
+import { GeometricElement, GeometricElement3d } from "@itwin/core-backend";
+import type {
+  InstanceKey, SelectionScope, SelectionScopeRequestOptions} from "@itwin/presentation-common";
+import { KeySet, PresentationError, PresentationStatus,
 } from "@itwin/presentation-common";
 import { getElementKey } from "./Utils";
 

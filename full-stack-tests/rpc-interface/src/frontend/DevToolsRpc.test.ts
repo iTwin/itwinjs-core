@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { LogLevel } from "@itwin/core-bentley";
-import { DevTools, IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
+import { DevTools } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
 
 describe("DevTools", () => {

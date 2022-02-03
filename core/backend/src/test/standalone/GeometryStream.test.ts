@@ -4,23 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BentleyStatus, DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { BentleyStatus, DbResult, Id64 } from "@itwin/core-bentley";
+import type { GeometryQueryCategory} from "@itwin/core-geometry";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
-  CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
+  CurveCollection, CurvePrimitive, Geometry, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere,
   StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
+import type { BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, FontProps, GeometricElement3dProps, GeometricElementProps,
+  GeometryContainmentRequestProps, GeometryPartProps, GeometryPrimitive,
+  GeometryStreamProps, ImageGraphicProps,
+  MassPropertiesRequestProps, PhysicalElementProps, Placement3dProps, TextStringProps} from "@itwin/core-common";
 import {
-  AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
-  ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
-  FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass,
-  GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryPrimitive, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
-  GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
-  MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
+  AreaPattern, BackgroundFill, BRepGeometryOperation, Code, ColorByName,
+  ColorDef, ElementGeometry, ElementGeometryOpcode,
+  FillDisplay, FontType, GeometryClass, GeometryParams, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, Gradient, ImageGraphicCorners, IModel, LinePixels, LineStyle, MassPropertiesOperation, Placement3d, TextString, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../core-backend";
+import type { GeometricElement, SnapshotDb } from "../../core-backend";
+import { GeometryPart, LineStyleDefinition, PhysicalObject, Platform } from "../../core-backend";
 import { IModelTestUtils, Timer } from "../";
 
 function assertTrue(expr: boolean): asserts expr {

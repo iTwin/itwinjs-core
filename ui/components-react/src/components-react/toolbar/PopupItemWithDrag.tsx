@@ -9,9 +9,10 @@
 import "./PopupItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, RelativePosition, ToolbarItemUtilities } from "@itwin/appui-abstract";
+import type { ActionButton, GroupButton} from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue, RelativePosition, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { BadgeUtilities, IconHelper, useRefState } from "@itwin/core-react";
-import { ToolbarButtonItemProps } from "./Item";
+import type { ToolbarButtonItemProps } from "./Item";
 import { PopupItemPopup, ToolbarPopupContext } from "./PopupItem";
 import { PopupItemsPanel } from "./PopupItemsPanel";
 import { ToolbarPanelAlignment, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";

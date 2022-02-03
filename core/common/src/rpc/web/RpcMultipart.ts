@@ -6,10 +6,10 @@
  * @module RpcInterface
  */
 
-import { Readable } from "stream";
+import type { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
-import { RpcSerializedValue } from "../core/RpcMarshaling";
-import { HttpServerRequest } from "../web/WebAppRpcProtocol";
+import type { RpcSerializedValue } from "../core/RpcMarshaling";
+import type { HttpServerRequest } from "../web/WebAppRpcProtocol";
 
 /** @internal */
 export interface FormDataCommon {

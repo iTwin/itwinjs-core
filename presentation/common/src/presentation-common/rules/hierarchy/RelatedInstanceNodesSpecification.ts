@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
-import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
+import type { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
+import type { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
  * Creates nodes for related instances of specified ECClasses.

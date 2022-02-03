@@ -8,17 +8,20 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
-import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
+import type { RenderTexture } from "@itwin/core-common";
+import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
-import { GraphicBuilder } from "../../render/GraphicBuilder";
-import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { RenderMemory } from "../../render/RenderMemory";
-import { RenderSystem, RenderTerrainGeometry, TerrainTexture } from "../../render/RenderSystem";
-import { ViewingSpace } from "../../ViewingSpace";
-import {
-  ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileGraphicType,
-  TileLoadStatus, TileParams, TileTreeLoadStatus, TraversalSelectionContext,
+import type { GraphicBuilder } from "../../render/GraphicBuilder";
+import type { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
+import type { RenderGraphic } from "../../render/RenderGraphic";
+import type { RenderMemory } from "../../render/RenderMemory";
+import type { RenderSystem, RenderTerrainGeometry} from "../../render/RenderSystem";
+import { TerrainTexture } from "../../render/RenderSystem";
+import type { ViewingSpace } from "../../ViewingSpace";
+import type {
+  ImageryMapTile, MapTileLoader, Tile, TileContent, TileDrawArgs, TileParams, TraversalSelectionContext} from "../internal";
+import { MapCartoRectangle, MapTileTree, QuadId, RealityTile, TileGraphicType,
+  TileLoadStatus, TileTreeLoadStatus,
 } from "../internal";
 
 /** @internal */

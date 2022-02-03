@@ -2,9 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64String } from "@itwin/core-bentley";
-import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotDb } from "@itwin/core-backend";
-import { NavigationValue } from "@itwin/core-common";
+import type { Id64String } from "@itwin/core-bentley";
+import { DbResult } from "@itwin/core-bentley";
+import type { ECSqlStatement, ECSqlValue, IModelDb} from "@itwin/core-backend";
+import { SnapshotDb } from "@itwin/core-backend";
+import type { NavigationValue } from "@itwin/core-common";
 
 /* eslint-disable no-console, @typescript-eslint/naming-convention */
 

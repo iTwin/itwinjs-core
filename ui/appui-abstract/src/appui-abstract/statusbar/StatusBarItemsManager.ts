@@ -9,7 +9,7 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
-import { CommonStatusBarItem, StatusBarItemId } from "./StatusBarItem";
+import type { CommonStatusBarItem, StatusBarItemId } from "./StatusBarItem";
 
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 

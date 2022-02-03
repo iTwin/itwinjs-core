@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { LabelCompositeValue, LabelDefinition, LabelDefinitionJSON } from "../presentation-common/LabelDefinition";
+import type { LabelDefinitionJSON } from "../presentation-common/LabelDefinition";
+import { LabelCompositeValue, LabelDefinition } from "../presentation-common/LabelDefinition";
 import {
   createRandomLabelCompositeValue, createRandomLabelCompositeValueJSON, createRandomLabelDefinition, createRandomLabelDefinitionJSON,
 } from "./_helpers/random";

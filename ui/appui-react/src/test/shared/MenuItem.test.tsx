@@ -8,7 +8,8 @@ import * as sinon from "sinon";
 import { BadgeType } from "@itwin/appui-abstract";
 import { ContextMenuItem, ContextSubMenu } from "@itwin/core-react";
 import { render } from "@testing-library/react";
-import { MenuItem, MenuItemHelpers, MenuItemProps } from "../../appui-react/shared/MenuItem";
+import type { MenuItemProps } from "../../appui-react/shared/MenuItem";
+import { MenuItem, MenuItemHelpers } from "../../appui-react/shared/MenuItem";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("MenuItem", () => {

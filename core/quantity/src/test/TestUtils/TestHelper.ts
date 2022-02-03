@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AlternateUnitLabelsProvider, UnitConversion, UnitProps, UnitsProvider } from "../../Interfaces";
+import type { AlternateUnitLabelsProvider, UnitConversion, UnitProps, UnitsProvider } from "../../Interfaces";
 import { BadUnit, BasicUnit } from "../../Unit";
 
 interface ConversionDef {

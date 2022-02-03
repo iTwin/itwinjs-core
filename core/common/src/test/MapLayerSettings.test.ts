@@ -5,7 +5,8 @@
 
 import { expect } from "chai";
 import { BackgroundMapType } from "../BackgroundMapProvider";
-import { BaseMapLayerSettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../core-common";
+import type { MapLayerProps, MapSubLayerProps} from "../core-common";
+import { BaseMapLayerSettings, MapLayerSettings, MapSubLayerSettings } from "../core-common";
 
 const testMapSubLayer0 = { name: "TestName", visible: true, title: "TestTitle" };
 const testMapSubLayer1 = { name: "TestName", visible: true, title: "TestTitle", id: 0, parent: -1, children: [1, 2, 3] };

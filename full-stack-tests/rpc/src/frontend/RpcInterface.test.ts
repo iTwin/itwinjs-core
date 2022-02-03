@@ -7,15 +7,17 @@ import { assert } from "chai";
 import * as semver from "semver";
 import { BentleyError } from "@itwin/core-bentley";
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import {
-  ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
-  RpcOperation, RpcOperationPolicy, RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
-  SerializedRpcActivity, WipRpcInterface,
+import type {
+  ChangesetIdWithIndex, IModelRpcProps, RpcInterfaceDefinition,
+  SerializedRpcActivity} from "@itwin/core-common";
+import { IModelReadRpcInterface, NoContentError, RpcConfiguration, RpcInterface, RpcManager,
+  RpcOperation, RpcOperationPolicy, RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue, WipRpcInterface,
 } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
+import type { TestNotFoundResponse, TestOp1Params, TokenValues} from "../common/TestRpcInterface";
 import {
-  AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params,
-  TestRpcInterface, TestRpcInterface2, TokenValues, ZeroMajorRpcInterface,
+  AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponseCode,
+  TestRpcInterface, TestRpcInterface2, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
 

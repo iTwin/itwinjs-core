@@ -4,15 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import type { BeEvent} from "@itwin/core-bentley";
+import { BeDuration, Guid, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { EntityIdAndClassId, EntityIdAndClassIdIterable, UpgradeOptions} from "@itwin/core-common";
 import {
-  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
+  Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction,
 } from "@itwin/core-common";
+import type { TxnChangedEntities, TxnManager} from "../../core-backend";
 import {
-  IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
+  IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb,
 } from "../../core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
+import type { TestPhysicalObjectProps } from "../IModelTestUtils";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject } from "../IModelTestUtils";
 
 /// cspell:ignore accum
 

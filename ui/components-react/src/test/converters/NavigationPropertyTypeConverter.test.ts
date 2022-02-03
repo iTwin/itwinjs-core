@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PrimitiveValue } from "@itwin/appui-abstract";
+import type { PrimitiveValue } from "@itwin/appui-abstract";
 import { expect } from "chai";
 import { NavigationPropertyTypeConverter } from "../../components-react/converters/NavigationPropertyTypeConverter";
 import { TestUtils } from "../TestUtils";

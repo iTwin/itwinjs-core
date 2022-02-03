@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import type { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Rule used to inject some extended data into presentation data

@@ -8,7 +8,7 @@
 
 import { enablePatches } from "immer";
 import { Logger } from "@itwin/core-bentley";
-import { Localization } from "@itwin/core-common";
+import type { Localization } from "@itwin/core-common";
 import { getClassName, UiError } from "@itwin/appui-abstract";
 import { UiCore } from "@itwin/core-react";
 

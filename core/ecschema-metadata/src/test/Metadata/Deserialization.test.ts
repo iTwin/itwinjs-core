@@ -11,10 +11,10 @@ import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { JsonParser } from "../../Deserialization/JsonParser";
 import { SchemaItemType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
-import { AnyClass } from "../../Interfaces";
-import { NavigationProperty } from "../../Metadata/Property";
+import type { AnyClass } from "../../Interfaces";
+import type { NavigationProperty } from "../../Metadata/Property";
 import { Schema } from "../../Metadata/Schema";
-import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
+import type { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { deserializeXml, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
 

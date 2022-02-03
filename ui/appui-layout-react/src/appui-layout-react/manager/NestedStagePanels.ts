@@ -6,11 +6,13 @@
  * @module StagePanels
  */
 
-import {
-  NestedStagePanelKey, NestedStagePanelsId, NestedStagePanelsManager, NestedStagePanelsManagerProps,
+import type {
+  NestedStagePanelKey, NestedStagePanelsId, NestedStagePanelsManagerProps} from "../stage-panels/manager/NestedStagePanels";
+import { NestedStagePanelsManager,
 } from "../stage-panels/manager/NestedStagePanels";
-import { WidgetZoneId } from "../zones/manager/Zones";
-import { NineZoneStagePanelsManager, NineZoneStagePanelsManagerProps } from "./StagePanels";
+import type { WidgetZoneId } from "../zones/manager/Zones";
+import type { NineZoneStagePanelsManagerProps } from "./StagePanels";
+import { NineZoneStagePanelsManager } from "./StagePanels";
 
 /** Properties used by [[NineZoneNestedStagePanelsManager]].
  * @internal

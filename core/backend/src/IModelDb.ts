@@ -7,36 +7,41 @@
  */
 
 import { join } from "path";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+import type { IModelJsNative } from "@bentley/imodeljs-native";
+import type {
+  AccessToken, GuidString, Id64Arg, Id64Array, Id64Set, Id64String} from "@itwin/core-bentley";
+import { assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, Id64,
   IModelStatus, JsonUtils, Logger, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
-import {
-  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
-  CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesRequestProps,
-  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
+import type {
+  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId,
+  CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps,
+  ElementLoadProps, ElementProps, EntityProps, EntityQueryParams, FilePropertyProps, FontProps, GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModelCoordinatesRequestProps,
+  IModelCoordinatesResponseProps, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, PropertyCallback, QueryBinder,
+  QueryOptions, RpcActivity, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
   SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
-  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  ViewQueryParams, ViewStateLoadProps, ViewStateProps} from "@itwin/core-common";
+import { BriefcaseIdValue, Code,
+  DomainOptions, ECSqlReader, EntityMetaData, FontMap, IModel, IModelError, IModelNotFoundResponse, ProfileOptions, QueryOptionsBuilder, SchemaState,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
-import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
+import type { PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
+import { BriefcaseManager } from "./BriefcaseManager";
+import type { CheckpointProps} from "./CheckpointManager";
+import { CheckpointManager, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { Element, SectionDrawing, Subject } from "./Element";
-import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
+import type { Element, SectionDrawing, Subject } from "./Element";
+import type { ElementAspect} from "./ElementAspect";
+import { ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { generateElementGraphics } from "./ElementGraphics";
-import { Entity, EntityClassType } from "./Entity";
-import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
+import type { Entity, EntityClassType } from "./Entity";
+import type { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
@@ -46,8 +51,10 @@ import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
-import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import type { SettingDictionary, SettingName, SettingResolver, SettingType } from "./workspace/Settings";
+import { BaseSettings, SettingsPriority } from "./workspace/Settings";
+import type { Workspace } from "./workspace/Workspace";
+import { ITwinWorkspace } from "./workspace/Workspace";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 

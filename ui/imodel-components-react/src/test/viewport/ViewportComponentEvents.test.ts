@@ -6,7 +6,8 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { BeUiEvent } from "@itwin/core-bentley";
 import { Matrix3d, Point3d } from "@itwin/core-geometry";
-import { IModelApp, SelectedViewportChangedArgs, StandardViewId, ViewManager, Viewport } from "@itwin/core-frontend";
+import type { SelectedViewportChangedArgs, ViewManager, Viewport } from "@itwin/core-frontend";
+import { IModelApp, StandardViewId } from "@itwin/core-frontend";
 import { ViewportComponentEvents } from "../../imodel-components-react/viewport/ViewportComponentEvents";
 import { TestUtils } from "../TestUtils";
 

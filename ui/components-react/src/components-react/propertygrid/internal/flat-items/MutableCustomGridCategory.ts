@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PropertyCategory } from "../../PropertyDataProvider";
+import type { PropertyCategory } from "../../PropertyDataProvider";
+import type { IMutableCategorizedPropertyItem, IMutableFlatGridItem, IMutableGridCategoryItem} from "./MutableFlatGridItem";
 import {
-  FlatGridItemType, IMutableCategorizedPropertyItem, IMutableFlatGridItem, IMutableGridCategoryItem, MutableFlatPropertyGridItem,
+  FlatGridItemType, MutableFlatPropertyGridItem,
 } from "./MutableFlatGridItem";
-import { CategoryRecordsDict } from "./MutableGridCategory";
-import { IMutableGridItemFactory } from "./MutableGridItemFactory";
+import type { CategoryRecordsDict } from "./MutableGridCategory";
+import type { IMutableGridItemFactory } from "./MutableGridItemFactory";
 
 /** @internal */
 export class MutableCustomGridCategory extends MutableFlatPropertyGridItem implements IMutableGridCategoryItem {

@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IpcWebSocketBackend } from "@itwin/core-common";
-import { MobileDevice, MobileHost, MobileHostOpts } from "./MobileHost";
+import type { MobileHostOpts } from "./MobileHost";
+import { MobileDevice, MobileHost } from "./MobileHost";
 
 /** @beta */
 export type IOSHostOpts = MobileHostOpts;

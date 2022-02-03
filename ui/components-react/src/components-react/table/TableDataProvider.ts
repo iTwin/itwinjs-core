@@ -7,10 +7,10 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { PropertyDescription, PropertyRecord } from "@itwin/appui-abstract";
-import { HorizontalAlignment, SortDirection } from "@itwin/core-react";
-import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
-import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
+import type { PropertyDescription, PropertyRecord } from "@itwin/appui-abstract";
+import type { HorizontalAlignment, SortDirection } from "@itwin/core-react";
+import type { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
+import type { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
 
 // cSpell:ignore columnfiltering
 

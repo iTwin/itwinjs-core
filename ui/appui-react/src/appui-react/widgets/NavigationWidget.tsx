@@ -7,21 +7,23 @@
  */
 
 import * as React from "react";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { UiError } from "@itwin/appui-abstract";
-import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@itwin/imodel-components-react";
-import { CommonProps } from "@itwin/core-react";
+import type { ViewClassFullNameChangedEventArgs} from "@itwin/imodel-components-react";
+import { ViewportComponentEvents } from "@itwin/imodel-components-react";
+import type { CommonProps } from "@itwin/core-react";
 import { Direction, Tools as NZ_ToolsWidget, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { ContentControlActivatedEventArgs } from "../content/ContentControl";
+import type { ContentControlActivatedEventArgs } from "../content/ContentControl";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { NavigationAidActivatedEventArgs, NavigationAidControl } from "../navigationaids/NavigationAidControl";
+import type { NavigationAidActivatedEventArgs, NavigationAidControl } from "../navigationaids/NavigationAidControl";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
-import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
+import type { NavigationWidgetProps} from "./WidgetDef";
+import { WidgetType } from "./WidgetDef";
 
 /** Definition of a Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  * @public

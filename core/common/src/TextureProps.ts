@@ -6,10 +6,10 @@
  * @module Entities
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { DefinitionElementProps } from "./ElementProps";
-import { ImageSourceFormat } from "./Image";
-import { Base64EncodedString } from "./Base64EncodedString";
+import type { Id64String } from "@itwin/core-bentley";
+import type { DefinitionElementProps } from "./ElementProps";
+import type { ImageSourceFormat } from "./Image";
+import type { Base64EncodedString } from "./Base64EncodedString";
 
 /** Properties that define a [Texture]($backend) element.
  * @public

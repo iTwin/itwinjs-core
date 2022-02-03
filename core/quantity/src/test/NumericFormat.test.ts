@@ -10,7 +10,7 @@ import { BasicUnit } from "../Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { FormatTraits, FormatType } from "../core-quantity";
 import { DecimalPrecision } from "../Formatter/FormatEnums";
-import { UnitProps } from "../Interfaces";
+import type { UnitProps } from "../Interfaces";
 
 describe("Numeric Formats tests:", () => {
   it("Feet to 4 Decimal places w/trailing zeros ", async () => {

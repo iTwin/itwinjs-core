@@ -8,7 +8,8 @@ import { render } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../core-react/settings/SettingsContainer";
-import { SettingsManager, SettingsTabEntry, SettingsTabsProvider } from "../../core-react/settings/SettingsManager";
+import type { SettingsTabEntry, SettingsTabsProvider } from "../../core-react/settings/SettingsManager";
+import { SettingsManager } from "../../core-react/settings/SettingsManager";
 
 function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {
 

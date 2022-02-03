@@ -6,9 +6,11 @@
 import * as React from "react";
 import { expect } from "chai";
 import sinon from "sinon";
-import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { Presentation, SelectionManager } from "@itwin/presentation-frontend";
-import { Primitives, PrimitiveValue, PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
+import type { Primitives, PrimitiveValue, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 import { TypeConverter, TypeConverterManager } from "@itwin/components-react";
 import { act, cleanup, render } from "@testing-library/react";
 import { InstanceKeyValueRenderer } from "../../presentation-components/properties/InstanceKeyValueRenderer";

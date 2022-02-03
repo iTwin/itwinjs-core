@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { StandardNodeTypes } from "../../presentation-common/hierarchy/Key";
-import { Node, NodeJSON } from "../../presentation-common/hierarchy/Node";
+import type { NodeJSON } from "../../presentation-common/hierarchy/Node";
+import { Node } from "../../presentation-common/hierarchy/Node";
 
 describe("Node", () => {
   const testNodeJson: NodeJSON = {

@@ -9,22 +9,26 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
+import type { Frustum, SpatialClassifier} from "@itwin/core-common";
 import {
-  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
+  ColorDef, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
-import { PlanarClipMaskState } from "../../PlanarClipMaskState";
-import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
-import { SceneContext } from "../../ViewContext";
-import { ViewState3d } from "../../ViewState";
-import { FeatureSymbology } from "../FeatureSymbology";
-import { RenderGraphic } from "../RenderGraphic";
-import { RenderMemory } from "../RenderMemory";
-import { PlanarClassifierTarget, RenderPlanarClassifier } from "../RenderPlanarClassifier";
+import type { PlanarClipMaskState } from "../../PlanarClipMaskState";
+import type { SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
+import { GraphicsCollectorDrawArgs } from "../../tile/internal";
+import type { SceneContext } from "../../ViewContext";
+import type { ViewState3d } from "../../ViewState";
+import type { FeatureSymbology } from "../FeatureSymbology";
+import type { RenderGraphic } from "../RenderGraphic";
+import type { RenderMemory } from "../RenderMemory";
+import type { PlanarClassifierTarget} from "../RenderPlanarClassifier";
+import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { BatchState } from "./BatchState";
 import { BranchStack } from "./BranchStack";
-import { CachedGeometry, Combine3TexturesGeometry, CombineTexturesGeometry, ViewportQuadGeometry } from "./CachedGeometry";
-import { WebGLDisposable } from "./Disposable";
-import { DrawCommands } from "./DrawCommand";
+import type { CachedGeometry} from "./CachedGeometry";
+import { Combine3TexturesGeometry, CombineTexturesGeometry, ViewportQuadGeometry } from "./CachedGeometry";
+import type { WebGLDisposable } from "./Disposable";
+import type { DrawCommands } from "./DrawCommand";
 import { FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
 import { Batch, Branch } from "./Graphic";
@@ -34,7 +38,7 @@ import { RenderPass } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { getDrawParams } from "./ScratchDrawParams";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { Texture, TextureHandle } from "./Texture";
 

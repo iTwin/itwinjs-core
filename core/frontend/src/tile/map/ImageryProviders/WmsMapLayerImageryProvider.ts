@@ -7,11 +7,13 @@
  */
 import { IModelStatus } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
-import { Cartographic, MapLayerSettings, MapSubLayerSettings, ServerError } from "@itwin/core-common";
+import type { Cartographic, MapLayerSettings, MapSubLayerSettings} from "@itwin/core-common";
+import { ServerError } from "@itwin/core-common";
 
-import {
-  ImageryMapTileTree, MapCartoRectangle, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, WmsCapabilities,
-  WmsCapability, WmsUtilities,
+import type {
+  ImageryMapTileTree, MapCartoRectangle, QuadId,
+  WmsCapability} from "../../internal";
+import { MapLayerImageryProvider, MapLayerImageryProviderStatus, WmsCapabilities, WmsUtilities,
 } from "../../internal";
 
 // eslint-disable-next-line prefer-const

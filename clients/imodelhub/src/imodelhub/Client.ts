@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 
-import { FileHandler } from "../itwin-client/FileHandler";
+import type { FileHandler } from "../itwin-client/FileHandler";
 import { IModelClient } from "../IModelClient";
 import { IModelBaseHandler } from "./BaseHandler";
 import { PermissionHandler } from "./Permissions";

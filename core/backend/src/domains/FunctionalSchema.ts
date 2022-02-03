@@ -10,7 +10,7 @@ import * as path from "path";
 import { DbResult } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { ClassRegistry } from "../ClassRegistry";
-import { IModelDb } from "../IModelDb";
+import type { IModelDb } from "../IModelDb";
 import { KnownLocations } from "../IModelHost";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./FunctionalElements";

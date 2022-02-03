@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { LabelCompositeValue, LabelCompositeValueJSON, LabelDefinition, LabelDefinitionJSON } from "../../../presentation-common/LabelDefinition";
+import type { LabelCompositeValue, LabelCompositeValueJSON, LabelDefinitionJSON } from "../../../presentation-common/LabelDefinition";
+import { LabelDefinition } from "../../../presentation-common/LabelDefinition";
 
 /**
  * @internal Used for testing only.

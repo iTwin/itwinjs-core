@@ -5,10 +5,11 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Content } from "../../presentation-common/content/Content";
-import {
-  addFieldHierarchy, createFieldHierarchies, FIELD_NAMES_SEPARATOR, FieldHierarchy, IContentVisitor, ProcessFieldHierarchiesProps,
+import type { FieldHierarchy, IContentVisitor, ProcessFieldHierarchiesProps,
   ProcessMergedValueProps, ProcessPrimitiveValueProps, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps,
-  StartStructProps, traverseContent, traverseContentItem, traverseFieldHierarchy,
+  StartStructProps} from "../../presentation-common/content/ContentTraverser";
+import {
+  addFieldHierarchy, createFieldHierarchies, FIELD_NAMES_SEPARATOR, traverseContent, traverseContentItem, traverseFieldHierarchy,
 } from "../../presentation-common/content/ContentTraverser";
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
 import {

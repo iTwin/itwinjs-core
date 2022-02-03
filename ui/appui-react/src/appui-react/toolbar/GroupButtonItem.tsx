@@ -9,16 +9,19 @@
 import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import {
-  ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
+import type {
+  ActionButton, GroupButton, OnItemExecutedFunc} from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { BadgeUtilities, CommonProps, withOnOutsideClick } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { BadgeUtilities, withOnOutsideClick } from "@itwin/core-react";
 import {
   ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
   Group as ToolGroupComponent, withDragInteraction,
 } from "@itwin/appui-layout-react";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import type { ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";

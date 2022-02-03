@@ -8,8 +8,9 @@
 
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
-import { FormatterSpec } from "./FormatterSpec";
-import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
+import type { FormatterSpec } from "./FormatterSpec";
+import type { FractionalPrecision} from "./FormatEnums";
+import { DecimalPrecision, FormatTraits, FormatType, ScientificType, ShowSignOption } from "./FormatEnums";
 
 /**  rounding additive
  * @internal

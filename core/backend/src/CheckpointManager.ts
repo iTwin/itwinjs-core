@@ -9,12 +9,16 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@itwin/core-bentley";
-import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
+import type { GuidString, Mutable} from "@itwin/core-bentley";
+import { BeEvent, ChangeSetStatus, DbResult, Guid, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
+import type { ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, LocalDirName, LocalFileName } from "@itwin/core-common";
+import { BriefcaseIdValue, IModelError, IModelVersion } from "@itwin/core-common";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
+import { CloudSqlite } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { SnapshotDb, TokenArg } from "./IModelDb";
+import type { TokenArg } from "./IModelDb";
+import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 

@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // cspell:ignore GCRS
-import { XYZProps } from "@itwin/core-geometry";
-import {
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
-  IModelReadRpcInterface, PointWithStatus,
+import type { XYZProps } from "@itwin/core-geometry";
+import type {
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, PointWithStatus} from "@itwin/core-common";
+import { GeoCoordStatus,
+  IModelReadRpcInterface,
 } from "@itwin/core-common";
-import { IModelConnection } from "./IModelConnection";
+import type { IModelConnection } from "./IModelConnection";
 
 /** Response to a request to obtain imodel coordinates from cache.
  * @internal

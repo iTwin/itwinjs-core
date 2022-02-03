@@ -7,7 +7,7 @@
  */
 
 import { Angle, Vector3d } from "@itwin/core-geometry";
-import { Cartographic } from "./geometry/Cartographic";
+import type { Cartographic } from "./geometry/Cartographic";
 
 // cspell:ignore mrad sinm sint aarg
 

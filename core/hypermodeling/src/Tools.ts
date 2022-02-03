@@ -7,9 +7,10 @@
  */
 
 import { SectionType } from "@itwin/core-common";
-import { IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
+import type { ScreenViewport} from "@itwin/core-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 import { HyperModeling } from "./HyperModeling";
-import { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
+import type { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
 
 /** Parses a string case-insensitively returning true for "ON", false for "OFF", undefined for "TOGGLE" or undefined, and the input string for anything else. */

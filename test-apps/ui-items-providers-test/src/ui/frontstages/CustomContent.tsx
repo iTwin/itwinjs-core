@@ -3,14 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import type { FrontstageProps, StandardFrontstageProps} from "@itwin/appui-react";
 import {
-  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, FrontstageProps,
-  IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider,
+  IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
   UiFramework,
 } from "@itwin/appui-react";
-import { ContentLayoutProps, StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import type { ContentLayoutProps} from "@itwin/appui-abstract";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { CustomContentUiProvider } from "../providers/CustomContentUiProvider";
 import { SampleContentControl } from "../content/SampleContentControl";
 

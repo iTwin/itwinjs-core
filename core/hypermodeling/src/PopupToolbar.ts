@@ -6,7 +6,7 @@
  * @module HyperModeling
  */
 
-import { XAndY } from "@itwin/core-geometry";
+import type { XAndY } from "@itwin/core-geometry";
 import type { AbstractToolbarProps } from "@itwin/appui-abstract";
 import { IModelApp } from "@itwin/core-frontend";
 

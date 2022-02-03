@@ -5,14 +5,17 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Id64 } from "@itwin/core-bentley";
-import { ModelProps } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { ModelProps } from "@itwin/core-common";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import type { Ruleset} from "@itwin/presentation-common";
 import {
-  ContentSpecificationTypes, InstanceKey, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes,
+  ContentSpecificationTypes, InstanceKey, KeySet, RelationshipDirection, RelationshipMeaning, RuleTypes,
 } from "@itwin/presentation-common";
 import { PresentationTableDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat, StructValue } from "@itwin/appui-abstract";
+import type { PropertyRecord, StructValue } from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { SortDirection } from "@itwin/core-react";
 import { initialize, terminate } from "../../IntegrationTests";
 

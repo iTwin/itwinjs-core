@@ -6,7 +6,8 @@
  * @module RpcInterface
  */
 
-import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, RpcRequestFulfillment } from "@itwin/core-common";
+import type { RpcPushChannel, RpcRequestFulfillment } from "@itwin/core-common";
+import { RpcMarshaling, RpcPushConnection, RpcPushTransport } from "@itwin/core-common";
 import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 

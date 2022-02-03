@@ -7,9 +7,10 @@
  */
 
 import * as React from "react";
-import { ArrayValue } from "@itwin/appui-abstract";
+import type { ArrayValue } from "@itwin/appui-abstract";
 import { NonPrimitivePropertyRenderer } from "../../NonPrimitivePropertyRenderer";
-import { TableSpecificValueRendererProps, TableNonPrimitiveValueRenderer as TableValueRenderer } from "./NonPrimitiveValueRenderer";
+import type { TableSpecificValueRendererProps} from "./NonPrimitiveValueRenderer";
+import { TableNonPrimitiveValueRenderer as TableValueRenderer } from "./NonPrimitiveValueRenderer";
 
 /** A react component which renders array property value as a button with text
  * @public

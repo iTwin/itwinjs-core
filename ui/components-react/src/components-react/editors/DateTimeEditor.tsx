@@ -9,14 +9,16 @@
 import "./DateTimeEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
+import type { PropertyValue} from "@itwin/appui-abstract";
 import {
-  AlternateDateFormats, PropertyValue, PropertyValueFormat, StandardTypeNames, TimeDisplay,
+  AlternateDateFormats, PropertyValueFormat, StandardTypeNames, TimeDisplay,
 } from "@itwin/appui-abstract";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
-import { TimeField, TimeSpec } from "../datepicker/TimeField";
-import { TypeConverter } from "../converters/TypeConverter";
+import type { TimeSpec } from "../datepicker/TimeField";
+import { TimeField } from "../datepicker/TimeField";
+import type { TypeConverter } from "../converters/TypeConverter";
 import { DatePicker } from "../datepicker/DatePicker";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { DateTimeTypeConverterBase } from "../converters/DateTimeTypeConverter";

@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import { SnapshotDb } from "@itwin/core-backend";
 import { HierarchyCacheMode, PresentationManagerMode } from "@itwin/presentation-backend";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@itwin/presentation-backend/lib/cjs/presentation-backend/NativePlatform";
+import type { NativePlatformDefinition } from "@itwin/presentation-backend/lib/cjs/presentation-backend/NativePlatform";
+import { createDefaultNativePlatform } from "@itwin/presentation-backend/lib/cjs/presentation-backend/NativePlatform";
 import { PresentationError } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 

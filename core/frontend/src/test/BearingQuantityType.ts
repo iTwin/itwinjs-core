@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider, UnitSystemKey,
+import type {
+  CustomFormatProps, FormatProps, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider, UnitSystemKey} from "@itwin/core-quantity";
+import { Format, FormatterSpec, Parser, ParserSpec,
 } from "@itwin/core-quantity";
-import {
+import type {
   CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition,
   TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec,
 } from "../quantity-formatting/QuantityFormatter";

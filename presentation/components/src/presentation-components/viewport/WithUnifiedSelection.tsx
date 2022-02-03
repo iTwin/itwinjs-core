@@ -7,12 +7,15 @@
  */
 
 import * as React from "react";
-import { IDisposable, using } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import { AsyncTasksTracker, KeySet, SelectionInfo } from "@itwin/presentation-common";
-import { ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionHandler } from "@itwin/presentation-frontend";
-import { ViewportProps } from "@itwin/imodel-components-react";
-import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
+import type { IDisposable} from "@itwin/core-bentley";
+import { using } from "@itwin/core-bentley";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { KeySet, SelectionInfo } from "@itwin/presentation-common";
+import { AsyncTasksTracker } from "@itwin/presentation-common";
+import type { ISelectionProvider, SelectionChangeEventArgs} from "@itwin/presentation-frontend";
+import { Presentation, SelectionHandler } from "@itwin/presentation-frontend";
+import type { ViewportProps } from "@itwin/imodel-components-react";
+import type { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { getDisplayName } from "../common/Utils";
 
 /**

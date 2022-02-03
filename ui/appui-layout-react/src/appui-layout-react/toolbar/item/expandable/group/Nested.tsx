@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { BackArrow } from "./BackArrow";
 import { Columns } from "./Columns";
-import { GroupProps } from "./Group";
+import type { GroupProps } from "./Group";
 import { Panel } from "./Panel";
 import { Title } from "./Title";
 

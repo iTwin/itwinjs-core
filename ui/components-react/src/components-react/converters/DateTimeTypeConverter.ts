@@ -7,14 +7,16 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import { AlternateDateFormats, Primitives, StandardTypeNames, TimeDisplay } from "@itwin/appui-abstract";
+import type { Primitives} from "@itwin/appui-abstract";
+import { AlternateDateFormats, StandardTypeNames, TimeDisplay } from "@itwin/appui-abstract";
 import { TimeFormat } from "@itwin/core-react";
 import { formatInputDate } from "../datepicker/DateField";
 import { adjustDateToTimezone } from "../common/DateUtils";
 import { UiComponents } from "../UiComponents";
-import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter";
+import type { LessGreaterOperatorProcessor} from "./TypeConverter";
+import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
+import type { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
 
 // cSpell:ignore datepicker valuetypes
 

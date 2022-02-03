@@ -6,17 +6,20 @@
  * @module HyperModeling
  */
 
-import { Transform, XAndY } from "@itwin/core-geometry";
+import type { XAndY } from "@itwin/core-geometry";
+import { Transform } from "@itwin/core-geometry";
 import type { AbstractToolbarProps } from "@itwin/appui-abstract";
-import {
-  ChangeFlags, DecorateContext, Decorator, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, TiledGraphicsProvider, ViewClipTool,
+import type {
+  ChangeFlags, DecorateContext, Decorator, IModelConnection, ScreenViewport, SpatialViewState, TiledGraphicsProvider} from "@itwin/core-frontend";
+import { IModelApp, ViewClipTool,
 } from "@itwin/core-frontend";
 import { SectionMarker, SectionMarkerSet } from "./SectionMarkers";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { createSectionGraphicsProvider } from "./SectionGraphicsProvider";
-import { PopupToolbarManager, PopupToolbarProvider } from "./PopupToolbar";
+import type { PopupToolbarProvider } from "./PopupToolbar";
+import { PopupToolbarManager } from "./PopupToolbar";
 import { HyperModeling } from "./HyperModeling";
-import { SectionMarkerConfig } from "./HyperModelingConfig";
+import type { SectionMarkerConfig } from "./HyperModelingConfig";
 
 async function createMarkers(vp: ScreenViewport): Promise<SectionMarkerSet | undefined> {
   if (!vp.view.isSpatialView())

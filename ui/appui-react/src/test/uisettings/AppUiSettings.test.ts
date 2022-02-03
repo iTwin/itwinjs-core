@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import { storageMock, TestUtils } from "../TestUtils";
 import { UiFramework } from "../../appui-react/UiFramework";
-import { AppUiSettings, InitialAppUiSettings } from "../../appui-react/uistate/AppUiSettings";
+import type { InitialAppUiSettings } from "../../appui-react/uistate/AppUiSettings";
+import { AppUiSettings } from "../../appui-react/uistate/AppUiSettings";
 import { SYSTEM_PREFERRED_COLOR_THEME } from "../../appui-react/theme/ThemeManager";
 
 describe("AppUiSettings", () => {

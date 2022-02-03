@@ -7,9 +7,10 @@
  */
 
 import { Cartographic } from "@itwin/core-common";
-import { request, RequestOptions, Response } from "./request/Request";
+import type { RequestOptions, Response } from "./request/Request";
+import { request } from "./request/Request";
 import { IModelApp } from "./IModelApp";
-import { GlobalLocation } from "./ViewGlobalLocation";
+import type { GlobalLocation } from "./ViewGlobalLocation";
 
 /** Provides an interface to the [Bing Maps location services](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/).
  * @public

@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import type { SpatialClassifierProps,
+  SpatialClassifiersContainer} from "../SpatialClassification";
 import {
-  SpatialClassifier, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SpatialClassifierProps, SpatialClassifiers,
-  SpatialClassifiersContainer,
+  SpatialClassifier, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SpatialClassifiers,
 } from "../SpatialClassification";
 
 describe("SpatialClassifierFlags", () => {

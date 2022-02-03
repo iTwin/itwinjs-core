@@ -6,14 +6,14 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
-import { SkyBoxQuadsGeometry } from "../CachedGeometry";
+import type { SkyBoxQuadsGeometry } from "../CachedGeometry";
 import { Matrix3 } from "../Matrix";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { Texture } from "../Texture";
+import type { ShaderProgram } from "../ShaderProgram";
+import type { Texture } from "../Texture";
 
 const computeBaseColor = `return vec4(0, 0, 0, 0);`;
 const assignFragData = `FragColor = TEXTURE_CUBE(s_cube, v_texDir);`;

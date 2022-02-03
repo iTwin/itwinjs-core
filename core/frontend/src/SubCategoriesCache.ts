@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
+import type { Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
+import { assert, Id64 } from "@itwin/core-bentley";
 import { QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
-import { IModelConnection } from "./IModelConnection";
+import type { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
  * @see SubCategoriesCache

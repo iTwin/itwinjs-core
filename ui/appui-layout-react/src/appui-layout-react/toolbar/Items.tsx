@@ -9,8 +9,9 @@
 import "./Items.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
-import { OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
+import type { CommonProps } from "@itwin/core-react";
+import type { OrthogonalDirection} from "../utilities/Direction";
+import { OrthogonalDirectionHelpers } from "../utilities/Direction";
 
 /** Properties of [[Items]] component.
  * @internal

@@ -6,7 +6,8 @@
  * @module Geometry
  */
 
-import { Point3d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import type { Transform, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 /** Properties for a TextString class.
  * @see [[GeometryStreamEntryProps]]

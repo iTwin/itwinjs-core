@@ -9,8 +9,8 @@
 import "./Arrow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
-import { WidgetZoneId } from "../manager/Zones";
+import type { CommonProps } from "@itwin/core-react";
+import type { WidgetZoneId } from "../manager/Zones";
 
 /** Properties of [[Arrow]] component.
  * @internal

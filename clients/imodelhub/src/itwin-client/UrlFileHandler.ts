@@ -11,10 +11,10 @@ import * as http from "http";
 import * as https from "https";
 import * as path from "path";
 import { URL } from "url";
-import { CancelRequest, FileHandler } from "../itwin-client/FileHandler";
-import { ProgressCallback } from "./Request";
+import type { CancelRequest, FileHandler } from "../itwin-client/FileHandler";
+import type { ProgressCallback } from "./Request";
 import { downloadFileAtomic } from "./downloadFileAtomic";
-import { AccessToken } from "@itwin/core-bentley";
+import type { AccessToken } from "@itwin/core-bentley";
 
 /**
  * Provides methods to upload and download files from the Internet

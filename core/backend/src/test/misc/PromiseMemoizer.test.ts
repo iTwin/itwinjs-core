@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
+import type { QueryablePromise } from "../../PromiseMemoizer";
+import { PromiseMemoizer } from "../../PromiseMemoizer";
 import * as sinon from "sinon";
 
 describe("PromiseMemoizer", () => {

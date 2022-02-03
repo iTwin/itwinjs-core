@@ -9,7 +9,7 @@
 // NOTE: A NavigationRelationship is not an Entity, so is not registered in the ClassRegistry.
 // NOTE: It does, however, have a classFullName property for consistency with Entity subclasses.
 
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
 import { RelatedElement, TypeDefinition } from "@itwin/core-common";
 
 /** Relates a parent Element to child Elements which represent parts of the Entity modeled by the parent Element.

@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import type { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Rule to override default node style and dynamically define a foreground/background

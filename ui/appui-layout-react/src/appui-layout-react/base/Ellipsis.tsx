@@ -9,7 +9,7 @@
 import "./Ellipsis.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 
 /** A component that renders three dots (common for text truncation). Used in overflow buttons.
  * @internal

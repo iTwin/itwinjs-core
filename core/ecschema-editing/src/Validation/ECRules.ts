@@ -6,17 +6,19 @@
  * @module Validation
  */
 
-import { AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
-  ECStringConstants, EntityClass, Enumeration, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
-  Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
+import type { AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, EntityClass, Enumeration, PrimitiveProperty,
+  Property, RelationshipClass, RelationshipConstraint, Schema} from "@itwin/ecschema-metadata";
+import { ECClassModifier,
+  ECStringConstants, PrimitiveType, primitiveTypeToString, RelationshipMultiplicity, SchemaGraph, SchemaItemType,
   schemaItemTypeToString, StrengthDirection, strengthDirectionToString,
 } from "@itwin/ecschema-metadata";
-import {
-  ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
-  createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic,
-  PropertyDiagnostic, RelationshipConstraintDiagnostic, SchemaDiagnostic, SchemaItemDiagnostic,
+import type {
+  ClassDiagnostic, CustomAttributeContainerDiagnostic,
+  PropertyDiagnostic, RelationshipConstraintDiagnostic, SchemaDiagnostic, SchemaItemDiagnostic} from "./Diagnostic";
+import { createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
+  createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass,
 } from "./Diagnostic";
-import { IRuleSet } from "./Rules";
+import type { IRuleSet } from "./Rules";
 
 const ruleSetName = "ECObjects";
 

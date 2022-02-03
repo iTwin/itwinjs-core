@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SchemaKeyProps } from "../Deserialization/JsonProps";
+import type { SchemaKeyProps } from "../Deserialization/JsonProps";
 import { SchemaMatchType } from "../ECObjects";
 import { ECObjectsError } from "../Exception";
 import { ECVersion, SchemaKey } from "../SchemaKey";

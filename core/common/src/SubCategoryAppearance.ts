@@ -6,8 +6,10 @@
  * @module Symbology
  */
 
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { ColorDef, ColorDefProps } from "./ColorDef";
+import type { Id64String} from "@itwin/core-bentley";
+import { Id64, JsonUtils } from "@itwin/core-bentley";
+import type { ColorDefProps } from "./ColorDef";
+import { ColorDef } from "./ColorDef";
 
 /** Parameters that define the way geometry on a [[SubCategory]] appears.
  * SubCategoryAppearance describes the intrinsic appearance of geometry belonging to that SubCategory, independent of a particular [[ViewState]].

@@ -8,8 +8,9 @@
  */
 
 import * as React from "react";
-import {
-  CommonToolbarItem, ToolbarItemsChangedArgs, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsManager,
+import type {
+  CommonToolbarItem, ToolbarItemsChangedArgs, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage} from "@itwin/appui-abstract";
+import { UiItemsManager,
 } from "@itwin/appui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";

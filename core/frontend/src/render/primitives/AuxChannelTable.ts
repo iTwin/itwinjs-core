@@ -6,9 +6,11 @@
  * @module Rendering
  */
 
-import { assert, Mutable } from "@itwin/core-bentley";
+import type { Mutable } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import type { AuxChannel as PolyfaceAuxChannel} from "@itwin/core-geometry";
 import {
-  AuxChannelDataType, Point3d, AuxChannel as PolyfaceAuxChannel, Range1d, Range3d, Vector3d,
+  AuxChannelDataType, Point3d, Range1d, Range3d, Vector3d,
 } from "@itwin/core-geometry";
 import { OctEncodedNormal, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
 import { computeDimensions } from "./VertexTable";

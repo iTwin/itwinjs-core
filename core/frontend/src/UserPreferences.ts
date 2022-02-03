@@ -7,7 +7,7 @@
  * @module UserPreferences
  */
 
-import { AccessToken, GuidString } from "@itwin/core-bentley";
+import type { AccessToken, GuidString } from "@itwin/core-bentley";
 
 /** Argument for methods that can supply an iTwinId and iModelId.
  * @beta

@@ -8,11 +8,14 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 
 import { BeEvent, Logger } from "@itwin/core-bentley";
-import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@itwin/core-geometry";
-import { Frustum, SpatialViewDefinitionProps } from "@itwin/core-common";
-import {
-  CategorySelectorState, DisplayStyle3dState, EntityState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,
-  SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
+import type { WritableXAndY } from "@itwin/core-geometry";
+import { AxisIndex, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
+import type { SpatialViewDefinitionProps } from "@itwin/core-common";
+import { Frustum } from "@itwin/core-common";
+import type {
+  CategorySelectorState, DisplayStyle3dState, IModelConnection, ModelSelectorState, OrthographicViewState, TentativePoint, ViewManager, Viewport, ViewState} from "@itwin/core-frontend";
+import { EntityState, MockRender, ScreenViewport,
+  SpatialViewState, StandardViewId, ViewRect,
 } from "@itwin/core-frontend";
 import { fireEvent, render } from "@testing-library/react";
 import { ViewportComponentEvents } from "../../imodel-components-react/viewport/ViewportComponentEvents";

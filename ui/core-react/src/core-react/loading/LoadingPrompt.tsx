@@ -13,7 +13,7 @@ import { Button, ProgressLinear } from "@itwin/itwinui-react";
 import { LoadingBar } from "./LoadingBar";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { LoadingStatus } from "./LoadingStatus";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 // cspell:ignore loadingprompt
 

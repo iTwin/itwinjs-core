@@ -7,7 +7,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";
+import type { ProgramBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { addEyeSpace } from "./Common";
 

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { BackstageItem, BackstageItemsChangedArgs, BackstageItemsManager } from "@itwin/appui-abstract";
+import type { BackstageItem, BackstageItemsChangedArgs, BackstageItemsManager } from "@itwin/appui-abstract";
 
 /** Hook that returns items from [[BackstageItemsManager]].
  * @internal

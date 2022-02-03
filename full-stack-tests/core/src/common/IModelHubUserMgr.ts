@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BeEvent } from "@itwin/core-bentley";
+import type { AccessToken} from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
 import { getAccessTokenFromBackend } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
-import { AuthorizationClient } from "@itwin/core-common";
+import type { AuthorizationClient } from "@itwin/core-common";
 
 export class IModelHubUserMgr implements AuthorizationClient {
   private _token: AccessToken = "";

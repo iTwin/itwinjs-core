@@ -7,13 +7,15 @@
  */
 
 import * as React from "react";
-import { CommonProps, Icon } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Icon } from "@itwin/core-react";
 import { AppButton, Direction, Tools as NZ_ToolsWidget } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { CommandItemDef } from "../shared/CommandItemDef";
+import type { CommandItemDef } from "../shared/CommandItemDef";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
-import { ToolWidgetProps, WidgetType } from "./WidgetDef";
+import type { ToolWidgetProps} from "./WidgetDef";
+import { WidgetType } from "./WidgetDef";
 import { UiFramework } from "../UiFramework";
 
 /** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.

@@ -2,13 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
-import { Project as ITwin } from "@itwin/projects-client";
-import { AuthorizationClient, BriefcaseId, ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
-import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
-import { BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelQuery, VersionQuery } from "@bentley/imodelbank-client"; // TODO: Remove when we have a replacement for the current iModelBank client in the way
+import type { AccessToken, GuidString } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
+import type { Project as ITwin } from "@itwin/projects-client";
+import type { AuthorizationClient, BriefcaseId, ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
+import type { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
+import type { ChangeSet} from "@bentley/imodelbank-client";
+import { BriefcaseQuery, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelQuery, VersionQuery } from "@bentley/imodelbank-client"; // TODO: Remove when we have a replacement for the current iModelBank client in the way
 import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
-import { IModelsClient as AuthorIModelsClient, Briefcase, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, ReleaseBriefcaseParams, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-authoring";
+import type { Briefcase, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, ReleaseBriefcaseParams} from "@itwin/imodels-client-authoring";
+import { IModelsClient as AuthorIModelsClient, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-authoring";
 import { IModelsClient as FrontendIModelsClient } from "@itwin/imodels-client-management";
 import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
 

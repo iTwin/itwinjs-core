@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection, SubCategoriesCache } from "@itwin/core-frontend";
+import type { Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
+import { BeDuration, Id64 } from "@itwin/core-bentley";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 describe("SubCategoriesCache", () => {

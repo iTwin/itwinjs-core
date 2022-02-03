@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Code, DisplayStyle3dProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import type { DisplayStyle3dProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { Code } from "@itwin/core-common";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";

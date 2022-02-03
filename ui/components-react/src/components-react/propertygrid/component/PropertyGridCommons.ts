@@ -6,13 +6,14 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { CommonProps, Orientation } from "@itwin/core-react";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { CommonProps} from "@itwin/core-react";
+import { Orientation } from "@itwin/core-react";
 import { matchLinks } from "../../common/Links";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { PropertyCategory } from "../PropertyDataProvider";
+import type { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import type { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
+import type { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import type { PropertyCategory } from "../PropertyDataProvider";
 
 /** Arguments for the Property Editing event callback
  * @public

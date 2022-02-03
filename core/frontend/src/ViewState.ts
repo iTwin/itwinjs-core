@@ -6,40 +6,49 @@
  * @module Views
  */
 
-import { assert, BeEvent, dispose, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
+import type { Id64Arg, Id64String} from "@itwin/core-bentley";
+import { assert, BeEvent, dispose, Id64, JsonUtils } from "@itwin/core-bentley";
+import type { ClipVector, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, XAndY,
+  XYAndZ, XYZ} from "@itwin/core-geometry";
 import {
-  Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY,
-  XYAndZ, XYZ, YawPitchRollAngles,
+  Angle, AxisOrder, Constant, Geometry, Map4d, Matrix3d,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import {
-  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
-  ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
-  ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
+import type {
+  AnalysisStyle, AxisAlignedBox3d, ColorDef, FeatureAppearance,
+  ModelClipGroups, RenderSchedule, SubCategoryOverride,
+  ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags, ViewStateProps} from "@itwin/core-common";
+import { Camera, Cartographic, Frustum, GlobeMode, GridOrientationType, Npc, ViewDetails, ViewDetails3d,
 } from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
-import { CategorySelectorState } from "./CategorySelectorState";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
-import { DrawingViewState } from "./DrawingViewState";
+import type { CategorySelectorState } from "./CategorySelectorState";
+import type { DisplayStyle2dState, DisplayStyleState } from "./DisplayStyleState";
+import { DisplayStyle3dState } from "./DisplayStyleState";
+import type { DrawingViewState } from "./DrawingViewState";
 import { ElementState } from "./EntityState";
 import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { GeometricModel2dState, GeometricModelState } from "./ModelState";
+import type { IModelConnection } from "./IModelConnection";
+import type { GeometricModelState } from "./ModelState";
+import { GeometricModel2dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
-import { RenderClipVolume } from "./render/RenderClipVolume";
-import { RenderMemory } from "./render/RenderMemory";
-import { RenderScheduleState } from "./RenderScheduleState";
-import { SheetViewState } from "./SheetViewState";
-import { SpatialViewState } from "./SpatialViewState";
-import { StandardView, StandardViewId } from "./StandardView";
-import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
-import { MarginOptions, OnViewExtentsError } from "./ViewAnimation";
-import { DecorateContext, SceneContext } from "./ViewContext";
-import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
+import type { RenderClipVolume } from "./render/RenderClipVolume";
+import type { RenderMemory } from "./render/RenderMemory";
+import type { RenderScheduleState } from "./RenderScheduleState";
+import type { SheetViewState } from "./SheetViewState";
+import type { SpatialViewState } from "./SpatialViewState";
+import type { StandardViewId } from "./StandardView";
+import { StandardView } from "./StandardView";
+import type { TileTreeReference } from "./tile/internal";
+import { DisclosedTileTreeSet } from "./tile/internal";
+import type { MarginOptions, OnViewExtentsError } from "./ViewAnimation";
+import type { DecorateContext, SceneContext } from "./ViewContext";
+import type { GlobalLocation } from "./ViewGlobalLocation";
+import { areaToEyeHeight, areaToEyeHeightFromGcs } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-import { Viewport } from "./Viewport";
-import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
+import type { Viewport } from "./Viewport";
+import type { ViewPose} from "./ViewPose";
+import { ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
 

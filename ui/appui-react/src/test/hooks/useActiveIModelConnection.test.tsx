@@ -9,9 +9,10 @@ import * as moq from "typemoq";
 import * as sinon from "sinon";
 
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
-import { IModelConnection, MockRender, SelectionSet } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { MockRender, SelectionSet } from "@itwin/core-frontend";
 import { render } from "@testing-library/react";
-import { IModelRpcProps } from "@itwin/core-common";
+import type { IModelRpcProps } from "@itwin/core-common";
 import { SyncUiEventDispatcher, UiFramework, useActiveIModelConnection } from "../../appui-react";
 import TestUtils from "../TestUtils";
 

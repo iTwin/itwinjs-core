@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { WidgetProps } from "./WidgetProps";
+import type { WidgetProps } from "./WidgetProps";
 
 /** Widget React component.
  * A Widget is a collection of UI components tied to a particular Zone that allows the user to view and/or modify data relevant to their current context.

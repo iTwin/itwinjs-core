@@ -9,19 +9,23 @@
 import { inPlaceSort } from "fast-sort";
 import memoize from "micro-memoize";
 import { assert } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { CategoryDescription, Descriptor, DescriptorOverrides, Field, FieldHierarchy,
+  InstanceKey, NestedContentValue, ProcessFieldHierarchiesProps, ProcessPrimitiveValueProps, Ruleset, StartArrayProps, StartCategoryProps, StartContentProps, StartStructProps, ValuesMap} from "@itwin/presentation-common";
 import {
-  addFieldHierarchy, CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldHierarchy,
-  InstanceKey, NestedContentValue, PropertyValueFormat as PresentationPropertyValueFormat, ProcessFieldHierarchiesProps, ProcessPrimitiveValueProps,
-  RelationshipMeaning, Ruleset, StartArrayProps, StartCategoryProps, StartContentProps, StartStructProps, traverseContentItem, traverseFieldHierarchy,
-  Value, ValuesMap,
+  addFieldHierarchy, ContentFlags, DefaultContentDisplayTypes, PropertyValueFormat as PresentationPropertyValueFormat,
+  RelationshipMeaning, traverseContentItem, traverseFieldHierarchy,
+  Value,
 } from "@itwin/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat } from "@itwin/appui-abstract";
-import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@itwin/components-react";
-import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../common/ContentBuilder";
-import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
-import { DiagnosticsProps } from "../common/Diagnostics";
+import type { IPropertyDataProvider, PropertyCategory, PropertyData} from "@itwin/components-react";
+import { PropertyDataChangeEvent } from "@itwin/components-react";
+import type { FieldHierarchyRecord, IPropertiesAppender} from "../common/ContentBuilder";
+import { PropertyRecordsBuilder } from "../common/ContentBuilder";
+import type { CacheInvalidationProps, IContentDataProvider } from "../common/ContentDataProvider";
+import { ContentDataProvider } from "../common/ContentDataProvider";
+import type { DiagnosticsProps } from "../common/Diagnostics";
 import { createLabelRecord, findField } from "../common/Utils";
 import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-properties/DataProvider";
 

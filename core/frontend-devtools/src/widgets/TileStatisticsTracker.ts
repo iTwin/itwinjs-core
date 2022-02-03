@@ -7,7 +7,8 @@
  * @module Widgets
  */
 
-import { IModelApp, TileAdmin, Viewport } from "@itwin/core-frontend";
+import type { TileAdmin, Viewport } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { createButton } from "../ui/Button";
 import { createCheckBox } from "../ui/CheckBox";
 import { createNumericInput } from "../ui/NumericInput";

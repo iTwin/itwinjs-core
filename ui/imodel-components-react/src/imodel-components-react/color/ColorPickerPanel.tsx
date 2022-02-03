@@ -9,7 +9,8 @@
 // cSpell:ignore colorpicker
 
 import * as React from "react";
-import { ColorDef, HSVColor } from "@itwin/core-common";
+import type { HSVColor } from "@itwin/core-common";
+import { ColorDef } from "@itwin/core-common";
 import { ColorSwatch } from "./Swatch";
 import { HueSlider } from "./HueSlider";
 import { SaturationPicker } from "./SaturationPicker";

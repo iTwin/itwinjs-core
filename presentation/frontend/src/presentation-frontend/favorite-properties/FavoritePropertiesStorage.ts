@@ -6,12 +6,14 @@
  * @module Core
  */
 
-import { AccessToken, compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
+import type { AccessToken, IDisposable, OrderedComparator } from "@itwin/core-bentley";
+import { compareStrings, Dictionary, Guid, isIDisposable } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
-import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
-import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
+import type { IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
+import { ConnectivityInformationProvider } from "../ConnectivityInformationProvider";
+import type { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
 
 /** @internal */
 export const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";

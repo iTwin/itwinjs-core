@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnyEnumerator, Enumeration } from "@itwin/ecschema-metadata";
+import type { AnyEnumerator} from "@itwin/ecschema-metadata";
+import { Enumeration } from "@itwin/ecschema-metadata";
 
 /** @internal
  * An abstract class used for schema editing.

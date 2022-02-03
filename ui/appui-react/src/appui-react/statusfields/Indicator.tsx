@@ -10,8 +10,10 @@ import "./Indicator.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ConditionalStringValue, StatusBarLabelSide } from "@itwin/appui-abstract";
-import { CommonProps, Icon } from "@itwin/core-react";
-import { FooterPopup, FooterPopupContentType } from "@itwin/appui-layout-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Icon } from "@itwin/core-react";
+import type { FooterPopupContentType } from "@itwin/appui-layout-react";
+import { FooterPopup } from "@itwin/appui-layout-react";
 
 /** Properties of [[Indicator]] component. */
 interface IndicatorProps extends CommonProps {

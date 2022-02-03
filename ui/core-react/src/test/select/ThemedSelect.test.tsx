@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
-import { mount, ReactWrapper, shallow } from "enzyme";
+import type { ReactWrapper} from "enzyme";
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import { ThemedSelect } from "../../core-react";

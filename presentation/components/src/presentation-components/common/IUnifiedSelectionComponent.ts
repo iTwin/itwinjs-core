@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { IModelConnection } from "@itwin/core-frontend";
-import { SelectionHandler } from "@itwin/presentation-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { SelectionHandler } from "@itwin/presentation-frontend";
 
 /**
  * An interface for all unified selection components

@@ -7,7 +7,8 @@
  */
 
 import { assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStringsOrUndefined } from "@itwin/core-bentley";
-import { ColorDef, FillFlags, Gradient, GraphicParams, LinePixels, RenderMaterial, RenderTexture, TextureMapping } from "@itwin/core-common";
+import type { ColorDef, GraphicParams, RenderMaterial, RenderTexture} from "@itwin/core-common";
+import { FillFlags, Gradient, LinePixels, TextureMapping } from "@itwin/core-common";
 
 function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {
   return comparePossiblyUndefined((lhMat: RenderMaterial, rhMat: RenderMaterial) => lhMat === rhMat ? 0 : compareStringsOrUndefined(lhMat.key, rhMat.key), lhs, rhs);

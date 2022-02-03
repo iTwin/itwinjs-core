@@ -8,12 +8,14 @@
 
 import { assert } from "@itwin/core-bentley";
 import { OvrFlags, Pass, RenderOrder, TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
+import type {
+  FragmentShaderBuilder, ProgramBuilder, ShaderBuilder, VertexShaderBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariablePrecision, VariableType,
   VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
+import type { TechniqueFlags } from "../TechniqueFlags";
+import { FeatureMode } from "../TechniqueFlags";
 import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
 import { decodeDepthRgb, decodeUint24 } from "./Decode";
 import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";

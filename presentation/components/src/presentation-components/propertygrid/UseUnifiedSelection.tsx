@@ -8,9 +8,10 @@
 
 import * as React from "react";
 import { KeySet } from "@itwin/presentation-common";
-import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@itwin/presentation-frontend";
+import type { SelectionChangeEventArgs} from "@itwin/presentation-frontend";
+import { Presentation, SelectionHandler } from "@itwin/presentation-frontend";
 import { useDisposable } from "@itwin/core-react";
-import { IPresentationPropertyDataProvider } from "./DataProvider";
+import type { IPresentationPropertyDataProvider } from "./DataProvider";
 
 const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;
 

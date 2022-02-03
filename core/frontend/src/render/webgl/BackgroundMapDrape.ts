@@ -9,12 +9,14 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
-import { ColorDef, Frustum, FrustumPlanes, RenderTexture, TextureTransparency } from "@itwin/core-common";
-import { GraphicsCollectorDrawArgs, MapTileTreeReference, TileTreeReference } from "../../tile/internal";
-import { SceneContext } from "../../ViewContext";
-import { ViewState3d } from "../../ViewState";
+import type { Frustum} from "@itwin/core-common";
+import { ColorDef, FrustumPlanes, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import type { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
+import { GraphicsCollectorDrawArgs } from "../../tile/internal";
+import type { SceneContext } from "../../ViewContext";
+import type { ViewState3d } from "../../ViewState";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { RenderGraphic } from "../RenderGraphic";
+import type { RenderGraphic } from "../RenderGraphic";
 import { BatchState } from "./BatchState";
 import { BranchStack } from "./BranchStack";
 import { FrameBuffer } from "./FrameBuffer";
@@ -23,7 +25,7 @@ import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
 

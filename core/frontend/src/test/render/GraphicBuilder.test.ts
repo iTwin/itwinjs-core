@@ -7,17 +7,18 @@ import {
   Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
 } from "@itwin/core-geometry";
 import { ColorByName, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
-import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
+import type { GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
+import { GraphicType } from "../../render/GraphicBuilder";
 import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
-import { RenderSystem } from "../../render/RenderSystem";
-import { ScreenViewport } from "../../Viewport";
-import { MeshParams } from "../../render/primitives/VertexTable";
+import type { RenderSystem } from "../../render/RenderSystem";
+import type { ScreenViewport } from "../../Viewport";
+import type { MeshParams } from "../../render/primitives/VertexTable";
 import { SurfaceType } from "../../render/primitives/SurfaceParams";
 import { MeshArgs } from "../../render/primitives/mesh/MeshPrimitives";
 import { MeshGraphic } from "../../render/webgl/Mesh";
-import { InstancedGraphicParams } from "../../render/InstancedGraphicParams";
+import type { InstancedGraphicParams } from "../../render/InstancedGraphicParams";
 import { openBlankViewport } from "../openBlankViewport";
 
 describe("GraphicBuilder", () => {

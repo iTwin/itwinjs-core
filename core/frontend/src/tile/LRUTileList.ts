@@ -8,7 +8,7 @@
 
 import { assert, ReadonlySortedArray, SortedArray } from "@itwin/core-bentley";
 import { RenderMemory } from "../render/RenderMemory";
-import { Tile } from "./internal";
+import type { Tile } from "./internal";
 
 /** Maintains in sorted order a set of [[TileUser]] Ids for which a given tile has been selected for display. The number of users in a set is expected to be very small - often only 1 for a typical application.
  * Strictly for use by LRUTileList.

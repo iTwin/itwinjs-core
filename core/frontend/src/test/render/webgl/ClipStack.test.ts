@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { ClipStack } from "../../../render/webgl/ClipStack";
-import { RenderSystem } from "../../../render/RenderSystem";
+import type { RenderSystem } from "../../../render/RenderSystem";
 import { IModelApp } from "../../../IModelApp";
 
 for (let i = 0; i < 2; i++) {

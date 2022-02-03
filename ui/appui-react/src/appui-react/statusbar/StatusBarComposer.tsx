@@ -8,11 +8,13 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import {
-  AbstractStatusBarActionItem, AbstractStatusBarLabelItem, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
-  isAbstractStatusBarActionItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarLabelSide, StatusBarSection, UiSyncEventArgs,
+import type {
+  AbstractStatusBarActionItem, AbstractStatusBarLabelItem, CommonStatusBarItem, UiSyncEventArgs} from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue,
+  isAbstractStatusBarActionItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarLabelSide, StatusBarSection,
 } from "@itwin/appui-abstract";
-import { CommonProps, Icon, useRefs, useResizeObserver } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Icon, useRefs, useResizeObserver } from "@itwin/core-react";
 import { eqlOverflown, FooterIndicator } from "@itwin/appui-layout-react";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { Indicator } from "../statusfields/Indicator";

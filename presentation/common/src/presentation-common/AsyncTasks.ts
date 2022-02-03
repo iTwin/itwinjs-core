@@ -6,7 +6,8 @@
  * @module Core
  */
 
-import { Guid, GuidString, IDisposable } from "@itwin/core-bentley";
+import type { GuidString, IDisposable } from "@itwin/core-bentley";
+import { Guid } from "@itwin/core-bentley";
 
 /**
  * A helper to track ongoing async tasks. Usage:

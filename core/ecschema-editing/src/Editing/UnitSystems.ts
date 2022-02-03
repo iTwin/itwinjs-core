@@ -6,9 +6,9 @@
  * @module Editing
  */
 
-import { SchemaKey, UnitSystemProps } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
+import type { SchemaKey, UnitSystemProps } from "@itwin/ecschema-metadata";
+import type { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
 
 /**
  * @alpha

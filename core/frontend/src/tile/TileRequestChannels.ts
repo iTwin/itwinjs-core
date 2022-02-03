@@ -7,9 +7,10 @@
  */
 
 import { IpcApp } from "../IpcApp";
-import { IModelConnection } from "../IModelConnection";
-import {
-  IModelTile, IModelTileRequestChannels, TileRequest, TileRequestChannel, TileRequestChannelStatistics,
+import type { IModelConnection } from "../IModelConnection";
+import type {
+  IModelTile, TileRequest} from "./internal";
+import { IModelTileRequestChannels, TileRequestChannel, TileRequestChannelStatistics,
 } from "./internal";
 
 /** For an [[IpcApp]], allows backend element graphics requests in progress to be canceled. */

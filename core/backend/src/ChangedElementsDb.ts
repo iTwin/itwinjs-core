@@ -6,12 +6,14 @@
  * @module ChangedElementsDb
  */
 
-import { AccessToken, DbResult, IDisposable, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import type { AccessToken, IDisposable} from "@itwin/core-bentley";
+import { DbResult, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import type { ChangeData, ChangedElements, ChangedModels} from "@itwin/core-common";
+import { IModelError } from "@itwin/core-common";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDbOpenMode } from "./ECDb";
-import { IModelDb } from "./IModelDb";
+import type { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 
 /**

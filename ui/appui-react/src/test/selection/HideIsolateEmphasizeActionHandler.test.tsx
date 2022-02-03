@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { MockRender, ScreenViewport, Viewport } from "@itwin/core-frontend";
+import type { ScreenViewport, Viewport } from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import * as moq from "typemoq";
 import { HideIsolateEmphasizeActionHandler } from "../../appui-react/selection/HideIsolateEmphasizeManager";
 import TestUtils from "../TestUtils";

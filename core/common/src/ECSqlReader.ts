@@ -6,9 +6,10 @@
  * @module iModels
  */
 import { Base64EncodedString } from "./Base64EncodedString";
+import type { DbQueryRequest, DbQueryResponse, DbRequestExecutor, QueryOptions,
+  QueryPropertyMetaData} from "./ConcurrentQuery";
 import {
-  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
-  QueryPropertyMetaData, QueryRowFormat,
+  DbQueryError, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptionsBuilder, QueryRowFormat,
 } from "./ConcurrentQuery";
 
 /** @beta */

@@ -12,14 +12,16 @@ import * as React from "react";
 import produce from "immer";
 import { DraggedPanelSideContext } from "../base/DragManager";
 import { NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
-import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
+import type { PanelState, WidgetState } from "../base/NineZoneState";
+import { isHorizontalPanelState } from "../base/NineZoneState";
+import type { PanelWidgetProps } from "../widget/PanelWidget";
+import { PanelWidget } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
 import { PanelTarget } from "./PanelTarget";
-import { RectangleProps, SizeProps } from "@itwin/core-react";
+import type { RectangleProps, SizeProps } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
-import { WidgetComponent } from "../widget/Widget";
+import type { WidgetComponent } from "../widget/Widget";
 
 /** @internal */
 export type TopPanelSide = "top";

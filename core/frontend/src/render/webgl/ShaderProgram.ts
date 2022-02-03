@@ -7,17 +7,18 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { WebGLContext } from "@itwin/webgl-compatibility";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
 import { DebugShaderFile } from "../RenderSystem";
-import { AttributeDetails } from "./AttributeMap";
-import { WebGLDisposable } from "./Disposable";
-import { DrawParams, ShaderProgramParams } from "./DrawCommand";
+import type { AttributeDetails } from "./AttributeMap";
+import type { WebGLDisposable } from "./Disposable";
+import type { DrawParams} from "./DrawCommand";
+import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
-import { Batch, Branch } from "./Graphic";
+import type { Batch, Branch } from "./Graphic";
 import { UniformHandle } from "./UniformHandle";
-import { RenderPass } from "./RenderFlags";
+import type { RenderPass } from "./RenderFlags";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { TechniqueFlags } from "./TechniqueFlags";
 
 /* eslint-disable no-restricted-syntax */

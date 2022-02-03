@@ -3,12 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { AccessToken, Id64, Id64Set } from "@itwin/core-bentley";
-import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { AccessToken, Id64Set } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { XYZProps} from "@itwin/core-geometry";
+import { Matrix4d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { MassPropertiesRequestProps, ModelQueryParams} from "@itwin/core-common";
 import {
-  EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams,
+  EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation,
 } from "@itwin/core-common";
-import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, SpatialModelState } from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 

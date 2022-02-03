@@ -6,7 +6,8 @@
  * @module Entities
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { RelatedElement } from "./ElementProps";
 

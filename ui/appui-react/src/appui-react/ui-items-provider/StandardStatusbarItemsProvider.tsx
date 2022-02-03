@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { BaseUiItemsProvider, CommonStatusBarItem, StatusBarSection, UiItemsManager } from "@itwin/appui-abstract";
+import type { CommonStatusBarItem} from "@itwin/appui-abstract";
+import { BaseUiItemsProvider, StatusBarSection, UiItemsManager } from "@itwin/appui-abstract";
 import { FooterSeparator } from "@itwin/appui-layout-react";
 import { StatusBarItemUtilities } from "../statusbar/StatusBarItemUtilities";
 import { ToolAssistanceField } from "../statusfields/toolassistance/ToolAssistanceField";

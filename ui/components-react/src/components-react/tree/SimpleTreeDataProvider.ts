@@ -7,8 +7,8 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { PageOptions } from "../common/PageOptions";
-import { ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "./TreeDataProvider";
+import type { PageOptions } from "../common/PageOptions";
+import type { ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "./TreeDataProvider";
 
 /**
  * Used by [[SimpleTreeDataProvider]].

@@ -5,8 +5,9 @@
 import "./ContextMenu.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { RelativePosition } from "@itwin/appui-abstract";
-import { CommonProps, Popup } from "@itwin/core-react";
+import type { RelativePosition } from "@itwin/appui-abstract";
+import type { CommonProps} from "@itwin/core-react";
+import { Popup } from "@itwin/core-react";
 /* eslint-disable deprecation/deprecation */
 
 /* istanbul ignore next */

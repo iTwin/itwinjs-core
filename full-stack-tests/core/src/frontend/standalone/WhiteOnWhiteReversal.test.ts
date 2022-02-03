@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ColorDef, FeatureAppearance, RenderMode, ViewFlags, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
-import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import type { ViewFlags} from "@itwin/core-common";
+import { ColorDef, FeatureAppearance, RenderMode, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
+import type { DecorateContext, FeatureSymbology, IModelConnection, Viewport } from "@itwin/core-frontend";
+import { GraphicType, IModelApp, SnapshotConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { Color, testOnScreenViewport } from "../TestViewport";

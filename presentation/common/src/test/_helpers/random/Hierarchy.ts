@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
+import type {
+  BaseNodeKey, ECClassGroupingNodeKey, ECInstancesNodeKey, ECPropertyGroupingNodeKey, GroupingNodeKey, LabelGroupingNodeKey, Node, NodePathElement} from "../../../presentation-common";
 import {
-  BaseNodeKey, ECClassGroupingNodeKey, ECInstancesNodeKey, ECPropertyGroupingNodeKey, GroupingNodeKey, LabelGroupingNodeKey, Node, NodePathElement,
   StandardNodeTypes,
 } from "../../../presentation-common";
-import { InstanceKey, InstanceKeyJSON } from "../../../presentation-common/EC";
-import { ECInstancesNodeKeyJSON } from "../../../presentation-common/hierarchy/Key";
-import { NodeJSON } from "../../../presentation-common/hierarchy/Node";
-import { NodePathElementJSON } from "../../../presentation-common/hierarchy/NodePathElement";
+import type { InstanceKey, InstanceKeyJSON } from "../../../presentation-common/EC";
+import type { ECInstancesNodeKeyJSON } from "../../../presentation-common/hierarchy/Key";
+import type { NodeJSON } from "../../../presentation-common/hierarchy/Node";
+import type { NodePathElementJSON } from "../../../presentation-common/hierarchy/NodePathElement";
 import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "./EC";
 import { createRandomLabelDefinition, createRandomLabelDefinitionJSON } from "./LabelDefinition";
 import { createRandomHexColor, createRandomRgbColor, nullable } from "./Misc";

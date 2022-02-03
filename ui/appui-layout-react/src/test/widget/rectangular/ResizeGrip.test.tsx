@@ -5,7 +5,8 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { PointerCaptor, ResizeDirection, ResizeDirectionHelpers, ResizeGrip, ResizeGripResizeArgs } from "../../../appui-layout-react";
+import type { ResizeGripResizeArgs } from "../../../appui-layout-react";
+import { PointerCaptor, ResizeDirection, ResizeDirectionHelpers, ResizeGrip } from "../../../appui-layout-react";
 import { createRect, mount } from "../../Utils";
 
 describe("<ResizeGrip />", () => {

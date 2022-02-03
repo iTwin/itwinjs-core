@@ -11,7 +11,7 @@
 import "./Tooltip.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 import { Popup } from "../popup/Popup";
 import { RelativePosition } from "@itwin/appui-abstract";
 

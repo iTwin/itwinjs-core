@@ -3,16 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { Project as ITwin } from "@itwin/projects-client";
-import { AuthorizationClient } from "@itwin/core-common";
+import type { AccessToken, GuidString} from "@itwin/core-bentley";
+import { Logger, ProcessDetector } from "@itwin/core-bentley";
+import type { Project as ITwin } from "@itwin/projects-client";
+import type { AuthorizationClient } from "@itwin/core-common";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
-import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import type { IModelAppOptions} from "@itwin/core-frontend";
+import { IModelApp, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
+import type { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { getAccessTokenFromBackend } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces } from "../common/RpcInterfaces";
-import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
+import type { ITwinPlatformAbstraction} from "./hub/ITwinPlatformEnv";
+import { ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
 import { setBackendAccessToken } from "../certa/certaCommon";
 
 export class TestUtility {

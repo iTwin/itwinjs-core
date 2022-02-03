@@ -6,16 +6,18 @@
  * @module Tools
  */
 
-import { AxisOrder, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { ColorDef } from "@itwin/core-common";
+import type { Vector3d } from "@itwin/core-geometry";
+import { AxisOrder, Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
+import type { ColorDef } from "@itwin/core-common";
 import { AccuDrawHintBuilder } from "../AccuDraw";
-import { HitDetail } from "../HitDetail";
+import type { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { SelectionSetEvent } from "../SelectionSet";
-import { DecorateContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
-import { BeButton, BeButtonEvent, BeTouchEvent, CoordinateLockOverrides, EventHandled, InputCollector, InputSource, Tool } from "./Tool";
+import type { IModelConnection } from "../IModelConnection";
+import type { SelectionSetEvent } from "../SelectionSet";
+import type { DecorateContext } from "../ViewContext";
+import type { Viewport } from "../Viewport";
+import type { BeButtonEvent, BeTouchEvent, Tool } from "./Tool";
+import { BeButton, CoordinateLockOverrides, EventHandled, InputCollector, InputSource } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 
 /** Classes and methods to create on screen control handles for interactive modification of element(s) and pickable decorations.

@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp } from "@itwin/core-frontend";
-import { UnitSystemKey } from "@itwin/core-quantity";
+import type { UnitSystemKey } from "@itwin/core-quantity";
 import { Presentation } from "@itwin/presentation-frontend";
-import {
-  DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, PropertyDescription,
+import type {
+  DialogButtonDef, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription} from "@itwin/appui-abstract";
+import { DialogButtonType, DialogLayoutDataProvider,
 } from "@itwin/appui-abstract";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 

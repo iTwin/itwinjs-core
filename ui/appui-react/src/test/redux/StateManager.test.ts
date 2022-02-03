@@ -5,9 +5,11 @@
 
 import { expect } from "chai";
 import { UiError } from "@itwin/appui-abstract";
-import { ActionCreatorsObject, ActionsUnion, createAction, FrameworkReducer, ReducerRegistryInstance, SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../../appui-react";
+import type { ActionCreatorsObject, ActionsUnion} from "../../appui-react";
+import { createAction, FrameworkReducer, ReducerRegistryInstance, SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../../appui-react";
 import { StateManager } from "../../appui-react/redux/StateManager";
-import { ConfigurableUiActions, ConfigurableUiReducer, ConfigurableUiState } from "../../appui-react/configurableui/state";
+import type { ConfigurableUiState } from "../../appui-react/configurableui/state";
+import { ConfigurableUiActions, ConfigurableUiReducer } from "../../appui-react/configurableui/state";
 import { SnapMode } from "@itwin/core-frontend";
 
 // Fake state for the host app

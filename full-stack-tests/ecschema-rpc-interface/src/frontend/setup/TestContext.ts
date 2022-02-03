@@ -4,15 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
+import type { AccessToken} from "@itwin/core-bentley";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { NoRenderApp } from "@itwin/core-frontend";
+import type { TestBrowserAuthorizationClientConfiguration, TestUserCredentials} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import {
-  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
+  getAccessTokenFromBackend, TestFrontendAuthorizationClient,
 } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
+import type { OpenAPIInfo } from "@itwin/core-common";
+import { BentleyCloudRpcManager } from "@itwin/core-common";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 

@@ -8,19 +8,22 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import type { GrowableXYZArray} from "@itwin/core-geometry";
+import { ClipUtilities, ConvexClipPlaneSet, Geometry, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import type { SolarShadowSettings} from "@itwin/core-common";
 import {
-  Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, TextureTransparency, ViewFlags,
+  Frustum, FrustumPlanes, RenderMode, RenderTexture, TextureTransparency, ViewFlags,
 } from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
-import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
-import { SceneContext } from "../../ViewContext";
-import { RenderGraphic } from "../RenderGraphic";
-import { RenderMemory } from "../RenderMemory";
-import { BranchStack } from "./BranchStack";
+import type { Tile, TileTreeReference} from "../../tile/internal";
+import { TileDrawArgs, TileVisibility } from "../../tile/internal";
+import type { SceneContext } from "../../ViewContext";
+import type { RenderGraphic } from "../RenderGraphic";
+import type { RenderMemory } from "../RenderMemory";
+import type { BranchStack } from "./BranchStack";
 import { BatchState } from "./BatchState";
 import { EVSMGeometry } from "./CachedGeometry";
-import { WebGLDisposable } from "./Disposable";
+import type { WebGLDisposable } from "./Disposable";
 import { FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
 import { RenderCommands } from "./RenderCommands";
@@ -28,7 +31,7 @@ import { RenderPass, TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { getDrawParams } from "./ScratchDrawParams";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";
 
 type ProcessTiles = (tiles: Tile[]) => void;

@@ -7,8 +7,8 @@
  */
 
 import { useEffect, useState } from "react";
-import { UiSyncEventArgs } from "@itwin/appui-abstract";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { UiSyncEventArgs } from "@itwin/appui-abstract";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { SessionStateActionId } from "../redux/SessionState";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";

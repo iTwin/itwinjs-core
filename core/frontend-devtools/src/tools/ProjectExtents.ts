@@ -7,8 +7,10 @@
  * @module Tools
  */
 
-import { AxisAlignedBox3d, ColorDef, LinePixels } from "@itwin/core-common";
-import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
+import type { AxisAlignedBox3d} from "@itwin/core-common";
+import { ColorDef, LinePixels } from "@itwin/core-common";
+import type { DecorateContext, IModelConnection} from "@itwin/core-frontend";
+import { GraphicType, IModelApp, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** @beta */

@@ -9,12 +9,13 @@
 import "./EnumButtonGroupEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import {
-  ButtonGroupEditorParams, EnumerationChoice, IconDefinition, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord,
-  PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
+import type {
+  ButtonGroupEditorParams, EnumerationChoice, IconDefinition, PropertyEditorParams, PropertyRecord,
+  PropertyValue} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
 import { Icon } from "@itwin/core-react";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 // cspell:ignore buttongroup enumbuttongroup

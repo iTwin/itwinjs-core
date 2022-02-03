@@ -9,14 +9,16 @@
 import "./TextareaEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
+import type {
+  InputEditorSizeParams, MultilineTextEditorParams, PrimitiveValue, PropertyEditorParams, PropertyValue} from "@itwin/appui-abstract";
 import {
-  InputEditorSizeParams, MultilineTextEditorParams, PrimitiveValue, PropertyEditorParams,
-  PropertyEditorParamTypes, PropertyValue, PropertyValueFormat,
+  PropertyEditorParamTypes, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
-import { Textarea, TextareaProps } from "@itwin/itwinui-react";
+import type { TextareaProps } from "@itwin/itwinui-react";
+import { Textarea } from "@itwin/itwinui-react";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
 import { UiComponents } from "../UiComponents";

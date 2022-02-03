@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { MapSubLayerProps } from "@itwin/core-common";
-import { MapLayerImageryProvider } from "@itwin/core-frontend";
+import type { MapSubLayerProps } from "@itwin/core-common";
+import type { MapLayerImageryProvider } from "@itwin/core-frontend";
 
 export interface StyleMapLayerSettings {
   /** Name */

@@ -7,20 +7,26 @@
  */
 
 import produce from "immer";
-import { PointProps } from "@itwin/appui-abstract";
-import { Point, Rectangle, RectangleProps } from "@itwin/core-react";
-import { Cell, CellProps } from "../../utilities/Cell";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { RectangleProps } from "@itwin/core-react";
+import { Point, Rectangle } from "@itwin/core-react";
+import type { CellProps } from "../../utilities/Cell";
+import { Cell } from "../../utilities/Cell";
 import { DisabledResizeHandles } from "../../utilities/DisabledResizeHandles";
-import { HorizontalAnchor, ResizeHandle, VerticalAnchor } from "../../widget/Stacked";
+import type { VerticalAnchor } from "../../widget/Stacked";
+import { HorizontalAnchor, ResizeHandle } from "../../widget/Stacked";
 import { BottomZones, LeftZones, RightZones, TopZones } from "./AdjacentZones";
+import type { ResizeStrategy} from "./ResizeStrategy";
 import {
-  GrowBottom, GrowLeft, GrowRight, GrowTop, ResizeStrategy, ShrinkBottom, ShrinkLeft, ShrinkRight, ShrinkTop, UpdateWindowResizeSettings,
+  GrowBottom, GrowLeft, GrowRight, GrowTop, ShrinkBottom, ShrinkLeft, ShrinkRight, ShrinkTop, UpdateWindowResizeSettings,
 } from "./ResizeStrategy";
+import type { DraggedWidgetManagerProps, ToolSettingsWidgetManagerProps, WidgetManagerProps} from "./Widget";
 import {
-  DraggedWidgetManager, DraggedWidgetManagerProps, getDefaultToolSettingsWidgetManagerProps, getDefaultWidgetHorizontalAnchor,
-  getDefaultWidgetManagerProps, getDefaultWidgetVerticalAnchor, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps,
+  DraggedWidgetManager, getDefaultToolSettingsWidgetManagerProps, getDefaultWidgetHorizontalAnchor,
+  getDefaultWidgetManagerProps, getDefaultWidgetVerticalAnchor, ToolSettingsWidgetMode,
 } from "./Widget";
-import { getDefaultZoneManagerProps, getWindowResizeSettings, ZoneManager, ZoneManagerProps } from "./Zone";
+import type { ZoneManagerProps } from "./Zone";
+import { getDefaultZoneManagerProps, getWindowResizeSettings, ZoneManager } from "./Zone";
 import { setRectangleProps } from "../../base/NineZoneState";
 
 /** Widget zone id.

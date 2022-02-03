@@ -4,14 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { Guid, Id64 } from "@itwin/core-bentley";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { PhysicalElementProps,
+  PrimaryTileTreeId} from "@itwin/core-common";
 import {
-  BatchType, Code, ColorDef, defaultTileOptions, EdgeType, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps,
-  PrimaryTileTreeId, RenderSchedule,
+  BatchType, Code, ColorDef, defaultTileOptions, EdgeType, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, RenderSchedule,
 } from "@itwin/core-common";
+import type { IModelDb} from "../../core-backend";
 import {
-  GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb, SpatialCategory,
+  GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";

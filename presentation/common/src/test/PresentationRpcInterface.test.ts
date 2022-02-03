@@ -5,15 +5,18 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Id64String, using } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@itwin/core-common";
-import {
+import type { Id64String} from "@itwin/core-bentley";
+import { using } from "@itwin/core-bentley";
+import type { IModelRpcProps, RpcSerializedValue } from "@itwin/core-common";
+import { RpcOperation, RpcRegistry, RpcRequest } from "@itwin/core-common";
+import type {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, DisplayLabelRpcRequestOptions,
-  DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, Paged, PresentationRpcInterface,
-  SelectionScopeRpcRequestOptions,
+  DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, Paged,
+  SelectionScopeRpcRequestOptions} from "../presentation-common";
+import { KeySet, PresentationRpcInterface,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
-import {
+import type {
   ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
   SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";

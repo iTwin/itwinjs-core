@@ -6,23 +6,28 @@
  * @module SelectionSet
  */
 
-import { Id64, Id64Arg } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import type { Id64Arg } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { Point3d} from "@itwin/core-geometry";
+import { Point2d, Range2d } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
-import {
-  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
-  SuppressLabelEditorParams,
+import type {
+  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription,
+  SuppressLabelEditorParams} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes,
 } from "@itwin/appui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
-import { HitDetail } from "../HitDetail";
+import type { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { Pixel } from "../render/Pixel";
-import { DecorateContext } from "../ViewContext";
+import type { DecorateContext } from "../ViewContext";
 import { ViewRect } from "../ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool";
+import type { BeTouchEvent} from "./Tool";
+import { BeButton, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import type { ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 
 // cSpell:ignore buttongroup
 

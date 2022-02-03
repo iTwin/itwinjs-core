@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapLayerProps, MapLayerSettings, ServerError } from "@itwin/core-common";
-import { RequestBasicCredentials } from "../../../request/Request";
+import type { MapLayerProps} from "@itwin/core-common";
+import { MapLayerSettings, ServerError } from "@itwin/core-common";
+import type { RequestBasicCredentials } from "../../../request/Request";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";

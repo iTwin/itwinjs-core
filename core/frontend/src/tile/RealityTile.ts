@@ -6,19 +6,24 @@
  * @module Tiles
  */
 
-import { BeTimePoint, dispose } from "@itwin/core-bentley";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Polyface, Transform } from "@itwin/core-geometry";
-import { ColorDef, Frustum } from "@itwin/core-common";
+import type { BeTimePoint} from "@itwin/core-bentley";
+import { dispose } from "@itwin/core-bentley";
+import type { Polyface, Transform } from "@itwin/core-geometry";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d } from "@itwin/core-geometry";
+import type { ColorDef} from "@itwin/core-common";
+import { Frustum } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
-import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderSystem } from "../render/RenderSystem";
-import { ViewingSpace } from "../ViewingSpace";
-import { Viewport } from "../Viewport";
+import type { GraphicBranchOptions } from "../render/GraphicBranch";
+import { GraphicBranch } from "../render/GraphicBranch";
+import type { GraphicBuilder } from "../render/GraphicBuilder";
+import type { RenderGraphic } from "../render/RenderGraphic";
+import type { RenderSystem } from "../render/RenderSystem";
+import type { ViewingSpace } from "../ViewingSpace";
+import type { Viewport } from "../Viewport";
+import type { RealityTileTree, TileContent, TileDrawArgs, TileGeometryCollector, TileGraphicType, TileParams, TileRequest, TileRequestChannel, TileUser, TraversalDetails, TraversalSelectionContext} from "./internal";
 import {
-  RealityTileRegion, RealityTileTree, Tile, TileContent, TileDrawArgs, TileGeometryCollector, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel,
-  TileTreeLoadStatus, TileUser, TraversalDetails, TraversalSelectionContext,
+  RealityTileRegion, Tile, TileLoadStatus,
+  TileTreeLoadStatus,
 } from "./internal";
 
 /** @internal */

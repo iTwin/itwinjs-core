@@ -5,7 +5,7 @@
 
 import * as sinon from "sinon";
 import { MapLayersUI } from "../mapLayers";
-import { ITwinIdArg, PreferenceArg, PreferenceKeyArg, TokenArg } from "@itwin/core-frontend";
+import type { ITwinIdArg, PreferenceArg, PreferenceKeyArg, TokenArg } from "@itwin/core-frontend";
 
 let iModelPrefs: Map<string, any> | undefined;
 let iTwinPrefs: Map<string, any> | undefined;

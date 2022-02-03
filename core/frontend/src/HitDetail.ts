@@ -6,14 +6,17 @@
  * @module LocatingElements
  */
 import { Id64 } from "@itwin/core-bentley";
-import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
-import { GeometryClass, LinePixels } from "@itwin/core-common";
+import type { CurvePrimitive, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
+import { Arc3d, LineSegment3d, LineString3d, Path, Point3d } from "@itwin/core-geometry";
+import type { GeometryClass} from "@itwin/core-common";
+import { LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
+import type { IModelConnection } from "./IModelConnection";
 import { GraphicType } from "./render/GraphicBuilder";
-import { IconSprites, Sprite } from "./Sprites";
-import { DecorateContext } from "./ViewContext";
-import { ScreenViewport } from "./Viewport";
+import type { Sprite } from "./Sprites";
+import { IconSprites } from "./Sprites";
+import type { DecorateContext } from "./ViewContext";
+import type { ScreenViewport } from "./Viewport";
 
 /** @public */
 export enum SnapMode {

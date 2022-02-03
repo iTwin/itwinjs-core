@@ -7,18 +7,18 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { KindOfQuantityProps } from "../Deserialization/JsonProps";
+import type { KindOfQuantityProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
+import type { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
 import { formatStringRgx } from "../utils/FormatEnums";
-import { Format } from "./Format";
-import { InvertedUnit } from "./InvertedUnit";
+import type { Format } from "./Format";
+import type { InvertedUnit } from "./InvertedUnit";
 import { OverrideFormat } from "./OverrideFormat";
-import { Schema } from "./Schema";
+import type { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { Unit } from "./Unit";
+import type { Unit } from "./Unit";
 
 interface OverrideFormatProps {
   name: string;

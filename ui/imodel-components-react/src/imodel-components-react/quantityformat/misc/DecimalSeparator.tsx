@@ -7,9 +7,10 @@
  */
 
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 import { UiIModelComponents } from "../../UiIModelComponents";
-import { Select, SelectOption } from "@itwin/itwinui-react";
+import type { SelectOption } from "@itwin/itwinui-react";
+import { Select } from "@itwin/itwinui-react";
 
 /** Properties of [[DecimalSeparatorSelector]] component.
  * @internal

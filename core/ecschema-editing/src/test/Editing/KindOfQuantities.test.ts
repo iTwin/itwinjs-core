@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  KindOfQuantity, KindOfQuantityProps, SchemaContext, SchemaItemKey, SchemaKey,
+import type {
+  KindOfQuantity, KindOfQuantityProps, SchemaItemKey, SchemaKey} from "@itwin/ecschema-metadata";
+import { SchemaContext,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 

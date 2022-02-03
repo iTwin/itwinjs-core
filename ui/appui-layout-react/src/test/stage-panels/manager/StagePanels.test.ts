@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
+import type { StagePanelManagerProps, StagePanelsManagerProps} from "../../../appui-layout-react";
 import {
-  getDefaultStagePanelManagerProps, getDefaultStagePanelsManagerProps, StagePanelManager, StagePanelManagerProps, StagePanelsManager, StagePanelsManagerProps,
+  getDefaultStagePanelManagerProps, getDefaultStagePanelsManagerProps, StagePanelManager, StagePanelsManager,
   StagePanelType,
 } from "../../../appui-layout-react";
 

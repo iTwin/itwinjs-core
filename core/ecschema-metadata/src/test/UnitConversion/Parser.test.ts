@@ -5,7 +5,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { expect } from "chai";
-import { DefinitionFragment, parseDefinition } from "../../UnitConversion/Parser";
+import type { DefinitionFragment} from "../../UnitConversion/Parser";
+import { parseDefinition } from "../../UnitConversion/Parser";
 
 describe("DefinitionParser tests", () => {
   const definitionsToTest: string[] = [

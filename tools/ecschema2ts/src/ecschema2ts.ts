@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveProperty, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass, StructProperty,
+import type {
+  ECClass, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveProperty, Schema, SchemaItem, StructClass, StructProperty} from "@itwin/ecschema-metadata";
+import { ECClassModifier, PrimitiveType, SchemaItemType,
 } from "@itwin/ecschema-metadata";
 
 interface TsBentleyModule {

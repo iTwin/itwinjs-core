@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SchemaContext, SchemaItemKey, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import type { SchemaItemKey, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Units tests", () => {

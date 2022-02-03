@@ -6,28 +6,28 @@
  * @module Rendering
  */
 
-import { Id64String, IDisposable } from "@itwin/core-bentley";
-import { Point2d, XAndY } from "@itwin/core-geometry";
-import { Frustum, ImageBuffer, SpatialClassifier } from "@itwin/core-common";
-import { HiliteSet } from "../SelectionSet";
-import { SceneContext } from "../ViewContext";
-import { ReadImageBufferArgs, Viewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
-import { IModelConnection } from "../IModelConnection";
-import { CanvasDecoration } from "./CanvasDecoration";
-import { Decorations } from "./Decorations";
-import { FeatureSymbology } from "./FeatureSymbology";
-import { AnimationBranchStates } from "./GraphicBranch";
-import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
-import { Pixel } from "./Pixel";
-import { GraphicList } from "./RenderGraphic";
-import { RenderMemory } from "./RenderMemory";
-import { RenderPlan } from "./RenderPlan";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
-import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
-import { Scene } from "./Scene";
-import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
-import { FrameStatsCollector } from "./FrameStats";
+import type { Id64String, IDisposable } from "@itwin/core-bentley";
+import type { Point2d, XAndY } from "@itwin/core-geometry";
+import type { Frustum, ImageBuffer, SpatialClassifier } from "@itwin/core-common";
+import type { HiliteSet } from "../SelectionSet";
+import type { SceneContext } from "../ViewContext";
+import type { ReadImageBufferArgs, Viewport } from "../Viewport";
+import type { ViewRect } from "../ViewRect";
+import type { IModelConnection } from "../IModelConnection";
+import type { CanvasDecoration } from "./CanvasDecoration";
+import type { Decorations } from "./Decorations";
+import type { FeatureSymbology } from "./FeatureSymbology";
+import type { AnimationBranchStates } from "./GraphicBranch";
+import type { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
+import type { Pixel } from "./Pixel";
+import type { GraphicList } from "./RenderGraphic";
+import type { RenderMemory } from "./RenderMemory";
+import type { RenderPlan } from "./RenderPlan";
+import type { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import type { RenderSystem, RenderTextureDrape } from "./RenderSystem";
+import type { Scene } from "./Scene";
+import type { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
+import type { FrameStatsCollector } from "./FrameStats";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].

@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as sinon from "sinon";
-import { Guid, GuidString } from "@itwin/core-bentley";
+import type { GuidString } from "@itwin/core-bentley";
+import { Guid } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { MapLayerSource, MockRender } from "@itwin/core-frontend";
 

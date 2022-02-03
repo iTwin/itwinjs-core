@@ -9,10 +9,11 @@
 import classnames from "classnames";
 import * as _ from "lodash";
 import * as React from "react";
-import { XAndY } from "@itwin/core-geometry";
+import type { XAndY } from "@itwin/core-geometry";
+import type { MessageBoxValue, ToolAssistanceInstructions, ToolTipOptions} from "@itwin/core-frontend";
 import {
-  ActivityMessageDetails, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, OutputMessageAlert, OutputMessagePriority,
-  OutputMessageType, ToolAssistanceInstructions, ToolTipOptions,
+  ActivityMessageDetails, IModelApp, MessageBoxIconType, MessageBoxType, OutputMessageAlert, OutputMessagePriority,
+  OutputMessageType,
 } from "@itwin/core-frontend";
 import { MessageSeverity, UiEvent } from "@itwin/appui-abstract";
 import { MessageContainer } from "@itwin/core-react";
@@ -23,7 +24,7 @@ import { ElementTooltip } from "../feedback/ElementTooltip";
 import { UiFramework } from "../UiFramework";
 import { MessageSpan } from "./MessageSpan";
 import { PointerMessage } from "./Pointer";
-import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
+import type { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
 import { StatusMessageManager } from "./StatusMessageManager";
 
 class MessageBoxCallbacks {

@@ -7,10 +7,13 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MockRender } from "@itwin/core-frontend";
-import { CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, getFrontstageStateSettingName, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
+import type { FrontstageProps} from "../../appui-react";
+import { CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, FrontstageManager, FrontstageProvider, getFrontstageStateSettingName, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
-import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
-import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, NineZoneState } from "@itwin/appui-layout-react";
+import type { AbstractWidgetProps, UiItemsProvider} from "@itwin/appui-abstract";
+import { StagePanelLocation, StagePanelSection, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
+import type { NineZoneState } from "@itwin/appui-layout-react";
+import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState } from "@itwin/appui-layout-react";
 import { UiStateStorageStatus } from "@itwin/core-react";
 import { ProcessDetector } from "@itwin/core-bentley";
 

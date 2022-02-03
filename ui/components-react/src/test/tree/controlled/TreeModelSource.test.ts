@@ -7,9 +7,10 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent } from "@itwin/core-bentley";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { MutableTreeModel, TreeModelNodeInput } from "../../../components-react/tree/controlled/TreeModel";
-import { TreeModelChanges, TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
-import { ITreeDataProvider, TreeDataChangesListener } from "../../../components-react/tree/TreeDataProvider";
+import type { MutableTreeModel, TreeModelNodeInput } from "../../../components-react/tree/controlled/TreeModel";
+import type { TreeModelChanges} from "../../../components-react/tree/controlled/TreeModelSource";
+import { TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
+import type { ITreeDataProvider, TreeDataChangesListener } from "../../../components-react/tree/TreeDataProvider";
 import TestUtils from "../../TestUtils";
 
 describe("TreeModelSource", () => {

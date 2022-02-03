@@ -5,9 +5,10 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import * as https from "https";
-import { AccessToken, BentleyError, GetMetaDataFunction } from "@itwin/core-bentley";
-import { ProgressCallback } from "./Request";
+import type * as https from "https";
+import type { AccessToken, GetMetaDataFunction } from "@itwin/core-bentley";
+import { BentleyError } from "@itwin/core-bentley";
+import type { ProgressCallback } from "./Request";
 
 /** Interface to cancel a request
   * @beta

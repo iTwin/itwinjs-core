@@ -5,9 +5,10 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { IModelAppOptions, MockRender } from "@itwin/core-frontend";
+import type { IModelAppOptions} from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { ConfigurableUiControlType } from "../../appui-react/configurableui/ConfigurableUiControl";
-import { WidgetProps } from "../../appui-react/widgets/WidgetProps";
+import type { WidgetProps } from "../../appui-react/widgets/WidgetProps";
 import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
 import { AccuDrawWidget, AccuDrawWidgetControl } from "../../appui-react/accudraw/AccuDrawWidget";

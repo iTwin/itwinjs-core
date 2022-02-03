@@ -6,9 +6,9 @@
  * @module PresentationRules
  */
 
-import { Rule } from "./Rule";
-import { RequiredSchemaSpecification } from "./SchemasSpecification";
-import { VariablesGroup } from "./Variables";
+import type { Rule } from "./Rule";
+import type { RequiredSchemaSpecification } from "./SchemasSpecification";
+import type { VariablesGroup } from "./Variables";
 
 /**
  * Presentation ruleset is a list of rules that define tree hierarchy and content provided by

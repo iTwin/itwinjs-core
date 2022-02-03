@@ -8,8 +8,9 @@
 
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { FrameworkRootState } from "../redux/StateManager";
-import { FrameworkVersionId, UiFramework } from "../UiFramework";
+import type { FrameworkRootState } from "../redux/StateManager";
+import type { FrameworkVersionId} from "../UiFramework";
+import { UiFramework } from "../UiFramework";
 
 /** @public */
 export function useFrameworkVersion(): FrameworkVersionId {

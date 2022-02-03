@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ScreenViewport } from "../Viewport";
-import { Decorator } from "../ViewManager";
-import { DecorateContext } from "../ViewContext";
+import type { ScreenViewport } from "../Viewport";
+import type { Decorator } from "../ViewManager";
+import type { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport } from "./openBlankViewport";
 import { Marker } from "../Marker";

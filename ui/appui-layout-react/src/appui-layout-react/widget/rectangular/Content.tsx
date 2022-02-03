@@ -9,8 +9,9 @@
 import "./Content.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "@itwin/core-react";
-import { HorizontalAnchor, HorizontalAnchorHelpers } from "../Stacked";
+import type { CommonProps, NoChildrenProps } from "@itwin/core-react";
+import type { HorizontalAnchor} from "../Stacked";
+import { HorizontalAnchorHelpers } from "../Stacked";
 
 /** Properties of [[WidgetContent]] component.
  * @deprecated

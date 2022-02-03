@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonStatusBarItem, StatusBarItemsChangedArgs, StatusBarItemsManager } from "@itwin/appui-abstract";
+import type { CommonStatusBarItem, StatusBarItemsChangedArgs, StatusBarItemsManager } from "@itwin/appui-abstract";
 
 /** Hook that returns items from [[StatusBarItemsManager]].
  * @public

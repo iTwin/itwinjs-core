@@ -14,7 +14,8 @@ import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabStateContext, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { isHorizontalPanelState } from "../base/NineZoneState";
 import { getCursorClassName } from "./CursorOverlay";
-import { PanelSide, PanelStateContext } from "./Panel";
+import type { PanelSide} from "./Panel";
+import { PanelStateContext } from "./Panel";
 
 /** @internal */
 export const PanelTarget = React.memo(function PanelTarget() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow

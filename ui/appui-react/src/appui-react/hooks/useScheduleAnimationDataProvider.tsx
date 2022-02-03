@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { ScheduleAnimationTimelineDataProvider } from "../timeline/ScheduleAnimationProvider";
-import { ScreenViewport, Viewport } from "@itwin/core-frontend";
+import type { ScreenViewport, Viewport } from "@itwin/core-frontend";
 
 /** @internal */
 // istanbul ignore next

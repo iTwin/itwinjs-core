@@ -8,10 +8,10 @@ import * as sinon from "sinon";
 import { SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { JsonParser } from "../../Deserialization/JsonParser";
-import { ECClass } from "../../Metadata/Class";
-import { RelationshipClass } from "../../Metadata/RelationshipClass";
+import type { ECClass } from "../../Metadata/Class";
+import type { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { Schema } from "../../Metadata/Schema";
-import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
+import type { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
 import { SchemaWalker } from "../../Validation/SchemaWalker";
 
 /* eslint-disable @typescript-eslint/naming-convention */

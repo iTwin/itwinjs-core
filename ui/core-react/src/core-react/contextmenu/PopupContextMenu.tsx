@@ -10,7 +10,7 @@ import * as React from "react";
 import { Popup } from "../popup/Popup";
 import { ContextMenu } from "./ContextMenu";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 import { ContextMenuDirection } from "./ContextMenuDirection";
 
 /** Properties for [[PopupContextMenu]] component

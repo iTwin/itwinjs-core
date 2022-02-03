@@ -6,20 +6,23 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
+import type { GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, BeTimePoint } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
+import type { ElementAlignedBox3d, ElementGeometryChange,
+  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, TileProps} from "@itwin/core-common";
 import {
-  BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, TileProps,
+  BatchType, ContentIdProvider, FeatureAppearanceProvider,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import type { IModelConnection } from "../IModelConnection";
 import { GraphicalEditingScope } from "../GraphicalEditingScope";
-import { RenderSystem } from "../render/RenderSystem";
+import type { RenderSystem } from "../render/RenderSystem";
 import { GraphicBranch } from "../render/GraphicBranch";
+import type { IModelTileParams, TileContent, TileDrawArgs, TileParams, TileRequest,
+  TileRequestChannel, TileTreeParams} from "./internal";
 import {
-  DynamicIModelTile, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
-  TileRequestChannel, TileTree, TileTreeParams,
+  DynamicIModelTile, IModelTile, iModelTileParamsFromJSON, Tile, TileLoadPriority, TileTree,
 } from "./internal";
 
 /** @internal */

@@ -6,8 +6,8 @@
  * @packageDocumentation
  * @module Entities
  */
-import { DbOpcode, Id64String } from "@itwin/core-bentley";
-import { AxisAlignedBox3dProps } from "./geometry/Placement";
+import type { DbOpcode, Id64String } from "@itwin/core-bentley";
+import type { AxisAlignedBox3dProps } from "./geometry/Placement";
 
 // cspell:ignore bboxes
 

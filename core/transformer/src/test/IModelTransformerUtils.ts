@@ -5,21 +5,25 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
-import { Schema } from "@itwin/ecschema-metadata";
-import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { AccessToken, Id64Set, Id64String } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64 } from "@itwin/core-bentley";
+import type { Schema } from "@itwin/ecschema-metadata";
+import type { Transform} from "@itwin/core-geometry";
+import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import type {
+  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, IModelDb, Model, Relationship, RelationshipProps, SpatialLocationModel} from "@itwin/core-backend";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
-  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalSchema,
-  GeometricElement3d, GeometryPart, IModelDb, IModelJsFs, InformationPartitionElement, InformationRecordModel, Model, ModelSelector,
-  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps,
-  RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture,
+  AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement, ElementRefersToElements, ExternalSourceAspect, FunctionalSchema,
+  GeometricElement3d, GeometryPart, IModelJsFs, InformationPartitionElement, InformationRecordModel, ModelSelector,
+  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
+  RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialViewDefinition, SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
+import type { CategorySelectorProps, CodeSpec, ElementAspectProps, ElementProps, FontProps,
+  GeometricElement3dProps, ModelProps, ModelSelectorProps, PhysicalElementProps,
+  SpatialViewDefinitionProps, SubjectProps} from "@itwin/core-common";
 import {
-  Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
-  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, SkyBoxImageType,
-  SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
+  Base64EncodedString, BisCodeSpec, Code, CodeScopeSpec, ColorDef, GeometryStreamIterator, IModel, Placement3d, SkyBoxImageType, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
 

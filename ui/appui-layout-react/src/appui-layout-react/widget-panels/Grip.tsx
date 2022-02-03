@@ -9,12 +9,15 @@
 import "./Grip.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, Rectangle, Timer } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Point, Rectangle, Timer } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
-import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager";
+import type { UseDragPanelGripArgs } from "../base/DragManager";
+import { useDragPanelGrip } from "../base/DragManager";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { isHorizontalPanelSide, PanelStateContext, WidgetPanelContext } from "./Panel";
-import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
+import type { PointerCaptorArgs} from "../base/PointerCaptor";
+import { usePointerCaptor } from "../base/PointerCaptor";
 
 /** Resize grip of [[WidgetPanel]] component.
  * @internal

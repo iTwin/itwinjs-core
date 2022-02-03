@@ -9,8 +9,9 @@
 import * as React from "react";
 import classnames from "classnames";
 import { Input } from "@itwin/itwinui-react";
-import { CommonProps } from "@itwin/core-react";
-import { ParseResults, SpecialKey } from "@itwin/appui-abstract";
+import type { CommonProps } from "@itwin/core-react";
+import type { ParseResults} from "@itwin/appui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
 import "./ParsedInput.scss";
 
 /** Props for [[ParsedInput]] control

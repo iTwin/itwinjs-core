@@ -7,10 +7,13 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Point3d, Range1d, Range2d, Vector3d } from "@itwin/core-geometry";
-import { OctEncodedNormal, QParams2d, QParams3d, QPoint2d, QPoint3d, Quantization } from "@itwin/core-common";
-import { RenderMemory } from "../../RenderMemory";
-import { RealityMeshPrimitive, RealityMeshProps } from "./RealityMeshPrimitive";
+import type { Point3d} from "@itwin/core-geometry";
+import { Range1d, Range2d, Vector3d } from "@itwin/core-geometry";
+import type { QParams3d} from "@itwin/core-common";
+import { OctEncodedNormal, QParams2d, QPoint2d, QPoint3d, Quantization } from "@itwin/core-common";
+import type { RenderMemory } from "../../RenderMemory";
+import type { RealityMeshProps } from "./RealityMeshPrimitive";
+import { RealityMeshPrimitive } from "./RealityMeshPrimitive";
 
 export enum Child { Q00, Q01, Q10, Q11 }
 class UpsampleIndexMap extends Map<number, number> {

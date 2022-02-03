@@ -8,7 +8,8 @@ import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../core-react/settings/SettingsContainer";
-import { SettingsManager, SettingsTabEntry } from "../../core-react/settings/SettingsManager";
+import type { SettingsTabEntry } from "../../core-react/settings/SettingsManager";
+import { SettingsManager } from "../../core-react/settings/SettingsManager";
 import TestUtils from "../TestUtils";
 
 // cSpell:ignore sublabel

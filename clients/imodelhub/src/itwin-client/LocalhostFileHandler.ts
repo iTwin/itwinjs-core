@@ -7,12 +7,13 @@
  */
 
 import * as fs from "fs-extra";
-import * as https from "https";
+import type * as https from "https";
 import * as pathLib from "path";
 import * as url from "url";
-import { AccessToken, Logger } from "@itwin/core-bentley";
-import { ProgressCallback } from "./Request";
-import { FileHandler } from "../itwin-client/FileHandler";
+import type { AccessToken} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
+import type { ProgressCallback } from "./Request";
+import type { FileHandler } from "../itwin-client/FileHandler";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.FileHandlers;

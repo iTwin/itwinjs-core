@@ -6,15 +6,16 @@
  * @module Tiles
  */
 
-import { BeDuration, BeTimePoint, dispose, Id64String } from "@itwin/core-bentley";
-import { Matrix4d, Range3d, Transform } from "@itwin/core-geometry";
-import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@itwin/core-common";
+import type { BeDuration, Id64String } from "@itwin/core-bentley";
+import { BeTimePoint, dispose } from "@itwin/core-bentley";
+import type { Matrix4d, Range3d, Transform } from "@itwin/core-geometry";
+import type { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@itwin/core-common";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { RenderClipVolume } from "../render/RenderClipVolume";
-import { RenderMemory } from "../render/RenderMemory";
-import { Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal";
+import type { IModelConnection } from "../IModelConnection";
+import type { RenderClipVolume } from "../render/RenderClipVolume";
+import type { RenderMemory } from "../render/RenderMemory";
+import type { Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal";
 
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
  * @see [[TileTreeOwner]].

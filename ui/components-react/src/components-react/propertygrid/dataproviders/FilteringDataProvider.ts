@@ -6,12 +6,14 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
-import { IDisposable } from "@itwin/core-bentley";
-import { HighlightInfo } from "../../common/HighlightingComponentProps";
-import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory";
-import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "../PropertyDataProvider";
-import { FilteredType, IPropertyDataFilterer, PropertyDataFilterResult } from "./filterers/PropertyDataFiltererBase";
+import type { PropertyRecord, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { IDisposable } from "@itwin/core-bentley";
+import type { HighlightInfo } from "../../common/HighlightingComponentProps";
+import type { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory";
+import type { IPropertyDataProvider, PropertyCategory, PropertyData} from "../PropertyDataProvider";
+import { PropertyDataChangeEvent } from "../PropertyDataProvider";
+import type { FilteredType, IPropertyDataFilterer, PropertyDataFilterResult } from "./filterers/PropertyDataFiltererBase";
 
 interface FilteredRecords {
   filteredRecords: PropertyRecord[];

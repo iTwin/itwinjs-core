@@ -6,7 +6,8 @@
  * @module UiStateStorage
  */
 
-import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "./UiStateStorage";
+import type { UiStateStorage, UiStateStorageResult} from "./UiStateStorage";
+import { UiStateStorageStatus } from "./UiStateStorage";
 
 // All of the Settings APIs that are available in core-react should be fully deprecated. However, some of the usage and implementation
 // of it from AppUI will continue to be supported there.

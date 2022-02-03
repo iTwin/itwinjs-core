@@ -3,12 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ByteStream, GuidString, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
+import type { GuidString, Id64String} from "@itwin/core-bentley";
+import { ByteStream, Logger, StopWatch } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
+import type { TileMetadata, TileProps} from "@itwin/core-common";
 import {
-  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, EdgeType, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
+  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, EdgeType, iModelTileTreeIdToString, TileMetadataReader,
 } from "@itwin/core-common";
-import { IModelDb, SpatialModel } from "@itwin/core-backend";
+import type { IModelDb} from "@itwin/core-backend";
+import { SpatialModel } from "@itwin/core-backend";
 import { ConcurrencyQueue } from "./ConcurrencyQueue";
 
 interface TileTreeInfo {

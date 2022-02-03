@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RequestQueryOptions } from "../itwin-client/Request";
+import type { RequestQueryOptions } from "../itwin-client/Request";
 
 /**
  * Context for holding chunked query data.

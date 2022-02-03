@@ -6,28 +6,28 @@
  * @module RpcInterface
  */
 
-import { GuidString, Id64String } from "@itwin/core-bentley";
-import { Range3dProps } from "@itwin/core-geometry";
-import { CodeProps } from "../Code";
-import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "../ConcurrentQuery";
-import { ElementLoadOptions, ElementProps } from "../ElementProps";
-import { EntityQueryParams } from "../EntityProps";
-import { FontMapProps } from "../Fonts";
-import {
+import type { GuidString, Id64String } from "@itwin/core-bentley";
+import type { Range3dProps } from "@itwin/core-geometry";
+import type { CodeProps } from "../Code";
+import type { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "../ConcurrentQuery";
+import type { ElementLoadOptions, ElementProps } from "../ElementProps";
+import type { EntityQueryParams } from "../EntityProps";
+import type { FontMapProps } from "../Fonts";
+import type {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
 } from "../GeoCoordinateServices";
-import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
-import { GeometrySummaryRequestProps } from "../GeometrySummary";
-import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps } from "../IModel";
-import { MassPropertiesRequestProps, MassPropertiesResponseProps } from "../MassProperties";
-import { ModelProps } from "../ModelProps";
+import type { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
+import type { GeometrySummaryRequestProps } from "../GeometrySummary";
+import type { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps } from "../IModel";
+import type { MassPropertiesRequestProps, MassPropertiesResponseProps } from "../MassProperties";
+import type { ModelProps } from "../ModelProps";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { SnapRequestProps, SnapResponseProps } from "../Snapping";
-import { TextureData, TextureLoadProps } from "../TextureProps";
-import { ViewStateLoadProps, ViewStateProps } from "../ViewProps";
+import type { SnapRequestProps, SnapResponseProps } from "../Snapping";
+import type { TextureData, TextureLoadProps } from "../TextureProps";
+import type { ViewStateLoadProps, ViewStateProps } from "../ViewProps";
 import { RpcNotFoundResponse } from "./core/RpcControl";
-import { RpcRoutingToken } from "./core/RpcRoutingToken";
+import type { RpcRoutingToken } from "./core/RpcRoutingToken";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)

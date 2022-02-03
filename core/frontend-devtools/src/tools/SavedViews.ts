@@ -8,9 +8,10 @@
  */
 
 import { BentleyError } from "@itwin/core-bentley";
-import { ViewStateProps } from "@itwin/core-common";
-import {
-  EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, ViewState,
+import type { ViewStateProps } from "@itwin/core-common";
+import type {
+  EntityState, IModelConnection, ViewState} from "@itwin/core-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool,
 } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";

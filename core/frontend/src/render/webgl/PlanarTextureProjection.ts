@@ -7,17 +7,18 @@
  * @module Rendering
  */
 
+import type { GrowableXYZArray, Range1d} from "@itwin/core-geometry";
 import {
-  ClipUtilities, ConvexClipPlaneSet, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range1d, Range2d, Range3d,
+  ClipUtilities, ConvexClipPlaneSet, Map4d, Matrix3d, Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range2d, Range3d,
   Ray3d, Transform,
 } from "@itwin/core-geometry";
 import { Frustum, FrustumPlanes, Npc, RenderMode } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { SceneContext } from "../../ViewContext";
-import { Tile, TileTreeReference } from "../../tile/internal";
-import { ViewState3d } from "../../ViewState";
+import type { SceneContext } from "../../ViewContext";
+import type { Tile, TileTreeReference } from "../../tile/internal";
+import type { ViewState3d } from "../../ViewState";
 import { RenderState } from "./RenderState";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 
 const scratchRange = Range3d.createNull();
 export class PlanarTextureProjection {

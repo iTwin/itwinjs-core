@@ -6,7 +6,7 @@
  * @module AccuDraw
  */
 
-import { KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
+import type { KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
 import { AccuDrawCommandItems } from "./AccuDrawCommandItems";
 import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
 

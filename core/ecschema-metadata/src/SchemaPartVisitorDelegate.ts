@@ -4,25 +4,28 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaItemType } from "./ECObjects";
-import { AnyClass, AnyECType } from "./Interfaces";
-import { ECClass, StructClass } from "./Metadata/Class";
-import { Constant } from "./Metadata/Constant";
-import { CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
-import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
-import { EntityClass } from "./Metadata/EntityClass";
-import { Enumeration } from "./Metadata/Enumeration";
-import { Format } from "./Metadata/Format";
-import { InvertedUnit } from "./Metadata/InvertedUnit";
-import { KindOfQuantity } from "./Metadata/KindOfQuantity";
-import { Mixin } from "./Metadata/Mixin";
-import { Phenomenon } from "./Metadata/Phenomenon";
-import { AnyProperty, Property } from "./Metadata/Property";
-import { PropertyCategory } from "./Metadata/PropertyCategory";
-import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
-import { Schema } from "./Metadata/Schema";
+import type { AnyClass, AnyECType } from "./Interfaces";
+import type { StructClass } from "./Metadata/Class";
+import { ECClass } from "./Metadata/Class";
+import type { Constant } from "./Metadata/Constant";
+import type { CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
+import type { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
+import type { EntityClass } from "./Metadata/EntityClass";
+import type { Enumeration } from "./Metadata/Enumeration";
+import type { Format } from "./Metadata/Format";
+import type { InvertedUnit } from "./Metadata/InvertedUnit";
+import type { KindOfQuantity } from "./Metadata/KindOfQuantity";
+import type { Mixin } from "./Metadata/Mixin";
+import type { Phenomenon } from "./Metadata/Phenomenon";
+import type { AnyProperty} from "./Metadata/Property";
+import { Property } from "./Metadata/Property";
+import type { PropertyCategory } from "./Metadata/PropertyCategory";
+import type { RelationshipClass} from "./Metadata/RelationshipClass";
+import { RelationshipConstraint } from "./Metadata/RelationshipClass";
+import type { Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
-import { Unit } from "./Metadata/Unit";
-import { UnitSystem } from "./Metadata/UnitSystem";
+import type { Unit } from "./Metadata/Unit";
+import type { UnitSystem } from "./Metadata/UnitSystem";
 
 /**
  * Interface to allow schema traversal/deserialization workflows to visit

@@ -9,12 +9,15 @@
 import "./SheetsModalFrontstage.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { UiEvent } from "@itwin/appui-abstract";
-import { CommonProps, FlexWrapContainer, ScrollView, SearchBox, UiCore } from "@itwin/core-react";
-import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import type { CommonProps} from "@itwin/core-react";
+import { FlexWrapContainer, ScrollView, SearchBox, UiCore } from "@itwin/core-react";
+import type { ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
-import { SheetData } from "./SheetNavigationAid";
+import type { SheetData } from "./SheetNavigationAid";
 
 /** Data about a sheet card
  * @alpha

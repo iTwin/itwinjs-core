@@ -10,11 +10,13 @@ import * as sinon from "sinon";
 import { WidgetState } from "@itwin/appui-abstract";
 import { Rectangle } from "@itwin/core-react";
 import { getDefaultZoneManagerProps, ResizeHandle, ToolSettings } from "@itwin/appui-layout-react";
-import {
-  ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider,
-  ToolSettingsZone, ToolSettingsZoneProps, ToolUiProvider, Widget, Zone,
+import type {
+  ConfigurableCreateInfo, FrontstageProps, ToolSettingsZoneProps} from "../../../appui-react";
+import { ConfigurableUiManager, CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProvider,
+  ToolSettingsZone, ToolUiProvider, Widget, Zone,
 } from "../../../appui-react";
-import TestUtils, { mount, ReactWrapper } from "../../TestUtils";
+import type { ReactWrapper } from "../../TestUtils";
+import TestUtils, { mount } from "../../TestUtils";
 import { Tool1 } from "../../tools/Tool1";
 
 describe("ToolSettingsZone", () => {

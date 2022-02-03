@@ -5,14 +5,17 @@
 
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
+import type {
+  TileMetadata, TileProps, TileTreeMetadata} from "@itwin/core-common";
 import {
   BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, EdgeType, ImdlHeader, iModelTileTreeIdToString,
-  TileMetadata, TileProps, TileTreeMetadata,
 } from "@itwin/core-common";
+import type { IModelConnection, IModelTile, IModelTileTree, Tile} from "@itwin/core-frontend";
 import {
-  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
+  GeometricModelState, IModelApp, SnapshotConnection, TileTreeLoadStatus,
 } from "@itwin/core-frontend";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import type { Range3dProps } from "@itwin/core-geometry";
+import { Range3d } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 import { fakeViewState } from "./TileIO.test";
 

@@ -5,12 +5,15 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { AuthorizationClient, InternetConnectivityStatus } from "@itwin/core-common";
-import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
+import type { AccessToken} from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
+import type { AuthorizationClient} from "@itwin/core-common";
+import { InternetConnectivityStatus } from "@itwin/core-common";
+import type { UserPreferencesAccess } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
-import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
-import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
+import type { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
+import type { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import {
   BrowserLocalFavoritePropertiesStorage, createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes,
   DEPRECATED_PROPERTIES_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, FAVORITE_PROPERTIES_SETTING_NAME,

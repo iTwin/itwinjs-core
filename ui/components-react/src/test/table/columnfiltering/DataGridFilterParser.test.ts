@@ -7,15 +7,19 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
+import type { FieldFilterData, MultiValueFilterData, NumericExactMatchData, NumericFilterData, NumericGreaterThanData, NumericLessThanData, NumericRangeData, ReactDataGridFilter} from "../../../components-react/table/columnfiltering/DataGridFilterParser";
 import {
-  DataGridFilterParser, FieldFilterData, FILTER_PARSER_TIMER_TIMEOUT, MultiValueFilterData, NumericExactMatchData, NumericFilterData,
-  NumericFilterType, NumericGreaterThanData, NumericLessThanData, NumericRangeData, ReactDataGridFilter,
+  DataGridFilterParser, FILTER_PARSER_TIMER_TIMEOUT,
+  NumericFilterType,
 } from "../../../components-react/table/columnfiltering/DataGridFilterParser";
-import { ReactDataGridColumn, TableColumn } from "../../../components-react/table/component/TableColumn";
+import type { ReactDataGridColumn} from "../../../components-react/table/component/TableColumn";
+import { TableColumn } from "../../../components-react/table/component/TableColumn";
 import { SimpleTableDataProvider } from "../../../components-react/table/SimpleTableDataProvider";
-import { ColumnDescription, FilterRenderer, RowItem } from "../../../components-react/table/TableDataProvider";
+import type { ColumnDescription, RowItem } from "../../../components-react/table/TableDataProvider";
+import { FilterRenderer } from "../../../components-react/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
-import { FilterCompositionLogicalOperator, FilterOperator, TableDistinctValue } from "../../../components-react/table/columnfiltering/ColumnFiltering";
+import type { TableDistinctValue } from "../../../components-react/table/columnfiltering/ColumnFiltering";
+import { FilterCompositionLogicalOperator, FilterOperator } from "../../../components-react/table/columnfiltering/ColumnFiltering";
 
 const columns: ColumnDescription[] = [
   {

@@ -9,22 +9,24 @@
 
 import * as React from "react";
 import { WidgetState } from "@itwin/appui-abstract";
-import { CommonProps, RectangleProps } from "@itwin/core-react";
-import {
-  DisabledResizeHandles, DraggedWidgetManagerProps, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps, WidgetZoneId,
-  ZoneManagerProps, ZoneTargetType,
+import type { CommonProps, RectangleProps } from "@itwin/core-react";
+import type {
+  DisabledResizeHandles, DraggedWidgetManagerProps, ToolSettingsWidgetManagerProps, WidgetManagerProps, WidgetZoneId,
+  ZoneManagerProps, ZoneTargetType} from "@itwin/appui-layout-react";
+import { ToolSettingsWidgetMode,
 } from "@itwin/appui-layout-react";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { TargetChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import type { TargetChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { WidgetDef, WidgetStateChangedEventArgs, WidgetType } from "../widgets/WidgetDef";
-import { WidgetProps } from "../widgets/WidgetProps";
-import { WidgetTabs } from "../widgets/WidgetStack";
+import type { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
+import type { WidgetStateChangedEventArgs} from "../widgets/WidgetDef";
+import { WidgetDef, WidgetType } from "../widgets/WidgetDef";
+import type { WidgetProps } from "../widgets/WidgetProps";
+import type { WidgetTabs } from "../widgets/WidgetStack";
 import { FrameworkZone } from "./FrameworkZone";
 import { StatusBarZone } from "./StatusBarZone";
 import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
-import { ZoneDef, ZoneState } from "./ZoneDef";
+import type { ZoneDef, ZoneState } from "./ZoneDef";
 
 /** Enum for [[Zone]] Location.
  * @public @deprecated

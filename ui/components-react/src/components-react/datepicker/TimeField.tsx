@@ -8,7 +8,8 @@
 
 import * as React from "react";
 import { Input } from "@itwin/itwinui-react";
-import { SpecialKey, TimeDisplay } from "@itwin/appui-abstract";
+import type { TimeDisplay } from "@itwin/appui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { UiComponents } from "../UiComponents";
 import "./TimeField.scss";
 

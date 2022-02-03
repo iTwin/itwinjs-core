@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
+import type {
   ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, RelationshipClassProps,
   SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitProps, UnitSystemProps,
 } from "../Deserialization/JsonProps";
-import { CustomAttribute } from "../Metadata/CustomAttribute";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
+import type { CustomAttribute } from "../Metadata/CustomAttribute";
+import type { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 
 type SchemaItemTuple<T> = Readonly<[string /** Name */, string /** SchemaItemType */, Readonly<T>]>;
 type PropertyTuple<T> = Readonly<[string /** Name */, string /** Property */, Readonly<T>]>;

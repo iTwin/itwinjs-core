@@ -9,12 +9,12 @@
 import * as React from "react";
 import { v4 } from "uuid";
 import { Rectangle, useRefs, useResizeObserver } from "@itwin/core-react";
-import { CursorType } from "../widget-panels/CursorOverlay";
-import { PanelSide } from "../widget-panels/Panel";
+import type { CursorType } from "../widget-panels/CursorOverlay";
+import type { PanelSide } from "../widget-panels/Panel";
 import { WidgetContentManager } from "../widget/ContentManager";
-import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
+import type { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdContext, DragProvider } from "./DragManager";
-import {
+import type {
   DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
 } from "./NineZoneState";
 import { assert } from "@itwin/core-bentley";

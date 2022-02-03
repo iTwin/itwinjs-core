@@ -8,15 +8,15 @@
 
 import { URL } from "url";
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
+import type { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcOperation } from "../core/RpcOperation";
-import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
-import { RpcRequest } from "../core/RpcRequest";
-import { OpenAPIParameter } from "./OpenAPI";
+import type { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
+import type { RpcRequest } from "../core/RpcRequest";
+import type { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import { SerializedRpcActivity } from "../core/RpcInvocation";
+import type { SerializedRpcActivity } from "../core/RpcInvocation";
 
 enum AppMode {
   MilestoneReview = "1",

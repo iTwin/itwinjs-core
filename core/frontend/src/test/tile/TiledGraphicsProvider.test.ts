@@ -5,12 +5,14 @@
 import { expect } from "chai";
 import { BeDuration, BeEvent } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { SpatialViewState } from "../../SpatialViewState";
-import { ScreenViewport, Viewport } from "../../Viewport";
+import type { Viewport } from "../../Viewport";
+import { ScreenViewport } from "../../Viewport";
 import { IModelApp } from "../../IModelApp";
+import type { TileContent, TiledGraphicsProvider, TileRequest, TileTreeOwner, TileTreeSupplier} from "../../tile/internal";
 import {
-  Tile, TileContent, TiledGraphicsProvider, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  Tile, TileLoadPriority, TileTree, TileTreeReference,
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
 

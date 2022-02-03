@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, DialogRow,
-  PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, StandardEditorNames,
-  StandardTypeNames, SuppressLabelEditorParams, UiLayoutDataProvider,
+import type {
+  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertyItem, DialogPropertySyncItem, DialogRow,
+  PrimitiveValue, PropertyDescription, SuppressLabelEditorParams} from "../../appui-abstract";
+import { DialogLayoutDataProvider, PropertyEditorParamTypes, StandardEditorNames,
+  StandardTypeNames, UiLayoutDataProvider,
 } from "../../appui-abstract";
 
 const value1: DialogItemValue = { value: 3 };

@@ -6,10 +6,11 @@
  * @module Elements
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
+import type { Id64String } from "@itwin/core-bentley";
+import type { CodeScopeProps, CodeSpec, DefinitionElementProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
+import { BisCodeSpec, Code } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
-import { IModelDb } from "./IModelDb";
+import type { IModelDb } from "./IModelDb";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

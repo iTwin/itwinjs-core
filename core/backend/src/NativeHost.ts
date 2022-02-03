@@ -7,15 +7,18 @@
  */
 
 import { join } from "path";
-import { AccessToken, assert, BeEvent, GuidString } from "@itwin/core-bentley";
-import {
-  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
-  OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+import type { AccessToken, GuidString } from "@itwin/core-bentley";
+import { assert, BeEvent } from "@itwin/core-bentley";
+import type {
+  BriefcaseProps, LocalBriefcaseProps, NativeAppFunctions, NativeAppNotifications,
+  OverriddenBy, RequestNewBriefcaseProps, StorageValue} from "@itwin/core-common";
+import { InternetConnectivityStatus, nativeAppChannel, nativeAppNotify,
 } from "@itwin/core-common";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
-import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
+import type { IpcHostOpts } from "./IpcHost";
+import { IpcHandler, IpcHost } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 /**

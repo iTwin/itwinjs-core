@@ -6,11 +6,12 @@
  * @module Rendering
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
-import { GeometryClass } from "@itwin/core-common";
-import { ViewRect } from "../ViewRect";
-import { Viewport } from "../Viewport";
-import { IModelConnection } from "../IModelConnection";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import type { GeometryClass } from "@itwin/core-common";
+import type { ViewRect } from "../ViewRect";
+import type { Viewport } from "../Viewport";
+import type { IModelConnection } from "../IModelConnection";
 import { Pixel } from "./Pixel";
 
 /** Represents a [Feature]($common) determined to be visible within a [[Viewport]].

@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { Icon } from "../icons/IconComponent";
-import { CommonDivProps } from "../utils/Props";
+import type { CommonDivProps } from "../utils/Props";
 
 /** Properties for the [[Tile]] component
  * @beta

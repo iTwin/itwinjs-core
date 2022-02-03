@@ -7,12 +7,14 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
-import {
-  ChangedEntities, ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid,
-  RemoveFunction, RootSubjectProps, TxnNotifications,
+import type { Range3dProps, XYZProps } from "@itwin/core-geometry";
+import { Point3d, Range3d } from "@itwin/core-geometry";
+import type {
+  ChangedEntities, ChangesetIndexAndId, EcefLocationProps, GeographicCRSProps, IModelStatus, ModelIdAndGeometryGuid,
+  RemoveFunction, RootSubjectProps, TxnNotifications} from "@itwin/core-common";
+import { EcefLocation, GeographicCRS, IpcAppChannel,
 } from "@itwin/core-common";
-import { BriefcaseConnection } from "./BriefcaseConnection";
+import type { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
 
 /**

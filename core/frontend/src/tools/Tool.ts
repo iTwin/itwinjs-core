@@ -6,16 +6,20 @@
  * @module Tools
  */
 
-import { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
+import type { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { assert } from "@itwin/core-bentley";
-import { GeometryStreamProps, IModelError } from "@itwin/core-common";
-import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
-import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
-import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
-import { HitDetail } from "../HitDetail";
+import type { GeometryStreamProps} from "@itwin/core-common";
+import { IModelError } from "@itwin/core-common";
+import type { XAndY } from "@itwin/core-geometry";
+import { Point2d, Point3d, PolygonOps } from "@itwin/core-geometry";
+import type { LocateResponse } from "../ElementLocateManager";
+import { LocateFilterStatus } from "../ElementLocateManager";
+import type { FuzzySearchResults } from "../FuzzySearch";
+import { FuzzySearch } from "../FuzzySearch";
+import type { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { ScreenViewport } from "../Viewport";
+import type { DecorateContext, DynamicsContext } from "../ViewContext";
+import type { ScreenViewport } from "../Viewport";
 
 /** @public */
 export type ToolType = typeof Tool;

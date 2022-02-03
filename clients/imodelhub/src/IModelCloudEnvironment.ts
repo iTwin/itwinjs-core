@@ -6,10 +6,10 @@
  * @module iModelHubClient
  */
 
-import { AccessToken } from "@itwin/core-bentley";
-import { Project as ITwin } from "@itwin/projects-client";
-import { AuthorizationClient } from "@itwin/core-common";
-import { IModelClient } from "./IModelClient";
+import type { AccessToken } from "@itwin/core-bentley";
+import type { Project as ITwin } from "@itwin/projects-client";
+import type { AuthorizationClient } from "@itwin/core-common";
+import type { IModelClient } from "./IModelClient";
 
 /** How to discover iTwins
  * @internal

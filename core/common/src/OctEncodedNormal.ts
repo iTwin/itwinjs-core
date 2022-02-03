@@ -6,7 +6,8 @@
  * @module Rendering
  */
 
-import { Vector3d, XYAndZ } from "@itwin/core-geometry";
+import type { XYAndZ } from "@itwin/core-geometry";
+import { Vector3d } from "@itwin/core-geometry";
 
 const scratchUInt16 = new Uint16Array(1);
 

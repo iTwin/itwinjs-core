@@ -6,8 +6,10 @@
  * @module OIDC
  */
 
-import { AccessToken, assert, AuthStatus } from "@itwin/core-bentley";
-import { AuthorizationClient, IModelError } from "@itwin/core-common";
+import type { AccessToken} from "@itwin/core-bentley";
+import { assert, AuthStatus } from "@itwin/core-bentley";
+import type { AuthorizationClient} from "@itwin/core-common";
+import { IModelError } from "@itwin/core-common";
 import { MobileHost } from "./MobileHost";
 
 /**

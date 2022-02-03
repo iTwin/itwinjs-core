@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
-import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
+import type { MultiSchemaClassesSpecification } from "../ClassSpecifications";
+import type { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 
 /**
  * Creates content for ECInstance(s) of specified classes.

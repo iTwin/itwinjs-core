@@ -6,9 +6,10 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
-import {
-  BackstageActionItem, BackstageComposerActionItem, BackstageComposerItem, BackstageComposerStageLauncher, BackstageItemType, BackstageManager,
-  BackstageStageLauncher, FrontstageManager, UiFramework,
+import type {
+  BackstageActionItem,
+  BackstageStageLauncher} from "../../appui-react";
+import { BackstageComposerActionItem, BackstageComposerItem, BackstageComposerStageLauncher, BackstageItemType, BackstageManager, FrontstageManager, UiFramework,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { BadgeType } from "@itwin/appui-abstract";

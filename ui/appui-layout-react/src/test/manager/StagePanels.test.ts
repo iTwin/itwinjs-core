@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
+import type { NineZoneStagePanelManagerProps, NineZoneStagePanelsManagerProps} from "../../appui-layout-react";
 import {
-  getDefaultNineZoneStagePanelManagerProps, getDefaultNineZoneStagePanelsManagerProps, NineZoneStagePanelManager, NineZoneStagePanelManagerProps,
-  NineZoneStagePanelsManager, NineZoneStagePanelsManagerProps, StagePanelType,
+  getDefaultNineZoneStagePanelManagerProps, getDefaultNineZoneStagePanelsManagerProps, NineZoneStagePanelManager,
+  NineZoneStagePanelsManager, StagePanelType,
 } from "../../appui-layout-react";
 
 describe("NineZoneStagePanelsManager", () => {

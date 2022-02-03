@@ -7,7 +7,8 @@
  */
 
 import { Transform } from "@itwin/core-geometry";
-import { Box, extend, G, Element as MarkupElement, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
+import type { Svg} from "@svgdotjs/svg.js";
+import { Box, extend, G, Element as MarkupElement, Matrix, nodeOrNew, Rect, register, Text } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 
 // cspell:ignore lmultiply matrixify dmove

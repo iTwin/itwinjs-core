@@ -10,10 +10,12 @@ import "./FilteringInput.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Key } from "ts-key-enum";
-import { CommonProps, UiCore } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { UiCore } from "@itwin/core-react";
 import { Input } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
-import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
+import type { ResultSelectorProps } from "./ResultSelector";
+import { ResultSelector } from "./ResultSelector";
 
 /** [[FilteringInput]] React Component state
  * @internal

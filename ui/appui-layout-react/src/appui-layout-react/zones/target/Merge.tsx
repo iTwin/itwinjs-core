@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 import { Arrow } from "./Arrow";
 import { ZoneTarget } from "./Zone";
 

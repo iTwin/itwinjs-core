@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import type { IndexedPolyface} from "@itwin/core-geometry";
+import { LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
-import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
-import { StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
+import type { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
+import type { StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
 
 function pointIsInArray(pt: Point3d, arr: Point3d[]): boolean {
   for (const arrPt of arr) {

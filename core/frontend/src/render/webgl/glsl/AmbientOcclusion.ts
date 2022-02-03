@@ -8,11 +8,11 @@
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
-import { AmbientOcclusionGeometry } from "../CachedGeometry";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
+import type { AmbientOcclusionGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
+import type { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
 import { Texture2DHandle } from "../Texture";
 import { addFrustum } from "./Common";

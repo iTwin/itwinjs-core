@@ -5,14 +5,16 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyCategory } from "../../PropertyDataProvider";
+import type { PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { PropertyCategory } from "../../PropertyDataProvider";
 import { MutableCategorizedArrayProperty } from "./MutableCategorizedArrayProperty";
 import { MutableCategorizedPrimitiveProperty } from "./MutableCategorizedPrimitiveProperty";
 import { MutableCategorizedStructProperty } from "./MutableCategorizedStructProperty";
 import { MutableCustomGridCategory } from "./MutableCustomGridCategory";
-import { IMutableCategorizedPropertyItem, IMutableGridCategoryItem } from "./MutableFlatGridItem";
-import { CategoryRecordsDict, MutableGridCategory } from "./MutableGridCategory";
+import type { IMutableCategorizedPropertyItem, IMutableGridCategoryItem } from "./MutableFlatGridItem";
+import type { CategoryRecordsDict} from "./MutableGridCategory";
+import { MutableGridCategory } from "./MutableGridCategory";
 
 /**
  * IMutableGridItemFactory interface for creating MutableGridItem objects

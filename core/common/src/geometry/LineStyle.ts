@@ -6,8 +6,9 @@
  * @module Symbology
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import type { Id64String } from "@itwin/core-bentley";
+import type { Transform, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
+import { Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 /** @public */
 export namespace LineStyle {

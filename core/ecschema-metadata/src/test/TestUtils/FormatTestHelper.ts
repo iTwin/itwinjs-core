@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ISchemaLocater, SchemaContext } from "../../Context";
-import { SchemaMatchType } from "../../ECObjects";
+import type { ISchemaLocater, SchemaContext } from "../../Context";
+import type { SchemaMatchType } from "../../ECObjects";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaKey } from "../../SchemaKey";
 

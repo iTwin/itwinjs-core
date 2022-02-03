@@ -6,8 +6,9 @@
  * @module Rendering
  */
 
-import { FeatureIndex, QParams3d } from "@itwin/core-common";
-import { Mesh } from "./mesh/MeshPrimitives";
+import type { QParams3d } from "@itwin/core-common";
+import { FeatureIndex } from "@itwin/core-common";
+import type { Mesh } from "./mesh/MeshPrimitives";
 
 /** @internal */
 export class PointCloudArgs {

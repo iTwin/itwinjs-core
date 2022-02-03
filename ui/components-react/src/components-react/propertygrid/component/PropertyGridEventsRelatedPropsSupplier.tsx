@@ -8,11 +8,12 @@
  */
 import "./PropertyGrid.scss";
 import * as React from "react";
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyCategory } from "../PropertyDataProvider";
-import { CommonPropertyGridProps } from "./PropertyGridCommons";
-import { PropertyListProps } from "./PropertyList";
+import type { PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import type { PropertyCategory } from "../PropertyDataProvider";
+import type { CommonPropertyGridProps } from "./PropertyGridCommons";
+import type { PropertyListProps } from "./PropertyList";
 
 /** @internal */
 export type PropertyGridEventsRelatedProps = Pick<PropertyListProps, "onPropertyClicked" | "onPropertyRightClicked" |

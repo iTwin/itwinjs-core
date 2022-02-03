@@ -2,10 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, OpenMode } from "@itwin/core-bentley";
+import type { AccessToken} from "@itwin/core-bentley";
+import { OpenMode } from "@itwin/core-bentley";
 import { BriefcaseDb } from "@itwin/core-backend";
-import { IModelError, IModelStatus, OpenBriefcaseProps } from "@itwin/core-common";
-import { TestUserCredentials, TestUtility } from "@itwin/oidc-signin-tool";
+import type { OpenBriefcaseProps } from "@itwin/core-common";
+import { IModelError, IModelStatus } from "@itwin/core-common";
+import type { TestUserCredentials} from "@itwin/oidc-signin-tool";
+import { TestUtility } from "@itwin/oidc-signin-tool";
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 

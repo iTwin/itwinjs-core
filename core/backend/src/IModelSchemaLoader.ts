@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelStatus } from "@itwin/core-bentley";
-import { ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import type { ISchemaLocater} from "@itwin/ecschema-metadata";
+import { ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { IModelError } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { IModelDb } from "./IModelDb";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
+import type { IModelDb } from "./IModelDb";
 
 /**
  * A utility class for retrieving EC Schema objects from an iModel. Loaded schemas are held in memory within

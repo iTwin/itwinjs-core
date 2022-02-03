@@ -11,9 +11,10 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BadgeType, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import { HorizontalAnchor, Tab as NZ_Tab, Stacked as NZ_WidgetStack, ResizeHandle, TabMode, VerticalAnchor } from "@itwin/appui-layout-react";
-import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, CoreTools, Frontstage, FrontstageComposer, FrontstageManager,
-  FrontstageProps, FrontstageProvider, Widget, WidgetControl, WidgetStack, WidgetStackProps, WidgetStackTab, WidgetStackTabGroup, WidgetStackTabGroupProps,
+import type {
+  ConfigurableCreateInfo,
+  FrontstageProps, WidgetStackProps, WidgetStackTabGroupProps} from "../../appui-react";
+import { ConfigurableUiManager, ContentGroup, CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProvider, Widget, WidgetControl, WidgetStack, WidgetStackTab, WidgetStackTabGroup,
   WidgetStackTabs, Zone, ZoneState,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";

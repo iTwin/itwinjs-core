@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyCategory, SimplePropertyDataProvider } from "../../components-react";
+import type { PrimitiveValue, PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { PropertyCategory} from "../../components-react";
+import { SimplePropertyDataProvider } from "../../components-react";
 import TestUtils from "../TestUtils";
 
 class SamplePropertyDataProvider extends SimplePropertyDataProvider {

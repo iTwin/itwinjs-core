@@ -7,8 +7,9 @@
  */
 
 import memoize from "micro-memoize";
-import { IModelConnection } from "@itwin/core-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, InstanceKey, LabelDefinition } from "@itwin/presentation-common";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { InstanceKey, LabelDefinition } from "@itwin/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 
 /**

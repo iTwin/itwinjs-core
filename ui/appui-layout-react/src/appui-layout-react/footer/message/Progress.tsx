@@ -9,9 +9,10 @@
 import "./Progress.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "@itwin/core-react";
+import type { CommonProps, NoChildrenProps } from "@itwin/core-react";
 import { Css } from "../../utilities/Css";
-import { Status, StatusHelpers } from "./Status";
+import type { Status} from "./Status";
+import { StatusHelpers } from "./Status";
 
 /** Properties of [[MessageProgress]] component.
  * @internal

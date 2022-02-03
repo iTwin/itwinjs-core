@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { AbstractMenuItemProps } from "../appui-abstract/items/AbstractMenuItemProps";
-import { AbstractToolbarProps } from "../appui-abstract/items/AbstractToolbarProps";
+import type { AbstractMenuItemProps } from "../appui-abstract/items/AbstractMenuItemProps";
+import type { AbstractToolbarProps } from "../appui-abstract/items/AbstractToolbarProps";
 import { RelativePosition } from "../appui-abstract/items/RelativePosition";
-import { PropertyDescription } from "../appui-abstract/properties/Description";
+import type { PropertyDescription } from "../appui-abstract/properties/Description";
 import { UiAdmin } from "../appui-abstract/UiAdmin";
 import { loggerCategory } from "../appui-abstract/utils/misc";
 import { UiDataProvider } from "../appui-abstract/dialogs/UiDataProvider";
 import { StandardTypeNames } from "../appui-abstract/properties/StandardTypeNames";
 import { DialogLayoutDataProvider } from "../appui-abstract/dialogs/UiLayoutDataProvider";
-import { DialogItem, DialogPropertySyncItem } from "../appui-abstract/dialogs/DialogItem";
-import { DisplayMessageType, MessagePresenter } from "../appui-abstract/notification/MessagePresenter";
-import { MessageSeverity } from "../appui-abstract/notification/MessageSeverity";
+import type { DialogItem, DialogPropertySyncItem } from "../appui-abstract/dialogs/DialogItem";
+import type { DisplayMessageType, MessagePresenter } from "../appui-abstract/notification/MessagePresenter";
+import type { MessageSeverity } from "../appui-abstract/notification/MessageSeverity";
 
 describe("UiAdmin", () => {
 

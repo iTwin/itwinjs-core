@@ -5,12 +5,14 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { IModelConnection } from "@itwin/core-frontend";
-import { Field } from "@itwin/presentation-common";
-import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyDataFiltererBase, PropertyDataFilterResult } from "@itwin/components-react";
-import { IPresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { Field } from "@itwin/presentation-common";
+import type { FavoritePropertiesScope} from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyDataFilterResult } from "@itwin/components-react";
+import { PropertyDataFiltererBase } from "@itwin/components-react";
+import type { IPresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 
 /**
  * Props for [[FavoritePropertiesDataFilterer]].

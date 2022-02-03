@@ -3,13 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps,
+import type {
+  BackgroundMapProps, BackgroundMapProviderName, PersistentBackgroundMapProps} from "@itwin/core-common";
+import { BackgroundMapSettings, BackgroundMapType, GlobeMode,
   TerrainHeightOriginMode,
 } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import type { TestViewport } from "../TestViewport";
+import { testOnScreenViewport } from "../TestViewport";
 
 describe("Background map", () => {
   let imodel: IModelConnection;

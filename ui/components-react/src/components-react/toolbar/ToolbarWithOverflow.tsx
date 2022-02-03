@@ -9,11 +9,13 @@
 import "./Toolbar.scss";
 import classnames from "classnames";
 import * as React from "react";
-import {
-  ActionButton, CommonToolbarItem, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition,
-  GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
+import type {
+  ActionButton, CommonToolbarItem, CustomButtonDefinition,
+  GroupButton, OnItemExecutedFunc} from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { BadgeUtilities, CommonProps, IconHelper, NoChildrenProps, useRefs } from "@itwin/core-react";
+import type { CommonProps, NoChildrenProps} from "@itwin/core-react";
+import { BadgeUtilities, IconHelper, useRefs } from "@itwin/core-react";
 import { ToolbarButtonItem } from "./Item";
 import { ToolbarItems } from "./Items";
 import { ItemWrapper, useResizeObserverSingleDimension } from "./ItemWrapper";

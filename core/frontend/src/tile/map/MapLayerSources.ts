@@ -8,14 +8,17 @@
 
 import { compareStrings } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
+import type { DeprecatedBackgroundMapProps, MapSubLayerProps} from "@itwin/core-common";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, MapLayerSettings,
 } from "@itwin/core-common";
-import { getJson, RequestBasicCredentials } from "../../request/Request";
+import type { RequestBasicCredentials } from "../../request/Request";
+import { getJson } from "../../request/Request";
 import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 
-import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
+import type { MapLayerSourceValidation } from "../internal";
+import { ArcGisUtilities, MapCartoRectangle } from "../internal";
 
 /** @internal */
 export enum MapLayerSourceStatus {

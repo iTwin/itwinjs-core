@@ -8,8 +8,9 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Input, InputProps } from "./Input";
-import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
+import type { InputProps } from "./Input";
+import { Input } from "./Input";
+import type { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 
 /* eslint-disable deprecation/deprecation */
 

@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { NodeKeyJSON } from "./hierarchy/Key";
-import { RulesetVariableJSON } from "./RulesetVariables";
+import type { NodeKeyJSON } from "./hierarchy/Key";
+import type { RulesetVariableJSON } from "./RulesetVariables";
 
 /** @internal */
 export const PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface";

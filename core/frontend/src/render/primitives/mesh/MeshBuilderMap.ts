@@ -7,14 +7,15 @@
  */
 
 import { compareBooleans, compareNumbers, Dictionary } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
+import type { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
-import { DisplayParams } from "../DisplayParams";
-import { GeometryList } from "../geometry/GeometryList";
-import { Geometry } from "../geometry/GeometryPrimitives";
-import { PolyfacePrimitive } from "../Polyface";
-import { GeometryOptions, ToleranceRatio } from "../Primitives";
-import { StrokesPrimitive } from "../Strokes";
+import type { DisplayParams } from "../DisplayParams";
+import type { GeometryList } from "../geometry/GeometryList";
+import type { Geometry } from "../geometry/GeometryPrimitives";
+import type { PolyfacePrimitive } from "../Polyface";
+import type { GeometryOptions} from "../Primitives";
+import { ToleranceRatio } from "../Primitives";
+import type { StrokesPrimitive } from "../Strokes";
 import { MeshBuilder, MeshEdgeCreationOptions } from "./MeshBuilder";
 import { Mesh, MeshList } from "./MeshPrimitives";
 

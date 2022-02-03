@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ScreenSpaceEffectBuilderParams } from "../../ScreenSpaceEffectBuilder";
+import type { ScreenSpaceEffectBuilderParams } from "../../ScreenSpaceEffectBuilder";
 import { TextureUnit } from "../RenderFlags";
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";

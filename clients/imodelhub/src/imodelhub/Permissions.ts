@@ -6,10 +6,11 @@
  * @module iModelHubClient
  */
 
-import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
+import type { AccessToken, GuidString} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
-import { IModelBaseHandler } from "./BaseHandler";
+import type { IModelBaseHandler } from "./BaseHandler";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 

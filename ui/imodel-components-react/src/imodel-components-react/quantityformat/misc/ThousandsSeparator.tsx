@@ -8,8 +8,9 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
-import { Format, FormatProps, FormatTraits } from "@itwin/core-quantity";
+import type { CommonProps } from "@itwin/core-react";
+import type { FormatProps} from "@itwin/core-quantity";
+import { Format, FormatTraits } from "@itwin/core-quantity";
 import { Checkbox } from "@itwin/itwinui-react";
 import { ThousandsSelector } from "./ThousandsSelector";
 import { UiIModelComponents } from "../../UiIModelComponents";

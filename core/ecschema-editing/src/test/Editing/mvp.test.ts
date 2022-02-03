@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { ECClass, ECClassModifier, ECVersion, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext,
+import type { ECClass, EntityClass, PrimitiveProperty, Schema, SchemaContext} from "@itwin/ecschema-metadata";
+import { ECClassModifier, ECVersion, PrimitiveType,
   SchemaItemKey, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";

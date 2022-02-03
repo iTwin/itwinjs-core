@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ITwinLocalization } from "@itwin/core-i18n";
-import {
+import type {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, CustomFormattedNumberParams, DisplayMessageType,
-  ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
-  Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
-  StandardEditorNames, StandardTypeNames, StructValue, UiAdmin,
+  ImageCheckBoxParams, MessagePresenter, ParseResults,
+  Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyValue, StructValue} from "@itwin/appui-abstract";
+import { MessageSeverity, PropertyEditorParamTypes, PropertyRecord, PropertyValueFormat,
+  StandardEditorNames, StandardTypeNames, UiAdmin,
 } from "@itwin/appui-abstract";
-import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents } from "../components-react";
+import type { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, FilterableTable} from "../components-react";
+import { DataControllerBase, UiComponents } from "../components-react";
 import { TableFilterDescriptorCollection } from "../components-react/table/columnfiltering/TableFilterDescriptorCollection";
 
 // cSpell:ignore buttongroup

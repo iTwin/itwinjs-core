@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { DefinitionElementProps } from "./ElementProps";
-import { TextureMapping } from "./TextureMapping";
+import type { Id64String } from "@itwin/core-bentley";
+import type { DefinitionElementProps } from "./ElementProps";
+import type { TextureMapping } from "./TextureMapping";
 
 /** Describes a color as an array of three numbers ranging from 0 to 1 where the first entry corresponds to the color's red component,
  * the second to green, and the third to blue.

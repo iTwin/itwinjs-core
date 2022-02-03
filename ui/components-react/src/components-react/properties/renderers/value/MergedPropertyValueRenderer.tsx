@@ -6,9 +6,10 @@
  * @module Properties
  */
 
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import type { PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { UiComponents } from "../../../UiComponents";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
+import type { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { withContextStyle } from "./WithContextStyle";
 
 /** Default Merged Property Renderer

@@ -5,18 +5,22 @@
 import { expect } from "chai";
 import { it } from "mocha";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
-import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
-import { PrimitiveValue } from "@itwin/appui-abstract";
+import type { RulesetVariable} from "@itwin/presentation-common";
+import { Node, RegisteredRuleset, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
+import type { PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
+import type { PrimitiveValue } from "@itwin/appui-abstract";
+import type { TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput} from "@itwin/components-react";
 import {
-  computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput, UiComponents,
+  computeVisibleNodes, MutableTreeModel, UiComponents,
 } from "@itwin/components-react";
 import { act, cleanup, renderHook } from "@testing-library/react-hooks";
-import { IPresentationTreeDataProvider } from "../../../presentation-components";
+import type { IPresentationTreeDataProvider } from "../../../presentation-components";
+import type { PresentationTreeNodeLoaderProps} from "../../../presentation-components/tree/controlled/TreeHooks";
 import {
-  applyHierarchyChanges, PresentationTreeNodeLoaderProps, reloadVisibleHierarchyParts, usePresentationTreeNodeLoader,
+  applyHierarchyChanges, reloadVisibleHierarchyParts, usePresentationTreeNodeLoader,
 } from "../../../presentation-components/tree/controlled/TreeHooks";
 import { createTreeNodeItem } from "../../../presentation-components/tree/Utils";
 import { mockPresentationManager } from "../../_helpers/UiComponents";

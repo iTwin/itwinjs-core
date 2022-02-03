@@ -8,12 +8,14 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "@itwin/appui-abstract";
+import type { CommonToolbarItem} from "@itwin/appui-abstract";
+import { ToolbarOrientation, ToolbarUsage } from "@itwin/appui-abstract";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
+import type { UiVisibilityEventArgs } from "../UiFramework";
+import { UiFramework } from "../UiFramework";
 import { ToolWidgetComposer } from "./ToolWidgetComposer";
 import { BackstageAppButton } from "./BackstageAppButton";
 

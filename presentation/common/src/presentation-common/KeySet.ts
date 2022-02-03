@@ -6,11 +6,13 @@
  * @module Core
  */
 
-import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { EntityProps } from "@itwin/core-common";
-import { InstanceId, InstanceKey } from "./EC";
+import type { GuidString, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
+import type { EntityProps } from "@itwin/core-common";
+import type { InstanceId, InstanceKey } from "./EC";
 import { PresentationError, PresentationStatus } from "./Error";
-import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
+import type { NodeKeyJSON } from "./hierarchy/Key";
+import { NodeKey } from "./hierarchy/Key";
 
 /**
  * A single key that identifies something in an iTwin.js application

@@ -7,15 +7,17 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Gradient, RenderTexture, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
-import { WebGLDisposable } from "./Disposable";
-import { UniformHandle } from "./UniformHandle";
+import type { ThematicDisplay} from "@itwin/core-common";
+import { Gradient, RenderTexture, ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
+import type { WebGLDisposable } from "./Disposable";
+import type { UniformHandle } from "./UniformHandle";
 import { TextureUnit } from "./RenderFlags";
 import { desync, sync } from "./Sync";
 import { TextureHandle } from "./Texture";
 import { ThematicSensors } from "./ThematicSensors";
-import { Angle, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { Target } from "./Target";
+import type { Transform} from "@itwin/core-geometry";
+import { Angle, Range3d, Vector3d } from "@itwin/core-geometry";
+import type { Target } from "./Target";
 import { System } from "./System";
 import { FloatRgb } from "./FloatRGBA";
 

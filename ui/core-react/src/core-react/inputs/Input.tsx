@@ -10,7 +10,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { Input as ITwinUI_Input } from "@itwin/itwinui-react";
 import { useRefs } from "../utils/hooks/useRefs";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 /** Properties for the [[Input]] component
  * @public

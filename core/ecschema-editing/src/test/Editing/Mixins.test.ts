@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ECClassModifier, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import type { SchemaKey } from "@itwin/ecschema-metadata";
+import { ECClassModifier, SchemaContext, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Mixins tests", () => {

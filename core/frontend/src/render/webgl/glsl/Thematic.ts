@@ -7,7 +7,8 @@
  */
 
 import { ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
+import type { ProgramBuilder, ShaderBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { unpackFloat } from "./Clipping";
 import { addRenderPass } from "./RenderPass";

@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { Arc3d, Point3d } from "@itwin/core-geometry";
 // __PUBLISH_EXTRACT_START__ Element.subclass
-import { IModelDb, SpatialCategory, SpatialLocationElement } from "@itwin/core-backend";
-import { GeometryStreamBuilder, GeometryStreamProps } from "@itwin/core-common";
+import type { IModelDb, SpatialCategory} from "@itwin/core-backend";
+import { SpatialLocationElement } from "@itwin/core-backend";
+import type { GeometryStreamProps } from "@itwin/core-common";
+import { GeometryStreamBuilder } from "@itwin/core-common";
 import { RobotWorld } from "./RobotWorldSchema";
 
 /**

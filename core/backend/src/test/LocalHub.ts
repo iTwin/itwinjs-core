@@ -4,12 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import {
-  BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
-  ChangesetRange, IModelError, LocalDirName, LocalFileName,
+import type { GuidString, Id64String} from "@itwin/core-bentley";
+import { DbResult, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import type {
+  BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
+  ChangesetRange, LocalDirName, LocalFileName} from "@itwin/core-common";
+import { BriefcaseIdValue, IModelError,
 } from "@itwin/core-common";
-import { LockConflict, LockMap, LockProps, LockState } from "../BackendHubAccess";
+import type { LockMap, LockProps} from "../BackendHubAccess";
+import { LockConflict, LockState } from "../BackendHubAccess";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";

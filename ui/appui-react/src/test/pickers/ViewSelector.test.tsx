@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { FrameworkVersion, UiFramework, ViewSelector } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { Provider } from "react-redux";

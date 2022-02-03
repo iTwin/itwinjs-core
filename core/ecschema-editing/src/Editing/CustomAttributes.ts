@@ -6,13 +6,14 @@
  * @module Editing
  */
 
-import {
-  CustomAttributeClassProps, CustomAttributeContainerType, DelayedPromiseWithProps, ECClass,
-  SchemaItemKey, SchemaItemType, SchemaKey,
+import type {
+  CustomAttributeClassProps, CustomAttributeContainerType, ECClass,
+  SchemaItemKey, SchemaKey} from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, SchemaItemType,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
-import { MutableCAClass } from "./Mutable/MutableCAClass";
+import type { MutableCAClass } from "./Mutable/MutableCAClass";
 
 /**
  * @alpha

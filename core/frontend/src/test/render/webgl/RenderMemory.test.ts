@@ -6,15 +6,15 @@ import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorDef, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3dList, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
-import { IModelConnection } from "../../../IModelConnection";
+import type { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
-import { RenderGeometry } from "../../../render/RenderSystem";
-import { RenderGraphic } from "../../../render/RenderGraphic";
+import type { RenderGeometry } from "../../../render/RenderSystem";
+import type { RenderGraphic } from "../../../render/RenderGraphic";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 import { Texture } from "../../../render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
-import { InstancedGraphicParams } from "../../../core-frontend";
+import type { InstancedGraphicParams } from "../../../core-frontend";
 
 function expectMemory(consumer: RenderMemory.Consumers, total: number, max: number, count: number) {
   expect(consumer.totalBytes).to.equal(total);

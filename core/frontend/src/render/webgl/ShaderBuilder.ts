@@ -7,8 +7,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { WebGLContext } from "@itwin/webgl-compatibility";
-import { AttributeDetails } from "./AttributeMap";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
+import type { AttributeDetails } from "./AttributeMap";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { volClassOpaqueColor } from "./glsl/PlanarClassification";
 import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex";

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { AnalysisAnimationTimelineDataProvider } from "../timeline/AnalysisAnimationProvider";
-import { ScreenViewport, Viewport } from "@itwin/core-frontend";
+import type { ScreenViewport, Viewport } from "@itwin/core-frontend";
 
 /** @internal */
 // istanbul ignore next

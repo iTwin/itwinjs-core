@@ -10,7 +10,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 import { useRefs } from "../utils/hooks/useRefs";
 
 /** Properties for a Select option

@@ -6,11 +6,12 @@
  * @module WebGL
  */
 
-import { assert, Id64, Id64String, lowerBound } from "@itwin/core-bentley";
-import { Feature } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
-import { BranchStack } from "./BranchStack";
-import { Batch } from "./Graphic";
+import type { Id64String} from "@itwin/core-bentley";
+import { assert, Id64, lowerBound } from "@itwin/core-bentley";
+import type { Feature } from "@itwin/core-common";
+import type { IModelConnection } from "../../IModelConnection";
+import type { BranchStack } from "./BranchStack";
+import type { Batch } from "./Graphic";
 
 /**
  * Assigns a transient, unique 32-bit integer ID to each Batch in a RenderCommands.

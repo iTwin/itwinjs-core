@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { ConditionalStringValue, StringGetter } from "@itwin/appui-abstract";
+import type { StringGetter } from "@itwin/appui-abstract";
+import { ConditionalStringValue } from "@itwin/appui-abstract";
 import { Icon } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
 

@@ -9,7 +9,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
-import { AutoCompleteFilter, AutoCompleteFilterProps } from "./AutoCompleteFilter";
+import type { AutoCompleteFilterProps } from "./AutoCompleteFilter";
+import { AutoCompleteFilter } from "./AutoCompleteFilter";
 
 /* istanbul ignore next */
 /** @internal */

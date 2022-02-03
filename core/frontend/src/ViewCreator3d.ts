@@ -12,15 +12,16 @@ API for creating a 3D default view for an iModel.
 Either takes in a list of modelIds, or displays all 3D models by default.
 */
 
-import { Id64Array, Id64String } from "@itwin/core-bentley";
+import type { Id64Array, Id64String } from "@itwin/core-bentley";
+import type { CategorySelectorProps, DisplayStyle3dProps, ModelSelectorProps, ViewDefinition3dProps, ViewQueryParams, ViewStateProps} from "@itwin/core-common";
 import {
-  Camera, CategorySelectorProps, Code, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface, ModelSelectorProps, QueryRowFormat,
-  RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
+  Camera, Code, Environment, IModel, IModelReadRpcInterface, QueryRowFormat,
+  RenderMode,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
-import { StandardViewId } from "./StandardView";
-import { IModelConnection } from "./IModelConnection";
-import { ViewState } from "./ViewState";
+import type { StandardViewId } from "./StandardView";
+import type { IModelConnection } from "./IModelConnection";
+import type { ViewState } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].

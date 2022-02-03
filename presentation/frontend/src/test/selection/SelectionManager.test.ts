@@ -6,11 +6,14 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64, Id64Arg, Id64String, using } from "@itwin/core-bentley";
+import type { Id64Arg, Id64String} from "@itwin/core-bentley";
+import { Id64, using } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
-import { InstanceKey, KeySet, SelectionScope } from "@itwin/presentation-common";
+import type { InstanceKey, SelectionScope } from "@itwin/presentation-common";
+import { KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope, createRandomTransientId, waitForPendingAsyncs } from "@itwin/presentation-common/lib/cjs/test";
-import { HiliteSetProvider, SelectionManager, SelectionScopesManager } from "../../presentation-frontend";
+import type { SelectionScopesManager } from "../../presentation-frontend";
+import { HiliteSetProvider, SelectionManager } from "../../presentation-frontend";
 import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 const generateSelection = (): InstanceKey[] => {

@@ -6,13 +6,15 @@
  * @module Views
  */
 
-import { Arc3d, Geometry, Point3d, SmoothTransformBetweenFrusta } from "@itwin/core-geometry";
+import type { Arc3d, Point3d} from "@itwin/core-geometry";
+import { Geometry, SmoothTransformBetweenFrusta } from "@itwin/core-geometry";
 import { Cartographic, Easing, Frustum, GlobeMode, Interpolation, Tweens } from "@itwin/core-common";
+import type { GlobalLocation} from "./ViewGlobalLocation";
 import {
-  areaToEyeHeight, areaToEyeHeightFromGcs, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants,
+  areaToEyeHeight, areaToEyeHeightFromGcs, eyeToCartographicOnGlobe, metersToRange, ViewGlobalLocationConstants,
 } from "./ViewGlobalLocation";
-import { ScreenViewport } from "./Viewport";
-import { Animator } from "./ViewAnimation";
+import type { ScreenViewport } from "./Viewport";
+import type { Animator } from "./ViewAnimation";
 
 /** Animates the transition of a [[Viewport]] to view a location on the Earth. The animation traces a flight path from the viewport's current [Frustum]($common) to the destination.
  * The duration of the animation varies based on the distance traversed.

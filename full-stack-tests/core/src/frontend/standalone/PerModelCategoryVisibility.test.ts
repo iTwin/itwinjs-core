@@ -3,11 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { ColorDef, Feature, FeatureAppearance, SubCategoryOverride } from "@itwin/core-common";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { FeatureAppearance} from "@itwin/core-common";
+import { ColorDef, Feature, SubCategoryOverride } from "@itwin/core-common";
+import type { SpatialViewState,
+  Viewport} from "@itwin/core-frontend";
 import {
-  FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
-  Viewport,
+  FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, StandardViewId,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 

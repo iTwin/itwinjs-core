@@ -6,9 +6,9 @@
  * @module Editing
  */
 
-import { PhenomenonProps, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutablePhenomenon } from "./Mutable/MutablePhenomenon";
+import type { PhenomenonProps, SchemaKey } from "@itwin/ecschema-metadata";
+import type { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { MutablePhenomenon } from "./Mutable/MutablePhenomenon";
 
 /**
  * @alpha

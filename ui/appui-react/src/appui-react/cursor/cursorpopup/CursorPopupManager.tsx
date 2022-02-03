@@ -8,8 +8,10 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { PointProps, RelativePosition, UiEvent } from "@itwin/appui-abstract";
-import { Point, RectangleProps, Size, SizeProps } from "@itwin/core-react";
+import type { PointProps} from "@itwin/appui-abstract";
+import { RelativePosition, UiEvent } from "@itwin/appui-abstract";
+import type { RectangleProps, SizeProps } from "@itwin/core-react";
+import { Point, Size } from "@itwin/core-react";
 import { UiFramework } from "../../UiFramework";
 import { CursorPopup } from "./CursorPopup";
 

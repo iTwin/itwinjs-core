@@ -4,15 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable no-console */
 import { expect } from "chai";
-import { assert, Guid, Id64String, OrderedId64Iterable, StopWatch } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { assert, Guid, OrderedId64Iterable, StopWatch } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import type { ClassInfo, Descriptor, Field, InstanceKey,
+  PropertiesField, PropertiesFieldDescriptor, PropertyInfo, Ruleset, StrippedRelationshipPath} from "@itwin/presentation-common";
 import {
-  ChildNodeSpecificationTypes, ClassInfo, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, Field, InstanceKey, KeySet, NodeKey,
-  PropertiesField, PropertiesFieldDescriptor, PropertyInfo, RelationshipDirection, Ruleset, RuleTypes, StrippedRelationshipPath, Value,
+  ChildNodeSpecificationTypes, ContentSpecificationTypes, DefaultContentDisplayTypes, KeySet, NodeKey, RelationshipDirection, RuleTypes, Value,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { ECClassHierarchy, ECClassInfo } from "../ECClasHierarchy";
+import type { ECClassInfo } from "../ECClasHierarchy";
+import { ECClassHierarchy } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldsByLabel } from "../Utils";
 

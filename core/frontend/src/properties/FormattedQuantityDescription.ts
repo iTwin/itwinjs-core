@@ -6,10 +6,12 @@
  * @module Properties
  */
 
-import { FormatterSpec, Parser, ParserSpec } from "@itwin/core-quantity";
-import { BaseQuantityDescription, ParseResults } from "@itwin/appui-abstract";
+import type { FormatterSpec, ParserSpec } from "@itwin/core-quantity";
+import { Parser } from "@itwin/core-quantity";
+import type { ParseResults } from "@itwin/appui-abstract";
+import { BaseQuantityDescription } from "@itwin/appui-abstract";
 import { IModelApp } from "../IModelApp";
-import { QuantityType } from "../quantity-formatting/QuantityFormatter";
+import type { QuantityType } from "../quantity-formatting/QuantityFormatter";
 
 /**
  * Base Quantity Property Description

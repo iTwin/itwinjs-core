@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
+import type { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
 
 /** Base interface for a 2d [[GraphicPrimitive]] that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @public

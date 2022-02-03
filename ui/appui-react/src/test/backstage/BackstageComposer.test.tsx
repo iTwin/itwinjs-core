@@ -6,8 +6,9 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import {
-  BackstageItem, BackstageItemsManager, BackstageItemUtilities, ConditionalBooleanValue, UiItemsManager, UiItemsProvider,
+import type {
+  BackstageItem, UiItemsProvider} from "@itwin/appui-abstract";
+import { BackstageItemsManager, BackstageItemUtilities, ConditionalBooleanValue, UiItemsManager,
 } from "@itwin/appui-abstract";
 import { Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { BackstageComposer, BackstageComposerActionItem, BackstageComposerStageLauncher, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../appui-react";

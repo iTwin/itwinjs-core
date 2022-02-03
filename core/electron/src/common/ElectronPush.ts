@@ -6,8 +6,9 @@
  * @module RpcInterface
  */
 
-import { RpcMarshaling, RpcPushChannel, RpcPushConnection, RpcPushTransport, RpcRequestFulfillment } from "@itwin/core-common";
-import { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTransport";
+import type { RpcPushChannel, RpcRequestFulfillment } from "@itwin/core-common";
+import { RpcMarshaling, RpcPushConnection, RpcPushTransport } from "@itwin/core-common";
+import type { BackendIpcTransport, FrontendIpcTransport } from "./ElectronIpcTransport";
 
 const PUSH = "__push__";
 

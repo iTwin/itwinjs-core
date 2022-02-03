@@ -7,14 +7,15 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeUiEvent } from "@itwin/core-bentley";
 import { renderHook } from "@testing-library/react-hooks";
-import { TreeEventHandler, TreeEventHandlerParams } from "../../../components-react/tree/controlled/TreeEventHandler";
+import type { TreeEventHandler, TreeEventHandlerParams } from "../../../components-react/tree/controlled/TreeEventHandler";
 import {
   usePagedTreeNodeLoader, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
 } from "../../../components-react/tree/controlled/TreeHooks";
-import { MutableTreeModel, TreeModel } from "../../../components-react/tree/controlled/TreeModel";
-import { TreeModelChanges, TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
-import { ITreeNodeLoader } from "../../../components-react/tree/controlled/TreeNodeLoader";
-import { TreeDataProvider, TreeDataProviderRaw } from "../../../components-react/tree/TreeDataProvider";
+import type { TreeModel } from "../../../components-react/tree/controlled/TreeModel";
+import { MutableTreeModel } from "../../../components-react/tree/controlled/TreeModel";
+import type { TreeModelChanges, TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
+import type { ITreeNodeLoader } from "../../../components-react/tree/controlled/TreeNodeLoader";
+import type { TreeDataProvider, TreeDataProviderRaw } from "../../../components-react/tree/TreeDataProvider";
 
 describe("useTreeModel", () => {
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();

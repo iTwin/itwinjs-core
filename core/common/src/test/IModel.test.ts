@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { EcefLocation, EcefLocationProps, IModel, IModelProps, RootSubjectProps } from "../IModel";
-import { GeographicCRS } from "../geometry/CoordinateReferenceSystem";
+import type { EcefLocationProps, IModelProps, RootSubjectProps } from "../IModel";
+import { EcefLocation, IModel } from "../IModel";
+import type { GeographicCRS } from "../geometry/CoordinateReferenceSystem";
 
 interface TestIModelProps extends IModelProps {
   key: string;

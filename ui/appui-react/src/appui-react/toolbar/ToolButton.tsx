@@ -7,13 +7,15 @@
  */
 
 import * as React from "react";
-import { IModelApp, Tool } from "@itwin/core-frontend";
-import { ConditionalStringValue, StringGetter, UiSyncEventArgs } from "@itwin/appui-abstract";
-import { BadgeUtilities, CommonProps, Icon } from "@itwin/core-react";
+import type { Tool } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import type { ConditionalStringValue, StringGetter, UiSyncEventArgs } from "@itwin/appui-abstract";
+import type { CommonProps} from "@itwin/core-react";
+import { BadgeUtilities, Icon } from "@itwin/core-react";
 import { getToolbarItemProps, Item } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { BaseItemState } from "../shared/ItemDefBase";
-import { ToolItemProps } from "../shared/ItemProps";
+import type { BaseItemState } from "../shared/ItemDefBase";
+import type { ToolItemProps } from "../shared/ItemProps";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";

@@ -9,10 +9,11 @@ import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { PresentationError } from "@itwin/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
-import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+import type { IFavoritePropertiesStorage} from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+import { NoopFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 import { PresentationManager } from "../presentation-frontend/PresentationManager";
 import * as selection from "../presentation-frontend/selection/SelectionManager";
-import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
+import type { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Presentation", () => {

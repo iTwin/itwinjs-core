@@ -7,7 +7,8 @@
  */
 
 import { StagePanelType } from "../StagePanel";
-import { getDefaultStagePanelManagerProps, StagePanelManager, StagePanelManagerProps } from "./StagePanel";
+import type { StagePanelManagerProps } from "./StagePanel";
+import { getDefaultStagePanelManagerProps, StagePanelManager } from "./StagePanel";
 
 /** Properties used to manage stage panels.
  * @internal

@@ -9,11 +9,13 @@
 // cspell:ignore rtmp stmp
 
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import {
-  BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
-  ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
+import type {
+  BeButtonEvent, ToolAssistanceInstruction, ToolAssistanceSection} from "@itwin/core-frontend";
+import { CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
+  ToolAssistanceInputMethod,
 } from "@itwin/core-frontend";
-import { G, Marker, Element as MarkupElement, SVG } from "@svgdotjs/svg.js";
+import type { G, Marker, Element as MarkupElement} from "@svgdotjs/svg.js";
+import { SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 

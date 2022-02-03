@@ -7,25 +7,31 @@
  * @module AccuDraw
  */
 import { BentleyStatus } from "@itwin/core-bentley";
+import type { CurvePrimitive} from "@itwin/core-geometry";
 import {
-  Arc3d, AxisOrder, CurveCurve, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
+  Arc3d, AxisOrder, CurveCurve, Geometry, IModelJson as GeomJson, LineSegment3d, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PointString3d, Ray3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
-import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@itwin/core-common";
+import type { GeometryStreamProps} from "@itwin/core-common";
+import { ColorByName, ColorDef, LinePixels } from "@itwin/core-common";
 import { TentativeOrAccuSnap } from "./AccuSnap";
-import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
-import { HitDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
+import type { AuxCoordSystemState } from "./AuxCoordSys";
+import { ACSDisplayOptions } from "./AuxCoordSys";
+import type { HitDetail, SnapDetail} from "./HitDetail";
+import { SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import type { GraphicBuilder} from "./render/GraphicBuilder";
+import { GraphicType } from "./render/GraphicBuilder";
 import { StandardViewId } from "./StandardView";
 import { BeButton, BeButtonEvent, CoordinateLockOverrides, InputCollector, InputSource } from "./tools/Tool";
 import { ViewTool } from "./tools/ViewTool";
-import { DecorateContext } from "./ViewContext";
+import type { DecorateContext } from "./ViewContext";
 import { linePlaneIntersect } from "./LinePlaneIntersect";
-import { ScreenViewport, Viewport } from "./Viewport";
+import type { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./quantity-formatting/QuantityFormatter";
-import { ParseError, Parser, QuantityParseResult } from "@itwin/core-quantity";
+import type { QuantityParseResult } from "@itwin/core-quantity";
+import { ParseError, Parser } from "@itwin/core-quantity";
 
 // cspell:ignore dont primitivetools
 

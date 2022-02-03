@@ -4,10 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyData } from "@itwin/components-react";
-import { IModelApp, IModelConnection, ITwinIdArg, PreferenceArg, PreferenceKeyArg, SnapshotConnection, TokenArg } from "@itwin/core-frontend";
-import { Field, KeySet } from "@itwin/presentation-common";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyData } from "@itwin/components-react";
+import type { IModelConnection, ITwinIdArg, PreferenceArg, PreferenceKeyArg, TokenArg } from "@itwin/core-frontend";
+import { IModelApp, SnapshotConnection } from "@itwin/core-frontend";
+import type { Field} from "@itwin/presentation-common";
+import { KeySet } from "@itwin/presentation-common";
 import { DEFAULT_PROPERTY_GRID_RULESET, FAVORITES_CATEGORY_NAME, PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import {
   createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, FavoritePropertiesManager, FavoritePropertiesScope, Presentation,

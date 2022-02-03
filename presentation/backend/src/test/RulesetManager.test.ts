@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
 import { RegisteredRuleset } from "@itwin/presentation-common";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import type { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 
 describe("RulesetManager", () => {

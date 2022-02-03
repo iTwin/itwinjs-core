@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
+import type { OrbitGtBlobProps} from "@itwin/core-common";
+import { RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { expect } from "chai";
 import { CesiumIonAssetProvider, getCesiumAssetUrl } from "../core-frontend";
 import { RealityDataSource } from "../RealityDataSource";

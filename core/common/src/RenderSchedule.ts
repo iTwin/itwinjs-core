@@ -6,12 +6,15 @@
  * @module DisplayStyles
  */
 
-import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import type { Constructor, Id64Set, Id64String} from "@itwin/core-bentley";
+import { assert, CompressedId64Set, Id64, OrderedId64Iterable } from "@itwin/core-bentley";
+import type { XYAndZ} from "@itwin/core-geometry";
 import {
-  ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
+  ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d,
 } from "@itwin/core-geometry";
 import { RgbColor } from "./RgbColor";
-import { FeatureAppearance, FeatureOverrides } from "./FeatureSymbology";
+import type { FeatureOverrides } from "./FeatureSymbology";
+import { FeatureAppearance } from "./FeatureSymbology";
 
 function interpolate(start: number, end: number, fraction: number): number {
   return start + fraction * (end - start);

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { BackstageSeparator as NZ_BackstageSeparator } from "@itwin/appui-layout-react";
-import { BackstageItemProps } from "./BackstageItemProps";
+import type { BackstageItemProps } from "./BackstageItemProps";
 
 /** Separator Backstage item.
  * @public

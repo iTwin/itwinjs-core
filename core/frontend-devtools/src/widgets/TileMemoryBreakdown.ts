@@ -6,7 +6,8 @@
  * @module Widgets
  */
 
-import { IModelApp, IModelConnection, RenderMemory, Tile } from "@itwin/core-frontend";
+import type { IModelConnection, Tile } from "@itwin/core-frontend";
+import { IModelApp, RenderMemory } from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 import { formatMemory } from "./MemoryTracker";
 

@@ -7,8 +7,9 @@
  */
 
 import * as React from "react";
-import { LinkElementsInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
+import type { LinkElementsInfo, PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
+import type { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { convertPrimitiveRecordToString, PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer";
 
 /**

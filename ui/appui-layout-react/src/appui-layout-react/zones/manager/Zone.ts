@@ -6,9 +6,11 @@
  * @module Zone
  */
 
-import { Rectangle, RectangleProps } from "@itwin/core-react";
+import type { RectangleProps } from "@itwin/core-react";
+import { Rectangle } from "@itwin/core-react";
 import { RECTANGULAR_DEFAULT_MIN_HEIGHT, RECTANGULAR_DEFAULT_MIN_WIDTH } from "./ResizeStrategy";
-import { getZoneCell, WidgetZoneId } from "./Zones";
+import type { WidgetZoneId } from "./Zones";
+import { getZoneCell } from "./Zones";
 
 /** Zone properties used in [[ZonesManagerProps]].
  * @internal

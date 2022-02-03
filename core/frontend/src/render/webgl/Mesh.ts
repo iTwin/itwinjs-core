@@ -7,18 +7,18 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Point3d, Range3d } from "@itwin/core-geometry";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
-import { MeshParams } from "../primitives/VertexTable";
+import type { Point3d, Range3d } from "@itwin/core-geometry";
+import type { InstancedGraphicParams } from "../InstancedGraphicParams";
+import type { MeshParams } from "../primitives/VertexTable";
 import { SurfaceType } from "../primitives/SurfaceParams";
-import { RenderMemory } from "../RenderMemory";
-import { RenderGeometry } from "../RenderSystem";
+import type { RenderMemory } from "../RenderMemory";
+import type { RenderGeometry } from "../RenderSystem";
 import { CachedGeometry } from "./CachedGeometry";
 import { Graphic } from "./Graphic";
 import { InstanceBuffers, PatternBuffers } from "./InstancedGeometry";
 import { Primitive } from "./Primitive";
-import { RenderCommands } from "./RenderCommands";
-import { RenderPass } from "./RenderFlags";
+import type { RenderCommands } from "./RenderCommands";
+import type { RenderPass } from "./RenderFlags";
 import { EdgeGeometry, PolylineEdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
 import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
 import { SurfaceGeometry } from "./SurfaceGeometry";

@@ -5,7 +5,8 @@
 
 import { expect } from "chai";
 import { UiError } from "@itwin/appui-abstract";
-import { ActionCreatorsObject, ActionsUnion, createAction, NameToReducerMap, ReducerRegistryInstance } from "../../appui-react";
+import type { ActionCreatorsObject, ActionsUnion, NameToReducerMap} from "../../appui-react";
+import { createAction, ReducerRegistryInstance } from "../../appui-react";
 
 // Manages the state for extension
 interface ExtensionState {

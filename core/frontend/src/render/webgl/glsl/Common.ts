@@ -7,9 +7,10 @@
  */
 
 import { RenderType } from "@itwin/webgl-compatibility";
-import { DrawParams } from "../DrawCommand";
-import { UniformHandle } from "../UniformHandle";
-import { ProgramBuilder, ShaderBuilder, ShaderType, VariableType } from "../ShaderBuilder";
+import type { DrawParams } from "../DrawCommand";
+import type { UniformHandle } from "../UniformHandle";
+import type { ProgramBuilder, ShaderBuilder} from "../ShaderBuilder";
+import { ShaderType, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { addModelViewMatrix } from "./Vertex";
 

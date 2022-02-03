@@ -7,9 +7,10 @@
  */
 
 import * as React from "react";
-import { UnitProps, UnitsProvider } from "@itwin/core-quantity";
-import { CommonProps } from "@itwin/core-react";
-import { Input, Select, SelectOption } from "@itwin/itwinui-react";
+import type { UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import type { CommonProps } from "@itwin/core-react";
+import type { SelectOption } from "@itwin/itwinui-react";
+import { Input, Select } from "@itwin/itwinui-react";
 
 /** Properties of [[UnitDescr]] component.
  * @internal

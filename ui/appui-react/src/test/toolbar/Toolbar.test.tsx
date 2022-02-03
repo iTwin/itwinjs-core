@@ -7,7 +7,8 @@ import * as React from "react";
 import { Orientation } from "@itwin/core-react";
 import { Direction, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { render } from "@testing-library/react";
-import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, SyncUiEventDispatcher, Toolbar } from "../../appui-react";
+import type { BaseItemState} from "../../appui-react";
+import { CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, SyncUiEventDispatcher, Toolbar } from "../../appui-react";
 import { ItemList } from "../../appui-react/shared/ItemMap";
 import TestUtils from "../TestUtils";
 

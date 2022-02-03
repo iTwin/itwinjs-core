@@ -6,9 +6,11 @@
  * @module Core
  */
 
-import { assert, BeEvent, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
-import { RulesetVariable, VariableValue, VariableValueTypes } from "@itwin/presentation-common";
-import { IpcRequestsHandler } from "./IpcRequestsHandler";
+import type { Id64String} from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, OrderedId64Iterable } from "@itwin/core-bentley";
+import type { RulesetVariable, VariableValue} from "@itwin/presentation-common";
+import { VariableValueTypes } from "@itwin/presentation-common";
+import type { IpcRequestsHandler } from "./IpcRequestsHandler";
 
 /**
  * Presentation ruleset variables' registry.

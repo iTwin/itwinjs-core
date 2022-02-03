@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { TextureLoadProps } from "@itwin/core-common";
-import { SnapshotDb } from "../../IModelDb";
+import type { TextureLoadProps } from "@itwin/core-common";
+import type { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("IModelDb.queryTextureData", () => {

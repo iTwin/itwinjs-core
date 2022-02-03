@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../../../../TestUtils";
-import { FlatGridItemType, IMutableCategorizedPropertyItem, IMutableFlatGridItem, IMutableGridCategoryItem } from "../../../../../components-react/propertygrid/internal/flat-items/MutableFlatGridItem";
+import type { IMutableCategorizedPropertyItem, IMutableFlatGridItem, IMutableGridCategoryItem } from "../../../../../components-react/propertygrid/internal/flat-items/MutableFlatGridItem";
+import { FlatGridItemType } from "../../../../../components-react/propertygrid/internal/flat-items/MutableFlatGridItem";
 import { FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils";
 import sinon from "sinon";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { MutableGridItemFactory } from "../../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
 import { MutableGridCategory } from "../../../../../components-react/propertygrid/internal/flat-items/MutableGridCategory";
-import { PropertyCategory } from "../../../../../components-react/propertygrid/PropertyDataProvider";
-import { GridCategoryItem } from "../../../../../components-react/propertygrid/internal/flat-items/FlatGridItem";
+import type { PropertyCategory } from "../../../../../components-react/propertygrid/PropertyDataProvider";
+import type { GridCategoryItem } from "../../../../../components-react/propertygrid/internal/flat-items/FlatGridItem";
 
 describe("GridCategory", () => {
   describe("GridCategory Mocked", () => {

@@ -6,14 +6,18 @@
  * @module iModels
  */
 
-import { AccessToken, assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
-import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
-import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
+import type { AccessToken, Id64String} from "@itwin/core-bentley";
+import { assert, DbResult, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
+import type { Schema} from "@itwin/ecschema-metadata";
+import { ECVersion, SchemaKey } from "@itwin/ecschema-metadata";
+import type { CodeSpec, FontProps} from "@itwin/core-common";
+import { IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
+import type { BriefcaseDb, ECSqlStatement, ElementAspect, IModelDb, IModelJsNative, Relationship, RelationshipProps} from "@itwin/core-backend";
 import {
-  BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
-  ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement, IModelDb,
-  IModelHost, IModelJsNative, IModelSchemaLoader, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
+  BisCoreSchema, BriefcaseManager, DefinitionModel, Element,
+  ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement,
+  IModelHost, IModelSchemaLoader, Model, RecipeDefinitionElement,
 } from "@itwin/core-backend";
 
 const loggerCategory = TransformerLoggerCategory.IModelExporter;

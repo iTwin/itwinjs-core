@@ -6,12 +6,14 @@
  * @module NativeApp
  */
 
-import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
+import type { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
+import type { IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, RemoveFunction} from "@itwin/core-common";
 import {
-  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
-  iTwinChannel, RemoveFunction,
+  BackendError, IModelError, IModelStatus, IpcAppChannel,
+  iTwinChannel,
 } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions } from "./IModelApp";
+import type { IModelAppOptions } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
 
 /**
  * Options for [[IpcApp.startup]]

@@ -10,7 +10,7 @@ import "./SearchBox.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { UiCore } from "../UiCore";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 import { SpecialKey } from "@itwin/appui-abstract";
 
 /** Properties for [[SearchBox]] component

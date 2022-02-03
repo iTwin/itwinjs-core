@@ -7,7 +7,7 @@
  */
 
 import { Cartographic, ColorByName, ColorDef, SolarShadowSettings } from "@itwin/core-common";
-import { DisplayStyle3dState, ScreenViewport, ViewState } from "@itwin/core-frontend";
+import type { DisplayStyle3dState, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { BaseSolarDataProvider } from "@itwin/imodel-components-react";
 
 // the interface and class are in alpha state - it may change after usability testing - test coverage not complete

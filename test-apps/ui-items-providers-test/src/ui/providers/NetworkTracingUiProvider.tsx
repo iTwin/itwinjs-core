@@ -4,17 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import {
+import type {
   AbstractWidgetProps, BackstageItem,
-  BackstageItemUtilities, BadgeType,
   CommonStatusBarItem,
-  CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities,
+  CommonToolbarItem, UiItemsProvider} from "@itwin/appui-abstract";
+import {
+  BackstageItemUtilities, BadgeType, ConditionalBooleanValue, IconSpecUtilities,
   StagePanelLocation, StagePanelSection,
   StatusBarSection,
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
-  UiItemsManager, UiItemsProvider, WidgetState,
+  UiItemsManager, WidgetState,
 } from "@itwin/appui-abstract";
-import { CustomToolbarItem } from "@itwin/components-react";
+import type { CustomToolbarItem } from "@itwin/components-react";
 import { Indicator, StateManager, StatusBarItemUtilities, SyncUiEventDispatcher } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "../widgets/PresentationPropertyGridWidget";

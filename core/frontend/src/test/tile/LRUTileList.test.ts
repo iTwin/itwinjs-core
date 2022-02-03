@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { RenderMemory } from "../../render/RenderMemory";
-import { LRUTileList, LRUTileListNode, Tile } from "../../tile/internal";
+import type { RenderMemory } from "../../render/RenderMemory";
+import type { LRUTileListNode, Tile } from "../../tile/internal";
+import { LRUTileList } from "../../tile/internal";
 
 function mockTile(bytesUsed: number): Tile {
   return {

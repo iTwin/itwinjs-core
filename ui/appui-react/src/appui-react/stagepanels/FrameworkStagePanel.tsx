@@ -10,19 +10,21 @@
 import "./FrameworkStagePanel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { StagePanelLocation } from "@itwin/appui-abstract";
-import {
-  NineZoneStagePanelManagerProps, SplitterPaneTarget as NZ_SplitterPaneTarget, StagePanel as NZ_StagePanel, SafeAreaInsets, Splitter, SplitterTarget,
-  StagePanelTarget, StagePanelTypeHelpers, WidgetZoneId, ZonesManagerWidgetsProps,
+import type { StagePanelLocation } from "@itwin/appui-abstract";
+import type {
+  NineZoneStagePanelManagerProps, WidgetZoneId, ZonesManagerWidgetsProps} from "@itwin/appui-layout-react";
+import { SplitterPaneTarget as NZ_SplitterPaneTarget, StagePanel as NZ_StagePanel, SafeAreaInsets, Splitter, SplitterTarget,
+  StagePanelTarget, StagePanelTypeHelpers,
 } from "@itwin/appui-layout-react";
-import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
+import type { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
-import { ZoneLocation } from "../zones/Zone";
+import type { WidgetTabs } from "../widgets/WidgetStack";
+import { WidgetStack } from "../widgets/WidgetStack";
+import type { ZoneLocation } from "../zones/Zone";
 import { getNestedStagePanelKey, getStagePanelType } from "./StagePanel";
 import { StagePanelState } from "./StagePanelDef";
-import { WidgetDef } from "../widgets/WidgetDef";
+import type { WidgetDef } from "../widgets/WidgetDef";
 
 /** Properties of a [[FrameworkStagePanel]] component
  * @internal

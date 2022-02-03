@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { HTMLAttributes, ReactWrapper, shallow } from "enzyme";
+import type { HTMLAttributes, ReactWrapper} from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MessageManager, ValidationTextbox } from "../../appui-react";

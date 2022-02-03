@@ -8,8 +8,9 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { using } from "@itwin/core-bentley";
 import { IModelDb, IpcHost } from "@itwin/core-backend";
-import { PresentationIpcEvents, UpdateInfoJSON } from "@itwin/presentation-common";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import type { UpdateInfoJSON } from "@itwin/presentation-common";
+import { PresentationIpcEvents } from "@itwin/presentation-common";
+import type { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 
 describe("UpdatesTracker", () => {

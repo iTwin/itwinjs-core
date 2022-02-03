@@ -8,26 +8,31 @@
 
 import { join } from "path";
 import { UserCancelledError } from "./itwin-client/FileHandler";
-import { ProgressCallback, ProgressInfo } from "./itwin-client/Request";
-import {
-  AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg, CheckpointArg,
-  CheckpointProps, CreateNewIModelProps, IModelDb, IModelHost, IModelIdArg, IModelJsFs, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, SnapshotDb, TokenArg,
-  V2CheckpointAccessProps,
+import type { ProgressCallback, ProgressInfo } from "./itwin-client/Request";
+import type {
+  AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckpointArg,
+  CheckpointProps, CreateNewIModelProps, IModelIdArg, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, TokenArg,
+  V2CheckpointAccessProps} from "@itwin/core-backend";
+import { BriefcaseLocalValue, BriefcaseManager, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
 } from "@itwin/core-backend";
-import { BentleyError, BriefcaseStatus, GuidString, Id64String, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
+import type { GuidString, Id64String} from "@itwin/core-bentley";
+import { BentleyError, BriefcaseStatus, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
+import type { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, CodeProps, IModelVersion, LocalDirName} from "@itwin/core-common";
 import {
-  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
+  BriefcaseIdValue, IModelError,
 } from "@itwin/core-common";
 import { IModelBankClient } from "./imodelbank/IModelBankClient";
-import { IModelClient } from "./IModelClient";
+import type { IModelClient } from "./IModelClient";
 import { BriefcaseQuery } from "./imodelhub/Briefcases";
 import { ChangeSet, ChangeSetQuery, ChangesType } from "./imodelhub/ChangeSets";
 import { CheckpointQuery } from "./imodelhub/Checkpoints";
-import { CheckpointV2, CheckpointV2Query } from "./imodelhub/CheckpointsV2";
+import type { CheckpointV2} from "./imodelhub/CheckpointsV2";
+import { CheckpointV2Query } from "./imodelhub/CheckpointsV2";
 import { IModelHubClient } from "./imodelhub/Client";
 import { CodeQuery } from "./imodelhub/Codes";
 import { IModelQuery } from "./imodelhub/iModels";
-import { Lock, LockLevel, LockQuery, LockType } from "./imodelhub/Locks";
+import type { LockLevel} from "./imodelhub/Locks";
+import { Lock, LockQuery, LockType } from "./imodelhub/Locks";
 import { VersionQuery } from "./imodelhub/Versions";
 import { AzureFileHandler } from "./itwin-client/AzureFileHandler";
 

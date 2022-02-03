@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, Id64Arg } from "@itwin/core-bentley";
+import type { Id64Arg } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { HiliteSet, IModelConnection, SelectionSet} from "@itwin/core-frontend";
 import {
-  ElementAgenda, HiliteSet, IModelConnection, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection,
+  ElementAgenda, ModifyElementSource, SelectionSetEventType, SnapshotConnection,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 

@@ -6,10 +6,11 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { JsonParser } from "../../Deserialization/JsonParser";
-import { FormatProps } from "../../Deserialization/JsonProps";
+import type { FormatProps } from "../../Deserialization/JsonProps";
 import { ECObjectsError } from "../../Exception";
-import { Format } from "../../Metadata/Format";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
+import type { Format } from "../../Metadata/Format";
+import type { MutableSchema} from "../../Metadata/Schema";
+import { Schema } from "../../Metadata/Schema";
 import { DecimalPrecision, FormatTraits, FormatType, ShowSignOption } from "../../utils/FormatEnums";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";

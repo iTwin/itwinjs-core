@@ -6,9 +6,12 @@
  * @module Tools
  */
 
-import { BeEvent, GuidString, Id64String } from "@itwin/core-bentley";
-import { FeatureAppearance, GeometricElementProps } from "@itwin/core-common";
-import { EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, ScreenViewport, Viewport } from "@itwin/core-frontend";
+import type { GuidString, Id64String } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
+import type { GeometricElementProps } from "@itwin/core-common";
+import { FeatureAppearance } from "@itwin/core-common";
+import type { FeatureOverrideProvider, FeatureSymbology, IModelConnection, ScreenViewport, Viewport } from "@itwin/core-frontend";
+import { EmphasizeElements, IModelApp } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";

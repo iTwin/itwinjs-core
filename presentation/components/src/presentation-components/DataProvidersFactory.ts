@@ -6,12 +6,14 @@
  * @module Core
  */
 
-import { Omit, PrimitivePropertyValue, RulesetsFactory } from "@itwin/presentation-common";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { Omit, PrimitivePropertyValue} from "@itwin/presentation-common";
+import { RulesetsFactory } from "@itwin/presentation-common";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 import { TypeConverterManager } from "@itwin/components-react";
 import { findField } from "./common/Utils";
-import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
-import { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./table/DataProvider";
+import type { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
+import type { IPresentationTableDataProvider, PresentationTableDataProviderProps } from "./table/DataProvider";
+import { PresentationTableDataProvider } from "./table/DataProvider";
 
 /**
  * Data structure holding initialization properties for [[DataProvidersFactory]]

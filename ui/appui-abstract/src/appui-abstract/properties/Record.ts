@@ -6,9 +6,10 @@
  * @module Properties
  */
 
-import { PropertyDescription } from "./Description";
+import type { PropertyDescription } from "./Description";
 import { StandardTypeNames } from "./StandardTypeNames";
-import { PropertyValue, PropertyValueFormat } from "./Value";
+import type { PropertyValue} from "./Value";
+import { PropertyValueFormat } from "./Value";
 
 /** Properties for the [[PropertyRecord]] with link info supplied
  * @public

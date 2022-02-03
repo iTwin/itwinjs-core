@@ -6,8 +6,8 @@
  * @module Inputs
  */
 
-import * as React from "react";
-import { InputStatus } from "./InputStatus";
+import type * as React from "react";
+import type { InputStatus } from "./InputStatus";
 
 /** Properties for labeled components
  * @public

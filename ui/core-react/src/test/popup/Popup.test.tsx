@@ -7,8 +7,10 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { fireEvent, render, RenderResult } from "@testing-library/react";
-import { Popup, PopupProps } from "../../core-react";
+import type { RenderResult } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
+import type { PopupProps } from "../../core-react";
+import { Popup } from "../../core-react";
 
 function NestedPopup() {
   const [showPopup, setShowPopup] = React.useState(false);

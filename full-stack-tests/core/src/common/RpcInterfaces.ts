@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GuidString } from "@itwin/core-bentley";
+import type { GuidString } from "@itwin/core-bentley";
+import type { IModelRpcProps} from "@itwin/core-common";
 import {
-  DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
+  DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
   WipRpcInterface,
 } from "@itwin/core-common";
 

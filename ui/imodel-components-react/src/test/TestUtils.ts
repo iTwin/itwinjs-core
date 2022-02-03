@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ColorByName } from "@itwin/core-common";
-import {
+import type {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, DisplayMessageType,
-  ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
-  Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
-  StandardEditorNames, StandardTypeNames, StructValue, UiAdmin,
+  ImageCheckBoxParams, MessagePresenter, ParseResults,
+  Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyValue, StructValue} from "@itwin/appui-abstract";
+import { MessageSeverity, PropertyEditorParamTypes, PropertyRecord, PropertyValueFormat,
+  StandardEditorNames, StandardTypeNames, UiAdmin,
 } from "@itwin/appui-abstract";
-import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, TableFilterDescriptorCollection } from "@itwin/components-react";
+import type { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, FilterableTable} from "@itwin/components-react";
+import { DataControllerBase, TableFilterDescriptorCollection } from "@itwin/components-react";
 import { UiIModelComponents } from "../imodel-components-react/UiIModelComponents";
 
 // cSpell:ignore buttongroup

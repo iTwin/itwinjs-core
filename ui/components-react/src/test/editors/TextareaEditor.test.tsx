@@ -8,8 +8,9 @@ import { mount, shallow } from "enzyme";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
+import type {
+  InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo} from "@itwin/appui-abstract";
 import {
-  InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo,
   PropertyEditorParamTypes, SpecialKey, StandardEditorNames,
 } from "@itwin/appui-abstract";
 import { TextareaEditor } from "../../components-react/editors/TextareaEditor";

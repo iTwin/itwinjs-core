@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "../PlanarClipMask";
+import type { PlanarClipMaskProps} from "../PlanarClipMask";
+import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
 
 function expectProps(mask: PlanarClipMaskSettings, expected: PlanarClipMaskProps): void {
   const actual = mask.toJSON();

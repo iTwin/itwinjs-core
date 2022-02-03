@@ -9,7 +9,7 @@
 import "./Tools.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "@itwin/core-react";
+import type { CommonProps, NoChildrenProps } from "@itwin/core-react";
 
 /** Properties of [[Tools]] component.
  * @internal

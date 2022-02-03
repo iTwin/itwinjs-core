@@ -10,7 +10,7 @@ import "./WebFontIcon.scss";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 /** Properties for the [[WebFontIcon]] React component
  * @public

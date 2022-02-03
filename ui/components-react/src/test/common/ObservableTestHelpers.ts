@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Observable } from "rxjs/internal/Observable";
-import { Subscription } from "rxjs/internal/Subscription";
+import type { Observable } from "rxjs/internal/Observable";
+import type { Subscription } from "rxjs/internal/Subscription";
 import { ResolvablePromise } from "../test-helpers/misc";
 
 /** Expects observable to emit nodes in a specific order. The order is defined by the sequence of groups of emitted node ids, e.g. `[[0], [1, 2]]`. */

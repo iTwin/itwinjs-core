@@ -7,18 +7,21 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Arc3d, ClipPlaneContainment, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@itwin/core-common";
+import type { Matrix4d, Point3d, Range3d, Transform} from "@itwin/core-geometry";
+import { Arc3d, ClipPlaneContainment, Point2d, Point4d, Vector3d } from "@itwin/core-geometry";
+import type { ElementAlignedBox3d} from "@itwin/core-common";
+import { BoundingSphere, ColorDef, Frustum, FrustumPlanes } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderMemory } from "../render/RenderMemory";
-import { RenderSystem } from "../render/RenderSystem";
-import { SceneContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
-import {
-  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUser, TileUserIdSet,
+import type { IModelConnection } from "../IModelConnection";
+import type { GraphicBuilder } from "../render/GraphicBuilder";
+import type { RenderGraphic } from "../render/RenderGraphic";
+import type { RenderMemory } from "../render/RenderMemory";
+import type { RenderSystem } from "../render/RenderSystem";
+import type { SceneContext } from "../ViewContext";
+import type { Viewport } from "../Viewport";
+import type {
+  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequestChannel, TileTree, TileUser, TileUserIdSet} from "./internal";
+import { TileRequest, TileTreeLoadStatus, TileUsageMarker,
 } from "./internal";
 
 // cSpell:ignore undisplayable bitfield

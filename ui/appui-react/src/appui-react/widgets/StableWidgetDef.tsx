@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import { WidgetDef } from "./WidgetDef";
+import type { WidgetDef } from "./WidgetDef";
 
 function isGenerated(value: WidgetDef["id"]) {
   return value.startsWith("Widget-");

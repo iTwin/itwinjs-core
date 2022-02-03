@@ -6,7 +6,8 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
+import type { AbstractWidgetProps, UiItemsProvider} from "@itwin/appui-abstract";
+import { AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
 import { WidgetDef, WidgetManager, ZoneLocation } from "../../appui-react";
 import { TestUtils } from "../TestUtils";
 

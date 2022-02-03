@@ -7,13 +7,16 @@
  */
 
 import { IModelApp } from "@itwin/core-frontend";
-import { Localization } from "@itwin/core-common";
+import type { Localization } from "@itwin/core-common";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
-import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
+import type { FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
+import { FavoritePropertiesManager } from "./favorite-properties/FavoritePropertiesManager";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage";
 import { LocalizationHelper } from "./LocalizationHelper";
-import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
-import { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
+import type { PresentationManagerProps } from "./PresentationManager";
+import { PresentationManager } from "./PresentationManager";
+import type { SelectionManagerProps } from "./selection/SelectionManager";
+import { SelectionManager } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 
 let localization: Localization | undefined;

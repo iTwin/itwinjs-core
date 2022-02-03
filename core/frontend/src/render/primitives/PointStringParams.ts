@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { PolylineArgs } from "./mesh/MeshPrimitives";
+import type { PolylineArgs } from "./mesh/MeshPrimitives";
 import { VertexIndices, VertexTable } from "./VertexTable";
 
 /** Describes point string geometry to be submitted to the rendering system.

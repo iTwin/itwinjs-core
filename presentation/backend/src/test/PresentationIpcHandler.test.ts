@@ -4,18 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelDb, IModelJsNative } from "@itwin/core-backend";
-import {
+import type { IModelJsNative } from "@itwin/core-backend";
+import { IModelDb } from "@itwin/core-backend";
+import type {
   Id64sRulesetVariableJSON,
-  NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams, UpdateHierarchyStateParams,
+  NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams, UpdateHierarchyStateParams} from "@itwin/presentation-common";
+import {
   VariableValueTypes,
 } from "@itwin/presentation-common";
 import { createRandomBaseNodeKey, createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import type { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
-import { PresentationManager } from "../presentation-backend/PresentationManager";
-import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+import type { PresentationManager } from "../presentation-backend/PresentationManager";
+import type { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
 import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 
 describe("PresentationIpcHandler", () => {

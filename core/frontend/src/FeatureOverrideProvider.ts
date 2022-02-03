@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Viewport } from "./Viewport";
-import { FeatureSymbology } from "./render/FeatureSymbology";
+import type { Viewport } from "./Viewport";
+import type { FeatureSymbology } from "./render/FeatureSymbology";
 
 /** An object that customizes the appearance of [Feature]($common)s within a [[Viewport]] using [[FeatureSymbology.Overrides]].
  * When the viewport needs to recreate the symbology overrides, it invokes the provider's [[addFeatureOverrides]] method.

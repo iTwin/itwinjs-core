@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { Viewport } from "../Viewport";
-import { SceneContext } from "../ViewContext";
-import { TileTreeReference } from "./internal";
+import type { Viewport } from "../Viewport";
+import type { SceneContext } from "../ViewContext";
+import type { TileTreeReference } from "./internal";
 
 /** Provides a way for applications to inject additional non-decorative graphics into a [[Viewport]] by supplying one or more [[TileTreeReference]]s capable of loading and drawing the graphics.
  * @see [[Viewport.addTiledGraphicsProvider]] to register a provider to be drawn in a viewport.

@@ -6,11 +6,13 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { ArrayValue, PropertyRecord } from "@itwin/appui-abstract";
-import { FilteredType, IPropertyDataFilterer, PropertyFilterChangeEvent } from "../../../components-react";
+import type { ArrayValue, PropertyRecord } from "@itwin/appui-abstract";
+import type { IPropertyDataFilterer} from "../../../components-react";
+import { FilteredType, PropertyFilterChangeEvent } from "../../../components-react";
 import { FilteringPropertyDataProvider } from "../../../components-react/propertygrid/dataproviders/FilteringDataProvider";
-import {
-  IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
+import type {
+  IPropertyDataProvider, PropertyCategory, PropertyData} from "../../../components-react/propertygrid/PropertyDataProvider";
+import { PropertyDataChangeEvent,
 } from "../../../components-react/propertygrid/PropertyDataProvider";
 import { TestUtils } from "../../TestUtils";
 

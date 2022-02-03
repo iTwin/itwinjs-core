@@ -4,17 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
 import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import {
-  CategorySelectorProps, DisplayStyleProps, EcefLocation, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
+import type {
+  CategorySelectorProps, DisplayStyleProps, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps} from "@itwin/core-common";
+import { EcefLocation,
 } from "@itwin/core-common";
-import { DrawingViewState, EmphasizeElements, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState } from "@itwin/core-frontend";
+import type { ScreenViewport, ViewState } from "@itwin/core-frontend";
+import { DrawingViewState, EmphasizeElements, IModelConnection, MockRender, SheetViewState, SpatialViewState, SubCategoriesCache } from "@itwin/core-frontend";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
-import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentProps, CoreTools, Frontstage,
-  FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, StageContentLayout, StageContentLayoutProps, ViewportContentControl, Widget,
+import type {
+  ConfigurableCreateInfo, ContentProps, FrontstageProps, StageContentLayoutProps} from "../../appui-react";
+import { ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, CoreTools, Frontstage,
+  FrontstageManager, FrontstageProvider, NavigationWidget, StageContentLayout, ViewportContentControl, Widget,
   Zone,
 } from "../../appui-react";
 import { ViewUtilities } from "../../appui-react/utils/ViewUtilities";

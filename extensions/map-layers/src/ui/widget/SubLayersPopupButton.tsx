@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ScreenViewport } from "@itwin/core-frontend";
+import type { ScreenViewport } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { OutsideClickEvent, Popup, useOnOutsideClick, WebFontIcon } from "@itwin/core-react";
+import type { OutsideClickEvent} from "@itwin/core-react";
+import { Popup, useOnOutsideClick, WebFontIcon } from "@itwin/core-react";
 import { SubLayersPanel } from "./SubLayersTree";
-import { StyleMapLayerSettings } from "../Interfaces";
+import type { StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 
 // cSpell:ignore droppable Sublayer

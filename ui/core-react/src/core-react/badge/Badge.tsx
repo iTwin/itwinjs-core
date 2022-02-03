@@ -10,7 +10,7 @@ import "./Badge.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { SvgSprite } from "../icons/SvgSprite";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 /** Properties for the [[Badge]] React component
  * @internal

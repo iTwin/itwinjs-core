@@ -8,7 +8,7 @@
 
 import { Range3d } from "@itwin/core-geometry";
 import { QParams3d } from "@itwin/core-common";
-import { Geometry } from "./GeometryPrimitives";
+import type { Geometry } from "./GeometryPrimitives";
 
 /** @internal */
 export class GeometryList {

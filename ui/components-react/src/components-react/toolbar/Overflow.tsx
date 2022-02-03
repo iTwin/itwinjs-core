@@ -9,7 +9,8 @@
 import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps, Popup, useRefState } from "@itwin/core-react";
+import type { CommonProps, NoChildrenProps} from "@itwin/core-react";
+import { Popup, useRefState } from "@itwin/core-react";
 import { useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { useResizeObserverSingleDimension } from "./ItemWrapper";
 import { Direction } from "./utilities/Direction";

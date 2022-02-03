@@ -6,9 +6,9 @@
  * @module PropertyGrid
  */
 
-import * as React from "react";
-import { VirtualizedPropertyGridContext } from "./component/VirtualizedPropertyGrid";
-import { GridCategoryItem } from "./internal/flat-items/FlatGridItem";
+import type * as React from "react";
+import type { VirtualizedPropertyGridContext } from "./component/VirtualizedPropertyGrid";
+import type { GridCategoryItem } from "./internal/flat-items/FlatGridItem";
 
 /**
  * Props that property category renderer receives.

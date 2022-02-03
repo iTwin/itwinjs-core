@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import type { RenderTexture, RgbColorProps} from "@itwin/core-common";
 import {
-  Gradient, ImageSource, ImageSourceFormat, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
+  Gradient, ImageSource, ImageSourceFormat, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
-import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
+import type { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
-import { CreateRenderMaterialArgs } from "../../../render/RenderMaterial";
-import { IModelConnection } from "../../../IModelConnection";
+import type { CreateRenderMaterialArgs } from "../../../render/RenderMaterial";
+import type { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
-import { Material } from "../../../render/webgl/Material";
+import type { Material } from "../../../render/webgl/Material";
 import { RenderSystem } from "../../../render/RenderSystem";
-import { TileAdmin } from "../../../tile/internal";
+import type { TileAdmin } from "../../../tile/internal";
 import { System } from "../../../render/webgl/System";
 import { createBlankConnection } from "../../createBlankConnection";
 import { unpackAndNormalizeMaterialParam } from "./Material.test";

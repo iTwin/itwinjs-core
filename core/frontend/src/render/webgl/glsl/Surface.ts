@@ -10,13 +10,15 @@ import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { Material } from "../Material";
 import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent,
+import type {
+  FragmentShaderBuilder, ShaderBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
+import type { IsClassified, TechniqueFlags } from "../TechniqueFlags";
+import { FeatureMode, IsAnimated, IsInstanced, IsShadowable, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
-import { Texture } from "../Texture";
+import type { Texture } from "../Texture";
 import { addAnimation } from "./Animation";
 import { unpackFloat } from "./Clipping";
 import { addColor } from "./Color";

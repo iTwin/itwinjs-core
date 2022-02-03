@@ -3,10 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { ElementAspectProps, ExternalSourceAspectProps, IModel, IModelError, SubCategoryAppearance } from "@itwin/core-common";
-import {
-  Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { ElementAspectProps, ExternalSourceAspectProps} from "@itwin/core-common";
+import { IModel, IModelError, SubCategoryAppearance } from "@itwin/core-common";
+import type {
+  Element} from "../../core-backend";
+import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";

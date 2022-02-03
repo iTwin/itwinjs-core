@@ -7,7 +7,7 @@
  */
 
 import { BeUiEvent } from "@itwin/core-bentley";
-import { DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
+import type { DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
 
 /** Sync UI Control Properties Event class.
  * @public

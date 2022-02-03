@@ -9,7 +9,7 @@
 import "./Panels.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 import { WidgetContentRenderers } from "../widget/ContentRenderer";
 import { AppContent } from "./AppContent";
 import { CenterContent } from "./CenterContent";

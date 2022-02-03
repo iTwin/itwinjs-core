@@ -9,9 +9,9 @@
 import "./HueSlider.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { HSVColor } from "@itwin/core-common";
+import type { HSVColor } from "@itwin/core-common";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 import { UiIModelComponents } from "../UiIModelComponents";
 
 // hue is a value from 0 to 360

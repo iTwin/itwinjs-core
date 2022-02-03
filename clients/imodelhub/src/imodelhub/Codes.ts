@@ -7,13 +7,14 @@
  */
 
 import deepAssign from "deep-assign";
-import { AccessToken, GuidString, Id64String, IModelHubStatus, Logger } from "@itwin/core-bentley";
+import type { AccessToken, GuidString, Id64String} from "@itwin/core-bentley";
+import { IModelHubStatus, Logger } from "@itwin/core-bentley";
 import { ResponseError } from "../itwin-client/Request";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgQuery } from "../wsg/WsgQuery";
-import { WsgRequestOptions } from "../wsg/WsgClient";
+import type { WsgRequestOptions } from "../wsg/WsgClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
-import { IModelBaseHandler } from "./BaseHandler";
+import type { IModelBaseHandler } from "./BaseHandler";
 import { AggregateResponseError, ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;

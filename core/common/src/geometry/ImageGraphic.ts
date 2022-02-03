@@ -6,8 +6,9 @@
  * @module Geometry
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
+import type { Id64String } from "@itwin/core-bentley";
+import type { Transform, XYZProps } from "@itwin/core-geometry";
+import { Point3d, Range3d } from "@itwin/core-geometry";
 
 /** JSON representation of the 4 corners of an [[ImageGraphicProps]]. @see [[ImageGraphicCorners]].
  * @public

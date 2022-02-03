@@ -6,15 +6,18 @@
  * @module NativeApp
  */
 
-import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
-import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
-  IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
-  TileTreeContentIds, TxnNotifications,
+import type { OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import type {
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelRpcProps, IpcAppFunctions,
+  IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
+  TileTreeContentIds, TxnNotifications} from "@itwin/core-common";
+import { IModelError, IpcAppChannel, iTwinChannel,
 } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
-import { IModelHost, IModelHostConfiguration } from "./IModelHost";
+import type { IModelHostConfiguration } from "./IModelHost";
+import { IModelHost } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**

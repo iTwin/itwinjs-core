@@ -6,7 +6,8 @@
 import { useActiveFrontstageDef } from "@itwin/appui-react";
 import { WidgetState } from "@itwin/appui-abstract";
 import { Centered } from "@itwin/core-react";
-import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
+import type { ISelectionProvider, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
 import * as React from "react";
 
 export function useWidgetDef(id: string) {

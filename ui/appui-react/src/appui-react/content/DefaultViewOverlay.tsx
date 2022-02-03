@@ -8,7 +8,7 @@
 
 import "./DefaultViewOverlay.scss";
 import * as React from "react";
-import { ScreenViewport } from "@itwin/core-frontend";
+import type { ScreenViewport } from "@itwin/core-frontend";
 import { SolarTimeline, TimelineComponent } from "@itwin/imodel-components-react";
 import { useScheduleAnimationDataProvider } from "../hooks/useScheduleAnimationDataProvider";
 import { useActiveViewport } from "../hooks/useActiveViewport";

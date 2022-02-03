@@ -7,17 +7,19 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
 import * as moq from "typemoq";
-import { Id64String } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { Id64String } from "@itwin/core-bentley";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { KeySet, Ruleset } from "@itwin/presentation-common";
-import {
-  FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager,
+import type { Ruleset } from "@itwin/presentation-common";
+import { KeySet } from "@itwin/presentation-common";
+import type {
+  FavoritePropertiesManager, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager} from "@itwin/presentation-frontend";
+import { Presentation,
 } from "@itwin/presentation-frontend";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyData } from "@itwin/components-react";
+import type { PropertyData } from "@itwin/components-react";
 import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
-import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
+import type { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 
 describe("FavoritePropertiesDataProvider", () => {
 

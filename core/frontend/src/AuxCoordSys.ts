@@ -7,17 +7,20 @@
  */
 
 import { JsonUtils } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
-import {
-  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Code, ColorDef, IModel, LinePixels, Npc,
+import type { XAndY, XYAndZ} from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import type {
+  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps} from "@itwin/core-common";
+import { BisCodeSpec, Code, ColorDef, IModel, LinePixels, Npc,
 } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
-import { IModelConnection } from "./IModelConnection";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { DecorateContext } from "./ViewContext";
+import type { IModelConnection } from "./IModelConnection";
+import type { GraphicBuilder} from "./render/GraphicBuilder";
+import { GraphicType } from "./render/GraphicBuilder";
+import type { DecorateContext } from "./ViewContext";
 import { CoordSystem } from "./CoordSystem";
-import { Viewport } from "./Viewport";
-import { ViewState } from "./ViewState";
+import type { Viewport } from "./Viewport";
+import type { ViewState } from "./ViewState";
 
 /** @public */
 export enum ACSType {

@@ -7,11 +7,12 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
-import { IModelApp, MockRender, ScreenViewport, Viewport } from "@itwin/core-frontend";
+import type { ScreenViewport, Viewport } from "@itwin/core-frontend";
+import { IModelApp, MockRender } from "@itwin/core-frontend";
 import { render } from "@testing-library/react";
 import { ClearEmphasisStatusField } from "../../appui-react/selection/ClearEmphasisStatusField";
 import { HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "../../appui-react/selection/HideIsolateEmphasizeManager";
-import { StatusBarFieldId } from "../../appui-react/statusbar/StatusBarWidgetControl";
+import type { StatusBarFieldId } from "../../appui-react/statusbar/StatusBarWidgetControl";
 import TestUtils from "../TestUtils";
 
 describe("ClearEmphasisStatusField", () => {

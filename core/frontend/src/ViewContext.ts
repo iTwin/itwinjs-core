@@ -6,27 +6,32 @@
  * @module Rendering
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
-import {
+import type { Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import type {
   Matrix3d, Point2d,
   Point3d, Range1d, Transform, XAndY,
 } from "@itwin/core-geometry";
-import { Frustum, FrustumPlanes, SpatialClassifier, ViewFlags } from "@itwin/core-common";
-import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
+import type { Frustum, SpatialClassifier, ViewFlags } from "@itwin/core-common";
+import { FrustumPlanes } from "@itwin/core-common";
+import type { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 import { IModelApp } from "./IModelApp";
-import { PlanarClipMaskState } from "./PlanarClipMaskState";
-import { CanvasDecoration } from "./render/CanvasDecoration";
-import { Decorations } from "./render/Decorations";
-import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
-import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
-import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
-import { RenderSystem, RenderTextureDrape } from "./render/RenderSystem";
-import { RenderTarget } from "./render/RenderTarget";
+import type { PlanarClipMaskState } from "./PlanarClipMaskState";
+import type { CanvasDecoration } from "./render/CanvasDecoration";
+import type { Decorations } from "./render/Decorations";
+import type { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
+import type { GraphicBuilder, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
+import { GraphicType } from "./render/GraphicBuilder";
+import type { GraphicList, RenderGraphic } from "./render/RenderGraphic";
+import type { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
+import type { RenderSystem, RenderTextureDrape } from "./render/RenderSystem";
+import type { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
-import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
-import { ViewingSpace } from "./ViewingSpace";
-import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
+import type { SpatialClassifierTileTreeReference, Tile, TileTreeReference } from "./tile/internal";
+import { TileGraphicType, TileLoadStatus } from "./tile/internal";
+import type { ViewingSpace } from "./ViewingSpace";
+import type { ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
+import { ELEMENT_MARKED_FOR_REMOVAL } from "./Viewport";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public

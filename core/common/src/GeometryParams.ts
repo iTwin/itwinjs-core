@@ -6,11 +6,12 @@
  * @module Symbology
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { ColorDef } from "./ColorDef";
-import { AreaPattern } from "./geometry/AreaPattern";
-import { LineStyle } from "./geometry/LineStyle";
-import { Gradient } from "./Gradient";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { ColorDef } from "./ColorDef";
+import type { AreaPattern } from "./geometry/AreaPattern";
+import type { LineStyle } from "./geometry/LineStyle";
+import type { Gradient } from "./Gradient";
 import { IModel } from "./IModel";
 
 /** Whether a closed region should be drawn for wireframe display with its internal area filled or not.

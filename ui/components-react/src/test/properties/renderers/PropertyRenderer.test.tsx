@@ -14,7 +14,7 @@ import { PropertyRenderer } from "../../../components-react/properties/renderers
 import { PropertyValueRendererManager } from "../../../components-react/properties/ValueRendererManager";
 import TestUtils from "../../TestUtils";
 import { fireEvent, render } from "@testing-library/react";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 
 describe("PropertyRenderer", () => {
   describe("getLabelOffset", () => {

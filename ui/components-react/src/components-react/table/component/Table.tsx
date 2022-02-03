@@ -14,32 +14,40 @@ import classnamesDedupe from "classnames/dedupe";
 import { memoize } from "lodash";
 import * as React from "react";
 import ReactDataGrid from "react-data-grid";
-import { DisposableList, Guid, GuidString } from "@itwin/core-bentley";
+import type { GuidString } from "@itwin/core-bentley";
+import { DisposableList, Guid } from "@itwin/core-bentley";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
-import {
-  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalStateStorage, Orientation, SortDirection, Timer,
-  UiStateStorage, UiStateStorageStatus,
+import type {
+  CommonProps,
+  UiStateStorage} from "@itwin/core-react";
+import { Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalStateStorage, Orientation, SortDirection, Timer, UiStateStorageStatus,
 } from "@itwin/core-react";
-import {
-  MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
+import type {
+  MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SingleSelectionHandler} from "../../common/selection/SelectionHandler";
+import { SelectionHandler,
 } from "../../common/selection/SelectionHandler";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import type { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { TableRowStyleProvider } from "../../properties/ItemStyle";
-import { PropertyDialogState, PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
+import type { PropertyDialogState} from "../../properties/ValueRendererManager";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import type { CompositeFilterDescriptorCollection} from "../columnfiltering/ColumnFiltering";
+import { FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
 import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
 import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
 import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
-import { DataGridFilterParser, ReactDataGridFilter } from "../columnfiltering/DataGridFilterParser";
+import type { ReactDataGridFilter } from "../columnfiltering/DataGridFilterParser";
+import { DataGridFilterParser } from "../columnfiltering/DataGridFilterParser";
 import { MultiValueFilter } from "../columnfiltering/multi-value-filter/MultiValueFilter";
 import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterDescriptorCollection";
-import { CellItem, ColumnDescription, FilterRenderer, RowItem, TableDataProvider } from "../TableDataProvider";
+import type { CellItem, ColumnDescription, RowItem, TableDataProvider } from "../TableDataProvider";
+import { FilterRenderer } from "../TableDataProvider";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
 import { TableCell, TableCellContent, TableIconCellContent } from "./TableCell";
-import { ReactDataGridColumn, TableColumn } from "./TableColumn";
+import type { ReactDataGridColumn} from "./TableColumn";
+import { TableColumn } from "./TableColumn";
 
 // cspell:ignore Overscan columnfiltering Dedupe popout
 

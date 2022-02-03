@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
+import type { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 
 /**
  * Creates content for current selection.

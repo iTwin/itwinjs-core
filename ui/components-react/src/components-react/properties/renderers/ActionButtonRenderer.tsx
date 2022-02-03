@@ -6,8 +6,8 @@
  * @module Properties
  */
 
-import * as React from "react";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type * as React from "react";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 
 /** Properties of [[ActionButtonRenderer]]
  * @public

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EditCommandIpc } from "@itwin/editor-common";
+import type { EditCommandIpc } from "@itwin/editor-common";
 
 export const testCmdIds = {
   cmd1: "testcommand.1",

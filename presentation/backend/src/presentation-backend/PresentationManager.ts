@@ -8,26 +8,31 @@
 
 import * as hash from "object-hash";
 import * as path from "path";
-import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
-import { Id64String } from "@itwin/core-bentley";
-import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
-import {
-  Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
-  DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
+import type { IModelDb, IModelJsNative} from "@itwin/core-backend";
+import { BriefcaseDb, IpcHost } from "@itwin/core-backend";
+import type { Id64String } from "@itwin/core-bentley";
+import type { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
+import type { ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions,
+  DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  isSingleElementPropertiesRequestOptions, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged,
-  PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
-  SingleElementPropertiesRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyCompareOptions, HierarchyRequestOptions, MultiElementPropertiesRequestOptions, NodeKey, Paged,
+  PagedResponse, Prioritized, Ruleset, SelectionScope, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions} from "@itwin/presentation-common";
+import {
+  Content, ContentFlags, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, getLocalesDirectory, HierarchyCompareInfo, InstanceKey,
+  isSingleElementPropertiesRequestOptions, Key, KeySet, LabelDefinition, Node, NodePathElement, PresentationError, PresentationStatus, SelectClassInfo,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
+import type { NativePlatformDefinition, NativePresentationDefaultUnitFormats,
+  NativePresentationKeySetJSON} from "./NativePlatform";
 import {
-  createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
-  NativePresentationKeySetJSON, NativePresentationUnitSystem,
+  createDefaultNativePlatform, NativePlatformRequestTypes, NativePresentationUnitSystem,
 } from "./NativePlatform";
-import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
-import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
+import type { RulesetManager} from "./RulesetManager";
+import { RulesetManagerImpl } from "./RulesetManager";
+import type { RulesetVariablesManager} from "./RulesetVariablesManager";
+import { RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
 import { UpdatesTracker } from "./UpdatesTracker";
 import { getElementKey } from "./Utils";

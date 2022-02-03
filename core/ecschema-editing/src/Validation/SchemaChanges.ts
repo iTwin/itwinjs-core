@@ -6,11 +6,12 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus,
-  EntityClass, Enumeration, Format, KindOfQuantity, OverrideFormat, Property, RelationshipConstraint,
+import type { AnyClass, AnyEnumerator, CustomAttribute,
+  EntityClass, Enumeration, Format, KindOfQuantity} from "@itwin/ecschema-metadata";
+import { ECClass, ECObjectsError, ECObjectsStatus, OverrideFormat, Property, RelationshipConstraint,
   Schema, SchemaItem, SchemaItemType, schemaItemTypeToString,
 } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic } from "./Diagnostic";
+import type { AnyDiagnostic } from "./Diagnostic";
 import { SchemaCompareCodes } from "./SchemaCompareDiagnostics";
 
 /**

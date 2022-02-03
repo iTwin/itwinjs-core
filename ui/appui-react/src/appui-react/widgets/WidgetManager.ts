@@ -8,7 +8,8 @@
  */
 
 import { BeUiEvent, Logger } from "@itwin/core-bentley";
-import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, UiItemsManager } from "@itwin/appui-abstract";
+import type { AbstractWidgetProps} from "@itwin/appui-abstract";
+import { AbstractZoneLocation, StagePanelLocation, StagePanelSection, UiItemsManager } from "@itwin/appui-abstract";
 import { UiFramework } from "../UiFramework";
 import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
 import { WidgetDef } from "./WidgetDef";

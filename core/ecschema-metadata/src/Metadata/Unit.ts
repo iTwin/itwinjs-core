@@ -7,16 +7,16 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { UnitProps } from "../Deserialization/JsonProps";
+import type { UnitProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedPhenomenon, LazyLoadedUnitSystem } from "../Interfaces";
-import { SchemaItemKey } from "../SchemaKey";
-import { Phenomenon } from "./Phenomenon";
-import { Schema } from "./Schema";
+import type { LazyLoadedPhenomenon, LazyLoadedUnitSystem } from "../Interfaces";
+import type { SchemaItemKey } from "../SchemaKey";
+import type { Phenomenon } from "./Phenomenon";
+import type { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { UnitSystem } from "./UnitSystem";
+import type { UnitSystem } from "./UnitSystem";
 
 /**
  * An abstract class that adds the ability to define Units and everything that goes with them, within an ECSchema as a

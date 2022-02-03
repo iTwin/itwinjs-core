@@ -7,8 +7,9 @@
  */
 
 import * as React from "react";
-import { BackstageItem, BackstageItemsManager, ConditionalBooleanValue, isStageLauncher, UiSyncEventArgs } from "@itwin/appui-abstract";
-import { CommonProps } from "@itwin/core-react";
+import type { BackstageItem, UiSyncEventArgs } from "@itwin/appui-abstract";
+import { BackstageItemsManager, ConditionalBooleanValue, isStageLauncher } from "@itwin/appui-abstract";
+import type { CommonProps } from "@itwin/core-react";
 import { BackstageSeparator, Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";

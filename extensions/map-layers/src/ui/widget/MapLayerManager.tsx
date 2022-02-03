@@ -9,16 +9,18 @@
 
 import "./MapLayerManager.scss";
 import * as React from "react";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import type { DropResult } from "react-beautiful-dnd";
+import { DragDropContext } from "react-beautiful-dnd";
 import { assert, BentleyError } from "@itwin/core-bentley";
-import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import type { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import type { MapLayerImageryProvider, MapLayerSource,
+  ScreenViewport, TileTreeOwner, Viewport} from "@itwin/core-frontend";
 import {
-  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
-  ScreenViewport, TileTreeOwner, Viewport,
+  ImageryMapTileTree, IModelApp, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { MapLayerPreferences, MapLayerSourceChangeType } from "../../MapLayerPreferences";
-import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
+import type { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";

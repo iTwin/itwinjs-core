@@ -6,49 +6,55 @@
  * @module WebGL
  */
 
-import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
-import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, BentleyStatus, Dictionary, dispose, Id64 } from "@itwin/core-bentley";
+import type { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
+import type { ElementAlignedBox3d, Frustum, PackedFeatureTable, RgbColorProps} from "@itwin/core-common";
 import {
-  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable,
-  RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
+  ColorDef, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError,
+  RenderMaterial, RenderTexture, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
-import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
+import { Capabilities, DepthType } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
-import { ViewRect } from "../../ViewRect";
-import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
-import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
-import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
+import type { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
+import type { ViewRect } from "../../ViewRect";
+import type { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
+import type { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
+import type { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
-import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
-import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
-import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { MeshParams } from "../primitives/VertexTable";
-import { PointStringParams } from "../primitives/PointStringParams";
-import { PolylineParams } from "../primitives/PolylineParams";
-import { RenderClipVolume } from "../RenderClipVolume";
-import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
-import { RenderMemory } from "../RenderMemory";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
-import { CreateRenderMaterialArgs } from "../RenderMaterial";
-import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams,
-  RenderSystem, RenderSystemDebugControl, TerrainTexture,
+import type { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
+import type { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
+import type { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import type { MeshParams } from "../primitives/VertexTable";
+import type { PointStringParams } from "../primitives/PointStringParams";
+import type { PolylineParams } from "../primitives/PolylineParams";
+import type { RenderClipVolume } from "../RenderClipVolume";
+import type { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
+import type { RenderMemory } from "../RenderMemory";
+import type { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
+import type { CreateRenderMaterialArgs } from "../RenderMaterial";
+import type {
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderGeometry, RenderSkyBoxParams, RenderSystemDebugControl, TerrainTexture} from "../RenderSystem";
+import { RenderDiagnostics,
+  RenderSystem,
 } from "../RenderSystem";
-import { RenderTarget } from "../RenderTarget";
-import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
+import type { RenderTarget } from "../RenderTarget";
+import type { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
 import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { Debug } from "./Diagnostics";
-import { WebGLDisposable } from "./Disposable";
-import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
+import type { WebGLDisposable } from "./Disposable";
+import type { DepthBuffer} from "./FrameBuffer";
+import { FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
-import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
+import type { Graphic} from "./Graphic";
+import { AnimationTransformBranch, Batch, Branch, GraphicOwner, GraphicsArray } from "./Graphic";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -65,7 +71,7 @@ import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
 import { RealityMeshGeometry } from "./RealityMesh";
 import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
-import { UniformHandle } from "./UniformHandle";
+import type { UniformHandle } from "./UniformHandle";
 import { PlanarGridGeometry } from "./PlanarGrid";
 
 /* eslint-disable no-restricted-syntax */

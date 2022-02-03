@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IDisposable } from "@itwin/core-bentley";
+import type { IDisposable } from "@itwin/core-bentley";
 
 /** Interface implemented by any type that potentially owns WebGL resources that must be explicitly freed.
  * Resources are freed in the inherited `dispose` method.

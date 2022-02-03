@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import type { FeatureOverrideProvider, FeatureSymbology, IModelConnection, MutableChangeFlags, Viewport} from "@itwin/core-frontend";
 import {
-  EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelConnection, MutableChangeFlags, SnapshotConnection, Viewport,
+  EmphasizeElements, SnapshotConnection,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";

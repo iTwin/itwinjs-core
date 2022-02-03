@@ -9,7 +9,8 @@
 import "./Indicator.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { FooterIndicator, FooterIndicatorProps } from "../Indicator";
+import type { FooterIndicatorProps } from "../Indicator";
+import { FooterIndicator } from "../Indicator";
 
 /** Properties of [[SnapMode]] component.
  * @internal

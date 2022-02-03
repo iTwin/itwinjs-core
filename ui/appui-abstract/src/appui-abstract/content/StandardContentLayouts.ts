@@ -6,7 +6,7 @@
  * @module ContentView
  */
 
-import { ContentLayoutProps } from "./ContentLayoutProps";
+import type { ContentLayoutProps } from "./ContentLayoutProps";
 
 /**
  * Class that define Standard Content Layouts that can be used to specify how the content is arranged in a frontstage.

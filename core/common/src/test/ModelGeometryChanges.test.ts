@@ -4,9 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CompressedId64Set, DbOpcode, Guid, Id64String, OrderedId64Iterable, TransientIdSequence } from "@itwin/core-bentley";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
-import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../ModelGeometryChanges";
+import type { Id64String, OrderedId64Iterable} from "@itwin/core-bentley";
+import { CompressedId64Set, DbOpcode, Guid, TransientIdSequence } from "@itwin/core-bentley";
+import type { Range3dProps } from "@itwin/core-geometry";
+import { Range3d } from "@itwin/core-geometry";
+import type { ModelGeometryChangesProps } from "../ModelGeometryChanges";
+import { ElementGeometryChange, ModelGeometryChanges } from "../ModelGeometryChanges";
 
 // Each test is list of inserted, updated, and/or deleted element Ids; along with modelId.
 // We choose an arbitrary range for each insert or update.

@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { Map4d } from "@itwin/core-geometry";
-import { FrustumPlanes } from "@itwin/core-common";
+import type { Map4d } from "@itwin/core-geometry";
+import type { FrustumPlanes } from "@itwin/core-common";
 import { TileDrawArgs } from "./internal";
 
 /** @internal */

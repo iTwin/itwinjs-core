@@ -6,14 +6,18 @@ import { expect, use } from "chai";
 import ChaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, Guid, Id64String } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import {
-  CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, Field, Item, KeySet, PrimitiveTypeDescription,
-  PropertyValueFormat, RegisteredRuleset, Ruleset, Value, ValuesDictionary,
+import type { Id64String } from "@itwin/core-bentley";
+import { BeEvent, Guid } from "@itwin/core-bentley";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type {
+  CategoryDescription, DisplayValue, PrimitiveTypeDescription, Ruleset, Value, ValuesDictionary} from "@itwin/presentation-common";
+import { Content, DefaultContentDisplayTypes, Descriptor, Field, Item, KeySet,
+  PropertyValueFormat, RegisteredRuleset,
 } from "@itwin/presentation-common";
-import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
-import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
+import type { PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
+import type { IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
+import { ContentBuilder } from "../presentation-testing/ContentBuilder";
 
 use(ChaiAsPromised);
 

@@ -5,11 +5,13 @@
 
 import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
+import type { IModelConnection, IModelTileTree, Tile, TileTree, Viewport} from "@itwin/core-frontend";
 import {
-  DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
+  DisclosedTileTreeSet, IModelApp, SnapshotConnection, TileLoadStatus, TileUsageMarker,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
-import { createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
+import type { TestViewport} from "../../TestViewport";
+import { createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, testViewports } from "../../TestViewport";
 
 describe("Tile unloading", async () => {
   let imodel: IModelConnection;

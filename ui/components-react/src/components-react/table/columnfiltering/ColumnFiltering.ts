@@ -7,8 +7,8 @@
  * @module Table
  */
 
-import { Primitives } from "@itwin/appui-abstract";
-import { RowItem } from "../TableDataProvider";
+import type { Primitives } from "@itwin/appui-abstract";
+import type { RowItem } from "../TableDataProvider";
 
 /** Operator used in FilterDescriptor
  * @public

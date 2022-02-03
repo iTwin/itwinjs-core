@@ -8,8 +8,10 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { fireEvent, render } from "@testing-library/react";
-import { IModelConnection, MockRender } from "@itwin/core-frontend";
-import { CardContainer, CardInfo, FrontstageManager, SheetCard, SheetData, SheetsModalFrontstage } from "../../appui-react";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend";
+import type { CardInfo, SheetData} from "../../appui-react";
+import { CardContainer, FrontstageManager, SheetCard, SheetsModalFrontstage } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("SheetsModalFrontstage", () => {

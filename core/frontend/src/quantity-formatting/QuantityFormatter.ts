@@ -7,12 +7,13 @@
  */
 
 import { BeUiEvent } from "@itwin/core-bentley";
-import {
-  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion,
-  UnitProps, UnitsProvider, UnitSystemKey,
+import type {
+  AlternateUnitLabelsProvider, FormatProps, QuantityParseResult, UnitConversion,
+  UnitProps, UnitsProvider, UnitSystemKey} from "@itwin/core-quantity";
+import { Format, FormatterSpec, ParseError, ParserSpec,
 } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import type { IModelConnection } from "../IModelConnection";
 import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM

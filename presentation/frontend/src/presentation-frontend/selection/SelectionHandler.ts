@@ -6,12 +6,13 @@
  * @module UnifiedSelection
  */
 
-import { DisposableList, IDisposable } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import { Keys, KeySet } from "@itwin/presentation-common";
-import { ISelectionProvider } from "./ISelectionProvider";
-import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
-import { SelectionManager } from "./SelectionManager";
+import type { IDisposable } from "@itwin/core-bentley";
+import { DisposableList } from "@itwin/core-bentley";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { Keys, KeySet } from "@itwin/presentation-common";
+import type { ISelectionProvider } from "./ISelectionProvider";
+import type { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
+import type { SelectionManager } from "./SelectionManager";
 
 /**
  * Properties for creating a `SelectionHandler` instance.

@@ -3,9 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
-import { ECSqlStatement, Element, GeometricElement3d, PhysicalPartition, SnapshotDb } from "@itwin/core-backend";
+import type { Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64 } from "@itwin/core-bentley";
+import type { Range3dProps } from "@itwin/core-geometry";
+import { Range3d } from "@itwin/core-geometry";
+import type { ECSqlStatement, SnapshotDb } from "@itwin/core-backend";
+import { Element, GeometricElement3d, PhysicalPartition } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */

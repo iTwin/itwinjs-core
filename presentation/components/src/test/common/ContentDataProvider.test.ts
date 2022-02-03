@@ -7,17 +7,21 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, Paged, SelectionInfo} from "@itwin/presentation-common";
 import {
-  Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, FIELD_NAMES_SEPARATOR, KeySet, Paged, RegisteredRuleset, SelectionInfo,
+  Content, FIELD_NAMES_SEPARATOR, KeySet, RegisteredRuleset,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomRuleset, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
   createTestPropertyInfo, createTestSimpleContentField, PromiseContainer, ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
-import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@itwin/appui-abstract";
-import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
+import type { PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
+import type { PrimitiveValue, PropertyDescription} from "@itwin/appui-abstract";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import type { ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
+import { CacheInvalidationProps, ContentDataProvider } from "../../presentation-components/common/ContentDataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 
 /**

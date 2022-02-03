@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import type { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
 
 describe("IModelConnection", () => {

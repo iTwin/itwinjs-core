@@ -6,12 +6,12 @@
  * @module RpcInterface
  */
 
-import { IModelConnectionProps, IModelRpcProps, SnapshotOpenOptions } from "../IModel";
+import type { IModelConnectionProps, IModelRpcProps, SnapshotOpenOptions } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { RpcOperation } from "./core/RpcOperation";
-import { RpcRequestTokenSupplier_T } from "./core/RpcRequest";
-import { RpcRoutingToken } from "./core/RpcRoutingToken";
+import type { RpcRequestTokenSupplier_T } from "./core/RpcRequest";
+import type { RpcRoutingToken } from "./core/RpcRoutingToken";
 
 const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefined", key: req.parameters[0] });
 

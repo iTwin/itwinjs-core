@@ -6,10 +6,11 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@itwin/presentation-common/lib/cjs/test";
-import { HiliteSetProvider, Presentation, PresentationManager } from "../../presentation-frontend";
+import type { PresentationManager } from "../../presentation-frontend";
+import { HiliteSetProvider, Presentation } from "../../presentation-frontend";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 describe("HiliteSetProvider", () => {

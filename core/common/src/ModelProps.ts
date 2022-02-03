@@ -6,11 +6,11 @@
  * @module Entities
  */
 
-import { GuidString, Id64String } from "@itwin/core-bentley";
-import { XYProps } from "@itwin/core-geometry";
-import { CodeProps } from "./Code";
-import { RelatedElementProps } from "./ElementProps";
-import { EntityProps, EntityQueryParams } from "./EntityProps";
+import type { GuidString, Id64String } from "@itwin/core-bentley";
+import type { XYProps } from "@itwin/core-geometry";
+import type { CodeProps } from "./Code";
+import type { RelatedElementProps } from "./ElementProps";
+import type { EntityProps, EntityQueryParams } from "./EntityProps";
 
 /** Properties that define a [Model]($docs/bis/intro/model-fundamentals)
  * @public

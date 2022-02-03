@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { EnumerationInfo, FieldHierarchy, traverseContentItem } from "@itwin/presentation-common";
+import type { EnumerationInfo, FieldHierarchy} from "@itwin/presentation-common";
+import { traverseContentItem } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { ArrayValue, PropertyRecord, StructValue } from "@itwin/appui-abstract";
-import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../../presentation-components/common/ContentBuilder";
+import type { ArrayValue, PropertyRecord, StructValue } from "@itwin/appui-abstract";
+import type { FieldHierarchyRecord, IPropertiesAppender} from "../../presentation-components/common/ContentBuilder";
+import { PropertyRecordsBuilder } from "../../presentation-components/common/ContentBuilder";
 
 class TestPropertyRecordsBuilder extends PropertyRecordsBuilder {
   public entries: Array<{ record: PropertyRecord, fieldHierarchy: FieldHierarchy }> = [];

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Viewport } from "./Viewport";
+import type { Viewport } from "./Viewport";
 
 /** Forms a bidirectional connection between two [[Viewport]]s such that the [[ViewState]]s of each are synchronized with one another.
  * For example, panning in one viewport will cause the other viewport to pan by the same distance, and changing the [RenderMode]($common) of one viewport

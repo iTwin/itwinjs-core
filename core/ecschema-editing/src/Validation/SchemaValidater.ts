@@ -6,11 +6,12 @@
  * @module Validation
  */
 
-import { ISchemaPartVisitor, Schema } from "@itwin/ecschema-metadata";
-import { IRuleSet } from "./Rules";
+import type { ISchemaPartVisitor, Schema } from "@itwin/ecschema-metadata";
+import type { IRuleSet } from "./Rules";
 import { SchemaValidationVisitor } from "./SchemaValidationVisitor";
-import { IDiagnosticReporter, SuppressionDiagnosticReporter } from "./DiagnosticReporter";
-import { AnyDiagnostic } from "./Diagnostic";
+import type { IDiagnosticReporter} from "./DiagnosticReporter";
+import { SuppressionDiagnosticReporter } from "./DiagnosticReporter";
+import type { AnyDiagnostic } from "./Diagnostic";
 import { SchemaWalker } from "./SchemaWalker";
 import { ECRuleSet } from "./ECRules";
 

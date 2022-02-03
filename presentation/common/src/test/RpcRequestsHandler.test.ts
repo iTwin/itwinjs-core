@@ -6,29 +6,32 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64String } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
-import {
-  DescriptorOverrides, DistinctValuesRpcRequestOptions, KeySet, KeySetJSON, Paged, PresentationError, PresentationRpcInterface,
-  PresentationRpcRequestOptions, PresentationRpcResponse, PresentationStatus, RpcRequestsHandler, SelectionInfo, SelectionScopeRequestOptions,
+import type { Id64String } from "@itwin/core-bentley";
+import type { IModelRpcProps, RpcInterface, RpcInterfaceDefinition} from "@itwin/core-common";
+import { RpcManager } from "@itwin/core-common";
+import type {
+  DescriptorOverrides, DistinctValuesRpcRequestOptions, KeySetJSON, Paged, PresentationRpcInterface,
+  PresentationRpcRequestOptions, PresentationRpcResponse, SelectionInfo, SelectionScopeRequestOptions} from "../presentation-common";
+import { KeySet, PresentationError, PresentationStatus, RpcRequestsHandler,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
-import { ItemJSON } from "../presentation-common/content/Item";
-import { DiagnosticsScopeLogs } from "../presentation-common/Diagnostics";
-import { InstanceKeyJSON } from "../presentation-common/EC";
-import { ElementProperties } from "../presentation-common/ElementProperties";
-import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
-import {
+import type { ItemJSON } from "../presentation-common/content/Item";
+import type { DiagnosticsScopeLogs } from "../presentation-common/Diagnostics";
+import type { InstanceKeyJSON } from "../presentation-common/EC";
+import type { ElementProperties } from "../presentation-common/ElementProperties";
+import type { NodeKeyJSON } from "../presentation-common/hierarchy/Key";
+import { NodeKey } from "../presentation-common/hierarchy/Key";
+import type {
   ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
   HierarchyRequestOptions, SingleElementPropertiesRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
-import {
+import type {
   ContentDescriptorRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
   FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
-import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
+import type { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import {
   createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON,

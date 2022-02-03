@@ -7,19 +7,22 @@
  */
 
 import { assert, BeTimePoint } from "@itwin/core-bentley";
+import type { XYZProps} from "@itwin/core-geometry";
 import {
-  Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps,
+  Matrix3d, Point3d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
-import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
+import type { ViewFlagOverrides } from "@itwin/core-common";
+import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus } from "@itwin/core-common";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
-import { GeoConverter } from "../GeoServices";
+import type { GeoConverter } from "../GeoServices";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { SceneContext } from "../ViewContext";
+import type { GraphicBuilder } from "../render/GraphicBuilder";
+import type { SceneContext } from "../ViewContext";
+import type { RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
+  TileGraphicType, TileParams, TileTreeParams} from "./internal";
 import {
-  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
-  TileGraphicType, TileParams, TileTree, TileTreeParams,
+  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, TileTree,
 } from "./internal";
 
 /** @internal */

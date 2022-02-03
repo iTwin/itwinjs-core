@@ -5,12 +5,14 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { CodeSpec, ElementProps, PropertyMetaData} from "@itwin/core-common";
+import { CodeScopeSpec, IModel, RelatedElement } from "@itwin/core-common";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
-import { Element } from "./Element";
-import { IModelDb } from "./IModelDb";
+import type { Element } from "./Element";
+import type { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.

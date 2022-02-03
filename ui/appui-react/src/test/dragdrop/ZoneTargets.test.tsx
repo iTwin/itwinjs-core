@@ -6,7 +6,8 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BackTarget, MergeTarget, WidgetZoneId, ZoneTargetType } from "@itwin/appui-layout-react";
+import type { WidgetZoneId} from "@itwin/appui-layout-react";
+import { BackTarget, MergeTarget, ZoneTargetType } from "@itwin/appui-layout-react";
 import { ZoneTargets } from "../../appui-react/dragdrop/ZoneTargets";
 import TestUtils, { mount } from "../TestUtils";
 

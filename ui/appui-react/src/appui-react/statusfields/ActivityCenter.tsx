@@ -10,10 +10,11 @@ import classnames from "classnames";
 import * as React from "react";
 import { Centered } from "@itwin/core-react";
 import { MessageLayout, MessageProgress, Status } from "@itwin/appui-layout-react";
-import { ActivityMessageEventArgs, MessageManager } from "../messages/MessageManager";
-import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
+import type { ActivityMessageEventArgs} from "../messages/MessageManager";
+import { MessageManager } from "../messages/MessageManager";
+import type { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import type { StatusFieldProps } from "./StatusFieldProps";
 
 /** State for the [[ActivityCenterField]] component
  * @internal

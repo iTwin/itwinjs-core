@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ChildProcess } from "child_process";
+import type { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { ChangesetProps } from "@itwin/core-common";
+import type { AccessToken, GuidString } from "@itwin/core-bentley";
+import type { ChangesetProps } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { IModelHost, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";

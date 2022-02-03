@@ -9,19 +9,23 @@
 import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter, UiSyncEventArgs } from "@itwin/appui-abstract";
-import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@itwin/core-react";
+import type { BadgeType, ConditionalStringValue, OnItemExecutedFunc, StringGetter, UiSyncEventArgs } from "@itwin/appui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
+import type { CommonProps, IconSpec, SizeProps} from "@itwin/core-react";
+import { BadgeUtilities, Icon, withOnOutsideClick } from "@itwin/core-react";
 import {
   Direction, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
   Group as ToolGroupComponent, withDragInteraction,
 } from "@itwin/appui-layout-react";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import type { ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { AnyItemDef } from "../shared/AnyItemDef";
-import { GroupItemProps } from "../shared/GroupItemProps";
-import { BaseItemState, ItemDefBase } from "../shared/ItemDefBase";
+import type { AnyItemDef } from "../shared/AnyItemDef";
+import type { GroupItemProps } from "../shared/GroupItemProps";
+import type { BaseItemState} from "../shared/ItemDefBase";
+import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";

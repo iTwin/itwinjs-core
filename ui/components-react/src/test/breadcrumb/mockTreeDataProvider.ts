@@ -5,7 +5,7 @@
 
 import { BeEvent } from "@itwin/core-bentley";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import {
+import type {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeDataChangesListener, TreeNodeItem,
 } from "../../components-react";
 

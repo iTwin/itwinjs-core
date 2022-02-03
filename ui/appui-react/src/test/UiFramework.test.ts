@@ -7,15 +7,20 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
-import { IModelRpcProps } from "@itwin/core-common";
-import { RpcRequestsHandler } from "@itwin/presentation-common";
+import type { IModelRpcProps } from "@itwin/core-common";
+import type { RpcRequestsHandler } from "@itwin/presentation-common";
 import { createRandomSelectionScope } from "@itwin/presentation-common/lib/cjs/test";
-import { Id64String, Logger } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@itwin/core-frontend";
-import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@itwin/presentation-frontend";
+import type { Id64String} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
+import type { IModelConnection, ViewState } from "@itwin/core-frontend";
+import { IModelApp, MockRender, SelectionSet } from "@itwin/core-frontend";
+import type { SelectionScopesManagerProps } from "@itwin/presentation-frontend";
+import { Presentation, SelectionManager, SelectionScopesManager } from "@itwin/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
-import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../appui-react";
-import { LocalStateStorage, UiStateStorage } from "@itwin/core-react";
+import type { CursorMenuData, UserSettingsProvider } from "../appui-react";
+import { ColorTheme, SettingsModalFrontstage, UiFramework } from "../appui-react";
+import type { UiStateStorage } from "@itwin/core-react";
+import { LocalStateStorage } from "@itwin/core-react";
 import TestUtils, { storageMock } from "./TestUtils";
 import { OpenSettingsTool } from "../appui-react/tools/OpenSettingsTool";
 

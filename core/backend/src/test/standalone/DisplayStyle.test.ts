@@ -5,7 +5,8 @@
 
 import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
-import { IModel, SkyBoxImageType, SkyBoxProps } from "@itwin/core-common";
+import type { SkyBoxProps } from "@itwin/core-common";
+import { IModel, SkyBoxImageType } from "@itwin/core-common";
 import { DisplayStyle3d, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 

@@ -6,7 +6,7 @@
  * @module Date
  */
 
-import { DateFormatter } from "@itwin/appui-abstract";
+import type { DateFormatter } from "@itwin/appui-abstract";
 
 /**
  * A basic class that allows user to provide an Intl.DateTimeFormat

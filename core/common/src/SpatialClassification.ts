@@ -6,7 +6,8 @@
  * @module DisplayStyles
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 
 /** Describes how a [[SpatialClassifier]] affects the display of classified geometry - that is, geometry intersecting
  * the classifier.

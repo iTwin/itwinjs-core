@@ -8,7 +8,8 @@
 
 import * as React from "react";
 import { ViewClipByPlaneTool } from "@itwin/core-frontend";
-import { BaseUiItemsProvider, CommonStatusBarItem, CommonToolbarItem, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsManager } from "@itwin/appui-abstract";
+import type { CommonStatusBarItem, CommonToolbarItem} from "@itwin/appui-abstract";
+import { BaseUiItemsProvider, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsManager } from "@itwin/appui-abstract";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
 import { StatusBarItemUtilities } from "../statusbar/StatusBarItemUtilities";
 import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";

@@ -2,11 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, JsonUtils } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { JsonUtils } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
-import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@itwin/core-backend";
-import {
-  AxisAlignedBox3d, Cartographic, IModel, PersistentBackgroundMapProps, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
+import type { IModelDb} from "@itwin/core-backend";
+import { CategorySelector, DisplayStyle3d, ModelSelector, OrthographicViewDefinition } from "@itwin/core-backend";
+import type {
+  AxisAlignedBox3d, PersistentBackgroundMapProps, ViewFlags} from "@itwin/core-common";
+import { Cartographic, IModel, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 
 class RealityModelTileUtils {

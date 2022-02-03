@@ -8,14 +8,16 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { UiSyncEventArgs } from "@itwin/appui-abstract";
-import { CommonProps, NoChildrenProps, Orientation, ResizableContainerObserver, Size } from "@itwin/core-react";
-import { Direction, Toolbar as NZ_Toolbar, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
+import type { UiSyncEventArgs } from "@itwin/appui-abstract";
+import type { CommonProps, NoChildrenProps} from "@itwin/core-react";
+import { Orientation, ResizableContainerObserver, Size } from "@itwin/core-react";
+import type { Direction, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
+import { Toolbar as NZ_Toolbar } from "@itwin/appui-layout-react";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { AnyItemDef } from "../shared/AnyItemDef";
+import type { AnyItemDef } from "../shared/AnyItemDef";
 import { CustomItemDef } from "../shared/CustomItemDef";
-import { ItemDefBase } from "../shared/ItemDefBase";
-import { ItemList } from "../shared/ItemMap";
+import type { ItemDefBase } from "../shared/ItemDefBase";
+import type { ItemList } from "../shared/ItemMap";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { GroupItemDef } from "./GroupItem";

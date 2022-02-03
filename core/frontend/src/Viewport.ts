@@ -6,61 +6,70 @@
  * @module Views
  */
 
+import type { Constructor, Id64Arg, Id64Set, Id64String, IDisposable} from "@itwin/core-bentley";
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, dispose, Id64, isInstanceOf,
   StopWatch,
 } from "@itwin/core-bentley";
-import {
-  Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
-  Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
+import type {
+  Angle, LowAndHighXY, LowAndHighXYZ, Map4d, Point4d, XAndY, XYAndZ, XYZ} from "@itwin/core-geometry";
+import { AngleSweep, Arc3d, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range1d,
+  Range3d, Ray3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
-import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
-  isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
-  SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+import type {
+  AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, ClipStyle, DisplayStyleSettingsProps,
+  ElementProps, FeatureAppearance, ImageBuffer, LightSettings, MapLayerSettings, Placement, PlacementProps,
+  SolarShadowSettings, ViewFlags} from "@itwin/core-common";
+import { Camera, ColorDef, Easing, Frustum, GlobeMode, GridOrientationType, Hilite, Interpolation,
+  isPlacement2dProps, Npc, NpcCenter, Placement2d, Placement3d, SubCategoryAppearance, SubCategoryOverride,
 } from "@itwin/core-common";
-import { AuxCoordSystemState } from "./AuxCoordSys";
-import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
-import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
+import type { AuxCoordSystemState } from "./AuxCoordSys";
+import type { BackgroundMapGeometry } from "./BackgroundMapGeometry";
+import type { ChangeFlags} from "./ChangeFlags";
+import { ChangeFlag, MutableChangeFlags } from "./ChangeFlags";
 import { CoordSystem } from "./CoordSystem";
 import { DecorationsCache } from "./DecorationsCache";
-import { DisplayStyleState } from "./DisplayStyleState";
+import type { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
-import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
+import type { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { FrustumAnimator } from "./FrustumAnimator";
 import { GlobeAnimator } from "./GlobeAnimator";
-import { HitDetail, SnapDetail } from "./HitDetail";
+import type { HitDetail} from "./HitDetail";
+import { SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
+import type { IModelConnection } from "./IModelConnection";
 import { linePlaneIntersect } from "./LinePlaneIntersect";
-import { ToolTipOptions } from "./NotificationManager";
+import type { ToolTipOptions } from "./NotificationManager";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { FrameStats, FrameStatsCollector } from "./render/FrameStats";
+import type { FrameStats} from "./render/FrameStats";
+import { FrameStatsCollector } from "./render/FrameStats";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Pixel } from "./render/Pixel";
-import { GraphicList } from "./render/RenderGraphic";
-import { RenderMemory } from "./render/RenderMemory";
+import type { GraphicList } from "./render/RenderGraphic";
+import type { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
-import { RenderTarget } from "./render/RenderTarget";
-import { StandardView, StandardViewId } from "./StandardView";
+import type { RenderTarget } from "./render/RenderTarget";
+import type { StandardViewId } from "./StandardView";
+import { StandardView } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
+import type { MapLayerImageryProvider, MapTileTreeReference, TileTreeReference} from "./tile/internal";
 import {
-  DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, MapTiledGraphicsProvider, TileBoundingBoxes, TiledGraphicsProvider, TileUser,
 } from "./tile/internal";
-import { EventController } from "./tools/EventController";
+import type { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
-import { Animator, MarginOptions, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
+import type { Animator, MarginOptions, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { GlobalLocation } from "./ViewGlobalLocation";
+import type { GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-import { ViewPose } from "./ViewPose";
+import type { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
-import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
+import type { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
-import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
+import type { QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
+import { queryVisibleFeatures } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's

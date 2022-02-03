@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
-import { ShaderProgram } from "../../../render/webgl/ShaderProgram";
+import type { ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import {
   ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType,
 } from "../../../render/webgl/ShaderBuilder";

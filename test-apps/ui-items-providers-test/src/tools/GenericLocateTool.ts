@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore Sharepoint
 
-import {
-  BeButtonEvent, CoordinateLockOverrides, EventHandled, HitDetail, IModelApp,
+import type {
+  BeButtonEvent, HitDetail} from "@itwin/core-frontend";
+import { CoordinateLockOverrides, EventHandled, IModelApp,
   LocateFilterStatus, LocateResponse, PrimitiveTool,
   SelectionMethod, SelectionMode,
 } from "@itwin/core-frontend";
-import { Point3d } from "@itwin/core-geometry";
+import type { Point3d } from "@itwin/core-geometry";
 import { UiFramework } from "@itwin/appui-react";
 import { ToolbarItemUtilities } from "@itwin/appui-abstract";
 import genericToolSvg from "./generic-tool.svg?sprite";

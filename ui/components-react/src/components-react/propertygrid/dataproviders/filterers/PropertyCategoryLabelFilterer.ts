@@ -7,8 +7,9 @@
  */
 
 import { countMatchesInString } from "../../../common/countMatchesInString";
-import { PropertyCategory } from "../../PropertyDataProvider";
-import { FilteredType, PropertyCategoryDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import type { PropertyCategory } from "../../PropertyDataProvider";
+import type { PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import { FilteredType, PropertyCategoryDataFiltererBase } from "./PropertyDataFiltererBase";
 
 /**
  * PropertyData filterer which matches on PropertyCategory's label.

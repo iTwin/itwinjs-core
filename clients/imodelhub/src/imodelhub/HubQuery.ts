@@ -6,8 +6,8 @@
  * @module iModelHubClient
  */
 
-import { GuidString } from "@itwin/core-bentley";
-import { RequestQueryOptions } from "../itwin-client/Request";
+import type { GuidString } from "@itwin/core-bentley";
+import type { RequestQueryOptions } from "../itwin-client/Request";
 import { WsgQuery } from "../wsg/WsgQuery";
 import { ArgumentCheck } from "./Errors";
 

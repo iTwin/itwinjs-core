@@ -7,17 +7,19 @@
  * @module Tiles
  */
 import { BilinearPatch, Point2d, Point3d, Range1d, Range2d, Range3d } from "@itwin/core-geometry";
-import { Cartographic, ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, RenderTexture, TextureMapping } from "@itwin/core-common";
-import { request, RequestOptions, Response } from "../../request/Request";
+import type { Cartographic, RenderTexture} from "@itwin/core-common";
+import { ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, TextureMapping } from "@itwin/core-common";
+import type { RequestOptions, Response } from "../../request/Request";
+import { request } from "../../request/Request";
 import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { Mesh, MeshArgs } from "../../render/primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../../render/primitives/DisplayParams";
 import { Triangle } from "../../render/primitives/Primitives";
 import { VertexKey } from "../../render/primitives/VertexKey";
 import { MeshParams } from "../../render/primitives/VertexTable";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { RenderSystem } from "../../render/RenderSystem";
+import type { RenderGraphic } from "../../render/RenderGraphic";
+import type { RenderSystem } from "../../render/RenderSystem";
 
 // cspell:ignore atae qdng uyzv auje sealevel
 

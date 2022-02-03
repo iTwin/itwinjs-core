@@ -10,7 +10,7 @@ import _ from "lodash";
 import * as React from "react";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer";
-import { PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer";
+import type { PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer";
 import { NonPrimitivePropertyLabelRenderer } from "../../../properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 import { PropertyView } from "../../../properties/renderers/PropertyView";
 

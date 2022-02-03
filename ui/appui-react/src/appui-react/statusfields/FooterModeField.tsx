@@ -9,7 +9,7 @@
 import * as React from "react";
 import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
 import { ConditionalField } from "./ConditionalField";
-import { StatusFieldProps } from "./StatusFieldProps";
+import type { StatusFieldProps } from "./StatusFieldProps";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ConditionalFieldWithProps = withStatusFieldProps(ConditionalField);

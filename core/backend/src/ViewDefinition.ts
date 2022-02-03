@@ -6,19 +6,22 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import type { Id64Array, Id64Set, Id64String} from "@itwin/core-bentley";
+import { Id64, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import type { Range2d, Range3d} from "@itwin/core-geometry";
 import {
-  Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
+  Angle, Matrix3d, Point2d, Point3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import {
-  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera,
-  CategorySelectorProps, Code, CodeScopeProps, CodeSpec, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement,
-  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d,
+import type {
+  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps,
+  CategorySelectorProps, CodeScopeProps, CodeSpec, LightLocationProps, ModelSelectorProps,
+  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps} from "@itwin/core-common";
+import { BisCodeSpec, Camera, Code, IModelError, RelatedElement, ViewDetails, ViewDetails3d,
 } from "@itwin/core-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
-import { IModelCloneContext } from "./IModelCloneContext";
-import { IModelDb } from "./IModelDb";
-import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
+import type { IModelCloneContext } from "./IModelCloneContext";
+import type { IModelDb } from "./IModelDb";
+import type { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)

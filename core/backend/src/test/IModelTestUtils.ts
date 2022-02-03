@@ -7,29 +7,35 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Base64 } from "js-base64";
 import * as path from "path";
-import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import {
-  AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
-  ElementProps, Environment, ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
-  ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName, PhysicalElementProps,
-  PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse,
+import type { AccessToken, GuidString, Id64String, OpenMode } from "@itwin/core-bentley";
+import { BeEvent, DbResult, Guid, Id64, IModelStatus } from "@itwin/core-bentley";
+import type {
+  AuxCoordSystem2dProps, ChangesetIdWithIndex, CodeProps, CodeSpec, ElementAspectProps,
+  ElementProps, ExternalSourceProps, GeometricElement2dProps, GeometryPartProps, GeometryStreamProps, IModelVersionProps, LocalFileName, PhysicalElementProps, RepositoryLinkProps, RequestNewBriefcaseProps} from "@itwin/core-common";
+import { Base64EncodedString, Code, CodeScopeSpec, ColorDef, Environment, FontType, GeometryParams, GeometryStreamBuilder,
+  ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion,
+  PlanProjectionSettings, RelatedElement, RpcConfiguration, RpcManager, RpcPendingResponse,
   SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
+import type { RequestNewBriefcaseArg } from "../BriefcaseManager";
+import type { CheckpointProps} from "../CheckpointManager";
+import { V1CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
+import type {
+  ECSqlStatement, ElementAspect, ElementUniqueAspect} from "../core-backend";
 import {
-  AuxCoordSystem2d, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition,
-  ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect,
+  AuxCoordSystem2d, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, Element, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect,
   ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelJsFs,
   InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
 } from "../core-backend";
 import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
 import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model";
-import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship";
-import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
+import type { Relationship, RelationshipProps } from "../Relationship";
+import { DrawingGraphicRepresentsElement, ElementDrivesElement } from "../Relationship";
+import type { DownloadAndOpenArgs} from "../rpc-impl/RpcBriefcaseUtility";
+import { RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
 import { HubMock } from "./HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";

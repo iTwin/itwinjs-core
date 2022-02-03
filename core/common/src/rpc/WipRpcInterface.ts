@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 
-import { ChangedElements } from "../ChangedElements";
-import { IModelRpcProps } from "../IModel";
+import type { ChangedElements } from "../ChangedElements";
+import type { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 

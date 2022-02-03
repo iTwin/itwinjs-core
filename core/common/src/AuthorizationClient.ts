@@ -6,7 +6,7 @@
  * @module Authorization
  */
 
-import { AccessToken } from "@itwin/core-bentley";
+import type { AccessToken } from "@itwin/core-bentley";
 
 /** Interface to provide authorization information
  * @beta

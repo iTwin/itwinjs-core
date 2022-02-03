@@ -13,10 +13,11 @@ import "./KeyinPalettePanel.scss";
 import { FilteredText, Listbox, ListboxItem, UiStateStorageStatus } from "@itwin/core-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, ParseAndRunResult } from "@itwin/core-frontend";
 import { UiFramework } from "../UiFramework";
-import { matchesWords, OnItemExecutedFunc, SpecialKey } from "@itwin/appui-abstract";
+import type { OnItemExecutedFunc} from "@itwin/appui-abstract";
+import { matchesWords, SpecialKey } from "@itwin/appui-abstract";
 import { ClearKeyinPaletteHistoryTool } from "../tools/KeyinPaletteTools";
 import { useUiStateStorageHandler } from "../uistate/useUiStateStorage";
-import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
+import type { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 import { Input } from "@itwin/itwinui-react";
 
 const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";

@@ -7,7 +7,8 @@
  */
 
 import { MonochromeMode } from "@itwin/core-common";
-import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import type { FragmentShaderBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 
 const applyUnlitMonochromeColor = `
   vec4 monoColor = vec4(u_monoRgb, baseColor.a);

@@ -3,14 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
 import { Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, PhysicalModel, SnapshotDb, SpatialViewDefinition,
 } from "@itwin/core-backend";
-import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
-import {
-  ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS,
+import type { AxisAlignedBox3d, ContextRealityModelProps} from "@itwin/core-common";
+import { Cartographic, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
+import type {
+  ALong, PointCloudReader} from "@itwin/core-orbitgt";
+import { CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, UrlFS,
 } from "@itwin/core-orbitgt";
 import { DownloaderNode } from "@itwin/core-orbitgt/lib/cjs/system/runtime/DownloaderNode";
 

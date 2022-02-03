@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType, SchemaProps } from "@itwin/ecschema-metadata";
-import { IModelRpcProps } from "@itwin/core-common";
+import type { ISchemaLocater, SchemaKey, SchemaMatchType, SchemaProps } from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import type { IModelRpcProps } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "./ECSchemaRpcInterface";
 
 /**

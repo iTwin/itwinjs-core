@@ -7,29 +7,32 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb } from "@itwin/core-backend";
-import { Id64String, using } from "@itwin/core-bentley";
-import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
-import {
-  Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions,
+import type { Id64String} from "@itwin/core-bentley";
+import { using } from "@itwin/core-bentley";
+import type { IModelRpcProps } from "@itwin/core-common";
+import { IModelNotFoundResponse } from "@itwin/core-common";
+import type { ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentInstanceKeysRpcRequestOptions,
   ContentRequestOptions, ContentRpcRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor,
   DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
-  DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor,
-  FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
-  HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError,
-  PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions,
-  SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions, VariableValueTypes,
+  DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
+  HierarchyRpcRequestOptions, Paged, PageOptions,
+  PresentationRpcRequestOptions, RulesetVariable, RulesetVariableJSON, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions} from "@itwin/presentation-common";
+import {
+  Content, ContentFlags,
+  FieldDescriptorType, InstanceKey, Item, KeySet, Node, NodeKey, NodePathElement, PresentationError, PresentationStatus, SelectClassInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
   createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor, createTestECInstanceKey, createTestSelectClassInfo,
   ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import type { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { MAX_ALLOWED_KEYS_PAGE_SIZE, MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
-import { RulesetManager } from "../presentation-backend/RulesetManager";
-import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+import type { RulesetManager } from "../presentation-backend/RulesetManager";
+import type { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
 
 describe("PresentationRpcImpl", () => {
 

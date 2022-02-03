@@ -10,8 +10,10 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelJsFs } from "../../IModelJsFs";
-import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
-import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, ITwinWorkspaceDb, WorkspaceContainerName, WorkspaceDbName } from "../../workspace/Workspace";
+import type { SettingDictionary} from "../../workspace/Settings";
+import { BaseSettings, SettingsPriority } from "../../workspace/Settings";
+import type { WorkspaceContainerName, WorkspaceDbName } from "../../workspace/Workspace";
+import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, ITwinWorkspaceDb } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 

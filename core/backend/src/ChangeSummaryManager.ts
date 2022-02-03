@@ -6,14 +6,17 @@
  * @module iModels
  */
 
-import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@itwin/core-bentley";
-import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
+import type { AccessToken, GuidString, Id64String} from "@itwin/core-bentley";
+import { assert, DbResult, IModelStatus, Logger, PerfLogger, using } from "@itwin/core-bentley";
+import type { ChangedValueState, ChangeOpCode, ChangesetRange} from "@itwin/core-common";
+import { IModelError, IModelVersion } from "@itwin/core-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
-import { ECSqlStatement } from "./ECSqlStatement";
-import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
+import type { ECSqlStatement } from "./ECSqlStatement";
+import type { IModelDb, TokenArg } from "./IModelDb";
+import { BriefcaseDb } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 

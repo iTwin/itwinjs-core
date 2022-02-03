@@ -7,20 +7,23 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as Semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { DbResult, Guid, Id64, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { ECSqlStatement, Model, Relationship} from "@itwin/core-backend";
 import {
-  CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
+  CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, Element,
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
-  IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
-  ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
+  IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement,
+  ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import {
-  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
+import type {
+  AxisAlignedBox3d, CreateIModelProps, DefinitionElementProps,
+  ExternalSourceAspectProps, PhysicalElementProps} from "@itwin/core-common";
+import { BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, IModel, IModelError, Placement3d, QueryRowFormat,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {

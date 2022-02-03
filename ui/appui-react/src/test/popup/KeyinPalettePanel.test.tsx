@@ -6,10 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 
-import { IModelApp, IModelAppOptions, MockRender, Tool } from "@itwin/core-frontend";
+import type { IModelAppOptions} from "@itwin/core-frontend";
+import { IModelApp, MockRender, Tool } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../appui-react";
+import type { KeyinEntry} from "../../appui-react";
+import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinPalettePanel, UiFramework } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { UiStateStorageStatus } from "@itwin/core-react";
 

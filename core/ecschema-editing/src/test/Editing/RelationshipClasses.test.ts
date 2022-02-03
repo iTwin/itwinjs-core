@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  RelationshipClass, RelationshipClassProps, RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey,
+import type {
+  RelationshipClass, RelationshipClassProps, RelationshipConstraintProps, SchemaKey} from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext, SchemaItemKey,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 

@@ -5,11 +5,13 @@
 import { expect } from "chai";
 import { CompressedId64Set } from "@itwin/core-bentley";
 import { Vector3d } from "@itwin/core-geometry";
+import type { DisplayStyle3dProps, DisplayStyle3dSettingsProps} from "@itwin/core-common";
 import {
-  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, GroundPlane, PlanarClipMaskMode, PlanarClipMaskSettings,
+  BackgroundMapType, ColorByName, GroundPlane, PlanarClipMaskMode, PlanarClipMaskSettings,
   SkyGradient, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
 } from "@itwin/core-common";
-import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { ContextRealityModelState, IModelConnection} from "@itwin/core-frontend";
+import { DisplayStyle3dState, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 describe("DisplayStyle", () => {

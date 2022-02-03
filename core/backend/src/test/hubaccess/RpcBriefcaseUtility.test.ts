@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { AccessToken } from "@itwin/core-bentley";
+import type { AccessToken } from "@itwin/core-bentley";
 import { IModelDb } from "../../IModelDb";
 import { RpcBriefcaseUtility } from "../../rpc-impl/RpcBriefcaseUtility";
 

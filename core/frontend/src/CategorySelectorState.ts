@@ -5,10 +5,11 @@
 /** @packageDocumentation
  * @module Views
  */
-import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
-import { CategorySelectorProps } from "@itwin/core-common";
+import type { Id64Arg, Id64String} from "@itwin/core-bentley";
+import { Id64, ObservableSet } from "@itwin/core-bentley";
+import type { CategorySelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
-import { IModelConnection } from "./IModelConnection";
+import type { IModelConnection } from "./IModelConnection";
 
 /** A set of Categories to be displayed in a [[ViewState]].
  * Elements belonging to categories not specified in the category selector will not be drawn in the view.

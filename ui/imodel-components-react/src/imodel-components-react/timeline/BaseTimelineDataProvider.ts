@@ -6,8 +6,8 @@
  * @module Timeline
  */
 
-import { ScreenViewport } from "@itwin/core-frontend";
-import { PlaybackSettings, TimelineDataProvider } from "./interfaces";
+import type { ScreenViewport } from "@itwin/core-frontend";
+import type { PlaybackSettings, TimelineDataProvider } from "./interfaces";
 
 /** Base Timeline Data Provider
  * @alpha

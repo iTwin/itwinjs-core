@@ -6,8 +6,9 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
-import { ContentViewManager, ViewportContentControl } from "../../appui-react";
+import type { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
+import type { ViewportContentControl } from "../../appui-react";
+import { ContentViewManager } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("ContentViewManager", () => {

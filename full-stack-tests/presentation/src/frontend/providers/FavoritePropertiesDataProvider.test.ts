@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
 import { DEFAULT_PROPERTY_GRID_RULESET, FavoritePropertiesDataProvider, PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyData } from "@itwin/components-react";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyData } from "@itwin/components-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 describe("FavoritePropertiesDataProvider", async () => {

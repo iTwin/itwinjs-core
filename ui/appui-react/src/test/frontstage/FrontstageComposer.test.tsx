@@ -9,12 +9,14 @@ import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
 import { Rectangle } from "@itwin/core-react";
+import type { NineZoneManagerProps} from "@itwin/appui-layout-react";
 import {
-  getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, StagePanelsManager,
+  getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, StagePanelsManager,
 } from "@itwin/appui-layout-react";
+import type {
+  ModalFrontstageInfo} from "../../appui-react";
 import {
-  FrontstageComposer, FrontstageManager, getNestedStagePanelKey, isCollapsedToPanelState,
-  ModalFrontstageInfo, StagePanelDef, StagePanelState, UiFramework,
+  FrontstageComposer, FrontstageManager, getNestedStagePanelKey, isCollapsedToPanelState, StagePanelDef, StagePanelState, UiFramework,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { TestFrontstage } from "./FrontstageTestUtils";

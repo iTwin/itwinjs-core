@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { ChangesetId } from "./ChangesetProps";
+import type { ChangesetId } from "./ChangesetProps";
 
 /** Properties for IModelVersion
  * @public

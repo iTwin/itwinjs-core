@@ -6,9 +6,10 @@
  * @module ContentView
  */
 
-import { EmphasizeElementsProps, ViewStateProps } from "@itwin/core-common";
+import type { EmphasizeElementsProps, ViewStateProps } from "@itwin/core-common";
+import type { EntityState, IModelConnection, ScreenViewport, ViewState} from "@itwin/core-frontend";
 import {
-  EmphasizeElements, EntityState, IModelConnection, ScreenViewport, ViewState,
+  EmphasizeElements,
 } from "@itwin/core-frontend";
 import { ViewUtilities } from "../utils/ViewUtilities";
 

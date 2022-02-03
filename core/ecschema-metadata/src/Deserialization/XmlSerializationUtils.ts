@@ -5,10 +5,10 @@
 
 import { PrimitiveType, primitiveTypeToString } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { CustomAttribute } from "../Metadata/CustomAttribute";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { ArrayProperty, EnumerationProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property";
-import { Schema } from "../Metadata/Schema";
+import type { CustomAttribute } from "../Metadata/CustomAttribute";
+import type { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
+import type { ArrayProperty, EnumerationProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property";
+import type { Schema } from "../Metadata/Schema";
 
 /**
  * Namespace holding utility functions for serializing EC types to the EC XML format.

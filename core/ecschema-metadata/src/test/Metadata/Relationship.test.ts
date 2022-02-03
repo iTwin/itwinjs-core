@@ -12,8 +12,10 @@ import { ECObjectsError } from "../../Exception";
 import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
-import { MutableRelationshipConstraint, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "../../Metadata/RelationshipClass";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
+import type { MutableRelationshipConstraint} from "../../Metadata/RelationshipClass";
+import { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "../../Metadata/RelationshipClass";
+import type { MutableSchema} from "../../Metadata/Schema";
+import { Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 

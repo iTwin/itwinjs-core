@@ -7,18 +7,22 @@
  */
 
 import * as React from "react";
-import { Id64String, Logger } from "@itwin/core-bentley";
-import { Point3d, Transform } from "@itwin/core-geometry";
+import type { Id64String} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
+import type { Point3d} from "@itwin/core-geometry";
+import { Transform } from "@itwin/core-geometry";
 import { NpcCenter } from "@itwin/core-common";
+import type { IModelConnection,
+  TentativePoint, ViewManager,
+  Viewport} from "@itwin/core-frontend";
 import {
-  IModelApp, IModelConnection, ScreenViewport,
-  TentativePoint, ToolSettings, ViewManager,
-  Viewport, ViewState,
+  IModelApp, ScreenViewport, ToolSettings, ViewState,
 } from "@itwin/core-frontend";
 
-import { CommonProps } from "@itwin/core-react";
-import {
-  CubeRotationChangeEventArgs, DrawingViewportChangeEventArgs, StandardRotationChangeEventArgs, ViewportComponentEvents,
+import type { CommonProps } from "@itwin/core-react";
+import type {
+  CubeRotationChangeEventArgs, DrawingViewportChangeEventArgs, StandardRotationChangeEventArgs} from "./ViewportComponentEvents";
+import { ViewportComponentEvents,
 } from "./ViewportComponentEvents";
 
 /** Type for a ViewState prop

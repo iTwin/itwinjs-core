@@ -6,7 +6,7 @@
  * @module Item
  */
 
-import { CommonToolbarItem } from "../toolbars/ToolbarItem";
+import type { CommonToolbarItem } from "../toolbars/ToolbarItem";
 
 /** Definition for a Toolbar.
  * @public

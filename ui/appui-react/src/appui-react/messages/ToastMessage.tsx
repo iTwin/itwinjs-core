@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { MessageSeverity } from "@itwin/appui-abstract";
+import type { MessageSeverity } from "@itwin/appui-abstract";
 import { MessageLayout, Toast } from "@itwin/appui-layout-react";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
-import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
+import type { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
 import { MessageLabel } from "./MessageLabel";
 import { getToastCategory } from "./getToastCategory";
 

@@ -6,13 +6,14 @@
  * @module Metadata
  */
 
-import { CustomAttributeClassProps } from "../Deserialization/JsonProps";
+import type { CustomAttributeClassProps } from "../Deserialization/JsonProps";
+import type { CustomAttributeContainerType, ECClassModifier} from "../ECObjects";
 import {
-  containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseCustomAttributeContainerType, SchemaItemType,
+  containerTypeToString, parseCustomAttributeContainerType, SchemaItemType,
 } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECClass } from "./Class";
-import { Schema } from "./Schema";
+import type { Schema } from "./Schema";
 
 /**
  * A Typescript class representation of an ECCustomAttributeClass.

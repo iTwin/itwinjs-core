@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { BackgroundMapProps } from "./BackgroundMapSettings";
+import type { BackgroundMapProps } from "./BackgroundMapSettings";
 
 /** The current set of supported terrain providers. Currently only CesiumWorldTerrain.
  * @see [[TerrainProps]]

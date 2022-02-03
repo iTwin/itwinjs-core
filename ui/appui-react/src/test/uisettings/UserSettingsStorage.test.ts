@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { assert, expect } from "chai";
-import { IModelApp, ITwinIdArg, MockRender, PreferenceArg, PreferenceKeyArg, TokenArg } from "@itwin/core-frontend";
+import type { ITwinIdArg, PreferenceArg, PreferenceKeyArg, TokenArg } from "@itwin/core-frontend";
+import { IModelApp, MockRender } from "@itwin/core-frontend";
 import { UiStateStorageStatus } from "@itwin/core-react";
 import { UserSettingsStorage } from "../../appui-react/uistate/UserSettingsStorage";
 import { TestUtils } from "../TestUtils";

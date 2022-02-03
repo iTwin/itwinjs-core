@@ -8,9 +8,10 @@ import * as sinon from "sinon";
 import { NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import { FooterPopup } from "@itwin/appui-layout-react";
-import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, MessageCenterField, MessageManager, StatusBar, StatusBarWidgetControl,
-  StatusBarWidgetControlArgs, WidgetDef,
+import type {
+  ConfigurableCreateInfo,
+  StatusBarWidgetControlArgs} from "../../appui-react";
+import { ConfigurableUiControlType, ConfigurableUiManager, MessageCenterField, MessageManager, StatusBar, StatusBarWidgetControl, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 

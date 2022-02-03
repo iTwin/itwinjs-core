@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as puppeteer from "puppeteer";
-import { ChildProcess } from "child_process";
+import type { ChildProcess } from "child_process";
 import { spawnChildProcess } from "../../utils/SpawnUtils";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
-import { CertaConfig } from "../../CertaConfig";
+import type { CertaConfig } from "../../CertaConfig";
 import { writeCoverageData } from "../../utils/CoverageUtils";
 import { configureRemoteReporter } from "./MochaRemoteReporter";
 

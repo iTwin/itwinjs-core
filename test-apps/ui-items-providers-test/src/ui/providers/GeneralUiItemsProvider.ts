@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import type {
+  CommonStatusBarItem, CommonToolbarItem, UiItemsProvider} from "@itwin/appui-abstract";
 import {
-  AbstractStatusBarItemUtilities,
-  CommonStatusBarItem, CommonToolbarItem, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
+  AbstractStatusBarItemUtilities, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage,
 } from "@itwin/appui-abstract";
 import { SampleTool } from "../../tools/SampleTool";
 import statusBarButtonSvg from "../icons/StatusField.svg?sprite";

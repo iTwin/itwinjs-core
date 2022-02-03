@@ -6,15 +6,16 @@
  * @module iModels
  */
 
+import type { Id64Array, Id64String, IModelStatus} from "@itwin/core-bentley";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, IndexMap, Logger, OrderedId64Array,
 } from "@itwin/core-bentley";
-import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@itwin/core-common";
+import type { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, StandaloneDb } from "./IModelDb";
+import type { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
-import { Relationship, RelationshipProps } from "./Relationship";
-import { SqliteStatement } from "./SqliteStatement";
+import type { Relationship, RelationshipProps } from "./Relationship";
+import type { SqliteStatement } from "./SqliteStatement";
 
 /** A string that identifies a Txn.
  * @public

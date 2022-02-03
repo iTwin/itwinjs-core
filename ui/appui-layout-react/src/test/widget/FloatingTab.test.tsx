@@ -7,8 +7,9 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Point } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
+import type { DragManager, NineZoneDispatch} from "../../appui-layout-react";
 import {
-  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch,
+  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, FloatingTab,
 } from "../../appui-layout-react";
 import { createDragItemInfo, TestNineZoneProvider } from "../Providers";
 

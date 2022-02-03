@@ -12,7 +12,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { RelativePosition, SpecialKey } from "@itwin/appui-abstract";
 import { FocusTrap } from "../focustrap/FocusTrap";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 // cSpell:ignore focustrap focusable alertdialog
 

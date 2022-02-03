@@ -6,11 +6,14 @@
  * @module ECSQL
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
-import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
-import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { ECDb } from "./ECDb";
+import type { GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
+import { assert, DbResult } from "@itwin/core-bentley";
+import type { LowAndHighXYZ, XAndY, XYAndZ} from "@itwin/core-geometry";
+import { Range3d, XYZ } from "@itwin/core-geometry";
+import type { NavigationBindingValue, NavigationValue } from "@itwin/core-common";
+import { ECJsNames, ECSqlValueType, IModelError } from "@itwin/core-common";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
+import type { ECDb } from "./ECDb";
 import { IModelHost } from "./IModelHost";
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).

@@ -4,19 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Observable as RxjsObservable } from "rxjs/internal/Observable";
+import type { Observable as RxjsObservable } from "rxjs/internal/Observable";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent } from "@itwin/core-bentley";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { Observable } from "../../../components-react/tree/controlled/Observable";
-import { MutableTreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "../../../components-react/tree/controlled/TreeModel";
+import type { Observable } from "../../../components-react/tree/controlled/Observable";
+import type { MutableTreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "../../../components-react/tree/controlled/TreeModel";
 import { TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
+import type { LoadedNodeHierarchy, TreeNodeLoadResult} from "../../../components-react/tree/controlled/TreeNodeLoader";
 import {
-  handleLoadedNodeHierarchy, LoadedNodeHierarchy, PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, TreeNodeLoadResult,
+  handleLoadedNodeHierarchy, PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader,
 } from "../../../components-react/tree/controlled/TreeNodeLoader";
-import {
+import type {
   ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
 } from "../../../components-react/tree/TreeDataProvider";
 import { extractSequence } from "../../common/ObservableTestHelpers";

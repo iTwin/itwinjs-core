@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
+import type { RpcInterfaceDefinition} from "@itwin/core-common";
+import { RpcManager } from "@itwin/core-common";
 
 /**
  * @internal Used for testing only.

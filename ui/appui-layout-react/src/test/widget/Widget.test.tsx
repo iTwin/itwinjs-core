@@ -5,9 +5,10 @@
 import { act, fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
+import type { NineZoneDispatch, PanelWidgetDragStartAction} from "../../appui-layout-react";
 import {
-  addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext,
-  PanelStateContext, PanelWidget, PanelWidgetDragStartAction, Widget, WidgetIdContext, WidgetStateContext,
+  addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, PanelSideContext,
+  PanelStateContext, PanelWidget, Widget, WidgetIdContext, WidgetStateContext,
 } from "../../appui-layout-react";
 import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
 import { TestNineZoneProvider } from "../Providers";

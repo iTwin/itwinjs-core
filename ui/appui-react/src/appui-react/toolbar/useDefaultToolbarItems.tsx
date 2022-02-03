@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonToolbarItem, ToolbarItemsChangedArgs, ToolbarItemsManager } from "@itwin/appui-abstract";
+import type { CommonToolbarItem, ToolbarItemsChangedArgs, ToolbarItemsManager } from "@itwin/appui-abstract";
 
 /** Hook that returns items from [[ToolbarItemsManager]].
  * @public

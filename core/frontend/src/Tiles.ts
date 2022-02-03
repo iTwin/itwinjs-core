@@ -6,10 +6,12 @@
  * @module IModelConnection
  */
 
-import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import type { BeTimePoint, Id64Array, Id64String} from "@itwin/core-bentley";
+import { Dictionary, dispose, IModelStatus } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
+import type { IModelConnection } from "./IModelConnection";
+import type { TileTree, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
+import { TileTreeLoadStatus } from "./tile/internal";
 
 class TreeOwner implements TileTreeOwner {
   private _tileTree?: TileTree;

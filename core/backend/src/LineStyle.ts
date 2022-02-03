@@ -6,10 +6,13 @@
  * @module Symbology
  */
 
-import { Id64String, IModelStatus } from "@itwin/core-bentley";
-import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@itwin/core-common";
-import { GeometryPart, LineStyle } from "./Element";
-import { IModelDb } from "./IModelDb";
+import type { Id64String} from "@itwin/core-bentley";
+import { IModelStatus } from "@itwin/core-bentley";
+import type { FilePropertyProps, LineStyleProps } from "@itwin/core-common";
+import { IModelError, LinePixels } from "@itwin/core-common";
+import type { GeometryPart} from "./Element";
+import { LineStyle } from "./Element";
+import type { IModelDb } from "./IModelDb";
 
 /** A line style definition is a uniquely named pattern that repeats as it is displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
  * There are three varieties of line styles:

@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import type { IModelRpcProps, RpcInterfaceDefinition, RpcOperationsProfile} from "@itwin/core-common";
 import {
-  IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperationsProfile,
+  IModelReadRpcInterface, RpcInterface, RpcManager, RpcNotFoundResponse,
   RpcPushChannel, RpcRoutingToken, WipRpcInterface,
 } from "@itwin/core-common";
 

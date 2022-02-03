@@ -6,12 +6,12 @@
  * @module PresentationRules
  */
 
-import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
-import { ChildNodeRule } from "./ChildNodeRule";
-import { CustomNodeSpecification } from "./CustomNodeSpecification";
-import { CustomQueryInstanceNodesSpecification } from "./CustomQueryInstanceNodesSpecification";
-import { InstanceNodesOfSpecificClassesSpecification } from "./InstanceNodesOfSpecificClassesSpecification";
-import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecification";
+import type { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
+import type { ChildNodeRule } from "./ChildNodeRule";
+import type { CustomNodeSpecification } from "./CustomNodeSpecification";
+import type { CustomQueryInstanceNodesSpecification } from "./CustomQueryInstanceNodesSpecification";
+import type { InstanceNodesOfSpecificClassesSpecification } from "./InstanceNodesOfSpecificClassesSpecification";
+import type { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecification";
 
 /**
  * Used for serializing array of [[ChildNodeSpecification]]

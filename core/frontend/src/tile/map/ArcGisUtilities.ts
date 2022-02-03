@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Angle } from "@itwin/core-geometry";
-import { MapSubLayerProps } from "@itwin/core-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
+import type { MapSubLayerProps } from "@itwin/core-common";
+import type { RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
+import { getJson, request } from "../../request/Request";
+import type { MapLayerSourceValidation} from "../internal";
 import {
-  ArcGisTokenClientType, ArcGisTokenManager, MapCartoRectangle, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
+  ArcGisTokenClientType, ArcGisTokenManager, MapCartoRectangle, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus,
 } from "../internal";
 
 /** @packageDocumentation

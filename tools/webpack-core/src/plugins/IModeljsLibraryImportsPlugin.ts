@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Compiler } from "webpack";
+import type { Compiler } from "webpack";
 import { ConcatSource } from "webpack-sources";
 import * as utils from "./IModeljsLibraryUtils";
 function getLoaderString(pkgName: string, pkgVersion: string) {

@@ -4,12 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
-import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
+import type { CodeSpec, NavigationValue} from "@itwin/core-common";
+import { BisCodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
+import type { ViewState} from "@itwin/core-frontend";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection,
-  ModelSelectorState, OrthographicViewState, ViewState,
+  ModelSelectorState, OrthographicViewState,
 } from "@itwin/core-frontend";
-import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
+import type { XYAndZ } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "../TestUtility";

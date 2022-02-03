@@ -5,7 +5,7 @@
 import "./PlayerButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 import { UiIModelComponents } from "../UiIModelComponents";
 
 /** Player button used by buttons on timeline control

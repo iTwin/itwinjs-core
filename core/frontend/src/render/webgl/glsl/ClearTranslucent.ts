@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
 import { FragmentShaderComponent } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
+import type { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 

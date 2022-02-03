@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes } from "./ChildNodeSpecification";
+import type { ChildNodeSpecificationBase, ChildNodeSpecificationTypes } from "./ChildNodeSpecification";
 
 /**
  * Creates a custom-defined node.

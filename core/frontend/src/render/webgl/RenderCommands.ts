@@ -8,27 +8,30 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-common";
-import { Decorations } from "../Decorations";
+import type { ViewFlags } from "@itwin/core-common";
+import { Frustum, FrustumPlanes, RenderMode } from "@itwin/core-common";
+import type { Decorations } from "../Decorations";
 import { SurfaceType } from "../primitives/SurfaceParams";
-import { GraphicList, RenderGraphic } from "../RenderGraphic";
-import { AnimationBranchState } from "../GraphicBranch";
-import { BranchStack } from "./BranchStack";
-import { BatchState } from "./BatchState";
-import { BranchState } from "./BranchState";
-import {
-  DrawCommands, PopBatchCommand, PopBranchCommand, PopClipCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
-  PushBranchCommand, PushClipCommand, PushCommand, PushStateCommand,
+import type { GraphicList, RenderGraphic } from "../RenderGraphic";
+import type { AnimationBranchState } from "../GraphicBranch";
+import type { BranchStack } from "./BranchStack";
+import type { BatchState } from "./BatchState";
+import type { BranchState } from "./BranchState";
+import type {
+  DrawCommands, PopCommand, PushCommand} from "./DrawCommand";
+import { PopBatchCommand, PopBranchCommand, PopClipCommand, PrimitiveCommand, PushBatchCommand,
+  PushBranchCommand, PushClipCommand, PushStateCommand,
 } from "./DrawCommand";
-import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
-import { Layer, LayerContainer } from "./Layer";
+import type { Batch, Graphic} from "./Graphic";
+import { Branch, GraphicsArray } from "./Graphic";
+import type { Layer, LayerContainer } from "./Layer";
 import { LayerCommandLists } from "./LayerCommands";
 import { MeshGraphic } from "./Mesh";
-import { Primitive } from "./Primitive";
+import type { Primitive } from "./Primitive";
 import { CompositeFlags, Pass, RenderOrder, RenderPass } from "./RenderFlags";
-import { TargetGraphics } from "./TargetGraphics";
-import { Target } from "./Target";
-import { ClipVolume } from "./ClipVolume";
+import type { TargetGraphics } from "./TargetGraphics";
+import type { Target } from "./Target";
+import type { ClipVolume } from "./ClipVolume";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal

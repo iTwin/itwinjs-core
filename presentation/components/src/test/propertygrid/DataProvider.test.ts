@@ -8,20 +8,22 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent, using } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import type { ArrayTypeDescription, CategoryDescription, Field, Property, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary} from "@itwin/presentation-common";
 import {
-  applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
-  RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
+  applyOptionalPrefix, Content, ContentFlags, Item, PropertyValueFormat,
+  RelationshipMeaning,
 } from "@itwin/presentation-common";
 import {
   createRandomId, createTestCategoryDescription, createTestContentDescriptor, createTestContentItem,
   createTestECClassInfo, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import type { FavoritePropertiesManager, PresentationManager } from "@itwin/presentation-frontend";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyCategory } from "@itwin/components-react";
-import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
+import type { PropertyCategory } from "@itwin/components-react";
+import type { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";
 import { DEFAULT_PROPERTY_GRID_RULESET, PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";

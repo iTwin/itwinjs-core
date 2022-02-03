@@ -6,10 +6,11 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyCategory } from "../../PropertyDataProvider";
-import { FlatGridItemType, IMutableFlatGridItem, IMutableGridCategoryItem, MutableFlatPropertyGridItem } from "./MutableFlatGridItem";
-import { IMutableGridItemFactory } from "./MutableGridItemFactory";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyCategory } from "../../PropertyDataProvider";
+import type { IMutableFlatGridItem, IMutableGridCategoryItem} from "./MutableFlatGridItem";
+import { FlatGridItemType, MutableFlatPropertyGridItem } from "./MutableFlatGridItem";
+import type { IMutableGridItemFactory } from "./MutableGridItemFactory";
 
 /**
  * Category name to PropertyRecord[] key pair interface used to describe which records belong to which category.

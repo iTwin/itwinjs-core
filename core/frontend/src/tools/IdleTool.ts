@@ -7,7 +7,8 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, EventHandled, InteractiveTool } from "./Tool";
+import type { BeButtonEvent, BeTouchEvent, BeWheelEvent} from "./Tool";
+import { BeButton, EventHandled, InteractiveTool } from "./Tool";
 import { DefaultViewTouchTool, FitViewTool, ViewHandleType, ViewManip } from "./ViewTool";
 
 /**

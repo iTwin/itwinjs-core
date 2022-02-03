@@ -3,15 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
-import {
-  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
-  IModelConnection, OffScreenViewport, Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
+import type { FeatureAppearanceProvider} from "@itwin/core-common";
+import { ClipStyle, ColorDef, FeatureAppearance, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
+import type {
+  DecorateContext, Decorator, FeatureOverrideProvider, GraphicBranchOptions,
+  IModelConnection, RenderSystem, Viewport} from "@itwin/core-frontend";
+import { FeatureSymbology, GraphicBranch, GraphicType, IModelApp, OffScreenViewport, Pixel, SnapshotConnection, SpatialViewState, ViewRect,
 } from "@itwin/core-frontend";
 import { ClipVector, Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
+import type { TestViewport} from "../TestViewport";
 import {
-  Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr,
+  Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, testViewports, testViewportsWithDpr,
 } from "../TestViewport";
 
 /* eslint-disable @typescript-eslint/unbound-method */

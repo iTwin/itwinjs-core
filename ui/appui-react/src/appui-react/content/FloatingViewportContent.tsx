@@ -8,7 +8,8 @@
 
 import "./FloatingViewportContent.css";
 import * as React from "react";
-import { IModelApp, ScreenViewport, ViewState } from "@itwin/core-frontend";
+import type { ScreenViewport, ViewState } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 import { ViewportComponent } from "@itwin/imodel-components-react";
 import { FloatingViewportContentControl } from "./ViewportContentControl";

@@ -5,12 +5,13 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import { expect } from "chai";
-import { IDisposable } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
-import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
-import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
+import type { IDisposable } from "@itwin/core-bentley";
+import type { Transform } from "@itwin/core-geometry";
+import type { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
+import type { GraphicBranchOptions } from "../../render/GraphicBranch";
+import { GraphicBranch } from "../../render/GraphicBranch";
 import { MockRender } from "../../render/MockRender";
-import { RenderGraphic } from "../../render/RenderGraphic";
+import type { RenderGraphic } from "../../render/RenderGraphic";
 
 function addIsDisposed(disposable: IDisposable): void {
   (disposable as any).isDisposed = false;

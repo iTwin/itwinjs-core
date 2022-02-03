@@ -6,19 +6,22 @@
  * @module WebGL
  */
 
-import { assert, BeEvent, dispose, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, dispose } from "@itwin/core-bentley";
+import type { ImageSourceFormat, TextureData} from "@itwin/core-common";
 import {
-  ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData, TextureTransparency,
+  ImageBuffer, ImageBufferFormat, ImageSource, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
 import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { WebGLDisposable } from "./Disposable";
+import type { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
-import { UniformHandle } from "./UniformHandle";
-import { OvrFlags, TextureUnit } from "./RenderFlags";
+import type { UniformHandle } from "./UniformHandle";
+import type { OvrFlags} from "./RenderFlags";
+import { TextureUnit } from "./RenderFlags";
 import { System } from "./System";
-import { TextureOwnership } from "../RenderTexture";
+import type { TextureOwnership } from "../RenderTexture";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 

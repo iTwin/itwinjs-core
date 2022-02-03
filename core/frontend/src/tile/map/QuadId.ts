@@ -9,7 +9,7 @@
 import { assert, compareNumbers } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { MapTilingScheme } from "../internal";
+import type { MapTilingScheme } from "../internal";
 
 const scratchCartographic1 = Cartographic.createZero();
 const scratchCartographic2 = Cartographic.createZero();

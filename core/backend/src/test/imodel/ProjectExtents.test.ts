@@ -5,8 +5,10 @@
 
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { GeometricElement3dProps, Placement3d } from "@itwin/core-common";
-import { GeometricElement3d, SnapshotDb } from "../../core-backend";
+import type { GeometricElement3dProps} from "@itwin/core-common";
+import { Placement3d } from "@itwin/core-common";
+import type { SnapshotDb } from "../../core-backend";
+import { GeometricElement3d } from "../../core-backend";
 import { IModelTestUtils } from "../index";
 
 describe("computeProjectExtents", () => {

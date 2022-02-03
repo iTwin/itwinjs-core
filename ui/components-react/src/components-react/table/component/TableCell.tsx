@@ -10,13 +10,16 @@
 import "./TableCell.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Icon, Omit } from "@itwin/core-react";
-import { EditorContainer, EditorContainerProps } from "../../editors/EditorContainer";
+import type { CommonProps, Omit } from "@itwin/core-react";
+import { Icon } from "@itwin/core-react";
+import type { EditorContainerProps } from "../../editors/EditorContainer";
+import { EditorContainer } from "../../editors/EditorContainer";
 import { ItemStyleProvider } from "../../properties/ItemStyle";
+import type { PropertyDialogState, PropertyValueRendererContext, PropertyValueRendererManager} from "../../properties/ValueRendererManager";
 import {
-  PropertyContainerType, PropertyDialogState, PropertyValueRendererContext, PropertyValueRendererManager,
+  PropertyContainerType,
 } from "../../properties/ValueRendererManager";
-import { CellItem } from "../TableDataProvider";
+import type { CellItem } from "../TableDataProvider";
 
 /**
  * Properties of the [[TableCell]] React component

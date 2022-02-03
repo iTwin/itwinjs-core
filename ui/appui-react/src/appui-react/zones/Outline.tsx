@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { RectangleProps } from "@itwin/core-react";
+import type { RectangleProps } from "@itwin/core-react";
 import { Outline as NZ_Outline } from "@itwin/appui-layout-react";
 
 /** @internal */

@@ -5,7 +5,8 @@
 
 import * as ws from "ws";
 import { BentleyStatus, IModelError } from "@itwin/core-common";
-import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
+import type { MobileRpcGateway} from "../common/MobileRpcProtocol";
+import { MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
 import { ProcessDetector } from "@itwin/core-bentley";

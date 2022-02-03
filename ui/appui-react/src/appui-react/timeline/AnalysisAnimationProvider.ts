@@ -6,8 +6,9 @@
  * @module Timeline
  */
 
-import { ScreenViewport, ViewState } from "@itwin/core-frontend";
-import { BaseTimelineDataProvider, PlaybackSettings } from "@itwin/imodel-components-react";
+import type { ScreenViewport, ViewState } from "@itwin/core-frontend";
+import type { PlaybackSettings } from "@itwin/imodel-components-react";
+import { BaseTimelineDataProvider } from "@itwin/imodel-components-react";
 
 /**  Analysis Timeline Data Provider - Allows a TimelineComponent to animate the AnalysisStyle information stored in a ViewState.
  * @public

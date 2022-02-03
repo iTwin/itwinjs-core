@@ -7,7 +7,8 @@ import * as sinon from "sinon";
 import { IModelApp, NoRenderApp, SelectionTool, Tool } from "@itwin/core-frontend";
 import { ConditionalStringValue } from "@itwin/appui-abstract";
 import { Orientation, Size } from "@itwin/core-react";
-import { ActionButtonItemDef, CommandItemDef, ItemProps, ToolItemDef } from "../../appui-react";
+import type { ItemProps} from "../../appui-react";
+import { ActionButtonItemDef, CommandItemDef, ToolItemDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("Item", () => {

@@ -6,8 +6,9 @@
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { SnapshotDb } from "@itwin/core-backend";
-import { Code, GeometricElement3dProps, GeometryStreamBuilder, IModel, Placement3dProps } from "@itwin/core-common";
+import type { SnapshotDb } from "@itwin/core-backend";
+import type { GeometricElement3dProps, Placement3dProps } from "@itwin/core-common";
+import { Code, GeometryStreamBuilder, IModel } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully.

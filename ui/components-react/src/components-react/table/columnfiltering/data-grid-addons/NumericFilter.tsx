@@ -11,8 +11,9 @@
 
 import React from "react";
 import { UiComponents } from "../../../UiComponents";
-import { ReactDataGridColumn } from "../../component/TableColumn";
-import { NumericFilterRule, NumericFilterType } from "../DataGridFilterParser";
+import type { ReactDataGridColumn } from "../../component/TableColumn";
+import type { NumericFilterRule} from "../DataGridFilterParser";
+import { NumericFilterType } from "../DataGridFilterParser";
 
 /** @internal */
 export interface NumericFilterProps {

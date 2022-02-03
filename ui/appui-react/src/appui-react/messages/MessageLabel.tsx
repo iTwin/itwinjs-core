@@ -9,7 +9,7 @@
 import * as React from "react";
 import classnames from "classnames";
 import { MessageDiv } from "./MessageSpan";
-import { NotifyMessageType } from "./ReactNotifyMessageDetails";
+import type { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 /** Message String/Label
  * @internal

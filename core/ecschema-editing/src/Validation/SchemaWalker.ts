@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECClass, ISchemaPartVisitor, RelationshipClass, Schema, SchemaItem,
+import type { ISchemaPartVisitor, RelationshipClass, Schema, SchemaItem} from "@itwin/ecschema-metadata";
+import { ECClass,
   SchemaItemType, SchemaPartVisitorDelegate,
 } from "@itwin/ecschema-metadata";
 

@@ -7,20 +7,22 @@
  */
 
 import { IModelDb } from "@itwin/core-backend";
-import { assert, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
-import { IModelRpcProps } from "@itwin/core-common";
-import {
-  ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
-  ContentSourcesRpcResult, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions,
-  DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
-  Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError,
-  PresentationRpcInterface, PresentationRpcResponse, PresentationRpcResponseData, PresentationStatus, Ruleset, RulesetVariable, RulesetVariableJSON,
-  SelectClassInfo, SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
+import type { Id64String, IDisposable} from "@itwin/core-bentley";
+import { assert, Logger } from "@itwin/core-bentley";
+import type { IModelRpcProps } from "@itwin/core-common";
+import type {
+  ContentDescriptorRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
+  ContentSourcesRpcResult, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, ItemJSON, KeySetJSON, LabelDefinitionJSON, NodeJSON, NodeKeyJSON, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationRpcResponse, PresentationRpcResponseData, Ruleset, RulesetVariableJSON, SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions} from "@itwin/presentation-common";
+import { ContentFlags,
+  DisplayValueGroup, InstanceKey, KeySet, LabelDefinition,
+  Node, NodeKey, NodePathElement, PresentationError,
+  PresentationRpcInterface, PresentationStatus, RulesetVariable,
+  SelectClassInfo,
 } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
-import { PresentationManager } from "./PresentationManager";
+import type { PresentationManager } from "./PresentationManager";
 import { TemporaryStorage } from "./TemporaryStorage";
 
 type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) => TResult;

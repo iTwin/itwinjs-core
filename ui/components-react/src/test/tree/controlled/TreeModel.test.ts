@@ -7,10 +7,12 @@ import * as faker from "faker";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { CheckBoxState } from "@itwin/core-react";
-import { SparseArray, SparseTree } from "../../../components-react/tree/controlled/internal/SparseTree";
+import type { SparseTree } from "../../../components-react/tree/controlled/internal/SparseTree";
+import { SparseArray } from "../../../components-react/tree/controlled/internal/SparseTree";
+import type { MutableTreeModelNode, TreeModel,
+  TreeModelNode, TreeModelNodeInput, TreeModelNodePlaceholder, TreeModelRootNode} from "../../../components-react/tree/controlled/TreeModel";
 import {
-  computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, MutableTreeModel, MutableTreeModelNode, TreeModel,
-  TreeModelNode, TreeModelNodeInput, TreeModelNodePlaceholder, TreeModelRootNode,
+  computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, MutableTreeModel,
 } from "../../../components-react/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
 

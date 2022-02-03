@@ -6,9 +6,11 @@
  * @module Categories
  */
 
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { Id64, JsonUtils } from "@itwin/core-bentley";
+import type { CategoryProps, CodeScopeProps, CodeSpec, ElementProps, SubCategoryProps} from "@itwin/core-common";
 import {
-  BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
+  BisCodeSpec, Code, Rank, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";

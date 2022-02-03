@@ -8,13 +8,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { of } from "rxjs";
-import { Observable } from "rxjs/internal/Observable";
+import type { Observable } from "rxjs/internal/Observable";
+import type { ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, LoadedNodeHierarchy} from "@itwin/components-react";
 import {
-  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, LoadedNodeHierarchy, PagedTreeNodeLoader,
+  AbstractTreeNodeLoaderWithProvider, PagedTreeNodeLoader,
   TreeModelSource, useDebouncedAsyncValue,
 } from "@itwin/components-react";
-import { FilteredPresentationTreeDataProvider, IFilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import type { IFilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
+import { FilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
+import type { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 const FILTERED_DATA_PAGE_SIZE = 20;
 

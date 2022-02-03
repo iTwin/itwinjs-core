@@ -6,11 +6,12 @@
  * @module Metadata
  */
 
-import { SchemaItemProps } from "../Deserialization/JsonProps";
-import { SchemaItemType, schemaItemTypeToString, schemaItemTypeToXmlString } from "../ECObjects";
+import type { SchemaItemProps } from "../Deserialization/JsonProps";
+import type { SchemaItemType} from "../ECObjects";
+import { schemaItemTypeToString, schemaItemTypeToXmlString } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECVersion, SchemaItemKey } from "../SchemaKey";
-import { Schema } from "./Schema";
+import type { Schema } from "./Schema";
 
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
 

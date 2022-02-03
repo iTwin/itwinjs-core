@@ -4,12 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@itwin/appui-abstract";
-import { Localization } from "@itwin/core-common";
+import type { AbstractWidgetProps, UiItemsProvider } from "@itwin/appui-abstract";
+import { StagePanelLocation, StagePanelSection, StageUsage } from "@itwin/appui-abstract";
+import type { Localization } from "@itwin/core-common";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
-import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
+import type { ConfigurableCreateInfo} from "@itwin/appui-react";
+import { WidgetControl } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";
-import { MapLayerOptions } from "./Interfaces";
+import type { MapLayerOptions } from "./Interfaces";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {
   public readonly id = "MapLayersUiItemsProvider";

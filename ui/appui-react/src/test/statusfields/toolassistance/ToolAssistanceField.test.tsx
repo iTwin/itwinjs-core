@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ReactWrapper } from "enzyme";
+import type { ReactWrapper } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
@@ -12,9 +12,10 @@ import { WidgetState } from "@itwin/appui-abstract";
 import { LocalStateStorage } from "@itwin/core-react";
 import { FooterPopup, TitleBarButton } from "@itwin/appui-layout-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
+import type { ConfigurableCreateInfo,
+  StatusBarWidgetControlArgs} from "../../../appui-react";
 import {
-  AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl,
-  StatusBarWidgetControlArgs, ToolAssistanceField, WidgetDef,
+  AppNotificationManager, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl, ToolAssistanceField, WidgetDef,
 } from "../../../appui-react";
 import TestUtils, { mount, storageMock } from "../../TestUtils";
 

@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import type { ViewFlagOverrides, ViewFlagProps, ViewFlagsProperties} from "../ViewFlags";
 import {
-  RenderMode, ViewFlagOverrides, ViewFlagProps, ViewFlags, ViewFlagsProperties,
+  RenderMode, ViewFlags,
 } from "../ViewFlags";
 
 function invertDefaults(): ViewFlags {

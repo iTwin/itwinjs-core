@@ -6,9 +6,11 @@
  * @module DisplayStyles
  */
 
-import { Id64, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
-import { ColorDef, ColorDefProps } from "./ColorDef";
-import { TextureImageSpec } from "./RenderTexture";
+import type { Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { ColorDefProps } from "./ColorDef";
+import { ColorDef } from "./ColorDef";
+import type { TextureImageSpec } from "./RenderTexture";
 
 /** Supported types of [[SkyBox]] images.
  * @see [[SkyBoxImageProps]].

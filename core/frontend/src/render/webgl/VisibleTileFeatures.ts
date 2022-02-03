@@ -7,13 +7,14 @@
  */
 
 import { Id64 } from "@itwin/core-bentley";
-import { BatchType, PackedFeature } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
-import { QueryTileFeaturesOptions, VisibleFeature } from "../VisibleFeature";
+import type { PackedFeature } from "@itwin/core-common";
+import { BatchType } from "@itwin/core-common";
+import type { IModelConnection } from "../../IModelConnection";
+import type { QueryTileFeaturesOptions, VisibleFeature } from "../VisibleFeature";
 import { RenderPass } from "./RenderFlags";
-import { RenderCommands } from "./RenderCommands";
+import type { RenderCommands } from "./RenderCommands";
 import { ShaderProgramExecutor } from "./ShaderProgram";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 
 /** Iterates over features visible in tiles selected for display by a Target by inspecting its RenderCommands.
  * @internal

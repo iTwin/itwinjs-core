@@ -5,11 +5,14 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { BeDuration, compareStrings, DbOpcode, Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { BatchType, ChangedEntities, EdgeType, ElementGeometryChange, IModelError } from "@itwin/core-common";
+import type { ChangedEntities, ElementGeometryChange} from "@itwin/core-common";
+import { BatchType, EdgeType, IModelError } from "@itwin/core-common";
+import type { GeometricModel3dState, IModelTileTreeParams} from "@itwin/core-frontend";
 import {
-  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
+  BriefcaseConnection, GraphicalEditingScope, IModelTileTree, TileLoadPriority,
 } from "@itwin/core-frontend";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";

@@ -12,11 +12,13 @@ import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
 import { BeDuration } from "@itwin/core-bentley";
-import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@itwin/appui-abstract";
+import type { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyRecord, PropertyValueFormat, SpecialKey } from "@itwin/appui-abstract";
 import { HorizontalAlignment, LocalStateStorage } from "@itwin/core-react";
-import {
-  CellItem, ColumnDescription, PropertyUpdatedArgs, PropertyValueRendererManager, RowItem, SelectionMode, Table, TableDataChangeEvent,
-  TableDataChangesListener, TableDataProvider, TableProps, TableSelectionTarget,
+import type {
+  CellItem, ColumnDescription, PropertyUpdatedArgs, RowItem,
+  TableDataChangesListener, TableDataProvider, TableProps} from "../../../components-react";
+import { PropertyValueRendererManager, SelectionMode, Table, TableDataChangeEvent, TableSelectionTarget,
 } from "../../../components-react";
 import { DragDropHeaderWrapper } from "../../../components-react/table/component/DragDropHeaderCell";
 import { SimpleTableDataProvider } from "../../../components-react/table/SimpleTableDataProvider";

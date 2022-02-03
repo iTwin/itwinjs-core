@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { Tile, TileProps } from "./Tile";
+import type { TileProps } from "./Tile";
+import { Tile } from "./Tile";
 
 /** Minimal [[Tile]] component
  * @beta

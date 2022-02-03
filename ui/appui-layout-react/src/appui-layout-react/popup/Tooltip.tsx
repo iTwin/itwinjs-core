@@ -9,8 +9,9 @@
 import "./Tooltip.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Point, Rectangle, RectangleProps, Size, SizeProps } from "@itwin/core-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { CommonProps, RectangleProps, SizeProps } from "@itwin/core-react";
+import { Point, Rectangle, Size } from "@itwin/core-react";
 import { CssProperties } from "../utilities/Css";
 
 /** Properties of [[Tooltip]] component.

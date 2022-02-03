@@ -9,7 +9,8 @@
 import "./Handle.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, useRefs, useResizeObserver } from "@itwin/core-react";
+import type { CommonProps, Point} from "@itwin/core-react";
+import { useRefs, useResizeObserver } from "@itwin/core-react";
 import { useDragToolSettings } from "../base/DragManager";
 import { getUniqueId, NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { useDrag } from "../widget/TabBar";

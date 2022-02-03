@@ -6,9 +6,10 @@
  * @module Utilities
  */
 
-import { PointProps } from "@itwin/appui-abstract";
+import type { PointProps } from "@itwin/appui-abstract";
 import { Point } from "./Point";
-import { Size, SizeProps } from "./Size";
+import type { SizeProps } from "./Size";
+import { Size } from "./Size";
 import { UiGeometry } from "./UiGeometry";
 
 /** Describes 2d bounds.

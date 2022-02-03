@@ -6,9 +6,10 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyCategory } from "../../PropertyDataProvider";
-import { FilteredType, IPropertyDataFilterer, PropertyDataFiltererBase, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyCategory } from "../../PropertyDataProvider";
+import type { FilteredType, IPropertyDataFilterer, PropertyDataFilterResult } from "./PropertyDataFiltererBase";
+import { PropertyDataFiltererBase } from "./PropertyDataFiltererBase";
 
 /**
  * Logical operator for composite filterer.

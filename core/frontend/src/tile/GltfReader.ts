@@ -6,31 +6,34 @@
  * @module Tiles
  */
 
+import type { Id64String} from "@itwin/core-bentley";
 import {
-  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, Id64String, JsonUtils, Logger, utf8ToString,
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, JsonUtils, Logger, utf8ToString,
 } from "@itwin/core-bentley";
+import type { Polyface} from "@itwin/core-geometry";
 import {
-  Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Polyface, Range2d, Range3d, Transform, Vector3d,
+  Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
+import type { ElementAlignedBox3d, MeshPolylineList} from "@itwin/core-common";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
-  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
+  BatchType, ColorDef, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
+  MeshEdges, MeshPolyline, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { getImageSourceFormatForMimeType, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
-import { IModelConnection } from "../IModelConnection";
+import type { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { PickableGraphicOptions } from "../render/GraphicBuilder";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import type { PickableGraphicOptions } from "../render/GraphicBuilder";
+import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
 import { Triangle } from "../render/primitives/Primitives";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderSystem } from "../render/RenderSystem";
-import { RealityTileGeometry, TileContent } from "./internal";
+import type { RenderGraphic } from "../render/RenderGraphic";
+import type { RenderSystem } from "../render/RenderSystem";
+import type { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 
 /* eslint-disable no-restricted-syntax */

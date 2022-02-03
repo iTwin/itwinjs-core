@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import type { ExpandedNodeUpdateRecordJSON, HierarchyCompareInfoJSON,
+  HierarchyUpdateInfoJSON, HierarchyUpdateRecordJSON, Node, NodeDeletionInfo, NodeDeletionInfoJSON, NodeInsertionInfo,
+  NodeInsertionInfoJSON, NodeJSON, NodeUpdateInfo, NodeUpdateInfoJSON, UpdateInfoJSON} from "../presentation-common";
 import {
-  ExpandedNodeUpdateRecord, ExpandedNodeUpdateRecordJSON, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyUpdateInfo,
-  HierarchyUpdateInfoJSON, HierarchyUpdateRecord, HierarchyUpdateRecordJSON, Node, NodeDeletionInfo, NodeDeletionInfoJSON, NodeInsertionInfo,
-  NodeInsertionInfoJSON, NodeJSON, NodeUpdateInfo, NodeUpdateInfoJSON, PartialHierarchyModification, StandardNodeTypes, UpdateInfo, UpdateInfoJSON,
+  ExpandedNodeUpdateRecord, HierarchyCompareInfo, HierarchyUpdateInfo, HierarchyUpdateRecord, PartialHierarchyModification, StandardNodeTypes, UpdateInfo,
 } from "../presentation-common";
 
 const testNode: Node = {

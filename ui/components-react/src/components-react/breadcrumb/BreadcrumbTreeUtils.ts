@@ -6,8 +6,10 @@
  * @module Breadcrumb
  */
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataProvider } from "../table/TableDataProvider";
-import { DelayLoadedTreeNodeItem, hasChildren, ImmediatelyLoadedTreeNodeItem, TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
+import type { CellItem, ColumnDescription, RowItem, TableDataProvider } from "../table/TableDataProvider";
+import { TableDataChangeEvent } from "../table/TableDataProvider";
+import type { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
+import { hasChildren } from "../tree/TreeDataProvider";
 import { UiComponents } from "../UiComponents";
 
 /* eslint-disable deprecation/deprecation */

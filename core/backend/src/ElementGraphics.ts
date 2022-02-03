@@ -7,9 +7,10 @@
  */
 
 import { assert, IModelStatus } from "@itwin/core-bentley";
-import { ElementGraphicsRequestProps, IModelError } from "@itwin/core-common";
+import type { ElementGraphicsRequestProps} from "@itwin/core-common";
+import { IModelError } from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
-import { IModelDb } from "./IModelDb";
+import type { IModelDb } from "./IModelDb";
 
 /** See [[IModelDb.generateElementGraphics]] and IModelTileRpcImpl.requestElementGraphics.
  * @internal

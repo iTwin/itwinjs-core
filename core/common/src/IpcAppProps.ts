@@ -6,14 +6,14 @@
  * @module NativeApp
  */
 
-import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@itwin/core-bentley";
-import { Range3dProps, XYZProps } from "@itwin/core-geometry";
-import { OpenBriefcaseProps } from "./BriefcaseTypes";
-import { ChangedEntities } from "./ChangedEntities";
-import { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps";
-import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
-import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions } from "./IModel";
-import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
+import type { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@itwin/core-bentley";
+import type { Range3dProps, XYZProps } from "@itwin/core-geometry";
+import type { OpenBriefcaseProps } from "./BriefcaseTypes";
+import type { ChangedEntities } from "./ChangedEntities";
+import type { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps";
+import type { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
+import type { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions } from "./IModel";
+import type { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
  * @internal

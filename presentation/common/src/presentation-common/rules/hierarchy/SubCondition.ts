@@ -6,9 +6,9 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer } from "../Rule";
-import { RequiredSchemaSpecification } from "../SchemasSpecification";
-import { ChildNodeSpecification } from "./ChildNodeSpecification";
+import type { ConditionContainer } from "../Rule";
+import type { RequiredSchemaSpecification } from "../SchemasSpecification";
+import type { ChildNodeSpecification } from "./ChildNodeSpecification";
 
 /**
  * Defines child node specifications which should only be handled when a condition

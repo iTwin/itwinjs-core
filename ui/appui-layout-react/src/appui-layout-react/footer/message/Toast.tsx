@@ -9,7 +9,8 @@
 import "./Toast.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps, Rectangle, Timer } from "@itwin/core-react";
+import type { CommonProps, NoChildrenProps} from "@itwin/core-react";
+import { Rectangle, Timer } from "@itwin/core-react";
 import { Css } from "../../utilities/Css";
 
 /** Properties of [[Toast]] component.

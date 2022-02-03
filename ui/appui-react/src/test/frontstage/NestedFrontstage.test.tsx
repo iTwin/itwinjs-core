@@ -7,8 +7,9 @@ import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
+import type { FrontstageProps} from "../../appui-react";
 import {
-  ContentGroup, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, NestedFrontstage,
+  ContentGroup, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, NestedFrontstage,
   ToolItemDef,
   ToolWidget, Widget, Zone, ZoneState,
 } from "../../appui-react";

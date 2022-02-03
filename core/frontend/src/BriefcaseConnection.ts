@@ -6,10 +6,12 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import {
+import type { GuidString, Id64String} from "@itwin/core-bentley";
+import { assert, BeEvent, CompressedId64Set, Guid, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import type {
   ChangesetIndex,
-  ChangesetIndexAndId, IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions,
+  ChangesetIndexAndId, IModelConnectionProps, OpenBriefcaseProps, StandaloneOpenOptions} from "@itwin/core-common";
+import { IModelError,
 } from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";

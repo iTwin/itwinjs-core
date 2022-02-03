@@ -8,9 +8,11 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
-import { Format, FormatProps, FormatTraits } from "@itwin/core-quantity";
-import { Checkbox, Select, SelectOption } from "@itwin/itwinui-react";
+import type { CommonProps } from "@itwin/core-react";
+import type { FormatProps} from "@itwin/core-quantity";
+import { Format, FormatTraits } from "@itwin/core-quantity";
+import type { SelectOption } from "@itwin/itwinui-react";
+import { Checkbox, Select } from "@itwin/itwinui-react";
 import { UiIModelComponents } from "../UiIModelComponents";
 
 interface UomSeparatorSelectorProps extends CommonProps {

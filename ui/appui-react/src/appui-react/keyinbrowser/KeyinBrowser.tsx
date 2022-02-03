@@ -10,8 +10,10 @@
 import "./KeyinBrowser.scss";
 // cSpell:ignore Modeless keyins keyinbrowser testid
 import * as React from "react";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Tool } from "@itwin/core-frontend";
-import { AutoSuggest, AutoSuggestData, CommonProps, InputLabel } from "@itwin/core-react";
+import type { Tool } from "@itwin/core-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
+import type { AutoSuggestData, CommonProps} from "@itwin/core-react";
+import { AutoSuggest, InputLabel } from "@itwin/core-react";
 import { Button, LabeledInput } from "@itwin/itwinui-react";
 import { UiFramework } from "../UiFramework";
 import { SpecialKey } from "@itwin/appui-abstract";

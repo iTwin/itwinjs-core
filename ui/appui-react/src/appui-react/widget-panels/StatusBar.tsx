@@ -9,11 +9,11 @@
 import "./StatusBar.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { StatusBar } from "../statusbar/StatusBar";
-import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
+import type { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
 
 /** @internal */
 export function WidgetPanelsStatusBar(props: CommonProps) {

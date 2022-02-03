@@ -6,9 +6,10 @@
  * @module SQLite
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
+import type { GuidString, Id64String, IDisposable} from "@itwin/core-bentley";
+import { assert, DbResult, LRUMap } from "@itwin/core-bentley";
 import { ECJsNames, IModelError } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */

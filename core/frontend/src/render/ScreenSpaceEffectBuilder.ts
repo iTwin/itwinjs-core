@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Viewport } from "../Viewport";
+import type { Viewport } from "../Viewport";
 
 /** The underlying data types that can be used for uniform variables in screen-space effect shaders.
  * @see [[ScreenSpaceEffectBuilder.addUniform]] to define a uniform variable.

@@ -6,9 +6,10 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType, WidgetState } from "@itwin/appui-abstract";
-import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, FrontstageManager, SyncUiEventDispatcher, SyncUiEventId, UiFramework, WidgetChangedEventArgs,
-  WidgetControl, WidgetDef, WidgetProps,
+import type {
+  ConfigurableCreateInfo, WidgetChangedEventArgs, WidgetProps} from "../../appui-react";
+import { ConfigurableUiControlType, ConfigurableUiManager, FrontstageManager, SyncUiEventDispatcher, SyncUiEventId, UiFramework,
+  WidgetControl, WidgetDef,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 

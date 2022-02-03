@@ -5,11 +5,13 @@
 import { should } from "chai";
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { PointProps } from "@itwin/appui-abstract";
-import { Point, Rectangle, RectangleProps } from "@itwin/core-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { RectangleProps } from "@itwin/core-react";
+import { Point, Rectangle } from "@itwin/core-react";
+import type {
+  ResizeStrategy, WidgetZoneId, ZonesManagerProps} from "../../../appui-layout-react";
 import {
-  DisabledResizeHandles, DraggedWidgetManager, getClosedWidgetTabIndex, getColumnZones, getZoneCell, HorizontalAnchor, ResizeHandle,
-  ResizeStrategy, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManager, ZonesManager, ZonesManagerProps, ZoneTargetType,
+  DisabledResizeHandles, DraggedWidgetManager, getClosedWidgetTabIndex, getColumnZones, getZoneCell, HorizontalAnchor, ResizeHandle, ToolSettingsWidgetMode, widgetZoneIds, ZoneManager, ZonesManager, ZoneTargetType,
 } from "../../../appui-layout-react";
 import { TestProps } from "./TestProps";
 

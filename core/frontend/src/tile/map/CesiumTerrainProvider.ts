@@ -6,17 +6,20 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
-import { request, RequestOptions } from "../../request/Request";
+import type { RequestOptions } from "../../request/Request";
+import { request } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
+import type { MapCartoRectangle, MapTileProjection, MapTilingScheme, Tile} from "../internal";
 import {
-  GeographicTilingScheme, MapCartoRectangle, MapTile, MapTileProjection, MapTilingScheme, QuadId, TerrainMeshProvider, Tile, TileAvailability,
+  GeographicTilingScheme, MapTile, QuadId, TerrainMeshProvider, TileAvailability,
 } from "../internal";
 
 /** @internal */

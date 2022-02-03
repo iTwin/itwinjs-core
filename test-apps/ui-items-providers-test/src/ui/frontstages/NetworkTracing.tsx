@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import type { ContentGroupProps, ContentProps, FrontstageProps, StageContentLayoutProps, StandardFrontstageProps} from "@itwin/appui-react";
 import {
-  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
-  IModelViewportControl, StageContentLayout, StageContentLayoutProps, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider,
+  IModelViewportControl, StageContentLayout, StandardContentToolsProvider, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
   UiFramework,
@@ -13,7 +14,7 @@ import {
 import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { NetworkTracingUiProvider } from "../providers/NetworkTracingUiProvider";
 import { LocalStateStorage } from "@itwin/core-react";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 
 function getImodelSpecificKey(inKey: string, iModelConnection: IModelConnection | undefined) {
   const imodelId = iModelConnection?.iModelId ?? "unknownImodel";

@@ -3,11 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { DbResult, Id64String } from "@itwin/core-bentley";
-import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import type { Id64String } from "@itwin/core-bentley";
+import { DbResult } from "@itwin/core-bentley";
+import type { Point3d} from "@itwin/core-geometry";
+import { Angle, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { ECSqlStatement, Element, IModelDb} from "@itwin/core-backend";
+import { BriefcaseDb, IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import type { RpcInterfaceDefinition} from "@itwin/core-common";
 import {
-  Code, FeatureGates, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
+  Code, FeatureGates, IModelReadRpcInterface, RpcManager, TestRpcManager,
 } from "@itwin/core-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Barrier } from "./BarrierElement";

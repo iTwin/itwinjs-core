@@ -6,7 +6,7 @@
  * @module Comparison
  */
 
-import { ISchemaChanges } from "./SchemaChanges";
+import type { ISchemaChanges } from "./SchemaChanges";
 
 /**
  * Interface for reporting ISchemaChanges objects.

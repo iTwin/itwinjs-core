@@ -9,10 +9,10 @@
 import "./DefaultDialogGridContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DialogRow } from "@itwin/appui-abstract";
+import type { DialogRow } from "@itwin/appui-abstract";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { ToolSettingsContentContext } from "../widgets/ToolSettingsContent";
-import { ComponentGenerator } from "./ComponentGenerator";
+import type { ComponentGenerator } from "./ComponentGenerator";
 
 enum LayoutMode {
   Wide = 0,

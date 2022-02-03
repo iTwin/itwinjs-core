@@ -8,8 +8,9 @@ import * as assert from "assert";
 
 /* eslint-disable no-console */
 
+import type { FuzzyScorer, IFilter, IMatch} from "../../appui-abstract/utils/filter/filters";
 import {
-  createMatches, fuzzyScore, fuzzyScoreGraceful, fuzzyScoreGracefulAggressive, FuzzyScorer, IFilter, IMatch, matchesCamelCase,
+  createMatches, fuzzyScore, fuzzyScoreGraceful, fuzzyScoreGracefulAggressive, matchesCamelCase,
   matchesContiguousSubString, matchesFuzzy, matchesFuzzy2, matchesPrefix, matchesStrictPrefix, matchesSubString, matchesWords, or,
 } from "../../appui-abstract/utils/filter/filters";
 import { equalsIgnoreCase, startsWithIgnoreCase } from "../../appui-abstract/utils/filter/strings";

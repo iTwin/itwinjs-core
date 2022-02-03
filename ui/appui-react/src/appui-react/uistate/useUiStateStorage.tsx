@@ -7,8 +7,9 @@
  */
 
 import * as React from "react";
-import { UiSyncEventArgs } from "@itwin/appui-abstract";
-import { LocalStateStorage, UiStateStorage } from "@itwin/core-react";
+import type { UiSyncEventArgs } from "@itwin/appui-abstract";
+import type { UiStateStorage } from "@itwin/core-react";
+import { LocalStateStorage } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 

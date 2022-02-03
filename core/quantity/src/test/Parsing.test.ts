@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
-import { UnitProps } from "../Interfaces";
+import type { UnitProps } from "../Interfaces";
 import { Parser } from "../Parser";
 import { ParserSpec } from "../ParserSpec";
 import { Quantity } from "../Quantity";

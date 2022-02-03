@@ -6,11 +6,11 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
-import { BlurGeometry } from "../CachedGeometry";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
+import type { BlurGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
+import type { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { decodeDepthRgb } from "./Decode";
 import { addWindowToTexCoords, assignFragColor } from "./Fragment";

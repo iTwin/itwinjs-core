@@ -6,7 +6,8 @@
  * @module Rendering
  */
 
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
+import type { ProgramBuilder, VertexShaderBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { addInstanceColor } from "./Instancing";
 
 // Vertex

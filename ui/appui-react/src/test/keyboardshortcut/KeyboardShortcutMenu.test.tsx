@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { CommandItemDef, KeyboardShortcutManager, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../appui-react";
+import type { KeyboardShortcutProps } from "../../appui-react";
+import { CommandItemDef, KeyboardShortcutManager, KeyboardShortcutMenu } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { FunctionKey, SpecialKey } from "@itwin/appui-abstract";
 import { UiFramework } from "../../appui-react/UiFramework";

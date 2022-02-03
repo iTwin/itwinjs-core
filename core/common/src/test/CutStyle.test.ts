@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CutStyle, CutStyleProps } from "../ClipStyle";
+import type { CutStyleProps } from "../ClipStyle";
+import { CutStyle } from "../ClipStyle";
 import { HiddenLine } from "../HiddenLine";
 import { FeatureAppearance } from "../FeatureSymbology";
 

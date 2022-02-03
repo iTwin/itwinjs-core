@@ -6,8 +6,9 @@
  * @module Rendering
  */
 
-import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d } from "@itwin/core-geometry";
-import { RenderTexture } from "./RenderTexture";
+import type { IndexedPolyfaceVisitor, PolyfaceVisitor} from "@itwin/core-geometry";
+import { Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import type { RenderTexture } from "./RenderTexture";
 
 /** Describes how to map a [[RenderTexture]]'s image onto a surface as part of a [[RenderMaterial]].
  * @public

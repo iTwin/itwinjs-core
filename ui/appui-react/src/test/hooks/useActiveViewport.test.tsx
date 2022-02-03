@@ -6,8 +6,10 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { ActiveContentChangedEventArgs, ContentViewManager, useActiveViewport } from "../../appui-react";
+import type { ScreenViewport } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import type { ActiveContentChangedEventArgs} from "../../appui-react";
+import { ContentViewManager, useActiveViewport } from "../../appui-react";
 import { mount } from "../TestUtils";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

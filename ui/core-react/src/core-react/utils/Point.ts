@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { PointProps } from "@itwin/appui-abstract";
+import type { PointProps } from "@itwin/appui-abstract";
 
 /** Describes and provides methods to work with 2d points.
  * @internal

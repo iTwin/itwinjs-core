@@ -8,7 +8,7 @@
 
 import "./SettingsContainer.scss";
 import * as React from "react";
-import { ActivateSettingsTabEventArgs, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, SettingsManager, SettingsTabEntry } from "./SettingsManager";
+import type { ActivateSettingsTabEventArgs, ProcessSettingsContainerCloseEventArgs, ProcessSettingsTabActivationEventArgs, SettingsManager, SettingsTabEntry } from "./SettingsManager";
 import { VerticalTabs } from "../tabs/VerticalTabs";
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
 

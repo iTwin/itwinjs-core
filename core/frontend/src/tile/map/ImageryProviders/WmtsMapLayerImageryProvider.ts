@@ -6,12 +6,14 @@
  * @module Tiles
  */
 import { assert } from "@itwin/core-bentley";
-import { IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
-import {
+import type { MapLayerSettings} from "@itwin/core-common";
+import { IModelStatus, ServerError } from "@itwin/core-common";
+import type {
   ImageryMapTile,
+  QuadId} from "../../internal";
+import {
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
-  QuadId,
   WmsUtilities, WmtsCapabilities, WmtsCapability,
 } from "../../internal";
 

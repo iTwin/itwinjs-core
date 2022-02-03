@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import { WidgetState } from "@itwin/appui-abstract";
 import { UiFramework, Zone } from "../../appui-react";
 import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
-import { ZoneRuntimeProps } from "../../appui-react/zones/Zone";
+import type { ZoneRuntimeProps } from "../../appui-react/zones/Zone";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("Zone", () => {

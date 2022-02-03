@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { WebGLExtensionName } from "@itwin/webgl-compatibility";
+import type { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { AttributeMap } from "../../../render/webgl/AttributeMap";
 import { CompileStatus } from "../../../render/webgl/ShaderProgram";
@@ -12,7 +12,7 @@ import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlag
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../render/webgl/ShaderBuilder";
 import { SingularTechnique, Techniques } from "../../../render/webgl/Technique";
 import { System } from "../../../render/webgl/System";
-import { Target } from "../../../render/webgl/Target";
+import type { Target } from "../../../render/webgl/Target";
 import { TechniqueId } from "../../../render/webgl/TechniqueId";
 import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
 

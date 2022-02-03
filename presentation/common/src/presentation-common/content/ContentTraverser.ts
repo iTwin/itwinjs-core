@@ -6,14 +6,18 @@
  * @module Content
  */
 
-import { assert, IDisposable, using } from "@itwin/core-bentley";
-import { CategoryDescription } from "./Category";
-import { Content } from "./Content";
-import { Descriptor } from "./Descriptor";
-import { Field, NestedContentField } from "./Fields";
+import type { IDisposable} from "@itwin/core-bentley";
+import { assert, using } from "@itwin/core-bentley";
+import type { CategoryDescription } from "./Category";
+import type { Content } from "./Content";
+import type { Descriptor } from "./Descriptor";
+import type { NestedContentField } from "./Fields";
+import { Field } from "./Fields";
 import { Item } from "./Item";
-import { PropertyValueFormat, TypeDescription } from "./TypeDescription";
-import { DisplayValue, DisplayValuesArray, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value";
+import type { TypeDescription } from "./TypeDescription";
+import { PropertyValueFormat } from "./TypeDescription";
+import type { DisplayValuesArray, DisplayValuesMap, NestedContentValue, ValuesArray, ValuesMap } from "./Value";
+import { DisplayValue, Value } from "./Value";
 
 /** @alpha */
 export interface FieldHierarchy {

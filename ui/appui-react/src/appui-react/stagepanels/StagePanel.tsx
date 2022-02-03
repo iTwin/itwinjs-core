@@ -9,18 +9,20 @@
 
 import * as React from "react";
 import { StagePanelLocation } from "@itwin/appui-abstract";
-import {
-  NestedStagePanelKey, NestedStagePanelsManagerProps, NineZoneStagePanelManagerProps, StagePanelType as NZ_StagePanelType, WidgetZoneId,
-  ZonesManagerWidgetsProps,
+import type {
+  NestedStagePanelKey, NestedStagePanelsManagerProps, NineZoneStagePanelManagerProps, WidgetZoneId,
+  ZonesManagerWidgetsProps} from "@itwin/appui-layout-react";
+import { StagePanelType as NZ_StagePanelType,
 } from "@itwin/appui-layout-react";
-import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import type { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { WidgetProps } from "../widgets/WidgetProps";
-import { WidgetTabs } from "../widgets/WidgetStack";
-import { ZoneLocation } from "../zones/Zone";
+import type { WidgetProps } from "../widgets/WidgetProps";
+import type { WidgetTabs } from "../widgets/WidgetStack";
+import type { ZoneLocation } from "../zones/Zone";
 import { FrameworkStagePanel } from "./FrameworkStagePanel";
-import { PanelStateChangedEventArgs, StagePanelDef, StagePanelState as StagePanelState } from "./StagePanelDef";
-import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
+import type { PanelStateChangedEventArgs, StagePanelDef} from "./StagePanelDef";
+import { StagePanelState as StagePanelState } from "./StagePanelDef";
+import type { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 
 /** Available StagePanel locations.
  * ------------------------------------------------------------------------------------

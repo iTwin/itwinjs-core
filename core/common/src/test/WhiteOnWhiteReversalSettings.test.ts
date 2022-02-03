@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
+import type { WhiteOnWhiteReversalProps} from "../WhiteOnWhiteReversalSettings";
+import { WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
 
 describe("WhiteOnWhiteReversalSettings", () => {
   it("round-trips through JSON", () => {

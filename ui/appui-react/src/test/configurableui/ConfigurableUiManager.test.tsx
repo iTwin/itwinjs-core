@@ -7,10 +7,11 @@ import { expect } from "chai";
 import * as React from "react";
 import { MockRender } from "@itwin/core-frontend";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
-import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, CoreTools,
-  Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
-  TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
+import type {
+  ConfigurableCreateInfo, ContentGroupProps, FrontstageProps, TaskPropsList, WorkflowProps, WorkflowPropsList} from "../../appui-react";
+import { ConfigurableUiManager, ContentControl, ContentGroup, CoreTools,
+  Frontstage, FrontstageManager, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
+  TaskManager, WidgetControl, WorkflowManager,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 

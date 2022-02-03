@@ -5,11 +5,11 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { Format } from "../../Metadata/Format";
-import { InvertedUnit } from "../../Metadata/InvertedUnit";
+import type { Format } from "../../Metadata/Format";
+import type { InvertedUnit } from "../../Metadata/InvertedUnit";
 import { OverrideFormat } from "../../Metadata/OverrideFormat";
 import { Schema } from "../../Metadata/Schema";
-import { Unit } from "../../Metadata/Unit";
+import type { Unit } from "../../Metadata/Unit";
 import { FormatTraits, FractionalPrecision, ShowSignOption } from "../../utils/FormatEnums";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";

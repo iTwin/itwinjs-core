@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Angle, AxisIndex, Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
-import { Element, G, Matrix, Svg, SVG } from "@svgdotjs/svg.js";
+import type { G, Svg} from "@svgdotjs/svg.js";
+import { Element, Matrix, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "../Markup";
 import { initSvgExt } from "../SvgJsExt";
 

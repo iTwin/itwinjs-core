@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { DiagnosticsLogEntry, DiagnosticsLogMessage, DiagnosticsScopeLogs } from "../presentation-common/Diagnostics";
+import type { DiagnosticsLogMessage, DiagnosticsScopeLogs } from "../presentation-common/Diagnostics";
+import { DiagnosticsLogEntry } from "../presentation-common/Diagnostics";
 
 describe("DiagnosticsLogEntry", () => {
 

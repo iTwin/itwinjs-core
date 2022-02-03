@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  CategoryDescription, ClassInfo, Descriptor, DescriptorSource, DisplayValuesMap, EditorDescription, Field, InstanceKey, Item, LabelDefinition,
-  NestedContentField, PropertiesField, Property, PropertyValueFormat, RelationshipPath, RendererDescription, SelectClassInfo, StructTypeDescription,
-  TypeDescription, ValuesMap,
+import type {
+  CategoryDescription, ClassInfo, DescriptorSource, DisplayValuesMap, EditorDescription, InstanceKey, LabelDefinition, Property, RelationshipPath, RendererDescription, SelectClassInfo, StructTypeDescription,
+  TypeDescription, ValuesMap} from "../../presentation-common";
+import { Descriptor, Field, Item,
+  NestedContentField, PropertiesField, PropertyValueFormat,
 } from "../../presentation-common";
-import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
+import type { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 import { createTestECClassInfo, createTestECInstanceKey, createTestRelationshipPath } from "./EC";
 
 /**

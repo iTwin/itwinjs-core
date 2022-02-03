@@ -6,12 +6,13 @@
  * @module Tiles
  */
 
-import { Map4d } from "@itwin/core-geometry";
-import { FrustumPlanes } from "@itwin/core-common";
-import { GraphicBranch } from "../render/GraphicBranch";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { SceneContext } from "../ViewContext";
-import { TileDrawArgs, TileGraphicType, TileTreeReference } from "./internal";
+import type { Map4d } from "@itwin/core-geometry";
+import type { FrustumPlanes } from "@itwin/core-common";
+import type { GraphicBranch } from "../render/GraphicBranch";
+import type { RenderGraphic } from "../render/RenderGraphic";
+import type { SceneContext } from "../ViewContext";
+import type { TileGraphicType, TileTreeReference } from "./internal";
+import { TileDrawArgs } from "./internal";
 
 /** @internal */
 export interface GraphicsCollector {

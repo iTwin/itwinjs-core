@@ -5,10 +5,11 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
-import {
-  ISelectionProvider, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionManager,
+import type {
+  ISelectionProvider, SelectionChangeEventArgs, SelectionManager} from "../../presentation-frontend";
+import { SelectionChangeEvent, SelectionChangeType, SelectionHandler,
 } from "../../presentation-frontend";
 
 describe("SelectionHandler", () => {

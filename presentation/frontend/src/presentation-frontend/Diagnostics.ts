@@ -6,8 +6,9 @@
  * @module Core
  */
 
-import {
-  DiagnosticsHandler, DiagnosticsLogEntry, DiagnosticsLoggerSeverity, DiagnosticsLogMessage, DiagnosticsScopeLogs,
+import type {
+  DiagnosticsHandler, DiagnosticsLoggerSeverity, DiagnosticsLogMessage, DiagnosticsScopeLogs} from "@itwin/presentation-common";
+import { DiagnosticsLogEntry,
 } from "@itwin/presentation-common";
 
 /**

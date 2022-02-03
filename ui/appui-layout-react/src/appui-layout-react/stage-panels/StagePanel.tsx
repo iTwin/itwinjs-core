@@ -9,9 +9,12 @@
 import "./StagePanel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, Rectangle } from "@itwin/core-react";
-import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
-import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "../widget/rectangular/ResizeGrip";
+import type { CommonProps} from "@itwin/core-react";
+import { Point, Rectangle } from "@itwin/core-react";
+import type { SafeAreaInsets} from "../utilities/SafeAreaInsets";
+import { SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
+import type { ResizeGripResizeArgs } from "../widget/rectangular/ResizeGrip";
+import { ResizeDirection, ResizeGrip } from "../widget/rectangular/ResizeGrip";
 
 /** Describes available stage panel types.
  * @internal

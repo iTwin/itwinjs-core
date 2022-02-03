@@ -8,18 +8,20 @@
 
 import { assert } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { ClassProps } from "../Deserialization/JsonProps";
+import type { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, LazyLoadedECClass } from "../Interfaces";
+import type { AnyClass, LazyLoadedECClass } from "../Interfaces";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
-import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import { Enumeration } from "./Enumeration";
+import type { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet} from "./CustomAttribute";
+import { serializeCustomAttributes } from "./CustomAttribute";
+import type { Enumeration } from "./Enumeration";
+import type { Property} from "./Property";
 import {
-  EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property, StructArrayProperty, StructProperty,
+  EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, StructArrayProperty, StructProperty,
 } from "./Property";
-import { Schema } from "./Schema";
+import type { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
 /**

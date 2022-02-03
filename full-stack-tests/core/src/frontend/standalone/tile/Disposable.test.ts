@@ -3,15 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ByteStream, IDisposable } from "@itwin/core-bentley";
+import type { IDisposable } from "@itwin/core-bentley";
+import { ByteStream } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
-import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
-  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
-  TileTreeReference,
+import type {
+  Decorations, GraphicList, IModelConnection, PlanarClassifierMap, PlanarClassifierTarget,
+  PlanarClipMaskState, RenderMemory, SceneContext, TextureDrapeMap,
+  TileTreeReference} from "@itwin/core-frontend";
+import { GraphicType, ImdlReader, IModelApp, OffScreenViewport, RenderPlanarClassifier, RenderTextureDrape, ScreenViewport, SnapshotConnection,
 } from "@itwin/core-frontend";
 import { MeshArgs } from "@itwin/core-frontend/lib/cjs/render-primitives";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
+import type { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
 import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 import { testViewports } from "../../TestViewport";

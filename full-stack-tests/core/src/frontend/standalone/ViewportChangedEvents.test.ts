@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import type { Id64Arg, Id64String } from "@itwin/core-bentley";
+import { BeDuration, Id64 } from "@itwin/core-bentley";
 import { ClipVector, Transform } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, ModelClipGroup, ModelClipGroups, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
 } from "@itwin/core-common";
+import type { FeatureSymbology, SpatialViewState, Viewport, ViewState} from "@itwin/core-frontend";
 import {
-  ChangeFlag, FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport, ViewState,
+  ChangeFlag, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, StandardViewId,
 } from "@itwin/core-frontend";
 import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
 import { TestUtility } from "../TestUtility";

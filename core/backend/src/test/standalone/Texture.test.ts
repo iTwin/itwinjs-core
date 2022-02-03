@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { Base64EncodedString, ImageSourceFormat, IModel, TextureTransparency } from "@itwin/core-common";
-import { SnapshotDb, Texture } from "../../core-backend";
+import type { SnapshotDb} from "../../core-backend";
+import { Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Texture", () => {

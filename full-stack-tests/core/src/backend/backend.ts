@@ -15,11 +15,14 @@ import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import type { Id64String} from "@itwin/core-bentley";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import type { CodeProps, ElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { BentleyCloudRpcManager, IModel, RelatedElement, RpcConfiguration } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
-import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
+import type { FullStackTestIpc } from "../common/FullStackTestIpc";
+import { fullstackIpcChannel } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
 import { exposeBackendCallbacks } from "../certa/certaBackend";

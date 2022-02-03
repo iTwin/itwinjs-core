@@ -7,10 +7,12 @@
  */
 
 import * as React from "react";
-import { OnCancelFunc, RelativePosition } from "@itwin/appui-abstract";
-import { DivWithOutsideClick, Orientation, Point, Size, SizeProps } from "@itwin/core-react";
+import type { OnCancelFunc, RelativePosition } from "@itwin/appui-abstract";
+import type { Orientation, SizeProps } from "@itwin/core-react";
+import { DivWithOutsideClick, Point, Size } from "@itwin/core-react";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
+import type { PopupPropsBase } from "./PopupManager";
+import { PopupManager } from "./PopupManager";
 import { PositionPopup } from "./PositionPopup";
 import { MessageDiv } from "../messages/MessageSpan";
 

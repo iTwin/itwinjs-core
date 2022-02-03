@@ -8,7 +8,8 @@
 
 import * as React from "react";
 import { Dialog } from "@itwin/core-react";
-import { DialogButtonDef, DialogButtonType, DialogLayoutDataProvider } from "@itwin/appui-abstract";
+import type { DialogButtonDef, DialogLayoutDataProvider } from "@itwin/appui-abstract";
+import { DialogButtonType } from "@itwin/appui-abstract";
 import { getUniqueId } from "@itwin/appui-layout-react";
 import { ModalDialogManager } from "./ModalDialogManager";
 import { ModelessDialogManager } from "./ModelessDialogManager";

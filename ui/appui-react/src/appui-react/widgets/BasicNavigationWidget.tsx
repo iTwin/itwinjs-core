@@ -8,7 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "@itwin/appui-abstract";
+import type { CommonToolbarItem} from "@itwin/appui-abstract";
+import { ToolbarOrientation, ToolbarUsage } from "@itwin/appui-abstract";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";

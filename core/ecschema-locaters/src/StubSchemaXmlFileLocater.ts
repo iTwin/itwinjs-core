@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
+import type { ISchemaLocater} from "@itwin/ecschema-metadata";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType,
+  ECObjectsError, ECObjectsStatus, ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 

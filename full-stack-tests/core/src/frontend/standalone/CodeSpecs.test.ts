@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCodeSpec, CodeScopeSpec, CodeSpec } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { CodeSpec } from "@itwin/core-common";
+import { BisCodeSpec, CodeScopeSpec } from "@itwin/core-common";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 describe("CodeSpecs", async () => {

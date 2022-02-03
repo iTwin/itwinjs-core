@@ -7,8 +7,9 @@
  */
 import { immerable } from "immer";
 import shortid from "shortid";
-import { PropertyDescription, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyCategory } from "../../PropertyDataProvider";
+import type { PropertyDescription} from "@itwin/appui-abstract";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import type { PropertyCategory } from "../../PropertyDataProvider";
 
 /**
  * Types of FlatGridItems for differentiating what property FlatGridItem is wrapping.

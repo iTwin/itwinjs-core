@@ -6,11 +6,12 @@
  * @module Notification
  */
 
-import { BeDuration } from "@itwin/core-bentley";
-import { Point2d, XAndY } from "@itwin/core-geometry";
-import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
+import type { BeDuration } from "@itwin/core-bentley";
+import type { Point2d, XAndY } from "@itwin/core-geometry";
+import type { OutputMessagePriority} from "@itwin/core-frontend";
+import { NotifyMessageDetails, OutputMessageAlert, OutputMessageType } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { MessageType } from "@itwin/core-react";
+import type { MessageType } from "@itwin/core-react";
 
 /** Types for message in [[MessageManager]]
  * @public

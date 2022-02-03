@@ -5,17 +5,18 @@
 
 import { join } from "path";
 import * as sinon from "sinon";
-import { Guid, GuidString } from "@itwin/core-bentley";
-import {
+import type { GuidString } from "@itwin/core-bentley";
+import { Guid } from "@itwin/core-bentley";
+import type {
   ChangesetFileProps, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
-import {
+import type {
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckpointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
 } from "../BackendHubAccess";
-import { CheckpointProps } from "../CheckpointManager";
+import type { CheckpointProps } from "../CheckpointManager";
 import { IModelHost } from "../IModelHost";
-import { AcquireNewBriefcaseIdArg, TokenArg } from "../core-backend";
+import type { AcquireNewBriefcaseIdArg, TokenArg } from "../core-backend";
 import { IModelJsFs } from "../IModelJsFs";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { LocalHub } from "./LocalHub";

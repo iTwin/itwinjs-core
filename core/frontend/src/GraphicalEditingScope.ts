@@ -6,13 +6,15 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
-import {
-  EditingScopeNotifications, ElementGeometryChange, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
+import type { GuidString, Id64String} from "@itwin/core-bentley";
+import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, SortedArray } from "@itwin/core-bentley";
+import type { Range3d } from "@itwin/core-geometry";
+import type {
+  EditingScopeNotifications, ElementGeometryChange, ModelGeometryChangesProps, RemoveFunction} from "@itwin/core-common";
+import { IpcAppChannel, ModelGeometryChanges,
 } from "@itwin/core-common";
 import { BriefcaseNotificationHandler } from "./BriefcaseTxns";
-import { BriefcaseConnection } from "./BriefcaseConnection";
+import type { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp } from "./IpcApp";
 
 class ModelChanges extends SortedArray<ElementGeometryChange> {

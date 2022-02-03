@@ -13,8 +13,8 @@ import * as _ from "lodash";
 import React from "react";
 import { ThemedSelect } from "@itwin/core-react";
 import { UiComponents } from "../../../UiComponents";
-import { ReactDataGridColumn } from "../../component/TableColumn";
-import { TableDistinctValue } from "../ColumnFiltering";
+import type { ReactDataGridColumn } from "../../component/TableColumn";
+import type { TableDistinctValue } from "../ColumnFiltering";
 
 // cspell:ignore autosize
 

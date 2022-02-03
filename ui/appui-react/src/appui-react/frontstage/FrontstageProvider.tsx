@@ -6,8 +6,8 @@
  * @module Frontstage
  */
 
-import * as React from "react";
-import { FrontstageProps } from "./Frontstage";
+import type * as React from "react";
+import type { FrontstageProps } from "./Frontstage";
 
 /** Provides a Frontstage as a React based definition
  * @public

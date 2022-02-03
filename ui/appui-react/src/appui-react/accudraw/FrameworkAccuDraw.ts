@@ -7,15 +7,18 @@
  */
 
 import { BeUiEvent } from "@itwin/core-bentley";
+import type { BeButtonEvent} from "@itwin/core-frontend";
 import {
-  AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField,
+  AccuDraw, CompassMode, IModelApp, ItemField,
   NotifyMessageDetails, OutputMessagePriority, QuantityType, RotationMode,
 } from "@itwin/core-frontend";
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
-import { UiStateStorage, UiStateStorageStatus } from "@itwin/core-react";
-import { UiFramework, UserSettingsProvider } from "../UiFramework";
+import type { UiStateStorage} from "@itwin/core-react";
+import { UiStateStorageStatus } from "@itwin/core-react";
+import type { UserSettingsProvider } from "../UiFramework";
+import { UiFramework } from "../UiFramework";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
+import type { AccuDrawUiSettings } from "./AccuDrawUiSettings";
 
 // cspell:ignore dont
 

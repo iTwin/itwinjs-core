@@ -6,12 +6,12 @@
  * @module Tile
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { TransformProps } from "@itwin/core-geometry";
-import { Placement2dProps, Placement3dProps } from "../ElementProps";
-import { ElementGeometryDataEntry } from "../geometry/ElementGeometry";
-import { GeometryStreamProps } from "../geometry/GeometryStream";
-import { ContentFlags, EdgeType, TreeFlags } from "../tile/TileMetadata";
+import type { Id64String } from "@itwin/core-bentley";
+import type { TransformProps } from "@itwin/core-geometry";
+import type { Placement2dProps, Placement3dProps } from "../ElementProps";
+import type { ElementGeometryDataEntry } from "../geometry/ElementGeometry";
+import type { GeometryStreamProps } from "../geometry/GeometryStream";
+import type { ContentFlags, EdgeType, TreeFlags } from "../tile/TileMetadata";
 
 /** Wire format describing properties common to [[PersistentGraphicsRequestProps]] and [[DynamicGraphicsRequestProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.

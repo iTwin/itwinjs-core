@@ -7,18 +7,18 @@
  */
 
 import { BeUiEvent } from "@itwin/core-bentley";
-import { AbstractMenuItemProps } from "./items/AbstractMenuItemProps";
-import { AbstractToolbarProps } from "./items/AbstractToolbarProps";
-import { RelativePosition } from "./items/RelativePosition";
-import { PropertyDescription } from "./properties/Description";
-import { Primitives } from "./properties/PrimitiveTypes";
-import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc } from "./utils/callbacks";
-import { PropertyRecord } from "./properties/Record";
-import { UiDataProvider } from "./dialogs/UiDataProvider";
-import { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
-import { PointProps } from "./utils/PointProps";
+import type { AbstractMenuItemProps } from "./items/AbstractMenuItemProps";
+import type { AbstractToolbarProps } from "./items/AbstractToolbarProps";
+import type { RelativePosition } from "./items/RelativePosition";
+import type { PropertyDescription } from "./properties/Description";
+import type { Primitives } from "./properties/PrimitiveTypes";
+import type { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc } from "./utils/callbacks";
+import type { PropertyRecord } from "./properties/Record";
+import type { UiDataProvider } from "./dialogs/UiDataProvider";
+import type { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
+import type { PointProps } from "./utils/PointProps";
 import { loggerCategory } from "./utils/misc";
-import { MessagePresenter } from "./notification/MessagePresenter";
+import type { MessagePresenter } from "./notification/MessagePresenter";
 import { UiError } from "./utils/UiError";
 
 /** The Generic UI Event args contains information useful for any UI message

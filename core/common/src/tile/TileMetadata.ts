@@ -6,12 +6,13 @@
  * @module Tile
  */
 
+import type { ByteStream, Id64String} from "@itwin/core-bentley";
 import {
-  assert, ByteStream, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, Id64, Id64String,
+  assert, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, Id64,
 } from "@itwin/core-bentley";
 import { Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType } from "../FeatureTable";
-import { TileProps } from "../TileProps";
+import type { TileProps } from "../TileProps";
 import { CurrentImdlVersion, FeatureTableHeader, ImdlFlags, ImdlHeader } from "./IModelTileIO";
 import { TileReadError, TileReadStatus } from "./TileIO";
 

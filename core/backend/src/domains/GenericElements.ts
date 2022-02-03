@@ -6,16 +6,17 @@
  * @module Elements
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import {
-  CalloutProps, DefinitionElementProps, ElementProps, GeometricElement2dProps, GeometricElement3dProps, GeometricModel3dProps, IModel,
-  InformationPartitionElementProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, TypeDefinitionElementProps, ViewAttachmentLabelProps,
+import type { Id64String } from "@itwin/core-bentley";
+import type {
+  CalloutProps, DefinitionElementProps, ElementProps, GeometricElement2dProps, GeometricElement3dProps, GeometricModel3dProps,
+  InformationPartitionElementProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, TypeDefinitionElementProps, ViewAttachmentLabelProps} from "@itwin/core-common";
+import { IModel,
 } from "@itwin/core-common";
 import {
   Document, GraphicalElement2d, GraphicalElement3d, GraphicalPartition3d, GraphicalType2d, GroupInformationElement, GroupInformationPartition,
   PhysicalElement, PhysicalType, SpatialLocationElement,
 } from "../Element";
-import { IModelDb } from "../IModelDb";
+import type { IModelDb } from "../IModelDb";
 import { PhysicalMaterial } from "../Material";
 import { GraphicalModel3d, GroupInformationModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";

@@ -6,10 +6,10 @@
  * @module iModels
  */
 
-import { GuidString } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, LocalFileName } from "./ChangesetProps";
-import { IModelEncryptionProps, OpenDbKey } from "./IModel";
-import { IModelVersionProps } from "./IModelVersion";
+import type { GuidString } from "@itwin/core-bentley";
+import type { ChangesetIdWithIndex, LocalFileName } from "./ChangesetProps";
+import type { IModelEncryptionProps, OpenDbKey } from "./IModel";
+import type { IModelVersionProps } from "./IModelVersion";
 
 /** The Id assigned to a briefcase by iModelHub, or [[BriefcaseIdValue.Unassigned]] .
  * @public

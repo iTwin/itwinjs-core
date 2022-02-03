@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Subtract } from "@itwin/presentation-common";
+import type { Subtract } from "@itwin/presentation-common";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 
 /**

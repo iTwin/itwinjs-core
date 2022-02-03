@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { SizeProps } from "@itwin/core-react";
+import type { SizeProps } from "@itwin/core-react";
 import { offsetAndContainInContainer, Tooltip } from "../../appui-layout-react";
 import { createRect, mount } from "../Utils";
 

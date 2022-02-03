@@ -6,8 +6,8 @@
  * @module NativeApp
  */
 
-import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
+import type { AccessToken, GuidString } from "@itwin/core-bentley";
+import type { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";

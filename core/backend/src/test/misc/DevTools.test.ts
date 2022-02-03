@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import * as os from "os";
+import type * as os from "os";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { DevTools, DevToolsStatsFormatter } from "../../core-backend";
 

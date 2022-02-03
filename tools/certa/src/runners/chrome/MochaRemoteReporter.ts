@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EventEmitter } from "events";
-import * as puppeteer from "puppeteer";
+import type * as puppeteer from "puppeteer";
 import "./MochaSerializer";
 declare const window: any;
 

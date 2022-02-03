@@ -8,7 +8,8 @@
 import { assert } from "@itwin/core-bentley";
 import { RenderType } from "@itwin/webgl-compatibility";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";
+import type { FragmentShaderBuilder, ProgramBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { addInstancedRtcMatrix } from "./Vertex";
 

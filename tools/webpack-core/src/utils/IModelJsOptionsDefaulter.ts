@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { Configuration } from "webpack";
+import type { Configuration } from "webpack";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention
 const OptionsDefaulter: any = require("webpack/lib/OptionsDefaulter");

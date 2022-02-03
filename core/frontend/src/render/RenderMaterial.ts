@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { ColorDef, RenderTexture, RgbColorProps, TextureMapping } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
+import type { Id64String } from "@itwin/core-bentley";
+import type { ColorDef, RenderTexture, RgbColorProps, TextureMapping } from "@itwin/core-common";
+import type { IModelConnection } from "../IModelConnection";
 
 /** Specifies the provenance of a [RenderMaterial]($common) created for a persistent material element.
  * @see [[CreateRenderMaterialArgs.source]].

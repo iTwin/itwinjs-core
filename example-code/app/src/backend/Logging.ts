@@ -7,7 +7,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 // __PUBLISH_EXTRACT_START__ Logging-configureLoggingAndStreams.example-code
-import { Logger, LoggerLevelsConfig } from "@itwin/core-bentley";
+import type { LoggerLevelsConfig } from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 
 export function initializeLogging(): void {
   // Read the configuration parameters for my service. Some config

@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelDb, IModelHost, SnapshotDb } from "@itwin/core-backend";
+import type { IModelDb} from "@itwin/core-backend";
+import { IModelHost, SnapshotDb } from "@itwin/core-backend";
 import { DbResult, QueryRowFormat } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
 

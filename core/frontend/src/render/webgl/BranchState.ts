@@ -7,15 +7,16 @@
  */
 
 import { Transform } from "@itwin/core-geometry";
-import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags,
+import type {
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine} from "@itwin/core-common";
+import { RenderMode, ViewFlags,
 } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { ClipVolume } from "./ClipVolume";
-import { Branch } from "./Graphic";
-import { PlanarClassifier } from "./PlanarClassifier";
-import { TextureDrape } from "./TextureDrape";
+import type { ClipVolume } from "./ClipVolume";
+import type { Branch } from "./Graphic";
+import type { PlanarClassifier } from "./PlanarClassifier";
+import type { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 
 /** Options used to construct a BranchState.

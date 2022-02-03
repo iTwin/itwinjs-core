@@ -6,27 +6,27 @@
  * @module Metadata
  */
 
-import { DelayedPromise } from "./DelayedPromise";
-import { ECClass, StructClass } from "./Metadata/Class";
-import { Constant } from "./Metadata/Constant";
-import { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
-import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
-import { EntityClass } from "./Metadata/EntityClass";
-import { AnyEnumerator, Enumeration } from "./Metadata/Enumeration";
-import { Format } from "./Metadata/Format";
-import { InvertedUnit } from "./Metadata/InvertedUnit";
-import { KindOfQuantity } from "./Metadata/KindOfQuantity";
-import { Mixin } from "./Metadata/Mixin";
-import { OverrideFormat } from "./Metadata/OverrideFormat";
-import { Phenomenon } from "./Metadata/Phenomenon";
-import { AnyProperty } from "./Metadata/Property";
-import { PropertyCategory } from "./Metadata/PropertyCategory";
-import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
-import { Schema } from "./Metadata/Schema";
-import { SchemaItem } from "./Metadata/SchemaItem";
-import { Unit } from "./Metadata/Unit";
-import { UnitSystem } from "./Metadata/UnitSystem";
-import { SchemaItemKey, SchemaKey } from "./SchemaKey";
+import type { DelayedPromise } from "./DelayedPromise";
+import type { ECClass, StructClass } from "./Metadata/Class";
+import type { Constant } from "./Metadata/Constant";
+import type { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
+import type { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
+import type { EntityClass } from "./Metadata/EntityClass";
+import type { AnyEnumerator, Enumeration } from "./Metadata/Enumeration";
+import type { Format } from "./Metadata/Format";
+import type { InvertedUnit } from "./Metadata/InvertedUnit";
+import type { KindOfQuantity } from "./Metadata/KindOfQuantity";
+import type { Mixin } from "./Metadata/Mixin";
+import type { OverrideFormat } from "./Metadata/OverrideFormat";
+import type { Phenomenon } from "./Metadata/Phenomenon";
+import type { AnyProperty } from "./Metadata/Property";
+import type { PropertyCategory } from "./Metadata/PropertyCategory";
+import type { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
+import type { Schema } from "./Metadata/Schema";
+import type { SchemaItem } from "./Metadata/SchemaItem";
+import type { Unit } from "./Metadata/Unit";
+import type { UnitSystem } from "./Metadata/UnitSystem";
+import type { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 /** @beta */
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema> & Promise<Schema>;

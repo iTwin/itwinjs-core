@@ -5,14 +5,15 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
+import type { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
-import { SerializedRpcActivity } from "./RpcInvocation";
-import { RpcProtocol, RpcRequestFulfillment } from "./RpcProtocol";
+import type { SerializedRpcActivity } from "./RpcInvocation";
+import type { RpcRequestFulfillment } from "./RpcProtocol";
+import { RpcProtocol } from "./RpcProtocol";
 import { INSTANCE } from "./RpcRegistry";
 import { RpcRequest } from "./RpcRequest";
-import { RpcRequestContext } from "./RpcRequestContext";
+import type { RpcRequestContext } from "./RpcRequestContext";
 import { RpcRoutingToken } from "./RpcRoutingToken";
 
 /** @internal */

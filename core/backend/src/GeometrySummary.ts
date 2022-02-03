@@ -3,19 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, BentleyError, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
-import {
-  AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
+import type { Id64Array, Id64String} from "@itwin/core-bentley";
+import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
+import type {
+  AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive,
   InterpolationCurve3d,
   LinearSweep, LineSegment3d, LineString3d, Loop, Path, Range3d, RotationalSweep, RuledSweep, SolidPrimitive, Sphere, TorusPipe, Transform,
-  TransitionSpiral3d, UVSelect,
+  TransitionSpiral3d} from "@itwin/core-geometry";
+import { IModelJson, UVSelect,
 } from "@itwin/core-geometry";
-import {
-  BRepEntity, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
-  IModelError, TextStringPrimitive,
+import type {
+  BRepEntity, GeometryParams, GeometrySummaryRequestProps, ImagePrimitive, TextStringPrimitive} from "@itwin/core-common";
+import { GeometryStreamIterator, GeometrySummaryVerbosity,
+  IModelError,
 } from "@itwin/core-common";
-import { Element, GeometricElement, GeometryPart } from "./Element";
-import { IModelDb } from "./IModelDb";
+import type { Element} from "./Element";
+import { GeometricElement, GeometryPart } from "./Element";
+import type { IModelDb } from "./IModelDb";
 
 interface ElementGeom {
   iterator: GeometryStreamIterator;

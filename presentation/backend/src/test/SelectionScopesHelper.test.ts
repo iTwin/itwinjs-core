@@ -5,10 +5,13 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb, IModelHost } from "@itwin/core-backend";
-import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@itwin/core-common";
-import { InstanceKey } from "@itwin/presentation-common";
+import type { Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64 } from "@itwin/core-bentley";
+import type { ECSqlStatement, ECSqlValue, Element, IModelDb} from "@itwin/core-backend";
+import { DrawingGraphic, IModelHost } from "@itwin/core-backend";
+import type { ElementProps, ModelProps } from "@itwin/core-common";
+import { EntityMetaData, IModelError } from "@itwin/core-common";
+import type { InstanceKey } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 

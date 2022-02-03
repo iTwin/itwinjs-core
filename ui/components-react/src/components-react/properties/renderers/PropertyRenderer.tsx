@@ -7,17 +7,20 @@
  */
 
 import * as React from "react";
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { Orientation, RatioChangeResult } from "@itwin/core-react";
-import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
-import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import type { PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { Orientation, RatioChangeResult } from "@itwin/core-react";
+import type { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
+import type { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { EditorContainer } from "../../editors/EditorContainer";
 import { UiComponents } from "../../UiComponents";
-import { PropertyValueRendererManager } from "../ValueRendererManager";
-import { ActionButtonRenderer } from "./ActionButtonRenderer";
+import type { PropertyValueRendererManager } from "../ValueRendererManager";
+import type { ActionButtonRenderer } from "./ActionButtonRenderer";
 import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
-import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
-import { PropertyGridColumnInfo } from "./PropertyGridColumns";
+import type { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
+import { PrimitivePropertyRenderer } from "./PrimitivePropertyRenderer";
+import type { PropertyGridColumnInfo } from "./PropertyGridColumns";
 
 /** Properties shared by all renderers and PropertyView
  * @public

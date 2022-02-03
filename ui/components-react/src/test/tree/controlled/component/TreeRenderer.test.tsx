@@ -8,17 +8,21 @@ import { VariableSizeList } from "react-window";
 import { Observable } from "rxjs/internal/Observable";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
+import type { PrimitiveValue} from "@itwin/appui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { act, fireEvent, render } from "@testing-library/react";
-import { TreeNodeRendererProps } from "../../../../components-react/tree/controlled/component/TreeNodeRenderer";
-import { TreeRenderer, TreeRendererProps } from "../../../../components-react/tree/controlled/component/TreeRenderer";
+import type { TreeNodeRendererProps } from "../../../../components-react/tree/controlled/component/TreeNodeRenderer";
+import type { TreeRendererProps } from "../../../../components-react/tree/controlled/component/TreeRenderer";
+import { TreeRenderer } from "../../../../components-react/tree/controlled/component/TreeRenderer";
 import { from } from "../../../../components-react/tree/controlled/Observable";
-import { TreeActions } from "../../../../components-react/tree/controlled/TreeActions";
+import type { TreeActions } from "../../../../components-react/tree/controlled/TreeActions";
+import type { TreeModel, TreeModelNode, TreeModelNodePlaceholder, TreeModelRootNode, VisibleTreeNodes} from "../../../../components-react/tree/controlled/TreeModel";
 import {
-  computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodePlaceholder, TreeModelRootNode, VisibleTreeNodes,
+  computeVisibleNodes, MutableTreeModel,
 } from "../../../../components-react/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../components-react/tree/HighlightingEngine";
+import type { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
+import type { HighlightableTreeProps} from "../../../../components-react/tree/HighlightingEngine";
+import { HighlightingEngine } from "../../../../components-react/tree/HighlightingEngine";
 import TestUtils from "../../../TestUtils";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 

@@ -11,8 +11,9 @@ import { StrengthDirection } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
-import { NavigationProperty } from "../../Metadata/Property";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
+import type { NavigationProperty } from "../../Metadata/Property";
+import type { MutableSchema} from "../../Metadata/Schema";
+import { Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 

@@ -10,7 +10,7 @@ import * as React from "react";
 import { Orientation, ResizableContainerObserver } from "@itwin/core-react";
 import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
 import { PropertyList } from "../propertygrid/component/PropertyList";
-import { PropertyData } from "../propertygrid/PropertyDataProvider";
+import type { PropertyData } from "../propertygrid/PropertyDataProvider";
 
 /** Properties for [[FavoritePropertyList]] React component
  * @alpha

@@ -11,7 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { CommonProps, Popup, useRefs, WebFontIcon } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Popup, useRefs, WebFontIcon } from "@itwin/core-react";
 import { ColorSwatch } from "./Swatch";
 import { getCSSColorFromDef } from "./getCSSColorFromDef";
 

@@ -7,12 +7,13 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { DrawParams } from "../DrawCommand";
-import { UniformHandle } from "../UniformHandle";
+import type { DrawParams } from "../DrawCommand";
+import type { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
 import { Pass, TextureUnit } from "../RenderFlags";
 import { IsInstanced } from "../TechniqueFlags";
-import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
+import type { VertexShaderBuilder } from "../ShaderBuilder";
+import { VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { decodeUint16, decodeUint24 } from "./Decode";
 import { addInstanceOverrides } from "./Instancing";

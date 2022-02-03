@@ -7,7 +7,7 @@
  */
 
 import { RpcOperation } from "../core/RpcOperation";
-import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import type { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
 /** An OpenAPI 3.0 root document object.
  * @internal

@@ -6,9 +6,9 @@
  * @module Item
  */
 
-import { OnItemExecutedFunc } from "@itwin/appui-abstract";
+import type { OnItemExecutedFunc } from "@itwin/appui-abstract";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
-import { CommandItemProps } from "./ItemProps";
+import type { CommandItemProps } from "./ItemProps";
 
 /** An Item that executes a Command.
  * @public

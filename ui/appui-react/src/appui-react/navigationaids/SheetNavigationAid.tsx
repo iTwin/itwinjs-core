@@ -9,16 +9,20 @@
 import "./SheetNavigationAid.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { IModelApp, IModelConnection, ScreenViewport, SelectedViewportChangedArgs } from "@itwin/core-frontend";
+import type { IModelConnection, ScreenViewport, SelectedViewportChangedArgs } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { UiComponents } from "@itwin/components-react";
-import { ViewIdChangedEventArgs, ViewportComponentEvents } from "@itwin/imodel-components-react";
-import { CommonProps } from "@itwin/core-react";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import type { ViewIdChangedEventArgs} from "@itwin/imodel-components-react";
+import { ViewportComponentEvents } from "@itwin/imodel-components-react";
+import type { CommonProps } from "@itwin/core-react";
+import type { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import type { ModalFrontstageInfo } from "../frontstage/FrontstageManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { NavigationAidControl } from "./NavigationAidControl";
-import { CardContainer, CardSelectedEventArgs, SheetsModalFrontstage } from "./SheetsModalFrontstage";
+import type { CardSelectedEventArgs} from "./SheetsModalFrontstage";
+import { CardContainer, SheetsModalFrontstage } from "./SheetsModalFrontstage";
 import { ProgressRadial } from "@itwin/itwinui-react";
 
 /** A Sheet Navigation Aid control.

@@ -8,7 +8,8 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Dialog, DialogProps } from "./Dialog";
+import type { DialogProps } from "./Dialog";
+import { Dialog } from "./Dialog";
 
 /** Properties for the [[GlobalDialog]] component
  * @public

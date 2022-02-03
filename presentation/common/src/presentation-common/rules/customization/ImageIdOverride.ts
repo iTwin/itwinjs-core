@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import type { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Rule that allows overriding default icon and dynamically define an icon

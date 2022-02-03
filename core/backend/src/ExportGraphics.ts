@@ -6,9 +6,11 @@
  * @module iModels
  */
 
-import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
-import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
-import { GeometryClass } from "@itwin/core-common";
+import type { Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import type { Polyface, PolyfaceVisitor } from "@itwin/core-geometry";
+import { IndexedPolyface, PolyfaceData } from "@itwin/core-geometry";
+import type { GeometryClass } from "@itwin/core-common";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.

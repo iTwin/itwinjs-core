@@ -9,7 +9,8 @@
 
 import "./SelectableContent.scss";
 import * as React from "react";
-import { Select, SelectOption } from "@itwin/itwinui-react";
+import type { SelectOption } from "@itwin/itwinui-react";
+import { Select } from "@itwin/itwinui-react";
 
 /**
  * A definition for content displayed in [[ControlledSelectableContent]] and

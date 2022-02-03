@@ -3,13 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
-import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend"; // All of the imports from both frontend and common must be only of interfaces.
-import { BriefcaseId, ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
+import type { AccessToken, GuidString } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
+import type { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend"; // All of the imports from both frontend and common must be only of interfaces.
+import type { BriefcaseId, ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
 import { BriefcaseQuery } from "./imodelhub/Briefcases";
-import { ChangeSet, ChangeSetQuery } from "./imodelhub/ChangeSets";
+import type { ChangeSet} from "./imodelhub/ChangeSets";
+import { ChangeSetQuery } from "./imodelhub/ChangeSets";
 import { IModelHubClient } from "./imodelhub/Client";
-import { Version, VersionQuery } from "./imodelhub/Versions";
+import type { Version} from "./imodelhub/Versions";
+import { VersionQuery } from "./imodelhub/Versions";
 import { IModelQuery } from "./imodelhub/iModels";
 
 // TODO: Replace with types from imodeljs-backend once its dep is removed on this client

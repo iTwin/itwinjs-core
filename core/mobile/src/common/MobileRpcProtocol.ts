@@ -7,9 +7,10 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
+import type { RpcRequestFulfillment, RpcSerializedValue,
+  SerializedRpcRequest} from "@itwin/core-common";
 import {
-  IModelError, IpcWebSocket, RpcEndpoint, RpcProtocol, RpcPushChannel, RpcPushConnection, RpcRequest, RpcRequestFulfillment, RpcSerializedValue,
-  SerializedRpcRequest,
+  IModelError, IpcWebSocket, RpcEndpoint, RpcProtocol, RpcPushChannel, RpcPushConnection, RpcRequest,
 } from "@itwin/core-common";
 import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileIpcTransport } from "./MobileIpc";

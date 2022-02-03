@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
+import type { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
 /** Enumerates the types of map imagery that can be supplied by a [[BackgroundMapProvider]].
  * @public

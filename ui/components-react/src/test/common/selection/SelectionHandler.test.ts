@@ -5,8 +5,9 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { SelectionMode } from "../../../components-react";
+import type { MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, OnSelectionChanged, SingleSelectionHandler} from "../../../components-react/common/selection/SelectionHandler";
 import {
-  DragAction, MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, OnSelectionChanged, SelectionHandler, SingleSelectionHandler,
+  DragAction, SelectionHandler,
 } from "../../../components-react/common/selection/SelectionHandler";
 
 describe("SelectionHandler", () => {

@@ -6,12 +6,13 @@
  * @module Tiles
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
-import { Range1d } from "@itwin/core-geometry";
-import { RequestOptions } from "../../request/Request";
-import { IModelConnection } from "../../IModelConnection";
-import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
-import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile } from "../internal";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import type { Range1d } from "@itwin/core-geometry";
+import type { RequestOptions } from "../../request/Request";
+import type { IModelConnection } from "../../IModelConnection";
+import type { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
+import type { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile } from "../internal";
 
 /** Abstract base class for terrain mesh providers responsible for producing geometry background map tiles.
  * @see [[EllipsoidTerrainMeshProvider]]

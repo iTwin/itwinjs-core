@@ -8,20 +8,20 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMode } from "@itwin/core-common";
-import { TesselatedPolyline } from "../primitives/PolylineParams";
-import { SegmentEdgeParams, SilhouetteParams } from "../primitives/EdgeParams";
+import type { TesselatedPolyline } from "../primitives/PolylineParams";
+import type { SegmentEdgeParams, SilhouetteParams } from "../primitives/EdgeParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { PolylineBuffers } from "./CachedGeometry";
-import { ColorInfo } from "./ColorInfo";
-import { ShaderProgramParams } from "./DrawCommand";
+import type { ColorInfo } from "./ColorInfo";
+import type { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-import { MeshData } from "./MeshData";
+import type { MeshData } from "./MeshData";
 import { MeshGeometry } from "./MeshGeometry";
 
 /** @internal */

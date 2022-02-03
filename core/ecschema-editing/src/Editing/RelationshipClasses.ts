@@ -6,13 +6,14 @@
  * @module Editing
  */
 
+import type { RelationshipClass, RelationshipClassProps, SchemaItemKey,
+  SchemaKey, StrengthDirection} from "@itwin/ecschema-metadata";
 import {
-  ECObjectsError, ECObjectsStatus, RelationshipClass, RelationshipClassProps, SchemaItemKey, SchemaItemType,
-  SchemaKey, StrengthDirection,
+  ECObjectsError, ECObjectsStatus, SchemaItemType,
 } from "@itwin/ecschema-metadata";
-import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
-import { MutableRelationshipClass } from "./Mutable/MutableRelationshipClass";
+import type { MutableRelationshipClass } from "./Mutable/MutableRelationshipClass";
 
 /**
  * @alpha

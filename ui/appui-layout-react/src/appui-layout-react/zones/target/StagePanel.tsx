@@ -9,9 +9,11 @@
 import "./StagePanel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { StagePanelType, StagePanelTypeHelpers } from "../../stage-panels/StagePanel";
-import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../../utilities/SafeAreaInsets";
-import { MergeTargetProps } from "./Merge";
+import type { StagePanelType} from "../../stage-panels/StagePanel";
+import { StagePanelTypeHelpers } from "../../stage-panels/StagePanel";
+import type { SafeAreaInsets} from "../../utilities/SafeAreaInsets";
+import { SafeAreaInsetsHelpers } from "../../utilities/SafeAreaInsets";
+import type { MergeTargetProps } from "./Merge";
 import { WidgetTarget } from "./Target";
 
 /** Properties of [[StagePanel]] component.

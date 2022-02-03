@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LogLevel } from "@itwin/core-bentley";
-import { DevToolsRpcInterface, DevToolsStatsOptions, IModelRpcProps } from "@itwin/core-common";
+import type { LogLevel } from "@itwin/core-bentley";
+import type { IModelRpcProps } from "@itwin/core-common";
+import { DevToolsRpcInterface, DevToolsStatsOptions } from "@itwin/core-common";
 
 /**
  * Results of the ping test

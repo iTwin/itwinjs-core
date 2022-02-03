@@ -6,7 +6,8 @@
  * @module Geometry
  */
 
-import { Point3d, Transform } from "@itwin/core-geometry";
+import type { Transform } from "@itwin/core-geometry";
+import { Point3d } from "@itwin/core-geometry";
 
 /** Represents a bounding sphere.  Optional optimization for FrustumPlane containment test.
  * @public

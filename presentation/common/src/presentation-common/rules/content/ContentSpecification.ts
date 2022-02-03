@@ -6,11 +6,11 @@
  * @module PresentationRules
  */
 
-import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
-import { ContentInstancesOfSpecificClassesSpecification } from "./ContentInstancesOfSpecificClassesSpecification";
-import { ContentRelatedInstancesSpecification } from "./ContentRelatedInstancesSpecification";
-import { ContentModifiersList } from "./modifiers/ContentModifier";
-import { SelectedNodeInstancesSpecification } from "./SelectedNodeInstancesSpecification";
+import type { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
+import type { ContentInstancesOfSpecificClassesSpecification } from "./ContentInstancesOfSpecificClassesSpecification";
+import type { ContentRelatedInstancesSpecification } from "./ContentRelatedInstancesSpecification";
+import type { ContentModifiersList } from "./modifiers/ContentModifier";
+import type { SelectedNodeInstancesSpecification } from "./SelectedNodeInstancesSpecification";
 
 /**
  * Used for serializing array of [[ContentSpecification]]

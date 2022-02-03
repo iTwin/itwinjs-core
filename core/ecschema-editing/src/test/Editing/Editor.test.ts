@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import type { EntityClass} from "@itwin/ecschema-metadata";
 import {
-  ECVersion, EntityClass, PrimitiveType, Schema,
+  ECVersion, PrimitiveType, Schema,
   SchemaContext, SchemaItemKey, SchemaKey,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";

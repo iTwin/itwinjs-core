@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Node } from "@itwin/presentation-common";
+import type { Node } from "@itwin/presentation-common";
 
 /** @internal */
 export interface ColorMap {

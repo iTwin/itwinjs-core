@@ -6,15 +6,18 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
-import { NodeKey } from "@itwin/presentation-common";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { NodeKey } from "@itwin/presentation-common";
 import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
-import { Presentation, StateTracker } from "@itwin/presentation-frontend";
-import { TreeModelNodeInput, TreeModelSource, TreeNodeItem } from "@itwin/components-react";
+import type { StateTracker } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
+import type { TreeModelNodeInput, TreeNodeItem } from "@itwin/components-react";
+import { TreeModelSource } from "@itwin/components-react";
 import { cleanup, renderHook } from "@testing-library/react-hooks";
-import { IPresentationTreeDataProvider } from "../../../presentation-components";
+import type { IPresentationTreeDataProvider } from "../../../presentation-components";
 import { createLabelRecord } from "../../../presentation-components/common/Utils";
-import { useExpandedNodesTracking, UseExpandedNodesTrackingProps } from "../../../presentation-components/tree/controlled/UseExpandedNodesTracking";
+import type { UseExpandedNodesTrackingProps } from "../../../presentation-components/tree/controlled/UseExpandedNodesTracking";
+import { useExpandedNodesTracking } from "../../../presentation-components/tree/controlled/UseExpandedNodesTracking";
 import { mockPresentationManager } from "../../_helpers/UiComponents";
 
 interface TestTreeNodeItem extends TreeNodeItem {

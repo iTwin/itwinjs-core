@@ -6,8 +6,9 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, FrontstageManager, INACTIVITY_TIME_DEFAULT, UiFramework,
+import type {
+  ConfigurableCreateInfo} from "../../appui-react";
+import { ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, FrontstageManager, INACTIVITY_TIME_DEFAULT, UiFramework,
   UiShowHideManager,
   UiShowHideSettingsProvider,
 } from "../../appui-react";

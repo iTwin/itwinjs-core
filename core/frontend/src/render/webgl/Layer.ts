@@ -7,11 +7,11 @@
  */
 
 import { Id64 } from "@itwin/core-bentley";
-import { RenderMemory } from "../RenderMemory";
+import type { RenderMemory } from "../RenderMemory";
 import { Graphic } from "./Graphic";
-import { RenderCommands } from "./RenderCommands";
+import type { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 
 abstract class GraphicWrapper extends Graphic {
   public readonly graphic: Graphic;

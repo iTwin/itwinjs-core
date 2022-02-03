@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeNodeItem } from "../../components-react";
+import type { DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeNodeItem } from "../../components-react";
 import { ResolvablePromise } from "../test-helpers/misc";
 
 /** @internal */

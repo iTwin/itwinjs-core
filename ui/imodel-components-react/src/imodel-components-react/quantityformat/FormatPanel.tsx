@@ -8,8 +8,9 @@
 
 import "./FormatPanel.scss";
 import * as React from "react";
-import { Format, FormatProps, FormatterSpec, UnitProps, UnitsProvider } from "@itwin/core-quantity";
-import { CommonProps } from "@itwin/core-react";
+import type { FormatProps, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { Format, FormatterSpec } from "@itwin/core-quantity";
+import type { CommonProps } from "@itwin/core-react";
 import { FormatPrecision } from "./FormatPrecision";
 import { FormatSample } from "./FormatSample";
 import { FormatTypeOption } from "./FormatType";

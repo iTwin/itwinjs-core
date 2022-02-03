@@ -7,7 +7,8 @@ import * as React from "react";
 import * as moq from "typemoq";
 import { StagePanelLocation } from "@itwin/appui-abstract";
 import { StagePanel as NZ_StagePanel, StagePanelTarget } from "@itwin/appui-layout-react";
-import { FrameworkStagePanel, FrameworkStagePanelProps, SplitterPaneTarget, StagePanelState } from "../../appui-react";
+import type { FrameworkStagePanelProps} from "../../appui-react";
+import { FrameworkStagePanel, SplitterPaneTarget, StagePanelState } from "../../appui-react";
 import { mount } from "../TestUtils";
 
 describe("FrameworkStagePanel", () => {

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { LinkElementsInfo } from "@itwin/appui-abstract";
+import type { LinkElementsInfo } from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
 import { LinksRenderer, renderLinks, withLinks } from "../../components-react/properties/LinkHandler";
 import TestUtils from "../TestUtils";

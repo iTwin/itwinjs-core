@@ -7,9 +7,11 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BeDuration, using } from "@itwin/core-bentley";
-import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
+import type { Ruleset } from "@itwin/presentation-common";
+import { RegisteredRuleset } from "@itwin/presentation-common";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
-import { Presentation, RulesetManager } from "@itwin/presentation-frontend";
+import type { RulesetManager } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
 import { RulesetRegistrationHelper } from "../../presentation-components/common/RulesetRegistrationHelper";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 

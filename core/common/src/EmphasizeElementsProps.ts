@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { Id64Array } from "@itwin/core-bentley";
-import { ColorDefProps } from "./ColorDef";
-import { FeatureAppearanceProps } from "./FeatureSymbology";
+import type { Id64Array } from "@itwin/core-bentley";
+import type { ColorDefProps } from "./ColorDef";
+import type { FeatureAppearanceProps } from "./FeatureSymbology";
 
 /** Options for overriding element appearance.
  * @see [EmphasizeElements]($frontend)

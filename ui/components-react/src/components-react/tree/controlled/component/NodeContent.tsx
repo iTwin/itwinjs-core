@@ -9,12 +9,17 @@
 import "./NodeContent.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, TreeNodePlaceholder } from "@itwin/core-react";
-import { ItemStyle, ItemStyleProvider } from "../../../properties/ItemStyle";
-import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { HighlightableTreeNodeProps, HighlightingEngine } from "../../HighlightingEngine";
-import { TreeModelNode } from "../TreeModel";
-import { TreeNodeEditor, TreeNodeEditorRenderer } from "./TreeNodeEditor";
+import type { CommonProps} from "@itwin/core-react";
+import { TreeNodePlaceholder } from "@itwin/core-react";
+import type { ItemStyle} from "../../../properties/ItemStyle";
+import { ItemStyleProvider } from "../../../properties/ItemStyle";
+import type { PropertyValueRendererContext, PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
+import { PropertyContainerType } from "../../../properties/ValueRendererManager";
+import type { HighlightableTreeNodeProps} from "../../HighlightingEngine";
+import { HighlightingEngine } from "../../HighlightingEngine";
+import type { TreeModelNode } from "../TreeModel";
+import type { TreeNodeEditorRenderer } from "./TreeNodeEditor";
+import { TreeNodeEditor } from "./TreeNodeEditor";
 
 /** Properties for [[TreeNodeContent]] component
  * @internal

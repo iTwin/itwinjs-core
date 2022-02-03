@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { Code, IModel, ModelSelectorProps } from "@itwin/core-common";
+import type { ModelSelectorProps } from "@itwin/core-common";
+import { Code, IModel } from "@itwin/core-common";
+import type { GeometricModelState, IModelConnection} from "@itwin/core-frontend";
 import {
-  DrawingModelState, GeometricModelState, IModelConnection, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
+  DrawingModelState, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 

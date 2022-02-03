@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64String, IDisposable } from "@itwin/core-bentley";
+import type { Id64String, IDisposable } from "@itwin/core-bentley";
 
 /** Identifies an image to be used to produce a [[RenderTexture]] for a given purpose - for example,
  * as part of a [[SkyBox]]. If the string is a valid `Id64String`, it refers to a persistent [Texture]($backend) element stored in an iModel.

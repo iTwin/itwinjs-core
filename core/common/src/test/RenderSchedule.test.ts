@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@itwin/core-geometry";
+import type { TransformProps } from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Point4d, Transform } from "@itwin/core-geometry";
 import { RenderSchedule } from "../RenderSchedule";
 import { RgbColor } from "../RgbColor";
 

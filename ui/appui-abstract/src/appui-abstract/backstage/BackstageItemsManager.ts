@@ -9,7 +9,7 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
-import { BackstageItem } from "./BackstageItem";
+import type { BackstageItem } from "./BackstageItem";
 
 /** Arguments of [[BackstageItemsManager.onChanged]] event.
  * @internal

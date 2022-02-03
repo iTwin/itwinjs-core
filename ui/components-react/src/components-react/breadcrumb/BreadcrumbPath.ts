@@ -9,7 +9,7 @@
 /* eslint-disable deprecation/deprecation */
 
 import { UiEvent } from "@itwin/core-react";
-import { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
+import type { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
 
 /** BreadcrumbChangeEvent Event Args class.
  * @beta

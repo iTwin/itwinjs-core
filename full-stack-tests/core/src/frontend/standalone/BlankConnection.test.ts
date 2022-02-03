@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Guid, GuidString } from "@itwin/core-bentley";
+import type { GuidString } from "@itwin/core-bentley";
+import { Guid } from "@itwin/core-bentley";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
-import { Cartographic, ElementProps, IModel } from "@itwin/core-common";
+import type { ElementProps} from "@itwin/core-common";
+import { Cartographic, IModel } from "@itwin/core-common";
 import { BlankConnection, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 

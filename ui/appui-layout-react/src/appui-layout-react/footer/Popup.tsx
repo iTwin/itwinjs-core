@@ -10,7 +10,8 @@ import "./Popup.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { Popup, PopupProps } from "@itwin/core-react";
+import type { PopupProps } from "@itwin/core-react";
+import { Popup } from "@itwin/core-react";
 
 /** Available footer popup content types.
  * @beta

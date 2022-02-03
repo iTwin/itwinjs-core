@@ -7,12 +7,15 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings } from "@itwin/core-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
+import type { Cartographic, MapLayerSettings } from "@itwin/core-common";
+import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import type { RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
+import { getJson, request } from "../../request/Request";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { ScreenViewport } from "../../Viewport";
-import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
+import type { ScreenViewport } from "../../Viewport";
+import type { ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapTilingScheme, QuadId} from "../internal";
+import { GeographicTilingScheme, WebMercatorTilingScheme } from "../internal";
 
 const tileImageSize = 256, untiledImageSize = 256;
 

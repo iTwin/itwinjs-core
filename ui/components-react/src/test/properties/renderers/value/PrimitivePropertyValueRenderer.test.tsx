@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Primitives, PropertyConverterInfo } from "@itwin/appui-abstract";
+import type { Primitives, PropertyConverterInfo } from "@itwin/appui-abstract";
 import { render, waitFor } from "@testing-library/react";
 import { PrimitivePropertyValueRenderer } from "../../../../components-react";
 import { TypeConverter } from "../../../../components-react/converters/TypeConverter";
 import { TypeConverterManager } from "../../../../components-react/converters/TypeConverterManager";
-import { PropertyValueRendererContext } from "../../../../components-react/properties/ValueRendererManager";
+import type { PropertyValueRendererContext } from "../../../../components-react/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
 
 class AsyncValuesTypeConverter extends TypeConverter {

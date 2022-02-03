@@ -9,16 +9,20 @@
 import "./FloatingWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Point, Rectangle, useRefs } from "@itwin/core-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { CommonProps} from "@itwin/core-react";
+import { Point, Rectangle, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
-import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
+import type { UseDragResizeHandleArgs} from "../base/DragManager";
+import { useDragResizeHandle, useIsDraggedItem } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
-import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
+import type { FloatingWidgetState, WidgetState } from "../base/NineZoneState";
+import { toolSettingsTabId } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
-import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
+import type { PointerCaptorArgs} from "../base/PointerCaptor";
+import { usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
 
 type FloatingWidgetEdgeHandle = "left" | "right" | "top" | "bottom";

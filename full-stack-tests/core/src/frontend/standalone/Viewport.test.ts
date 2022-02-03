@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d } from "@itwin/core-geometry";
-import { BackgroundMapProps, BackgroundMapSettings, ColorDef, FontMap, FontType } from "@itwin/core-common";
+import type { BackgroundMapProps} from "@itwin/core-common";
+import { BackgroundMapSettings, ColorDef, FontMap, FontType } from "@itwin/core-common";
+import type { IModelConnection,
+  RenderPlan, SpatialViewState} from "@itwin/core-frontend";
 import {
-  CompassMode, createRenderPlanFromViewport, IModelApp, IModelConnection, PanViewTool,
-  RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync,
+  CompassMode, createRenderPlanFromViewport, IModelApp, PanViewTool, ScreenViewport, SnapshotConnection, StandardViewId, TwoWayViewportSync,
 } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";

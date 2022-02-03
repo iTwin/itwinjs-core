@@ -6,9 +6,10 @@
  * @module Zone
  */
 
-import { Rectangle, RectangleProps } from "@itwin/core-react";
+import type { RectangleProps } from "@itwin/core-react";
+import { Rectangle } from "@itwin/core-react";
 import { HorizontalAnchor } from "../../widget/Stacked";
-import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "./Zones";
+import type { WidgetZoneId, ZonesManager, ZonesManagerProps } from "./Zones";
 
 /** @internal */
 export const RECTANGULAR_DEFAULT_MIN_HEIGHT = 220;

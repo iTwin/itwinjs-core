@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
+import type { TabState, WidgetContentManagerContextArgs} from "../../appui-layout-react";
 import {
-  createWidgetState, EventEmitter, TabState, WidgetContentContainer, WidgetContentManagerContext, WidgetContentManagerContextArgs,
+  createWidgetState, EventEmitter, WidgetContentContainer, WidgetContentManagerContext,
   WidgetStateContext,
 } from "../../appui-layout-react";
 

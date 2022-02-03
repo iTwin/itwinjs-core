@@ -4,26 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { dispose } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
-import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import type { Transform } from "@itwin/core-geometry";
+import type { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
+import type { IModelAppOptions } from "../IModelApp";
+import { IModelApp } from "../IModelApp";
+import type { IModelConnection } from "../IModelConnection";
 import { ViewRect } from "../ViewRect";
-import { Decorations } from "./Decorations";
-import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
-import { Pixel } from "./Pixel";
+import type { Decorations } from "./Decorations";
+import type { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
+import type { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
+import type { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
-import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { PointStringParams } from "./primitives/PointStringParams";
-import { PolylineParams } from "./primitives/PolylineParams";
-import { MeshParams } from "./primitives/VertexTable";
-import { GraphicList, RenderGraphic } from "./RenderGraphic";
-import { RenderMemory } from "./RenderMemory";
-import { RenderPlan } from "./RenderPlan";
-import { RenderAreaPattern, RenderGeometry, RenderSystem } from "./RenderSystem";
+import type { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import type { PointStringParams } from "./primitives/PointStringParams";
+import type { PolylineParams } from "./primitives/PolylineParams";
+import type { MeshParams } from "./primitives/VertexTable";
+import type { GraphicList} from "./RenderGraphic";
+import { RenderGraphic } from "./RenderGraphic";
+import type { RenderMemory } from "./RenderMemory";
+import type { RenderPlan } from "./RenderPlan";
+import type { RenderAreaPattern, RenderGeometry} from "./RenderSystem";
+import { RenderSystem } from "./RenderSystem";
 import { RenderTarget } from "./RenderTarget";
-import { Scene } from "./Scene";
+import type { Scene } from "./Scene";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
  * Use these for tests instead of the default RenderSystem wherever possible because:

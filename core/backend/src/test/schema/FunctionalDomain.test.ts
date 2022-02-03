@@ -7,13 +7,16 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
+import type { ElementProps} from "@itwin/core-common";
+import { CodeScopeSpec, CodeSpec, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
-import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
+import type { OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
+import { ElementUniqueAspect } from "../../ElementAspect";
+import type { OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg,
+  OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg} from "../../core-backend";
 import {
   FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema,
-  InformationPartitionElement, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg,
-  OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb,
+  InformationPartitionElement, Schemas, StandaloneDb,
 } from "../../core-backend";
 import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
 import { IModelTestUtils } from "../IModelTestUtils";

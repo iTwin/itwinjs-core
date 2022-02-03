@@ -3,10 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@itwin/core-bentley";
-import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { ECDb, ECEnumValue, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend";
+import type { GuidString, Id64String} from "@itwin/core-bentley";
+import { DbResult, Guid, Id64, using } from "@itwin/core-bentley";
+import type { NavigationValue, QueryOptions} from "@itwin/core-common";
+import { QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import type { XAndY, XYAndZ } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
+import type { ECDb, ECEnumValue, ECSqlInsertResult, ECSqlStatement, ECSqlValue} from "../../core-backend";
+import { SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";

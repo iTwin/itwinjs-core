@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ColorDef } from "@itwin/core-common";
-import { Point3d, Sphere, Transform } from "@itwin/core-geometry";
+import type { ColorDef } from "@itwin/core-common";
+import type { Transform } from "@itwin/core-geometry";
+import { Point3d, Sphere } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
-import { DecorateContext } from "../ViewContext";
-import { ScreenViewport } from "../Viewport";
-import { GraphicType, PickableGraphicOptions } from "../render/GraphicBuilder";
+import type { DecorateContext } from "../ViewContext";
+import type { ScreenViewport } from "../Viewport";
+import type { PickableGraphicOptions } from "../render/GraphicBuilder";
+import { GraphicType } from "../render/GraphicBuilder";
 import {GraphicBranch} from "../core-frontend";
 
 /** A simple configurable box decorator for tests.

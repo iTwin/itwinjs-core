@@ -3,12 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, SpatialModelState, TileAdmin } from "@itwin/core-frontend";
+import type { IModelConnection, TileAdmin } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, RealityDataSource, SpatialModelState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
-import { RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
-import { Id64String } from "@itwin/core-bentley";
-import { ITwinRealityData, RealityDataAccessClient, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
+import type { RealityDataSourceKey } from "@itwin/core-common";
+import { RealityDataFormat, RealityDataProvider } from "@itwin/core-common";
+import type { Id64String } from "@itwin/core-bentley";
+import type { ITwinRealityData, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
+import { RealityDataAccessClient } from "@itwin/reality-data-client";
 
 export interface IRealityDataModelInfo {
   key: RealityDataSourceKey;

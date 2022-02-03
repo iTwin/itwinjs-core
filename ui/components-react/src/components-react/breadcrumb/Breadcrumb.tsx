@@ -11,16 +11,19 @@ import classnames from "classnames";
 import * as React from "react";
 import { using } from "@itwin/core-bentley";
 import { MessageSeverity, PropertyRecord, SpecialKey } from "@itwin/appui-abstract";
-import { CommonProps, ContextMenu, ContextMenuItem, DialogButtonType, MessageBox, SplitButton, withOnOutsideClick } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { ContextMenu, ContextMenuItem, DialogButtonType, MessageBox, SplitButton, withOnOutsideClick } from "@itwin/core-react";
 import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
-import {
-  DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, TreeDataProvider, TreeNodeItem,
+import type {
+  DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeDataProvider, TreeNodeItem} from "../tree/TreeDataProvider";
+import { isTreeDataProviderInterface,
 } from "../tree/TreeDataProvider";
 import { UiComponents } from "../UiComponents";
+import type { BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback} from "./BeInspireTree";
 import {
-  BeInspireTree, BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNodes,
+  BeInspireTree, BeInspireTreeEvent, toNodes,
 } from "./BeInspireTree";
-import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
+import type { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { getPropertyRecordAsString } from "./BreadcrumbTreeUtils";
 
 /* eslint-disable deprecation/deprecation */

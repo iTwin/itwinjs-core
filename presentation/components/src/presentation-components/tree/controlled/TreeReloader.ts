@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Observable } from "rxjs/internal/Observable";
+import type { Observable } from "rxjs/internal/Observable";
 import { concat } from "rxjs/internal/observable/concat";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { from } from "rxjs/internal/observable/from";
@@ -16,11 +16,12 @@ import { map } from "rxjs/internal/operators/map";
 import { take } from "rxjs/internal/operators/take";
 import { tap } from "rxjs/internal/operators/tap";
 import { assert } from "@itwin/core-bentley";
+import type { TreeModel, TreeModelNode, TreeModelRootNode,
+  TreeNodeLoadResult} from "@itwin/components-react";
 import {
-  isTreeModelNode, PagedTreeNodeLoader, toRxjsObservable, TreeModel, TreeModelNode, TreeModelRootNode, TreeModelSource,
-  TreeNodeLoadResult,
+  isTreeModelNode, PagedTreeNodeLoader, toRxjsObservable, TreeModelSource,
 } from "@itwin/components-react";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import type { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /**
  * Creates a new tree model from scratch while attempting to match provided tree model's expanded structure.

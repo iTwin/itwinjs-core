@@ -4,18 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { IModelConnection } from "@itwin/core-frontend";
-import { Field } from "@itwin/presentation-common";
-import {
-  IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { Field } from "@itwin/presentation-common";
+import type {
+  IPresentationPropertyDataProvider} from "@itwin/presentation-components";
+import { PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
 } from "@itwin/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
-import {
-  ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
-  VirtualizedPropertyGridWithDataProviderProps,
+import type {
+  ActionButtonRendererProps, PropertyGridContextMenuArgs,
+  VirtualizedPropertyGridWithDataProviderProps} from "@itwin/components-react";
+import { useAsyncValue, VirtualizedPropertyGridWithDataProvider,
 } from "@itwin/components-react";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver } from "@itwin/core-react";
-import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@itwin/appui-react";
+import type { ContextMenuItemProps} from "@itwin/core-react";
+import { ContextMenuItem, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver } from "@itwin/core-react";
+import type { ConfigurableCreateInfo} from "@itwin/appui-react";
+import { useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@itwin/appui-react";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 
 export type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };

@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { StagePanelManager, StagePanelManagerProps } from "../../../appui-layout-react";
+import type { StagePanelManagerProps } from "../../../appui-layout-react";
+import { StagePanelManager } from "../../../appui-layout-react";
 
 describe("StagePanelManager", () => {
   describe("resize", () => {

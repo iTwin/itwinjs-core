@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { NativeAppOpts } from "@itwin/core-frontend";
+import type { NativeAppOpts } from "@itwin/core-frontend";
 import { MobileApp } from "./MobileApp";
 
 /** @beta */

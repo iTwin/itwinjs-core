@@ -15,7 +15,8 @@ import { checkSync, lockSync } from "proper-lockfile";
 import * as stream from "stream";
 import * as util from "util";
 import { AsyncMutex, BeEvent, BentleyError, BriefcaseStatus } from "@itwin/core-bentley";
-import { CancelRequest, UserCancelledError } from "../itwin-client/FileHandler";
+import type { CancelRequest} from "../itwin-client/FileHandler";
+import { UserCancelledError } from "../itwin-client/FileHandler";
 
 /** Configure download task
  * @internal

@@ -3,12 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import type { ThematicDisplayProps} from "@itwin/core-common";
 import {
-  ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode,
+  ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection, ViewRect, ViewState3d } from "@itwin/core-frontend";
+import type { IModelConnection, ViewState3d } from "@itwin/core-frontend";
+import { SnapshotConnection, ViewRect } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
-import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
+import type { TestViewport} from "../TestViewport";
+import { Color, testViewportsWithDpr } from "../TestViewport";
 
 describe("Thematic display", () => {
   let imodel: IModelConnection;

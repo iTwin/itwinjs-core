@@ -9,10 +9,11 @@
 import { Matrix4d } from "@itwin/core-geometry";
 import { ColorDef, RgbColor } from "@itwin/core-common";
 import { FloatRgba } from "./FloatRGBA";
-import { UniformHandle } from "./UniformHandle";
+import type { UniformHandle } from "./UniformHandle";
 import { Matrix4 } from "./Matrix";
-import { desync, sync, SyncToken } from "./Sync";
-import { Target } from "./Target";
+import type { SyncToken } from "./Sync";
+import { desync, sync } from "./Sync";
+import type { Target } from "./Target";
 
 /** Maintains state of uniforms used for applying shadows.
  * @internal

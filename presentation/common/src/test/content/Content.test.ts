@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Content, ContentJSON } from "../../presentation-common/content/Content";
-import { Item } from "../../presentation-common/content/Item";
+import type { ContentJSON } from "../../presentation-common/content/Content";
+import { Content } from "../../presentation-common/content/Content";
+import type { Item } from "../../presentation-common/content/Item";
 import { createTestContentDescriptor } from "../_helpers/Content";
 import { createRandomECClassInfoJSON, createRandomECInstanceKeyJSON, createRandomLabelDefinitionJSON } from "../_helpers/random";
 

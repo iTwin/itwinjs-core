@@ -9,8 +9,8 @@
 import "./StatusMessagesContainer.scss";
 import * as React from "react";
 import classnames from "classnames";
-import { StatusMessage } from "./StatusMessageManager";
-import { ActivityMessageEventArgs } from "./MessageManager";
+import type { StatusMessage } from "./StatusMessageManager";
+import type { ActivityMessageEventArgs } from "./MessageManager";
 import { OutputMessageType } from "@itwin/core-frontend";
 import { ToastMessage } from "./ToastMessage";
 import { StickyMessage } from "./StickyMessage";

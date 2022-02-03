@@ -9,12 +9,14 @@
 import "./SliderEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import {
-  PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, SliderEditorParams, StandardEditorNames, StandardTypeNames,
+import type {
+  PropertyEditorParams, PropertyValue, SliderEditorParams} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
 import { Icon } from "@itwin/core-react";
-import { Slider, TooltipProps } from "@itwin/itwinui-react";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { TooltipProps } from "@itwin/itwinui-react";
+import { Slider } from "@itwin/itwinui-react";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
 

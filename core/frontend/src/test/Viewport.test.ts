@@ -6,13 +6,14 @@
 import { expect } from "chai";
 import { UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
-import { AnalysisStyle, ColorDef, ImageBuffer, ImageBufferFormat } from "@itwin/core-common";
+import type { ImageBuffer} from "@itwin/core-common";
+import { AnalysisStyle, ColorDef, ImageBufferFormat } from "@itwin/core-common";
 import { ViewRect } from "../ViewRect";
-import { ScreenViewport } from "../Viewport";
+import type { ScreenViewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, testBlankViewport } from "./openBlankViewport";
-import { DecorateContext } from "../ViewContext";
+import type { DecorateContext } from "../ViewContext";
 import { GraphicType } from "../render/GraphicBuilder";
 
 describe("Viewport", () => {

@@ -6,7 +6,8 @@
 import { Vector3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import { DisplayStyle3dSettings } from "../DisplayStyleSettings";
-import { LightSettings, LightSettingsProps, SolarLightProps } from "../LightSettings";
+import type { LightSettingsProps, SolarLightProps } from "../LightSettings";
+import { LightSettings } from "../LightSettings";
 import { RgbColor } from "../RgbColor";
 
 describe("LightSettings", () => {

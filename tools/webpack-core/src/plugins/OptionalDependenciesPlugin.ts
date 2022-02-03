@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Compiler } from "webpack";
+import type { Compiler } from "webpack";
 import { getSourcePosition } from "../utils/paths";
 
 /**

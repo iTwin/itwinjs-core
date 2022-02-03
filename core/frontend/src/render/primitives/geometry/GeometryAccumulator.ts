@@ -7,17 +7,19 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
-import { AnalysisStyleDisplacement } from "@itwin/core-common";
+import type { IndexedPolyface, Loop, Path, SolidPrimitive} from "@itwin/core-geometry";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import type { AnalysisStyleDisplacement } from "@itwin/core-common";
 import { GraphicBranch } from "../../GraphicBranch";
-import { RenderGraphic } from "../../RenderGraphic";
-import { RenderSystem } from "../../RenderSystem";
-import { DisplayParams } from "../DisplayParams";
+import type { RenderGraphic } from "../../RenderGraphic";
+import type { RenderSystem } from "../../RenderSystem";
+import type { DisplayParams } from "../DisplayParams";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
 import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
-import { GeometryOptions } from "../Primitives";
+import type { GeometryOptions } from "../Primitives";
 import { GeometryList } from "./GeometryList";
-import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
+import type { PrimitiveGeometryType } from "./GeometryPrimitives";
+import { Geometry } from "./GeometryPrimitives";
 import { IModelApp } from "../../../IModelApp";
 
 /** @internal */

@@ -7,8 +7,10 @@
  */
 
 import { BackgroundMapProvider, BackgroundMapType } from "./BackgroundMapProvider";
-import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
-import { TerrainProps, TerrainSettings } from "./TerrainSettings";
+import type { PlanarClipMaskProps} from "./PlanarClipMask";
+import { PlanarClipMaskSettings } from "./PlanarClipMask";
+import type { TerrainProps} from "./TerrainSettings";
+import { TerrainSettings } from "./TerrainSettings";
 
 /** Describes the projection of the background map
  * @see [[BackgroundMapProps]]

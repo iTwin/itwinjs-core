@@ -12,7 +12,7 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { FooterIndicator } from "@itwin/appui-layout-react";
 import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import type { StatusFieldProps } from "./StatusFieldProps";
 
 /** Defines properties supported by the Prompt Field Component.
  */

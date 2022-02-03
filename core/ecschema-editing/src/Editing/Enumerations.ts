@@ -6,9 +6,10 @@
  * @module Editing
  */
 
-import { AnyEnumerator, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutableEnumeration } from "./Mutable/MutableEnumeration";
+import type { AnyEnumerator, Enumeration, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, SchemaItemType } from "@itwin/ecschema-metadata";
+import type { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { MutableEnumeration } from "./Mutable/MutableEnumeration";
 
 /**
  * @alpha

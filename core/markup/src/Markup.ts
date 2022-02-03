@@ -7,10 +7,12 @@
  */
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { Point3d, XAndY } from "@itwin/core-geometry";
+import type { XAndY } from "@itwin/core-geometry";
+import { Point3d } from "@itwin/core-geometry";
 import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
+import type { G, Svg} from "@svgdotjs/svg.js";
+import { adopt, create, Matrix, Point, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";

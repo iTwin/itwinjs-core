@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, compareStringsOrUndefined } from "@itwin/core-bentley";
-import { MapSubLayerProps, SubLayerId } from "@itwin/core-common";
+import type { MapSubLayerProps, SubLayerId } from "@itwin/core-common";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@itwin/components-react";
+import type { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@itwin/components-react";
 import { CheckBoxState } from "@itwin/core-react";
-import { StyleMapLayerSettings } from "../Interfaces";
+import type { StyleMapLayerSettings } from "../Interfaces";
 
 /**
  * Data provider that returns some fake nodes to show in tree.

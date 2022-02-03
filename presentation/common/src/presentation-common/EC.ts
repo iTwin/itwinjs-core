@@ -6,9 +6,10 @@
  * @module Core
  */
 
-import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { FormatProps } from "@itwin/core-quantity";
-import { PartialBy } from "./Utils";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, Id64 } from "@itwin/core-bentley";
+import type { FormatProps } from "@itwin/core-quantity";
+import type { PartialBy } from "./Utils";
 
 /**
  * Type of an ECClass ID.

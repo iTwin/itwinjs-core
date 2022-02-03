@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { CustomRendererSpecification } from "./CustomRendererSpecification";
+import type { CustomRendererSpecification } from "./CustomRendererSpecification";
 
 /**
  * Identifier for no category. Used to make category displayed at root level by using

@@ -7,15 +7,18 @@
  */
 
 import * as React from "react";
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { Orientation } from "@itwin/core-react";
-import { HighlightingComponentProps } from "../../../common/HighlightingComponentProps";
-import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer";
+import type { PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { Orientation } from "@itwin/core-react";
+import type { HighlightingComponentProps } from "../../../common/HighlightingComponentProps";
+import type { PropertyUpdatedArgs } from "../../../editors/EditorContainer";
+import { EditorContainer } from "../../../editors/EditorContainer";
 import { CommonPropertyRenderer } from "../../../properties/renderers/CommonPropertyRenderer";
-import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer";
-import { SharedRendererProps } from "../../../properties/renderers/PropertyRenderer";
-import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { PropertyCategory } from "../../PropertyDataProvider";
+import type { PrimitiveRendererProps } from "../../../properties/renderers/PrimitivePropertyRenderer";
+import { PrimitivePropertyRenderer } from "../../../properties/renderers/PrimitivePropertyRenderer";
+import type { SharedRendererProps } from "../../../properties/renderers/PropertyRenderer";
+import type { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
+import type { PropertyCategory } from "../../PropertyDataProvider";
 import { FlatNonPrimitivePropertyRenderer } from "./FlatNonPrimitivePropertyRenderer";
 
 /** Properties of [[FlatPropertyRenderer]] React component

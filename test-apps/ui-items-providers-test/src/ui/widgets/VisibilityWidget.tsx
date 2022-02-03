@@ -4,18 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import "./VisibilityWidget.scss";
 import * as React from "react";
-import { BeEvent, Id64Array, Id64String } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
-import { IPresentationTreeDataProvider } from "@itwin/presentation-components";
+import type { Id64Array, Id64String } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
+import type { IModelConnection, Viewport } from "@itwin/core-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
+import type { IPresentationTreeDataProvider } from "@itwin/presentation-components";
 import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@itwin/components-react";
 import { Icon, useLayoutResizeObserver, useRefState, WebFontIcon } from "@itwin/core-react";
+import type { ConfigurableCreateInfo, ModelsTreeSelectionPredicate} from "@itwin/appui-react";
 import {
-  CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeNodeType, ModelsTreeSelectionPredicate, toggleAllCategories,
+  CategoryTree, ClassGroupingOption, CommandItemDef, ModelsTree, ModelsTreeNodeType, toggleAllCategories,
   useActiveViewport,
   WidgetControl,
 } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
-import { NodeKey } from "@itwin/presentation-common";
+import type { NodeKey } from "@itwin/presentation-common";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

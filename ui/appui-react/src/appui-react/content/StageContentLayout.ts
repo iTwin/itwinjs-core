@@ -6,11 +6,12 @@
  * @module ContentView
  */
 
-import { IModelConnection, ViewState } from "@itwin/core-frontend";
-import { ContentCallback, ContentGroup, ContentGroupProps } from "./ContentGroup";
-import { ContentLayoutDef } from "./ContentLayout";
-import { ViewStateHelper, ViewStateHelperProps } from "./ViewStateHelper";
-import { ContentLayoutProps } from "@itwin/appui-abstract";
+import type { IModelConnection, ViewState } from "@itwin/core-frontend";
+import type { ContentCallback, ContentGroup, ContentGroupProps } from "./ContentGroup";
+import type { ContentLayoutDef } from "./ContentLayout";
+import type { ViewStateHelperProps } from "./ViewStateHelper";
+import { ViewStateHelper } from "./ViewStateHelper";
+import type { ContentLayoutProps } from "@itwin/appui-abstract";
 
 /** StageContentLayoutProps interface for sharing view layout information.
  * @public

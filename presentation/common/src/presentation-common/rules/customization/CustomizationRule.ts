@@ -6,15 +6,15 @@
  * @module PresentationRules
  */
 
-import { NodeArtifactsRule } from "../hierarchy/NodeArtifactsRule";
-import { CheckBoxRule } from "./CheckBoxRule";
-import { ExtendedDataRule } from "./ExtendedDataRule";
-import { GroupingRule } from "./GroupingRule";
-import { ImageIdOverride } from "./ImageIdOverride";
-import { InstanceLabelOverride } from "./InstanceLabelOverride";
-import { LabelOverride } from "./LabelOverride";
-import { SortingRule } from "./SortingRule";
-import { StyleOverride } from "./StyleOverride";
+import type { NodeArtifactsRule } from "../hierarchy/NodeArtifactsRule";
+import type { CheckBoxRule } from "./CheckBoxRule";
+import type { ExtendedDataRule } from "./ExtendedDataRule";
+import type { GroupingRule } from "./GroupingRule";
+import type { ImageIdOverride } from "./ImageIdOverride";
+import type { InstanceLabelOverride } from "./InstanceLabelOverride";
+import type { LabelOverride } from "./LabelOverride";
+import type { SortingRule } from "./SortingRule";
+import type { StyleOverride } from "./StyleOverride";
 
 /**
  * Customization rules allow customizing each node or content item separately.

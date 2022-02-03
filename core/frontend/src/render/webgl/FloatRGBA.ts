@@ -7,8 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ColorDef, RgbColor } from "@itwin/core-common";
-import { UniformHandle } from "./UniformHandle";
+import type { RgbColor } from "@itwin/core-common";
+import { ColorDef } from "@itwin/core-common";
+import type { UniformHandle } from "./UniformHandle";
 
 function clamp(norm: number): number {
   assert(() => norm >= 0 && norm <= 1);

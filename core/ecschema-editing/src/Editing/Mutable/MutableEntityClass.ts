@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import type { ECClass, Mixin, RelationshipClass, StrengthDirection} from "@itwin/ecschema-metadata";
 import {
-  DelayedPromiseWithProps, ECClass, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, NavigationProperty,
-  parseStrengthDirection, RelationshipClass, StrengthDirection,
+  DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, EntityClass, NavigationProperty,
+  parseStrengthDirection,
 } from "@itwin/ecschema-metadata";
 
 /**

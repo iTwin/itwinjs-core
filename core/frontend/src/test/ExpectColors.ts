@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import { ColorDef } from "@itwin/core-common";
-import { ScreenViewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
+import type { ScreenViewport } from "../Viewport";
+import type { ViewRect } from "../ViewRect";
 
 /** A viewport-color-checking function for tests. Tests for the presence of a list of expected colors in the entire viewport or specified ViewRect.
  * @internal

@@ -6,8 +6,8 @@
  * @module HyperModeling
  */
 
-import { SectionType } from "@itwin/core-common";
-import { SectionMarkerHandler } from "./SectionMarkerHandler";
+import type { SectionType } from "@itwin/core-common";
+import type { SectionMarkerHandler } from "./SectionMarkerHandler";
 
 /** Configures display of [[SectionMarker]]s for [[HyperModelingDecorator]]s.
  * @see [[HyperModelingDecorator.updateConfiguration]] or [[HyperModelingDecorator.replaceConfiguration]] to change the configuration for a specific decorator.

@@ -9,9 +9,9 @@
 import classnames from "classnames";
 import * as React from "react";
 import * as RDG from "react-data-grid";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 import { ColumnDragLayer } from "./ColumnDragLayer";
-import { DragSourceArguments, DropTargetArguments } from "./dragdrop/DragDropDef";
+import type { DragSourceArguments, DropTargetArguments } from "./dragdrop/DragDropDef";
 import { withDragSource } from "./dragdrop/withDragSource";
 import { withDropTarget } from "./dragdrop/withDropTarget";
 

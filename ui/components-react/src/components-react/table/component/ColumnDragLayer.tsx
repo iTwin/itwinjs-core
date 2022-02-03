@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { DragLayerProps } from "./dragdrop/DragDropDef";
+import type { DragLayerProps } from "./dragdrop/DragDropDef";
 
 /**
  * React component used to portray a column being dragged during Table column reordering.

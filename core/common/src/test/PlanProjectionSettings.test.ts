@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
+import type { PlanProjectionSettingsProps } from "../PlanProjectionSettings";
+import { PlanProjectionSettings } from "../PlanProjectionSettings";
 
 describe("PlanProjectionSettings", () => {
   it("round-trips through JSON", () => {

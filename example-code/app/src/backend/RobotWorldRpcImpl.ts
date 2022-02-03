@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
-import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@itwin/core-common";
-import { Id64String } from "@itwin/core-bentley";
+import type { IModelRpcProps, RpcInterfaceDefinition } from "@itwin/core-common";
+import { RpcInterface } from "@itwin/core-common";
+import type { Id64String } from "@itwin/core-bentley";
 import { IModelDb } from "@itwin/core-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
-import { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
+import type { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldReadRpcInterface
 export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInterface {
@@ -29,8 +30,9 @@ export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldRea
 // __PUBLISH_EXTRACT_END__
 
 /* eslint-disable no-duplicate-imports */ // Disable this because it is intentionally separated.
-import { Angle, AngleProps, Point3d, XYZProps } from "@itwin/core-geometry";
-import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
+import type { AngleProps, XYZProps } from "@itwin/core-geometry";
+import { Angle, Point3d } from "@itwin/core-geometry";
+import type { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldWriteRpcInterface
 export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface {
@@ -48,7 +50,8 @@ export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWr
 }
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeForCloud
-import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-common";
+import type { BentleyCloudRpcParams } from "@itwin/core-common";
+import { BentleyCloudRpcManager } from "@itwin/core-common";
 
 export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition[]) {
   const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };

@@ -6,8 +6,9 @@
  * @module Content
  */
 
-import { InstanceKey, InstanceKeyJSON } from "../EC";
-import { ValuesDictionary } from "../Utils";
+import type { InstanceKeyJSON } from "../EC";
+import { InstanceKey } from "../EC";
+import type { ValuesDictionary } from "../Utils";
 
 /**
  * Raw value type

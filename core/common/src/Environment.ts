@@ -6,9 +6,11 @@
  * @module DisplayStyles
  */
 
-import { NonFunctionPropertiesOf } from "@itwin/core-bentley";
-import { GroundPlane, GroundPlaneProps } from "./GroundPlane";
-import { SkyBox, SkyBoxProps } from "./SkyBox";
+import type { NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import type { GroundPlaneProps } from "./GroundPlane";
+import { GroundPlane } from "./GroundPlane";
+import type { SkyBoxProps } from "./SkyBox";
+import { SkyBox } from "./SkyBox";
 
 /** JSON representation of an [[Environment]].
  * @see [[DisplayStyle3dSettingsProps.environment]].

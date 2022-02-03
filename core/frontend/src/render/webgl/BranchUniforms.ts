@@ -7,20 +7,22 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
-import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
-import { FeatureSymbology } from "../FeatureSymbology";
-import { BranchState } from "./BranchState";
+import type { ClipVector, XYZ } from "@itwin/core-geometry";
+import { Matrix3d, Matrix4d, Point3d, Transform } from "@itwin/core-geometry";
+import type { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
+import type { FeatureSymbology } from "../FeatureSymbology";
+import type { BranchState } from "./BranchState";
 import { BranchStack } from "./BranchStack";
 import { BatchState } from "./BatchState";
-import { CachedGeometry } from "./CachedGeometry";
-import { Branch } from "./Graphic";
-import { UniformHandle } from "./UniformHandle";
+import type { CachedGeometry } from "./CachedGeometry";
+import type { Branch } from "./Graphic";
+import type { UniformHandle } from "./UniformHandle";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { RenderCommands } from "./RenderCommands";
-import { desync, sync, SyncToken } from "./Sync";
+import type { SyncToken } from "./Sync";
+import { desync, sync } from "./Sync";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { ClipStack } from "./ClipStack";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {

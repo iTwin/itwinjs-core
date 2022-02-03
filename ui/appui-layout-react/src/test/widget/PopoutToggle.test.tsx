@@ -5,7 +5,8 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { ActiveTabIdContext, createNineZoneState, NineZoneDispatch, PanelStateContext, PopoutToggle } from "../../appui-layout-react";
+import type { NineZoneDispatch} from "../../appui-layout-react";
+import { ActiveTabIdContext, createNineZoneState, PanelStateContext, PopoutToggle } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
 describe("PopoutToggle", () => {

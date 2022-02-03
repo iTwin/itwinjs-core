@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { DelayedPromiseWithProps, ECClassModifier, EntityClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { MutableSchema } from "../../Editing/Mutable/MutableSchema";
+import type { MutableSchema } from "../../Editing/Mutable/MutableSchema";
 import { SchemaValidater } from "../../Validation/SchemaValidater";
 import { TestRuleSet } from "../TestUtils/DiagnosticHelpers";
 

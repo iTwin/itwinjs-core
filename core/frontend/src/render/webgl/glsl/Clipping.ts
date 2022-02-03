@@ -8,7 +8,8 @@
 
 import { assert } from "@itwin/core-bentley";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
+import type { ProgramBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { addEyeSpace } from "./Common";
 import { addModelViewMatrix } from "./Vertex";

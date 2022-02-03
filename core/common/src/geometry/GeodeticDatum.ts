@@ -7,8 +7,10 @@
  */
 // cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, NADCON, GEOCN
 
-import { Geometry, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
+import type { XYAndZ } from "@itwin/core-geometry";
+import { Geometry, Vector3d } from "@itwin/core-geometry";
+import type { GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
+import { GeodeticEllipsoid } from "./GeodeticEllipsoid";
 
 /** Holds 3 components of a Positional Vector rotation definition in arc seconds
  *  @public

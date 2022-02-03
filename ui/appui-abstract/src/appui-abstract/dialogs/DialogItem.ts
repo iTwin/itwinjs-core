@@ -6,7 +6,7 @@
  * @module Dialog
  */
 
-import { PropertyDescription } from "../properties/Description";
+import type { PropertyDescription } from "../properties/Description";
 
 /** [[DialogItemValue]] Interface of PrimitiveValue types that have type editor support for use in dialogs.
  * @public

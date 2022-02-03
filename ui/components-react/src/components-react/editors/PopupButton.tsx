@@ -10,7 +10,8 @@ import "./PopupButton.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition, SpecialKey } from "@itwin/appui-abstract";
-import { CommonDivProps, CommonProps, Div, Icon, Popup, UiCore } from "@itwin/core-react";
+import type { CommonDivProps, CommonProps} from "@itwin/core-react";
+import { Div, Icon, Popup, UiCore } from "@itwin/core-react";
 import { Button } from "@itwin/itwinui-react";
 
 /** Properties for [[PopupButton]] component

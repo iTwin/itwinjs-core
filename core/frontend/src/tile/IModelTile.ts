@@ -6,17 +6,20 @@
  * @module Tiles
  */
 
-import { assert, BentleyError, BeTimePoint, ByteStream } from "@itwin/core-bentley";
+import type { BeTimePoint} from "@itwin/core-bentley";
+import { assert, BentleyError, ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
+import type { ElementAlignedBox3d, TileProps} from "@itwin/core-common";
 import {
-  ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
+  ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, LinePixels, TileFormat,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { RenderSystem } from "../render/RenderSystem";
+import type { GraphicBuilder } from "../render/GraphicBuilder";
+import type { RenderSystem } from "../render/RenderSystem";
+import type { IModelTileTree, TileContent, TileDrawArgs, TileParams, TileRequest,
+  TileRequestChannel} from "./internal";
 import {
-  addRangeGraphic, ImdlReader, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
-  TileRequestChannel, TileTreeLoadStatus, TileVisibility,
+  addRangeGraphic, ImdlReader, Tile, TileBoundingBoxes, TileLoadStatus, TileTreeLoadStatus, TileVisibility,
 } from "./internal";
 
 /** Parameters used to construct an [[IModelTile]].

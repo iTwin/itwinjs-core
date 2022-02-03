@@ -6,21 +6,28 @@
  * @module Geometry
  */
 import { flatbuffers } from "flatbuffers";
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { CurveCollection, GeometryQuery, Polyface, SolidPrimitive} from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, FrameBuilder, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceQuery, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
-import { TextString, TextStringProps } from "./TextString";
+import type { TextStringProps } from "./TextString";
+import { TextString } from "./TextString";
 import { ColorDef } from "../ColorDef";
 import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
-import { ThematicGradientSettings, ThematicGradientSettingsProps } from "../ThematicDisplay";
+import type { ThematicGradientSettingsProps } from "../ThematicDisplay";
+import { ThematicGradientSettings } from "../ThematicDisplay";
 import { AreaPattern } from "./AreaPattern";
 import { BRepEntity } from "./GeometryStream";
-import { ImageGraphic, ImageGraphicCorners, ImageGraphicProps } from "./ImageGraphic";
+import type { ImageGraphicProps } from "./ImageGraphic";
+import { ImageGraphic, ImageGraphicCorners } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
-import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
-import { isPlacement2dProps, PlacementProps } from "../ElementProps";
+import type { ElementAlignedBox3d} from "./Placement";
+import { Placement2d, Placement3d } from "./Placement";
+import type { PlacementProps } from "../ElementProps";
+import { isPlacement2dProps } from "../ElementProps";
 
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].

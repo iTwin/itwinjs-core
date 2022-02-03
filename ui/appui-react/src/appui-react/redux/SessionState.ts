@@ -7,10 +7,11 @@
  */
 
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
-import { XAndY } from "@itwin/core-geometry";
+import type { XAndY } from "@itwin/core-geometry";
 // import { IModelConnection, ViewState } from "@itwin/core-frontend";
-import { MenuItemProps } from "../shared/MenuItem";
-import { ActionsUnion, createAction, DeepReadonly } from "./redux-ts";
+import type { MenuItemProps } from "../shared/MenuItem";
+import type { ActionsUnion, DeepReadonly } from "./redux-ts";
+import { createAction } from "./redux-ts";
 
 // cSpell:ignore configurableui snapmode toolprompt sessionstate imodelid viewid viewportid rulesetid
 

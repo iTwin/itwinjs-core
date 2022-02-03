@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, MockRender, QuantityType, QuantityTypeArg } from "@itwin/core-frontend";
+import type { QuantityTypeArg } from "@itwin/core-frontend";
+import { IModelApp, MockRender, QuantityType } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";

@@ -7,10 +7,12 @@
  */
 import * as deepAssign from "deep-assign";
 import * as _ from "lodash";
-import * as https from "https";
-import { IStringifyOptions, stringify } from "qs";
+import type * as https from "https";
+import type { IStringifyOptions} from "qs";
+import { stringify } from "qs";
 import * as sarequest from "superagent";
-import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import type { GetMetaDataFunction} from "@itwin/core-bentley";
+import { BentleyError, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 const loggerCategory: string = FrontendLoggerCategory.Request;

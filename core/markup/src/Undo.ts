@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Element as MarkupElement } from "@svgdotjs/svg.js";
+import type { Element as MarkupElement } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 
 /* @internal */

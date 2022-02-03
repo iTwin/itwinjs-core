@@ -12,15 +12,17 @@ import "./CustomNumberEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import {
-  CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, MessageSeverity, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
-  PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames, UiAdmin,
+import type {
+  CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams,
+  PropertyRecord, PropertyValue} from "@itwin/appui-abstract";
+import { MessageSeverity, PropertyEditorParamTypes, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames, UiAdmin,
 } from "@itwin/appui-abstract";
 import { Icon, IconInput } from "@itwin/core-react";
-import { Input, InputProps } from "@itwin/itwinui-react";
+import type { InputProps } from "@itwin/itwinui-react";
+import { Input } from "@itwin/itwinui-react";
 
 import { UiComponents } from "../UiComponents";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** @internal */

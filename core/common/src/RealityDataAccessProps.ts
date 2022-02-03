@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module RealityData
  */
-import { AccessToken } from "@itwin/core-bentley";
+import type { AccessToken } from "@itwin/core-bentley";
 
 /**
  * All of the currently supported Reality Data types

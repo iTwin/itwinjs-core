@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { Icon, IconProps } from "@itwin/core-react";
+import type { IconProps } from "@itwin/core-react";
+import { Icon } from "@itwin/core-react";
 
 /** Icon for Message
  * @internal

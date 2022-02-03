@@ -5,9 +5,12 @@
 import { expect } from "chai";
 import * as ChaiJestSnapshot from "chai-jest-snapshot";
 import path from "path";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, ContentSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { ContentBuilder, ContentBuilderResult, HierarchyBuilder } from "@itwin/presentation-testing";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import type { Ruleset} from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, ContentSpecificationTypes, RelationshipDirection, RuleTypes } from "@itwin/presentation-common";
+import type { ContentBuilderResult} from "@itwin/presentation-testing";
+import { ContentBuilder, HierarchyBuilder } from "@itwin/presentation-testing";
 import { initialize, terminate } from "../IntegrationTests";
 
 function configureSnapshotLocation(test: Mocha.Runnable, subdirectory: string, instance: ContentBuilderResult) {

@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { CustomAttribute } from "../Metadata/CustomAttribute";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
+import type { CustomAttribute } from "../Metadata/CustomAttribute";
+import type { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { ECName } from "../ECName";
-import { AbstractParser, CAProviderTuple } from "./AbstractParser";
-import {
+import type { CAProviderTuple } from "./AbstractParser";
+import { AbstractParser } from "./AbstractParser";
+import type {
   ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps,
   PropertyCategoryProps, PropertyProps, RelationshipClassProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps,

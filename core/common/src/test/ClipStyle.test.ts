@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import type {
+  ClipStyleProps} from "../ClipStyle";
 import {
   ClipStyle,
-  ClipStyleProps,
   CutStyle,
 } from "../ClipStyle";
-import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings";
+import type { DisplayStyleSettingsProps } from "../DisplayStyleSettings";
+import { DisplayStyleSettings } from "../DisplayStyleSettings";
 
 describe("ClipStyle", () => {
   it("should round-trip through JSON", () => {

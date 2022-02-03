@@ -8,8 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
-import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
+import type { CommonProps } from "../utils/Props";
+import type { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 
 /** Properties for [[InputLabel]] components
  * @public

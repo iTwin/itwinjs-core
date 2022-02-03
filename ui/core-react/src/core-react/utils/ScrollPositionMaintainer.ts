@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Utilities
  */
-import { IDisposable } from "@itwin/core-bentley";
+import type { IDisposable } from "@itwin/core-bentley";
 
 /**
  * A helper class to recursively save and restore scroll positions.

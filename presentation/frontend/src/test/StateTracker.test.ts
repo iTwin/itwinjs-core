@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
-import { NodeKey } from "@itwin/presentation-common";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { NodeKey } from "@itwin/presentation-common";
 import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
-import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
-import { NodeIdentifier, StateTracker } from "../presentation-frontend/StateTracker";
+import type { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
+import type { NodeIdentifier} from "../presentation-frontend/StateTracker";
+import { StateTracker } from "../presentation-frontend/StateTracker";
 
 describe("StateTracker", () => {
   let tracker: StateTracker;

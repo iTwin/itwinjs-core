@@ -8,9 +8,10 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { IModelDb, IpcHandler } from "@itwin/core-backend";
-import {
-  NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,
-  UnsetRulesetVariableParams, UpdateHierarchyStateParams,
+import type {
+  NodeKeyJSON, PresentationIpcInterface, RulesetVariableJSON, SetRulesetVariableParams,
+  UnsetRulesetVariableParams, UpdateHierarchyStateParams} from "@itwin/presentation-common";
+import { PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable,
 } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";

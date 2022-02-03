@@ -5,12 +5,14 @@
 
 import { expect } from "chai";
 import sinon from "sinon";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
 import { Presentation, SelectionManager } from "@itwin/presentation-frontend";
-import { act, renderHook, RenderHookResult } from "@testing-library/react-hooks";
-import {
-  UnifiedSelectionContext, UnifiedSelectionContextProvider, UnifiedSelectionContextProviderProps, useUnifiedSelectionContext,
+import type { RenderHookResult } from "@testing-library/react-hooks";
+import { act, renderHook } from "@testing-library/react-hooks";
+import type {
+  UnifiedSelectionContext, UnifiedSelectionContextProviderProps} from "../../presentation-components/unified-selection/UnifiedSelectionContext";
+import { UnifiedSelectionContextProvider, useUnifiedSelectionContext,
 } from "../../presentation-components/unified-selection/UnifiedSelectionContext";
 
 describe("UnifiedSelectionContext", () => {

@@ -9,16 +9,16 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { FeatureIndexType } from "@itwin/core-common";
-import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { RenderMemory } from "../RenderMemory";
+import type { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import type { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry } from "./CachedGeometry";
-import { ShaderProgramParams } from "./DrawCommand";
+import type { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./AttributeBuffers";
 import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 
 /** @internal */

@@ -5,7 +5,8 @@
 import { assert, expect } from "chai";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { AccuDraw } from "../AccuDraw";
-import { IModelApp, IModelAppOptions } from "../IModelApp";
+import type { IModelAppOptions } from "../IModelApp";
+import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";

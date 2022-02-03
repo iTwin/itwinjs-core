@@ -6,15 +6,16 @@ import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
-import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
 import {
   createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestRelatedClassInfo, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
+import type { FavoritePropertiesOrderInfo, IFavoritePropertiesStorage} from "../../presentation-frontend";
 import {
-  createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
+  createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesScope, getFieldInfos,
 } from "../../presentation-frontend";
-import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
+import type { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 
 describe("FavoritePropertiesManager", () => {
 

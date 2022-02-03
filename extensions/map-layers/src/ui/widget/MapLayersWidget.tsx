@@ -7,7 +7,7 @@ import * as React from "react";
 import { useActiveViewport } from "@itwin/appui-react";
 import { FillCentered } from "@itwin/core-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { MapLayerOptions } from "../Interfaces";
+import type { MapLayerOptions } from "../Interfaces";
 import { MapLayerManager } from "./MapLayerManager";
 
 /**

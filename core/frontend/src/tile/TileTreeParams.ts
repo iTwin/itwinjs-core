@@ -6,12 +6,12 @@
  * @module Tiles
  */
 
-import { BeDuration, Id64String } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
-import { ElementAlignedBox3d } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { RenderClipVolume } from "../render/RenderClipVolume";
-import { TileLoadPriority } from "./internal";
+import type { BeDuration, Id64String } from "@itwin/core-bentley";
+import type { Transform } from "@itwin/core-geometry";
+import type { ElementAlignedBox3d } from "@itwin/core-common";
+import type { IModelConnection } from "../IModelConnection";
+import type { RenderClipVolume } from "../render/RenderClipVolume";
+import type { TileLoadPriority } from "./internal";
 
 /** Parameters used to construct a [[TileTree]].
  * @public

@@ -6,9 +6,10 @@
  * @module Editing
  */
 
-import { DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey, UnitProps, UnitSystem } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutableUnit } from "./Mutable/MutableUnit";
+import type { Phenomenon, SchemaItemKey, SchemaKey, UnitProps, UnitSystem } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, SchemaItemType } from "@itwin/ecschema-metadata";
+import type { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { MutableUnit } from "./Mutable/MutableUnit";
 
 /**
  * @alpha

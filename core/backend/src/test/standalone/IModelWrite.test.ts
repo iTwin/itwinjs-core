@@ -5,16 +5,19 @@
 
 import { assert, expect } from "chai";
 import * as semver from "semver";
-import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import type { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64 } from "@itwin/core-bentley";
+import type { GeometryStreamProps, RequestNewBriefcaseProps} from "@itwin/core-common";
 import {
-  Code, ColorDef, GeometryStreamProps, IModel, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  Code, ColorDef, IModel, QueryRowFormat, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { DrawingCategory } from "../../Category";
+import type { DictionaryModel, SqliteStatement, SqliteValue} from "../../core-backend";
 import {
-  BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
+  BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, SpatialCategory, SqliteValueType,
 } from "../../core-backend";
-import { ECSqlStatement } from "../../ECSqlStatement";
+import type { ECSqlStatement } from "../../ECSqlStatement";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubWrappers } from "..";

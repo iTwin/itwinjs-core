@@ -4,13 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import type { ExternalSourceAttachmentProps, ExternalSourceProps, RepositoryLinkProps, SynchronizationConfigLinkProps} from "@itwin/core-common";
 import {
-  Code, ExternalSourceAttachmentProps, ExternalSourceProps, IModel, RepositoryLinkProps, SynchronizationConfigLinkProps,
+  Code, IModel,
 } from "@itwin/core-common";
+import type { IModelDb} from "../../core-backend";
 import {
   ExternalSource, ExternalSourceAttachment, ExternalSourceAttachmentAttachesSource, ExternalSourceGroup, ExternalSourceGroupGroupsSources,
-  ExternalSourceIsInRepository, ExternalSourceOwnsAttachments, FolderContainsRepositories, FolderLink, IModelDb, LinkElement, RepositoryLink,
+  ExternalSourceIsInRepository, ExternalSourceOwnsAttachments, FolderContainsRepositories, FolderLink, LinkElement, RepositoryLink,
   SnapshotDb, SynchronizationConfigLink, SynchronizationConfigProcessesSources, SynchronizationConfigSpecifiesRootSources,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";

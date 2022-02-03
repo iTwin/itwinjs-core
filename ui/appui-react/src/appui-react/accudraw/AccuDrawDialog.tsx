@@ -9,7 +9,8 @@
 import "./AccuDrawDialog.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Orientation } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Orientation } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
 import { ModelessDialog } from "../dialog/ModelessDialog";
 import { AccuDrawFieldContainer } from "./AccuDrawFieldContainer";

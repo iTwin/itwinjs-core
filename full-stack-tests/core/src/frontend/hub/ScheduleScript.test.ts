@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
-import { CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import type { DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { Code } from "@itwin/core-common";
+import type { IModelConnection, ViewState } from "@itwin/core-frontend";
+import { CheckpointConnection, DisplayStyle3dState, IModelApp, SpatialViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 

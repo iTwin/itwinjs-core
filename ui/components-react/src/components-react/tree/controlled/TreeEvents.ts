@@ -6,9 +6,9 @@
  * @module Tree
  */
 
-import { CheckBoxState } from "@itwin/core-react";
-import { TreeNodeItem } from "../TreeDataProvider";
-import { Observable, Subscription } from "./Observable";
+import type { CheckBoxState } from "@itwin/core-react";
+import type { TreeNodeItem } from "../TreeDataProvider";
+import type { Observable, Subscription } from "./Observable";
 
 /**
  * Tree events that can occur while interacting with tree.

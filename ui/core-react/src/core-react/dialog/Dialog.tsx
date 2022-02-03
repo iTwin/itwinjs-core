@@ -9,11 +9,12 @@
 import "./Dialog.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DialogButtonDef, DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
+import type { DialogButtonDef} from "@itwin/appui-abstract";
+import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 import { UiCore } from "../UiCore";
-import { CommonProps } from "../utils/Props";
-import { Omit } from "../utils/typeUtils";
+import type { CommonProps } from "../utils/Props";
+import type { Omit } from "../utils/typeUtils";
 import { FocusTrap } from "../focustrap/FocusTrap";
 import { Button } from "@itwin/itwinui-react";
 

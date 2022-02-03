@@ -9,8 +9,10 @@
 import "./Toolbar.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, flattenChildren, NoChildrenProps } from "@itwin/core-react";
-import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
+import type { CommonProps, NoChildrenProps } from "@itwin/core-react";
+import { flattenChildren } from "@itwin/core-react";
+import type { OrthogonalDirection} from "../utilities/Direction";
+import { Direction, DirectionHelpers, OrthogonalDirectionHelpers } from "../utilities/Direction";
 import { Items } from "./Items";
 
 /** Available alignment modes of [[Toolbar]] panels.

@@ -3,12 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelDb, SnapshotDb } from "@itwin/core-backend";
+import type { IModelDb} from "@itwin/core-backend";
+import { SnapshotDb } from "@itwin/core-backend";
 import { Guid, using } from "@itwin/core-bentley";
-import { UnitSystemKey } from "@itwin/core-quantity";
-import { PresentationManager, UnitSystemFormat } from "@itwin/presentation-backend";
+import type { UnitSystemKey } from "@itwin/core-quantity";
+import type { UnitSystemFormat } from "@itwin/presentation-backend";
+import { PresentationManager } from "@itwin/presentation-backend";
+import type { DisplayValue, DisplayValuesArray, DisplayValuesMap, ElementProperties, Ruleset} from "@itwin/presentation-common";
 import {
-  ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, ElementProperties, KeySet, Ruleset, RuleTypes,
+  ContentSpecificationTypes, KeySet, RuleTypes,
 } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";

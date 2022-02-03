@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { BisCodeSpec, DisplayStyleProps, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { DisplayStyle3d, SnapshotDb } from "../../core-backend";
+import type { DisplayStyleProps} from "@itwin/core-common";
+import { BisCodeSpec, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import type { SnapshotDb } from "../../core-backend";
+import { DisplayStyle3d } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 // spell-checker: disable

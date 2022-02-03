@@ -6,8 +6,9 @@
  * @module Properties
  */
 
-import { PropertyDescription, PropertyEditorInfo } from "../properties/Description";
-import { CustomFormattedNumberParams, IconEditorParams, ParseResults, PropertyEditorParamTypes } from "../properties/EditorParams";
+import type { PropertyDescription, PropertyEditorInfo } from "../properties/Description";
+import type { CustomFormattedNumberParams, IconEditorParams, ParseResults} from "../properties/EditorParams";
+import { PropertyEditorParamTypes } from "../properties/EditorParams";
 import { StandardTypeNames } from "../properties/StandardTypeNames";
 import { StandardEditorNames } from "../properties/StandardEditorNames";
 

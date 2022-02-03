@@ -9,8 +9,9 @@
 import "./Group.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
-import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
+import type { CommonProps } from "@itwin/core-react";
+import type { HorizontalAnchor, VerticalAnchor} from "../../Stacked";
+import { HorizontalAnchorHelpers, VerticalAnchorHelpers } from "../../Stacked";
 
 /** Available handle modes.
  * @internal

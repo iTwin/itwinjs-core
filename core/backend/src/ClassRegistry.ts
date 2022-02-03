@@ -7,9 +7,10 @@
  */
 
 import { DbResult, IModelStatus, Logger } from "@itwin/core-bentley";
-import { EntityMetaData, IModelError } from "@itwin/core-common";
+import type { EntityMetaData} from "@itwin/core-common";
+import { IModelError } from "@itwin/core-common";
 import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
+import type { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 
 /** The mapping between a BIS class name (in the form "schema:class") and its JavaScript constructor function

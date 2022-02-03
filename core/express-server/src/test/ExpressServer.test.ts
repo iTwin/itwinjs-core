@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { HttpServerRequest, HttpServerResponse } from "@itwin/core-common";
+import type { HttpServerRequest, HttpServerResponse } from "@itwin/core-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as request from "supertest";

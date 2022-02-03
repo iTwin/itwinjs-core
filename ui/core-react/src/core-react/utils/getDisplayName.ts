@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import * as React from "react";
+import type * as React from "react";
 
 /** Gets the display name for a React component.
  * @internal

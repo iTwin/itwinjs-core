@@ -7,10 +7,11 @@
  */
 
 import * as React from "react";
-import { ContextMenuDivider, ContextMenuItem, GlobalContextMenu, GlobalContextMenuProps } from "@itwin/core-react";
+import type { GlobalContextMenuProps } from "@itwin/core-react";
+import { ContextMenuDivider, ContextMenuItem, GlobalContextMenu } from "@itwin/core-react";
 import { UiComponents } from "../../UiComponents";
 import { ShowHideDialog } from "./ShowHideDialog";
-import { ShowHideID, ShowHideItem } from "./ShowHideItem";
+import type { ShowHideID, ShowHideItem } from "./ShowHideItem";
 import { Checkbox } from "@itwin/itwinui-react";
 
 /** Properties for the [[ShowHideMenu]] component

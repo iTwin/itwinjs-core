@@ -6,9 +6,10 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { FlatGridItemType, IMutableCategorizedPropertyItem, IMutableFlatGridItem, MutableCategorizedProperty } from "./MutableFlatGridItem";
-import { IMutableGridItemFactory } from "./MutableGridItemFactory";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { IMutableCategorizedPropertyItem, IMutableFlatGridItem} from "./MutableFlatGridItem";
+import { FlatGridItemType, MutableCategorizedProperty } from "./MutableFlatGridItem";
+import type { IMutableGridItemFactory } from "./MutableGridItemFactory";
 
 /**
  * Mutable wrapper object for PropertyRecord with array valueFormat which provides methods for working with and managing record children hierarchies.

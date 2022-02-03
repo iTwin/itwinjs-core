@@ -9,12 +9,14 @@
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
 // cSpell:Ignore configurableui Fronstage
-import { DialogItem, DialogPropertySyncItem, UiLayoutDataProvider } from "@itwin/appui-abstract";
-import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
+import type { DialogItem, DialogPropertySyncItem} from "@itwin/appui-abstract";
+import { UiLayoutDataProvider } from "@itwin/appui-abstract";
+import type { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
 import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
-import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager } from "./ToolSettingsManager";
+import type { SyncToolSettingsPropertiesEventArgs} from "./ToolSettingsManager";
+import { ToolSettingsManager } from "./ToolSettingsManager";
 import { ToolUiProvider } from "./ToolUiProvider";
 import { FrontstageManager } from "../../frontstage/FrontstageManager";
 

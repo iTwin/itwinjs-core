@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { MessageCenterFieldProps } from "../statusfields/MessageCenter";
+import type { MessageCenterFieldProps } from "../statusfields/MessageCenter";
 import { StatusBarContext } from "./StatusBar";
 
 /** HOC that injects values for [[MessageCenterFieldProps]].

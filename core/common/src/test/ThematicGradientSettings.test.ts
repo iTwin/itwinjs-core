@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ColorDef } from "../ColorDef";
-import { ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsProps } from "../ThematicDisplay";
+import type { ThematicGradientSettingsProps } from "../ThematicDisplay";
+import { ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings } from "../ThematicDisplay";
 
 describe("ThematicGradientSettings", () => {
   it("compares", () => {

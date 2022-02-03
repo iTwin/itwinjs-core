@@ -8,7 +8,8 @@
 
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { FeatureMode, IsAnimated, IsClassified, IsThematic } from "../TechniqueFlags";
+import type { IsClassified} from "../TechniqueFlags";
+import { FeatureMode, IsAnimated, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addUniformHiliter } from "./FeatureSymbology";
 import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier } from "./PlanarClassification";

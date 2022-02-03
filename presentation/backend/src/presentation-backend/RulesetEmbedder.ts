@@ -8,15 +8,18 @@
 
 import * as path from "path";
 import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
-import {
-  DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, Entity, IModelDb, KnownLocations, Model, Subject,
+import type {
+  DefinitionElement, ECSqlStatement, Element, Entity, IModelDb, Model} from "@itwin/core-backend";
+import { DefinitionModel, DefinitionPartition, KnownLocations, Subject,
 } from "@itwin/core-backend";
-import { assert, DbResult, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, DbResult } from "@itwin/core-bentley";
+import type { DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, SubjectProps} from "@itwin/core-common";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, QueryBinder,
-  QueryRowFormat, SubjectProps,
+  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, QueryBinder,
+  QueryRowFormat,
 } from "@itwin/core-common";
-import { Ruleset } from "@itwin/presentation-common";
+import type { Ruleset } from "@itwin/presentation-common";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
 import * as RulesetElements from "./domain/RulesetElements";
 import { normalizeVersion } from "./Utils";

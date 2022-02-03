@@ -7,13 +7,14 @@
  */
 
 import { assert, compareNumbers, compareStrings, SortedArray } from "@itwin/core-bentley";
-import {
-  DrawCommand, DrawCommands, PopBatchCommand, PopBranchCommand, PopCommand, PushBatchCommand, PushBranchCommand, PushCommand,
+import type {
+  DrawCommand, DrawCommands, PopCommand, PushBatchCommand, PushBranchCommand, PushCommand} from "./DrawCommand";
+import { PopBatchCommand, PopBranchCommand,
 } from "./DrawCommand";
-import { Layer, LayerContainer } from "./Layer";
-import { RenderCommands } from "./RenderCommands";
+import type { Layer, LayerContainer } from "./Layer";
+import type { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 
 type OpCode = "Idle" | "Container" | "Branch" | "Batch" | "Layer";
 

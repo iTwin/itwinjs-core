@@ -8,7 +8,7 @@
 
 import * as _ from "lodash";
 import * as React from "react";
-import { StatusFieldProps } from "./StatusFieldProps";
+import type { StatusFieldProps } from "./StatusFieldProps";
 
 /**
  * Properties supported by [[ConditionalField]] component.

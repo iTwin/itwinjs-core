@@ -7,9 +7,10 @@
  */
 
 import * as React from "react";
-import { FormatterSpec } from "@itwin/core-quantity";
+import type { FormatterSpec } from "@itwin/core-quantity";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { CommonProps, WebFontIcon } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { WebFontIcon } from "@itwin/core-react";
 import { Input } from "@itwin/itwinui-react";
 import { UiIModelComponents } from "../UiIModelComponents";
 

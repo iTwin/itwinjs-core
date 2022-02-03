@@ -9,10 +9,10 @@
 import "./Toolbar.scss";
 import classnames from "classnames";
 import * as React from "react";
-import {
+import type {
   CommonToolbarItem, OnItemExecutedFunc,
 } from "@itwin/appui-abstract";
-import { CommonProps, NoChildrenProps } from "@itwin/core-react";
+import type { CommonProps, NoChildrenProps } from "@itwin/core-react";
 import { ToolbarItems } from "./Items";
 import { Direction, OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
 import { getToolbarDirection, ToolbarItemComponent, ToolbarItemContext, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";

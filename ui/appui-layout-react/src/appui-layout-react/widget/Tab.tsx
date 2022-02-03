@@ -9,12 +9,14 @@
 import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Icon, Point, Rectangle, Timer, useRefs, useResizeObserver } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Icon, Point, Rectangle, Timer, useRefs, useResizeObserver } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragTab } from "../base/DragManager";
 import { MeasureContext, NineZoneDispatchContext, ShowWidgetIconContext, TabNodeContext } from "../base/NineZone";
-import { TabState } from "../base/NineZoneState";
-import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
+import type { TabState } from "../base/NineZoneState";
+import type { PointerCaptorArgs, PointerCaptorEvent} from "../base/PointerCaptor";
+import { usePointerCaptor } from "../base/PointerCaptor";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { WidgetTabsEntryContext } from "./Tabs";

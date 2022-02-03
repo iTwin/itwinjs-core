@@ -6,7 +6,8 @@
  * @module UnifiedSelection
  */
 
-import { Key, Keys, NodeKey } from "@itwin/presentation-common";
+import type { Keys} from "@itwin/presentation-common";
+import { Key, NodeKey } from "@itwin/presentation-common";
 
 /** @internal */
 export class SelectionHelper {

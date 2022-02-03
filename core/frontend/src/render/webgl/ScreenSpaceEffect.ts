@@ -7,18 +7,21 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import {
-  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, UniformArrayParams, UniformParams, UniformType, VaryingType,
+import type {
+  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, UniformArrayParams, UniformParams} from "../ScreenSpaceEffectBuilder";
+import { UniformType, VaryingType,
 } from "../ScreenSpaceEffectBuilder";
 import { TechniqueId } from "./TechniqueId";
-import { ProgramBuilder, VariableType } from "./ShaderBuilder";
-import { CompileStatus, ShaderProgram } from "./ShaderProgram";
+import type { ProgramBuilder} from "./ShaderBuilder";
+import { VariableType } from "./ShaderBuilder";
+import type { ShaderProgram } from "./ShaderProgram";
+import { CompileStatus } from "./ShaderProgram";
 import { RenderState } from "./RenderState";
 import { SingleTexturedViewportQuadGeometry, ViewportQuadGeometry } from "./CachedGeometry";
 import { FrameBuffer } from "./FrameBuffer";
 import { getDrawParams } from "./ScratchDrawParams";
 import { SingularTechnique } from "./Technique";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { System } from "./System";
 import { createScreenSpaceEffectProgramBuilder } from "./glsl/ScreenSpaceEffect";
 

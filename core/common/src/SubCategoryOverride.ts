@@ -6,7 +6,8 @@
  * @module DisplayStyles
  */
 
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { Id64, JsonUtils } from "@itwin/core-bentley";
 import { ColorDef } from "./ColorDef";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 

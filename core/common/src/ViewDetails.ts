@@ -6,9 +6,12 @@
  * @module Views
  */
 
-import { BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@itwin/core-geometry";
-import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
+import type { Id64String} from "@itwin/core-bentley";
+import { BeEvent, Id64, JsonUtils } from "@itwin/core-bentley";
+import type { ClipVectorProps, XAndY } from "@itwin/core-geometry";
+import { ClipVector, Geometry } from "@itwin/core-geometry";
+import type { ModelClipGroupProps} from "./ModelClipGroup";
+import { ModelClipGroups } from "./ModelClipGroup";
 
 /** Properties of a [[ViewDefinitionProps]] stored as JSON.
  * @see [[ViewDefinitionProps.jsonProperties]].

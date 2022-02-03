@@ -9,19 +9,21 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import type { Descriptor, NestedContentValue, ValuesDictionary} from "@itwin/presentation-common";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError,
-  SortDirection as PresentationSortDirection, RelationshipMeaning, ValuesDictionary,
+  Content, DefaultContentDisplayTypes, FieldDescriptorType, Item, KeySet, PresentationError,
+  SortDirection as PresentationSortDirection, RelationshipMeaning,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestSimpleContentField, PromiseContainer,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { RowItem } from "@itwin/components-react";
+import type { PresentationManager } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
+import type { RowItem } from "@itwin/components-react";
 import { HorizontalAlignment, SortDirection } from "@itwin/core-react";
-import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
+import type { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { PresentationTableDataProvider, TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE } from "../../presentation-components/table/DataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";

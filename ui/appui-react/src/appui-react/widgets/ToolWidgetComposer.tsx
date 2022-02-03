@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { CommonProps, useProximityToMouse, WidgetElementSet, WidgetOpacityContext } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { useProximityToMouse, WidgetElementSet, WidgetOpacityContext } from "@itwin/core-react";
 import { ToolsArea } from "@itwin/appui-layout-react";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 

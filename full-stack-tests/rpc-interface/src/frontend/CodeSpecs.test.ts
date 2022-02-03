@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { BisCodeSpec, CodeSpec } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { CodeSpec } from "@itwin/core-common";
+import { BisCodeSpec } from "@itwin/core-common";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;

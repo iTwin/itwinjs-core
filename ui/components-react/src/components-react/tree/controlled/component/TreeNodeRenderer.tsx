@@ -7,16 +7,17 @@
  */
 
 import * as React from "react";
-import { CommonProps, NodeCheckboxProps, NodeCheckboxRenderer, TreeNode } from "@itwin/core-react";
+import type { CommonProps, NodeCheckboxProps, NodeCheckboxRenderer} from "@itwin/core-react";
+import { TreeNode } from "@itwin/core-react";
 import { ImageRenderer } from "../../../common/ImageRenderer";
 import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
-import { ITreeImageLoader } from "../../ImageLoader";
+import type { HighlightableTreeNodeProps } from "../../HighlightingEngine";
+import type { ITreeImageLoader } from "../../ImageLoader";
 import { TreeComponentTestId } from "../../TreeComponentTestId";
-import { TreeActions } from "../TreeActions";
-import { CheckBoxInfo, TreeModelNode } from "../TreeModel";
+import type { TreeActions } from "../TreeActions";
+import type { CheckBoxInfo, TreeModelNode } from "../TreeModel";
 import { TreeNodeContent } from "./NodeContent";
-import { TreeNodeEditorRenderer } from "./TreeNodeEditor";
+import type { TreeNodeEditorRenderer } from "./TreeNodeEditor";
 
 /**
  * Properties for [[TreeNodeRenderer]].

@@ -6,7 +6,8 @@
  * @module Core
  */
 
-import { assert, IDisposable } from "@itwin/core-bentley";
+import type { IDisposable } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 
 /**

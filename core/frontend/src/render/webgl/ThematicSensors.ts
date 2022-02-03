@@ -7,15 +7,18 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ThematicDisplaySensor, ThematicDisplaySensorSettings } from "@itwin/core-common";
-import { WebGLDisposable } from "./Disposable";
+import type { Point3d} from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import type { ThematicDisplaySensorSettings } from "@itwin/core-common";
+import { ThematicDisplaySensor } from "@itwin/core-common";
+import type { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";
-import { Texture2DData, Texture2DHandle } from "./Texture";
-import { UniformHandle } from "./UniformHandle";
+import type { Texture2DData} from "./Texture";
+import { Texture2DHandle } from "./Texture";
+import type { UniformHandle } from "./UniformHandle";
 import { TextureUnit } from "./RenderFlags";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 
 /** @internal */
 interface ThematicSensorsTexture {

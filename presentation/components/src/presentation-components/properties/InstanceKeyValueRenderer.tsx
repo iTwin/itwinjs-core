@@ -8,8 +8,10 @@
  */
 
 import * as React from "react";
-import { Primitives, PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { IPropertyValueRenderer, PropertyValueRendererContext, TypeConverterManager, useAsyncValue } from "@itwin/components-react";
+import type { Primitives, PrimitiveValue, PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { IPropertyValueRenderer, PropertyValueRendererContext} from "@itwin/components-react";
+import { TypeConverterManager, useAsyncValue } from "@itwin/components-react";
 import { UnderlinedButton } from "@itwin/core-react";
 import { translate } from "../common/Utils";
 import { useUnifiedSelectionContext } from "../unified-selection/UnifiedSelectionContext";

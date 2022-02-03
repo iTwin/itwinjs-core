@@ -6,11 +6,11 @@
  * @module Item
  */
 
-import * as React from "react";
-import { BadgeType, ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@itwin/appui-abstract";
+import type * as React from "react";
+import type { BadgeType, ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@itwin/appui-abstract";
 import { PropsHelper } from "../utils/PropsHelper";
-import { ItemProps } from "./ItemProps";
-import { IconSpec } from "@itwin/core-react";
+import type { ItemProps } from "./ItemProps";
+import type { IconSpec } from "@itwin/core-react";
 
 /** Base state for any 'stateful' React component
  * @public

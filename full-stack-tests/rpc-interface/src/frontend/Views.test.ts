@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { IModelConnection, SpatialViewState } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SpatialViewState } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;

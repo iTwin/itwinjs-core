@@ -10,7 +10,8 @@ import "./ToolSettingsContent.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ResizableContainerObserver } from "@itwin/core-react";
-import { HorizontalAnchor, ToolSettingsWidgetMode, WidgetContent } from "@itwin/appui-layout-react";
+import type { HorizontalAnchor} from "@itwin/appui-layout-react";
+import { ToolSettingsWidgetMode, WidgetContent } from "@itwin/appui-layout-react";
 
 /** @internal */
 interface ToolSettingsContentProps {

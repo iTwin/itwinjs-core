@@ -8,12 +8,12 @@
 
 import { RenderMode } from "@itwin/core-common";
 import { LUTGeometry } from "./CachedGeometry";
-import { ColorInfo } from "./ColorInfo";
-import { ShaderProgramParams } from "./DrawCommand";
-import { FloatRgba } from "./FloatRGBA";
-import { Pass } from "./RenderFlags";
-import { Target } from "./Target";
-import { MeshData } from "./MeshData";
+import type { ColorInfo } from "./ColorInfo";
+import type { ShaderProgramParams } from "./DrawCommand";
+import type { FloatRgba } from "./FloatRGBA";
+import type { Pass } from "./RenderFlags";
+import type { Target } from "./Target";
+import type { MeshData } from "./MeshData";
 
 /** Defines one aspect of the geometry of a mesh (surface or edges)
  * @internal

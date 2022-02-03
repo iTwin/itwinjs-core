@@ -6,9 +6,11 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, SpecialKey, ToolbarItemUtilities } from "@itwin/appui-abstract";
+import type { ActionButton, CommonToolbarItem, GroupButton} from "@itwin/appui-abstract";
+import { BadgeType, SpecialKey, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
-import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../components-react/toolbar/ToolbarWithOverflow";
+import type { CustomToolbarItem} from "../../components-react/toolbar/ToolbarWithOverflow";
+import { ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../components-react/toolbar/ToolbarWithOverflow";
 import { Direction } from "../../components-react/toolbar/utilities/Direction";
 import TestUtils from "../TestUtils";
 

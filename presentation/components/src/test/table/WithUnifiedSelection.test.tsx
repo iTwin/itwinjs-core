@@ -10,16 +10,19 @@ import * as faker from "faker";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { InstanceKey, KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, isKeySet } from "@itwin/presentation-common/lib/cjs/test";
-import {
-  ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler,
-  SelectionManager,
+import type {
+  ISelectionProvider, PresentationManager, SelectionChangeEventArgs, SelectionHandler,
+  SelectionManager} from "@itwin/presentation-frontend";
+import { Presentation, SelectionChangeEvent, SelectionChangeType,
 } from "@itwin/presentation-frontend";
-import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@itwin/components-react";
-import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
-import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
+import type { ColumnDescription, RowItem, TableProps } from "@itwin/components-react";
+import { Table, TableDataChangeEvent } from "@itwin/components-react";
+import type { IUnifiedSelectionComponent} from "../../presentation-components";
+import { PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
+import type { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 
 // eslint-disable-next-line deprecation/deprecation
 const PresentationTable = tableWithUnifiedSelection(Table);

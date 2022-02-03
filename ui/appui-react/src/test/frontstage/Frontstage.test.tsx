@@ -12,8 +12,9 @@ import { render } from "@testing-library/react";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import { getDefaultZonesManagerProps } from "@itwin/appui-layout-react";
+import type { ZoneDefProvider} from "../../appui-react";
 import {
-  CoreTools, Frontstage, FrontstageComposer, FrontstageManager, getExtendedZone, UiFramework, WidgetDef, ZoneDef, ZoneDefProvider,
+  CoreTools, Frontstage, FrontstageComposer, FrontstageManager, getExtendedZone, UiFramework, WidgetDef, ZoneDef,
   ZoneLocation,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";

@@ -7,10 +7,12 @@
  * @module Tools
  */
 
+import type { ClipStyleProps} from "@itwin/core-common";
 import {
-  ClipStyle, ClipStyleProps, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
+  ClipStyle, ColorByName, ColorDef, LinePixels, RenderMode, RgbColor,
 } from "@itwin/core-common";
-import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
+import type { Viewport } from "@itwin/core-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 import { parseBoolean } from "./parseBoolean";
 import { DisplayStyleTool } from "./DisplayStyleTools";

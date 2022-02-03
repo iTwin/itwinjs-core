@@ -6,7 +6,7 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 import { BeEvent } from "@itwin/core-bentley";
 
 /**

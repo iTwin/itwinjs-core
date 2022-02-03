@@ -9,11 +9,13 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { Timer } from "@itwin/core-react";
-import ReactDataGrid from "react-data-grid";
+import type ReactDataGrid from "react-data-grid";
 import { UiComponents } from "../../UiComponents";
-import { TableColumn } from "../component/TableColumn";
-import { ColumnDescription, FilterRenderer } from "../TableDataProvider";
-import { ColumnFilterDescriptor, FilterCompositionLogicalOperator, FilterOperator, TableDistinctValue } from "./ColumnFiltering";
+import type { TableColumn } from "../component/TableColumn";
+import type { ColumnDescription} from "../TableDataProvider";
+import { FilterRenderer } from "../TableDataProvider";
+import type { ColumnFilterDescriptor, TableDistinctValue } from "./ColumnFiltering";
+import { FilterCompositionLogicalOperator, FilterOperator } from "./ColumnFiltering";
 
 /** @internal */
 export interface ReactDataGridFilter extends ReactDataGrid.Filter {

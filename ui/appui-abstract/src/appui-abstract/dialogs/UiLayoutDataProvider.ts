@@ -7,11 +7,14 @@
  */
 
 import { BeUiEvent } from "@itwin/core-bentley";
-import { PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properties/EditorParams";
+import type { PropertyEditorParams, SuppressLabelEditorParams } from "../properties/EditorParams";
+import { PropertyEditorParamTypes } from "../properties/EditorParams";
 import { PropertyRecord } from "../properties/Record";
-import { PrimitiveValue, PropertyValueFormat } from "../properties/Value";
-import { BaseDialogItem, DialogItem, DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
-import { PropertyChangeResult, PropertyChangeStatus, UiDataProvider } from "./UiDataProvider";
+import type { PrimitiveValue} from "../properties/Value";
+import { PropertyValueFormat } from "../properties/Value";
+import type { BaseDialogItem, DialogItem, DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
+import type { PropertyChangeResult} from "./UiDataProvider";
+import { PropertyChangeStatus, UiDataProvider } from "./UiDataProvider";
 
 /** Enum for button types. Determines button label, and default button style.
  * @public

@@ -7,12 +7,13 @@
  */
 
 import * as React from "react";
-import { BadgeUtilities, CommonProps, Icon, SizeProps } from "@itwin/core-react";
-import { UiSyncEventArgs } from "@itwin/appui-abstract";
+import type { CommonProps, SizeProps } from "@itwin/core-react";
+import { BadgeUtilities, Icon } from "@itwin/core-react";
+import type { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Item } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { BaseItemState } from "../shared/ItemDefBase";
+import type { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
+import type { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";

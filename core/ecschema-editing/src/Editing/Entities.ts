@@ -6,13 +6,14 @@
  * @module Editing
  */
 
+import type { ECClassModifier, EntityClass, EntityClassProps,
+  Mixin, RelationshipClass, SchemaItemKey, SchemaKey, StrengthDirection} from "@itwin/ecschema-metadata";
 import {
-  DelayedPromiseWithProps, ECClassModifier, ECObjectsError, ECObjectsStatus, EntityClass, EntityClassProps,
-  Mixin, RelationshipClass, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
+  DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, SchemaItemType,
 } from "@itwin/ecschema-metadata";
-import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
-import { MutableEntityClass } from "./Mutable/MutableEntityClass";
+import type { MutableEntityClass } from "./Mutable/MutableEntityClass";
 
 /**
  * @alpha

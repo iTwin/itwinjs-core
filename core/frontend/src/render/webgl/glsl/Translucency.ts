@@ -6,7 +6,8 @@
  * @module WebGL
  */
 
-import { FragmentShaderComponent, ProgramBuilder } from "../ShaderBuilder";
+import type { ProgramBuilder } from "../ShaderBuilder";
+import { FragmentShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
 import { addEyeSpace, addFrustum } from "./Common";
 import { addRenderTargetIndex, computeLinearDepth } from "./Fragment";

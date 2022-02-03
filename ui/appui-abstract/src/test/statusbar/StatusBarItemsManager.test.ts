@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import {
-  AbstractStatusBarCustomItem, AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
+import type {
+  AbstractStatusBarCustomItem, CommonStatusBarItem} from "../../appui-abstract";
+import { AbstractStatusBarItemUtilities, ConditionalBooleanValue, ConditionalStringValue,
   isAbstractStatusBarActionItem, isAbstractStatusBarCustomItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarSection,
 } from "../../appui-abstract";
 

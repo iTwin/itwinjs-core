@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Field } from "@itwin/presentation-common";
+import type { Field } from "@itwin/presentation-common";
 
 /**
  * Simplified type for `sinon.SinonSpy`.

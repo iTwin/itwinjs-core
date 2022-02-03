@@ -6,11 +6,13 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
-import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
-import {
-  AnyWidgetProps, ConfigurableCreateInfo, ContentControl, FrontstageManager, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
+import type {
+  AnyWidgetProps, ConfigurableCreateInfo} from "../../appui-react";
+import { ContentControl, FrontstageManager, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
   ToolButton,
   UiFramework,
 } from "../../appui-react";

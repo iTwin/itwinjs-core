@@ -8,17 +8,20 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
-import { DbResult, Id64String, using } from "@itwin/core-bentley";
-import {
-  ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
-  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs,
-  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo,
-  HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo,
-  LabelDefinition, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
-  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
-  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription,
+import type { ECSqlStatement, ECSqlValue, IModelDb} from "@itwin/core-backend";
+import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
+import type { Id64String} from "@itwin/core-bentley";
+import { DbResult, using } from "@itwin/core-bentley";
+import type {
+  ArrayTypeDescription, ContentDescriptorRequestOptions, ContentJSON, ContentRequestOptions,
+  ContentSourcesRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor,
+  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, IntRulesetVariable, ItemJSON, KindOfQuantityInfo, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, Paged, PageOptions,
+  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, Ruleset,
+  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StructTypeDescription} from "@itwin/presentation-common";
+import { CategoryDescription, Content, ContentFlags, DefaultContentDisplayTypes, FieldDescriptorType, getLocalesDirectory, HierarchyCompareInfo, InstanceKey, KeySet,
+  LabelDefinition, NodeKey, PresentationError, RegisteredRuleset, RelatedClassInfo, SelectClassInfo, StandardNodeTypes,
   VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
@@ -29,9 +32,11 @@ import {
   createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
-import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
+import type { NativePlatformDefinition} from "../presentation-backend/NativePlatform";
+import { NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
+import type { HybridCacheConfig, PresentationManagerProps} from "../presentation-backend/PresentationManager";
 import {
-  getKeysForContentRequest, HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
+  getKeysForContentRequest, HierarchyCacheMode, PresentationManager, PresentationManagerMode,
 } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";

@@ -6,11 +6,11 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
-import { CopyPickBufferGeometry } from "../CachedGeometry";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
+import type { CopyPickBufferGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
+import type { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
 import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";

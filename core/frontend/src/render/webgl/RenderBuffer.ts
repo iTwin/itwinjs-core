@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { WebGLDisposable } from "./Disposable";
+import type { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";
 

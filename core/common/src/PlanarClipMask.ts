@@ -6,7 +6,8 @@
  * @module DisplayStyles
  */
 
-import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import type { Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { CompressedId64Set } from "@itwin/core-bentley";
 
 /** The different modes by which a [[PlanarClipMaskSettings]] collects the geometry used to mask a model.
  * @public

@@ -6,7 +6,8 @@
  * @module Core
  */
 
-import { BentleyError, GetMetaDataFunction } from "@itwin/core-bentley";
+import type { GetMetaDataFunction } from "@itwin/core-bentley";
+import { BentleyError } from "@itwin/core-bentley";
 
 /**
  * Status codes used by Presentation APIs.

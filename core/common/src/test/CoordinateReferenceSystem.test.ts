@@ -5,9 +5,12 @@
 // cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, CLRK, Benoit, NAVD, NADCON, Xfrm, prvi, stgeorge, stlrnc, stpaul, helmert, NSRS
 
 import { expect } from "chai";
-import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSExtent, HorizontalCRSExtentProps, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem";
-import { GeodeticDatum, GeodeticDatumProps, GeodeticTransform, GeodeticTransformProps } from "../geometry/GeodeticDatum";
-import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "../geometry/GeodeticEllipsoid";
+import type { GeographicCRSProps, HorizontalCRSExtentProps, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem";
+import { GeographicCRS, HorizontalCRS, HorizontalCRSExtent } from "../geometry/CoordinateReferenceSystem";
+import type { GeodeticDatumProps, GeodeticTransformProps } from "../geometry/GeodeticDatum";
+import { GeodeticDatum, GeodeticTransform } from "../geometry/GeodeticDatum";
+import type { GeodeticEllipsoidProps } from "../geometry/GeodeticEllipsoid";
+import { GeodeticEllipsoid } from "../geometry/GeodeticEllipsoid";
 import { Carto2DDegrees } from "../geometry/Projection";
 // import { ProjectionMethod2 } from "../geometry/Projection";
 

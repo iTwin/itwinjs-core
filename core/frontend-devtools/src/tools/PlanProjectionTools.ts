@@ -7,8 +7,10 @@
  * @module Tools
  */
 
-import { PlanProjectionSettings, PlanProjectionSettingsProps, SubCategoryOverride } from "@itwin/core-common";
-import { DisplayStyle3dState, IModelApp, ModelState, NotifyMessageDetails, OutputMessagePriority, Viewport } from "@itwin/core-frontend";
+import type { PlanProjectionSettingsProps} from "@itwin/core-common";
+import { PlanProjectionSettings, SubCategoryOverride } from "@itwin/core-common";
+import type { DisplayStyle3dState, ModelState, Viewport } from "@itwin/core-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { DisplayStyleTool } from "./DisplayStyleTools";
 import { parseArgs } from "./parseArgs";

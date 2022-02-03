@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // eslint-disable-next-line
 const RulesetSchema = require("../../../../../Ruleset.schema.json");
-import { Ruleset } from "../../../presentation-common";
+import type { Ruleset } from "../../../presentation-common";
 
 type IndexedType = { [key: number]: any } | { [key: string]: any };
 const hasIndexSignature = (obj: any): obj is IndexedType => {

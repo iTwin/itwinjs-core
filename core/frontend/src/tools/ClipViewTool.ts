@@ -6,26 +6,30 @@
  * @module Tools
  */
 
-import { BeEvent, Id64, Id64Arg } from "@itwin/core-bentley";
+import type { Id64Arg } from "@itwin/core-bentley";
+import { BeEvent, Id64 } from "@itwin/core-bentley";
+import type { GeometryQuery} from "@itwin/core-geometry";
 import {
-  AxisOrder, ClipMaskXYZRangePlanes, ClipPlane, ClipPrimitive, ClipShape, ClipUtilities, ClipVector, ConvexClipPlaneSet, FrameBuilder, Geometry, GeometryQuery,
+  AxisOrder, ClipMaskXYZRangePlanes, ClipPlane, ClipPrimitive, ClipShape, ClipUtilities, ClipVector, ConvexClipPlaneSet, FrameBuilder, Geometry,
   GrowableXYZArray, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PolygonOps, PolylineOps, Range1d, Range3d, Ray3d,
   Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { ClipStyle, ColorDef, LinePixels, Placement2d } from "@itwin/core-common";
-import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
+import type { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
 import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { CoordSystem } from "../CoordSystem";
 import { LocateResponse } from "../ElementLocateManager";
-import { HitDetail } from "../HitDetail";
+import type { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { GraphicBuilder, GraphicType } from "../render/GraphicBuilder";
-import { DecorateContext } from "../ViewContext";
-import { ScreenViewport, Viewport } from "../Viewport";
+import type { GraphicBuilder} from "../render/GraphicBuilder";
+import { GraphicType } from "../render/GraphicBuilder";
+import type { DecorateContext } from "../ViewContext";
+import type { ScreenViewport, Viewport } from "../Viewport";
 import { EditManipulator } from "./EditManipulator";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled } from "./Tool";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import type { ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 
 // cSpell:ignore geti
 

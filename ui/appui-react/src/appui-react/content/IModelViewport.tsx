@@ -7,14 +7,15 @@
  */
 
 import * as React from "react";
-import { Id64String } from "@itwin/core-bentley";
-import { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
+import type { Id64String } from "@itwin/core-bentley";
+import type { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
-import { ViewportComponent, ViewStateProp } from "@itwin/imodel-components-react";
+import type { ViewStateProp } from "@itwin/imodel-components-react";
+import { ViewportComponent } from "@itwin/imodel-components-react";
 import { FillCentered } from "@itwin/core-react";
 
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import type { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { connectIModelConnectionAndViewState } from "../redux/connectIModel";
 import { UiFramework } from "../UiFramework";
@@ -23,7 +24,7 @@ import { ViewportContentControl } from "./ViewportContentControl";
 import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
 import { UiError } from "@itwin/appui-abstract";
 import { useSelector } from "react-redux";
-import { FrameworkState } from "../redux/FrameworkState";
+import type { FrameworkState } from "../redux/FrameworkState";
 
 // create a HOC viewport component that supports unified selection
 // eslint-disable-next-line @typescript-eslint/naming-convention

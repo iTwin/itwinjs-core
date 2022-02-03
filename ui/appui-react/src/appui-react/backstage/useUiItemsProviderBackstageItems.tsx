@@ -8,7 +8,8 @@
  */
 
 import * as React from "react";
-import { BackstageItem, BackstageItemsChangedArgs, BackstageItemsManager, UiItemsManager } from "@itwin/appui-abstract";
+import type { BackstageItem, BackstageItemsChangedArgs, BackstageItemsManager} from "@itwin/appui-abstract";
+import { UiItemsManager } from "@itwin/appui-abstract";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
 
 // cspell:ignore setxxx

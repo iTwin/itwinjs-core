@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { UiEventDispatcher, UiSyncEventArgs } from "../../appui-abstract";
+import type { UiSyncEventArgs } from "../../appui-abstract";
+import { UiEventDispatcher } from "../../appui-abstract";
 
 const timeToWaitForUiSyncCallback = 60;
 

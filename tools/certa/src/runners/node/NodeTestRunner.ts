@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CertaConfig } from "../../CertaConfig";
+import type { CertaConfig } from "../../CertaConfig";
 import Mocha = require("mocha");
 
 declare const global: any;

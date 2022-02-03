@@ -6,11 +6,12 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, isIDisposable } from "@itwin/core-bentley";
+import type { IDisposable} from "@itwin/core-bentley";
+import { BeEvent, isIDisposable } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
-import { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
-import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
+import type { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
 
 /**
  * Scopes that favorite properties can be stored in.

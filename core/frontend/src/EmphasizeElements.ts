@@ -6,11 +6,13 @@
  * @module Rendering
  */
 
-import { Id64, Id64Arg, Id64Set } from "@itwin/core-bentley";
-import { AppearanceOverrideProps, ColorDef, EmphasizeElementsProps, FeatureAppearance, FeatureOverrideType, RgbColor } from "@itwin/core-common";
-import { FeatureSymbology } from "./render/FeatureSymbology";
-import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
-import { Viewport } from "./Viewport";
+import type { Id64Arg, Id64Set } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { AppearanceOverrideProps, EmphasizeElementsProps} from "@itwin/core-common";
+import { ColorDef, FeatureAppearance, FeatureOverrideType, RgbColor } from "@itwin/core-common";
+import type { FeatureSymbology } from "./render/FeatureSymbology";
+import type { FeatureOverrideProvider } from "./FeatureOverrideProvider";
+import type { Viewport } from "./Viewport";
 
 /** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
  * @public

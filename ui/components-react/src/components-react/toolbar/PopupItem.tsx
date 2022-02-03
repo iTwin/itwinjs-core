@@ -9,9 +9,9 @@
 import "./PopupItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActionButton, RelativePosition } from "@itwin/appui-abstract";
+import type { ActionButton, RelativePosition } from "@itwin/appui-abstract";
 import { Popup, useRefState } from "@itwin/core-react";
-import { ToolbarButtonItemProps } from "./Item";
+import type { ToolbarButtonItemProps } from "./Item";
 import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { toToolbarPopupRelativePosition } from "./PopupItemWithDrag";
 

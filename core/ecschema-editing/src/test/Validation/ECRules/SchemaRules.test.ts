@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
+import type { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
 import * as Rules from "../../../Validation/ECRules";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 

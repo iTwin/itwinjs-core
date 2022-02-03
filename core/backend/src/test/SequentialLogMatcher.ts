@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LogFunction, Logger, LoggingMetaData, LogLevel } from "@itwin/core-bentley";
+import type { LogFunction, LoggingMetaData} from "@itwin/core-bentley";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelHost } from "../IModelHost";
 
 /**

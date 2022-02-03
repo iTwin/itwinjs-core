@@ -6,7 +6,7 @@
  * @module Properties
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
 
 /** Primitive Property Value Types.
  * @public

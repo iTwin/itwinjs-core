@@ -8,34 +8,50 @@
 
 // cspell:ignore greyscale ovrs
 
+import type { Id64Array, Id64String} from "@itwin/core-bentley";
 import {
-  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
+  assert, BeEvent, CompressedId64Set, Id64, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
 } from "@itwin/core-bentley";
-import { XYZProps } from "@itwin/core-geometry";
+import type { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
-import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
-import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./BackgroundMapSettings";
-import { ClipStyle, ClipStyleProps } from "./ClipStyle";
-import { ColorDef, ColorDefProps } from "./ColorDef";
-import { DefinitionElementProps } from "./ElementProps";
+import type { AnalysisStyleProps } from "./AnalysisStyle";
+import { AnalysisStyle } from "./AnalysisStyle";
+import type { PersistentBackgroundMapProps } from "./BackgroundMapSettings";
+import { BackgroundMapSettings } from "./BackgroundMapSettings";
+import type { ClipStyleProps } from "./ClipStyle";
+import { ClipStyle } from "./ClipStyle";
+import type { ColorDefProps } from "./ColorDef";
+import { ColorDef } from "./ColorDef";
+import type { DefinitionElementProps } from "./ElementProps";
 import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
-import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
+import type { FeatureAppearanceProps } from "./FeatureSymbology";
+import { FeatureAppearance } from "./FeatureSymbology";
+import type { PlanarClipMaskProps} from "./PlanarClipMask";
+import { PlanarClipMaskSettings } from "./PlanarClipMask";
 import { SubCategoryOverride } from "./SubCategoryOverride";
-import { LightSettings, LightSettingsProps } from "./LightSettings";
-import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
-import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
-import { RenderSchedule } from "./RenderSchedule";
-import { Environment, EnvironmentProps } from "./Environment";
-import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows";
-import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
-import { ViewFlagProps, ViewFlags } from "./ViewFlags";
+import type { LightSettingsProps } from "./LightSettings";
+import { LightSettings } from "./LightSettings";
+import type { MapImageryProps} from "./MapImagerySettings";
+import { MapImagerySettings } from "./MapImagerySettings";
+import type { PlanProjectionSettingsProps } from "./PlanProjectionSettings";
+import { PlanProjectionSettings } from "./PlanProjectionSettings";
+import type { RenderSchedule } from "./RenderSchedule";
+import type { EnvironmentProps } from "./Environment";
+import { Environment } from "./Environment";
+import type { SolarShadowSettingsProps } from "./SolarShadows";
+import { SolarShadowSettings } from "./SolarShadows";
+import type { SubCategoryAppearance } from "./SubCategoryAppearance";
+import type { ThematicDisplayProps } from "./ThematicDisplay";
+import { ThematicDisplay, ThematicDisplayMode } from "./ThematicDisplay";
+import type { ViewFlagProps} from "./ViewFlags";
+import { ViewFlags } from "./ViewFlags";
 import { Cartographic } from "./geometry/Cartographic";
 import { IModel } from "./IModel";
 import { calculateSolarDirection } from "./SolarCalculate";
-import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
-import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
+import type { ContextRealityModel, ContextRealityModelProps} from "./ContextRealityModel";
+import { ContextRealityModels } from "./ContextRealityModel";
+import type { WhiteOnWhiteReversalProps} from "./WhiteOnWhiteReversalSettings";
+import { WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]

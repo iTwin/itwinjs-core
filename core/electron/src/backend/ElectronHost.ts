@@ -9,12 +9,14 @@
 // IMPORTANT: Do not call or construct any of these imports. Otherwise, a require("electron") call will be emitted at top level.
 // Instead, use `ElectronHost.electron.<type>`
 
-import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
+import type { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
-import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
-import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
+import type { NativeHostOpts } from "@itwin/core-backend";
+import { IpcHandler, IpcHost, NativeHost } from "@itwin/core-backend";
+import type { IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
+import { IModelError } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt

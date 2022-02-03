@@ -7,19 +7,21 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
-import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@itwin/core-common";
-import { PolylineParams } from "../primitives/PolylineParams";
+import type { Point3d } from "@itwin/core-geometry";
+import type { QParams3d} from "@itwin/core-common";
+import { FeatureIndexType, PolylineTypeFlags, RenderMode } from "@itwin/core-common";
+import type { PolylineParams } from "../primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
-import { ColorInfo } from "./ColorInfo";
-import { ShaderProgramParams } from "./DrawCommand";
+import type { ColorInfo } from "./ColorInfo";
+import type { ShaderProgramParams } from "./DrawCommand";
 import { LineCode } from "./LineCode";
 import { GL } from "./GL";
-import { BuffersContainer } from "./AttributeBuffers";
-import { Pass, RenderOrder } from "./RenderFlags";
+import type { BuffersContainer } from "./AttributeBuffers";
+import type { Pass} from "./RenderFlags";
+import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { VertexLUT } from "./VertexLUT";
 

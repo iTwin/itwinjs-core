@@ -6,31 +6,38 @@
  * @module Tools
  */
 
-import { AbandonedError, BeEvent, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
-import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
-import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
-import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
-import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
-import { LocateOptions } from "../ElementLocateManager";
+import type { Id64String} from "@itwin/core-bentley";
+import { AbandonedError, BeEvent, IModelStatus, Logger } from "@itwin/core-bentley";
+import type { Vector3d, XAndY } from "@itwin/core-geometry";
+import { Matrix3d, Point2d, Point3d, Transform } from "@itwin/core-geometry";
+import type { GeometryStreamProps} from "@itwin/core-common";
+import { Easing, NpcCenter } from "@itwin/core-common";
+import type { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
+import type { AccuSnap} from "../AccuSnap";
+import { TentativeOrAccuSnap } from "../AccuSnap";
+import type { LocateOptions } from "../ElementLocateManager";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { HitDetail } from "../HitDetail";
+import type { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { linePlaneIntersect } from "../LinePlaneIntersect";
 import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
-import { CanvasDecoration } from "../render/CanvasDecoration";
+import type { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
-import { OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
-import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { ScreenViewport, Viewport } from "../Viewport";
+import type { OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
+import type { DecorateContext} from "../ViewContext";
+import { DynamicsContext } from "../ViewContext";
+import type { Viewport } from "../Viewport";
+import { ScreenViewport } from "../Viewport";
 import { ViewStatus } from "../ViewStatus";
-import { IdleTool } from "./IdleTool";
+import type { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
+import type {
+  InputCollector, InteractiveTool, Tool} from "./Tool";
 import {
-  BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordinateLockOverrides, CoordSource, EventHandled,
-  InputCollector, InputSource, InteractiveTool, Tool,
+  BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordinateLockOverrides, CoordSource, EventHandled, InputSource,
 } from "./Tool";
 import { ToolSettings } from "./ToolSettings";
-import { ViewTool } from "./ViewTool";
+import type { ViewTool } from "./ViewTool";
 
 /** @public */
 export enum StartOrResume { Start = 1, Resume = 2 }

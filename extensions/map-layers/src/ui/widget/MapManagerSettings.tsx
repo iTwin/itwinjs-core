@@ -6,12 +6,15 @@
 
 import * as React from "react";
 import { NumberInput } from "@itwin/core-react";
-import {  QuantityType, ViewState3d } from "@itwin/core-frontend";
-import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@itwin/core-common";
+import type { ViewState3d } from "@itwin/core-frontend";
+import {  QuantityType } from "@itwin/core-frontend";
+import type { BackgroundMapProps, BackgroundMapSettings, TerrainProps } from "@itwin/core-common";
+import { PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode } from "@itwin/core-common";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react";
+import type { SelectOption} from "@itwin/itwinui-react";
+import { Select, Slider, ToggleSwitch } from "@itwin/itwinui-react";
 import { QuantityNumberInput } from "@itwin/imodel-components-react";
 
 /* eslint-disable deprecation/deprecation */

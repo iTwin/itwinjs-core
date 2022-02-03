@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs-extra";
 import * as path from "path";
-import { Compiler } from "webpack";
+import type { Compiler } from "webpack";
 import { getAppRelativePath, getSourcePosition } from "../utils/paths";
 const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
-import { Dependency } from "../utils/resolve-recurse/resolve";
+import type { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 const { builtinModules } = require("module");
 /* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */

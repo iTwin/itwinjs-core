@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Code, EntityMetaData } from "@itwin/core-common";
+import type { EntityMetaData } from "@itwin/core-common";
+import { Code } from "@itwin/core-common";
+import type { SnapshotDb} from "../../core-backend";
 import {
-  DefinitionElement, IModelDb, RepositoryLink, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+  DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";

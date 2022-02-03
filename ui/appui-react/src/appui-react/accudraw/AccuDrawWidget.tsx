@@ -10,7 +10,7 @@ import * as React from "react";
 import { Orientation, useResizeObserver } from "@itwin/core-react";
 
 import { AccuDrawFieldContainer } from "./AccuDrawFieldContainer";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import type { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { WidgetControl } from "../widgets/WidgetControl";
 import { UiFramework } from "../UiFramework";
 

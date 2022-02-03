@@ -5,9 +5,10 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64String } from "@itwin/core-bentley";
-import {
-  BlobOptions, BlobOptionsBuilder, BlobRange, DbBlobRequest, DbBlobResponse, DbQueryError, DbRequestExecutor, DbRequestKind,
+import type { Id64String } from "@itwin/core-bentley";
+import type {
+  BlobOptions, BlobRange, DbBlobRequest, DbBlobResponse, DbRequestExecutor} from "./ConcurrentQuery";
+import { BlobOptionsBuilder, DbQueryError, DbRequestKind,
 } from "./ConcurrentQuery";
 
 /** @beta */

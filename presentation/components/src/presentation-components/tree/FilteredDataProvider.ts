@@ -7,12 +7,13 @@
  */
 
 import memoize from "micro-memoize";
-import { IModelConnection } from "@itwin/core-frontend";
-import { NodeKey, NodePathElement } from "@itwin/presentation-common";
-import {
-  ActiveMatchInfo, DelayLoadedTreeNodeItem, PageOptions, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy, TreeNodeItem,
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { NodeKey, NodePathElement } from "@itwin/presentation-common";
+import type {
+  ActiveMatchInfo, DelayLoadedTreeNodeItem, PageOptions, SimpleTreeDataProviderHierarchy, TreeNodeItem} from "@itwin/components-react";
+import { SimpleTreeDataProvider,
 } from "@itwin/components-react";
-import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import type { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "./Utils";
 
 /**

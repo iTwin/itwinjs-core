@@ -6,14 +6,15 @@
  * @module iModelHubClient
  */
 
-import { AccessToken, GuidString, IModelHubStatus, Logger } from "@itwin/core-bentley";
-import { CancelRequest, FileHandler } from "../itwin-client/FileHandler";
-import { ProgressCallback } from "../itwin-client/Request";
-import { IModelClient } from "../IModelClient";
+import type { AccessToken, GuidString} from "@itwin/core-bentley";
+import { IModelHubStatus, Logger } from "@itwin/core-bentley";
+import type { CancelRequest, FileHandler } from "../itwin-client/FileHandler";
+import type { ProgressCallback } from "../itwin-client/Request";
+import type { IModelClient } from "../IModelClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgQuery } from "../wsg/WsgQuery";
-import { IModelBaseHandler } from "./BaseHandler";
+import type { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
 import { addSelectApplicationData, addSelectFileAccessKey } from "./HubQuery";
 import { LockQuery } from "./Locks";

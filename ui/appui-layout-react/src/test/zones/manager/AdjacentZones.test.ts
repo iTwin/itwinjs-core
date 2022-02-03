@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "../../../appui-layout-react";
+import type { WidgetZoneId, ZonesManager, ZonesManagerProps } from "../../../appui-layout-react";
 import { AdjacentZonesStrategy, BottomZones, LeftZones, RightZones, TopZones } from "../../../appui-layout-react/zones/manager/AdjacentZones";
 
 describe("AdjacentZonesStrategy", () => {

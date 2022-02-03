@@ -5,15 +5,15 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
-import { CAProviderTuple } from "../../Deserialization/AbstractParser";
-import {
+import type { CAProviderTuple } from "../../Deserialization/AbstractParser";
+import type {
   ConstantProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, EnumeratorProps, FormatProps, InvertedUnitProps, MixinProps,
   NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, SchemaProps,
   SchemaReferenceProps, StructArrayPropertyProps,
 } from "../../Deserialization/JsonProps";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaContext } from "../../Context";
-import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
+import type { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
 import { ECObjectsError } from "../../Exception";
 import { createSchemaJsonWithItems, createSchemaXmlWithItems } from "../TestUtils/DeserializationHelpers";

@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { BriefcaseIdValue } from "@itwin/core-common";
 import { HubWrappers, TestChangeSetUtility } from "..";
-import { Element } from "../../Element";
+import type { Element } from "../../Element";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils } from "../IModelTestUtils";
 

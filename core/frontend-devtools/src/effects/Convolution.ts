@@ -6,7 +6,8 @@
  * @module Effects
  */
 
-import { ScreenSpaceEffectBuilder, UniformType, VaryingType } from "@itwin/core-frontend";
+import type { ScreenSpaceEffectBuilder} from "@itwin/core-frontend";
+import { UniformType, VaryingType } from "@itwin/core-frontend";
 import { AddEffectTool } from "./EffectTools";
 
 /** Adds one of a collection of "convolution kernels" that alter a [Viewport]($frontend)'s image by blending neighboring pixels.

@@ -6,21 +6,26 @@
  * @module Core
  */
 
-import { BeEvent, CompressedId64Set, IDisposable, OrderedId64Iterable } from "@itwin/core-bentley";
-import { IModelConnection, IpcApp } from "@itwin/core-frontend";
-import { UnitSystemKey } from "@itwin/core-quantity";
+import type { IDisposable} from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { IpcApp } from "@itwin/core-frontend";
+import type { UnitSystemKey } from "@itwin/core-quantity";
+import type { ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
+  ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo, NodeKeyJSON, Paged, PagedResponse, PageOptions, Ruleset, SingleElementPropertiesRequestOptions,
+  UpdateInfoJSON} from "@itwin/presentation-common";
 import {
-  Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo,
-  Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
-  ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo,
-  InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions,
-  PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo,
-  UpdateInfoJSON, VariableValueTypes,
+  Content,
+  Descriptor, DisplayValueGroup,
+  InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey, NodePathElement,
+  PresentationIpcEvents, RpcRequestsHandler, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { LocalizationHelper } from "./LocalizationHelper";
-import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
-import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
+import type { RulesetManager} from "./RulesetManager";
+import { RulesetManagerImpl } from "./RulesetManager";
+import type { RulesetVariablesManager} from "./RulesetVariablesManager";
+import { RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StateTracker } from "./StateTracker";
 

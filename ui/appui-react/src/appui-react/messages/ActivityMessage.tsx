@@ -12,7 +12,7 @@ import { MessageHyperlink, MessageLayout, MessageProgress, Status } from "@itwin
 import { Small } from "@itwin/itwinui-react";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
 import { UiFramework } from "../UiFramework";
-import { ActivityMessageEventArgs } from "../messages/MessageManager";
+import type { ActivityMessageEventArgs } from "../messages/MessageManager";
 import { MessageLabel } from "./MessageLabel";
 
 /** Properties for a [[ActivityMessage]]

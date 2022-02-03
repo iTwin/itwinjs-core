@@ -7,17 +7,19 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { EntityClassProps } from "../Deserialization/JsonProps";
+import type { EntityClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
+import type { ECClassModifier, StrengthDirection } from "../ECObjects";
+import { parseStrengthDirection, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedMixin } from "../Interfaces";
-import { SchemaItemKey } from "../SchemaKey";
+import type { LazyLoadedMixin } from "../Interfaces";
+import type { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
-import { Mixin } from "./Mixin";
-import { AnyProperty, NavigationProperty, Property } from "./Property";
-import { RelationshipClass } from "./RelationshipClass";
-import { Schema } from "./Schema";
+import type { Mixin } from "./Mixin";
+import type { AnyProperty, Property } from "./Property";
+import { NavigationProperty } from "./Property";
+import type { RelationshipClass } from "./RelationshipClass";
+import type { Schema } from "./Schema";
 
 /**
  * A Typescript class representation of an ECEntityClass.

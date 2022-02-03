@@ -6,9 +6,9 @@
  * @module StatusBar
  */
 
-import * as React from "react";
-import { StatusBarSection } from "@itwin/appui-abstract";
-import { StatusBarItem } from "./StatusBarItem";
+import type * as React from "react";
+import type { StatusBarSection } from "@itwin/appui-abstract";
+import type { StatusBarItem } from "./StatusBarItem";
 
 /** Utility methods for creating and maintaining StatusBar items.
  * @public

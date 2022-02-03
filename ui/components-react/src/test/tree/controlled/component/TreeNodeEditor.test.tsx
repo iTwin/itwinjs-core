@@ -7,7 +7,7 @@ import * as React from "react";
 import sinon from "sinon";
 import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import { TreeNodeEditor } from "../../../../components-react/tree/controlled/component/TreeNodeEditor";
-import { MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
+import type { MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 describe("TreeNodeEditor", () => {

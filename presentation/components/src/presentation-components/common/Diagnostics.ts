@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { DiagnosticsHandler, DiagnosticsLoggerSeverity, DiagnosticsOptions, DiagnosticsOptionsWithHandler } from "@itwin/presentation-common";
+import type { DiagnosticsHandler, DiagnosticsLoggerSeverity, DiagnosticsOptions, DiagnosticsOptionsWithHandler } from "@itwin/presentation-common";
 import { createCombinedDiagnosticsHandler } from "@itwin/presentation-frontend";
 
 /**

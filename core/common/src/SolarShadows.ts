@@ -8,7 +8,8 @@
 
 import { JsonUtils } from "@itwin/core-bentley";
 import { ColorByName } from "./ColorByName";
-import { ColorDef, ColorDefProps } from "./ColorDef";
+import type { ColorDefProps } from "./ColorDef";
+import { ColorDef } from "./ColorDef";
 import { RgbColor } from "./RgbColor";
 
 /** JSON representation of [[SolarShadowSettings]].

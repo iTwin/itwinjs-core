@@ -6,10 +6,12 @@
  * @module LinearReferencing
  */
 
-import { Id64String, JsonUtils } from "@itwin/core-bentley";
-import { ElementMultiAspect, IModelDb } from "@itwin/core-backend";
+import type { Id64String} from "@itwin/core-bentley";
+import { JsonUtils } from "@itwin/core-bentley";
+import type { IModelDb } from "@itwin/core-backend";
+import { ElementMultiAspect } from "@itwin/core-backend";
 import { RelatedElement } from "@itwin/core-common";
-import {
+import type {
   DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps,
 } from "@itwin/linear-referencing-common";
 import {

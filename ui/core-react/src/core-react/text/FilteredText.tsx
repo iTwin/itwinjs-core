@@ -10,8 +10,8 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { IMatch } from "@itwin/appui-abstract";
-import { CommonProps } from "../utils/Props";
+import type { IMatch } from "@itwin/appui-abstract";
+import type { CommonProps } from "../utils/Props";
 import "./FilteredText.scss";
 
 /** Props supported by [FilteredText] component

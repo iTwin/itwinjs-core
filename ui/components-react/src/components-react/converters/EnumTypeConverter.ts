@@ -6,7 +6,8 @@
  * @module TypeConverters
  */
 
-import { EnumerationChoice, EnumerationChoicesInfo, Primitives, PropertyDescription, StandardTypeNames } from "@itwin/appui-abstract";
+import type { EnumerationChoice, EnumerationChoicesInfo, Primitives, PropertyDescription} from "@itwin/appui-abstract";
+import { StandardTypeNames } from "@itwin/appui-abstract";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 

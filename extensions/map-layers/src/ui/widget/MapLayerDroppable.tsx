@@ -8,8 +8,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import * as React from "react";
-import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
-import { MapLayerImageryProviderStatus, ScreenViewport } from "@itwin/core-frontend";
+import type { DraggableChildrenFn, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
+import { Draggable, Droppable } from "react-beautiful-dnd";
+import type { ScreenViewport } from "@itwin/core-frontend";
+import { MapLayerImageryProviderStatus } from "@itwin/core-frontend";
 import { Icon } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { ModalDialogManager } from "@itwin/appui-react";
@@ -17,7 +19,7 @@ import { Button } from "@itwin/itwinui-react";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
+import type { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayerSettingsMenu } from "./MapLayerSettingsMenu";
 import { MapUrlDialog } from "./MapUrlDialog";
 import "./MapLayerManager.scss";

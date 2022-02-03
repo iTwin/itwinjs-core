@@ -6,9 +6,10 @@
  * @module Table
  */
 
-import { RowItem } from "../TableDataProvider";
-import {
-  ColumnFilterDescriptor, CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator, FilterDescriptorCollection,
+import type { RowItem } from "../TableDataProvider";
+import type {
+  ColumnFilterDescriptor, CompositeFilterDescriptorCollection} from "./ColumnFiltering";
+import { FilterCompositionLogicalOperator, FilterDescriptorCollection,
 } from "./ColumnFiltering";
 
 /** Represents collection of FilterDescriptor objects composed together by a logical operator.

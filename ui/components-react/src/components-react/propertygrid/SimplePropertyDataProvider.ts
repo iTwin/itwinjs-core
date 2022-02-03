@@ -7,7 +7,8 @@
  */
 
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "./PropertyDataProvider";
+import type { IPropertyDataProvider, PropertyCategory, PropertyData} from "./PropertyDataProvider";
+import { PropertyDataChangeEvent } from "./PropertyDataProvider";
 
 /**
  * Implementation of [IPropertyDataProvider] that uses an associative array.

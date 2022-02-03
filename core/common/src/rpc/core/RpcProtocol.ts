@@ -7,14 +7,17 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
-import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
+import type { IModelRpcProps } from "../../IModel";
+import type { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
-import { RpcInvocation, SerializedRpcActivity } from "./RpcInvocation";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
-import { RpcOperation } from "./RpcOperation";
-import { RpcRequest } from "./RpcRequest";
+import type { RpcProtocolEvent} from "./RpcConstants";
+import { RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
+import type { SerializedRpcActivity } from "./RpcInvocation";
+import { RpcInvocation } from "./RpcInvocation";
+import type { RpcSerializedValue } from "./RpcMarshaling";
+import { RpcMarshaling } from "./RpcMarshaling";
+import type { RpcOperation } from "./RpcOperation";
+import type { RpcRequest } from "./RpcRequest";
 
 /** A serialized RPC operation descriptor.
  * @internal

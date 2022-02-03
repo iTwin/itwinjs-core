@@ -5,9 +5,10 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
+import type { FrontstageActivatedEventArgs, FrontstageProps, TaskPropsList, WorkflowPropsList} from "../../appui-react";
 import {
-  ConfigurableUiManager, CoreTools, Frontstage, FrontstageActivatedEventArgs, FrontstageManager, FrontstageProps, FrontstageProvider, TaskPropsList,
-  WorkflowManager, WorkflowPropsList,
+  ConfigurableUiManager, CoreTools, Frontstage, FrontstageManager, FrontstageProvider,
+  WorkflowManager,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 

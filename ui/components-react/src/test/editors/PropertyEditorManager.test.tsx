@@ -5,10 +5,12 @@
 
 import { expect } from "chai";
 import * as React from "react";
-import {
-  IconEditorParams, PropertyDescription, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+import type {
+  IconEditorParams, PropertyDescription, PropertyEditorParams, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, PropertyRecord, PropertyValueFormat,
 } from "@itwin/appui-abstract";
-import { AsyncValueProcessingResult, BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
+import type { AsyncValueProcessingResult} from "../../components-react/editors/PropertyEditorManager";
+import { BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 import { TextEditor } from "../../components-react/editors/TextEditor";
 
 // cspell:ignore badeditor newvalue

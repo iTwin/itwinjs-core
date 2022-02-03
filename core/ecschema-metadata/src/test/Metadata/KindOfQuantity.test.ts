@@ -6,11 +6,11 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { ECObjectsError } from "../../Exception";
-import { Format } from "../../Metadata/Format";
-import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
+import type { Format } from "../../Metadata/Format";
+import type { KindOfQuantity } from "../../Metadata/KindOfQuantity";
 import { OverrideFormat } from "../../Metadata/OverrideFormat";
 import { Schema } from "../../Metadata/Schema";
-import { Unit } from "../../Metadata/Unit";
+import type { Unit } from "../../Metadata/Unit";
 import { DecimalPrecision } from "../../utils/FormatEnums";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";

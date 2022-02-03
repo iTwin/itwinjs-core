@@ -6,9 +6,10 @@
  * @module Editing
  */
 
-import { ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutableConstant } from "./Mutable/MutableConstant";
+import type { ConstantProps, Phenomenon, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, SchemaItemType } from "@itwin/ecschema-metadata";
+import type { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { MutableConstant } from "./Mutable/MutableConstant";
 
 /**
  * @alpha

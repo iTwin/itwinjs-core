@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BlankConnection } from "../IModelConnection";
+import type { BlankConnection } from "../IModelConnection";
 import { ScreenViewport } from "../Viewport";
 import { SpatialViewState } from "../SpatialViewState";
 import { createBlankConnection } from "./createBlankConnection";

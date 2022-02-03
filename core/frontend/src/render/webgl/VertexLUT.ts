@@ -7,11 +7,11 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { QParams2d, QParams3d } from "@itwin/core-common";
-import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../primitives/AuxChannelTable";
-import { VertexTable } from "../primitives/VertexTable";
+import type { QParams2d, QParams3d } from "@itwin/core-common";
+import type { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../primitives/AuxChannelTable";
+import type { VertexTable } from "../primitives/VertexTable";
 import { ColorInfo } from "./ColorInfo";
-import { WebGLDisposable } from "./Disposable";
+import type { WebGLDisposable } from "./Disposable";
 import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./AttributeBuffers";
 import { TextureHandle } from "./Texture";
 

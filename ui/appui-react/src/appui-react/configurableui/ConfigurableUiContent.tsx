@@ -8,7 +8,8 @@
 
 import "./configurableui.scss";
 import * as React from "react";
-import { CommonProps, Point } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Point } from "@itwin/core-react";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
 import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";

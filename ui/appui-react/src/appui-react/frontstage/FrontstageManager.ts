@@ -7,25 +7,31 @@
  * @module Frontstage
  */
 
-import * as React from "react";
+import type * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection, InteractiveTool, SelectedViewportChangedArgs, StartOrResume, Tool } from "@itwin/core-frontend";
-import { WidgetState } from "@itwin/appui-abstract";
-import { Size, UiEvent } from "@itwin/core-react";
+import type { IModelConnection, SelectedViewportChangedArgs, StartOrResume, Tool } from "@itwin/core-frontend";
+import { IModelApp, InteractiveTool } from "@itwin/core-frontend";
+import type { WidgetState } from "@itwin/appui-abstract";
+import type { Size} from "@itwin/core-react";
+import { UiEvent } from "@itwin/core-react";
 import { NineZoneManager } from "@itwin/appui-layout-react";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
-import { ContentGroup } from "../content/ContentGroup";
-import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
+import type { ContentGroup } from "../content/ContentGroup";
+import type { ContentLayoutDef } from "../content/ContentLayout";
+import { ContentLayoutActivatedEvent } from "../content/ContentLayout";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
 import { PanelSizeChangedEvent, PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { WidgetChangedEventArgs, WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
+import type { WidgetChangedEventArgs, WidgetDef, WidgetEventArgs} from "../widgets/WidgetDef";
+import { WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
-import { SyncToolSettingsPropertiesEventArgs, ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
-import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
-import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "./FrontstageDef";
-import { FrontstageProvider } from "./FrontstageProvider";
+import type { SyncToolSettingsPropertiesEventArgs} from "../zones/toolsettings/ToolSettingsManager";
+import { ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
+import type { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
+import type { FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "./FrontstageDef";
+import { FrontstageDef } from "./FrontstageDef";
+import type { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
 

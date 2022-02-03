@@ -6,7 +6,8 @@
  * @module RpcInterface
  */
 
-import { RpcRequest, RpcRequestFulfillment, RpcSerializedValue } from "@itwin/core-common";
+import type { RpcRequestFulfillment, RpcSerializedValue } from "@itwin/core-common";
+import { RpcRequest } from "@itwin/core-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
 /** @beta */

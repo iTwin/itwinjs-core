@@ -8,9 +8,9 @@
 
 import * as React from "react";
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
-import { SizeProps } from "@itwin/core-react";
+import type { SizeProps } from "@itwin/core-react";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
-import { CustomItemProps } from "./CustomItemProps";
+import type { CustomItemProps } from "./CustomItemProps";
 
 /** @internal */
 interface CloneProps {

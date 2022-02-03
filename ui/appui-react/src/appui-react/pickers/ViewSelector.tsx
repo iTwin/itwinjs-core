@@ -7,15 +7,18 @@
  */
 
 import * as React from "react";
-import { Id64String, Logger } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection, ViewState } from "@itwin/core-frontend";
+import type { Id64String} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
+import type { IModelConnection, ViewState } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { UiEvent } from "@itwin/appui-abstract";
-import { SupportsViewSelectorChange } from "../content/ContentControl";
+import type { SupportsViewSelectorChange } from "../content/ContentControl";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { connectIModelConnection } from "../redux/connectIModel";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
-import { ListItem, ListItemType, ListPicker } from "./ListPicker";
+import type { ListItem} from "./ListPicker";
+import { ListItemType, ListPicker } from "./ListPicker";
 
 // cSpell:ignore Spatials
 

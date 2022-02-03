@@ -5,9 +5,12 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
-import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import type { IModelDb} from "@itwin/core-backend";
+import { IModelHost, IModelJsNative } from "@itwin/core-backend";
+import type { DiagnosticsScopeLogs, UpdateInfo} from "@itwin/presentation-common";
+import { PresentationError, VariableValueTypes } from "@itwin/presentation-common";
+import type { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import { createDefaultNativePlatform } from "../presentation-backend/NativePlatform";
 import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 
 describe("default NativePlatform", () => {

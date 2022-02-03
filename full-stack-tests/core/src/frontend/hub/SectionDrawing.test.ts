@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, DrawingViewState, IModelConnection, SectionDrawingModelState } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { CheckpointConnection, DrawingViewState, SectionDrawingModelState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import type { TestViewport } from "../TestViewport";
+import { testOnScreenViewport } from "../TestViewport";
 
 describe("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;

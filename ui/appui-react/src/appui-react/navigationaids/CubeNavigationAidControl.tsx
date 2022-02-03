@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { CubeNavigationAid } from "@itwin/imodel-components-react";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import type { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
 
 /** Navigation Aid that displays an interactive rotation cube for Spatial views that synchronizes with the rotation of the iModel Viewport

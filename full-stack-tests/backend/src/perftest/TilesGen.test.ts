@@ -6,13 +6,15 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
-import { AccessToken, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import type { AccessToken} from "@itwin/core-bentley";
+import { Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools";
 import { IModelHost, IModelJsFs, StandaloneDb } from "@itwin/core-backend";
 import { HubWrappers, IModelTestUtils, TestUtils } from "@itwin/core-backend/lib/cjs/test/index";
-import { BackendTileGenerator, TileGenParams, TileStats } from "./TilesGenUtils";
+import type { TileGenParams, TileStats } from "./TilesGenUtils";
+import { BackendTileGenerator } from "./TilesGenUtils";
 
 interface TileResult {
   nModels: number;

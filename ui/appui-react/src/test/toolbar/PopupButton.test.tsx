@@ -3,14 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ReactWrapper, shallow } from "enzyme";
+import type { ReactWrapper} from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@itwin/appui-abstract";
-import { WithOnOutsideClickProps } from "@itwin/core-react";
+import type { WithOnOutsideClickProps } from "@itwin/core-react";
 import { Item } from "@itwin/appui-layout-react";
 import { fireEvent, render } from "@testing-library/react";
-import { BaseItemState, PopupButton, SyncUiEventDispatcher } from "../../appui-react";
+import type { BaseItemState} from "../../appui-react";
+import { PopupButton, SyncUiEventDispatcher } from "../../appui-react";
 /* eslint-disable deprecation/deprecation */
 import TestUtils, { mount } from "../TestUtils";
 

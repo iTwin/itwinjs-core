@@ -6,9 +6,10 @@
  * @module WebGL
  */
 
-import { ColorDef, LightSettings, RgbColor } from "@itwin/core-common";
+import type { RgbColor } from "@itwin/core-common";
+import { ColorDef, LightSettings } from "@itwin/core-common";
 import { FloatRgb } from "./FloatRGBA";
-import { UniformHandle } from "./UniformHandle";
+import type { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 
 /** Maintains state of uniforms associated with a DisplayStyle3dState's LightSettings.

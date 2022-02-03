@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BackgroundMapSettings, GlobeMode, PersistentBackgroundMapProps } from "../BackgroundMapSettings";
+import type { PersistentBackgroundMapProps } from "../BackgroundMapSettings";
+import { BackgroundMapSettings, GlobeMode } from "../BackgroundMapSettings";
 import { BackgroundMapType } from "../BackgroundMapProvider";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
 

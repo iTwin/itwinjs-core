@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Button as ITwinUI_Button } from "@itwin/itwinui-react";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 /** Sizes for [[Button]] component
  * @public

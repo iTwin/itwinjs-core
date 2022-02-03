@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import { RelatedElement, SectionDrawingProps, SectionType } from "@itwin/core-common";
+import type { SectionDrawingProps} from "@itwin/core-common";
+import { RelatedElement, SectionType } from "@itwin/core-common";
 import { Drawing, SectionDrawing } from "../../Element";
 import { DocumentListModel, DrawingModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";

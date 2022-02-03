@@ -8,14 +8,16 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { CommonProps, Orientation, RatioChangeResult } from "@itwin/core-react";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
-import { PropertyGridColumnInfo } from "../../properties/renderers/PropertyGridColumns";
+import type { PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { CommonProps, RatioChangeResult } from "@itwin/core-react";
+import { Orientation } from "@itwin/core-react";
+import type { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import type { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
+import type { PropertyGridColumnInfo } from "../../properties/renderers/PropertyGridColumns";
 import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { PropertyCategory } from "../PropertyDataProvider";
+import type { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import type { PropertyCategory } from "../PropertyDataProvider";
 
 /** Properties of [[PropertyList]] React component
  * @public

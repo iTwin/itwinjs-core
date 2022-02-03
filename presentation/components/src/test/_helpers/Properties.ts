@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames, StructValue,
+import type {
+  ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, StructValue} from "@itwin/appui-abstract";
+import { PropertyRecord, PropertyValueFormat, StandardTypeNames,
 } from "@itwin/appui-abstract";
 
 /**

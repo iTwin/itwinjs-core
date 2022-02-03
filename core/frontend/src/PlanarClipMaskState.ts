@@ -6,11 +6,14 @@
  * @module Views
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
-import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import type { PlanarClipMaskProps} from "@itwin/core-common";
+import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskSettings } from "@itwin/core-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { createMaskTreeReference, DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
-import { ViewState3d } from "./ViewState";
+import type { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
+import { createMaskTreeReference } from "./tile/internal";
+import type { ViewState3d } from "./ViewState";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.
  * Handles loading models and their associated tiles for models that are used by masks but may not be otherwise loaded or displayed.

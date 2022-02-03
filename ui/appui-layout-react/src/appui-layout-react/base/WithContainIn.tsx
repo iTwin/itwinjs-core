@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { Rectangle, RectangleProps } from "@itwin/core-react";
+import type { RectangleProps } from "@itwin/core-react";
+import { Rectangle } from "@itwin/core-react";
 import { Css } from "../utilities/Css";
 
 /** Properties of [[withContainIn]] HOC.

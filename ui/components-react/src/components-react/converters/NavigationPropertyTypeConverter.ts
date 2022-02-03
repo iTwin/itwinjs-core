@@ -7,7 +7,8 @@
  * @module TypeConverters
  */
 
-import { Primitives, PropertyDescription, StandardTypeNames } from "@itwin/appui-abstract";
+import type { Primitives, PropertyDescription} from "@itwin/appui-abstract";
+import { StandardTypeNames } from "@itwin/appui-abstract";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 

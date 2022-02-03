@@ -9,10 +9,11 @@ import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { CheckBoxState } from "@itwin/core-react";
 import { render } from "@testing-library/react";
-import { PropertyValueRendererManager } from "../../../../components-react/properties/ValueRendererManager";
+import type { PropertyValueRendererManager } from "../../../../components-react/properties/ValueRendererManager";
 import { TreeNodeContent } from "../../../../components-react/tree/controlled/component/NodeContent";
-import { MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
-import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../components-react/tree/HighlightingEngine";
+import type { MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
+import type { HighlightableTreeNodeProps} from "../../../../components-react/tree/HighlightingEngine";
+import { HighlightingEngine } from "../../../../components-react/tree/HighlightingEngine";
 import { TestUtils } from "../../../TestUtils";
 
 describe("NodeContent", () => {

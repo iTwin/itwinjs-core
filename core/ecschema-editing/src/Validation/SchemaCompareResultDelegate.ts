@@ -6,16 +6,16 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyEnumerator, AnyProperty, Constant, CustomAttribute,
+import type { AnyClass, AnyEnumerator, AnyProperty, Constant, CustomAttribute,
   CustomAttributeClass, CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity,
   Mixin, OverrideFormat, Phenomenon, PropertyCategory, RelationshipClass, RelationshipConstraint,
   Schema, SchemaItem, Unit,
 } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic } from "./Diagnostic";
+import type { AnyDiagnostic } from "./Diagnostic";
 import { SchemaChanges } from "./SchemaChanges";
 import { SchemaCompareDiagnostics } from "./SchemaCompareDiagnostics";
-import { SchemaCompareDirection } from "./SchemaComparer";
-import { ISchemaCompareReporter } from "./SchemaCompareReporter";
+import type { SchemaCompareDirection } from "./SchemaComparer";
+import type { ISchemaCompareReporter } from "./SchemaCompareReporter";
 
 /**
  * Used by the [[SchemaComparer]] to report differences found during schema comparison.

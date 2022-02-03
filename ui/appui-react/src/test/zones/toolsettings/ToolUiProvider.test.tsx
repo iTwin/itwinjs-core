@@ -5,14 +5,16 @@
 /* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as React from "react";
-import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
+import type { FrontstageProps,
   SyncToolSettingsPropertiesEventArgs,
-  ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider, Widget, Zone,
+  ToolSettingsEntry} from "../../../appui-react";
+import {
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, CoreTools, Frontstage, FrontstageManager, FrontstageProvider, ToolSettingsGrid, ToolUiProvider, Widget, Zone,
 } from "../../../appui-react";
 import { ToolInformation } from "../../../appui-react/zones/toolsettings/ToolInformation";
 import TestUtils from "../../TestUtils";
-import { DialogItemValue, DialogPropertySyncItem, UiLayoutDataProvider } from "@itwin/appui-abstract";
+import type { DialogItemValue, DialogPropertySyncItem} from "@itwin/appui-abstract";
+import { UiLayoutDataProvider } from "@itwin/appui-abstract";
 import { Input, Slider } from "@itwin/itwinui-react";
 
 describe("ToolUiProvider", () => {

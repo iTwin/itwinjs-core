@@ -8,7 +8,7 @@
 
 import "./PopoutWidget.scss";
 import * as React from "react";
-import { WidgetDef } from "../widgets/WidgetDef";
+import type { WidgetDef } from "../widgets/WidgetDef";
 
 interface PopoutWidgetProps {
   widgetContainerId: string;

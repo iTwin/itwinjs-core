@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { IModelClient } from "./IModelClient";
+import type { IModelClient } from "./IModelClient";
 
 export abstract class IModelAccessContext {
   public abstract get client(): IModelClient | undefined;

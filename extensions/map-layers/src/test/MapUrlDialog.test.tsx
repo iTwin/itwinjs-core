@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EmptyLocalization, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MockRender,
-  NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import type { MapSubLayerProps } from "@itwin/core-common";
+import { EmptyLocalization, MapLayerSettings } from "@itwin/core-common";
+import type { DisplayStyle3dState, IModelConnection, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { IModelApp, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MockRender,
+  NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { Select } from "@itwin/itwinui-react";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";

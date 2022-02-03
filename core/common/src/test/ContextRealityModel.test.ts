@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import type { ContextRealityModelsContainer} from "../ContextRealityModel";
 import {
-  ContextRealityModel, ContextRealityModelProps, ContextRealityModels, ContextRealityModelsContainer,
+  ContextRealityModel, ContextRealityModelProps, ContextRealityModels,
 } from "../ContextRealityModel";
 import { SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";

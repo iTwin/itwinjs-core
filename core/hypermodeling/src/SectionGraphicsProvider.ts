@@ -7,14 +7,17 @@
  */
 
 import { assert, compareBooleans, compareStrings, Id64 } from "@itwin/core-bentley";
-import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-common";
+import type { Range3d} from "@itwin/core-geometry";
+import { ClipShape, ClipVector, Point3d, Transform } from "@itwin/core-geometry";
+import type { ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-common";
+import { ColorDef, Placement2d } from "@itwin/core-common";
+import type { DisclosedTileTreeSet, HitDetail, IModelConnection, RenderClipVolume, RenderSystem, TileContent, TiledGraphicsProvider, TileRequest, TileRequestChannel, TileTreeOwner, TileTreeSupplier, Viewport, ViewState2d} from "@itwin/core-frontend";
 import {
-  CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
-  FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
-  TileLoadPriority, TileRequest, TileRequestChannel, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
+  CategorySelectorState, DisplayStyle2dState, DrawingViewState,
+  FeatureSymbology, GeometricModel2dState, GraphicBranch, IModelApp, SheetModelState, Tile, TileDrawArgs,
+  TileLoadPriority, TileTree, TileTreeReference,
 } from "@itwin/core-frontend";
-import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
+import type { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
 
 interface ProxyTreeId {

@@ -10,7 +10,8 @@ import { SpecialKey } from "@itwin/appui-abstract";
 import { AccuDrawInputField } from "../../appui-react/accudraw/AccuDrawInputField";
 import { KeyboardShortcutManager } from "../../appui-react/keyboardshortcut/KeyboardShortcut";
 import { TestUtils } from "../TestUtils";
-import { IModelApp, IModelAppOptions, ItemField, MockRender } from "@itwin/core-frontend";
+import type { IModelAppOptions} from "@itwin/core-frontend";
+import { IModelApp, ItemField, MockRender } from "@itwin/core-frontend";
 import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
 import { FrameworkUiAdmin } from "../../appui-react/uiadmin/FrameworkUiAdmin";
 

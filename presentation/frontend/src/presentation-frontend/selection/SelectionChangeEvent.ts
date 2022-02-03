@@ -7,9 +7,9 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import { KeySet } from "@itwin/presentation-common";
-import { ISelectionProvider } from "./ISelectionProvider";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { KeySet } from "@itwin/presentation-common";
+import type { ISelectionProvider } from "./ISelectionProvider";
 
 /**
  * An interface for selection change listeners.

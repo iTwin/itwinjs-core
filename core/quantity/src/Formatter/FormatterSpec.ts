@@ -6,8 +6,8 @@
  * @module Quantity
  */
 
-import { UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
-import { Format } from "./Format";
+import type { UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
+import type { Format } from "./Format";
 import { Formatter } from "./Formatter";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses

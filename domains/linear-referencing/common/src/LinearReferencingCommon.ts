@@ -6,7 +6,7 @@
  * @module LinearReferencing
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
 
 /** Interface with data returned by LinearElement.queryLinearLocations API
  * @beta

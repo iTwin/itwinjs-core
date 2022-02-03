@@ -5,9 +5,10 @@
 
 import { expect } from "chai";
 import { GltfV2ChunkTypes, GltfVersions, TileFormat } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { Gltf, GltfGraphicsReader, GltfId, GltfNode, GltfReaderProps } from "../../tile/GltfReader";
+import type { Gltf, GltfId, GltfNode} from "../../tile/GltfReader";
+import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);

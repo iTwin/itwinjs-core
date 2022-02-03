@@ -7,12 +7,13 @@
  */
 
 import * as React from "react";
-import { CommonProps, RectangleProps } from "@itwin/core-react";
-import { Zone, ZoneManagerProps, ZoneTargetType } from "@itwin/appui-layout-react";
-import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
+import type { CommonProps, RectangleProps } from "@itwin/core-react";
+import type { ZoneManagerProps, ZoneTargetType } from "@itwin/appui-layout-react";
+import { Zone } from "@itwin/appui-layout-react";
+import type { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { StatusBar } from "../statusbar/StatusBar";
-import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
+import type { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
 import { getFloatingZoneBounds } from "./FrameworkZone";
 import { Outline } from "./Outline";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";

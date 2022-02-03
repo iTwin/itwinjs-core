@@ -7,9 +7,10 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
+import type { HorizontalPanelSide, NineZoneState, PanelSide,
+  TabState, VerticalPanelSide, WidgetContentManagerContextArgs} from "../../appui-layout-react";
 import {
-  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, EventEmitter, HorizontalPanelSide, NineZoneState, PanelSide, PanelStateContext, PanelWidget,
-  TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs,
+  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, EventEmitter, PanelStateContext, PanelWidget, useBorders, useMode, WidgetContentManagerContext,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 

@@ -6,14 +6,16 @@
  * @module Tiles
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
-import { Polyface, Range1d } from "@itwin/core-geometry";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import type { Polyface, Range1d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
 import { request } from "../../request/Request";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { RenderSystem } from "../../render/RenderSystem";
-import { MapCartoRectangle, MapTile, QuadId, RealityTile, RealityTileLoader, TerrainMeshProvider, TerrainTileContent, Tile, TileLoadPriority, TileRequest } from "../internal";
+import type { RenderSystem } from "../../render/RenderSystem";
+import type { MapCartoRectangle, MapTile, RealityTile, TerrainMeshProvider, TerrainTileContent, Tile, TileRequest } from "../internal";
+import { QuadId, RealityTileLoader, TileLoadPriority } from "../internal";
 
 /** Specialization of map tile loader that includes terrain geometry with map imagery draped on it.
  * @internal

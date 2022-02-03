@@ -8,12 +8,12 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { RpcInterfaceDefinition } from "../../RpcInterface";
+import type { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcProtocolEvent } from "../core/RpcConstants";
 import { RpcInvocation } from "../core/RpcInvocation";
-import { RpcOperation } from "../core/RpcOperation";
-import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
-import { RpcRequest } from "../core/RpcRequest";
+import type { RpcOperation } from "../core/RpcOperation";
+import type { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
+import type { RpcRequest } from "../core/RpcRequest";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

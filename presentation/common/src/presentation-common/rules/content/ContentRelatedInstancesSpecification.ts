@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
-import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
+import type { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
+import type { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 
 /**
  * Creates content for ECInstance(s) related to current selection.

@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { ElementAlignedBox3d } from "@itwin/core-common";
-import { Tile } from "./internal";
+import type { ElementAlignedBox3d } from "@itwin/core-common";
+import type { Tile } from "./internal";
 
 /**
  * Parameters used to construct a [[Tile]].

@@ -5,13 +5,16 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import type { DisplayValueGroup, Field, FieldDescriptor, InstanceKey,
+  NestedContentField, Ruleset, SelectClassInfo} from "@itwin/presentation-common";
 import {
-  ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
-  NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes, SelectClassInfo,
+  ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, KeySet, PresentationError, PresentationStatus, RelationshipDirection, RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { ECClassHierarchy, ECClassHierarchyInfo } from "../ECClasHierarchy";
+import type { ECClassHierarchyInfo } from "../ECClasHierarchy";
+import { ECClassHierarchy } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
 

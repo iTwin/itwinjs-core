@@ -7,7 +7,8 @@
  */
 
 import { assert, compareNumbers, IndexMap } from "@itwin/core-bentley";
-import { ColorDef, ColorIndex } from "@itwin/core-common";
+import type { ColorIndex } from "@itwin/core-common";
+import { ColorDef } from "@itwin/core-common";
 
 /** @internal */
 export class ColorMap extends IndexMap<number> {

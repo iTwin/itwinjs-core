@@ -6,8 +6,9 @@
  * @module PhysicalMaterial
  */
 
-import { IModelDb, PhysicalMaterial } from "@itwin/core-backend";
-import { DefinitionElementProps } from "@itwin/core-common";
+import type { IModelDb} from "@itwin/core-backend";
+import { PhysicalMaterial } from "@itwin/core-backend";
+import type { DefinitionElementProps } from "@itwin/core-common";
 
 /** Aggregate is a bis:PhysicalMaterial representing a broad category of coarse to medium grained particulate material typically used in construction as
  * well as base material under foundations, roadways, and railways.

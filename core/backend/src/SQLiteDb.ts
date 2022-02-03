@@ -6,8 +6,8 @@
  * @module SQLiteDb
  */
 
-import { DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import type { DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 

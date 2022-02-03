@@ -7,8 +7,9 @@
  */
 
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Point } from "@itwin/core-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { CommonProps} from "@itwin/core-react";
+import { Point } from "@itwin/core-react";
 import { PointerCaptor } from "./PointerCaptor";
 
 /** Properties of [[DragHandle]] component.

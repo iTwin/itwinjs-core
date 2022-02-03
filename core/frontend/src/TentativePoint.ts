@@ -8,13 +8,15 @@
 
 import { Point3d } from "@itwin/core-geometry";
 import { AccuSnap } from "./AccuSnap";
-import { HitListHolder } from "./ElementLocateManager";
-import { HitDetail, HitList, HitPriority, HitSource, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
+import type { HitListHolder } from "./ElementLocateManager";
+import type { HitList} from "./HitDetail";
+import { HitDetail, HitPriority, HitSource, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { BeButton, BeButtonEvent } from "./tools/Tool";
+import type { BeButtonEvent } from "./tools/Tool";
+import { BeButton } from "./tools/Tool";
 import { ViewHandleType, ViewManip } from "./tools/ViewTool";
-import { DecorateContext } from "./ViewContext";
-import { ScreenViewport } from "./Viewport";
+import type { DecorateContext } from "./ViewContext";
+import type { ScreenViewport } from "./Viewport";
 
 /** @public */
 export class TentativePoint {

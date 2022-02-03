@@ -7,8 +7,10 @@
  */
 
 import { compareNumbers } from "@itwin/core-bentley";
-import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
-import { ColorDef, ColorDefProps } from "./ColorDef";
+import type { Range1dProps, XYZProps } from "@itwin/core-geometry";
+import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
+import type { ColorDefProps } from "./ColorDef";
+import { ColorDef } from "./ColorDef";
 import { Gradient } from "./Gradient";
 
 /** A thematic gradient mode used to generate and apply a thematic effect to a scene.

@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { ColorDef } from "./ColorDef";
-import { TextureMapping } from "./TextureMapping";
+import type { ColorDef } from "./ColorDef";
+import type { TextureMapping } from "./TextureMapping";
 
 /** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, texture, and so on.
  * @public

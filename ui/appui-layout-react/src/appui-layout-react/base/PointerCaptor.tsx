@@ -9,7 +9,8 @@
 import "./PointerCaptor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useRefEffect } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { useRefEffect } from "@itwin/core-react";
 import { DragManagerContext } from "./DragManager";
 
 /** Properties of [[PointerCaptor]] component.

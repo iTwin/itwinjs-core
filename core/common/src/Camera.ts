@@ -7,7 +7,8 @@
  */
 
 import { JsonUtils } from "@itwin/core-bentley";
-import { Angle, AngleProps, Point3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import type { AngleProps, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import { Angle, Point3d } from "@itwin/core-geometry";
 
 /** JSON representation of a [[Camera]].
  * @public

@@ -6,8 +6,9 @@ import { expect } from "chai";
 import * as React from "react";
 import { WidgetState } from "@itwin/appui-abstract";
 import { FooterSeparator } from "@itwin/appui-layout-react";
-import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, FooterModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
+import type {
+  ConfigurableCreateInfo, StatusBarWidgetControlArgs} from "../../appui-react";
+import { ConfigurableUiControlType, FooterModeField, StatusBar, StatusBarWidgetControl, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 

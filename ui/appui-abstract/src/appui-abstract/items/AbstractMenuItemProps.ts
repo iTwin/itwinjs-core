@@ -6,8 +6,8 @@
  * @module Item
  */
 
-import { AbstractActionItemProps, CommonItemProps } from "./AbstractItemProps";
-import { ConditionalStringValue } from "./ConditionalStringValue";
+import type { AbstractActionItemProps, CommonItemProps } from "./AbstractItemProps";
+import type { ConditionalStringValue } from "./ConditionalStringValue";
 
 /** Properties for a Menu item
  * @public

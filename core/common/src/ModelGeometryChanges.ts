@@ -6,8 +6,10 @@
  * @module Geometry
  */
 
-import { assert, CompressedId64Set, DbOpcode, GuidString, Id64String } from "@itwin/core-bentley";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import type { GuidString, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, DbOpcode } from "@itwin/core-bentley";
+import type { Range3dProps } from "@itwin/core-geometry";
+import { Range3d } from "@itwin/core-geometry";
 
 /** Compact wire format representing geometric changes to a set of elements as part of a [[ModelGeometryChangesProps]].
  * All of the elements belong to the same model.

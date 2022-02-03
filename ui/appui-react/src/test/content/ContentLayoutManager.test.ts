@@ -6,7 +6,8 @@ import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { getUniqueId } from "@itwin/appui-layout-react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ContentGroup, ContentGroupProps, ContentProps } from "../../appui-react/content/ContentGroup";
+import type { ContentGroupProps, ContentProps } from "../../appui-react/content/ContentGroup";
+import { ContentGroup } from "../../appui-react/content/ContentGroup";
 import { ContentLayoutManager } from "../../appui-react/content/ContentLayoutManager";
 import { FrontstageManager } from "../../appui-react/frontstage/FrontstageManager";
 

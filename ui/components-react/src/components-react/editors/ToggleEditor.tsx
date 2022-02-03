@@ -9,8 +9,9 @@
 import "./ToggleEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { PropertyValue} from "@itwin/appui-abstract";
+import { PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 

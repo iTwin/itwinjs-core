@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { OctEncodedNormalPair } from "./OctEncodedNormal";
+import type { OctEncodedNormalPair } from "./OctEncodedNormal";
 
 // cSpell:ignore vals
 

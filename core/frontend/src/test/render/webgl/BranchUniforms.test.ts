@@ -12,7 +12,7 @@ import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Branch } from "../../../render/webgl/Graphic";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { ClipStack } from "../../../render/webgl/ClipStack";
-import { Target } from "../../../render/webgl/Target";
+import type { Target } from "../../../render/webgl/Target";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();

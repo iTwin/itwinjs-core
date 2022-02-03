@@ -7,7 +7,8 @@
  * @module Tools
  */
 
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, RenderSystemDebugControl, Tool } from "@itwin/core-frontend";
+import type { RenderSystemDebugControl} from "@itwin/core-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** Executes some code against a RenderSystemDebugControl obtained from the IModelApp's RenderSystem.

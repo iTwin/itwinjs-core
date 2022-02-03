@@ -7,12 +7,12 @@
  */
 import { dispose } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
-import { SceneContext } from "../../ViewContext";
-import { RenderMemory } from "../RenderMemory";
-import { RenderTextureDrape } from "../RenderSystem";
-import { WebGLDisposable } from "./Disposable";
-import { Target } from "./Target";
-import { Texture } from "./Texture";
+import type { SceneContext } from "../../ViewContext";
+import type { RenderMemory } from "../RenderMemory";
+import type { RenderTextureDrape } from "../RenderSystem";
+import type { WebGLDisposable } from "./Disposable";
+import type { Target } from "./Target";
+import type { Texture } from "./Texture";
 
 export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.Consumer, WebGLDisposable {
   protected _texture?: Texture;

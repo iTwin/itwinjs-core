@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { DbResult } from "@itwin/core-bentley";
-import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
+import type { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { getElementKey, normalizeVersion } from "../presentation-backend/Utils";
 

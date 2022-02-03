@@ -9,7 +9,7 @@ import { mount, shallow } from "enzyme";
 import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import { PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import type { PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
 import { ThemedEnumEditor } from "../../components-react/editors/ThemedEnumEditor";
 import TestUtils from "../TestUtils";
 

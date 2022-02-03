@@ -6,7 +6,7 @@
  * @module Color
  */
 
-import { ColorDef } from "@itwin/core-common";
+import type { ColorDef } from "@itwin/core-common";
 
 /** @internal */
 export function getCSSColorFromDef(colorDef: ColorDef): string {

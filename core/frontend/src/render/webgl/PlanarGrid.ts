@@ -8,17 +8,19 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@itwin/core-geometry";
-import { Frustum, QPoint2dList, QPoint3dList } from "@itwin/core-common";
+import type { Frustum} from "@itwin/core-common";
+import { QPoint2dList, QPoint3dList } from "@itwin/core-common";
 import { GraphicBranch } from "../GraphicBranch";
-import { RenderGraphic } from "../RenderGraphic";
-import { RenderMemory } from "../RenderMemory";
-import { PlanarGridProps, RenderSystem } from "../RenderSystem";
+import type { RenderGraphic } from "../RenderGraphic";
+import type { RenderMemory } from "../RenderMemory";
+import type { PlanarGridProps, RenderSystem } from "../RenderSystem";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
 import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
-import { Pass, RenderOrder } from "./RenderFlags";
+import type { Pass} from "./RenderFlags";
+import { RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 
 class PlanarGridGeometryParams extends IndexedGeometryParams {

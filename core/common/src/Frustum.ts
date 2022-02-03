@@ -6,8 +6,9 @@
  * @module Views
  */
 
+import type { LowAndHighXY, LowAndHighXYZ, Plane3dByOriginAndUnitNormal, Transform, XYAndZ} from "@itwin/core-geometry";
 import {
-  AxisOrder, ClipPlane, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Vector3d, XYAndZ,
+  AxisOrder, ClipPlane, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Point3d, Range3d, Vector3d,
 } from "@itwin/core-geometry";
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.

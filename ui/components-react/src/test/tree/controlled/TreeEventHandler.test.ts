@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Subject } from "rxjs/internal/Subject";
+import type { Subject } from "rxjs/internal/Subject";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { CheckBoxState } from "@itwin/core-react";
-import { TreeModelMutator } from "../../../components-react/tree/controlled/internal/TreeModelMutator";
+import type { TreeModelMutator } from "../../../components-react/tree/controlled/internal/TreeModelMutator";
 import { from } from "../../../components-react/tree/controlled/Observable";
-import { TreeEventHandler, TreeEventHandlerParams } from "../../../components-react/tree/controlled/TreeEventHandler";
-import { CheckboxStateChange, TreeEvents, TreeSelectionChange } from "../../../components-react/tree/controlled/TreeEvents";
-import { MutableTreeModelNode, TreeModel } from "../../../components-react/tree/controlled/TreeModel";
-import { TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
-import { ITreeNodeLoader } from "../../../components-react/tree/controlled/TreeNodeLoader";
+import type { TreeEventHandlerParams } from "../../../components-react/tree/controlled/TreeEventHandler";
+import { TreeEventHandler } from "../../../components-react/tree/controlled/TreeEventHandler";
+import type { CheckboxStateChange, TreeEvents, TreeSelectionChange } from "../../../components-react/tree/controlled/TreeEvents";
+import type { MutableTreeModelNode, TreeModel } from "../../../components-react/tree/controlled/TreeModel";
+import type { TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
+import type { ITreeNodeLoader } from "../../../components-react/tree/controlled/TreeNodeLoader";
 import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
 
 describe("TreeEventHandler", () => {

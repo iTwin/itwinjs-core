@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
+import type { DisplayValuesArray, DisplayValuesArrayJSON, DisplayValuesMap, DisplayValuesMapJSON, NestedContentValue,
+  NestedContentValueJSON, ValuesArray, ValuesArrayJSON, ValuesMap, ValuesMapJSON} from "../../presentation-common/content/Value";
 import {
-  DisplayValue, DisplayValueGroup, DisplayValuesArray, DisplayValuesArrayJSON, DisplayValuesMap, DisplayValuesMapJSON, NestedContentValue,
-  NestedContentValueJSON, Value, ValuesArray, ValuesArrayJSON, ValuesMap, ValuesMapJSON,
+  DisplayValue, DisplayValueGroup, Value,
 } from "../../presentation-common/content/Value";
 import { InstanceKey } from "../../presentation-common/EC";
 import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "../_helpers/random";

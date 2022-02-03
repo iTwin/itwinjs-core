@@ -8,14 +8,16 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { XAndY } from "@itwin/core-geometry";
-import {
+import type { XAndY } from "@itwin/core-geometry";
+import type {
   AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue,
-  PropertyDescription, PropertyRecord, PropertyValueFormat, RelativePosition, UiEvent,
+  PropertyDescription, RelativePosition} from "@itwin/appui-abstract";
+import { PropertyRecord, PropertyValueFormat, UiEvent,
 } from "@itwin/appui-abstract";
-import { Orientation, Point, Rectangle, SizeProps } from "@itwin/core-react";
+import type { Point, SizeProps } from "@itwin/core-react";
+import { Orientation, Rectangle } from "@itwin/core-react";
 import { offsetAndContainInContainer } from "@itwin/appui-layout-react";
-import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
+import type { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 import { UiFramework } from "../UiFramework";
 import { CardPopup } from "./CardPopup";
 import { HTMLElementPopup } from "./HTMLElementPopup";

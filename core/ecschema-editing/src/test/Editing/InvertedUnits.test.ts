@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { InvertedUnit, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import type { InvertedUnit, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("Inverted Units tests", () => {

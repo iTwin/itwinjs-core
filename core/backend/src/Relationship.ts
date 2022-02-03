@@ -6,11 +6,13 @@
  * @module Relationships
  */
 
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
-import { ECSqlStatement } from "./ECSqlStatement";
+import type { Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64 } from "@itwin/core-bentley";
+import type { RelationshipProps, SourceAndTarget } from "@itwin/core-common";
+import { IModelError, IModelStatus } from "@itwin/core-common";
+import type { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
+import type { IModelDb } from "./IModelDb";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
 

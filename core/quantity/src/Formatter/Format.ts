@@ -8,9 +8,10 @@
 
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
-import { UnitProps, UnitsProvider } from "../Interfaces";
+import type { UnitProps, UnitsProvider } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
-import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
+import type { CloneOptions, CustomFormatProps, FormatProps} from "./Interfaces";
+import { isCustomFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative

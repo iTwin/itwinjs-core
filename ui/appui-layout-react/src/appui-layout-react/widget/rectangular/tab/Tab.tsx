@@ -9,10 +9,12 @@
 import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Rectangle, RectangleProps } from "@itwin/core-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { CommonProps, RectangleProps } from "@itwin/core-react";
+import { Rectangle } from "@itwin/core-react";
 import { DragHandle } from "../../../base/DragHandle";
-import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
+import type { HorizontalAnchor, VerticalAnchor} from "../../Stacked";
+import { HorizontalAnchorHelpers, VerticalAnchorHelpers } from "../../Stacked";
 
 /** Describes available tab modes.
  * @internal

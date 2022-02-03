@@ -6,10 +6,12 @@
  * @module Settings
  */
 
-import { UiStateEntry, UiStateStorage } from "@itwin/core-react";
-import { UiSyncEventArgs } from "@itwin/appui-abstract";
+import type { UiStateStorage } from "@itwin/core-react";
+import { UiStateEntry } from "@itwin/core-react";
+import type { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFramework";
+import type { FrameworkVersionId, UserSettingsProvider } from "../UiFramework";
+import { UiFramework } from "../UiFramework";
 
 // cSpell:ignore configurableui
 

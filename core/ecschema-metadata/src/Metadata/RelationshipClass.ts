@@ -7,21 +7,24 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
+import type { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import {
-  ECClassModifier, parseStrength, parseStrengthDirection, RelationshipEnd, SchemaItemType, StrengthDirection, strengthDirectionToString,
+import type {
+  ECClassModifier} from "../ECObjects";
+import { parseStrength, parseStrengthDirection, RelationshipEnd, SchemaItemType, StrengthDirection, strengthDirectionToString,
   strengthToString, StrengthType,
 } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
-import { SchemaItemKey } from "../SchemaKey";
+import type { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
+import type { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
-import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import { createNavigationProperty, createNavigationPropertySync, EntityClass } from "./EntityClass";
-import { Mixin } from "./Mixin";
-import { NavigationProperty } from "./Property";
-import { Schema } from "./Schema";
+import type { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet} from "./CustomAttribute";
+import { serializeCustomAttributes } from "./CustomAttribute";
+import type { EntityClass } from "./EntityClass";
+import { createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
+import type { Mixin } from "./Mixin";
+import type { NavigationProperty } from "./Property";
+import type { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
 type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;

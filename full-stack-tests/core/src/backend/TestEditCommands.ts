@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb } from "@itwin/core-backend";
+import type { IModelDb } from "@itwin/core-backend";
 import { EditCommand } from "@itwin/editor-backend";
-import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../common/TestEditCommandIpc";
+import type { TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../common/TestEditCommandIpc";
+import { testCmdIds } from "../common/TestEditCommandIpc";
 
 export abstract class TestCommand extends EditCommand implements TestCommandIpc {
   public constructor(iModel: IModelDb, protected _str: string) { super(iModel); }

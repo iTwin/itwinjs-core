@@ -6,13 +6,15 @@
  * @module Core
  */
 import { assert } from "@itwin/core-bentley";
-import {
-  applyOptionalPrefix, EditorDescription, EnumerationInfo, Field, FieldHierarchy, IContentVisitor, Item, PropertyValueFormat as PresentationPropertyValueFormat,
+import type { EditorDescription, EnumerationInfo, Field, FieldHierarchy, IContentVisitor, Item,
   ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps, RendererDescription, StartArrayProps,
-  StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps, StartStructProps, TypeDescription,
-} from "@itwin/presentation-common";
+  StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps, StartStructProps, TypeDescription} from "@itwin/presentation-common";
 import {
-  ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, StructValue, PropertyValueFormat as UiPropertyValueFormat,
+  applyOptionalPrefix, PropertyValueFormat as PresentationPropertyValueFormat,
+} from "@itwin/presentation-common";
+import type {
+  ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, StructValue} from "@itwin/appui-abstract";
+import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat,
 } from "@itwin/appui-abstract";
 
 /** @internal */

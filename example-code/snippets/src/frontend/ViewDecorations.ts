@@ -2,12 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, Logger } from "@itwin/core-bentley";
-import { AngleSweep, Arc3d, Point2d, Point3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { AxisAlignedBox3d, ColorByName, ColorDef, NpcCenter } from "@itwin/core-common";
+import type { Id64String} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
+import type { XAndY, XYAndZ } from "@itwin/core-geometry";
+import { AngleSweep, Arc3d, Point2d, Point3d, Transform } from "@itwin/core-geometry";
+import type { AxisAlignedBox3d} from "@itwin/core-common";
+import { ColorByName, ColorDef, NpcCenter } from "@itwin/core-common";
+import type { BeButtonEvent, Cluster, DecorateContext, Decorator, HitDetail, IModelConnection, MarkerImage, RenderGraphic} from "@itwin/core-frontend";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, Decorator, GraphicBranch, GraphicType, HitDetail, imageElementFromUrl,
-  IModelApp, IModelConnection, Marker, MarkerImage, MarkerSet, MessageBoxIconType, MessageBoxType, readGltfGraphics, RenderGraphic,
+  BeButton, GraphicBranch, GraphicType, imageElementFromUrl,
+  IModelApp, Marker, MarkerSet, MessageBoxIconType, MessageBoxType, readGltfGraphics,
 } from "@itwin/core-frontend";
 
 // cSpell:ignore lerp

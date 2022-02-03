@@ -5,15 +5,18 @@
 /** @packageDocumentation
  * @module Views
  */
-import { BeEvent, BentleyStatus, BeTimePoint, BeUiEvent, Id64Arg } from "@itwin/core-bentley";
-import { GeometryStreamProps } from "@itwin/core-common";
-import { HitDetail } from "./HitDetail";
+import type { BeTimePoint, Id64Arg } from "@itwin/core-bentley";
+import { BeEvent, BentleyStatus, BeUiEvent } from "@itwin/core-bentley";
+import type { GeometryStreamProps } from "@itwin/core-common";
+import type { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { DisclosedTileTreeSet, TileTree } from "./tile/internal";
+import type { IModelConnection } from "./IModelConnection";
+import type { TileTree } from "./tile/internal";
+import { DisclosedTileTreeSet } from "./tile/internal";
 import { EventController } from "./tools/EventController";
-import { BeButtonEvent, EventHandled } from "./tools/Tool";
-import { ScreenViewport, ViewportDecorator } from "./Viewport";
+import type { BeButtonEvent} from "./tools/Tool";
+import { EventHandled } from "./tools/Tool";
+import type { ScreenViewport, ViewportDecorator } from "./Viewport";
 import { System } from "./render/webgl/System";
 
 /** Interface for drawing [decoration graphics]($docs/learning/frontend/ViewDecorations.md) into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].

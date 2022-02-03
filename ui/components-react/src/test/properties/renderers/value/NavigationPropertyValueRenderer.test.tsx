@@ -8,9 +8,9 @@ import * as sinon from "sinon";
 import { Id64 } from "@itwin/core-bentley";
 import { render } from "@testing-library/react";
 import { NavigationPropertyValueRenderer } from "../../../../components-react/properties/renderers/value/NavigationPropertyValueRenderer";
-import { PropertyValueRendererContext } from "../../../../components-react/properties/ValueRendererManager";
+import type { PropertyValueRendererContext } from "../../../../components-react/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
-import { PropertyConverterInfo } from "@itwin/appui-abstract";
+import type { PropertyConverterInfo } from "@itwin/appui-abstract";
 
 describe("NavigationPropertyValueRenderer", () => {
   const instanceKey = { className: "", id: Id64.fromUint32Pair(1, 0) };

@@ -6,9 +6,10 @@
  * @module Rendering
  */
 
-import { dispose, disposeArray, IDisposable } from "@itwin/core-bentley";
-import { CanvasDecorationList } from "./CanvasDecoration";
-import { GraphicList, RenderGraphic } from "./RenderGraphic";
+import type { IDisposable } from "@itwin/core-bentley";
+import { dispose, disposeArray } from "@itwin/core-bentley";
+import type { CanvasDecorationList } from "./CanvasDecoration";
+import type { GraphicList, RenderGraphic } from "./RenderGraphic";
 
 /** A set of [[RenderGraphic]]s and [[CanvasDecoration]]s produced by [[Tool]]s and [[Decorator]]s, used to decorate the contents of a [[Viewport]].
  * @public

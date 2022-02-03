@@ -8,8 +8,9 @@ import * as sinon from "sinon";
 import { Rectangle } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
+import type { NineZoneDispatch} from "../../appui-layout-react";
 import {
-  addFloatingWidget, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
+  addFloatingWidget, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, PanelStateContext,
   PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
 } from "../../appui-layout-react";
 import * as NineZoneModule from "../../appui-layout-react/base/NineZone";

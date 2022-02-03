@@ -11,9 +11,12 @@ import classnames from "classnames";
 import * as React from "react";
 import { WebFontIcon } from "@itwin/core-react";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@itwin/core-frontend";
-import { DecimalPrecision, FormatterSpec, FormatTraits, FormatType, Parser, ParserSpec, UnitConversionSpec, UnitProps } from "@itwin/core-quantity";
-import { Input, InputProps } from "@itwin/itwinui-react";
+import type { QuantityFormatsChangedArgs, QuantityTypeArg } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import type { ParserSpec, UnitConversionSpec, UnitProps } from "@itwin/core-quantity";
+import { DecimalPrecision, FormatterSpec, FormatTraits, FormatType, Parser } from "@itwin/core-quantity";
+import type { InputProps } from "@itwin/itwinui-react";
+import { Input } from "@itwin/itwinui-react";
 
 /** Step function prototype for [[QuantityNumberInput]] component
  * @beta

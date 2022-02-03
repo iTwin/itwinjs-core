@@ -6,9 +6,9 @@
  * @module Core
  */
 
-import { IModelConnection } from "@itwin/core-frontend";
-import { NodeKey } from "@itwin/presentation-common";
-import { IpcRequestsHandler } from "./IpcRequestsHandler";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { NodeKey } from "@itwin/presentation-common";
+import type { IpcRequestsHandler } from "./IpcRequestsHandler";
 
 /**
  * Data structure that describes information used by [[StateTracker]] to identify node.

@@ -5,16 +5,19 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, SpatialClassifier, SpatialClassifiers } from "@itwin/core-common";
-import { DisplayStyleState } from "../DisplayStyleState";
+import type { Id64String } from "@itwin/core-bentley";
+import { compareStrings, compareStringsOrUndefined, Id64 } from "@itwin/core-bentley";
+import type { ClassifierTileTreeId, SpatialClassifier, SpatialClassifiers } from "@itwin/core-common";
+import { BatchType, compareIModelTileTreeIds, iModelTileTreeIdToString } from "@itwin/core-common";
+import type { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import type { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
-import { SceneContext } from "../ViewContext";
-import { ViewState } from "../ViewState";
-import {
-  DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
+import type { SceneContext } from "../ViewContext";
+import type { ViewState } from "../ViewState";
+import type {
+  DisclosedTileTreeSet, TileTree, TileTreeOwner, TileTreeSupplier} from "./internal";
+import { IModelTileTree, iModelTileTreeParamsFromJSON, TileTreeLoadStatus, TileTreeReference,
 } from "./internal";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {

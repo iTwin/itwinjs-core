@@ -6,10 +6,11 @@
  * @module Item
  */
 
-import { IModelApp, Tool } from "@itwin/core-frontend";
-import { OnItemExecutedFunc } from "@itwin/appui-abstract";
+import type { Tool } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import type { OnItemExecutedFunc } from "@itwin/appui-abstract";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
-import { ToolItemProps } from "./ItemProps";
+import type { ToolItemProps } from "./ItemProps";
 
 /** An Item that starts the execution of a Tool.
  * @public

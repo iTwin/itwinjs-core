@@ -6,12 +6,13 @@
  * @module Views
  */
 
-import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import type { Point3d, Vector3d } from "@itwin/core-geometry";
+import { Angle, Geometry, Matrix3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Tweens } from "@itwin/core-common";
-import { Animator, ViewAnimationOptions } from "./ViewAnimation";
+import type { Animator, ViewAnimationOptions } from "./ViewAnimation";
 import { ScreenViewport } from "./Viewport";
-import { ViewPose, ViewPose3d } from "./ViewPose";
-import { ViewState3d } from "./ViewState";
+import type { ViewPose, ViewPose3d } from "./ViewPose";
+import type { ViewState3d } from "./ViewState";
 /**
  * Compute an intermediate eye point as it swings around a moving target with rotating axes and varying distance to target.
  * (eye, target, distance) is redundant -- implementation problem is to figure out which to use for compatibility with subsequent view setup.

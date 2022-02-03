@@ -11,11 +11,12 @@ import * as React from "react";
 // eslint-disable-next-line no-duplicate-imports
 import { useLayoutEffect, useRef } from "react";
 import { assert } from "@itwin/core-bentley";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
+import type { PrimitiveValue, PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { useRerender } from "../../../common/UseRerender";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { UiComponents } from "../../../UiComponents";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
+import type { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { useRenderedStringValue } from "./PrimitivePropertyValueRenderer";
 
 /** @internal */

@@ -3,17 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 /** @packageDocumentation
  * @module Content
  */
 import { using } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
-import {
-  Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, RegisteredRuleset, Ruleset, traverseContent,
+import type { IModelConnection } from "@itwin/core-frontend";
+import type {
+  Content, InstanceKey, PageOptions, RegisteredRuleset, Ruleset} from "@itwin/presentation-common";
+import { DefaultContentDisplayTypes, KeySet, traverseContent,
 } from "@itwin/presentation-common";
-import { ContentDataProvider, FieldHierarchyRecord, PropertyRecordsBuilder } from "@itwin/presentation-components";
+import type { FieldHierarchyRecord} from "@itwin/presentation-components";
+import { ContentDataProvider, PropertyRecordsBuilder } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
 
 /**

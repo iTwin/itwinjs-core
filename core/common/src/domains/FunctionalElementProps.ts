@@ -6,7 +6,7 @@
  * @module Entities
  */
 
-import { ElementProps, RelatedElementProps } from "../ElementProps";
+import type { ElementProps, RelatedElementProps } from "../ElementProps";
 
 /** @public */
 export interface FunctionalElementProps extends ElementProps {

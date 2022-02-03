@@ -7,9 +7,10 @@
  */
 
 import * as React from "react";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import type { PrimitiveValue, PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
+import type { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer";
 
 /** Default Navigation Property Renderer

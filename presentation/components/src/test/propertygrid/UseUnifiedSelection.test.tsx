@@ -5,12 +5,14 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, isKeySet } from "@itwin/presentation-common/lib/cjs/test";
-import { ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler } from "@itwin/presentation-frontend";
+import type { ISelectionProvider, SelectionChangeEventArgs, SelectionHandler } from "@itwin/presentation-frontend";
+import { SelectionChangeType } from "@itwin/presentation-frontend";
 import { renderHook } from "@testing-library/react-hooks";
-import { IPresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection } from "../../presentation-components";
+import type { IPresentationPropertyDataProvider} from "../../presentation-components";
+import { usePropertyDataProviderWithUnifiedSelection } from "../../presentation-components";
 
 describe("usePropertyDataProviderWithUnifiedSelection", () => {
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();

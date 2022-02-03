@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RelationshipPathSpecification } from "./RelationshipPathSpecification";
+import type { RelationshipPathSpecification } from "./RelationshipPathSpecification";
 
 /**
  * This sub-specification allows joining the primary node instance with any number of related instances and creating

@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorDef, Environment, EnvironmentProps, ImageSource, ImageSourceFormat, RenderTexture, SkyBoxImageType } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
+import type { EnvironmentProps} from "@itwin/core-common";
+import { ColorDef, Environment, ImageSource, ImageSourceFormat, RenderTexture, SkyBoxImageType } from "@itwin/core-common";
+import type { IModelConnection } from "../../../IModelConnection";
 import { ScreenViewport } from "../../../Viewport";
 import { IModelApp } from "../../../IModelApp";
 import { SpatialViewState } from "../../../SpatialViewState";

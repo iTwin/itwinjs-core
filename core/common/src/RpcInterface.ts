@@ -7,9 +7,10 @@
  */
 
 import * as semver from "semver";
-import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
+import type { RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
+import { RpcConfiguration } from "./rpc/core/RpcConfiguration";
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
-import { RpcRequest } from "./rpc/core/RpcRequest";
+import type { RpcRequest } from "./rpc/core/RpcRequest";
 import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
 
 /** @internal */

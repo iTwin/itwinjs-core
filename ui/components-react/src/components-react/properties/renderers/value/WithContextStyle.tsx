@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { PropertyValueRendererContext } from "../../ValueRendererManager";
+import type { PropertyValueRendererContext } from "../../ValueRendererManager";
 
 /** Wraps a React component with a span element with a given style attribute
  * @public

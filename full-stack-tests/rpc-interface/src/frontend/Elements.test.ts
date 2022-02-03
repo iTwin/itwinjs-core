@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { Id64Set, Id64String } from "@itwin/core-bentley";
-import { ElementProps, QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import type { Id64Set, Id64String } from "@itwin/core-bentley";
+import type { ElementProps} from "@itwin/core-common";
+import { QueryRowFormat } from "@itwin/core-common";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SpatialModelState } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;

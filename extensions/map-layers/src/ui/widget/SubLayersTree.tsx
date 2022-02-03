@@ -4,19 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
-import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import type { ScreenViewport } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
-import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
-import {
-  AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, HighlightableTreeProps, ITreeDataProvider,
+import type { NodeCheckboxRenderProps} from "@itwin/core-react";
+import { CheckBoxState, ImageCheckBox, useDisposable, WebFontIcon } from "@itwin/core-react";
+import type {
+  AbstractTreeNodeLoaderWithProvider, DelayLoadedTreeNodeItem, HighlightableTreeProps, ITreeDataProvider,
   MutableTreeModel,
-  MutableTreeModelNode,
-  SelectionMode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeEventHandler, TreeImageLoader, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem, TreeNodeLoader,
-  TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useTreeModel,
+  MutableTreeModelNode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeModel, TreeModelChanges, TreeNodeItem, TreeNodeRendererProps, TreeRendererProps} from "@itwin/components-react";
+import { ControlledTree,
+  SelectionMode, TreeEventHandler, TreeImageLoader, TreeModelSource, TreeNodeLoader,
+  TreeNodeRenderer, TreeRenderer, useTreeModel,
 } from "@itwin/components-react";
-import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import type { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import { Input } from "@itwin/itwinui-react";
-import { StyleMapLayerSettings } from "../Interfaces";
+import type { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./SubLayersTree.scss";

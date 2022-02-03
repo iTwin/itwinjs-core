@@ -5,13 +5,16 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
-import {
-  AxisAlignedBox3d, Base64EncodedString, ElementAspectProps, ElementProps, EntityProps, IModel, IModelError, ModelProps, PrimitiveTypeCode,
-  PropertyMetaData, RelatedElement, SubCategoryProps,
+import type { Id64String} from "@itwin/core-bentley";
+import { Id64, IModelStatus, Logger } from "@itwin/core-bentley";
+import type {
+  AxisAlignedBox3d, ElementAspectProps, ElementProps, EntityProps, ModelProps,
+  PropertyMetaData, SubCategoryProps} from "@itwin/core-common";
+import { Base64EncodedString, IModel, IModelError, PrimitiveTypeCode, RelatedElement,
 } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
+import type { ElementAspect, ElementMultiAspect, Entity, Model, Relationship, RelationshipProps, SourceAndTarget} from "@itwin/core-backend";
+import { IModelDb, SubCategory } from "@itwin/core-backend";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 

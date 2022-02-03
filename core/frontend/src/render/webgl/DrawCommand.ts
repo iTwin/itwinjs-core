@@ -6,18 +6,20 @@
  * @module WebGL
  */
 
-import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { BranchState } from "./BranchState";
-import { CachedGeometry } from "./CachedGeometry";
-import { ClipVolume } from "./ClipVolume";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, Id64 } from "@itwin/core-bentley";
+import type { BranchState } from "./BranchState";
+import type { CachedGeometry } from "./CachedGeometry";
+import type { ClipVolume } from "./ClipVolume";
 import { isFeatureHilited } from "./FeatureOverrides";
-import { Batch, Branch } from "./Graphic";
-import { UniformHandle } from "./UniformHandle";
-import { Primitive } from "./Primitive";
-import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
-import { ShaderProgramExecutor } from "./ShaderProgram";
+import type { Batch, Branch } from "./Graphic";
+import type { UniformHandle } from "./UniformHandle";
+import type { Primitive } from "./Primitive";
+import type { Pass, RenderOrder} from "./RenderFlags";
+import { RenderPass } from "./RenderFlags";
+import type { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
-import { Hilites, Target } from "./Target";
+import type { Hilites, Target } from "./Target";
 import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 

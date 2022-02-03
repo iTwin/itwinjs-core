@@ -7,10 +7,12 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MockRender } from "@itwin/core-frontend";
-import { ContentLayoutProps, StandardContentLayouts } from "@itwin/appui-abstract";
-import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
-  ContentViewManager, CoreTools, FloatingContentControl, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, SplitPane,
+import type { ContentLayoutProps} from "@itwin/appui-abstract";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
+import type {
+  ConfigurableCreateInfo, FrontstageProps} from "../../appui-react";
+import { ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
+  ContentViewManager, CoreTools, FloatingContentControl, Frontstage, FrontstageManager, FrontstageProvider, SplitPane,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 

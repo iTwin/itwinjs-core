@@ -8,11 +8,11 @@
 
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "../utils/FormatEnums";
-import { Format } from "./Format";
-import { InvertedUnit } from "./InvertedUnit";
-import { Schema } from "./Schema";
-import { Unit } from "./Unit";
+import type { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "../utils/FormatEnums";
+import type { Format } from "./Format";
+import type { InvertedUnit } from "./InvertedUnit";
+import type { Schema } from "./Schema";
+import type { Unit } from "./Unit";
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.

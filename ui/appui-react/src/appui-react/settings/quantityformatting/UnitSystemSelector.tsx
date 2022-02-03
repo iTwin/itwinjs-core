@@ -8,8 +8,9 @@
 
 import * as React from "react";
 import { UiFramework } from "../../UiFramework";
-import { UnitSystemKey } from "@itwin/core-quantity";
-import { Select, SelectOption } from "@itwin/itwinui-react";
+import type { UnitSystemKey } from "@itwin/core-quantity";
+import type { SelectOption } from "@itwin/itwinui-react";
+import { Select } from "@itwin/itwinui-react";
 
 /** Props for [[UnitSystemSelector]]
  * @beta

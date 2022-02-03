@@ -9,10 +9,11 @@
 import "./Zone.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, RectangleProps } from "@itwin/core-react";
+import type { CommonProps, RectangleProps } from "@itwin/core-react";
 import { CssProperties } from "../utilities/Css";
-import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
-import { WidgetZoneId } from "./manager/Zones";
+import type { SafeAreaInsets} from "../utilities/SafeAreaInsets";
+import { SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
+import type { WidgetZoneId } from "./manager/Zones";
 
 /** Properties of [[Zone]] component.
  * @internal

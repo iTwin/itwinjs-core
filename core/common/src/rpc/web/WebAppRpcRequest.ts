@@ -9,15 +9,16 @@
 import "@ungap/url-search-params/index";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
-import { RpcInterface } from "../../RpcInterface";
+import type { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { MarshalingBinaryMarker, RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
+import type { RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcMultipart } from "./RpcMultipart";
-import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import { SerializedRpcActivity } from "../core/RpcInvocation";
+import type { HttpServerRequest, HttpServerResponse} from "./WebAppRpcProtocol";
+import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import type { SerializedRpcActivity } from "../core/RpcInvocation";
 
 /** @internal */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention

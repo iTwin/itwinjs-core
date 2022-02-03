@@ -7,10 +7,13 @@
  */
 
 // Cspell:ignore popout
-import { castDraft, Draft, produce } from "immer";
-import { PointProps } from "@itwin/appui-abstract";
-import { IconSpec, Point, Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
-import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
+import type { Draft} from "immer";
+import { castDraft, produce } from "immer";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { IconSpec, RectangleProps, SizeProps } from "@itwin/core-react";
+import { Point, Rectangle } from "@itwin/core-react";
+import type { HorizontalPanelSide, PanelSide, VerticalPanelSide } from "../widget-panels/Panel";
+import { isHorizontalPanelSide, panelSides } from "../widget-panels/Panel";
 import { assert } from "@itwin/core-bentley";
 import { getUniqueId } from "./NineZone";
 

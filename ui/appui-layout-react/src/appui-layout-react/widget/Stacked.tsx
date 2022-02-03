@@ -9,10 +9,12 @@
 import "./Stacked.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, NoChildrenProps, Point, Rectangle, RectangleProps } from "@itwin/core-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { CommonProps, NoChildrenProps, Point, RectangleProps } from "@itwin/core-react";
+import { Rectangle } from "@itwin/core-react";
 import { DisabledResizeHandles, DisabledResizeHandlesHelpers } from "../utilities/DisabledResizeHandles";
-import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
+import type { ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
+import { ResizeDirection, ResizeGrip } from "./rectangular/ResizeGrip";
 
 /** Available [[Stacked]] widget horizontal anchors.
  * @deprecated

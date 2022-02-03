@@ -6,14 +6,14 @@
  * @module RpcInterface
  */
 
-import { Id64Array } from "@itwin/core-bentley";
-import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
-import { TileContentIdentifier } from "../CloudStorageTileCache";
-import { IModelRpcProps } from "../IModel";
+import type { Id64Array } from "@itwin/core-bentley";
+import type { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
+import type { TileContentIdentifier } from "../CloudStorageTileCache";
+import type { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
-import { IModelTileTreeProps, TileContentSource, TileVersionInfo } from "../TileProps";
+import type { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
+import type { IModelTileTreeProps, TileContentSource, TileVersionInfo } from "../TileProps";
 
 /** @public */
 export abstract class IModelTileRpcInterface extends RpcInterface {

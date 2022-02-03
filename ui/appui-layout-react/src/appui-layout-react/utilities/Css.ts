@@ -6,8 +6,9 @@
  * @module Utilities
  */
 
-import { PointProps } from "@itwin/appui-abstract";
-import { Rectangle, RectangleProps } from "@itwin/core-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { RectangleProps } from "@itwin/core-react";
+import { Rectangle } from "@itwin/core-react";
 
 /** CSS helpers.
  * @internal

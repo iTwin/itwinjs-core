@@ -4,16 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
+import type { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { ECObjectsError } from "../../Exception";
-import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
-import { CustomAttributeSet } from "../../Metadata/CustomAttribute";
-import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass";
+import type { MutableClass} from "../../Metadata/Class";
+import { ECClass, StructClass } from "../../Metadata/Class";
+import type { CustomAttributeSet } from "../../Metadata/CustomAttribute";
+import type { MutableEntityClass } from "../../Metadata/EntityClass";
+import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
+import type { MutableSchema} from "../../Metadata/Schema";
+import { Schema } from "../../Metadata/Schema";
 import { SchemaItem } from "../../Metadata/SchemaItem";
 import { SchemaKey } from "../../SchemaKey";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";

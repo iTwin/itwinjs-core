@@ -7,8 +7,9 @@
  */
 
 import { ProcessDetector } from "@itwin/core-bentley";
-import {
-  GraphicsDriverBugs, WebGLContext, WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus,
+import type {
+  GraphicsDriverBugs, WebGLContext, WebGLRenderCompatibilityInfo} from "./RenderCompatibility";
+import { WebGLFeature, WebGLRenderCompatibilityStatus,
 } from "./RenderCompatibility";
 
 /** @internal */

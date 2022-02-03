@@ -5,9 +5,11 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
+import type { IDisposable} from "@itwin/core-bentley";
+import { assert, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
+import type { DbQueryRequest, QueryBinder, QueryOptions} from "@itwin/core-common";
+import { ECSqlReader, IModelError, QueryOptionsBuilder } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";

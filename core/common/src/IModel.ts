@@ -6,17 +6,21 @@
  * @module iModels
  */
 
-import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@itwin/core-bentley";
-import {
-  Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps,
-  YawPitchRollAngles, YawPitchRollProps,
+import type { GuidString, Id64String, Mutable} from "@itwin/core-bentley";
+import { assert, BeEvent, GeoServiceStatus, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import type {
+  Angle, Range3dProps, XYAndZ, XYZProps, YawPitchRollProps} from "@itwin/core-geometry";
+import { AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d,
+  YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import { ChangesetIdWithIndex } from "./ChangesetProps";
-import { Cartographic, CartographicProps } from "./geometry/Cartographic";
-import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
-import { AxisAlignedBox3d } from "./geometry/Placement";
+import type { ChangesetIdWithIndex } from "./ChangesetProps";
+import type { CartographicProps } from "./geometry/Cartographic";
+import { Cartographic } from "./geometry/Cartographic";
+import type { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
+import { GeographicCRS } from "./geometry/CoordinateReferenceSystem";
+import type { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
-import { ThumbnailProps } from "./Thumbnail";
+import type { ThumbnailProps } from "./Thumbnail";
 
 /** The properties to open a connection to an iModel for RPC operations.
  * @public

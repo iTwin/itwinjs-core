@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ChildProcess, spawn, StdioOptions } from "child_process";
+import type { ChildProcess, StdioOptions } from "child_process";
+import { spawn } from "child_process";
 import * as inspector from "inspector";
 
 /**

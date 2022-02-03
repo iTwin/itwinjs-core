@@ -2,18 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as enzyme from "enzyme";
-import { createStore, Store } from "redux";
-import * as sinon from "sinon";
+import type * as enzyme from "enzyme";
+import type { Store } from "redux";
+import { createStore } from "redux";
+import type * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 
-import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
-import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
+import type { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo} from "@itwin/appui-abstract";
+import { PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
+import type { UiStateStorage, UiStateStorageResult} from "@itwin/core-react";
+import { UiStateStorageStatus } from "@itwin/core-react";
 
-import {
-  ActionsUnion, combineReducers, ContentGroup, createAction, DeepReadonly, FrameworkReducer,
-  FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
+import type {
+  ActionsUnion, DeepReadonly,
+  FrameworkState} from "../appui-react";
+import { combineReducers, ContentGroup, createAction, FrameworkReducer, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
 } from "../appui-react";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 

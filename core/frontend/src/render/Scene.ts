@@ -6,11 +6,11 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { SpatialClassifier } from "@itwin/core-common";
-import { RenderGraphic } from "./RenderGraphic";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
-import { RenderTextureDrape } from "./RenderSystem";
+import type { Id64String } from "@itwin/core-bentley";
+import type { SpatialClassifier } from "@itwin/core-common";
+import type { RenderGraphic } from "./RenderGraphic";
+import type { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import type { RenderTextureDrape } from "./RenderSystem";
 
 /** Describes the spatial classification applied to a [[Scene]].
  * @internal

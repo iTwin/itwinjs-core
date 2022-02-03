@@ -6,7 +6,8 @@
  * @module Core
  */
 
-import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set } from "@itwin/core-bentley";
 
 /**
  * Possible variable value types

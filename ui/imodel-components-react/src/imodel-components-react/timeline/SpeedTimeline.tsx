@@ -10,7 +10,7 @@ import "./SpeedTimeline.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Slider } from "@itwin/itwinui-react";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 
 // component is in alpha state - it may change after usability testing - test coverage not complete
 

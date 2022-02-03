@@ -6,17 +6,22 @@
  * @module LinearReferencing
  */
 
-import { assert, DbResult, Id64String } from "@itwin/core-bentley";
-import { ECSqlStatement, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@itwin/core-backend";
-import { Code, ElementProps, GeometricElement3dProps, IModelError, PhysicalElementProps, RelatedElement } from "@itwin/core-common";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, DbResult } from "@itwin/core-bentley";
+import type { ECSqlStatement, ElementAspect, IModelDb} from "@itwin/core-backend";
+import { PhysicalElement, SpatialLocationElement } from "@itwin/core-backend";
+import type { ElementProps, GeometricElement3dProps, PhysicalElementProps} from "@itwin/core-common";
+import { Code, IModelError, RelatedElement } from "@itwin/core-common";
+import type { LinearLocationReference, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationAspectProps,
+  LinearlyReferencedAtLocationProps, LinearlyReferencedFromToLocationAspectProps, LinearlyReferencedFromToLocationProps, QueryParams, ReferentElementProps} from "@itwin/linear-referencing-common";
 import {
-  ComparisonOption, LinearLocationReference, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationAspectProps,
-  LinearlyReferencedAtLocationProps, LinearlyReferencedFromToLocationAspectProps, LinearlyReferencedFromToLocationProps,
-  LinearlyReferencedLocationType, QueryParams, ReferentElementProps,
+  ComparisonOption,
+  LinearlyReferencedLocationType,
 } from "@itwin/linear-referencing-common";
 import { LinearlyReferencedAtLocation, LinearlyReferencedFromToLocation } from "./LinearReferencingElementAspects";
+import type { ILinearlyLocatedAttributesElement} from "./LinearReferencingRelationships";
 import {
-  ILinearLocationLocatesElement, ILinearlyLocatedAlongILinearElement, ILinearlyLocatedAttributesElement, IReferentReferencesElement,
+  ILinearLocationLocatesElement, ILinearlyLocatedAlongILinearElement, IReferentReferencesElement,
 } from "./LinearReferencingRelationships";
 
 /** Base class for Spatial Location Element subclasses representing properties whose value is located along a Linear-Element and only applies to a portion of an Element.

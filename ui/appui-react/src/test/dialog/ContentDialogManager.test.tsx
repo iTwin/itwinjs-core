@@ -6,7 +6,8 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { ConfigurableUiManager, ContentDialog, ContentDialogManager, ContentDialogRenderer, DialogChangedEventArgs } from "../../appui-react";
+import type { DialogChangedEventArgs } from "../../appui-react";
+import { ConfigurableUiManager, ContentDialog, ContentDialogManager, ContentDialogRenderer } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ContentDialogManager", () => {

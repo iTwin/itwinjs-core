@@ -10,12 +10,15 @@ const copyrightNotice = 'Copyright © 2017-2022 <a href="https://www.bentley.com
 
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
-import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
-import {
-  AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
+import type { AccessToken, GuidString} from "@itwin/core-bentley";
+import { BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, Logger } from "@itwin/core-bentley";
+import type {
+  AuthorizationClient, Localization, RealityDataAccess, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity} from "@itwin/core-common";
+import { IModelStatus, RpcConfiguration,
 } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
+import type { WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
+import { queryRenderCompatibility } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";
@@ -24,7 +27,7 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
-import { FrontendHubAccess } from "./FrontendHubAccess";
+import type { FrontendHubAccess } from "./FrontendHubAccess";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
@@ -35,7 +38,8 @@ import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
-import { MapLayerFormatRegistry, MapLayerOptions, TileAdmin } from "./tile/internal";
+import type { MapLayerOptions} from "./tile/internal";
+import { MapLayerFormatRegistry, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as idleTool from "./tools/IdleTool";
@@ -44,7 +48,7 @@ import * as selectTool from "./tools/SelectTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
-import { UserPreferencesAccess } from "./UserPreferences";
+import type { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
 

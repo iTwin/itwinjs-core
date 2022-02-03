@@ -6,12 +6,13 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyProperty, Constant, CustomAttributeClass, CustomAttributeContainerProps,
-  ECClass, EntityClass, Enumeration, Format, InvertedUnit, ISchemaPartVisitor, KindOfQuantity, Mixin,
-  Phenomenon, Property, PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem,
-  StructClass, Unit, UnitSystem,
+import type { AnyClass, AnyProperty, Constant, CustomAttributeClass, CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, ISchemaPartVisitor, KindOfQuantity, Mixin,
+  Phenomenon, PropertyCategory, RelationshipClass, SchemaItem,
+  StructClass, Unit, UnitSystem} from "@itwin/ecschema-metadata";
+import {
+  ECClass, Property, RelationshipConstraint, Schema,
 } from "@itwin/ecschema-metadata";
-import { ISchemaComparer } from "./SchemaComparer";
+import type { ISchemaComparer } from "./SchemaComparer";
 
 /**
  * An ISchemaPartVisitor interface implementation that is used to compare to Schemas.

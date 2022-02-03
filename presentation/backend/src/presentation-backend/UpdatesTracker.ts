@@ -6,11 +6,13 @@
  * @module Core
  */
 
-import { IDisposable, Logger } from "@itwin/core-bentley";
+import type { IDisposable} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { IModelDb, IpcHost } from "@itwin/core-backend";
-import { PresentationIpcEvents, UpdateInfoJSON } from "@itwin/presentation-common";
+import type { UpdateInfoJSON } from "@itwin/presentation-common";
+import { PresentationIpcEvents } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
-import { NativePlatformDefinition } from "./NativePlatform";
+import type { NativePlatformDefinition } from "./NativePlatform";
 
 /**
  * Configuration properties for [[UpdatesTracker]].

@@ -5,9 +5,10 @@
 import "./Scrubber.scss";
 import * as React from "react";
 import { Slider } from "@itwin/itwinui-react";
-import { CommonProps, useEventListener } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { useEventListener } from "@itwin/core-react";
 import { toDateString, toTimeString } from "@itwin/components-react";
-import { TimelineDateMarkerProps } from "./TimelineComponent";
+import type { TimelineDateMarkerProps } from "./TimelineComponent";
 
 /**
  * @internal

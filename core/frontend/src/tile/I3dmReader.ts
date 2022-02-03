@@ -5,14 +5,17 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import type { ByteStream, Id64String} from "@itwin/core-bentley";
+import { JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
-import { ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { RenderSystem } from "../render/RenderSystem";
-import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "./internal";
+import type { ElementAlignedBox3d} from "@itwin/core-common";
+import { Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
+import type { IModelConnection } from "../IModelConnection";
+import type { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import type { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import type { RenderSystem } from "../render/RenderSystem";
+import type { BatchedTileIdMap, GltfReaderResult, ShouldAbortReadGltf } from "./internal";
+import { GltfReader, GltfReaderProps } from "./internal";
 
 function setTransform(transforms: Float32Array, index: number, rotation: Matrix3d, origin: Point3d): void {
   const i = index * 12;

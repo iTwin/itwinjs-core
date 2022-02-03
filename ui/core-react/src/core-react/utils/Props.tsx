@@ -6,8 +6,8 @@
  * @module Utilities
  */
 
-import * as React from "react";
-import { Omit } from "./typeUtils";
+import type * as React from "react";
+import type { Omit } from "./typeUtils";
 
 /** Props used by components that expect class name to be passed in.
  * @public

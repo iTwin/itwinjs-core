@@ -6,9 +6,11 @@
  * @module IModelConnection
  */
 
-import { BentleyError, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
-import {
-  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
+import type { GuidString} from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
+import type {
+  IModelConnectionProps, IModelRpcOpenProps, RpcNotFoundResponse} from "@itwin/core-common";
+import { IModelError, IModelReadRpcInterface, IModelVersion, RpcManager, RpcOperation,
   RpcRequest, RpcRequestEvent,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";

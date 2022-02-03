@@ -7,18 +7,19 @@
  */
 
 import * as React from "react";
-import { XAndY } from "@itwin/core-geometry";
+import type { XAndY } from "@itwin/core-geometry";
 import { IModelApp } from "@itwin/core-frontend";
-import {
+import type {
   AbstractMenuItemProps, AbstractToolbarProps, DialogLayoutDataProvider, DialogProps, IMatch,
   OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc,
-  Primitives, PropertyDescription, PropertyRecord, RelativePosition, UiAdmin,
+  Primitives, PropertyDescription, PropertyRecord} from "@itwin/appui-abstract";
+import { RelativePosition, UiAdmin,
 } from "@itwin/appui-abstract";
 import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { CursorInformation } from "../cursor/CursorInformation";
 import { PopupManager } from "../popup/PopupManager";
-import { CursorMenuData } from "../redux/SessionState";
+import type { CursorMenuData } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";

@@ -8,9 +8,11 @@
 
 import "./EditorContainer.scss";
 import * as React from "react";
-import { PropertyRecord, PropertyValue, SpecialKey, UiAdmin } from "@itwin/appui-abstract";
-import { CommonProps } from "@itwin/core-react";
-import { AsyncErrorMessage, PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import type { PropertyRecord, PropertyValue} from "@itwin/appui-abstract";
+import { SpecialKey, UiAdmin } from "@itwin/appui-abstract";
+import type { CommonProps } from "@itwin/core-react";
+import type { AsyncErrorMessage, PropertyEditorBase} from "./PropertyEditorManager";
+import { PropertyEditorManager } from "./PropertyEditorManager";
 
 /** Arguments for the Property Updated event callback
  * @public

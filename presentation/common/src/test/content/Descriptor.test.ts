@@ -4,14 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
 import { CategoryDescription } from "../../presentation-common/content/Category";
+import type { DescriptorJSON, DescriptorSource, SelectClassInfoJSON} from "../../presentation-common/content/Descriptor";
 import {
-  Descriptor, DescriptorJSON, DescriptorSource, SelectClassInfo, SelectClassInfoJSON, SortDirection,
+  Descriptor, SelectClassInfo, SortDirection,
 } from "../../presentation-common/content/Descriptor";
-import { Field, FieldDescriptorType } from "../../presentation-common/content/Fields";
+import type { Field} from "../../presentation-common/content/Fields";
+import { FieldDescriptorType } from "../../presentation-common/content/Fields";
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
-import { CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON } from "../../presentation-common/EC";
+import type { CompressedClassInfoJSON, RelatedClassInfoJSON } from "../../presentation-common/EC";
+import { RelatedClassInfo } from "../../presentation-common/EC";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
   createTestSelectClassInfo, createTestSimpleContentField,

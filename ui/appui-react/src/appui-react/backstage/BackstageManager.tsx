@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { BeEvent } from "@itwin/core-bentley";
-import { IconSpec } from "@itwin/core-react";
+import type { IconSpec } from "@itwin/core-react";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { UiFramework } from "../UiFramework";
 import { Backstage } from "./Backstage";

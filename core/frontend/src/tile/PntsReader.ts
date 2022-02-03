@@ -6,15 +6,17 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64String, Logger, utf8ToString } from "@itwin/core-bentley";
+import type { ByteStream, Id64String} from "@itwin/core-bentley";
+import { Logger, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
-import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
+import type { ElementAlignedBox3d} from "@itwin/core-common";
+import { BatchType, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { IModelConnection } from "../IModelConnection";
+import type { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderSystem } from "../render/RenderSystem";
+import type { RenderGraphic } from "../render/RenderGraphic";
+import type { RenderSystem } from "../render/RenderSystem";
 
 /** Schema for the [3DTILES_draco_point_compression](https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_draco_point_compression) extension. */
 interface DracoPointCloud {

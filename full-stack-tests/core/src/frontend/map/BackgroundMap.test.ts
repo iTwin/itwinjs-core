@@ -4,10 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
-import { IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
+import type { BackgroundMapProps} from "@itwin/core-common";
+import { BackgroundMapSettings, ColorDef } from "@itwin/core-common";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { Pixel, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import type { TestViewport } from "../TestViewport";
+import { testOnScreenViewport } from "../TestViewport";
 
 // Set of tests require a BingMap key to be defined
 describe("Background map (#integration)", () => {

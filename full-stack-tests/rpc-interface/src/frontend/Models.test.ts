@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ModelProps } from "@itwin/core-common";
-import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import type { ModelProps } from "@itwin/core-common";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SpatialModelState } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;

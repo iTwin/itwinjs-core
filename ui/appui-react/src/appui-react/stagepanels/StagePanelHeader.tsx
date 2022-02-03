@@ -10,8 +10,8 @@
 import "./StagePanelHeader.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { StagePanelLocation } from "@itwin/appui-abstract";
-import { CommonProps } from "@itwin/core-react";
+import type { StagePanelLocation } from "@itwin/appui-abstract";
+import type { CommonProps } from "@itwin/core-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StagePanelState } from "./StagePanelDef";
 

@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DOMParser } from "@xmldom/xmldom";
-import { ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
+import type { ISchemaLocater, SchemaContext, SchemaKey, SchemaMatchType} from "@itwin/ecschema-metadata";
+import { Schema, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
 
 export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): any {
   return {

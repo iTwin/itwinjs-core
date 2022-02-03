@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Parser, UnitProps } from "@itwin/core-quantity";
+import type { UnitProps } from "@itwin/core-quantity";
+import { Parser } from "@itwin/core-quantity";
 import { assert } from "chai";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 
-import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
+import type { OverrideFormatEntry, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
+import { QuantityFormatter, QuantityType } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {

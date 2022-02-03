@@ -6,12 +6,13 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
-import { LabelDefinition, NodePathElement } from "@itwin/presentation-common";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { NodePathElement } from "@itwin/presentation-common";
+import { LabelDefinition } from "@itwin/presentation-common";
 import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@itwin/presentation-common/lib/cjs/test";
-import { PageOptions } from "@itwin/components-react";
+import type { PageOptions } from "@itwin/components-react";
 import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
-import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
+import type { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 

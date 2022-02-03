@@ -6,9 +6,15 @@
  * @module MapLayers
  */
 
-import { MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { RequestBasicCredentials } from "../../request/Request";
-import { IModelConnection } from "../../IModelConnection";
+import type { MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
+import type { RequestBasicCredentials } from "../../request/Request";
+import type { IModelConnection } from "../../IModelConnection";
+import type {
+  MapLayerAuthenticationInfo,
+  MapLayerImageryProvider,
+  MapLayerSourceValidation,
+  MapLayerTileTreeReference,
+  WmtsCapability} from "../internal";
 import {
   ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
@@ -16,18 +22,13 @@ import {
   BingMapsImageryLayerProvider,
   ImageryMapLayerTreeReference,
   MapBoxLayerImageryProvider,
-  MapLayerAuthenticationInfo,
   MapLayerAuthType,
   MapLayerFormat,
-  MapLayerImageryProvider,
   MapLayerSourceStatus,
-  MapLayerSourceValidation,
-  MapLayerTileTreeReference,
   TileUrlImageryProvider,
   WmsCapabilities,
   WmsMapLayerImageryProvider,
   WmtsCapabilities,
-  WmtsCapability,
   WmtsMapLayerImageryProvider,
 } from "../internal";
 

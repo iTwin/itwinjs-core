@@ -8,9 +8,11 @@
 
 import "./MenuButton.scss";
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { ContextMenu, Icon, Size, SizeProps } from "@itwin/core-react";
-import { SquareButton, SquareButtonProps } from "./SquareButton";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { SizeProps } from "@itwin/core-react";
+import { ContextMenu, Icon, Size } from "@itwin/core-react";
+import type { SquareButtonProps } from "./SquareButton";
+import { SquareButton } from "./SquareButton";
 
 /** @alpha */
 export interface MenuButtonProps extends SquareButtonProps {

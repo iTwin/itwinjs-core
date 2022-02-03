@@ -6,8 +6,8 @@
  * @module Geometry
  */
 
-import { BentleyStatus, Id64Array } from "@itwin/core-bentley";
-import { XYZProps } from "@itwin/core-geometry";
+import type { BentleyStatus, Id64Array } from "@itwin/core-bentley";
+import type { XYZProps } from "@itwin/core-geometry";
 
 /** Specify whether to accumulate volumes, areas, or lengths for the supplied elements.
  * @public

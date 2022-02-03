@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
-import { ScreenViewport } from "../../Viewport";
-import { FrameStats } from "../../render/FrameStats";
+import type { ScreenViewport } from "../../Viewport";
+import type { FrameStats } from "../../render/FrameStats";
 import { openBlankViewport } from "../openBlankViewport";
 
 describe("FrameStats", () => {

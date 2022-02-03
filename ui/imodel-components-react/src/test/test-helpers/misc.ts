@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as sinon from "sinon";
+import type * as sinon from "sinon";
 import { expect } from "chai";
 import { act, fireEvent, waitFor } from "@testing-library/react";
 

@@ -7,14 +7,15 @@
  * @module Elements
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
+import type { ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps,
+  SynchronizationConfigLinkProps} from "@itwin/core-common";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
-  SynchronizationConfigLinkProps,
+  BisCodeSpec, Code, CodeScopeSpec, IModel, RelatedElement,
 } from "@itwin/core-common";
 import { InformationReferenceElement, UrlLink } from "./Element";
-import { IModelDb } from "./IModelDb";
+import type { IModelDb } from "./IModelDb";
 import { ExternalSourceAttachmentAttachesSource, ExternalSourceIsInRepository } from "./NavigationRelationship";
 
 /** An ExternalSource refers to an 'information container' found in a repository. In some cases, the container is the entire repository.

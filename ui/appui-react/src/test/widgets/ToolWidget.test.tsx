@@ -10,8 +10,9 @@ import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { render } from "@testing-library/react";
+import type { AnyWidgetProps} from "../../appui-react";
 import {
-  ActionItemButton, AnyWidgetProps, CommandItemDef, CoreTools, FrontstageManager, GroupButton, GroupItemDef, ItemList, ToolbarDragInteractionContext,
+  ActionItemButton, CommandItemDef, CoreTools, FrontstageManager, GroupButton, GroupItemDef, ItemList, ToolbarDragInteractionContext,
   ToolButton, ToolWidget, ToolWidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";

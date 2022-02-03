@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
+import type { AccessToken, GuidString} from "@itwin/core-bentley";
+import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
-import { BriefcaseManager, ChangedElementsDb, IModelHost, IModelJsFs, ProcessChangesetOptions, SnapshotDb } from "@itwin/core-backend";
+import type { ProcessChangesetOptions} from "@itwin/core-backend";
+import { BriefcaseManager, ChangedElementsDb, IModelHost, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
 import { ChangedElementsManager } from "@itwin/core-backend/lib/cjs/ChangedElementsManager";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";

@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { AnimationBranchStates } from "./render/GraphicBranch";
+import type { IModelAppOptions } from "./IModelApp";
+import { IModelApp } from "./IModelApp";
+import type { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { ViewRect } from "./ViewRect";

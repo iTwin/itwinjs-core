@@ -4,13 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64 } from "@itwin/core-bentley";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
+import type { GeometricElementProps, GeometryStreamProps} from "@itwin/core-common";
 import {
-  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
+  BriefcaseIdValue, Code, ColorDef, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import type { ECSqlStatement, Element, IModelDb} from "@itwin/core-backend";
+import { DrawingCategory, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 

@@ -10,11 +10,12 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
 import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@itwin/appui-layout-react";
-import {
-  ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, FrameworkStagePanel, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps,
+import type {
+  ConfigurableCreateInfo, FrontstageProps} from "../../appui-react";
+import { ConfigurableUiManager, CoreTools, FrameworkStagePanel, Frontstage, FrontstageComposer, FrontstageManager,
   FrontstageProvider, SplitterPaneTarget, StagePanel, Widget, WidgetControl, WidgetDef,
 } from "../../appui-react";
-import { StagePanelRuntimeProps } from "../../appui-react/stagepanels/StagePanel";
+import type { StagePanelRuntimeProps } from "../../appui-react/stagepanels/StagePanel";
 import { StagePanelDef, StagePanelState } from "../../appui-react/stagepanels/StagePanelDef";
 import { UiFramework } from "../../appui-react/UiFramework";
 import { UiShowHideManager } from "../../appui-react/utils/UiShowHideManager";

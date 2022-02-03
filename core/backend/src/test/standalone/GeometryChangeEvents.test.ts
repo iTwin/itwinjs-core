@@ -5,8 +5,9 @@
 import { expect } from "chai";
 import { CompressedId64Set, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { GeometricElement3dProps, ModelGeometryChangesProps} from "@itwin/core-common";
 import {
-  Code, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, SubCategoryAppearance,
+  Code, ColorByName, GeometryStreamBuilder, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import {
   IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,

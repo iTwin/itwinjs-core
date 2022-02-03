@@ -5,9 +5,11 @@
 
 import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
-import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@itwin/core-common";
+import type { DynamicGraphicsRequest3dProps, ElementGeometryDataEntry, ElementGraphicsRequestProps} from "@itwin/core-common";
+import { CurrentImdlVersion, ElementGeometry, GeometryStreamIterator } from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
-import { GeometricElement3d, SnapshotDb } from "../../core-backend";
+import type { SnapshotDb } from "../../core-backend";
+import { GeometricElement3d } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ElementGraphics", () => {

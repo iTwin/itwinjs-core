@@ -9,7 +9,8 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
-import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemId, ToolbarItemUtilities } from "./ToolbarItem";
+import type { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemId} from "./ToolbarItem";
+import { ToolbarItemUtilities } from "./ToolbarItem";
 
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 

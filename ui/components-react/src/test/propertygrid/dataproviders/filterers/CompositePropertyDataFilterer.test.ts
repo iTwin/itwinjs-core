@@ -5,14 +5,15 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 import {
   CompositeFilterType, CompositePropertyDataFilterer,
 } from "../../../../components-react/propertygrid/dataproviders/filterers/CompositePropertyDataFilterer";
+import type { IPropertyDataFilterer} from "../../../../components-react/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
 import {
-  FilteredType, IPropertyDataFilterer, PropertyFilterChangeEvent,
+  FilteredType, PropertyFilterChangeEvent,
 } from "../../../../components-react/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
-import { PropertyCategory } from "../../../../components-react/propertygrid/PropertyDataProvider";
+import type { PropertyCategory } from "../../../../components-react/propertygrid/PropertyDataProvider";
 import { TestUtils } from "../../../TestUtils";
 
 describe("CompositePropertyDataFilterer", () => {

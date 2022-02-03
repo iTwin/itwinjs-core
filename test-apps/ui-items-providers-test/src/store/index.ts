@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { StateManager } from "@itwin/appui-react";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 /**
  * This file sets up the state that can be used by the tools and items within this provider. The package

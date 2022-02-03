@@ -6,33 +6,39 @@
  * @module Views
  */
 
-import { assert, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
+import type { Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, dispose } from "@itwin/core-bentley";
 import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
-import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, SheetProps,
-  TextureTransparency, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+import type {
+  AxisAlignedBox3d, HiddenLine, SheetProps, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps} from "@itwin/core-common";
+import { ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, PackedFeatureTable, Placement2d,
+  TextureTransparency,
 } from "@itwin/core-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
-import { IModelConnection } from "./IModelConnection";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { RenderGraphic } from "./render/RenderGraphic";
+import type { IModelConnection } from "./IModelConnection";
+import type { GraphicBuilder} from "./render/GraphicBuilder";
+import { GraphicType } from "./render/GraphicBuilder";
+import type { RenderGraphic } from "./render/RenderGraphic";
 import { GraphicBranch } from "./render/GraphicBranch";
 import { Frustum2d } from "./Frustum2d";
-import { Scene } from "./render/Scene";
-import { Decorations } from "./render/Decorations";
+import type { Scene } from "./render/Scene";
+import type { Decorations } from "./render/Decorations";
 import { MockRender } from "./render/MockRender";
-import { RenderClipVolume } from "./render/RenderClipVolume";
-import { RenderMemory } from "./render/RenderMemory";
+import type { RenderClipVolume } from "./render/RenderClipVolume";
+import type { RenderMemory } from "./render/RenderMemory";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { DecorateContext, SceneContext } from "./ViewContext";
+import type { DecorateContext, SceneContext } from "./ViewContext";
 import { ViewRect } from "./ViewRect";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem } from "./CoordSystem";
-import { OffScreenViewport, Viewport } from "./Viewport";
-import { AttachToViewportArgs, ViewState, ViewState2d } from "./ViewState";
-import { DrawingViewState } from "./DrawingViewState";
-import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
+import type { Viewport } from "./Viewport";
+import { OffScreenViewport } from "./Viewport";
+import type { AttachToViewportArgs, ViewState} from "./ViewState";
+import { ViewState2d } from "./ViewState";
+import type { DrawingViewState } from "./DrawingViewState";
+import type { DisclosedTileTreeSet} from "./tile/internal";
+import { createDefaultViewFlagOverrides, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
 
 // cSpell:ignore ovrs

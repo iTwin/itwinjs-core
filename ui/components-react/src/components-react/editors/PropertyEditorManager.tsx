@@ -8,7 +8,8 @@
 
 import * as React from "react";
 import { TextEditor } from "./TextEditor";
-import { DisplayMessageType, MessageSeverity, PropertyDescription, PropertyRecord, PropertyValue, StandardTypeNames } from "@itwin/appui-abstract";
+import type { DisplayMessageType, MessageSeverity, PropertyDescription, PropertyRecord, PropertyValue} from "@itwin/appui-abstract";
+import { StandardTypeNames } from "@itwin/appui-abstract";
 
 /** Asynchronous Error Message returned as part of [[AsyncValueProcessingResult]]
  * @public

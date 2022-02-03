@@ -9,9 +9,11 @@
 import "./EnumEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { EnumerationChoice, PropertyValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
-import { Select, SelectOption } from "@itwin/itwinui-react";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { EnumerationChoice, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
+import type { SelectOption } from "@itwin/itwinui-react";
+import { Select } from "@itwin/itwinui-react";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { UiComponents } from "../UiComponents";
 

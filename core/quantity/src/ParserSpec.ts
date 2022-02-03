@@ -6,9 +6,10 @@
  * @module Quantity
  */
 
-import { Format } from "./Formatter/Format";
-import { AlternateUnitLabelsProvider, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
-import { Parser, QuantityParseResult } from "./Parser";
+import type { Format } from "./Formatter/Format";
+import type { AlternateUnitLabelsProvider, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
+import type { QuantityParseResult } from "./Parser";
+import { Parser } from "./Parser";
 
 /** A ParserSpec holds information needed to parse a string into a quantity synchronously.
  * @beta

@@ -6,21 +6,28 @@
  * @module Geometry
  */
 
-import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { Id64, IModelStatus } from "@itwin/core-bentley";
+import type { AnyGeometryQuery, LowAndHighXYZ, TransformProps, XYZProps, YawPitchRollProps} from "@itwin/core-geometry";
 import {
-  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
-  Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
+  Angle, GeometryQuery, IModelJson as GeomJson, Matrix3d, Point2d, Point3d, Range3d, Transform,
+  Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import { ColorDef, ColorDefProps } from "../ColorDef";
-import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, isPlacement2dProps, PlacementProps } from "../ElementProps";
-import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
+import type { ColorDefProps } from "../ColorDef";
+import { ColorDef } from "../ColorDef";
+import type { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, PlacementProps } from "../ElementProps";
+import { isPlacement2dProps } from "../ElementProps";
+import type { GeometryClass} from "../GeometryParams";
+import { BackgroundFill, FillDisplay, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
 import { IModelError } from "../IModelError";
 import { AreaPattern } from "./AreaPattern";
-import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
+import type { ImageGraphicProps } from "./ImageGraphic";
+import { ImageGraphic } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
-import { TextString, TextStringProps } from "./TextString";
-import { Base64EncodedString } from "../Base64EncodedString";
+import type { TextStringProps } from "./TextString";
+import { TextString } from "./TextString";
+import type { Base64EncodedString } from "../Base64EncodedString";
 import { Placement2d, Placement3d } from "./Placement";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.

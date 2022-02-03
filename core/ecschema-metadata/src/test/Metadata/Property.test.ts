@@ -8,18 +8,20 @@ import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { PrimitiveType, StrengthDirection } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
-import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
-import { CustomAttribute } from "../../Metadata/CustomAttribute";
+import type { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
+import type { CustomAttribute } from "../../Metadata/CustomAttribute";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Enumeration } from "../../Metadata/Enumeration";
-import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
+import type { KindOfQuantity } from "../../Metadata/KindOfQuantity";
+import type { MutableProperty} from "../../Metadata/Property";
 import {
-  EnumerationArrayProperty, EnumerationProperty, MutableProperty, NavigationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property,
+  EnumerationArrayProperty, EnumerationProperty, NavigationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property,
   StructArrayProperty, StructProperty,
 } from "../../Metadata/Property";
-import { PropertyCategory } from "../../Metadata/PropertyCategory";
+import type { PropertyCategory } from "../../Metadata/PropertyCategory";
 import { RelationshipClass } from "../../Metadata/RelationshipClass";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
+import type { MutableSchema} from "../../Metadata/Schema";
+import { Schema } from "../../Metadata/Schema";
 import { PropertyType } from "../../PropertyTypes";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";

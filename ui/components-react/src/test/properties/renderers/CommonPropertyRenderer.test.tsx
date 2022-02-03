@@ -7,7 +7,7 @@ import React from "react";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { Orientation } from "@itwin/core-react";
 import { render } from "@testing-library/react";
-import { HighlightingComponentProps } from "../../../components-react/common/HighlightingComponentProps";
+import type { HighlightingComponentProps } from "../../../components-react/common/HighlightingComponentProps";
 import { CommonPropertyRenderer } from "../../../components-react/properties/renderers/CommonPropertyRenderer";
 
 describe("CommonPropertyRenderer", () => {

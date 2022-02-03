@@ -10,7 +10,7 @@ import "./ImageCheckBox.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Icon } from "../icons/IconComponent";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 /** Properties for the [[ImageCheckBox]] component
  * @public

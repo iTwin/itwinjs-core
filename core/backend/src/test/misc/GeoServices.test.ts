@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import {
+import type {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
 } from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";

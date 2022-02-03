@@ -6,7 +6,8 @@
  * @module Utils
  */
 
-import { IDisposable, Logger } from "@itwin/core-bentley";
+import type { IDisposable} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 /** Wrapper around a promise that allows synchronous queries of it's state

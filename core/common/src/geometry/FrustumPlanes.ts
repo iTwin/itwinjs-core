@@ -7,9 +7,10 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ClipPlane, Point3d, Vector3d } from "@itwin/core-geometry";
-import { Frustum } from "../Frustum";
-import { BoundingSphere } from "./BoundingSphere";
+import type { Point3d} from "@itwin/core-geometry";
+import { ClipPlane, Vector3d } from "@itwin/core-geometry";
+import type { Frustum } from "../Frustum";
+import type { BoundingSphere } from "./BoundingSphere";
 
 // Scratch variable used by FrustumPlanes.computeContainment.
 const planesContainingSphere = [false, false, false, false, false, false];

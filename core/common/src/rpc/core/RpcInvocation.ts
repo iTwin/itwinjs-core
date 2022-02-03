@@ -6,18 +6,21 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus } from "@itwin/core-bentley";
+import type { AccessToken, GuidString} from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, IModelStatus, Logger, RpcInterfaceStatus } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { IModelRpcProps } from "../../IModel";
+import type { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
-import { SessionProps } from "../../SessionProps";
+import type { SessionProps } from "../../SessionProps";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import type { RpcSerializedValue } from "./RpcMarshaling";
+import { RpcMarshaling } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
-import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import type { RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import { RpcProtocol } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
 /** The properties of an RpcActivity.

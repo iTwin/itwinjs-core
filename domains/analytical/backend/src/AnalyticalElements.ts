@@ -6,8 +6,9 @@
  * @module Analytical
  */
 
-import { GeometricElement3d, IModelDb, InformationPartitionElement, TypeDefinitionElement } from "@itwin/core-backend";
-import { GeometricElement3dProps, TypeDefinitionElementProps } from "@itwin/core-common";
+import type { IModelDb} from "@itwin/core-backend";
+import { GeometricElement3d, InformationPartitionElement, TypeDefinitionElement } from "@itwin/core-backend";
+import type { GeometricElement3dProps, TypeDefinitionElementProps } from "@itwin/core-common";
 
 /** An AnalyticalPartition element indicates that there is a specialized analytical perspective within
  * the overall information hierarchy. An AnalyticalPartition subclass is always parented to a Subject

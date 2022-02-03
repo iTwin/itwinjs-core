@@ -10,8 +10,8 @@ import "./Expandable.scss";
 import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { CommonProps } from "@itwin/core-react";
-import { ToolbarItem, ToolbarItemProps } from "../../Toolbar";
+import type { CommonProps } from "@itwin/core-react";
+import type { ToolbarItem, ToolbarItemProps } from "../../Toolbar";
 
 /** Properties of [[ExpandableItem]] component.
  * @deprecated

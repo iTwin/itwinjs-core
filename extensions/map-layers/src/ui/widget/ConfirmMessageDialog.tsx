@@ -5,7 +5,8 @@
 // cSpell:ignore Modeless WMTS
 
 import * as React from "react";
-import { CommonProps, Dialog } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Dialog } from "@itwin/core-react";
 
 import "./MapUrlDialog.scss";
 import { DialogButtonType } from "@itwin/appui-abstract";

@@ -2,11 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { Guid, Id64 } from "@itwin/core-bentley";
 import { Matrix3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
-import { Camera, Code, ColorDef, ElementProps, IModel, IModelError, SpatialViewDefinitionProps, SubCategoryAppearance } from "@itwin/core-common";
+import type { ElementProps, SpatialViewDefinitionProps} from "@itwin/core-common";
+import { Camera, Code, ColorDef, IModel, IModelError, SubCategoryAppearance } from "@itwin/core-common";
 import { assert } from "chai";
-import { CategorySelector, DictionaryModel, DisplayStyle3d, IModelDb, ModelSelector, SpatialCategory, SpatialViewDefinition, StandaloneDb } from "../../core-backend";
+import type { DictionaryModel, IModelDb} from "../../core-backend";
+import { CategorySelector, DisplayStyle3d, ModelSelector, SpatialCategory, SpatialViewDefinition, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function createNewModelAndCategory(rwIModel: IModelDb, parent?: Id64String) {

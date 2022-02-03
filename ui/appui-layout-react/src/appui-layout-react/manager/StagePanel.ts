@@ -6,11 +6,13 @@
  * @module StagePanels
  */
 
-import { getDefaultStagePanelManagerProps, StagePanelManager, StagePanelManagerProps } from "../stage-panels/manager/StagePanel";
+import type { StagePanelManagerProps } from "../stage-panels/manager/StagePanel";
+import { getDefaultStagePanelManagerProps, StagePanelManager } from "../stage-panels/manager/StagePanel";
 import { StagePanelType } from "../stage-panels/StagePanel";
 import { HorizontalAnchor, VerticalAnchor } from "../widget/Stacked";
-import { WidgetZoneId } from "../zones/manager/Zones";
-import { getDefaultNineZoneStagePanelPaneManagerProps, NineZoneStagePanelPaneManager, NineZoneStagePanelPaneManagerProps } from "./StagePanelPane";
+import type { WidgetZoneId } from "../zones/manager/Zones";
+import type { NineZoneStagePanelPaneManagerProps } from "./StagePanelPane";
+import { getDefaultNineZoneStagePanelPaneManagerProps, NineZoneStagePanelPaneManager } from "./StagePanelPane";
 
 /** Properties used by [[NineZoneStagePanelManager]].
  * @internal

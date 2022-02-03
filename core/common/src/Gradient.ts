@@ -7,10 +7,13 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Angle, AngleProps } from "@itwin/core-geometry";
-import { ColorDef, ColorDefProps } from "./ColorDef";
+import type { AngleProps } from "@itwin/core-geometry";
+import { Angle } from "@itwin/core-geometry";
+import type { ColorDefProps } from "./ColorDef";
+import { ColorDef } from "./ColorDef";
 import { ImageBuffer, ImageBufferFormat } from "./Image";
-import { ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
+import type { ThematicGradientSettingsProps } from "./ThematicDisplay";
+import { ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings } from "./ThematicDisplay";
 
 /** Namespace containing types for defining a color gradient, often used for filled planar regions.
  * @see [[GeometryParams]]

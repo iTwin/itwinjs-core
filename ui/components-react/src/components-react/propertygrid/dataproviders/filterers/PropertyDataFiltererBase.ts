@@ -6,9 +6,9 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 import { BeEvent } from "@itwin/core-bentley";
-import { PropertyCategory } from "../../PropertyDataProvider";
+import type { PropertyCategory } from "../../PropertyDataProvider";
 
 /**
  * Enumeration of possible component filtered types

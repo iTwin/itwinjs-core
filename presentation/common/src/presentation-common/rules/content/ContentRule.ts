@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
-import { ContentSpecification } from "./ContentSpecification";
+import type { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import type { ContentSpecification } from "./ContentSpecification";
 
 /**
  * Defines content that's displayed in content controls (table view,

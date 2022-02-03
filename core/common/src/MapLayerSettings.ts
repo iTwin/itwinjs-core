@@ -7,8 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
-import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
+import type { BackgroundMapProviderProps} from "./BackgroundMapProvider";
+import { BackgroundMapProvider, BackgroundMapType } from "./BackgroundMapProvider";
+import type { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
 /** @beta */
 export type SubLayerId = string | number;

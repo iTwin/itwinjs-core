@@ -6,11 +6,13 @@
  * @module iModelHubClient
  */
 
-import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { request, RequestOptions } from "../itwin-client/Request";
+import type { AccessToken} from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
+import type { RequestOptions } from "../itwin-client/Request";
+import { request } from "../itwin-client/Request";
 import { DefaultRequestOptionsProvider } from "../request/Client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
-import { IModelBaseHandler } from "./BaseHandler";
+import type { IModelBaseHandler } from "./BaseHandler";
 
 /**
  * Base class for event shared access signatures.

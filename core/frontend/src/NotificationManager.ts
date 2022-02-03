@@ -6,10 +6,12 @@
  * @module Notifications
  */
 import { BeDuration } from "@itwin/core-bentley";
-import { Point2d, XAndY } from "@itwin/core-geometry";
-import { DisplayMessageType, MessagePresenter, MessageSeverity, RelativePosition } from "@itwin/appui-abstract";
+import type { XAndY } from "@itwin/core-geometry";
+import { Point2d } from "@itwin/core-geometry";
+import type { MessagePresenter} from "@itwin/appui-abstract";
+import { DisplayMessageType, MessageSeverity, RelativePosition } from "@itwin/appui-abstract";
 import { IModelApp } from "./IModelApp";
-import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
+import type { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
 // cSpell:words messagebox
 

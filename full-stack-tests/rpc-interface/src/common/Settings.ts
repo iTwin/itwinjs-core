@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ServiceAuthorizationClientConfiguration } from "@itwin/service-authorization";
+import type { ServiceAuthorizationClientConfiguration } from "@itwin/service-authorization";
 import { LogLevel } from "@itwin/core-bentley";
 import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
-import { TestUserCredentials } from "@itwin/oidc-signin-tool";
+import type { TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 
 /* eslint-disable @typescript-eslint/indent */

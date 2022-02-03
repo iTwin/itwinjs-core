@@ -6,12 +6,13 @@
  * @module Elements
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import {
-  FunctionalElementProps, IModel, InformationPartitionElementProps, ModelProps, RelatedElement, TypeDefinitionElementProps,
+import type { Id64String } from "@itwin/core-bentley";
+import type {
+  FunctionalElementProps, InformationPartitionElementProps, ModelProps, TypeDefinitionElementProps} from "@itwin/core-common";
+import { IModel, RelatedElement,
 } from "@itwin/core-common";
 import { InformationPartitionElement, RoleElement, TypeDefinitionElement } from "../Element";
-import { IModelDb } from "../IModelDb";
+import type { IModelDb } from "../IModelDb";
 import { RoleModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
 import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Relationship";

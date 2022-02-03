@@ -7,11 +7,13 @@
  */
 
 import * as React from "react";
-import { OnCancelFunc, OnItemExecutedFunc, SpecialKey } from "@itwin/appui-abstract";
-import { DivWithOutsideClick, FocusTrap, Point, Size, SizeProps } from "@itwin/core-react";
+import type { OnCancelFunc, OnItemExecutedFunc} from "@itwin/appui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
+import type { SizeProps } from "@itwin/core-react";
+import { DivWithOutsideClick, FocusTrap, Point, Size } from "@itwin/core-react";
 import { PositionPopup } from "./PositionPopup";
 import { KeyinPalettePanel } from "./KeyinPalettePanel";
-import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
+import type { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 
 /** Props defining KeyinPalettePopup component
  * @public */

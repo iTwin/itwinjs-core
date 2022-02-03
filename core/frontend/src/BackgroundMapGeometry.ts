@@ -7,10 +7,12 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode } from "@itwin/core-common";
-import { IModelConnection } from "./IModelConnection";
-import { GraphicBuilder } from "./render/GraphicBuilder";
+import type { Arc3d, CurvePrimitive, LongitudeLatitudeNumber, XYAndZ } from "@itwin/core-geometry";
+import { Angle, ClipPlane, ClipPlaneContainment, Constant, Ellipsoid, GrowableXYZArray, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d } from "@itwin/core-geometry";
+import type { Frustum} from "@itwin/core-common";
+import { Cartographic, ColorByName, ColorDef, GeoCoordStatus, GlobeMode } from "@itwin/core-common";
+import type { IModelConnection } from "./IModelConnection";
+import type { GraphicBuilder } from "./render/GraphicBuilder";
 import { WebMercatorTilingScheme } from "./tile/internal";
 
 const scratchRange = Range3d.createNull();

@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
-import { RenderSystem } from "../../../render/RenderSystem";
+import type { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
+import type { RenderSystem } from "../../../render/RenderSystem";
 import { IModelApp } from "../../../IModelApp";
-import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
+import type { ShaderProgram } from "../../../render/webgl/ShaderProgram";
+import { CompileStatus } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
 
 class TestSystem extends System {

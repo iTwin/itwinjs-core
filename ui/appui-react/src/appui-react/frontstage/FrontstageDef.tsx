@@ -10,30 +10,36 @@
 // cSpell:ignore popout
 
 import * as React from "react";
-import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { PointProps, StagePanelLocation, StageUsage, UiError, WidgetState } from "@itwin/appui-abstract";
-import { RectangleProps, SizeProps } from "@itwin/core-react";
+import type { ScreenViewport } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import type { PointProps} from "@itwin/appui-abstract";
+import { StagePanelLocation, StageUsage, UiError, WidgetState } from "@itwin/appui-abstract";
+import type { RectangleProps, SizeProps } from "@itwin/core-react";
+import type {
+  NineZoneManagerProps, NineZoneState, PanelSide} from "@itwin/appui-layout-react";
 import {
-  dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
-  NineZoneManagerProps, NineZoneState, PanelSide, panelSides, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
+  dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation, panelSides, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@itwin/appui-layout-react";
-import { ContentControl } from "../content/ContentControl";
-import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
-import { ContentLayoutDef } from "../content/ContentLayout";
+import type { ContentControl } from "../content/ContentControl";
+import type { ContentGroup} from "../content/ContentGroup";
+import { ContentGroupProvider } from "../content/ContentGroup";
+import type { ContentLayoutDef } from "../content/ContentLayout";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
 import { ContentViewManager } from "../content/ContentViewManager";
-import { ToolItemDef } from "../shared/ToolItemDef";
-import { StagePanelDef, StagePanelState, toPanelSide } from "../stagepanels/StagePanelDef";
+import type { ToolItemDef } from "../shared/ToolItemDef";
+import type { StagePanelDef} from "../stagepanels/StagePanelDef";
+import { StagePanelState, toPanelSide } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
-import { WidgetControl } from "../widgets/WidgetControl";
-import { WidgetDef } from "../widgets/WidgetDef";
+import type { WidgetControl } from "../widgets/WidgetControl";
+import type { WidgetDef } from "../widgets/WidgetDef";
 import { ZoneLocation } from "../zones/Zone";
-import { ZoneDef } from "../zones/ZoneDef";
-import { Frontstage, FrontstageProps } from "./Frontstage";
+import type { ZoneDef } from "../zones/ZoneDef";
+import type { FrontstageProps } from "./Frontstage";
+import { Frontstage } from "./Frontstage";
 import { FrontstageManager } from "./FrontstageManager";
-import { FrontstageProvider } from "./FrontstageProvider";
+import type { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
-import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
+import type { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { setImmediate } from "timers";
 import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";

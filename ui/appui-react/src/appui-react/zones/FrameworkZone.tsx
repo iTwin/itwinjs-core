@@ -7,13 +7,15 @@
  */
 
 import * as React from "react";
-import { CommonProps, RectangleProps } from "@itwin/core-react";
-import {
-  DisabledResizeHandles, DraggedWidgetManagerProps, Zone as NZ_Zone, WidgetManagerProps, WidgetZoneId, ZoneManagerProps, ZoneTargetType,
+import type { CommonProps, RectangleProps } from "@itwin/core-react";
+import type {
+  DisabledResizeHandles, DraggedWidgetManagerProps, WidgetManagerProps, WidgetZoneId, ZoneManagerProps, ZoneTargetType} from "@itwin/appui-layout-react";
+import { Zone as NZ_Zone,
 } from "@itwin/appui-layout-react";
-import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
+import type { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
+import type { WidgetTabs } from "../widgets/WidgetStack";
+import { WidgetStack } from "../widgets/WidgetStack";
 import { Outline } from "./Outline";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 

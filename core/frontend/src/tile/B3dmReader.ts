@@ -6,14 +6,18 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { B3dmHeader, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, TileReadStatus } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { RenderSystem } from "../render/RenderSystem";
-import {
-  BatchedTileIdMap, GltfBufferData, GltfDataType, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf,
+import type { ByteStream, Id64String} from "@itwin/core-bentley";
+import { JsonUtils } from "@itwin/core-bentley";
+import type { Point3d} from "@itwin/core-geometry";
+import { Transform, Vector3d } from "@itwin/core-geometry";
+import type { ElementAlignedBox3d} from "@itwin/core-common";
+import { B3dmHeader, ColorDef, Feature, FeatureTable, TileReadStatus } from "@itwin/core-common";
+import type { IModelConnection } from "../IModelConnection";
+import type { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import type { RenderSystem } from "../render/RenderSystem";
+import type {
+  BatchedTileIdMap, GltfBufferData, GltfReaderResult, ShouldAbortReadGltf} from "./internal";
+import { GltfDataType, GltfReader, GltfReaderProps,
 } from "./internal";
 
 /**

@@ -9,7 +9,8 @@
 import "./Expander.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PanelSide, panelSides } from "./Panel";
+import type { PanelSide} from "./Panel";
+import { panelSides } from "./Panel";
 import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone";
 import { Point, Timer } from "@itwin/core-react";
 

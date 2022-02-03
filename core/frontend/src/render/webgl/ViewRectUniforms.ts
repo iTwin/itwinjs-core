@@ -7,7 +7,7 @@
  */
 
 import { Matrix4d } from "@itwin/core-geometry";
-import { UniformHandle } from "./UniformHandle";
+import type { UniformHandle } from "./UniformHandle";
 import { Matrix4 } from "./Matrix";
 import { desync, sync } from "./Sync";
 

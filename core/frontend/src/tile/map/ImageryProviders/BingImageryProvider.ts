@@ -7,14 +7,16 @@
  */
 
 import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
-import { Range2d } from "@itwin/core-geometry";
-import { ImageSource, MapLayerSettings } from "@itwin/core-common";
-import { request, RequestOptions, Response } from "../../../request/Request";
+import type { Range2d } from "@itwin/core-geometry";
+import type { ImageSource, MapLayerSettings } from "@itwin/core-common";
+import type { RequestOptions, Response } from "../../../request/Request";
+import { request } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
-import { ScreenViewport } from "../../../Viewport";
+import type { ScreenViewport } from "../../../Viewport";
+import type { MapTilingScheme,
+  Tile} from "../../internal";
 import {
-  MapLayerImageryProvider, MapTile, MapTilingScheme, QuadId,
-  Tile, WebMercatorTilingScheme,
+  MapLayerImageryProvider, MapTile, QuadId, WebMercatorTilingScheme,
 } from "../../internal";
 
 /** Represents one range of geography and tile zoom levels for a bing data provider

@@ -3,14 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import {
-  CategoryProps, Code, DefinitionElementProps, ElementProps, GeometricElement3dProps, IModel, PhysicalElementProps, PhysicalTypeProps,
-  TypeDefinitionElementProps,
+import type { Id64String } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64 } from "@itwin/core-bentley";
+import type {
+  CategoryProps, DefinitionElementProps, ElementProps, GeometricElement3dProps, PhysicalElementProps, PhysicalTypeProps,
+  TypeDefinitionElementProps} from "@itwin/core-common";
+import { Code, IModel,
 } from "@itwin/core-common";
+import type { ECSqlStatement, IModelDb} from "../../core-backend";
 import {
-  DefinitionModel, DocumentListModel, ECSqlStatement, GenericDocument, GenericGraphicalModel3d, GenericGraphicalType2d, GenericPhysicalMaterial,
-  GenericPhysicalType, GenericSchema, Graphic3d, Group, GroupModel, IModelDb, IModelJsFs, PhysicalElementIsOfPhysicalMaterial,
+  DefinitionModel, DocumentListModel, GenericDocument, GenericGraphicalModel3d, GenericGraphicalType2d, GenericPhysicalMaterial,
+  GenericPhysicalType, GenericSchema, Graphic3d, Group, GroupModel, IModelJsFs, PhysicalElementIsOfPhysicalMaterial,
   PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalTypeIsOfPhysicalMaterial, SnapshotDb, SpatialCategory,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";

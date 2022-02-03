@@ -3,19 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ByteStream, Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { ByteStream, Id64 } from "@itwin/core-bentley";
+import type { IModelRpcProps, IModelTileTreeId,
+  ModelProps, RelatedElementProps} from "@itwin/core-common";
 import {
-  BatchType, CurrentImdlVersion, EdgeType, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
-  ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
+  BatchType, CurrentImdlVersion, EdgeType, ImdlFlags, ImdlHeader, IModelTileRpcInterface, iModelTileTreeIdToString, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
+import type { IModelConnection, RenderGraphic, TileAdmin, TileRequest, ViewState} from "@itwin/core-frontend";
 import {
-  GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
-  SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  GeometricModelState, ImdlReader, IModelApp, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
+  SnapshotConnection, TileTreeLoadStatus,
 } from "@itwin/core-frontend";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/render-primitives";
-import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
+import type { PolylineGeometry} from "@itwin/core-frontend/lib/cjs/webgl";
+import { Batch, GraphicsArray, MeshGraphic, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
 import { TestUtility } from "../../TestUtility";
-import { TileTestCase, TileTestData } from "./data/TileIO.data";
+import type { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
 import { TILE_DATA_1_3 } from "./data/TileIO.data.1.3";

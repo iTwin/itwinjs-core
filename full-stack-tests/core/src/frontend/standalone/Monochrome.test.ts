@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ColorDef, FeatureAppearance, MonochromeMode, RenderMode } from "@itwin/core-common";
-import { FeatureSymbology, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import type { FeatureSymbology, IModelConnection, Viewport } from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, testOnScreenViewport } from "../TestViewport";
 

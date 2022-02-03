@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { SchemaKeyProps } from "./Deserialization/JsonProps";
+import type { SchemaKeyProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { ECName } from "./ECName";

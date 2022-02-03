@@ -5,12 +5,13 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { using } from "@itwin/core-bentley";
-import { ModelProps } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { ModelProps } from "@itwin/core-common";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, RuleTypes } from "@itwin/presentation-common";
 import { DEFAULT_PROPERTY_GRID_RULESET, PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { PropertyCategory } from "@itwin/components-react";
+import type { PropertyCategory } from "@itwin/components-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 describe("PropertyDataProvider", async () => {

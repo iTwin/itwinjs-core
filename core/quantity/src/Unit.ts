@@ -6,7 +6,7 @@
  * @module Quantity
  */
 
-import { UnitProps } from "./Interfaces";
+import type { UnitProps } from "./Interfaces";
 
 /** This class provides basic implementation of UnitProps interface.
  * @beta

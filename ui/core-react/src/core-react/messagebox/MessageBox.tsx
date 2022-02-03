@@ -9,9 +9,10 @@
 import "./MessageBox.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DialogButtonDef, MessageSeverity } from "@itwin/appui-abstract";
+import type { DialogButtonDef} from "@itwin/appui-abstract";
+import { MessageSeverity } from "@itwin/appui-abstract";
 import { Dialog } from "../dialog/Dialog";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 /** Properties for the [[MessageBox]] component
  * @public

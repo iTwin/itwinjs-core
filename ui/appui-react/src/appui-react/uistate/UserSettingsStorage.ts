@@ -7,7 +7,8 @@
  */
 
 import { IModelApp } from "@itwin/core-frontend";
-import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
+import type { UiStateStorage, UiStateStorageResult} from "@itwin/core-react";
+import { UiStateStorageStatus } from "@itwin/core-react";
 
 /**
  * Implementation of [[UiStateStorage]] that uses settings admin from [IModelApp.userPreferences]($core-frontend).

@@ -7,9 +7,11 @@
  */
 
 import * as React from "react";
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import type { PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { Orientation } from "@itwin/core-react";
-import { IPropertyValueRenderer, PropertyContainerType, PropertyValueRendererContext } from "../../ValueRendererManager";
+import type { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
+import { PropertyContainerType } from "../../ValueRendererManager";
 import { TableStructValueRenderer } from "./table/StructValueRenderer";
 import { withContextStyle } from "./WithContextStyle";
 

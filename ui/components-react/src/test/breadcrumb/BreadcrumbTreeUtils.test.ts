@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 import { BreadcrumbTreeUtils } from "../../components-react/breadcrumb/BreadcrumbTreeUtils";
-import { CellItem, RowItem } from "../../components-react/table/TableDataProvider";
-import { ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../components-react/tree/TreeDataProvider";
+import type { CellItem, RowItem } from "../../components-react/table/TableDataProvider";
+import type { ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../components-react/tree/TreeDataProvider";
 import TestUtils from "../TestUtils";
 import { mockInterfaceTreeDataProvider } from "./mockTreeDataProvider";
 

@@ -9,9 +9,10 @@ import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
-import {
-  BackstageItemState, ConfigurableUiManager, CoreTools, Frontstage, FrontstageLaunchBackstageItem, FrontstageManager,
-  FrontstageProps, FrontstageProvider, SyncUiEventDispatcher,
+import type {
+  BackstageItemState,
+  FrontstageProps} from "../../appui-react";
+import { ConfigurableUiManager, CoreTools, Frontstage, FrontstageLaunchBackstageItem, FrontstageManager, FrontstageProvider, SyncUiEventDispatcher,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 

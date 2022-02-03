@@ -8,14 +8,17 @@ import { mount, shallow } from "enzyme";
 import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
-import {
-  IconEditorParams, InputEditorSizeParams, MessageSeverity, PropertyConverterInfo, PropertyEditorInfo, PropertyEditorParamTypes,
-  PropertyRecord, PropertyValue, SpecialKey,
+import type {
+  IconEditorParams, InputEditorSizeParams, PropertyConverterInfo, PropertyEditorInfo,
+  PropertyRecord, PropertyValue} from "@itwin/appui-abstract";
+import { MessageSeverity, PropertyEditorParamTypes, SpecialKey,
 } from "@itwin/appui-abstract";
 import { TextEditor } from "../../components-react/editors/TextEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
+import type { PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { EditorContainer } from "../../components-react/editors/EditorContainer";
+import type { AsyncValueProcessingResult} from "../../components-react/editors/PropertyEditorManager";
+import { DataControllerBase, PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<TextEditor />", () => {
   before(async () => {

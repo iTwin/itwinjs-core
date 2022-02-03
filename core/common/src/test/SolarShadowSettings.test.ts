@@ -5,7 +5,8 @@
 
 import { expect } from "chai";
 import { ColorByName } from "../ColorByName";
-import { SolarShadowSettings, SolarShadowSettingsProps } from "../SolarShadows";
+import type { SolarShadowSettingsProps } from "../SolarShadows";
+import { SolarShadowSettings } from "../SolarShadows";
 
 describe("SolarShadowSettings", () => {
   it("round-trips through JSON", () => {

@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { ScreenViewport } from "../Viewport";
+import type { ScreenViewport } from "../Viewport";
 import { ToolAdmin } from "./ToolAdmin";
 
 /**

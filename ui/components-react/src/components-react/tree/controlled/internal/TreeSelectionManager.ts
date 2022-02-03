@@ -9,11 +9,13 @@
 import { take } from "rxjs/internal/operators/take";
 import { Subject } from "rxjs/internal/Subject";
 import { BeUiEvent } from "@itwin/core-bentley";
-import { MultiSelectionHandler, SelectionHandler, SingleSelectionHandler } from "../../../common/selection/SelectionHandler";
-import { SelectionMode } from "../../../common/selection/SelectionModes";
-import { Observable } from "../Observable";
-import { TreeActions } from "../TreeActions";
-import { isTreeModelNode, TreeModelNode, VisibleTreeNodes } from "../TreeModel";
+import type { MultiSelectionHandler, SingleSelectionHandler } from "../../../common/selection/SelectionHandler";
+import { SelectionHandler } from "../../../common/selection/SelectionHandler";
+import type { SelectionMode } from "../../../common/selection/SelectionModes";
+import type { Observable } from "../Observable";
+import type { TreeActions } from "../TreeActions";
+import type { TreeModelNode, VisibleTreeNodes } from "../TreeModel";
+import { isTreeModelNode } from "../TreeModel";
 import { isNavigationKey, ItemKeyboardNavigator, Orientation } from "@itwin/core-react";
 
 /** @internal */

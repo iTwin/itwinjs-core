@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CompressedId64Set, Guid, Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
 import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { PhysicalElementProps, RenderSchedule, RenderTimelineProps} from "@itwin/core-common";
 import {
-  Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,
+  Code, GeometryStreamBuilder, IModel,
 } from "@itwin/core-common";
 import {
   GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements,

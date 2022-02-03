@@ -6,10 +6,11 @@
  * @module UnifiedSelection
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import {
-  Content, ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset,
+import type { Id64String } from "@itwin/core-bentley";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type {
+  Content, DescriptorOverrides, Item, Ruleset} from "@itwin/presentation-common";
+import { ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, Key, KeySet,
 } from "@itwin/presentation-common";
 import { Presentation } from "../Presentation";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";

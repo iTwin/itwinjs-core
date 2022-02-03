@@ -8,19 +8,19 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMode } from "@itwin/core-common";
-import { EdgeTable, IndexedEdgeParams } from "../primitives/EdgeParams";
-import { RenderMemory } from "../RenderMemory";
+import type { EdgeTable, IndexedEdgeParams } from "../primitives/EdgeParams";
+import type { RenderMemory } from "../RenderMemory";
 import { TextureHandle } from "./Texture";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { WebGLDisposable } from "./Disposable";
-import { MeshData } from "./MeshData";
+import type { WebGLDisposable } from "./Disposable";
+import type { MeshData } from "./MeshData";
 import { MeshGeometry } from "./MeshGeometry";
 import { AttributeMap } from "./AttributeMap";
 import { TechniqueId } from "./TechniqueId";
 import { GL } from "./GL";
 import { System } from "./System";
-import { Target } from "./Target";
-import { ShaderProgramParams } from "./DrawCommand";
+import type { Target } from "./Target";
+import type { ShaderProgramParams } from "./DrawCommand";
 import { RenderOrder } from "./RenderFlags";
 
 /** @see [[EdgeTable]]

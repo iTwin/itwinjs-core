@@ -6,9 +6,9 @@
  * @module UnifiedSelection
  */
 
-import { IModelConnection } from "@itwin/core-frontend";
-import { KeySet } from "@itwin/presentation-common";
-import { SelectionChangeEvent } from "./SelectionChangeEvent";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { KeySet } from "@itwin/presentation-common";
+import type { SelectionChangeEvent } from "./SelectionChangeEvent";
 
 /**
  * Selection provider interface which provides main selection and sub-selection.

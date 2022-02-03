@@ -6,11 +6,11 @@
  * @module Tree
  */
 
-import { BeEvent } from "@itwin/core-bentley";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { CheckBoxState } from "@itwin/core-react";
-import { PageOptions } from "../common/PageOptions";
-import { ItemStyle } from "../properties/ItemStyle";
+import type { BeEvent } from "@itwin/core-bentley";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { CheckBoxState } from "@itwin/core-react";
+import type { PageOptions } from "../common/PageOptions";
+import type { ItemStyle } from "../properties/ItemStyle";
 
 /**
  * A node item which can be displayed in a tree.

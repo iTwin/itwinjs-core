@@ -3,13 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, CompressedId64Set, Id64, Id64String, OrderedId64Array, PromiseReturnType } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
-import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
-import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-frontend";
+import type { AsyncMethodsOf, Id64String, PromiseReturnType } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, OrderedId64Array } from "@itwin/core-bentley";
+import type { Transform} from "@itwin/core-geometry";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { CodeProps, PhysicalElementProps } from "@itwin/core-common";
+import { BisCodeSpec, Code, GeometryStreamBuilder } from "@itwin/core-common";
+import type { BriefcaseConnection, IModelConnection} from "@itwin/core-frontend";
+import { IpcApp } from "@itwin/core-frontend";
 import { EditTools } from "@itwin/editor-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
-import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
+import type { BasicManipulationCommandIpc} from "@itwin/editor-common";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
+import type { FullStackTestIpc } from "../common/FullStackTestIpc";
+import { fullstackIpcChannel } from "../common/FullStackTestIpc";
 
 async function startCommand(imodel: BriefcaseConnection): Promise<string> {
   return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, imodel.key);

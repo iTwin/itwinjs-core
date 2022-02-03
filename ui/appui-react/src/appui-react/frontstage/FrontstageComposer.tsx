@@ -9,20 +9,26 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { PointProps, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
-import { CommonProps, Rectangle, RectangleProps } from "@itwin/core-react";
+import type { PointProps} from "@itwin/appui-abstract";
+import { StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
+import type { CommonProps, RectangleProps } from "@itwin/core-react";
+import { Rectangle } from "@itwin/core-react";
+import type { NineZoneManagerProps, ResizeHandle,
+  WidgetZoneId, ZoneTargetType} from "@itwin/appui-layout-react";
 import {
-  getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, ResizeHandle, StagePanelsManager, StagePanelType,
-  WidgetZoneId, widgetZoneIds, ZoneTargetType,
+  getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, StagePanelsManager, StagePanelType, widgetZoneIds,
 } from "@itwin/appui-layout-react";
 import { getNestedStagePanelKey } from "../stagepanels/StagePanel";
-import { PanelSizeChangedEventArgs, PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
+import type { PanelSizeChangedEventArgs, PanelStateChangedEventArgs} from "../stagepanels/StagePanelDef";
+import { StagePanelState } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
-import { WidgetDef } from "../widgets/WidgetDef";
-import { WidgetTab, WidgetTabs } from "../widgets/WidgetStack";
-import { ZoneDef, ZoneState } from "../zones/ZoneDef";
-import { FrontstageDef } from "./FrontstageDef";
-import { FrontstageActivatedEventArgs, FrontstageManager, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "./FrontstageManager";
+import type { WidgetDef } from "../widgets/WidgetDef";
+import type { WidgetTab, WidgetTabs } from "../widgets/WidgetStack";
+import type { ZoneDef} from "../zones/ZoneDef";
+import { ZoneState } from "../zones/ZoneDef";
+import type { FrontstageDef } from "./FrontstageDef";
+import type { FrontstageActivatedEventArgs, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "./FrontstageManager";
+import { FrontstageManager } from "./FrontstageManager";
 import { ModalFrontstage } from "./ModalFrontstage";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 

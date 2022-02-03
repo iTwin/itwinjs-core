@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Code, CodeProps } from "../Code";
+import type { CodeProps } from "../Code";
+import { Code } from "../Code";
 
 describe("Code", () => {
   const spec = "0x1";

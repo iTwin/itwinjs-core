@@ -13,7 +13,7 @@ import { connect } from "react-redux";
 import { Icon } from "@itwin/core-react";
 import { FooterIndicator } from "@itwin/appui-layout-react";
 import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import type { StatusFieldProps } from "./StatusFieldProps";
 
 /** Defines properties supported by the SelectionInfo Field Component.
  */

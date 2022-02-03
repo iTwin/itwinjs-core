@@ -6,7 +6,7 @@
  * @module Tree
  */
 
-import { Observable } from "rxjs/internal/Observable";
+import type { Observable } from "rxjs/internal/Observable";
 import { concat } from "rxjs/internal/observable/concat";
 import { defer } from "rxjs/internal/observable/defer";
 import { EMPTY } from "rxjs/internal/observable/empty";
@@ -24,14 +24,16 @@ import { refCount } from "rxjs/internal/operators/refCount";
 import { subscribeOn } from "rxjs/internal/operators/subscribeOn";
 import { toArray } from "rxjs/internal/operators/toArray";
 import { asapScheduler } from "rxjs/internal/scheduler/asap";
-import { CheckBoxState } from "@itwin/core-react";
-import { SelectionMode } from "../../common/selection/SelectionModes";
-import { TreeNodeItem } from "../TreeDataProvider";
-import { IndividualSelection, isRangeSelection, RangeSelection, TreeSelectionManager } from "./internal/TreeSelectionManager";
-import { TreeActions } from "./TreeActions";
-import { TreeEvents } from "./TreeEvents";
-import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "./TreeModel";
-import { ITreeNodeLoader } from "./TreeNodeLoader";
+import type { CheckBoxState } from "@itwin/core-react";
+import type { SelectionMode } from "../../common/selection/SelectionModes";
+import type { TreeNodeItem } from "../TreeDataProvider";
+import type { IndividualSelection, RangeSelection} from "./internal/TreeSelectionManager";
+import { isRangeSelection, TreeSelectionManager } from "./internal/TreeSelectionManager";
+import type { TreeActions } from "./TreeActions";
+import type { TreeEvents } from "./TreeEvents";
+import type { TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "./TreeModel";
+import { isTreeModelNode } from "./TreeModel";
+import type { ITreeNodeLoader } from "./TreeNodeLoader";
 
 /**
  * Default event dispatcher that emits tree events according performed actions.

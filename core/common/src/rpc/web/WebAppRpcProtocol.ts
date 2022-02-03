@@ -6,12 +6,13 @@
  * @module RpcInterface
  */
 
-import { Readable, Writable } from "stream";
+import type { Readable, Writable } from "stream";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
-import { RpcOperation } from "../core/RpcOperation";
+import type { RpcOperation } from "../core/RpcOperation";
 import { RpcProtocol } from "../core/RpcProtocol";
-import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
+import type { OpenAPIInfo, OpenAPIParameter} from "./OpenAPI";
+import { RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";

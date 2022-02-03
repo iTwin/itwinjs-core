@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
+import type { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
 import { KeyinParseError, Tool } from "../tools/Tool";

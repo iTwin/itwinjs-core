@@ -6,8 +6,8 @@
  * @module IpcSocket
  */
 
-import { IpcListener, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RemoveFunction } from "./IpcSocket";
-import { IpcWebSocketTransport } from "./IpcWebSocketTransport";
+import type { IpcListener, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RemoveFunction } from "./IpcSocket";
+import type { IpcWebSocketTransport } from "./IpcWebSocketTransport";
 
 /** @internal */
 export enum IpcWebSocketMessageType {

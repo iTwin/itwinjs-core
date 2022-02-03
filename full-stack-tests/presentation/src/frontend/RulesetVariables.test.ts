@@ -5,10 +5,13 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import type { Ruleset} from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, ContentSpecificationTypes, KeySet, RuleTypes } from "@itwin/presentation-common";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { Presentation, PresentationManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import type { RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 const RULESET: Ruleset = {

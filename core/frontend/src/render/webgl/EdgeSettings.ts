@@ -6,7 +6,8 @@
  * @module WebGL
  */
 
-import { ColorDef, HiddenLine, RenderMode, ViewFlags } from "@itwin/core-common";
+import type { HiddenLine, ViewFlags } from "@itwin/core-common";
+import { ColorDef, RenderMode } from "@itwin/core-common";
 import { FloatRgba } from "./FloatRGBA";
 import { OvrFlags, RenderPass } from "./RenderFlags";
 import { LineCode } from "./LineCode";

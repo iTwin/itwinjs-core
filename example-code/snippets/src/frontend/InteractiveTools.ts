@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d } from "@itwin/core-geometry";
+import type { Point3d} from "@itwin/core-geometry";
+import { Vector3d } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
+import type { BeButtonEvent, DynamicsContext, HitDetail,
+  Viewport} from "@itwin/core-frontend";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool,
-  Viewport,
+  AccuDrawHintBuilder, EventHandled, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool,
 } from "@itwin/core-frontend";
 
 export class SamplePrimitiveTool extends PrimitiveTool {

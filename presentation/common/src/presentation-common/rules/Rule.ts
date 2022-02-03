@@ -6,12 +6,12 @@
  * @module PresentationRules
  */
 
-import { ContentRule } from "./content/ContentRule";
-import { DefaultPropertyCategoryOverride } from "./content/DefaultPropertyCategoryOverride";
-import { ContentModifier } from "./content/modifiers/ContentModifier";
-import { CustomizationRule } from "./customization/CustomizationRule";
-import { NavigationRule } from "./hierarchy/NavigationRule";
-import { RequiredSchemaSpecification } from "./SchemasSpecification";
+import type { ContentRule } from "./content/ContentRule";
+import type { DefaultPropertyCategoryOverride } from "./content/DefaultPropertyCategoryOverride";
+import type { ContentModifier } from "./content/modifiers/ContentModifier";
+import type { CustomizationRule } from "./customization/CustomizationRule";
+import type { NavigationRule } from "./hierarchy/NavigationRule";
+import type { RequiredSchemaSpecification } from "./SchemasSpecification";
 
 /**
  * Base interface for all [[Rule]] implementations. Not meant

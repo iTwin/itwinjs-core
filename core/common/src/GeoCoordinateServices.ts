@@ -9,8 +9,8 @@
 // cspell:ignore NGVD, NAVD, COMPD_CS, PROJCS, GEOGCS
 
 import { GeoServiceStatus } from "@itwin/core-bentley";
-import { XYZProps } from "@itwin/core-geometry";
-import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
+import type { XYZProps } from "@itwin/core-geometry";
+import type { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 
 /** This enumeration lists all possible status as returned from a coordinate conversion to or from a
  * [[GeographicCRS]] and either another [[GeographicCRS]] or a [[GeodeticDatum]].

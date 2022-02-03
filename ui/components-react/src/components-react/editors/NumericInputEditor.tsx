@@ -9,12 +9,13 @@
 import "./NumericInputEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import {
-  InputEditorSizeParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, RangeEditorParams,
+import type {
+  InputEditorSizeParams, PropertyEditorParams, PropertyValue, RangeEditorParams} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
 import { NumberInput } from "@itwin/core-react";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** @internal */

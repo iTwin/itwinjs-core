@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
-import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
+import type { Ruleset } from "@itwin/presentation-common";
+import { RegisteredRuleset } from "@itwin/presentation-common";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
-import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
+import type { PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
 import { renderHook } from "@testing-library/react-hooks";
 import { useRulesetRegistration } from "../../presentation-components/hooks/UseRulesetRegistration";
 

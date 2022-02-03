@@ -6,8 +6,8 @@
  * @module Quantity
  */
 
-import { UnitProps } from "../Interfaces";
-import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
+import type { UnitProps } from "../Interfaces";
+import type { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
 /** This interface defines the persistence format for describing the formatting of quantity values.
  * @beta

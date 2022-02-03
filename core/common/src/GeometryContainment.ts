@@ -6,9 +6,9 @@
  * @module Geometry
  */
 
-import { BentleyStatus, Id64Array } from "@itwin/core-bentley";
-import { ViewFlagProps } from "./ViewFlags";
-import { ClipPlaneContainment, ClipVectorProps } from "@itwin/core-geometry";
+import type { BentleyStatus, Id64Array } from "@itwin/core-bentley";
+import type { ViewFlagProps } from "./ViewFlags";
+import type { ClipPlaneContainment, ClipVectorProps } from "@itwin/core-geometry";
 
 /** Information required to request clip containment status for elements from the front end to the back end.
  * @public

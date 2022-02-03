@@ -7,11 +7,13 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AnalysisStyleDisplacement, AnalysisStyleThematic, ThematicGradientSettings } from "@itwin/core-common";
-import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
-import { DrawParams } from "../DrawCommand";
+import type { AnalysisStyleDisplacement, AnalysisStyleThematic} from "@itwin/core-common";
+import { ThematicGradientSettings } from "@itwin/core-common";
+import type { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
+import type { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
-import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
+import type { VertexShaderBuilder} from "../ShaderBuilder";
+import { VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { IsThematic } from "../TechniqueFlags";
 import { octDecodeNormal } from "./Surface";
 

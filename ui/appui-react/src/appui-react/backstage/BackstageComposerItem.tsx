@@ -8,8 +8,9 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import {
-  BackstageActionItem, BackstageItem, BackstageStageLauncher, ConditionalBooleanValue, ConditionalStringValue, isStageLauncher,
+import type {
+  BackstageActionItem, BackstageItem, BackstageStageLauncher} from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue, isStageLauncher,
 } from "@itwin/appui-abstract";
 import { BadgeUtilities, Icon } from "@itwin/core-react";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";

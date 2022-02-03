@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import type { SpatialViewDefinitionProps, ViewDefinitionProps} from "@itwin/core-common";
 import {
-  AmbientOcclusion, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
+  AmbientOcclusion, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode,
 } from "@itwin/core-common";
+import type { IModelConnection, LookAtOrthoArgs, ViewState, ViewState3d} from "@itwin/core-frontend";
 import {
-  AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, LookAtOrthoArgs, MarginPercent,
+  AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, MarginPercent,
   ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
-  StandardViewId, ViewState, ViewState3d, ViewStatus,
+  StandardViewId, ViewStatus,
 } from "@itwin/core-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { Mutable } from "@itwin/core-bentley";
+import type { Mutable } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
 
 describe("ViewState", () => {

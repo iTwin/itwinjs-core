@@ -4,13 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Logger } from "@itwin/core-bentley";
-import {
-  CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp, TextInputFormatPropEditorSpec,
-  TextSelectFormatPropEditorSpec,
+import type {
+  CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, TextInputFormatPropEditorSpec,
+  TextSelectFormatPropEditorSpec} from "@itwin/core-frontend";
+import { IModelApp,
 } from "@itwin/core-frontend";
-import {
-  CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider,
-  UnitSystemKey,
+import type {
+  CustomFormatProps, FormatProps, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider,
+  UnitSystemKey} from "@itwin/core-quantity";
+import { Format, FormatterSpec, Parser, ParserSpec,
 } from "@itwin/core-quantity";
 
 /* Interface that defines custom properties used to format and parse Bearing values. */

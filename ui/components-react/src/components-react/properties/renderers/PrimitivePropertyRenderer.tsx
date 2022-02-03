@@ -9,10 +9,10 @@
 import * as React from "react";
 import { Orientation } from "@itwin/core-react";
 import { HighlightedText } from "../../common/HighlightedText";
-import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
+import type { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
-import { SharedRendererProps } from "./PropertyRenderer";
+import type { SharedRendererProps } from "./PropertyRenderer";
 import { PropertyView } from "./PropertyView";
 
 /** Properties of [[PrimitivePropertyRenderer]] React component

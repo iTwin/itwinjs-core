@@ -9,13 +9,14 @@
 import "./SectionsField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ClipEventType, IModelApp, ViewClipClearTool, ViewClipDecoration, ViewClipDecorationProvider, Viewport } from "@itwin/core-frontend";
+import type { ClipEventType, Viewport } from "@itwin/core-frontend";
+import { IModelApp, ViewClipClearTool, ViewClipDecoration, ViewClipDecorationProvider } from "@itwin/core-frontend";
 import { Dialog, FooterPopup, TitleBar } from "@itwin/appui-layout-react";
 import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { useActiveViewport } from "../hooks/useActiveViewport";
 import { UiFramework } from "../UiFramework";
 import { Indicator } from "./Indicator";
-import { StatusFieldProps } from "./StatusFieldProps";
+import type { StatusFieldProps } from "./StatusFieldProps";
 
 /** Sections Status Field Props
  * @beta

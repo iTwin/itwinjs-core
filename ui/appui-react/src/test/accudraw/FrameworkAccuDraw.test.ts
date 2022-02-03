@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { BeButtonEvent, CompassMode, CurrentState, IModelApp, IModelAppOptions, ItemField, MockRender, RotationMode } from "@itwin/core-frontend";
+import type { IModelAppOptions} from "@itwin/core-frontend";
+import { BeButtonEvent, CompassMode, CurrentState, IModelApp, ItemField, MockRender, RotationMode } from "@itwin/core-frontend";
 import TestUtils, { storageMock } from "../TestUtils";
 import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";

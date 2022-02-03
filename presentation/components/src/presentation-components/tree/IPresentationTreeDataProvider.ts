@@ -6,9 +6,9 @@
  * @module Tree
  */
 
-import { NodeKey, NodePathElement } from "@itwin/presentation-common";
-import { ITreeDataProvider, TreeNodeItem } from "@itwin/components-react";
-import { IPresentationDataProvider } from "../common/IPresentationDataProvider";
+import type { NodeKey, NodePathElement } from "@itwin/presentation-common";
+import type { ITreeDataProvider, TreeNodeItem } from "@itwin/components-react";
+import type { IPresentationDataProvider } from "../common/IPresentationDataProvider";
 
 /**
  * Presentation tree data provider.

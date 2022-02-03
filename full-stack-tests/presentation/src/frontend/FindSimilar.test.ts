@@ -3,14 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64String, using } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import type { Id64String} from "@itwin/core-bentley";
+import { using } from "@itwin/core-bentley";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
 import { InstanceKey, KeySet } from "@itwin/presentation-common";
+import type { IPresentationTableDataProvider} from "@itwin/presentation-components";
 import {
-  DataProvidersFactory, DEFAULT_PROPERTY_GRID_RULESET, IPresentationTableDataProvider, PresentationPropertyDataProvider,
+  DataProvidersFactory, DEFAULT_PROPERTY_GRID_RULESET, PresentationPropertyDataProvider,
 } from "@itwin/presentation-components";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyData, RowItem } from "@itwin/components-react";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyData, RowItem } from "@itwin/components-react";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Find Similar", () => {

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ArrayValue } from "@itwin/appui-abstract";
+import type { ArrayValue } from "@itwin/appui-abstract";
 import { Orientation } from "@itwin/core-react";
 import { render } from "@testing-library/react";
 import { TableArrayValueRenderer } from "../../../../../components-react/properties/renderers/value/table/ArrayValueRenderer";

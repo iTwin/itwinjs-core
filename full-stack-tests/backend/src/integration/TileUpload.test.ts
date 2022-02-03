@@ -5,9 +5,10 @@
 import { assert } from "chai";
 import * as zlib from "zlib";
 import * as Azure from "@azure/storage-blob";
-import { AccessToken, GuidString } from "@itwin/core-bentley";
+import type { AccessToken, GuidString } from "@itwin/core-bentley";
+import type { IModelRpcProps} from "@itwin/core-common";
 import {
-  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, EdgeType, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
+  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, EdgeType, IModelTileRpcInterface, iModelTileTreeIdToString,
   RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
 import { GeometricModel3d, IModelDb, IModelHost, IModelHostConfiguration, RpcTrace } from "@itwin/core-backend";

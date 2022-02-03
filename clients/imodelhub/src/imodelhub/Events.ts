@@ -5,11 +5,13 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { AccessToken, GuidString, Id64, Id64String, Logger } from "@itwin/core-bentley";
-import { request, Response } from "../itwin-client/Request";
+import type { AccessToken, GuidString, Id64String} from "@itwin/core-bentley";
+import { Id64, Logger } from "@itwin/core-bentley";
+import type { Response } from "../itwin-client/Request";
+import { request } from "../itwin-client/Request";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
-import { IModelBaseHandler } from "./BaseHandler";
+import type { IModelBaseHandler } from "./BaseHandler";
 import { CodeState } from "./Codes";
 import { ArgumentCheck } from "./Errors";
 import {

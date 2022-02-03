@@ -7,16 +7,20 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { BeEvent, Id64String, using } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { BeEvent, using } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
+import type { IModelConnection, SpatialViewState, Viewport, ViewState, ViewState3d} from "@itwin/core-frontend";
 import {
-  IModelApp, IModelConnection, NoRenderApp, PerModelCategoryVisibility, SpatialViewState, Viewport, ViewState, ViewState3d,
+  IModelApp, NoRenderApp, PerModelCategoryVisibility,
 } from "@itwin/core-frontend";
 import { isPromiseLike } from "@itwin/core-react";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { FilteredPresentationTreeDataProvider } from "@itwin/presentation-components";
-import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
+import type { FilteredPresentationTreeDataProvider } from "@itwin/presentation-components";
+import type { IModelHierarchyChangeEventArgs, PresentationManager } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
+import type { ModelsVisibilityHandlerProps } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
+import { ModelsVisibilityHandler } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
 import { TestUtils } from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "../Common";
 

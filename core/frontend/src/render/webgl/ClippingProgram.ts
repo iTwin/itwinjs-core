@@ -7,8 +7,9 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { ProgramBuilder } from "./ShaderBuilder";
-import { CompileStatus, ShaderProgram } from "./ShaderProgram";
+import type { ProgramBuilder } from "./ShaderBuilder";
+import type { ShaderProgram } from "./ShaderProgram";
+import { CompileStatus } from "./ShaderProgram";
 import { System } from "./System";
 import { addClipping } from "./glsl/Clipping";
 

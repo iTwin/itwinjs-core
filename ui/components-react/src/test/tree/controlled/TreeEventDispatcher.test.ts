@@ -8,16 +8,17 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { CheckBoxState } from "@itwin/core-react";
 import { SelectionMode } from "../../../components-react/common/selection/SelectionModes";
-import { RangeSelection, TreeSelectionManager } from "../../../components-react/tree/controlled/internal/TreeSelectionManager";
+import type { RangeSelection, TreeSelectionManager } from "../../../components-react/tree/controlled/internal/TreeSelectionManager";
 import { from } from "../../../components-react/tree/controlled/Observable";
 import { TreeEventDispatcher } from "../../../components-react/tree/controlled/TreeEventDispatcher";
-import {
+import type {
   TreeCheckboxStateChangeEventArgs, TreeEvents, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "../../../components-react/tree/controlled/TreeEvents";
+import type { MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, VisibleTreeNodes} from "../../../components-react/tree/controlled/TreeModel";
 import {
-  isTreeModelNode, isTreeModelRootNode, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, VisibleTreeNodes,
+  isTreeModelNode, isTreeModelRootNode,
 } from "../../../components-react/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../components-react/tree/controlled/TreeNodeLoader";
+import type { ITreeNodeLoader } from "../../../components-react/tree/controlled/TreeNodeLoader";
 import { extractSequence } from "../../common/ObservableTestHelpers";
 import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes } from "./RandomTreeNodesHelpers";
 

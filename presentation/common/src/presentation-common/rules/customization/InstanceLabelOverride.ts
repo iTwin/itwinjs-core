@@ -6,9 +6,9 @@
  * @module PresentationRules
  */
 
-import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { RelationshipPathSpecification } from "../RelationshipPathSpecification";
-import { RuleBase, RuleTypes } from "../Rule";
+import type { SingleSchemaClassSpecification } from "../ClassSpecifications";
+import type { RelationshipPathSpecification } from "../RelationshipPathSpecification";
+import type { RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Rule to override labels for instances of specific ECClasses.

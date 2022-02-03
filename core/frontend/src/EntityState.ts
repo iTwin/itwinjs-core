@@ -6,9 +6,11 @@
  * @module ElementState
  */
 
-import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import { Code, ElementProps, EntityProps, RelatedElement } from "@itwin/core-common";
-import { IModelConnection } from "./IModelConnection";
+import type { GuidString, Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { ElementProps, EntityProps} from "@itwin/core-common";
+import { Code, RelatedElement } from "@itwin/core-common";
+import type { IModelConnection } from "./IModelConnection";
 
 /** The "state" of an Entity as represented in a web browser. Every subclass of EntityState handles one BIS class.
  * @public

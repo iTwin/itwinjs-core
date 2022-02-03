@@ -6,8 +6,10 @@
  * @module DisplayStyles
  */
 
-import { Range1d, Range1dProps } from "@itwin/core-geometry";
-import { ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
+import type { Range1dProps } from "@itwin/core-geometry";
+import { Range1d } from "@itwin/core-geometry";
+import type { ThematicGradientSettingsProps } from "./ThematicDisplay";
+import { ThematicGradientSettings } from "./ThematicDisplay";
 import { Gradient } from "./Gradient";
 
 /** JSON representation of an [[AnalysisStyleDisplacement]].

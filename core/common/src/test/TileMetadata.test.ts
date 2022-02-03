@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import { BatchType } from "../FeatureTable";
-import {
-  ClassifierTileTreeId, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, EdgeType, IModelTileTreeId, iModelTileTreeIdToString,
-  parseTileTreeIdAndContentId, PrimaryTileTreeId, TileMetadata, TileOptions, TreeFlags,
+import type {
+  ClassifierTileTreeId, IModelTileTreeId, PrimaryTileTreeId, TileMetadata} from "../tile/TileMetadata";
+import { computeTileChordTolerance, ContentIdProvider, defaultTileOptions, EdgeType, iModelTileTreeIdToString,
+  parseTileTreeIdAndContentId, TileOptions, TreeFlags,
 } from "../tile/TileMetadata";
 
 describe("TileMetadata", () => {

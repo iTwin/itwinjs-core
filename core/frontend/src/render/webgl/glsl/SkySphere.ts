@@ -8,16 +8,16 @@
 
 import { Angle, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Npc } from "@itwin/core-common";
-import { WebGLContext } from "@itwin/webgl-compatibility";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
-import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
+import type { SkySphereViewportQuadGeometry } from "../CachedGeometry";
 import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ShaderType, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
+import type { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
 import { TechniqueId } from "../TechniqueId";
-import { Texture } from "../Texture";
+import type { Texture } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 

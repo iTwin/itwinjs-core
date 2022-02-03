@@ -6,12 +6,13 @@
  * @module Editing
  */
 
+import type { Format, InvertedUnit, KindOfQuantityProps,
+  SchemaItemKey, SchemaKey, Unit} from "@itwin/ecschema-metadata";
 import {
-  ECObjectsError, ECObjectsStatus, Format, InvertedUnit, KindOfQuantityProps, OverrideFormat,
-  SchemaItemKey, SchemaItemType, SchemaKey, Unit,
+  ECObjectsError, ECObjectsStatus, OverrideFormat, SchemaItemType,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
+import type { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
 
 /**
  * @alpha

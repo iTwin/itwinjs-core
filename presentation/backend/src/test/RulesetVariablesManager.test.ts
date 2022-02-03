@@ -5,10 +5,11 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { OrderedId64Iterable } from "@itwin/core-bentley";
 import { VariableValueTypes } from "@itwin/presentation-common";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import type { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 
 describe("RulesetVariablesManager", () => {

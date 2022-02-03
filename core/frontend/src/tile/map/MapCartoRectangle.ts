@@ -8,8 +8,8 @@
 
 import { Angle, Point2d, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { GlobalLocation, GlobalLocationArea } from "../../ViewGlobalLocation";
-import { MapTilingScheme } from "../internal";
+import type { GlobalLocation, GlobalLocationArea } from "../../ViewGlobalLocation";
+import type { MapTilingScheme } from "../internal";
 
 const scratchMercatorFractionRange = Range2d.createNull();
 const scratchPoint2d = Point2d.createZero();

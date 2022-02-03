@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import type { MapLayerSource} from "@itwin/core-frontend";
+import { IModelApp, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
 import * as UiCore from "@itwin/core-react";
 import { ModalDialogManager } from "@itwin/appui-react";

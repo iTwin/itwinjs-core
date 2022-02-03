@@ -5,10 +5,12 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import type { ISchemaLocater, SchemaContext, SchemaMatchType} from "@itwin/ecschema-metadata";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType,
+  ECObjectsError, ECObjectsStatus, ECVersion, Schema, SchemaKey,
 } from "@itwin/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
+import type { FileSchemaKey} from "./SchemaFileLocater";
+import { SchemaFileLocater } from "./SchemaFileLocater";
 
 /**
  * A SchemaLocator implementation for locating JSON Schema files

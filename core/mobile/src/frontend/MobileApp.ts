@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, BeEvent, Logger, PromiseReturnType } from "@itwin/core-bentley";
+import type { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
+import { BeEvent, Logger } from "@itwin/core-bentley";
 import { IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketFrontend } from "@itwin/core-common";
-import { IpcApp, NativeApp, NativeAppOpts, NotificationHandler } from "@itwin/core-frontend";
+import type { NativeAppOpts} from "@itwin/core-frontend";
+import { IpcApp, NativeApp, NotificationHandler } from "@itwin/core-frontend";
 import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
-import { MobileAppFunctions, MobileNotifications } from "../common/MobileAppProps";
+import type { MobileAppFunctions, MobileNotifications } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 
 /** receive notifications from backend */

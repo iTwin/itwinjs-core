@@ -9,9 +9,10 @@
 import "./StatusMessageRenderer.scss";
 import * as React from "react";
 import classnames from "classnames";
-import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "./MessageManager";
-import { CommonProps } from "@itwin/core-react";
-import { StatusMessage } from "./StatusMessageManager";
+import type { ActivityMessageEventArgs, MessageAddedEventArgs} from "./MessageManager";
+import { MessageManager } from "./MessageManager";
+import type { CommonProps } from "@itwin/core-react";
+import type { StatusMessage } from "./StatusMessageManager";
 import { StatusMessagesContainer } from "./StatusMessagesContainer";
 
 /** Properties for [[StatusMessageRenderer]] component

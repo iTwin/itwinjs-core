@@ -9,7 +9,8 @@
 import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useRefs, useResizeObserver } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { useRefs, useResizeObserver } from "@itwin/core-react";
 import { Ellipsis } from "../base/Ellipsis";
 import { useLabel } from "../base/NineZone";
 

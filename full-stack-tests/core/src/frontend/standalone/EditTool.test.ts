@@ -5,9 +5,11 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import type { Viewport } from "@itwin/core-frontend";
+import { IModelApp, PrimitiveTool, SnapshotConnection } from "@itwin/core-frontend";
 import { EditTools } from "@itwin/editor-frontend";
-import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
+import type { TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
+import { testCmdIds } from "../../common/TestEditCommandIpc";
 import { TestUtility } from "../TestUtility";
 
 const expect = chai.expect;

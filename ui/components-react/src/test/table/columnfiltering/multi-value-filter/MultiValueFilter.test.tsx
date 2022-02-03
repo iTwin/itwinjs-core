@@ -8,9 +8,10 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import { MultiValueFilter } from "../../../../components-react/table/columnfiltering/multi-value-filter/MultiValueFilter";
-import { ReactDataGridColumn, TableColumn } from "../../../../components-react/table/component/TableColumn";
-import { FilterableColumn, TableDistinctValue } from "../../../../components-react/table/columnfiltering/ColumnFiltering";
-import { ColumnDescription } from "../../../../components-react/table/TableDataProvider";
+import type { ReactDataGridColumn} from "../../../../components-react/table/component/TableColumn";
+import { TableColumn } from "../../../../components-react/table/component/TableColumn";
+import type { FilterableColumn, TableDistinctValue } from "../../../../components-react/table/columnfiltering/ColumnFiltering";
+import type { ColumnDescription } from "../../../../components-react/table/TableDataProvider";
 import { TestFilterableTable } from "../../../TestUtils";
 
 // cSpell:ignore columnfiltering

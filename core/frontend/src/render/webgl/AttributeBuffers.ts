@@ -7,9 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
-import { QParams2d, QParams3d } from "@itwin/core-common";
-import { WebGLDisposable } from "./Disposable";
+import type { Point3d } from "@itwin/core-geometry";
+import type { QParams2d, QParams3d } from "@itwin/core-common";
+import type { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";
 

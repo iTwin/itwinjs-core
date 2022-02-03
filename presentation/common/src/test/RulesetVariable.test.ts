@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
-import {
+import type {
   BooleanRulesetVariable, BooleanRulesetVariableJSON, Id64RulesetVariable, Id64RulesetVariableJSON, Id64sRulesetVariable, Id64sRulesetVariableJSON,
-  IntRulesetVariable, IntRulesetVariableJSON, IntsRulesetVariable, IntsRulesetVariableJSON, RulesetVariable, StringRulesetVariable,
-  StringRulesetVariableJSON, VariableValueTypes,
+  IntRulesetVariable, IntRulesetVariableJSON, IntsRulesetVariable, IntsRulesetVariableJSON, StringRulesetVariable,
+  StringRulesetVariableJSON} from "../presentation-common/RulesetVariables";
+import { RulesetVariable, VariableValueTypes,
 } from "../presentation-common/RulesetVariables";
 import { createRandomId } from "./_helpers/random";
 

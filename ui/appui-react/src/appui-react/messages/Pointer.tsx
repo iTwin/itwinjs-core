@@ -9,14 +9,16 @@
 import "./Pointer.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { XAndY } from "@itwin/core-geometry";
+import type { XAndY } from "@itwin/core-geometry";
 import { OutputMessagePriority } from "@itwin/core-frontend";
-import { MessageSeverity, PointProps, RelativePosition, UiEvent } from "@itwin/appui-abstract";
-import { CommonProps, MessageContainer, Point, Rectangle, SizeProps } from "@itwin/core-react";
+import type { PointProps} from "@itwin/appui-abstract";
+import { MessageSeverity, RelativePosition, UiEvent } from "@itwin/appui-abstract";
+import type { CommonProps, SizeProps } from "@itwin/core-react";
+import { MessageContainer, Point, Rectangle } from "@itwin/core-react";
 import { offsetAndContainInContainer, Tooltip } from "@itwin/appui-layout-react";
 import { MessageManager } from "./MessageManager";
 import { MessageDiv, MessageSpan } from "./MessageSpan";
-import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
+import type { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 // cSpell:ignore noicon
 

@@ -5,9 +5,12 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { IModelHost, IModelJsFs, IModelJsNative } from "@itwin/core-backend";
-import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
-import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
+import type { IModelJsNative } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs } from "@itwin/core-backend";
+import type { AccessToken, GuidString} from "@itwin/core-bentley";
+import { ChangeSetStatus, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
+import type { ChangesetFileProps} from "@itwin/core-common";
+import { ChangesetType } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 

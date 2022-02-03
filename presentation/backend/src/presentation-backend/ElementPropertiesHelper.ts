@@ -6,13 +6,15 @@
  * @module Core
  */
 
-import { ECSqlStatement, IModelDb } from "@itwin/core-backend";
-import { assert, DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import {
+import type { ECSqlStatement, IModelDb } from "@itwin/core-backend";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, DbResult, Id64 } from "@itwin/core-bentley";
+import type {
   CategoryDescription, Content, ElementProperties, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem, ElementPropertiesPropertyItem,
-  ElementPropertiesStructArrayPropertyItem, IContentVisitor, Item, PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
-  ProcessPrimitiveValueProps, PropertyValueFormat, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps,
-  StartStructProps, traverseContent,
+  ElementPropertiesStructArrayPropertyItem, IContentVisitor, Item, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
+  ProcessPrimitiveValueProps, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps,
+  StartStructProps} from "@itwin/presentation-common";
+import { PresentationError, PresentationStatus, PropertyValueFormat, traverseContent,
 } from "@itwin/presentation-common";
 
 /** @internal */

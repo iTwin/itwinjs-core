@@ -6,32 +6,36 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { BeTimePoint, compareStringsOrUndefined } from "@itwin/core-bentley";
+import type { OrbitGtBlobProps, RealityDataSourceKey, ViewFlagOverrides} from "@itwin/core-common";
 import {
-  BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
-  Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
+  BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, PackedFeatureTable, QParams3d,
+  Quantization, RealityDataFormat, RealityDataProvider,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import {
-  ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
-  OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
-  OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
+import type {
+  ALong, OrbitGtBlockIndex, OrbitGtIProjectToViewForSort, OrbitGtLevel, OrbitGtTileIndex,
+  OrbitGtTransform} from "@itwin/core-orbitgt";
+import { CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBounds, OrbitGtCoordinate,
+  OrbitGtDataManager, OrbitGtFrameData, OrbitGtIViewRequest, OrbitGtTileLoadSorter, PageCachedFile, PointDataRaw, UrlFS,
 } from "@itwin/core-orbitgt";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
-import { HitDetail } from "../HitDetail";
+import type { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import type { IModelConnection } from "../IModelConnection";
 import { RealityDataSource } from "../RealityDataSource";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderMemory } from "../render/RenderMemory";
-import { RenderSystem } from "../render/RenderSystem";
-import { ViewingSpace } from "../ViewingSpace";
-import { Viewport } from "../Viewport";
+import type { RenderGraphic } from "../render/RenderGraphic";
+import type { RenderMemory } from "../render/RenderMemory";
+import type { RenderSystem } from "../render/RenderSystem";
+import type { ViewingSpace } from "../ViewingSpace";
+import type { Viewport } from "../Viewport";
+import type { TileContent, TileDrawArgs, TileParams, TileRequest, TileTreeOwner,
+  TileTreeParams, TileTreeSupplier} from "./internal";
 import {
-  RealityModelTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner,
-  TileTreeParams, TileTreeSupplier, TileUsageMarker,
+  RealityModelTileTree, Tile, TileLoadPriority, TileTree, TileUsageMarker,
 } from "./internal";
 
 const scratchRange = Range3d.create();

@@ -7,8 +7,8 @@
  */
 
 import { BeTimePoint, StopWatch } from "@itwin/core-bentley";
-import { GLTimerResultCallback } from "../RenderSystem";
-import { FrameBuffer } from "./FrameBuffer";
+import type { GLTimerResultCallback } from "../RenderSystem";
+import type { FrameBuffer } from "./FrameBuffer";
 import { System } from "./System";
 
 interface AllTimePoints {

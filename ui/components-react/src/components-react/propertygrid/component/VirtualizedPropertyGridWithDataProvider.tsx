@@ -9,12 +9,12 @@
 
 import React from "react";
 import { DelayedSpinner } from "../../common/DelayedSpinner";
-import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
-import { FilteredType } from "../dataproviders/filterers/PropertyDataFiltererBase";
+import type { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
+import type { FilteredType } from "../dataproviders/filterers/PropertyDataFiltererBase";
 import { usePropertyGridEventHandler, usePropertyGridModel, usePropertyGridModelSource } from "../internal/PropertyGridHooks";
-import { PropertyCategoryRendererManager } from "../PropertyCategoryRendererManager";
-import { IPropertyDataProvider } from "../PropertyDataProvider";
-import { CommonPropertyGridProps } from "./PropertyGridCommons";
+import type { PropertyCategoryRendererManager } from "../PropertyCategoryRendererManager";
+import type { IPropertyDataProvider } from "../PropertyDataProvider";
+import type { CommonPropertyGridProps } from "./PropertyGridCommons";
 import { VirtualizedPropertyGrid } from "./VirtualizedPropertyGrid";
 
 /** Properties for [[VirtualizedPropertyGridWithDataProvider]] React component

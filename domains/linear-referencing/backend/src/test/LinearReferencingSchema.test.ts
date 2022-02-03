@@ -5,17 +5,21 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { Guid, Id64 } from "@itwin/core-bentley";
+import type { IModelDb} from "@itwin/core-backend";
 import {
-  ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
+  ClassRegistry, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import {
-  CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps,
+import type {
+  CategoryProps, GeometricElement3dProps, InformationPartitionElementProps, PhysicalElementProps} from "@itwin/core-common";
+import { Code, IModel,
 } from "@itwin/core-common";
-import { ILinearElementProps, LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps } from "@itwin/linear-referencing-common";
+import type { ILinearElementProps, LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps } from "@itwin/linear-referencing-common";
+import type { LinearlyLocatedSingleFromTo, LinearlyReferencedFromToLocation} from "../linear-referencing-backend";
 import {
-  LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo, LinearlyReferencedFromToLocation, LinearReferencingSchema,
+  LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearReferencingSchema,
 } from "../linear-referencing-backend";
 
 class TestLinearReferencingSchema extends Schema {

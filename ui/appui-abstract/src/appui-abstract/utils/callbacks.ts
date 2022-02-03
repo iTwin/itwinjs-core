@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { Primitives } from "../properties/PrimitiveTypes";
+import type { Primitives } from "../properties/PrimitiveTypes";
 
 /** Signature for number onCommit function.
  * @public

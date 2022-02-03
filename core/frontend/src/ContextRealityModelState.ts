@@ -6,13 +6,15 @@
  * @module Views
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance, RealityDataFormat, RealityDataSourceKey } from "@itwin/core-common";
-import { DisplayStyleState } from "./DisplayStyleState";
-import { IModelConnection } from "./IModelConnection";
+import type { Id64String } from "@itwin/core-bentley";
+import type { ContextRealityModelProps, RealityDataSourceKey } from "@itwin/core-common";
+import { ContextRealityModel, FeatureAppearance, RealityDataFormat } from "@itwin/core-common";
+import type { DisplayStyleState } from "./DisplayStyleState";
+import type { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { RealityDataSource } from "./RealityDataSource";
-import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
+import type { TileTreeReference } from "./tile/internal";
+import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree } from "./tile/internal";
 
 /** A [ContextRealityModel]($common) attached to a [[DisplayStyleState]] supplying a [[TileTreeReference]] used to draw the
  * reality model in a [[Viewport]].

@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
+import type { CommonToolbarItem, CustomButtonDefinition} from "../../appui-abstract";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition, ToolbarItemsManager, ToolbarItemUtilities,
+  BadgeType, ConditionalBooleanValue, ConditionalStringValue, ToolbarItemsManager, ToolbarItemUtilities,
 } from "../../appui-abstract";
 
 describe("ToolbarItemsManager", () => {

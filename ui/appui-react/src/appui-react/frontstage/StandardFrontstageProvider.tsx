@@ -7,11 +7,14 @@
  */
 
 import * as React from "react";
-import { StageUsage } from "@itwin/appui-abstract";
-import { StagePanel, StagePanelProps } from "../stagepanels/StagePanel";
-import { ContentGroup, ContentGroupProps, ContentGroupProvider } from "../content/ContentGroup";
+import type { StageUsage } from "@itwin/appui-abstract";
+import type { StagePanelProps } from "../stagepanels/StagePanel";
+import { StagePanel } from "../stagepanels/StagePanel";
+import type { ContentGroupProps} from "../content/ContentGroup";
+import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
 import { FrontstageProvider } from "./FrontstageProvider";
-import { Frontstage, FrontstageProps } from "./Frontstage";
+import type { FrontstageProps } from "./Frontstage";
+import { Frontstage } from "./Frontstage";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 import { Zone } from "../zones/Zone";
 import { ContentToolWidgetComposer } from "../widgets/ContentToolWidgetComposer";

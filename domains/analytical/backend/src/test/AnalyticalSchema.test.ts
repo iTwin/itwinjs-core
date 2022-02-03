@@ -6,14 +6,17 @@
 import { assert } from "chai";
 import * as path from "path";
 import * as semver from "semver";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { Guid, Id64 } from "@itwin/core-bentley";
+import type { GeometricElement3d, IModelDb} from "@itwin/core-backend";
 import {
-  BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalPartition, Schema,
+  BisCoreSchema, ClassRegistry, GenericSchema, IModelHost, IModelJsFs, KnownLocations, PhysicalPartition, Schema,
   Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import {
-  CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, PropertyMetaData, RelatedElement,
-  TypeDefinitionElementProps,
+import type {
+  CategoryProps, GeometricElement3dProps, InformationPartitionElementProps, ModelProps, PropertyMetaData,
+  TypeDefinitionElementProps} from "@itwin/core-common";
+import { Code, ColorDef, IModel, RelatedElement,
 } from "@itwin/core-common";
 import { AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema } from "../analytical-backend";
 

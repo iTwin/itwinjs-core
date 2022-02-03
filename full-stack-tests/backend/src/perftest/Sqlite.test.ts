@@ -7,7 +7,8 @@ import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
 import { DbResult, StopWatch, using } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode, IModelHost, SqliteStatement } from "@itwin/core-backend";
+import type { SqliteStatement } from "@itwin/core-backend";
+import { ECDb, ECDbOpenMode, IModelHost } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 function makeRandStr(length: number) {

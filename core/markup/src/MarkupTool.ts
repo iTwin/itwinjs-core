@@ -6,10 +6,12 @@
  * @module MarkupTools
  */
 
-import { XAndY } from "@itwin/core-geometry";
-import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
-import { G, LinkedHTMLElement, Element as MarkupElement, Text as MarkupText } from "@svgdotjs/svg.js";
-import { Markup, MarkupApp } from "./Markup";
+import type { XAndY } from "@itwin/core-geometry";
+import type { BeTouchEvent, Viewport } from "@itwin/core-frontend";
+import { BeButton, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool } from "@itwin/core-frontend";
+import type { G, LinkedHTMLElement, Element as MarkupElement, Text as MarkupText } from "@svgdotjs/svg.js";
+import type { Markup} from "./Markup";
+import { MarkupApp } from "./Markup";
 
 /** Base class for all tools that operate on Markup elements.
  * @public

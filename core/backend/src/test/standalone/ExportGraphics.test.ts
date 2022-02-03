@@ -4,12 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
 import { Box, LineString3d, Point3d, Range3d, Sphere } from "@itwin/core-geometry";
-import { Code, ColorDef, DbResult, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, IModel, PhysicalElementProps } from "@itwin/core-common";
-import { ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
+import type { GeometryPartProps, PhysicalElementProps } from "@itwin/core-common";
+import { Code, ColorDef, DbResult, GeometryClass, GeometryParams, GeometryStreamBuilder, IModel } from "@itwin/core-common";
+import type { ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
+import type { ExportGraphicsInfo, ExportGraphicsOptions, GeometricElement, SnapshotDb} from "../../core-backend";
 import {
-  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, PhysicalObject, SnapshotDb,
+  ExportGraphics, ExportGraphicsMeshVisitor, PhysicalObject,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometryPart } from "../../Element";

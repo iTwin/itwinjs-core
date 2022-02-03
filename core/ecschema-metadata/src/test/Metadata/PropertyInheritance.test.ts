@@ -6,8 +6,9 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { PrimitiveType } from "../../ECObjects";
-import { ECClass, MutableClass } from "../../Metadata/Class";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
+import type { ECClass, MutableClass } from "../../Metadata/Class";
+import type { MutableSchema} from "../../Metadata/Schema";
+import { Schema } from "../../Metadata/Schema";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

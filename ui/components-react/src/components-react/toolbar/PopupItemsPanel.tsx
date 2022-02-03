@@ -8,7 +8,8 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@itwin/appui-abstract";
+import type { ActionButton, GroupButton} from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { BadgeUtilities, IconHelper } from "@itwin/core-react";
 import { BackArrow } from "./groupPanel/BackArrow";
 import { GroupColumn } from "./groupPanel/Column";

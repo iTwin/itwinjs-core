@@ -7,9 +7,11 @@
  */
 
 import * as React from "react";
-import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@itwin/appui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer";
-import { TreeModelNode } from "../TreeModel";
+import type { PrimitiveValue, PropertyDescription} from "@itwin/appui-abstract";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyUpdatedArgs } from "../../../editors/EditorContainer";
+import { EditorContainer } from "../../../editors/EditorContainer";
+import type { TreeModelNode } from "../TreeModel";
 
 /**
  * Properties for [[TreeNodeEditor]] component.

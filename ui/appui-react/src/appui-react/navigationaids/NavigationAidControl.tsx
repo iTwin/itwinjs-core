@@ -6,10 +6,11 @@
  * @module NavigationAids
  */
 
-import * as React from "react";
-import { IModelConnection } from "@itwin/core-frontend";
+import type * as React from "react";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { UiEvent } from "@itwin/appui-abstract";
-import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
+import type { ConfigurableCreateInfo} from "../configurableui/ConfigurableUiControl";
+import { ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 
 /** NavigationAid Activated Event Args interface.
  * @public

@@ -7,31 +7,34 @@ import * as faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeDuration, BeEvent, CompressedId64Set, using } from "@itwin/core-bentley";
-import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
-import { IModelConnection, IpcApp } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
-import { UnitSystemKey } from "@itwin/core-quantity";
+import type { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { IpcApp } from "@itwin/core-frontend";
+import type { ITwinLocalization } from "@itwin/core-i18n";
+import type { UnitSystemKey } from "@itwin/core-quantity";
+import type { ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions,
+  ContentSourcesRpcResult, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, RpcRequestsHandler, Ruleset, SelectClassInfo,
+  SingleElementPropertiesRequestOptions, UpdateInfo} from "@itwin/presentation-common";
 import {
-  Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions,
-  ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
-  DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition,
-  Node, NodeKey, NodePathElement, Paged, PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo,
-  SingleElementPropertiesRequestOptions, UpdateInfo, VariableValueTypes,
+  Content, Descriptor, DisplayValueGroup, FieldDescriptorType, InstanceKey, Item, KeySet, LabelDefinition,
+  Node, NodeKey, NodePathElement, PresentationIpcEvents, RegisteredRuleset, RulesetVariable, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement,
   createRandomRuleset, createRandomTransientId, createTestContentDescriptor, createTestECInstanceKey,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
+import type { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
+import type { IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs} from "../presentation-frontend/PresentationManager";
 import {
-  buildPagedArrayResponse, IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager,
+  buildPagedArrayResponse, PresentationManager,
 } from "../presentation-frontend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
-import { StateTracker } from "../presentation-frontend/StateTracker";
+import type { StateTracker } from "../presentation-frontend/StateTracker";
 
 describe("PresentationManager", () => {
 

@@ -7,10 +7,12 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { IndexedPolyface, Polyface, Transform } from "@itwin/core-geometry";
-import { OctEncodedNormal, QParams2d, QParams3d, RenderTexture } from "@itwin/core-common";
-import { GltfMeshData } from "../../../tile/internal";
-import { RenderMemory } from "../../RenderMemory";
+import type { Polyface, Transform } from "@itwin/core-geometry";
+import { IndexedPolyface } from "@itwin/core-geometry";
+import type { QParams2d, QParams3d, RenderTexture } from "@itwin/core-common";
+import { OctEncodedNormal } from "@itwin/core-common";
+import type { GltfMeshData } from "../../../tile/internal";
+import type { RenderMemory } from "../../RenderMemory";
 import { Mesh } from "./MeshPrimitives";
 
 export interface RealityMeshProps {

@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonDivProps } from "../utils/Props";
+import type { CommonDivProps } from "../utils/Props";
 
 /** Properties for the [[Div]] component
  * @public

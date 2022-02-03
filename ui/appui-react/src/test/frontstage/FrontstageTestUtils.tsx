@@ -5,9 +5,10 @@
 /* eslint-disable deprecation/deprecation */
 import * as React from "react";
 import { StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
-import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
-  MessageCenterField, StatusBarWidgetControl, StatusBarWidgetControlArgs, Widget, WidgetControl, Zone, ZoneLocation, ZoneState,
+import type {
+  ConfigurableCreateInfo, FrontstageProps, StatusBarWidgetControlArgs} from "../../appui-react";
+import { ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProvider,
+  MessageCenterField, StatusBarWidgetControl, Widget, WidgetControl, Zone, ZoneLocation, ZoneState,
 } from "../../appui-react";
 import { ToolItemDef } from "../../appui-react/shared/ToolItemDef";
 

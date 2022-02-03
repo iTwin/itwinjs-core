@@ -10,16 +10,19 @@ import "./PropertyGrid.scss";
 import classnames from "classnames";
 import { produce } from "immer";
 import * as React from "react";
-import { DisposeFunc } from "@itwin/core-bentley";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { DisposeFunc } from "@itwin/core-bentley";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 import { Orientation, ResizableContainerObserver } from "@itwin/core-react";
 import { DelayedSpinner } from "../../common/DelayedSpinner";
-import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
-import { ColumnResizeRelatedPropertyListProps, ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier";
+import type { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
+import type { ColumnResizeRelatedPropertyListProps} from "./ColumnResizingPropertyListPropsSupplier";
+import { ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier";
 import { PropertyCategoryBlock } from "./PropertyCategoryBlock";
-import { CommonPropertyGridProps, PropertyGridCommons } from "./PropertyGridCommons";
+import type { CommonPropertyGridProps} from "./PropertyGridCommons";
+import { PropertyGridCommons } from "./PropertyGridCommons";
 import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRelatedPropsSupplier";
-import { PropertyList, PropertyListProps } from "./PropertyList";
+import type { PropertyListProps } from "./PropertyList";
+import { PropertyList } from "./PropertyList";
 
 /** Properties for [[PropertyGrid]] React component
  * @public

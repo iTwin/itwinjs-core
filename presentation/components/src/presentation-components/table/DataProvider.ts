@@ -9,18 +9,23 @@
 import { sort } from "fast-sort";
 import memoize from "micro-memoize";
 import { assert } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import {
-  Content, createFieldHierarchies, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item,
-  NestedContentValue, PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, RelationshipMeaning, Ruleset, SortDirection,
-  StartItemProps, traverseContentItem, Value, ValuesDictionary,
+import type { IModelConnection } from "@itwin/core-frontend";
+import type {
+  Content, Descriptor, DescriptorOverrides, Field,
+  NestedContentValue, ProcessFieldHierarchiesProps, Ruleset,
+  StartItemProps, ValuesDictionary} from "@itwin/presentation-common";
+import { createFieldHierarchies, DefaultContentDisplayTypes, FieldDescriptorType, InstanceKey, Item, PresentationError, PresentationStatus, RelationshipMeaning, SortDirection, traverseContentItem, Value,
 } from "@itwin/presentation-common";
-import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@itwin/components-react";
+import type { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem} from "@itwin/components-react";
+import { TableDataChangeEvent } from "@itwin/components-react";
 import { HorizontalAlignment, SortDirection as UiSortDirection } from "@itwin/core-react";
-import { FieldHierarchyRecord, PropertyRecordsBuilder } from "../common/ContentBuilder";
-import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
-import { DiagnosticsProps } from "../common/Diagnostics";
-import { Page, PageContainer } from "../common/PageContainer";
+import type { FieldHierarchyRecord} from "../common/ContentBuilder";
+import { PropertyRecordsBuilder } from "../common/ContentBuilder";
+import type { CacheInvalidationProps, IContentDataProvider } from "../common/ContentDataProvider";
+import { ContentDataProvider } from "../common/ContentDataProvider";
+import type { DiagnosticsProps } from "../common/Diagnostics";
+import type { Page} from "../common/PageContainer";
+import { PageContainer } from "../common/PageContainer";
 import { createLabelRecord, translate } from "../common/Utils";
 
 interface PromisedPage<TItem> extends Page<TItem> {

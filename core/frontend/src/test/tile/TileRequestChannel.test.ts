@@ -6,13 +6,14 @@ import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { ServerTimeoutError } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { Viewport } from "../../Viewport";
+import type { Viewport } from "../../Viewport";
 import { MockRender } from "../../render/MockRender";
 import { createBlankConnection } from "../createBlankConnection";
+import type { TileContent, TileRequest, TileRequestChannelStatistics} from "../../tile/internal";
 import {
-  Tile, TileContent, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,
+  Tile, TileLoadPriority, TileLoadStatus, TileRequestChannel, TileTree,
 } from "../../tile/internal";
 
 async function runMicroTasks(): Promise<void> {

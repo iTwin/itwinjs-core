@@ -6,12 +6,13 @@
  * @module Notification
  */
 
-import { XAndY } from "@itwin/core-geometry";
-import {
-  ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
-  ToolAssistance, ToolAssistanceInstructions, ToolTipOptions,
+import type { XAndY } from "@itwin/core-geometry";
+import type {
+  ActivityMessageDetails, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, ToolAssistanceInstructions, ToolTipOptions} from "@itwin/core-frontend";
+import { ActivityMessageEndReason, NotificationManager,
+  ToolAssistance,
 } from "@itwin/core-frontend";
-import { RelativePosition } from "@itwin/appui-abstract";
+import type { RelativePosition } from "@itwin/appui-abstract";
 import { ElementTooltip } from "../feedback/ElementTooltip";
 import { UiFramework } from "../UiFramework";
 import { MessageManager } from "./MessageManager";

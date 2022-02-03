@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { Schema } from "./Schema";
+import type { Schema } from "./Schema";
 
 /** @beta */
 export interface CustomAttribute {

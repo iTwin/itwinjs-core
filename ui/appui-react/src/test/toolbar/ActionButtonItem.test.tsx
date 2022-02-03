@@ -6,7 +6,8 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ActionButton, BadgeType, ToolbarItemUtilities } from "@itwin/appui-abstract";
+import type { ActionButton} from "@itwin/appui-abstract";
+import { BadgeType, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { ActionButtonItem, CommandItemDef, KeyboardShortcutManager, ToolbarHelper } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 

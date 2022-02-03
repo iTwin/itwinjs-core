@@ -11,25 +11,29 @@
 // cSpell:ignore popout
 
 import "./Frontstage.scss";
-import produce, { castDraft, Draft } from "immer";
+import type { Draft } from "immer";
+import produce, { castDraft } from "immer";
 import * as React from "react";
 import { assert, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
-import { Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
+import type { SizeProps, UiStateStorageResult} from "@itwin/core-react";
+import { Size, UiStateStorageStatus } from "@itwin/core-react";
+import type { FloatingWidgetHomeState, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState, PanelSide, PanelState, TabState} from "@itwin/appui-layout-react";
 import {
   addPanelWidget, addTab, addWidgetTabToFloatingPanel, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
-  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, isFloatingLocation,
-  isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
-  NineZoneStateReducer, PanelSide, panelSides, PanelState, removeTab, TabState, toolSettingsTabId, WidgetPanels,
+  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgets, getUniqueId, isFloatingLocation,
+  isHorizontalPanelSide, NineZone,
+  NineZoneStateReducer, panelSides, removeTab, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
-import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
+import type { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
-import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
+import type { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
+import type { StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
+import { StagePanelState } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { useUiStateStorageHandler } from "../uistate/useUiStateStorage";
-import { WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
+import type { WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
 import { WidgetContent } from "./Content";
 import { WidgetPanelsFrontstageContent } from "./FrontstageContent";
@@ -39,7 +43,7 @@ import { WidgetPanelsTab } from "./Tab";
 import { WidgetPanelsToolbars } from "./Toolbars";
 import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
 import { useEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
-import { FrameworkRootState } from "../redux/StateManager";
+import type { FrameworkRootState } from "../redux/StateManager";
 import { useSelector } from "react-redux";
 
 const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "middle", "end"];

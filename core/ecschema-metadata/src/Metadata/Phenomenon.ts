@@ -6,10 +6,10 @@
  * @module Metadata
  */
 
-import { PhenomenonProps } from "../Deserialization/JsonProps";
+import type { PhenomenonProps } from "../Deserialization/JsonProps";
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { Schema } from "./Schema";
+import type { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
 /** @beta */

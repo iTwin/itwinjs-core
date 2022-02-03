@@ -9,8 +9,9 @@
 import "./Tool.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActionButton, GroupButton } from "@itwin/appui-abstract";
-import { CommonProps, useTargeted } from "@itwin/core-react";
+import type { ActionButton, GroupButton } from "@itwin/appui-abstract";
+import type { CommonProps} from "@itwin/core-react";
+import { useTargeted } from "@itwin/core-react";
 
 /** Properties of [[GroupTool]] component.
  * @internal

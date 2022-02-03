@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { useTargeted } from "@itwin/core-react";
-import { MergeTargetProps } from "./Merge";
+import type { MergeTargetProps } from "./Merge";
 
 /** Properties of [[WidgetTarget]] component.
  * @internal

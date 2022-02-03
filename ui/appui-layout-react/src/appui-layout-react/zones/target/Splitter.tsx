@@ -9,7 +9,7 @@
 import "./Splitter.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { MergeTargetProps } from "./Merge";
+import type { MergeTargetProps } from "./Merge";
 import { WidgetTarget } from "./Target";
 
 /** Properties of [[SplitterTarget]] component.

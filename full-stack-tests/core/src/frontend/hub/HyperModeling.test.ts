@@ -5,10 +5,12 @@
 import { expect } from "chai";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { SectionType } from "@itwin/core-common";
-import { CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, ParseAndRunResult, SnapshotConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
+import type { SectionMarkerConfig} from "@itwin/hypermodeling-frontend";
 import {
-  HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
+  HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerHandler,
 } from "@itwin/hypermodeling-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";

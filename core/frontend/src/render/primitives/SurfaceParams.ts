@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { FillFlags, RenderMaterial, RenderTexture } from "@itwin/core-common";
-import { VertexIndices } from "./VertexTable";
+import type { FillFlags, RenderMaterial, RenderTexture } from "@itwin/core-common";
+import type { VertexIndices } from "./VertexTable";
 
 /** @internal */
 export enum SurfaceType {

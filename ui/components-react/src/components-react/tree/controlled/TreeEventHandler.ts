@@ -8,15 +8,16 @@
 
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { Subject } from "rxjs/internal/Subject";
-import { IDisposable } from "@itwin/core-bentley";
+import type { IDisposable } from "@itwin/core-bentley";
 import { TreeModelMutator } from "./internal/TreeModelMutator";
-import { Subscription, toRxjsObservable } from "./Observable";
-import {
+import type { Subscription} from "./Observable";
+import { toRxjsObservable } from "./Observable";
+import type {
   TreeCheckboxStateChangeEventArgs, TreeEvents, TreeNodeEventArgs, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "./TreeEvents";
-import { TreeModelNode } from "./TreeModel";
-import { TreeModelSource } from "./TreeModelSource";
-import { ITreeNodeLoader } from "./TreeNodeLoader";
+import type { TreeModelNode } from "./TreeModel";
+import type { TreeModelSource } from "./TreeModelSource";
+import type { ITreeNodeLoader } from "./TreeNodeLoader";
 
 /**
  * Params used for tree node editing.

@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { Rectangle } from "@itwin/core-react";
+import type { Rectangle } from "@itwin/core-react";
 import * as ResizeObserverModule from "@itwin/core-react/lib/cjs/core-react/utils/hooks/ResizeObserverPolyfill";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../appui-layout-react";
+import type { NineZoneDispatch, NineZoneLabels} from "../../appui-layout-react";
+import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 import { createRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
 

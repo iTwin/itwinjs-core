@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
-import { FormatProps, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import type { CommonProps } from "@itwin/core-react";
+import type { FormatProps, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { Input } from "@itwin/itwinui-react";
 import { UnitDescr } from "./misc/UnitDescr";
 import { UiIModelComponents } from "../UiIModelComponents";

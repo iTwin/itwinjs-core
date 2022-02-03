@@ -6,10 +6,11 @@
  * @module Rendering
  */
 
-import { BeEvent, Id64 } from "@itwin/core-bentley";
+import type { BeEvent} from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
 import { FeatureAppearance, FeatureOverrides } from "@itwin/core-common";
 import { Viewport } from "../Viewport";
-import { ViewState } from "../ViewState";
+import type { ViewState } from "../ViewState";
 
 // cspell:ignore subcat subcats
 

@@ -6,9 +6,10 @@
  * @module Tiles
  */
 
-import { MapLayerSettings } from "@itwin/core-common";
-import { HitDetail } from "../../HitDetail";
-import { MapLayerImageryProvider, TileTreeReference } from "../internal";
+import type { MapLayerSettings } from "@itwin/core-common";
+import type { HitDetail } from "../../HitDetail";
+import type { MapLayerImageryProvider} from "../internal";
+import { TileTreeReference } from "../internal";
 
 /** @internal  */
 export abstract class MapLayerTileTreeReference extends TileTreeReference {

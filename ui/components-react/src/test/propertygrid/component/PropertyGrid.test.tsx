@@ -14,8 +14,9 @@ import { act, fireEvent, render } from "@testing-library/react";
 import { PropertyCategoryBlock } from "../../../components-react/propertygrid/component/PropertyCategoryBlock";
 import { PropertyGrid } from "../../../components-react/propertygrid/component/PropertyGrid";
 import { PropertyGridCommons } from "../../../components-react/propertygrid/component/PropertyGridCommons";
-import {
-  IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
+import type {
+  IPropertyDataProvider, PropertyCategory, PropertyData} from "../../../components-react/propertygrid/PropertyDataProvider";
+import { PropertyDataChangeEvent,
 } from "../../../components-react/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";

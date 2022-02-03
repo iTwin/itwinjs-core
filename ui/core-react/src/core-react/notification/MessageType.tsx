@@ -6,7 +6,7 @@
  * @module Notification
  */
 
-import * as React from "react";
+import type * as React from "react";
 
 /** Describes a React based message
  * @public

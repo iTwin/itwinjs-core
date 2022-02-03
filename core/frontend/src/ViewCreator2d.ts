@@ -12,18 +12,20 @@ API for creating a 2D view from a given modelId and modelType (classFullName).
 Additional options (such as background color) can be passed during view creation.
 */
 
-import { Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
-import {
-  CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, IModelError, ModelSelectorProps, QueryBinder, QueryRowFormat, SheetProps,
-  ViewDefinition2dProps, ViewStateProps,
+import type { Id64Array, Id64String} from "@itwin/core-bentley";
+import { IModelStatus } from "@itwin/core-bentley";
+import type {
+  CategorySelectorProps, DisplayStyleProps, ModelSelectorProps, SheetProps,
+  ViewDefinition2dProps, ViewStateProps} from "@itwin/core-common";
+import { Code, ColorDef, IModel, IModelError, QueryBinder, QueryRowFormat,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { DrawingViewState } from "./DrawingViewState";
-import { EntityState } from "./EntityState";
-import { IModelConnection } from "./IModelConnection";
+import type { EntityState } from "./EntityState";
+import type { IModelConnection } from "./IModelConnection";
 import { DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
 import { SheetViewState } from "./SheetViewState";
-import { ViewState, ViewState2d } from "./ViewState";
+import type { ViewState, ViewState2d } from "./ViewState";
 
 /** Options for creating a [[ViewState2d]] via [[ViewCreator2d]].
  *  @public

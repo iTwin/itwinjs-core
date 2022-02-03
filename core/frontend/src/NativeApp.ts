@@ -6,15 +6,19 @@
  * @module NativeApp
  */
 
-import { AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
-import {
-  BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
-  nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
-  RequestNewBriefcaseProps, StorageValue, SyncMode,
+import type { AsyncMethodsOf, GuidString, PromiseReturnType } from "@itwin/core-bentley";
+import { BeEvent, Logger } from "@itwin/core-bentley";
+import type {
+  BriefcaseDownloader, BriefcaseProps, IpcSocketFrontend, LocalBriefcaseProps, NativeAppFunctions, NativeAppNotifications,
+  RequestNewBriefcaseProps, StorageValue} from "@itwin/core-common";
+import { IModelVersion, InternetConnectivityStatus,
+  nativeAppChannel, nativeAppNotify, OverriddenBy, SyncMode,
 } from "@itwin/core-common";
-import { ProgressCallback, RequestGlobalOptions } from "./request/Request";
+import type { ProgressCallback} from "./request/Request";
+import { RequestGlobalOptions } from "./request/Request";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
+import type { IpcAppOptions} from "./IpcApp";
+import { IpcApp, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
 /** Properties for specifying the BriefcaseId for downloading. May either specify a BriefcaseId directly (preferable) or, for

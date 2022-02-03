@@ -8,15 +8,16 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
-import { RenderMemory } from "../RenderMemory";
+import type { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
+import type { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
-import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
-import { ShaderProgramParams } from "./DrawCommand";
+import type { LUTGeometry } from "./CachedGeometry";
+import { CachedGeometry } from "./CachedGeometry";
+import type { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { Target } from "./Target";
-import { TechniqueId } from "./TechniqueId";
+import type { Target } from "./Target";
+import type { TechniqueId } from "./TechniqueId";
 import { Matrix4 } from "./Matrix";
 
 /** @internal */

@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { IModelApp, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@itwin/core-frontend";
 import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@itwin/core-markup";
-import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
+import type { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
 import { TestUtility } from "../TestUtility";
-import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
+import type { ScreenTestViewport } from "../TestViewport";
+import { createOnScreenTestViewport } from "../TestViewport";
 
 describe("Markup tests", async () => {
   let imodel: IModelConnection;

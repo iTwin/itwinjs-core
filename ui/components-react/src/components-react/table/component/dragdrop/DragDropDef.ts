@@ -6,8 +6,8 @@
  * @module DragDrop
  */
 
-import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
+import type * as React from "react";
+import type { CommonProps } from "@itwin/core-react";
 
 /** Enum for different DropEffects.
  * @beta

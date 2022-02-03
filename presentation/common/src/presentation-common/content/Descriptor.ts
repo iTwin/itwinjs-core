@@ -6,13 +6,17 @@
  * @module Content
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
-import {
-  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelatedClassInfoWithOptionalRelationship,
-  RelatedClassInfoWithOptionalRelationshipJSON, RelationshipPath, RelationshipPathJSON,
+import type { Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import type {
+  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfoJSON,
+  RelatedClassInfoWithOptionalRelationshipJSON, RelationshipPath, RelationshipPathJSON} from "../EC";
+import { RelatedClassInfo, RelatedClassInfoWithOptionalRelationship,
 } from "../EC";
-import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
-import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
+import type { CategoryDescriptionJSON } from "./Category";
+import { CategoryDescription } from "./Category";
+import type { FieldDescriptor, FieldJSON} from "./Fields";
+import { Field, getFieldByName } from "./Fields";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].

@@ -5,9 +5,11 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { Id64, Id64Set } from "@itwin/core-bentley";
+import type { Id64Set } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
-import { GeometryPartProps, IModel } from "@itwin/core-common";
+import type { GeometryPartProps} from "@itwin/core-common";
+import { IModel } from "@itwin/core-common";
 import {
   CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
   ModelSelector, OrthographicViewDefinition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,

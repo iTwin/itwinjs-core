@@ -7,8 +7,9 @@
  */
 
 import * as React from "react";
-import { SolarDataProvider } from "@itwin/imodel-components-react";
-import { IModelApp, ScreenViewport, Viewport } from "@itwin/core-frontend";
+import type { SolarDataProvider } from "@itwin/imodel-components-react";
+import type { ScreenViewport, Viewport } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { SolarTimelineDataProvider } from "../timeline/SolarTimelineDataProvider";
 
 /** @internal */

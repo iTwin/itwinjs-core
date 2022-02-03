@@ -6,11 +6,14 @@
  * @module Symbology
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { AngleProps, Transform, XYProps, XYZProps, YawPitchRollProps} from "@itwin/core-geometry";
 import {
-  Angle, AngleProps, Geometry, Matrix3d, Point2d, Point3d, Transform, XYProps, XYZProps, YawPitchRollAngles, YawPitchRollProps,
+  Angle, Geometry, Matrix3d, Point2d, Point3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import { ColorDef, ColorDefProps } from "../ColorDef";
+import type { ColorDefProps } from "../ColorDef";
+import { ColorDef } from "../ColorDef";
 
 /** @public */
 export namespace AreaPattern {

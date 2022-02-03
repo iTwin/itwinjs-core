@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as React from "react";
+import type * as React from "react";
 import * as sinon from "sinon";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import {
   WidgetState,
 } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
+import type { StatusBarWidgetControl, StatusBarWidgetControlArgs} from "../../appui-react";
 import {
-  ConfigurableUiControlType, FrontstageManager, StatusBarWidgetComposerControl, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
+  ConfigurableUiControlType, FrontstageManager, StatusBarWidgetComposerControl, WidgetDef,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
 

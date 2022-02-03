@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d } from "@itwin/core-geometry";
-import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool } from "@itwin/core-frontend";
+import type { Point3d } from "@itwin/core-geometry";
+import type { BeButtonEvent} from "@itwin/core-frontend";
+import { EventHandled, IModelApp, PrimitiveTool } from "@itwin/core-frontend";
 
 /** @internal */
 export class Tool1 extends PrimitiveTool {

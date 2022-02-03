@@ -9,8 +9,9 @@
 import "./PositionPopup.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { CommonDivProps, CommonProps, Div, Size, SizeProps } from "@itwin/core-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { CommonDivProps, CommonProps, SizeProps } from "@itwin/core-react";
+import { Div, Size } from "@itwin/core-react";
 
 /** Props for popup at screen position
  * @beta */

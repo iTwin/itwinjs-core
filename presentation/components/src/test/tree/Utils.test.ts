@@ -5,9 +5,10 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { GroupingNodeKey, LabelDefinition, Node } from "@itwin/presentation-common";
+import type { GroupingNodeKey, Node } from "@itwin/presentation-common";
+import { LabelDefinition } from "@itwin/presentation-common";
 import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@itwin/presentation-common/lib/cjs/test";
-import { PageOptions } from "@itwin/components-react";
+import type { PageOptions } from "@itwin/components-react";
 import {
   createPartialTreeNodeItem, createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY,
 } from "../../presentation-components/tree/Utils";

@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
-import { Keys, KeySet } from "../../presentation-common";
+import type { Keys} from "../../presentation-common";
+import { KeySet } from "../../presentation-common";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 

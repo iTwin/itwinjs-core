@@ -5,8 +5,9 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { MapLayerSettings } from "@itwin/core-common";
-import { MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
+import type { MapLayerSettings } from "@itwin/core-common";
+import type { MapLayerSourceValidation } from "../../internal";
+import { MapLayerImageryProvider, MapLayerSourceStatus } from "../../internal";
 
 const levelToken = "{level}";
 const rowToken = "{row}";

@@ -6,8 +6,9 @@
  * @module Codes
  */
 
-import { GuidString, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { IModel } from "./IModel";
+import type { GuidString, Id64String} from "@itwin/core-bentley";
+import { Id64, JsonUtils } from "@itwin/core-bentley";
+import type { IModel } from "./IModel";
 
 /** The props that hold the identity of the object defining the uniqueness scope for a set of Code values.
  * @public

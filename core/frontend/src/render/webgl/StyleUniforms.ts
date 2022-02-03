@@ -7,10 +7,10 @@
  */
 
 import { ColorDef, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
-import { RenderPlan } from "../RenderPlan";
+import type { RenderPlan } from "../RenderPlan";
 import { ColorInfo } from "./ColorInfo";
 import { FloatRgb, FloatRgba } from "./FloatRGBA";
-import { UniformHandle } from "./UniformHandle";
+import type { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 
 /** Maintains state of uniforms associated with the DisplayStyleState.

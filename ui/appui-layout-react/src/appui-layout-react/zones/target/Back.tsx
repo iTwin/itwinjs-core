@@ -8,9 +8,9 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { WidgetZoneId } from "../manager/Zones";
+import type { WidgetZoneId } from "../manager/Zones";
 import { Arrow } from "./Arrow";
-import { MergeTargetProps } from "./Merge";
+import type { MergeTargetProps } from "./Merge";
 import { ZoneTarget } from "./Zone";
 
 /** Properties of [[BackTarget]] component.

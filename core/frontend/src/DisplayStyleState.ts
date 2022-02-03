@@ -5,26 +5,30 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, BeEvent, Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
-import {
-  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
-  BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, LightSettings, MapLayerProps,
-  MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTimelineProps,
-  SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64 } from "@itwin/core-bentley";
+import type { Vector3d } from "@itwin/core-geometry";
+import { Angle, Range1d } from "@itwin/core-geometry";
+import type {
+  BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings,
+  BaseLayerSettings, ContextRealityModelProps, DisplayStyle3dSettingsProps,
+  DisplayStyleProps, Environment, FeatureAppearance, LightSettings, MapLayerProps, MapSubLayerProps, RenderTimelineProps,
+  SolarShadowSettings, SubCategoryOverride, SubLayerId, ViewFlags} from "@itwin/core-common";
+import { BackgroundMapProvider, BaseMapLayerSettings, ColorDef, DisplayStyle3dSettings, DisplayStyleSettings, GlobeMode,
+  MapLayerSettings, RenderSchedule, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
+import type { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
+import type { MapCartoRectangle, TileTreeReference } from "./tile/internal";
+import { getCesiumOSMBuildingsUrl } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
-import { ScreenViewport } from "./Viewport";
+import type { ScreenViewport } from "./Viewport";
 
 /** @internal */
 export class TerrainDisplayOverrides {

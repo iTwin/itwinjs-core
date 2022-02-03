@@ -6,9 +6,10 @@
  * @module Properties
  */
 
-import * as React from "react";
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { Orientation } from "@itwin/core-react";
+import type * as React from "react";
+import type { PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { Orientation } from "@itwin/core-react";
 import { ArrayPropertyValueRenderer } from "./renderers/value/ArrayPropertyValueRenderer";
 import { DoublePropertyValueRenderer } from "./renderers/value/DoublePropertyValueRenderer";
 import { MergedPropertyValueRenderer } from "./renderers/value/MergedPropertyValueRenderer";

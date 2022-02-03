@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64String, OpenMode } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { OpenMode } from "@itwin/core-bentley";
 import { Angle, Point3d } from "@itwin/core-geometry";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
 import { IModel } from "@itwin/core-common";
-import { Barrier } from "../BarrierElement";
-import { Robot } from "../RobotElement";
+import type { Barrier } from "../BarrierElement";
+import type { Robot } from "../RobotElement";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
 import { IModelTestUtils } from "./Utils";

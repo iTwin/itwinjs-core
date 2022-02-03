@@ -7,7 +7,7 @@
 import { IModelBankClient } from "@bentley/imodelbank-client";
 import { UrlFileHandler } from "@bentley/imodelbank-client/lib/cjs/itwin-client/file-handlers";
 import { IModelHubBackend } from "@bentley/imodelbank-client/lib/cjs/imodelhub-node";
-import { BackendHubAccess } from "@itwin/core-backend";
+import type { BackendHubAccess } from "@itwin/core-backend";
 
 export const assetsPath = `${__dirname}/../../../lib/test/assets/`;
 export const workDir = `${__dirname}/../../../lib/test/output/`;

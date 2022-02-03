@@ -6,9 +6,10 @@
  * @module Editing
  */
 
-import { ECObjectsError, ECObjectsStatus, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
+import type { PropertyCategoryProps, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, SchemaItemType } from "@itwin/ecschema-metadata";
+import type { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import type { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
 
 /**
  * @alpha

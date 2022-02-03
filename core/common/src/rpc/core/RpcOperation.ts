@@ -7,12 +7,12 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
+import type { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
-import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
+import type { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcResponseCacheControl } from "./RpcConstants";
 import { OPERATION, POLICY, RpcRegistry } from "./RpcRegistry";
-import {
+import type {
   RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T,
 } from "./RpcRequest";
 

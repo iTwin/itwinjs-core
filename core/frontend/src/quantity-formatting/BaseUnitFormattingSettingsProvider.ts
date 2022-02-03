@@ -6,11 +6,11 @@
  * @module QuantityFormatting
  */
 
-import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
+import type { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { SelectedViewportChangedArgs } from "../ViewManager";
-import {
+import type { SelectedViewportChangedArgs } from "../ViewManager";
+import type {
   FormattingUnitSystemChangedArgs, OverrideFormatEntry, QuantityFormatOverridesChangedArgs, QuantityFormatter,
   QuantityTypeKey, UnitFormattingSettingsProvider,
 } from "./QuantityFormatter";

@@ -6,8 +6,10 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
-import { EditorContainer, PropertyEditorManager, PropertyUpdatedArgs } from "@itwin/components-react";
+import type { PrimitiveValue} from "@itwin/appui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
+import type { PropertyUpdatedArgs } from "@itwin/components-react";
+import { EditorContainer, PropertyEditorManager } from "@itwin/components-react";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { WeightEditor } from "../../imodel-components-react/editors/WeightEditor";
 import { MineDataController, TestUtils } from "../TestUtils";

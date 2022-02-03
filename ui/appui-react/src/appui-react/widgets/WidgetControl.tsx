@@ -6,10 +6,11 @@
  * @module Widget
  */
 
-import * as React from "react";
-import { WidgetState } from "@itwin/appui-abstract";
-import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { WidgetDef } from "./WidgetDef";
+import type * as React from "react";
+import type { WidgetState } from "@itwin/appui-abstract";
+import type { ConfigurableCreateInfo} from "../configurableui/ConfigurableUiControl";
+import { ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
+import type { WidgetDef } from "./WidgetDef";
 
 /** The base class for Widget controls.
  * @public

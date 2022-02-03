@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RelationshipPathSpecification } from "../../RelationshipPathSpecification";
-import { PropertySpecification } from "../PropertySpecification";
+import type { RelationshipPathSpecification } from "../../RelationshipPathSpecification";
+import type { PropertySpecification } from "../PropertySpecification";
 
 /**
  * Meaning of the relationship

@@ -7,10 +7,12 @@
  */
 
 import * as fs from "fs";
-import * as https from "https";
+import type * as https from "https";
 import * as path from "path";
-import { AccessToken, BentleyError, GetMetaDataFunction, Logger } from "@itwin/core-bentley";
-import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
+import type { AccessToken, GetMetaDataFunction} from "@itwin/core-bentley";
+import { BentleyError, Logger } from "@itwin/core-bentley";
+import type { ProgressCallback, ProgressInfo, RequestOptions } from "./Request";
+import { request } from "./Request";
 import { MobileHost } from "./MobileHost";
 import { Base64 } from "js-base64";
 

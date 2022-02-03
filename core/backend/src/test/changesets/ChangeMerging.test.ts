@@ -5,9 +5,12 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { Id64String, OpenMode } from "@itwin/core-bentley";
-import { ChangesetFileProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory, StandaloneDb } from "../../core-backend";
+import type { Id64String} from "@itwin/core-bentley";
+import { OpenMode } from "@itwin/core-bentley";
+import type { ChangesetFileProps} from "@itwin/core-common";
+import { IModel, SubCategoryAppearance } from "@itwin/core-common";
+import type { DictionaryModel, Element, IModelDb} from "../../core-backend";
+import { IModelJsFs, SpatialCategory, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 

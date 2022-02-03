@@ -7,11 +7,13 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import type { ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { ViewportComponentEvents } from "@itwin/imodel-components-react";
-import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,
-  CoreTools, FloatingContentControl, FloatingViewportContentControl, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,
+import type {
+  ConfigurableCreateInfo, FrontstageProps, SupportsViewSelectorChange} from "../../appui-react";
+import { ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,
+  CoreTools, FloatingContentControl, FloatingViewportContentControl, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProvider, NavigationWidget,
   ViewportContentControl, Widget, Zone,
 } from "../../appui-react";
 import TestUtils, { mount, storageMock } from "../TestUtils";

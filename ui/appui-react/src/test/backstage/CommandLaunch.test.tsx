@@ -8,7 +8,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
-import { BackstageItemState, CommandLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher } from "../../appui-react";
+import type { BackstageItemState} from "../../appui-react";
+import { CommandLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("Backstage", () => {

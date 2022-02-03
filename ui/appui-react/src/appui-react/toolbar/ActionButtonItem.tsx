@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, OnItemExecutedFunc } from "@itwin/appui-abstract";
+import type { ActionButton, OnItemExecutedFunc } from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue } from "@itwin/appui-abstract";
 import { BadgeUtilities } from "@itwin/core-react";
 import { Item } from "@itwin/appui-layout-react";
 import { ToolbarHelper } from "./ToolbarHelper";

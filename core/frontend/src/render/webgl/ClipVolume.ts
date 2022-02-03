@@ -7,8 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d,
+import type {
+  ClipVector, UnionOfConvexClipPlaneSets} from "@itwin/core-geometry";
+import { Point3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { System } from "./System";

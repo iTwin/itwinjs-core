@@ -6,7 +6,7 @@
  * @module TypeConverters
  */
 
-import { TypeConverter } from "./TypeConverter";
+import type { TypeConverter } from "./TypeConverter";
 
 /**
  * Manages Type Converters. Type Converters are registered with and obtained from the manager.

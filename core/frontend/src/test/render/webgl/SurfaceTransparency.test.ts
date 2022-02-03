@@ -7,15 +7,16 @@ import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import {
   ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
-import { RenderGraphic } from "../../../render/RenderGraphic";
+import type { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
 import { IModelApp } from "../../../IModelApp";
-import { IModelConnection } from "../../../IModelConnection";
+import type { IModelConnection } from "../../../IModelConnection";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { ScreenViewport } from "../../../Viewport";
-import { Target } from "../../../render/webgl/Target";
+import type { Target } from "../../../render/webgl/Target";
 import { Primitive } from "../../../render/webgl/Primitive";
-import { Pass, RenderPass, SinglePass } from "../../../render/webgl/RenderFlags";
+import type { SinglePass } from "../../../render/webgl/RenderFlags";
+import { Pass, RenderPass } from "../../../render/webgl/RenderFlags";
 import { MeshGraphic } from "../../../render/webgl/Mesh";
 import { SurfaceGeometry } from "../../../render/webgl/SurfaceGeometry";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";

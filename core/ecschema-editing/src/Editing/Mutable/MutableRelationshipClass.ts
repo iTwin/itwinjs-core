@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttribute, NavigationProperty, RelationshipClass, RelationshipConstraint, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
+import type { CustomAttribute, NavigationProperty, StrengthDirection, StrengthType } from "@itwin/ecschema-metadata";
+import { RelationshipClass, RelationshipConstraint } from "@itwin/ecschema-metadata";
 
 /**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.

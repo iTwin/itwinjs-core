@@ -6,10 +6,12 @@
  * @module Codes
  */
 
-import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, IModelError } from "@itwin/core-common";
-import { ECSqlStatement } from "./ECSqlStatement";
-import { IModelDb } from "./IModelDb";
+import type { Id64String} from "@itwin/core-bentley";
+import { DbResult, Id64, IModelStatus } from "@itwin/core-bentley";
+import type { CodeScopeSpec} from "@itwin/core-common";
+import { CodeSpec, IModelError } from "@itwin/core-common";
+import type { ECSqlStatement } from "./ECSqlStatement";
+import type { IModelDb } from "./IModelDb";
 
 /** Manages [CodeSpecs]($docs/BIS/intro/element-fundamentals.md#codespec) within an [[IModelDb]]
  * @public

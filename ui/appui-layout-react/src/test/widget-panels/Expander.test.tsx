@@ -5,8 +5,9 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
+import type { NineZoneDispatch} from "../../appui-layout-react";
 import {
-  createHorizontalPanelState, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, WidgetPanelExpander, WidgetPanelExpanders,
+  createHorizontalPanelState, createNineZoneState, createPanelsState, createVerticalPanelState, WidgetPanelExpander, WidgetPanelExpanders,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 

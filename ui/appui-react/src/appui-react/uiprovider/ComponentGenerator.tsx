@@ -9,12 +9,14 @@
 import "./DefaultDialogGridContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
-import {
-  BaseDialogItem, DialogItem, DialogItemValue, DialogPropertySyncItem, DialogRow, PropertyValueFormat, SyncPropertiesChangeEventArgs,
+import type {
+  BaseDialogItem, DialogItem, DialogItemValue, DialogPropertySyncItem, DialogRow, SyncPropertiesChangeEventArgs} from "@itwin/appui-abstract";
+import { PropertyValueFormat,
   UiLayoutDataProvider,
 } from "@itwin/appui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "@itwin/components-react";
-import { ToolSettingsEntry } from "../widget-panels/ToolSettings";
+import type { PropertyUpdatedArgs } from "@itwin/components-react";
+import { EditorContainer } from "@itwin/components-react";
+import type { ToolSettingsEntry } from "../widget-panels/ToolSettings";
 import { assert, Logger } from "@itwin/core-bentley";
 
 function EditorLabel({ uiDataProvider, item, isLeftmostRecord }: { uiDataProvider: UiLayoutDataProvider, item: DialogItem, isLeftmostRecord?: boolean }) {

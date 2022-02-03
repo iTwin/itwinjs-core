@@ -6,10 +6,11 @@ import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironme
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { DEFAULT_KEYS_BATCH_SIZE } from "@itwin/presentation-common";
 import { createRandomECInstanceKey } from "@itwin/presentation-common/lib/cjs/test";
-import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import type { PresentationManager } from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
 import { PresentationLabelsProvider } from "../../presentation-components/labels/LabelsProvider";
 
 describe("PresentationLabelsProvider", () => {

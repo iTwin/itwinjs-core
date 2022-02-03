@@ -6,7 +6,7 @@ import "./InlineEdit.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 import { Input } from "@itwin/itwinui-react";
 
 interface InlineEditProps extends CommonProps {

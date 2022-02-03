@@ -7,12 +7,13 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
+import type { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
-import { RpcInterfaceEndpoints, RpcManager } from "../../RpcManager";
+import type { RpcInterfaceEndpoints} from "../../RpcManager";
+import { RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcInvocation } from "./RpcInvocation";
+import type { RpcInvocation } from "./RpcInvocation";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry } from "./RpcRegistry";
 

@@ -7,16 +7,17 @@
  */
 
 import { assert, Logger, ObservableSet } from "@itwin/core-bentley";
-import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { ColorDef } from "@itwin/core-common";
+import type { Range1dProps, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
+import type { ColorDef } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { imageElementFromUrl } from "./ImageUtil";
 import { IModelApp } from "./IModelApp";
-import { ToolTipOptions } from "./NotificationManager";
-import { CanvasDecoration } from "./render/CanvasDecoration";
-import { BeButtonEvent } from "./tools/Tool";
-import { DecorateContext } from "./ViewContext";
-import { ScreenViewport, Viewport } from "./Viewport";
+import type { ToolTipOptions } from "./NotificationManager";
+import type { CanvasDecoration } from "./render/CanvasDecoration";
+import type { BeButtonEvent } from "./tools/Tool";
+import type { DecorateContext } from "./ViewContext";
+import type { ScreenViewport, Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 
 /** The types that may be used for Markers

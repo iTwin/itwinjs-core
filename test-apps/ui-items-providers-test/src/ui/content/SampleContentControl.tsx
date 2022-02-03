@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { ConfigurableCreateInfo, ContentControl } from "@itwin/appui-react";
+import type { ConfigurableCreateInfo} from "@itwin/appui-react";
+import { ContentControl } from "@itwin/appui-react";
 import "./SampleContentControl.scss";
 import { Centered } from "@itwin/core-react";
 

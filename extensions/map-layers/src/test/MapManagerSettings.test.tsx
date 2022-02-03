@@ -9,11 +9,13 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import {
-  BackgroundMapSettings, DisplayStyle3dSettings, EmptyLocalization, PlanarClipMaskMode,
-  PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings,
+import type {
+  BackgroundMapSettings, DisplayStyle3dSettings, TerrainSettings} from "@itwin/core-common";
+import { EmptyLocalization, PlanarClipMaskMode,
+  PlanarClipMaskPriority, TerrainHeightOriginMode,
 } from "@itwin/core-common";
-import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import type { DisplayStyle3dState, IModelConnection, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { NumberInput } from "@itwin/core-react";
 import { Select, ToggleSwitch } from "@itwin/itwinui-react";

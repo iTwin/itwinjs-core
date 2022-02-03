@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { UnitSystemKey } from "@itwin/core-quantity";
+import type { UnitSystemKey } from "@itwin/core-quantity";
 import { UnitSystemSelector } from "../../appui-react/settings/quantityformatting/UnitSystemSelector";
 import TestUtils, { handleError, selectChangeValueByText, selectTestOptionCount, stubScrollIntoView } from "../TestUtils";
 

@@ -7,9 +7,10 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { StandardTypeNames } from "@itwin/appui-abstract";
-import { ReactDataGridColumn, TableColumn } from "../../../components-react/table/component/TableColumn";
+import type { ReactDataGridColumn} from "../../../components-react/table/component/TableColumn";
+import { TableColumn } from "../../../components-react/table/component/TableColumn";
 import { SimpleTableDataProvider } from "../../../components-react/table/SimpleTableDataProvider";
-import { ColumnDescription, RowItem } from "../../../components-react/table/TableDataProvider";
+import type { ColumnDescription, RowItem } from "../../../components-react/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
 
 const columns: ColumnDescription[] = [

@@ -12,12 +12,13 @@ import * as React from "react";
 import { StandardViewId } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
 import { ViewportComponentEvents } from "@itwin/imodel-components-react";
-import { CommonProps, Icon, Popup } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { Icon, Popup } from "@itwin/core-react";
 import {
   containHorizontally, GroupColumn as NZ_Column, ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupTool as NZ_Item, Group as NZ_Tray,
   withContainIn,
 } from "@itwin/appui-layout-react";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import type { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { UiFramework } from "../UiFramework";
 import { NavigationAidControl } from "./NavigationAidControl";
 

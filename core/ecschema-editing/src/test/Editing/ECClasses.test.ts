@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import type { EntityClass, EnumerationProperty, NavigationProperty,
+  PrimitiveArrayProperty, PrimitiveProperty, RelationshipClassProps,
+  RelationshipConstraintProps, SchemaItemKey, SchemaKey,
+  StructArrayProperty, StructClass, StructProperty} from "@itwin/ecschema-metadata";
 import {
-  ECClassModifier, EntityClass, Enumeration, EnumerationProperty, NavigationProperty,
-  PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, RelationshipClass, RelationshipClassProps,
-  RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection,
-  StructArrayProperty, StructClass, StructProperty,
+  ECClassModifier, Enumeration, PrimitiveType, RelationshipClass, Schema, SchemaContext, StrengthDirection,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 

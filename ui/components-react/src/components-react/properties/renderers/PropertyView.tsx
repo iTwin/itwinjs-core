@@ -12,7 +12,7 @@ import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { ElementSeparator, Orientation } from "@itwin/core-react";
 import { ActionButtonList } from "./ActionButtonList";
 import { PropertyGridColumnStyleProvider } from "./PropertyGridColumns";
-import { SharedRendererProps } from "./PropertyRenderer";
+import type { SharedRendererProps } from "./PropertyRenderer";
 
 /** Properties of [[PropertyView]] React component
  * @public

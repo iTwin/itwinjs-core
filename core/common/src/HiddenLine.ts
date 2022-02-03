@@ -7,7 +7,8 @@
  */
 
 import { JsonUtils } from "@itwin/core-bentley";
-import { ColorDef, ColorDefProps } from "./ColorDef";
+import type { ColorDefProps } from "./ColorDef";
+import { ColorDef } from "./ColorDef";
 import { LinePixels } from "./LinePixels";
 
 /** Namespace containing types controlling how edges and surfaces should be drawn in "hidden line" and "solid fill" [[RenderMode]]s.

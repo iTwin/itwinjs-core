@@ -9,11 +9,13 @@
 import "./ToolSettings.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Point, Rectangle, RectangleProps } from "@itwin/core-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { CommonProps, Point, RectangleProps } from "@itwin/core-react";
+import { Rectangle } from "@itwin/core-react";
 import { DragHandle } from "../base/DragHandle";
 import { TitleBar } from "../footer/dialog/TitleBar";
-import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
+import type { ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
+import { ResizeDirection, ResizeGrip } from "./rectangular/ResizeGrip";
 import { ResizeHandle } from "./Stacked";
 
 /** Properties of [[ToolSettings]] component.

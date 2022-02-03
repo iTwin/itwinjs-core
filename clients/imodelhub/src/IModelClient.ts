@@ -5,13 +5,14 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { FileHandler } from "./itwin-client/FileHandler";
-import { addApplicationVersion, HttpRequestOptionsTransformer, IModelBaseHandler } from "./imodelhub/BaseHandler";
+import type { FileHandler } from "./itwin-client/FileHandler";
+import type { HttpRequestOptionsTransformer, IModelBaseHandler } from "./imodelhub/BaseHandler";
+import { addApplicationVersion } from "./imodelhub/BaseHandler";
 import { BriefcaseHandler } from "./imodelhub/Briefcases";
 import { ChangeSetHandler } from "./imodelhub/ChangeSets";
 import { CheckpointHandler } from "./imodelhub/Checkpoints";
 import { CodeHandler } from "./imodelhub/Codes";
-import { CustomRequestOptions } from "./imodelhub/CustomRequestOptions";
+import type { CustomRequestOptions } from "./imodelhub/CustomRequestOptions";
 import { EventHandler } from "./imodelhub/Events";
 import { GlobalEventHandler } from "./imodelhub/GlobalEvents";
 import { IModelHandler, IModelsHandler } from "./imodelhub/iModels";
@@ -19,7 +20,7 @@ import { LockHandler } from "./imodelhub/Locks";
 import { ThumbnailHandler } from "./imodelhub/Thumbnails";
 import { UserInfoHandler } from "./imodelhub/Users";
 import { VersionHandler } from "./imodelhub/Versions";
-import { PermissionHandler } from "./imodelhub/Permissions";
+import type { PermissionHandler } from "./imodelhub/Permissions";
 import { CheckpointV2Handler } from "./imodelhub/CheckpointsV2";
 
 /**

@@ -9,18 +9,22 @@
 // cspell:ignore cset csets ecchanges
 
 import * as path from "path";
-import {
-  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
+import type {
+  AccessToken, GuidString} from "@itwin/core-bentley";
+import { BeDuration, ChangeSetStatus, IModelHubStatus, IModelStatus, Logger, OpenMode,
 } from "@itwin/core-bentley";
-import {
-  BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
-  LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
+import type {
+  BriefcaseId, BriefcaseProps, ChangesetFileProps, ChangesetIndex, LocalBriefcaseProps,
+  LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity} from "@itwin/core-common";
+import { BriefcaseIdValue, ChangesetType, IModelError, IModelVersion,
 } from "@itwin/core-common";
 import { TelemetryEvent } from "@itwin/core-telemetry";
-import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
+import type { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
-import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
+import type { CheckpointProps, ProgressFunction } from "./CheckpointManager";
+import { CheckpointManager } from "./CheckpointManager";
+import type { BriefcaseDb, TokenArg } from "./IModelDb";
+import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 

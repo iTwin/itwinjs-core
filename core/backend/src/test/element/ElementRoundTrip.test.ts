@@ -3,13 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64 } from "@itwin/core-bentley";
+import type { ElementAspectProps, GeometricElementProps, GeometryStreamProps} from "@itwin/core-common";
 import {
-  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, QueryRowFormat, SubCategoryAppearance,
+  BriefcaseIdValue, Code, ColorDef, IModel, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
-import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
-import { ElementRefersToElements } from "../../Relationship";
+import type { ECSqlStatement, IModelDb} from "../../core-backend";
+import { IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
+import type { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 /* eslint-disable @typescript-eslint/naming-convention */

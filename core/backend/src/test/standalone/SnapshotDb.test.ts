@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
-import { ChangesetIdWithIndex } from "@itwin/core-common";
+import type { ChangesetIdWithIndex } from "@itwin/core-common";
 import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";

@@ -6,7 +6,8 @@
  * @module WebGL
  */
 
-import { AttributeDetails, AttributeMap } from "../AttributeMap";
+import type { AttributeDetails} from "../AttributeMap";
+import { AttributeMap } from "../AttributeMap";
 import { ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 
 // Positions are in NDC [-1..1]. Compute UV params in [0..1]

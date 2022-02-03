@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { PropertyValueRendererManager } from "../../../components-react/properties/ValueRendererManager";
 import { TableCell, TableCellContent, TableIconCellContent } from "../../../components-react/table/component/TableCell";
-import { CellItem } from "../../../components-react/table/TableDataProvider";
+import type { CellItem } from "../../../components-react/table/TableDataProvider";
 import TestUtils from "../../TestUtils";
 
 describe("TableCell", () => {

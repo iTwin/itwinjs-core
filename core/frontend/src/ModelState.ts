@@ -6,17 +6,20 @@
  * @module ModelState
  */
 
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
-import {
-  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
+import type { Id64String} from "@itwin/core-bentley";
+import { Id64, JsonUtils } from "@itwin/core-bentley";
+import type {
+  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataSourceKey} from "@itwin/core-common";
+import { RealityDataFormat, RelatedElement, SpatialClassifiers,
 } from "@itwin/core-common";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import { EntityState } from "./EntityState";
-import { HitDetail } from "./HitDetail";
-import { IModelConnection } from "./IModelConnection";
+import type { HitDetail } from "./HitDetail";
+import type { IModelConnection } from "./IModelConnection";
 import { RealityDataSource } from "./RealityDataSource";
-import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
-import { ViewState } from "./ViewState";
+import type { TileTreeReference } from "./tile/internal";
+import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference } from "./tile/internal";
+import type { ViewState } from "./ViewState";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public

@@ -7,12 +7,13 @@
  */
 
 import * as React from "react";
-import { LinkElementsInfo, PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import type { LinkElementsInfo, PrimitiveValue, PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { useAsyncValue } from "../../../common/UseAsyncValue";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { PropertyGridCommons } from "../../../propertygrid/component/PropertyGridCommons";
 import { LinksRenderer } from "../../LinkHandler";
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
+import type { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 
 /** Default Primitive Property Renderer
  * @public

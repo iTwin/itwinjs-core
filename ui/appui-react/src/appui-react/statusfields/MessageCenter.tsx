@@ -11,10 +11,10 @@ import { OutputMessagePriority } from "@itwin/core-frontend";
 import { FooterPopup, MessageCenter, MessageCenterDialog, MessageCenterMessage, MessageCenterTab } from "@itwin/appui-layout-react";
 import { MessageManager } from "../messages/MessageManager";
 import { MessageSpan } from "../messages/MessageSpan";
-import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
+import type { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
+import type { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import type { StatusFieldProps } from "./StatusFieldProps";
 
 /** Enum for the [[MessageCenterField]] active tab
  * @internal

@@ -5,9 +5,11 @@
 import { useActiveFrontstageDef,useActiveViewport } from "@itwin/appui-react";
 import { WidgetState } from "@itwin/appui-abstract";
 import { ToggleSwitch } from "@itwin/itwinui-react";
-import { ViewFlagProps, ViewFlags } from "@itwin/core-common";
+import type { ViewFlagProps} from "@itwin/core-common";
+import { ViewFlags } from "@itwin/core-common";
 import * as React from "react";
-import { IModelApp, Viewport } from "@itwin/core-frontend";
+import type { Viewport } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 
 export function useWidgetDef(id: string) {
   const frontstageDef = useActiveFrontstageDef();

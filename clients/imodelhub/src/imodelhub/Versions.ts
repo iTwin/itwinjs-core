@@ -6,13 +6,14 @@
  * @module iModelHubClient
  */
 
-import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
+import type { AccessToken, GuidString} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
-import { IModelBaseHandler } from "./BaseHandler";
+import type { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { addSelectApplicationData, InstanceIdQuery } from "./HubQuery";
-import { ThumbnailSize } from "./Thumbnails";
+import type { ThumbnailSize } from "./Thumbnails";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 

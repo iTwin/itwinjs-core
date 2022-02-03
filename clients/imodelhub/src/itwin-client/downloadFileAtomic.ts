@@ -6,8 +6,10 @@ import got from "got";
 import { PassThrough, pipeline as pipeline_callback } from "stream";
 import { promisify } from "util";
 import { BriefcaseStatus } from "@itwin/core-bentley";
-import { ProgressCallback, ResponseError } from "./Request";
-import { CancelRequest, DownloadFailed, UserCancelledError } from "../itwin-client/FileHandler";
+import type { ProgressCallback} from "./Request";
+import { ResponseError } from "./Request";
+import type { CancelRequest} from "../itwin-client/FileHandler";
+import { DownloadFailed, UserCancelledError } from "../itwin-client/FileHandler";
 import { BufferedStream } from "./AzureFileHandler";
 
 import WriteStreamAtomic from "fs-write-stream-atomic";

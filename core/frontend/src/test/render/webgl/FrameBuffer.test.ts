@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Capabilities } from "@itwin/webgl-compatibility";
+import type { Capabilities } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { Debug } from "../../../render/webgl/Diagnostics";
 import { FrameBuffer } from "../../../render/webgl/FrameBuffer";

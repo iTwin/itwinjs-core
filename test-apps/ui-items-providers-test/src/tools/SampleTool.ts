@@ -4,24 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
+import type { BeButtonEvent} from "@itwin/core-frontend";
 import {
-  AngleDescription, BeButtonEvent,
+  AngleDescription,
   EventHandled, IModelApp,
   LengthDescription, NotifyMessageDetails, OutputMessagePriority,
   PrimitiveTool, QuantityType,
   SurveyLengthDescription, ToolAssistance, ToolAssistanceImage,
 } from "@itwin/core-frontend";
-import {
+import type {
   ColorEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem,
   InputEditorSizeParams,
-  PropertyDescription, PropertyEditorParamTypes, StandardEditorNames, SuppressLabelEditorParams, ToolbarItemUtilities,
+  PropertyDescription, SuppressLabelEditorParams} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, StandardEditorNames, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
 
 import { Logger } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
+import type { Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef } from "@itwin/core-common";
-import { FormatterSpec } from "@itwin/core-quantity";
-import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
+import type { FormatterSpec } from "@itwin/core-quantity";
+import type { MenuItemProps} from "@itwin/appui-react";
+import { CursorInformation, UiFramework } from "@itwin/appui-react";
 import sampleToolSvg from "./SampleTool.svg?sprite";
 import { UiItemsProvidersTest } from "../ui-items-providers-test";
 

@@ -7,12 +7,14 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { RgbColor } from "@itwin/core-common";
+import type { ClipVector, Range3d} from "@itwin/core-geometry";
+import { ClipPlaneContainment, Point3d, Transform } from "@itwin/core-geometry";
+import type { RgbColor } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
-import { RenderClipVolume } from "../RenderClipVolume";
+import type { RenderClipVolume } from "../RenderClipVolume";
 import { FloatRgba } from "./FloatRGBA";
-import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
+import type { Texture2DData, TextureHandle } from "./Texture";
+import { Texture2DHandle } from "./Texture";
 import { ClipVolume } from "./ClipVolume";
 import { GL } from "./GL";
 import { System } from "./System";

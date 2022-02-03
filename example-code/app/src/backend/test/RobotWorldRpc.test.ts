@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { Id64, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { Angle, Point3d } from "@itwin/core-geometry";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import type { BentleyCloudRpcParams, GeometricElement3dProps,
+  RpcInterfaceDefinition} from "@itwin/core-common";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, GeometricElement3dProps, IModel, IModelReadRpcInterface,
-  RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
+  BentleyCloudRpcManager, IModel, IModelReadRpcInterface, SnapshotIModelRpcInterface, TestRpcManager,
 } from "@itwin/core-common";
 import { BriefcaseConnection, NullRenderSystem } from "@itwin/core-frontend";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";

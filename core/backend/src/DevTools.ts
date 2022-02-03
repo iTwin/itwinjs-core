@@ -5,7 +5,8 @@
 
 import * as os from "os";
 import * as process from "process";
-import { Logger, LogLevel } from "@itwin/core-bentley";
+import type { LogLevel } from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 

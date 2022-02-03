@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { SingleSchemaClassSpecification } from "./ClassSpecifications";
-import { RelationshipDirection } from "./RelationshipDirection";
+import type { SingleSchemaClassSpecification } from "./ClassSpecifications";
+import type { RelationshipDirection } from "./RelationshipDirection";
 
 /**
  * Specification of a single relationship path step.

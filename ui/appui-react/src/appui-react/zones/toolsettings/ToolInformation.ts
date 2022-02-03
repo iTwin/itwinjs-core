@@ -11,7 +11,7 @@ import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiCo
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../../UiFramework";
 import { ToolSettingsManager } from "./ToolSettingsManager";
-import { ToolUiProvider } from "./ToolUiProvider";
+import type { ToolUiProvider } from "./ToolUiProvider";
 
 /** Provides information about a tool with a given id, including the ToolUiProvider.
  * @public

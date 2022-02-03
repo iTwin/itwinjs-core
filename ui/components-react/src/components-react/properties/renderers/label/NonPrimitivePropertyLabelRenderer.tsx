@@ -8,7 +8,7 @@
 
 import "./PropertyLabelRenderer.scss";
 import * as React from "react";
-import { PrimitivePropertyLabelRendererProps } from "./PrimitivePropertyLabelRenderer";
+import type { PrimitivePropertyLabelRendererProps } from "./PrimitivePropertyLabelRenderer";
 import { PropertyLabelRenderer } from "./PropertyLabelRenderer";
 
 /** Properties for the [[NonPrimitivePropertyLabelRenderer]] React component

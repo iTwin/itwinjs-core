@@ -6,8 +6,8 @@
  * @module AccuDraw
  */
 
-import { ColorDef } from "@itwin/core-common";
-import { IconSpec } from "@itwin/core-react";
+import type { ColorDef } from "@itwin/core-common";
+import type { IconSpec } from "@itwin/core-react";
 
 /** AccuDraw User Interface Settings
  * @beta

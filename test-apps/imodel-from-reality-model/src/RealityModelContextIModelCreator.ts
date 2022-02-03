@@ -4,12 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import type { Id64String} from "@itwin/core-bentley";
+import { Id64, JsonUtils } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb,
 } from "@itwin/core-backend";
-import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
+import type { AxisAlignedBox3d, ContextRealityModelProps} from "@itwin/core-common";
+import { Cartographic, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
 
 class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {

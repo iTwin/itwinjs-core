@@ -9,14 +9,16 @@
 import "./Items.scss";
 import classnames from "classnames";
 import * as React from "react";
+import type { CommonProps} from "@itwin/core-react";
 import {
-  calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateToolbarOpacity, CommonProps,
+  calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateToolbarOpacity,
   getToolbarBackdropFilter, getToolbarBackgroundColor, getToolbarBoxShadow,
   TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
   useWidgetOpacityContext,
 } from "@itwin/core-react";
 import { ToolbarOpacitySetting, useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
-import { OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
+import type { OrthogonalDirection} from "./utilities/Direction";
+import { OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** Properties of [[ToolbarItems]] component.
  * @internal

@@ -5,12 +5,14 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { Id64String } from "@itwin/core-bentley";
-import { IModelRpcProps } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler } from "@itwin/presentation-common";
+import type { Id64String } from "@itwin/core-bentley";
+import type { IModelRpcProps } from "@itwin/core-common";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { RpcRequestsHandler } from "@itwin/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@itwin/presentation-common/lib/cjs/test";
-import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager";
+import type { SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager";
+import { SelectionScopesManager } from "../../presentation-frontend/selection/SelectionScopesManager";
 
 describe("SelectionScopesManager", () => {
 

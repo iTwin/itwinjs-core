@@ -6,7 +6,7 @@
 import * as path from "path";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { relaunchInElectron } from "../../utils/SpawnUtils";
-import { CertaConfig } from "../../CertaConfig";
+import type { CertaConfig } from "../../CertaConfig";
 
 export class ElectronTestRunner {
   public static readonly supportsCoverage = false;

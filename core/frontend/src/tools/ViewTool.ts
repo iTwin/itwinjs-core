@@ -6,14 +6,17 @@
  * @module Tools
  */
 
-import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
+import type { BeDuration} from "@itwin/core-bentley";
+import { BeTimePoint } from "@itwin/core-bentley";
+import type { CurveLocationDetail, XAndY} from "@itwin/core-geometry";
 import {
-  Angle, AngleSweep, Arc3d, AxisOrder, ClipUtilities, Constant, CurveLocationDetail, Geometry, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal,
-  Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY, YawPitchRollAngles,
+  Angle, AngleSweep, Arc3d, AxisOrder, ClipUtilities, Constant, Geometry, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal,
+  Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, Frustum, LinePixels, NpcCenter } from "@itwin/core-common";
-import {
-  DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper,
+import type {
+  DialogItem, DialogPropertySyncItem} from "@itwin/appui-abstract";
+import { DialogProperty, PropertyDescriptionHelper,
 } from "@itwin/appui-abstract";
 import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
@@ -24,23 +27,27 @@ import { LengthDescription } from "../properties/LengthDescription";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
-import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
-import { DecorateContext } from "../ViewContext";
+import type { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
+import type { DecorateContext } from "../ViewContext";
+import type { GlobalLocation} from "../ViewGlobalLocation";
 import {
-  eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation,
+  eyeToCartographicOnGlobeFromGcs, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation,
   ViewGlobalLocationConstants,
 } from "../ViewGlobalLocation";
-import { DepthPointSource, ScreenViewport, Viewport } from "../Viewport";
-import { ViewPose } from "../ViewPose";
+import type { Viewport } from "../Viewport";
+import { DepthPointSource, ScreenViewport } from "../Viewport";
+import type { ViewPose } from "../ViewPose";
 import { ViewRect } from "../ViewRect";
 import { ViewState3d } from "../ViewState";
 import { ViewStatus } from "../ViewStatus";
 import { EditManipulator } from "./EditManipulator";
 import { PrimitiveTool } from "./PrimitiveTool";
+import type { BeModifierKeys, BeWheelEvent} from "./Tool";
 import {
-  BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, CoreTools, EventHandled, InputSource, InteractiveTool,
+  BeButton, BeButtonEvent, BeTouchEvent, CoordSource, CoreTools, EventHandled, InputSource, InteractiveTool,
 } from "./Tool";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import type { ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 import { ToolSettings } from "./ToolSettings";
 
 // cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown

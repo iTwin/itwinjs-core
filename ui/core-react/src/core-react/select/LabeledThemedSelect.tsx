@@ -9,8 +9,9 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { LabeledComponentProps, MessagedComponentProps } from "../inputs/LabeledComponentProps";
-import { ThemedSelect, ThemedSelectProps } from "./ThemedSelect";
+import type { LabeledComponentProps, MessagedComponentProps } from "../inputs/LabeledComponentProps";
+import type { ThemedSelectProps } from "./ThemedSelect";
+import { ThemedSelect } from "./ThemedSelect";
 
 /** Properties for [[LabeledThemedSelect]] components
  * @beta @deprecated

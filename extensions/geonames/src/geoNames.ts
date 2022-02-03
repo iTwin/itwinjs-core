@@ -5,11 +5,13 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
+import type { BeButtonEvent, Cluster, DecorateContext, ScreenViewport} from "@itwin/core-frontend";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
-  OutputMessagePriority, ScreenViewport, Tool, ViewState3d,
+  BeButton, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
+  OutputMessagePriority, Tool, ViewState3d,
 } from "@itwin/core-frontend";
-import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@itwin/core-geometry";
+import type { XYAndZ } from "@itwin/core-geometry";
+import { Angle, Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 
 /*-----------------------------------------------------------------------
 This is the source for an iTwin.js Extension that displays on-screen markers

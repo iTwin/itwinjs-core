@@ -2,15 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
-import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@itwin/core-geometry";
+import type { Id64String} from "@itwin/core-bentley";
+import { Id64, OpenMode } from "@itwin/core-bentley";
+import type { GeometryQuery} from "@itwin/core-geometry";
+import { Angle, Arc3d, LineString3d, Loop, Range3d, StandardViewIndex } from "@itwin/core-geometry";
+import type {
+  SpatialModel, ViewDefinition} from "@itwin/core-backend";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
-  SpatialModel, StandaloneDb, ViewDefinition,
+  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory, StandaloneDb,
 } from "@itwin/core-backend";
-import {
-  AxisAlignedBox3d, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
-  GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, PersistentBackgroundMapProps, RenderMode, ViewFlags,
+import type {
+  AxisAlignedBox3d, GeometricElement3dProps, GeometryStreamProps, PersistentBackgroundMapProps} from "@itwin/core-common";
+import { BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation,
+  GeometryParams, GeometryStreamBuilder, IModel, RenderMode, ViewFlags,
 } from "@itwin/core-common";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
 import { GeoJson } from "./GeoJson";

@@ -6,19 +6,21 @@
  * @module Widget
  */
 
-import * as React from "react";
-import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, UiEvent, UiSyncEventArgs, WidgetState } from "@itwin/appui-abstract";
-import { Direction, PanelSide } from "@itwin/appui-layout-react";
-import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
+import type * as React from "react";
+import type { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiSyncEventArgs} from "@itwin/appui-abstract";
+import { UiError, UiEvent, WidgetState } from "@itwin/appui-abstract";
+import type { Direction, PanelSide } from "@itwin/appui-layout-react";
+import type { ConfigurableUiControlConstructor} from "../configurableui/ConfigurableUiControl";
+import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { CommandItemDef } from "../shared/CommandItemDef";
-import { ItemList } from "../shared/ItemMap";
+import type { CommandItemDef } from "../shared/CommandItemDef";
+import type { ItemList } from "../shared/ItemMap";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
-import { WidgetControl } from "./WidgetControl";
-import { WidgetProps } from "./WidgetProps";
+import type { WidgetControl } from "./WidgetControl";
+import type { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
 
 const widgetStateNameMap = new Map<WidgetState, string>([

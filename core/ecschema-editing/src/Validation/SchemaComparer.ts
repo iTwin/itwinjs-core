@@ -6,14 +6,15 @@
  * @module Comparison
  */
 
-import {
-  AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant,
-  containerTypeToString, CustomAttributeClass, CustomAttributeContainerProps, EntityClass, Enumeration, Format, formatTraitsToArray,
-  formatTypeToString, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass,
-  RelationshipConstraint, Schema, SchemaItem, schemaItemTypeToString, scientificTypeToString, showSignOptionToString, strengthDirectionToString,
-  strengthToString, StructProperty, Unit,
+import type {
+  AnyClass, AnyEnumerator, AnyProperty, Constant, CustomAttributeClass, CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PropertyCategory, RelationshipClass,
+  RelationshipConstraint, Schema, SchemaItem, StructProperty, Unit} from "@itwin/ecschema-metadata";
+import { classModifierToString,
+  containerTypeToString, formatTraitsToArray,
+  formatTypeToString, primitiveTypeToString, propertyTypeToString, schemaItemTypeToString, scientificTypeToString, showSignOptionToString, strengthDirectionToString,
+  strengthToString,
 } from "@itwin/ecschema-metadata";
-import { ISchemaCompareReporter } from "./SchemaCompareReporter";
+import type { ISchemaCompareReporter } from "./SchemaCompareReporter";
 import { SchemaCompareResultDelegate } from "./SchemaCompareResultDelegate";
 import { SchemaCompareVisitor } from "./SchemaCompareVisitor";
 import { SchemaWalker } from "./SchemaWalker";

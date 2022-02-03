@@ -8,16 +8,19 @@
 
 import memoize from "micro-memoize";
 import { Logger } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import {
-  Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, DiagnosticsOptionsWithHandler, Field, KeySet, PageOptions, RegisteredRuleset,
-  RequestOptionsWithRuleset, Ruleset, RulesetVariable, SelectionInfo,
+import type { IModelConnection } from "@itwin/core-frontend";
+import type {
+  Content, DescriptorOverrides, DiagnosticsOptionsWithHandler, Field, PageOptions, RegisteredRuleset,
+  RequestOptionsWithRuleset, Ruleset, RulesetVariable, SelectionInfo} from "@itwin/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, Descriptor, KeySet,
 } from "@itwin/presentation-common";
-import { IModelContentChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { IModelContentChangeEventArgs} from "@itwin/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
-import { createDiagnosticsOptions, DiagnosticsProps } from "./Diagnostics";
-import { IPresentationDataProvider } from "./IPresentationDataProvider";
+import type { DiagnosticsProps } from "./Diagnostics";
+import { createDiagnosticsOptions } from "./Diagnostics";
+import type { IPresentationDataProvider } from "./IPresentationDataProvider";
 import { RulesetRegistrationHelper } from "./RulesetRegistrationHelper";
 import { findField } from "./Utils";
 

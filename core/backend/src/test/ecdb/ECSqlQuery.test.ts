@@ -5,7 +5,8 @@
 import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { IModelDb, SnapshotDb } from "../../core-backend";
+import type { IModelDb} from "../../core-backend";
+import { SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 

@@ -6,9 +6,10 @@
  * @module Tree
  */
 
-import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as PresentationPageOptions } from "@itwin/presentation-common";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@itwin/components-react";
+import type { Node, PartialNode, PageOptions as PresentationPageOptions } from "@itwin/presentation-common";
+import { LabelDefinition, NodeKey } from "@itwin/presentation-common";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@itwin/components-react";
 import { CheckBoxState } from "@itwin/core-react";
 import { StyleHelper } from "../common/StyleHelper";
 import { createLabelRecord } from "../common/Utils";

@@ -11,7 +11,7 @@ import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 import { NonPrimitivePropertyLabelRenderer } from "./label/NonPrimitivePropertyLabelRenderer";
-import { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
+import type { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 import { PropertyRenderer } from "./PropertyRenderer";
 import { PropertyView } from "./PropertyView";
 

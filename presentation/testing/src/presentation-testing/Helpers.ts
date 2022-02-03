@@ -11,13 +11,16 @@ import { Guid } from "@itwin/core-bentley";
 // backend includes
 import { IModelHost } from "@itwin/core-backend";
 // frontend includes
+import type { RpcInterfaceDefinition} from "@itwin/core-common";
 import {
-  IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
+  IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
+import type { IModelAppOptions} from "@itwin/core-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
-import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import type { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import { Presentation as PresentationFrontend } from "@itwin/presentation-frontend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {

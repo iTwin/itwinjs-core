@@ -6,27 +6,31 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set } from "@itwin/core-bentley";
+import type { XYZProps} from "@itwin/core-geometry";
 import {
-  Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
+  Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
-import {
-  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
-  TerrainProviderName,
+import type {
+  BackgroundMapSettings, BaseLayerSettings, ColorDef,
+  TerrainProviderName} from "@itwin/core-common";
+import { Cartographic, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { TerrainDisplayOverrides } from "../../DisplayStyleState";
-import { HitDetail } from "../../HitDetail";
+import type { TerrainDisplayOverrides } from "../../DisplayStyleState";
+import type { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
+import type { IModelConnection } from "../../IModelConnection";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
-import { SceneContext } from "../../ViewContext";
-import { ScreenViewport } from "../../Viewport";
+import type { SceneContext } from "../../ViewContext";
+import type { ScreenViewport } from "../../Viewport";
+import type { DisclosedTileTreeSet, GeometryTileTreeReference, ImageryMapLayerTreeReference, ImageryMapTileTree, MapTilingScheme, RealityTileTreeParams, Tile, TileDrawArgs,
+  TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeSupplier} from "../internal";
 import {
-  BingElevationProvider, createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference, getCesiumTerrainProvider, ImageryMapLayerTreeReference, ImageryMapTileTree,
-  MapCartoRectangle, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs,
-  TileLoadPriority, TileParams, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
+  BingElevationProvider, createDefaultViewFlagOverrides, EllipsoidTerrainProvider, getCesiumTerrainProvider,
+  MapCartoRectangle, MapTile, MapTileLoader, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, TileTreeLoadStatus, TileTreeReference, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint = Point3d.create();

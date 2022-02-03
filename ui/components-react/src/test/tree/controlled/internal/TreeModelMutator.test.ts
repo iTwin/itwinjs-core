@@ -8,10 +8,10 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { CheckBoxState } from "@itwin/core-react";
 import { TreeModelMutator } from "../../../../components-react/tree/controlled/internal/TreeModelMutator";
-import { CheckboxStateChange } from "../../../../components-react/tree/controlled/TreeEvents";
-import { MutableTreeModel, MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
-import { TreeModelSource } from "../../../../components-react/tree/controlled/TreeModelSource";
-import { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
+import type { CheckboxStateChange } from "../../../../components-react/tree/controlled/TreeEvents";
+import type { MutableTreeModel, MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
+import type { TreeModelSource } from "../../../../components-react/tree/controlled/TreeModelSource";
+import type { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 describe("TreeModelMutator", () => {

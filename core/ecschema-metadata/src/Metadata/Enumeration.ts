@@ -6,11 +6,11 @@
  * @module Metadata
  */
 
-import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
+import type { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
 import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECName } from "../ECName";
-import { Schema } from "./Schema";
+import type { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
 /** @beta */

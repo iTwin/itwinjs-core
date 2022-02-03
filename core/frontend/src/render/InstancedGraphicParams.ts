@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import {
+import type {
   Point2d, Point3d, Range3d, Transform,
 } from "@itwin/core-geometry";
 

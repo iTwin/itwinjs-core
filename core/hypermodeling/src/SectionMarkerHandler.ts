@@ -8,9 +8,9 @@
 
 import { IModelApp } from "@itwin/core-frontend";
 import type { AbstractToolbarProps } from "@itwin/appui-abstract";
-import { SectionMarker } from "./SectionMarkers";
-import { SectionMarkerConfig } from "./HyperModelingConfig";
-import { HyperModelingDecorator } from "./HyperModelingDecorator";
+import type { SectionMarker } from "./SectionMarkers";
+import type { SectionMarkerConfig } from "./HyperModelingConfig";
+import type { HyperModelingDecorator } from "./HyperModelingDecorator";
 
 /** Supplies interactions with [[SectionMarker]]s, including a mini-toolbar displayed when the mouse hovers over a marker and what action occurs when the user clicks a marker.
  * The base implementation supplies the following interactions:

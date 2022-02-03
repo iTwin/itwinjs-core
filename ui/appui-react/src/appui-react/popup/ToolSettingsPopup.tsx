@@ -7,10 +7,13 @@
  */
 
 import * as React from "react";
-import { DialogLayoutDataProvider, OnCancelFunc, RelativePosition, SpecialKey } from "@itwin/appui-abstract";
-import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@itwin/core-react";
+import type { DialogLayoutDataProvider, OnCancelFunc, RelativePosition} from "@itwin/appui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
+import type { Orientation, SizeProps } from "@itwin/core-react";
+import { DivWithOutsideClick, FocusTrap, Point, Size } from "@itwin/core-react";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
+import type { PopupPropsBase } from "./PopupManager";
+import { PopupManager } from "./PopupManager";
 import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 import { ComponentGenerator } from "../uiprovider/ComponentGenerator";
 import { DialogGridContainer } from "../uiprovider/DefaultDialogGridContainer";

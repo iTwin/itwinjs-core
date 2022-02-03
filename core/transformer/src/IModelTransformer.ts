@@ -7,18 +7,21 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel, MarkRequired } from "@itwin/core-bentley";
-import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
+import type { AccessToken, Id64Set, Id64String, MarkRequired } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import type * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
+import type { ECSqlStatement, ElementAspect, ElementMultiAspect, ElementUniqueAspect, Model, Relationship, RelationshipProps} from "@itwin/core-backend";
 import {
-  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
-  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
-  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
-  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
+  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, Element,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations,
+  RecipeDefinitionElement, Schema, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
+import type { CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, ModelProps, PropertyMetaData} from "@itwin/core-common";
 import {
-  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
-  IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
+  Code, IModel,
+  IModelError, Placement2d, Placement3d, PrimitiveTypeCode,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";

@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { QueryVisibleFeaturesOptions } from "../../render/VisibleFeature";
+import type { IModelConnection } from "../../IModelConnection";
+import type { QueryVisibleFeaturesOptions } from "../../render/VisibleFeature";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport } from "../../Viewport";
 import { createBlankConnection } from "../createBlankConnection";

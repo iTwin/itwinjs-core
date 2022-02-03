@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { ConfigurableUiManager, TaskPropsList, Workflow, WorkflowManager, WorkflowProps, WorkflowPropsList } from "../../appui-react";
+import type { TaskPropsList, WorkflowProps, WorkflowPropsList } from "../../appui-react";
+import { ConfigurableUiManager, Workflow, WorkflowManager } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */

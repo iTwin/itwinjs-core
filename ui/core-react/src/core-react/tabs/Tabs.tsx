@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 import { Orientation } from "../enums/Orientation";
 import { ItemKeyboardNavigator } from "../focus/ItemKeyboardNavigator";
 import { IconHelper } from "../utils/IconHelper";

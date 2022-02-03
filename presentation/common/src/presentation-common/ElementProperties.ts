@@ -6,7 +6,7 @@
  * @module RPC
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
 
 /**
  * Data structure for storing element properties information in a simplified format.

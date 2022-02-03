@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import { FooterSeparator } from "@itwin/appui-layout-react";
-import { ConditionalField, StatusFieldProps } from "../../appui-react";
+import type { StatusFieldProps } from "../../appui-react";
+import { ConditionalField } from "../../appui-react";
 import { mount } from "../TestUtils";
 
 describe("ConditionalField", () => {

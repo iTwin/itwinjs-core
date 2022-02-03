@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { MapLayerSettings } from "@itwin/core-common";
+import type { MapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MapLayerImageryProvider } from "../../internal";
 

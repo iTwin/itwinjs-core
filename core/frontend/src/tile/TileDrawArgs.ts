@@ -6,19 +6,21 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@itwin/core-bentley";
-import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
-import { FeatureSymbology } from "../render/FeatureSymbology";
+import type { BeTimePoint } from "@itwin/core-bentley";
+import type { ClipVector, Map4d} from "@itwin/core-geometry";
+import { Geometry, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import type { HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
+import { FeatureAppearanceProvider, FrustumPlanes } from "@itwin/core-common";
+import type { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { RenderClipVolume } from "../render/RenderClipVolume";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
-import { RenderTextureDrape } from "../render/RenderSystem";
-import { SceneContext } from "../ViewContext";
-import { ViewingSpace } from "../ViewingSpace";
+import type { RenderClipVolume } from "../render/RenderClipVolume";
+import type { RenderGraphic } from "../render/RenderGraphic";
+import type { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
+import type { RenderTextureDrape } from "../render/RenderSystem";
+import type { SceneContext } from "../ViewContext";
+import type { ViewingSpace } from "../ViewingSpace";
 import { CoordSystem } from "../CoordSystem";
-import { Tile, TileGraphicType, TileTree } from "./internal";
+import type { Tile, TileGraphicType, TileTree } from "./internal";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();

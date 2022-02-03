@@ -12,9 +12,10 @@ import * as React from "react";
 import { OutputMessagePriority } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
 import { Popup } from "@itwin/core-react";
-import { InputFieldMessageEventArgs, MessageManager } from "../messages/MessageManager";
+import type { InputFieldMessageEventArgs} from "../messages/MessageManager";
+import { MessageManager } from "../messages/MessageManager";
 import { MessageDiv } from "./MessageSpan";
-import { NotifyMessageType } from "./ReactNotifyMessageDetails";
+import type { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 /** Properties of [[InputFieldMessage]] component.
  * @public

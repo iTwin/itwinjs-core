@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 import { Orientation } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { LinksRenderer } from "../../../../components-react/properties/LinkHandler";

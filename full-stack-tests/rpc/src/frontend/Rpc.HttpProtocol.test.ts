@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { RpcOperation, RpcRequest, RpcRequestEvent, ServerError, ServerTimeoutError } from "@itwin/core-common";
-import { TestOp1Params, TestRpcInterface } from "../common/TestRpcInterface";
+import type { TestOp1Params} from "../common/TestRpcInterface";
+import { TestRpcInterface } from "../common/TestRpcInterface";
 
 if (false) {
   describe("Rpc.HttpProtocol", () => {

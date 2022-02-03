@@ -9,8 +9,9 @@
 import "./DateField.scss";
 import * as React from "react";
 import classnames from "classnames";
-import { AlternateDateFormats, DateFormatter, TimeDisplay } from "@itwin/appui-abstract";
-import { CommonProps } from "@itwin/core-react";
+import type { DateFormatter} from "@itwin/appui-abstract";
+import { AlternateDateFormats, TimeDisplay } from "@itwin/appui-abstract";
+import type { CommonProps } from "@itwin/core-react";
 import { Input } from "@itwin/itwinui-react";
 import { Logger } from "@itwin/core-bentley";
 

@@ -6,12 +6,12 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@itwin/webgl-compatibility";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
-import { EVSMGeometry } from "../CachedGeometry";
+import type { EVSMGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
+import type { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { addEvsmExponent, warpDepth } from "./SolarShadowMapping";

@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@itwin/core-bentley";
-import { DrawingViewState, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import type { Id64String } from "@itwin/core-bentley";
+import type { IModelConnection, ViewState } from "@itwin/core-frontend";
+import { DrawingViewState, IModelApp, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
 
 export class RobotWorldApp {
 

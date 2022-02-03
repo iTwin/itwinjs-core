@@ -5,9 +5,10 @@
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { ServerTimeoutError } from "@itwin/core-common";
+import type { IModelTile, IModelTileContent, IModelTileTree, RenderGraphic, Tile,
+  TileRequestChannel, Viewport} from "@itwin/core-frontend";
 import {
-  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
-  TileRequestChannel, Viewport,
+  IModelApp, IpcApp, RenderMemory, SnapshotConnection, TileLoadStatus,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";

@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import type { ITreeDataProvider, TreeDataProviderMethod,
+  TreeDataProviderPromise, TreeDataProviderRaw} from "../../components-react/tree/TreeDataProvider";
 import {
-  isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw, ITreeDataProvider, TreeDataProviderMethod,
-  TreeDataProviderPromise, TreeDataProviderRaw,
+  isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw,
 } from "../../components-react/tree/TreeDataProvider";
 
 describe("TreeDataProvider", () => {

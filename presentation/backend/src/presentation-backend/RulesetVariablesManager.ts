@@ -6,9 +6,10 @@
  * @module Core
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { VariableValue, VariableValueTypes } from "@itwin/presentation-common";
-import { NativePlatformDefinition } from "./NativePlatform";
+import type { Id64String } from "@itwin/core-bentley";
+import type { VariableValue} from "@itwin/presentation-common";
+import { VariableValueTypes } from "@itwin/presentation-common";
+import type { NativePlatformDefinition } from "./NativePlatform";
 
 /**
  * Presentation ruleset variables registry.

@@ -8,42 +8,46 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
-import {
-  Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+import type {
+  Feature, PackedFeatureTable} from "@itwin/core-common";
+import { RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { DepthType, RenderType } from "@itwin/webgl-compatibility";
-import { IModelConnection } from "../../IModelConnection";
-import { SceneContext } from "../../ViewContext";
-import { ViewRect } from "../../ViewRect";
+import type { IModelConnection } from "../../IModelConnection";
+import type { SceneContext } from "../../ViewContext";
+import type { ViewRect } from "../../ViewRect";
 import { Pixel } from "../Pixel";
-import { GraphicList } from "../RenderGraphic";
-import { RenderMemory } from "../RenderMemory";
+import type { GraphicList } from "../RenderGraphic";
+import type { RenderMemory } from "../RenderMemory";
 import { BranchState } from "./BranchState";
-import { BatchState } from "./BatchState";
+import type { BatchState } from "./BatchState";
+import type { CachedGeometry} from "./CachedGeometry";
 import {
-  AmbientOcclusionGeometry, BlurGeometry, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, ScreenPointsGeometry,
+  AmbientOcclusionGeometry, BlurGeometry, BoundaryType, CompositeGeometry, CopyPickBufferGeometry, ScreenPointsGeometry,
   SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
 } from "./CachedGeometry";
 import { Debug } from "./Diagnostics";
-import { WebGLDisposable } from "./Disposable";
-import { DrawCommands, extractFlashedVolumeClassifierCommands, extractHilitedVolumeClassifierCommands } from "./DrawCommand";
+import type { WebGLDisposable } from "./Disposable";
+import type { DrawCommands} from "./DrawCommand";
+import { extractFlashedVolumeClassifierCommands, extractHilitedVolumeClassifierCommands } from "./DrawCommand";
 import { FloatRgba } from "./FloatRGBA";
-import { DepthBuffer, FrameBuffer } from "./FrameBuffer";
+import type { DepthBuffer} from "./FrameBuffer";
+import { FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
 import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
 import { Matrix4 } from "./Matrix";
-import { RenderCommands } from "./RenderCommands";
+import type { RenderCommands } from "./RenderCommands";
 import { CompositeFlags, RenderOrder, RenderPass, TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { getDrawParams } from "./ScratchDrawParams";
 import { SolarShadowMap } from "./SolarShadowMap";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { TextureHandle } from "./Texture";
 import { RenderBufferMultiSample } from "./RenderBuffer";
-import { Primitive } from "./Primitive";
-import { ShaderProgramExecutor } from "./ShaderProgram";
+import type { Primitive } from "./Primitive";
+import type { ShaderProgramExecutor } from "./ShaderProgram";
 
 function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)

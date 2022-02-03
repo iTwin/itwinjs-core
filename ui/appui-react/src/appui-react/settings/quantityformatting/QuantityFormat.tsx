@@ -9,14 +9,16 @@
 import "./QuantityFormat.scss";
 import * as React from "react";
 import { DeepCompare } from "@itwin/core-geometry";
+import type { QuantityFormatsChangedArgs, QuantityTypeArg, QuantityTypeKey} from "@itwin/core-frontend";
 import {
-  getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey,
+  getQuantityTypeKey, IModelApp, QuantityType,
 } from "@itwin/core-frontend";
-import { FormatProps, FormatterSpec, UnitSystemKey } from "@itwin/core-quantity";
+import type { FormatProps, FormatterSpec, UnitSystemKey } from "@itwin/core-quantity";
 import { DialogButtonType } from "@itwin/appui-abstract";
 import { FormatSample, QuantityFormatPanel } from "@itwin/imodel-components-react";
+import type { SettingsTabEntry} from "@itwin/core-react";
 import {
-  Dialog, Listbox, ListboxItem, SettingsTabEntry,
+  Dialog, Listbox, ListboxItem,
   useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer,
 } from "@itwin/core-react";
 import { ModalDialogManager } from "../../dialog/ModalDialogManager";

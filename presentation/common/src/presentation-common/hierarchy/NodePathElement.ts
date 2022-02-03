@@ -6,7 +6,8 @@
  * @module Hierarchies
  */
 
-import { Node, NodeJSON } from "./Node";
+import type { NodeJSON } from "./Node";
+import { Node } from "./Node";
 
 /**
  * Serialized [[NodePathElement]] JSON representation.

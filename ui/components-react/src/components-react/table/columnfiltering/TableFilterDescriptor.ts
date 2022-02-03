@@ -8,15 +8,16 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { StandardTypeNames } from "@itwin/appui-abstract";
-import { StringOperatorProcessor } from "../../converters/StringTypeConverter";
+import type { StringOperatorProcessor } from "../../converters/StringTypeConverter";
 import { BooleanTypeConverter } from "../../converters/BooleanTypeConverter";
-import { LessGreaterOperatorProcessor, NullableOperatorProcessor } from "../../converters/TypeConverter";
+import type { LessGreaterOperatorProcessor, NullableOperatorProcessor } from "../../converters/TypeConverter";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { UiComponents } from "../../UiComponents";
-import { RowItem } from "../TableDataProvider";
-import { FilterableTable, FilterOperator, OperatorValueFilterDescriptor } from "./ColumnFiltering";
+import type { RowItem } from "../TableDataProvider";
+import type { FilterableTable, OperatorValueFilterDescriptor } from "./ColumnFiltering";
+import { FilterOperator } from "./ColumnFiltering";
 import { ColumnFilteringUtilities } from "./ColumnFilteringUtilities";
-import { NumericRangeData } from "./DataGridFilterParser";
+import type { NumericRangeData } from "./DataGridFilterParser";
 
 /** Represents a filtering descriptor.
  * @internal

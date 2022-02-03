@@ -10,15 +10,19 @@ import produce from "immer";
 import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
-import { Size, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
-import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@itwin/appui-layout-react";
+import type { AbstractWidgetProps, UiItemsProvider} from "@itwin/appui-abstract";
+import { StagePanelLocation, StagePanelSection, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
+import type { UiStateStorageResult} from "@itwin/core-react";
+import { Size, UiStateStorageStatus } from "@itwin/core-react";
+import type { NineZoneState} from "@itwin/appui-layout-react";
+import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, toolSettingsTabId } from "@itwin/appui-layout-react";
+import type { WidgetPanelsFrontstageState} from "../../appui-react";
 import {
   ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
   FrontstageManager, FrontstageProvider, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
   packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelZoneDef, StagePanelZonesDef,
   UiFramework, UiStateStorageHandler, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
-  useSaveFrontstageSettings, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetPanelsFrontstageState, Zone, ZoneDef,
+  useSaveFrontstageSettings, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, Zone, ZoneDef,
 } from "../../appui-react";
 import TestUtils, { mount, storageMock, stubRaf, UiStateStorageStub } from "../TestUtils";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";

@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import type { PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
 import { LabelPropertyDataFilterer } from "../../../../components-react/propertygrid/dataproviders/filterers/LabelPropertyDataFilterer";
 import { FilteredType } from "../../../../components-react/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
 import { TestUtils } from "../../../TestUtils";

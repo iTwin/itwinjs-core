@@ -7,14 +7,15 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
-import { ITwinLocalization } from "@itwin/core-i18n";
-import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
+import type { ITwinLocalization } from "@itwin/core-i18n";
+import type { LabelCompositeValue} from "@itwin/presentation-common";
+import { applyOptionalPrefix, LabelDefinition } from "@itwin/presentation-common";
 import {
   createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
   createTestPropertyInfo, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
-import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
+import type { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import * as utils from "../../presentation-components/common/Utils";
 
 class TestComponent extends React.Component {

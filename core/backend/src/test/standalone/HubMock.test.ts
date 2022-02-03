@@ -5,16 +5,19 @@
 
 import { assert, expect } from "chai";
 import { join } from "path";
-import { AccessToken, Guid, Mutable } from "@itwin/core-bentley";
-import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
-import { LockProps, LockState } from "../../BackendHubAccess";
+import type { AccessToken, Mutable } from "@itwin/core-bentley";
+import { Guid } from "@itwin/core-bentley";
+import type { ChangesetFileProps} from "@itwin/core-common";
+import { ChangesetType } from "@itwin/core-common";
+import type { LockProps} from "../../BackendHubAccess";
+import { LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
+import type { LockStatusExclusive, LockStatusShared } from "../LocalHub";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");

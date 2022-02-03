@@ -7,12 +7,14 @@
  */
 
 import { IModelHost, IpcHost } from "@itwin/core-backend";
-import { DisposeFunc, Logger } from "@itwin/core-bentley";
+import type { DisposeFunc} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PresentationIpcHandler } from "./PresentationIpcHandler";
-import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
+import type { PresentationManagerProps } from "./PresentationManager";
+import { PresentationManager } from "./PresentationManager";
 import { PresentationRpcImpl } from "./PresentationRpcImpl";
 import { FactoryBasedTemporaryStorage } from "./TemporaryStorage";
 

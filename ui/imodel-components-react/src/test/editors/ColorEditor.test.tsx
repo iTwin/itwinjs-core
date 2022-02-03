@@ -8,8 +8,10 @@ import React from "react";
 import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import { ColorByName } from "@itwin/core-common";
-import { PrimitiveValue, SpecialKey, StandardEditorNames } from "@itwin/appui-abstract";
-import { EditorContainer, PropertyEditorManager, PropertyUpdatedArgs } from "@itwin/components-react";
+import type { PrimitiveValue} from "@itwin/appui-abstract";
+import { SpecialKey, StandardEditorNames } from "@itwin/appui-abstract";
+import type { PropertyUpdatedArgs } from "@itwin/components-react";
+import { EditorContainer, PropertyEditorManager } from "@itwin/components-react";
 import { ColorEditor } from "../../imodel-components-react/editors/ColorEditor";
 import { MineDataController, TestUtils } from "../TestUtils";
 

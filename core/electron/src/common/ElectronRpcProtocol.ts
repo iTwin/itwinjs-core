@@ -7,9 +7,11 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelError, IpcSocket, RpcInterface, RpcInterfaceDefinition, RpcProtocol } from "@itwin/core-common";
-import { ElectronIpcTransport, initializeIpc, IpcTransportMessage } from "./ElectronIpcTransport";
-import { ElectronRpcConfiguration } from "./ElectronRpcManager";
+import type { IpcSocket, RpcInterface, RpcInterfaceDefinition} from "@itwin/core-common";
+import { IModelError, RpcProtocol } from "@itwin/core-common";
+import type { ElectronIpcTransport, IpcTransportMessage } from "./ElectronIpcTransport";
+import { initializeIpc } from "./ElectronIpcTransport";
+import type { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
 /** RPC interface protocol for an Electron-based application.

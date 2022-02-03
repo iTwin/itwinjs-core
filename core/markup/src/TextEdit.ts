@@ -6,9 +6,10 @@
  * @module MarkupTools
  */
 
-import {
-  BeButtonEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
-  ToolAssistanceInstruction, ToolAssistanceSection,
+import type {
+  BeButtonEvent,
+  ToolAssistanceInstruction, ToolAssistanceSection} from "@itwin/core-frontend";
+import { CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
 } from "@itwin/core-frontend";
 import { G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";

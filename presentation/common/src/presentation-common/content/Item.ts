@@ -6,10 +6,13 @@
  * @module Content
  */
 
-import { ClassInfo, ClassInfoJSON, InstanceKey, InstanceKeyJSON } from "../EC";
-import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
-import { ValuesDictionary } from "../Utils";
-import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON, ValuesMapJSON } from "./Value";
+import type { ClassInfoJSON, InstanceKeyJSON } from "../EC";
+import { ClassInfo, InstanceKey } from "../EC";
+import type { LabelDefinitionJSON } from "../LabelDefinition";
+import { LabelDefinition } from "../LabelDefinition";
+import type { ValuesDictionary } from "../Utils";
+import type { DisplayValueJSON, DisplayValuesMapJSON, ValueJSON, ValuesMapJSON } from "./Value";
+import { DisplayValue, Value } from "./Value";
 
 /**
  * Serialized [[Item]] JSON representation.

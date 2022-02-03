@@ -6,9 +6,10 @@
  * @module UnifiedSelection
  */
 
-import { Id64Arg } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope } from "@itwin/presentation-common";
+import type { Id64Arg } from "@itwin/core-bentley";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { RpcRequestsHandler, SelectionScope } from "@itwin/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, KeySet } from "@itwin/presentation-common";
 
 /**
  * Properties for creating [[SelectionScopesManager]].

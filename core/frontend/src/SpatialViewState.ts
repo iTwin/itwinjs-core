@@ -6,18 +6,23 @@
  * @module Views
  */
 
-import { BeEvent, Id64String } from "@itwin/core-bentley";
-import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
-import { AxisAlignedBox3d, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
-import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
+import type { Id64String } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
+import type { Matrix3d, XYAndZ } from "@itwin/core-geometry";
+import { Constant, Range3d } from "@itwin/core-geometry";
+import type { AxisAlignedBox3d, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
+import type { AuxCoordSystemState } from "./AuxCoordSys";
+import { AuxCoordSystemSpatialState } from "./AuxCoordSys";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle3dState } from "./DisplayStyleState";
-import { GeometricModel3dState, GeometricModelState } from "./ModelState";
-import { SceneContext } from "./ViewContext";
-import { IModelConnection } from "./IModelConnection";
-import { AttachToViewportArgs, ViewState3d } from "./ViewState";
-import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
+import type { GeometricModel3dState, GeometricModelState } from "./ModelState";
+import type { SceneContext } from "./ViewContext";
+import type { IModelConnection } from "./IModelConnection";
+import type { AttachToViewportArgs} from "./ViewState";
+import { ViewState3d } from "./ViewState";
+import type { TileTreeReference } from "./tile/internal";
+import { SpatialTileTreeReferences } from "./tile/internal";
 
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored in the ModelSelector.

@@ -6,8 +6,9 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
+import type { PrimitiveValue, PropertyDescription, PropertyValue} from "@itwin/appui-abstract";
 import {
-  AlternateDateFormats, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat,
+  AlternateDateFormats, PropertyRecord, PropertyValueFormat,
   SpecialKey, StandardTypeNames, TimeDisplay,
 } from "@itwin/appui-abstract";
 import { fireEvent, render, waitFor } from "@testing-library/react";

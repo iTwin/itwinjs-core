@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ItemColorOverrides, ItemStyle, ItemStyleProvider, TableRowStyleProvider } from "../../components-react/properties/ItemStyle";
+import type { ItemColorOverrides, ItemStyle} from "../../components-react/properties/ItemStyle";
+import { ItemStyleProvider, TableRowStyleProvider } from "../../components-react/properties/ItemStyle";
 
 describe("ItemStyleProvider", () => {
   describe("createStyle", () => {

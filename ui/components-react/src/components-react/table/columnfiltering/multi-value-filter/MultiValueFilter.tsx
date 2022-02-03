@@ -12,10 +12,11 @@ import React from "react";
 import { CheckBoxState, CheckListBox, CheckListBoxItem, SearchBox, UiCore } from "@itwin/core-react";
 import { Button, Checkbox } from "@itwin/itwinui-react";
 import { PopupButton, PopupContent } from "../../../editors/PopupButton";
-import { ReactDataGridColumn } from "../../component/TableColumn";
+import type { ReactDataGridColumn } from "../../component/TableColumn";
 import { UiComponents } from "../../../UiComponents";
-import { FilterCompositionLogicalOperator, TableDistinctValue } from "../ColumnFiltering";
-import { FieldFilterData, MultiValueFilterData } from "../DataGridFilterParser";
+import type { TableDistinctValue } from "../ColumnFiltering";
+import { FilterCompositionLogicalOperator } from "../ColumnFiltering";
+import type { FieldFilterData, MultiValueFilterData } from "../DataGridFilterParser";
 
 function contains(valueA: string, valueB: string, caseSensitive: boolean): boolean {
   // istanbul ignore next

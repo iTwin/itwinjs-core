@@ -4,11 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
+import type { Project as ITwin} from "@itwin/projects-client";
+import { ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelHost, IModelJsFs, V1CheckpointManager } from "@itwin/core-backend";
-import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
-import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
-import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import type { AccessToken, GuidString} from "@itwin/core-bentley";
+import { ChangeSetStatus, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
+import type { ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
+import { BriefcaseIdValue } from "@itwin/core-common";
+import type { TestUserCredentials} from "@itwin/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 
 /** the types of users available for tests */
 export enum TestUserType {

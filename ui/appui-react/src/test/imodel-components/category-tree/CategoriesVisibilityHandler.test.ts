@@ -5,17 +5,21 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, Id64String, using } from "@itwin/core-bentley";
-import {
-  IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState,
+import type { Id64String} from "@itwin/core-bentley";
+import { BeEvent, using } from "@itwin/core-bentley";
+import type {
+  IModelConnection, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState} from "@itwin/core-frontend";
+import { PerModelCategoryVisibility,
 } from "@itwin/core-frontend";
-import { ECInstancesNodeKey, StandardNodeTypes } from "@itwin/presentation-common";
+import type { ECInstancesNodeKey} from "@itwin/presentation-common";
+import { StandardNodeTypes } from "@itwin/presentation-common";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import * as UiComponents from "@itwin/components-react";
 import { renderHook } from "@testing-library/react-hooks";
 
-import {
-  Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams, useCategories,
+import type {
+  Category, CategoryVisibilityHandlerParams} from "../../../appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
+import { CategoryVisibilityHandler, useCategories,
 } from "../../../appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
 
 const createKey = (id: Id64String): ECInstancesNodeKey => {

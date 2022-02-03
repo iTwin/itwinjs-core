@@ -6,18 +6,22 @@
  * @module Core
  */
 
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Field, PropertiesField } from "./content/Fields";
-import { Item } from "./content/Item";
-import { PrimitiveTypeDescription, PropertyValueFormat } from "./content/TypeDescription";
-import { DisplayValue, Value } from "./content/Value";
-import { ClassInfo, InstanceKey, RelationshipPath } from "./EC";
-import { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications";
+import type { Id64String } from "@itwin/core-bentley";
+import { Guid, Id64 } from "@itwin/core-bentley";
+import type { Field, PropertiesField } from "./content/Fields";
+import type { Item } from "./content/Item";
+import type { PrimitiveTypeDescription} from "./content/TypeDescription";
+import { PropertyValueFormat } from "./content/TypeDescription";
+import type { DisplayValue} from "./content/Value";
+import { Value } from "./content/Value";
+import type { ClassInfo, InstanceKey} from "./EC";
+import { RelationshipPath } from "./EC";
+import type { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications";
 import { ContentSpecificationTypes } from "./rules/content/ContentSpecification";
-import { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification";
+import type { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification";
 import { RelationshipDirection } from "./rules/RelationshipDirection";
 import { RuleTypes } from "./rules/Rule";
-import { Ruleset } from "./rules/Ruleset";
+import type { Ruleset } from "./rules/Ruleset";
 
 /**
  * A factory class that can be used to create presentation rulesets targeted towards

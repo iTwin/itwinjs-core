@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
-import { ITwinManagerClient } from "@bentley/imodelbank-client";
-import { AccessToken } from "@itwin/core-bentley";
+import type { Project as ITwin} from "@itwin/projects-client";
+import { ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
+import type { ITwinManagerClient } from "@bentley/imodelbank-client";
+import type { AccessToken } from "@itwin/core-bentley";
 
 /** An implementation of TestITwin backed by an iTwin project */
 export class ITwinAccessClientWrapper implements ITwinManagerClient {

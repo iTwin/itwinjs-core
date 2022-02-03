@@ -8,8 +8,10 @@
  */
 
 import * as React from "react";
-import { Checkbox, Input, Select, SelectOption, Textarea } from "@itwin/itwinui-react";
-import { FieldDef, FormContext, FormContextState } from "./Form";
+import type { SelectOption} from "@itwin/itwinui-react";
+import { Checkbox, Input, Select, Textarea } from "@itwin/itwinui-react";
+import type { FieldDef, FormContextState } from "./Form";
+import { FormContext } from "./Form";
 
 // cSpell:ignore multilinetextbox
 

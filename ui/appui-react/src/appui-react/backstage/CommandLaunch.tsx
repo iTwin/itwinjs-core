@@ -8,14 +8,14 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { CommandHandler, UiSyncEventArgs } from "@itwin/appui-abstract";
+import type { CommandHandler, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import { withSafeArea } from "../safearea/SafeAreaContext";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
+import type { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 // cspell:ignore safearea

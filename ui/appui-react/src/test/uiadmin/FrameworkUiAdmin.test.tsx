@@ -6,10 +6,11 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import {
-  AbstractMenuItemProps, AbstractToolbarProps, DialogButtonDef, DialogButtonType, DialogItem,
-  DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult,
-  PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
+import type {
+  AbstractMenuItemProps, AbstractToolbarProps, DialogButtonDef, DialogItem,
+  DialogItemValue, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyDescription} from "@itwin/appui-abstract";
+import { DialogButtonType, DialogLayoutDataProvider,
+  PropertyChangeStatus, RelativePosition, StandardTypeNames,
 } from "@itwin/appui-abstract";
 import { Point } from "@itwin/core-react";
 import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../appui-react";

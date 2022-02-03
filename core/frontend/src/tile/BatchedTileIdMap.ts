@@ -6,8 +6,9 @@
  * @module Tiles
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
-import { IModelConnection } from "../IModelConnection";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import type { IModelConnection } from "../IModelConnection";
 
 /**
  * Mapping between transient IDs assigned to 3D tiles "features" and batch table properties (and visa versa).

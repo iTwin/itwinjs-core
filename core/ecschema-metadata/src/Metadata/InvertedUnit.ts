@@ -7,16 +7,16 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { InvertedUnitProps } from "../Deserialization/JsonProps";
+import type { InvertedUnitProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedUnit, LazyLoadedUnitSystem } from "../Interfaces";
-import { SchemaItemKey } from "../SchemaKey";
-import { Schema } from "./Schema";
+import type { LazyLoadedUnit, LazyLoadedUnitSystem } from "../Interfaces";
+import type { SchemaItemKey } from "../SchemaKey";
+import type { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { Unit } from "./Unit";
-import { UnitSystem } from "./UnitSystem";
+import type { Unit } from "./Unit";
+import type { UnitSystem } from "./UnitSystem";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.

@@ -13,9 +13,10 @@ import { MessageSeverity, WidgetState } from "@itwin/appui-abstract";
 import { MessageHyperlink, MessageLayout, MessageProgress, Toast } from "@itwin/appui-layout-react";
 import { IconButton } from "@itwin/itwinui-react";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
+import type { ConfigurableCreateInfo, StatusBarWidgetControlArgs} from "../../appui-react";
 import {
-  AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarCenterSection,
-  StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
+  AppNotificationManager, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarCenterSection,
+  StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { MessageManager } from "../../appui-react/messages/MessageManager";

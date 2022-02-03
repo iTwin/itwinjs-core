@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { DrawingNavigationAid } from "@itwin/imodel-components-react";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import type { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
 
 /** Navigation Aid that displays an interactive mini-map for Drawing views that synchronizes with the iModel Viewport.

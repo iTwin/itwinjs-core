@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ShaderBuilder } from "../ShaderBuilder";
+import type { ShaderBuilder } from "../ShaderBuilder";
 
 /** @internal */
 export const decodeUint16 = `

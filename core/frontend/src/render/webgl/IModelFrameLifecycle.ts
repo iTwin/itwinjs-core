@@ -7,13 +7,13 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { Point3d, Vector3d } from "@itwin/core-geometry";
-import { Viewport } from "../../Viewport";
-import { FrameBuffer, FrameBufferStack } from "./FrameBuffer";
-import { FrustumUniformType } from "./FrustumUniforms";
-import { RenderCommands } from "./RenderCommands";
-import { CompositeFlags } from "./RenderFlags";
-import { System } from "./System";
+import type { Point3d, Vector3d } from "@itwin/core-geometry";
+import type { Viewport } from "../../Viewport";
+import type { FrameBuffer, FrameBufferStack } from "./FrameBuffer";
+import type { FrustumUniformType } from "./FrustumUniforms";
+import type { RenderCommands } from "./RenderCommands";
+import type { CompositeFlags } from "./RenderFlags";
+import type { System } from "./System";
 
 /** @internal */
 export interface FrameRenderData {

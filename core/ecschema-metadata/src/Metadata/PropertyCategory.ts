@@ -6,9 +6,9 @@
  * @module Metadata
  */
 
-import { PropertyCategoryProps } from "../Deserialization/JsonProps";
+import type { PropertyCategoryProps } from "../Deserialization/JsonProps";
 import { SchemaItemType } from "../ECObjects";
-import { Schema } from "./Schema";
+import type { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
 /**

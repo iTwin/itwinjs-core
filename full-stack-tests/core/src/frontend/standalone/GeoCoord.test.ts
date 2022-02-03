@@ -3,9 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
-import { GeoConverter, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { Geometry, Point3d, XYZProps } from "@itwin/core-geometry";
+import type { GeoCoordinatesResponseProps, IModelCoordinatesResponseProps } from "@itwin/core-common";
+import { GeoCoordStatus } from "@itwin/core-common";
+import type { GeoConverter, IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import type { XYZProps } from "@itwin/core-geometry";
+import { Geometry, Point3d } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 
 // spell-checker: disable

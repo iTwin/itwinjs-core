@@ -6,8 +6,10 @@
  * @module Core
  */
 
-import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
-import { Node, NodeJSON, PartialNode, PartialNodeJSON } from "./hierarchy/Node";
+import type { NodeKeyJSON } from "./hierarchy/Key";
+import { NodeKey } from "./hierarchy/Key";
+import type { NodeJSON, PartialNode, PartialNodeJSON } from "./hierarchy/Node";
+import { Node } from "./hierarchy/Node";
 
 /** @alpha */
 export const UPDATE_FULL = "FULL";

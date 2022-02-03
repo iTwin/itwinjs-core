@@ -9,8 +9,9 @@
 import "./Message.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
-import { Status, StatusHelpers } from "./Status";
+import type { CommonProps } from "@itwin/core-react";
+import type { Status} from "./Status";
+import { StatusHelpers } from "./Status";
 
 /** Properties of [[Message]] component.
  * @internal

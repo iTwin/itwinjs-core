@@ -17,15 +17,16 @@ export interface GraphicBranchFrustum {
   };
 }
 
-import { disposeArray, IDisposable } from "@itwin/core-bentley";
-import { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { FeatureSymbology } from "./FeatureSymbology";
-import { RenderClipVolume } from "./RenderClipVolume";
-import { RenderGraphic } from "./RenderGraphic";
-import { RenderMemory } from "./RenderMemory";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
-import { RenderTextureDrape } from "./RenderSystem";
+import type { IDisposable } from "@itwin/core-bentley";
+import { disposeArray } from "@itwin/core-bentley";
+import type { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
+import type { IModelConnection } from "../IModelConnection";
+import type { FeatureSymbology } from "./FeatureSymbology";
+import type { RenderClipVolume } from "./RenderClipVolume";
+import type { RenderGraphic } from "./RenderGraphic";
+import type { RenderMemory } from "./RenderMemory";
+import type { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import type { RenderTextureDrape } from "./RenderSystem";
 
 /** Special values of [[GraphicBranch.animationNodeId]].
  * All other values refer to an [ElementTimeline.batchId]($common) that applies a transform to the graphics in the branch.

@@ -6,10 +6,10 @@
  * @module PropertyGrid
  */
 import { immerable } from "immer";
-import { PropertyCategory, PropertyData } from "../PropertyDataProvider";
-import { FlatGridItem, GridCategoryItem } from "./flat-items/FlatGridItem";
-import { IMutableFlatGridItem, IMutableGridCategoryItem } from "./flat-items/MutableFlatGridItem";
-import { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
+import type { PropertyCategory, PropertyData } from "../PropertyDataProvider";
+import type { FlatGridItem, GridCategoryItem } from "./flat-items/FlatGridItem";
+import type { IMutableFlatGridItem, IMutableGridCategoryItem } from "./flat-items/MutableFlatGridItem";
+import type { IMutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
 
 /**
  * PropertyGridModel interface for working with immutable FlatGridItems

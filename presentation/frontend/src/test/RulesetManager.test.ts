@@ -6,7 +6,8 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import type { RegisteredRuleset, Rule, Ruleset} from "@itwin/presentation-common";
+import { RuleTypes } from "@itwin/presentation-common";
 import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 

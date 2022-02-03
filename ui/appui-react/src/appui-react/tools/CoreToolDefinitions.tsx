@@ -15,13 +15,14 @@ import {
 } from "@itwin/core-frontend";
 import { ConditionalBooleanValue, ConditionalStringValue } from "@itwin/appui-abstract";
 import { ToolbarPopupContext } from "@itwin/components-react";
-import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../toolbar/PopupButton";
+import type { PopupButtonChildrenRenderPropArgs } from "../toolbar/PopupButton";
+import { PopupButton } from "../toolbar/PopupButton";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { KeyinBrowser } from "../keyinbrowser/KeyinBrowser";
 import { getIsHiddenIfSelectionNotActive, getSelectionContextSyncEventIds, selectionContextStateFunc } from "../selection/SelectionContextItemDef";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { CustomItemDef } from "../shared/CustomItemDef";
-import { BaseItemState } from "../shared/ItemDefBase";
+import type { BaseItemState } from "../shared/ItemDefBase";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { GroupItemDef } from "../toolbar/GroupItem";

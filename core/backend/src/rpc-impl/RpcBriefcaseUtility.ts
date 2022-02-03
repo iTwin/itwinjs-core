@@ -6,13 +6,17 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, BentleyError, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
-import {
-  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
+import type { AccessToken} from "@itwin/core-bentley";
+import { assert, BeDuration, BentleyError, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
+import type {
+  BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, RpcActivity} from "@itwin/core-common";
+import { IModelError, IModelVersion, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointManager, CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
+import type { RequestNewBriefcaseArg } from "../BriefcaseManager";
+import { BriefcaseManager } from "../BriefcaseManager";
+import type { CheckpointProps} from "../CheckpointManager";
+import { CheckpointManager, V1CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";

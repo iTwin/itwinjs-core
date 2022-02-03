@@ -7,9 +7,10 @@
  */
 
 import * as React from "react";
-import { GlobalDialog, GlobalDialogProps } from "@itwin/core-react";
+import type { GlobalDialogProps } from "@itwin/core-react";
+import { GlobalDialog } from "@itwin/core-react";
 import { UiComponents } from "../../UiComponents";
-import { ShowHideID, ShowHideItem } from "./ShowHideItem";
+import type { ShowHideID, ShowHideItem } from "./ShowHideItem";
 import { DialogButtonType } from "@itwin/appui-abstract";
 import { Checkbox } from "@itwin/itwinui-react";
 

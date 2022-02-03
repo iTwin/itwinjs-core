@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
-import { SchemaContext } from "../Context";
-import { Constant } from "../Metadata/Constant";
+import type { SchemaContext } from "../Context";
+import type { Constant } from "../Metadata/Constant";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { SchemaKey } from "../SchemaKey";

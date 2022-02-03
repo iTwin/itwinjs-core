@@ -6,10 +6,11 @@
  * @module Schema
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
-import { Schema } from "./Schema";
+import type { Schema } from "./Schema";
 
 /** Represents an entity in an [[IModelDb]] such as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).

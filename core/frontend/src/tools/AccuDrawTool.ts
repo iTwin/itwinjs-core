@@ -10,11 +10,12 @@ import { BentleyStatus } from "@itwin/core-bentley";
 import { Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { AccuDraw, AccuDrawFlags, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
-import { ACSDisplayOptions, AuxCoordSystemState } from "../AuxCoordSys";
-import { SnapDetail } from "../HitDetail";
+import type { AuxCoordSystemState } from "../AuxCoordSys";
+import { ACSDisplayOptions } from "../AuxCoordSys";
+import type { SnapDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { DecorateContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
+import type { DecorateContext } from "../ViewContext";
+import type { Viewport } from "../Viewport";
 import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputCollector, Tool } from "./Tool";
 
 // cSpell:ignore dont unlockedz

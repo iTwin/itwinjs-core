@@ -7,20 +7,22 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { FillFlags, RenderMode, TextureTransparency, ViewFlags } from "@itwin/core-common";
+import type { ViewFlags } from "@itwin/core-common";
+import { FillFlags, RenderMode, TextureTransparency } from "@itwin/core-common";
 import { SurfaceType } from "../primitives/SurfaceParams";
-import { VertexIndices } from "../primitives/VertexTable";
-import { RenderMemory } from "../RenderMemory";
+import type { VertexIndices } from "../primitives/VertexTable";
+import type { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
-import { ShaderProgramParams } from "./DrawCommand";
+import type { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { MaterialInfo } from "./Material";
-import { Pass, RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
+import type { MaterialInfo } from "./Material";
+import type { Pass} from "./RenderFlags";
+import { RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-import { MeshData } from "./MeshData";
+import type { MeshData } from "./MeshData";
 import { MeshGeometry } from "./MeshGeometry";
 
 /** @internal */

@@ -8,10 +8,11 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import { HiddenLine, ViewFlags } from "@itwin/core-common";
+import type { HiddenLine} from "@itwin/core-common";
+import { ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
-import { Branch } from "./Graphic";
+import type { Branch } from "./Graphic";
 import { EdgeSettings } from "./EdgeSettings";
 
 /**

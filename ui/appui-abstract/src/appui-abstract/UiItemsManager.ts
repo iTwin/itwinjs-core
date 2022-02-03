@@ -8,11 +8,11 @@
  */
 
 import { BeEvent, Logger } from "@itwin/core-bentley";
-import { BackstageItem } from "./backstage/BackstageItem";
-import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
-import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
-import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
-import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
+import type { BackstageItem } from "./backstage/BackstageItem";
+import type { CommonStatusBarItem } from "./statusbar/StatusBarItem";
+import type { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
+import type { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
+import type { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 import { loggerCategory } from "./utils/misc";
 import { StageUsage } from "./items/StageUsage";
 

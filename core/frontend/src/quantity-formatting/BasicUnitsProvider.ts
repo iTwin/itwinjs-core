@@ -6,10 +6,11 @@
  * @module QuantityFormatting
  */
 
+import type { UnitConversion, UnitProps, UnitsProvider} from "@itwin/core-quantity";
 import {
-  BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider,
+  BadUnit, BasicUnit,
 } from "@itwin/core-quantity";
-import { UnitNameKey } from "./QuantityFormatter";
+import type { UnitNameKey } from "./QuantityFormatter";
 
 // cSpell:ignore ussurvey USCUSTOM
 

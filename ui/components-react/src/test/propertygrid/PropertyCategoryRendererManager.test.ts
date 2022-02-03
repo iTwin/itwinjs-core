@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as React from "react";
+import type * as React from "react";
 import sinon from "sinon";
-import { MutableGridCategory } from "../../components-react/propertygrid/internal/flat-items/MutableGridCategory";
+import type { MutableGridCategory } from "../../components-react/propertygrid/internal/flat-items/MutableGridCategory";
 import { PropertyCategoryRendererManager } from "../../components-react/propertygrid/PropertyCategoryRendererManager";
 import { FlatGridTestUtils } from "./component/internal/flat-items/FlatGridTestUtils";
 

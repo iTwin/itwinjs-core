@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
-import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/webgl";
+import type { IModelConnection } from "@itwin/core-frontend";
+import { CheckpointConnection, imageElementFromImageSource, IModelApp } from "@itwin/core-frontend";
+import type { ExternalTextureRequest} from "@itwin/core-frontend/lib/cjs/webgl";
+import { ExternalTextureLoader, GL, Texture2DHandle } from "@itwin/core-frontend/lib/cjs/webgl";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
 

@@ -10,11 +10,13 @@
 import "./ThemedEnumEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { EnumerationChoice, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
-import { OptionType, ThemedSelect } from "@itwin/core-react";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { EnumerationChoice, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
+import type { OptionType} from "@itwin/core-react";
+import { ThemedSelect } from "@itwin/core-react";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { ActionMeta, ValueType } from "react-select/src/types";
+import type { ActionMeta, ValueType } from "react-select/src/types";
 
 /** Properties for [[EnumEditor]] component
  * @beta @deprecated

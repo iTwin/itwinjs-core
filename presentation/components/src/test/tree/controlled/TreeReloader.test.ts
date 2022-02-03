@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Observable } from "rxjs/internal/Observable";
+import type { Observable } from "rxjs/internal/Observable";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { DelayLoadedTreeNodeItem, MutableTreeModel, TreeModelNodeInput, TreeModelSource } from "@itwin/components-react";
+import type { DelayLoadedTreeNodeItem, TreeModelNodeInput, TreeModelSource } from "@itwin/components-react";
+import { MutableTreeModel } from "@itwin/components-react";
 import { reloadTree } from "../../../presentation-components/tree/controlled/TreeReloader";
-import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
+import type { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
 
 describe("reloadTree", () => {
   let dataProvider: IPresentationTreeDataProvider;

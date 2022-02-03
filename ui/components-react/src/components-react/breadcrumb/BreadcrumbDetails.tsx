@@ -9,16 +9,20 @@
 import classnames from "classnames";
 import * as React from "react";
 import { using } from "@itwin/core-bentley";
-import { CommonProps } from "@itwin/core-react";
-import { Table, TableProps } from "../table/component/Table";
-import { ColumnDescription, RowItem, TableDataProvider } from "../table/TableDataProvider";
-import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, TreeNodeItem } from "../tree/TreeDataProvider";
+import type { CommonProps } from "@itwin/core-react";
+import type { TableProps } from "../table/component/Table";
+import { Table } from "../table/component/Table";
+import type { ColumnDescription, RowItem, TableDataProvider } from "../table/TableDataProvider";
+import type { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../tree/TreeDataProvider";
+import { isTreeDataProviderInterface } from "../tree/TreeDataProvider";
 import { UiComponents } from "../UiComponents";
+import type { BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback} from "./BeInspireTree";
 import {
-  BeInspireTree, BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNodes,
+  BeInspireTree, BeInspireTreeEvent, toNodes,
 } from "./BeInspireTree";
-import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
-import { BreadcrumbTreeUtils, DataRowItem, getPropertyRecordAsString } from "./BreadcrumbTreeUtils";
+import type { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
+import type { DataRowItem} from "./BreadcrumbTreeUtils";
+import { BreadcrumbTreeUtils, getPropertyRecordAsString } from "./BreadcrumbTreeUtils";
 
 /* eslint-disable deprecation/deprecation */
 

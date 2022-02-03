@@ -10,11 +10,13 @@ import "./ColorEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ColorDef } from "@itwin/core-common";
-import {
-  ColorEditorParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+import type {
+  ColorEditorParams, PropertyEditorParams, PropertyRecord, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
-import { PropertyEditorBase, PropertyEditorManager, PropertyEditorProps, TypeEditor } from "@itwin/components-react";
+import type { PropertyEditorProps, TypeEditor } from "@itwin/components-react";
+import { PropertyEditorBase, PropertyEditorManager } from "@itwin/components-react";
 import { ColorPickerButton } from "../color/ColorPickerButton";
 
 /** @internal */

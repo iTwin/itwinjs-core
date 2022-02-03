@@ -9,19 +9,23 @@
 import "./ControlledTree.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { areEqual, ListChildComponentProps, ListOnItemsRenderedProps, VariableSizeList } from "react-window";
+import type { ListChildComponentProps, ListOnItemsRenderedProps} from "react-window";
+import { areEqual, VariableSizeList } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";
 import { timer } from "rxjs/internal/observable/timer";
 import { assert } from "@itwin/core-bentley";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@itwin/core-react";
 import { createContextWithMandatoryProvider } from "../../../common/UseContextWithMandatoryProvider";
-import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
-import { TreeActions } from "../TreeActions";
+import type { HighlightableTreeProps} from "../../HighlightingEngine";
+import { HighlightingEngine } from "../../HighlightingEngine";
+import type { TreeActions } from "../TreeActions";
+import type { TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes} from "../TreeModel";
 import {
-  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes,
+  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode,
 } from "../TreeModel";
-import { ITreeNodeLoader } from "../TreeNodeLoader";
-import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
+import type { ITreeNodeLoader } from "../TreeNodeLoader";
+import type { TreeNodeRendererProps } from "./TreeNodeRenderer";
+import { TreeNodeRenderer } from "./TreeNodeRenderer";
 
 const NODE_LOAD_DELAY = 500;
 

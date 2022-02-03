@@ -9,8 +9,9 @@
 import "./ResizeGrip.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Point, Rectangle, RectangleProps } from "@itwin/core-react";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { CommonProps, RectangleProps } from "@itwin/core-react";
+import { Point, Rectangle } from "@itwin/core-react";
 import { PointerCaptor } from "../../base/PointerCaptor";
 
 /** Available resize directions of resize grip.

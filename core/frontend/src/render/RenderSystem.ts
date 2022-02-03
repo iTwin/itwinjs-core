@@ -6,38 +6,44 @@
  * @module Rendering
  */
 
-import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
-import {
-  ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
-  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
+import type { Id64String, IDisposable } from "@itwin/core-bentley";
+import { base64StringToUint8Array } from "@itwin/core-bentley";
+import type { ClipVector, Matrix3d, Range2d, Vector2d, XAndY } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import type {
+  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, PackedFeatureTable, RenderMaterial, SkyGradient, TextureProps} from "@itwin/core-common";
+import { FeatureIndexType, ImageBufferFormat, ImageSource, ImageSourceFormat,
+  isValidImageSourceFormat, QParams3d, QPoint3dList, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
-import { WebGLExtensionName } from "@itwin/webgl-compatibility";
+import type { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
+import type { IModelConnection } from "../IModelConnection";
+import type { MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
-import { SceneContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
-import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
-import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
-import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
-import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
-import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
-import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import type { SceneContext } from "../ViewContext";
+import type { Viewport } from "../Viewport";
+import type { ViewRect } from "../ViewRect";
+import type { GraphicBranchOptions } from "./GraphicBranch";
+import { GraphicBranch } from "./GraphicBranch";
+import type { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
+import type { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
+import type { PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { MeshArgs } from "./primitives/mesh/MeshPrimitives";
+import type { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
+import type { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
+import type { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { PointStringParams } from "./primitives/PointStringParams";
 import { PolylineParams } from "./primitives/PolylineParams";
 import { MeshParams } from "./primitives/VertexTable";
-import { RenderClipVolume } from "./RenderClipVolume";
-import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
-import { RenderMemory } from "./RenderMemory";
-import { RenderTarget } from "./RenderTarget";
-import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
-import { CreateRenderMaterialArgs } from "./RenderMaterial";
+import type { RenderClipVolume } from "./RenderClipVolume";
+import type { RenderGraphic} from "./RenderGraphic";
+import { RenderGraphicOwner } from "./RenderGraphic";
+import type { RenderMemory } from "./RenderMemory";
+import type { RenderTarget } from "./RenderTarget";
+import type { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
+import type { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
+import type { CreateRenderMaterialArgs } from "./RenderMaterial";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh

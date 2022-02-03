@@ -8,8 +8,9 @@
  */
 
 import * as React from "react";
-import {
-  CommonStatusBarItem, StatusBarItemsChangedArgs, StatusBarItemsManager, UiItemsManager,
+import type {
+  CommonStatusBarItem, StatusBarItemsChangedArgs, StatusBarItemsManager} from "@itwin/appui-abstract";
+import { UiItemsManager,
 } from "@itwin/appui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";

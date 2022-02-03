@@ -6,7 +6,8 @@ import { assert } from "chai";
 import * as path from "path";
 import { OpenMode } from "@itwin/core-bentley";
 import { ProjectsAccessClient } from "@itwin/projects-client";
-import { IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
+import type { IModelJsFsStats} from "@itwin/core-backend";
+import { IModelHost, IModelHostConfiguration, IModelJsFs, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
 import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);

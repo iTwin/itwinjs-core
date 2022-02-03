@@ -7,24 +7,27 @@
  * @module WebGL
  */
 
-import { assert, dispose, IDisposable } from "@itwin/core-bentley";
+import type { IDisposable } from "@itwin/core-bentley";
+import { assert, dispose } from "@itwin/core-bentley";
 import { Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
-import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@itwin/core-common";
+import type { ColorDef, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
+import { Quantization } from "@itwin/core-common";
 import { AttributeMap } from "./AttributeMap";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
 import { Matrix4 } from "./Matrix";
 import { GraphicBranch } from "../GraphicBranch";
-import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
-import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
-import { RenderGraphic } from "../RenderGraphic";
-import { RenderMemory } from "../RenderMemory";
-import { RenderSystem, TerrainTexture } from "../RenderSystem";
+import type { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
+import type { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
+import type { RenderGraphic } from "../RenderGraphic";
+import type { RenderMemory } from "../RenderMemory";
+import type { RenderSystem} from "../RenderSystem";
+import { TerrainTexture } from "../RenderSystem";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
 import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
-import { Target } from "./Target";
+import type { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 
 const scratchOverlapRange = Range2d.createNull();

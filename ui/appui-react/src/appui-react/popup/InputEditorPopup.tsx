@@ -7,10 +7,14 @@
  */
 
 import * as React from "react";
-import { OnCancelFunc, OnValueCommitFunc, Primitives, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "@itwin/components-react";
-import { DivWithOutsideClick, Size, SizeProps } from "@itwin/core-react";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
+import type { OnCancelFunc, OnValueCommitFunc, Primitives, PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { PropertyUpdatedArgs } from "@itwin/components-react";
+import { EditorContainer } from "@itwin/components-react";
+import type { SizeProps } from "@itwin/core-react";
+import { DivWithOutsideClick, Size } from "@itwin/core-react";
+import type { PopupPropsBase } from "./PopupManager";
+import { PopupManager } from "./PopupManager";
 import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 
 /** @beta */

@@ -8,8 +8,9 @@ import { Provider } from "react-redux";
 import { fireEvent, render } from "@testing-library/react";
 import { MockRender, SnapMode } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
-import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, SnapModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework,
+import type {
+  ConfigurableCreateInfo, StatusBarWidgetControlArgs} from "../../appui-react";
+import { ConfigurableUiControlType, SnapModeField, StatusBar, StatusBarWidgetControl, UiFramework,
   WidgetDef,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";

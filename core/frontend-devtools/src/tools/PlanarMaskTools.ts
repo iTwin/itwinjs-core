@@ -7,10 +7,11 @@
  * @module Tools
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
 import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskSettings } from "@itwin/core-common";
-import {
-  BeButtonEvent, ContextRealityModelState, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, ScreenViewport, Tool,
+import type {
+  BeButtonEvent, ContextRealityModelState, HitDetail, ScreenViewport} from "@itwin/core-frontend";
+import { EventHandled, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, Tool,
 } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 

@@ -7,17 +7,19 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { MixinProps } from "../Deserialization/JsonProps";
+import type { MixinProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { ECClassModifier, SchemaItemType, StrengthDirection } from "../ECObjects";
+import type { StrengthDirection } from "../ECObjects";
+import { ECClassModifier, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedEntityClass } from "../Interfaces";
-import { SchemaItemKey } from "../SchemaKey";
+import type { LazyLoadedEntityClass } from "../Interfaces";
+import type { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
-import { createNavigationProperty, createNavigationPropertySync, EntityClass } from "./EntityClass";
-import { NavigationProperty } from "./Property";
-import { RelationshipClass } from "./RelationshipClass";
-import { Schema } from "./Schema";
+import type { EntityClass } from "./EntityClass";
+import { createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
+import type { NavigationProperty } from "./Property";
+import type { RelationshipClass } from "./RelationshipClass";
+import type { Schema } from "./Schema";
 
 /**
  * A Typescript class representation of a Mixin.

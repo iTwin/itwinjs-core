@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
+import type { FeatureAppearanceProps, ViewDefinitionProps} from "@itwin/core-common";
 import {
-  ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride, ViewDefinitionProps,
+  ColorDef, Feature, FeatureAppearance, GeometryClass, LinePixels, RgbColor, SubCategoryOverride,
   ViewFlags,
 } from "@itwin/core-common";
-import { FeatureSymbology, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import type { IModelConnection, ViewState } from "@itwin/core-frontend";
+import { FeatureSymbology, SnapshotConnection, SpatialViewState } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 class Overrides extends FeatureSymbology.Overrides {

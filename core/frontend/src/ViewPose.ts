@@ -6,10 +6,11 @@
  * @module Views
  */
 
-import { BeTimePoint } from "@itwin/core-bentley";
-import { Angle, Matrix3d, Point2d, Point3d, Vector3d } from "@itwin/core-geometry";
-import { Camera } from "@itwin/core-common";
-import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
+import type { BeTimePoint } from "@itwin/core-bentley";
+import type { Angle, Point2d} from "@itwin/core-geometry";
+import { Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
+import type { Camera } from "@itwin/core-common";
+import type { ViewState, ViewState2d, ViewState3d } from "./ViewState";
 
 /** The "pose" for a view. This is either the volume or area, depending on whether the view is 3d or 2d,
  * plus the camera position/angle, if it is enabled.

@@ -8,9 +8,9 @@
 
 import "./ActionButtonList.scss";
 import * as React from "react";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyRecord } from "@itwin/appui-abstract";
 import { Orientation } from "@itwin/core-react";
-import { ActionButtonRenderer, ActionButtonRendererProps } from "./ActionButtonRenderer";
+import type { ActionButtonRenderer, ActionButtonRendererProps } from "./ActionButtonRenderer";
 
 /** Properties of [[ActionButtonList]] React component
  * @public

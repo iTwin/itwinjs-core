@@ -5,11 +5,13 @@
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { AccessToken, Id64String } from "@itwin/core-bentley";
-import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import type { AccessToken, Id64String } from "@itwin/core-bentley";
+import type { ElementAspectProps} from "@itwin/core-common";
+import { IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools";
-import { DictionaryModel, ElementAspect, IModelDb, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import type { DictionaryModel, IModelDb} from "@itwin/core-backend";
+import { ElementAspect, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 /* eslint-disable @typescript-eslint/naming-convention */

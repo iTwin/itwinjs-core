@@ -6,7 +6,7 @@
  * @module Notification
  */
 
-import { MessageSeverity } from "./MessageSeverity";
+import type { MessageSeverity } from "./MessageSeverity";
 
 /** Describes the type and behavior of a display message.
  * @public

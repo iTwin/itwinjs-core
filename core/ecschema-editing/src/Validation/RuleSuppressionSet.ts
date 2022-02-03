@@ -6,11 +6,11 @@
  * @module Validation
  */
 
-import { AnyClass, AnyECType, AnyProperty, Constant, CustomAttribute, CustomAttributeClass,
+import type { AnyClass, AnyECType, AnyProperty, Constant, CustomAttribute, CustomAttributeClass,
   CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon,
   PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem, StructClass, Unit,
   UnitSystem } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic } from "./Diagnostic";
+import type { AnyDiagnostic } from "./Diagnostic";
 
 /**
  * Interface used for all rule suppressions used during schema validation.

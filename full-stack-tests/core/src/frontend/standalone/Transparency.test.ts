@@ -3,12 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import type { RenderMaterial} from "@itwin/core-common";
 import {
-  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureTransparency,
+  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMode, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
-import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import type { DecorateContext, FeatureSymbology, RenderGraphicOwner, Viewport } from "@itwin/core-frontend";
+import { GraphicType, IModelApp, SnapshotConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import type { TestViewport } from "../TestViewport";
+import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
 
 interface GraphicOptions {

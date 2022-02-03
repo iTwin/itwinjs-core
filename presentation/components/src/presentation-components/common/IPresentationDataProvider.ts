@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { IDisposable } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { IDisposable } from "@itwin/core-bentley";
+import type { IModelConnection } from "@itwin/core-frontend";
 
 /**
  * Interface for a presentation data provider

@@ -6,27 +6,33 @@
  * @module Views
  */
 
-import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
-import {
-  AxisAlignedBox3d, Frustum, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, dispose, Id64 } from "@itwin/core-bentley";
+import type {
+  AxisAlignedBox3d, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps} from "@itwin/core-common";
+import { Frustum, QueryRowFormat,
 } from "@itwin/core-common";
-import { Constant, Range3d, Transform, TransformProps, Vector3d } from "@itwin/core-geometry";
+import type { TransformProps, Vector3d } from "@itwin/core-geometry";
+import { Constant, Range3d, Transform } from "@itwin/core-geometry";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { CoordSystem } from "./CoordSystem";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
+import type { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
+import type { GraphicBranchOptions } from "./render/GraphicBranch";
+import { GraphicBranch } from "./render/GraphicBranch";
 import { MockRender } from "./render/MockRender";
-import { RenderGraphic } from "./render/RenderGraphic";
-import { Scene } from "./render/Scene";
-import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
-import { SceneContext } from "./ViewContext";
+import type { RenderGraphic } from "./render/RenderGraphic";
+import type { Scene } from "./render/Scene";
+import type { DisclosedTileTreeSet} from "./tile/internal";
+import { TileGraphicType } from "./tile/internal";
+import type { SceneContext } from "./ViewContext";
 import { OffScreenViewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
-import { AttachToViewportArgs, ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
+import type { AttachToViewportArgs, ExtentLimits} from "./ViewState";
+import { ViewState2d, ViewState3d } from "./ViewState";
 
 /** Strictly for testing.
  * @internal

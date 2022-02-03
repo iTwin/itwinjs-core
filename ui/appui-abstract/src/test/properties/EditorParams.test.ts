@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, IconListEditorParams, InputEditorSizeParams, isButtonGroupEditorParams,
+import type {
+  ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, IconListEditorParams, InputEditorSizeParams, SuppressLabelEditorParams} from "../../appui-abstract";
+import { isButtonGroupEditorParams,
   isColorEditorParams, isCustomFormattedNumberParams, isIconListEditorParams, isInputEditorSizeParams, isSuppressLabelEditorParams,
-  PropertyEditorParamTypes, SuppressLabelEditorParams,
+  PropertyEditorParamTypes,
 } from "../../appui-abstract";
 
 describe("EditorParams", () => {

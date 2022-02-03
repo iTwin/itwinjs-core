@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
+import type { FeatureAppearanceProps} from "@itwin/core-common";
+import { ColorDef, Feature, FeatureAppearance, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
+import type { IModelConnection, SpatialViewState} from "@itwin/core-frontend";
 import {
-  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState,
+  EmphasizeElements, FeatureSymbology, ScreenViewport, SnapshotConnection,
   StandardViewId,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";

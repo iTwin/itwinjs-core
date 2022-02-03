@@ -6,7 +6,8 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Direction, getToolbarItemProps, PanelsProvider, Toolbar, ToolbarItem, ToolbarItemProps, ToolbarPanelAlignment } from "../../appui-layout-react";
+import type { ToolbarItem, ToolbarItemProps} from "../../appui-layout-react";
+import { Direction, getToolbarItemProps, PanelsProvider, Toolbar, ToolbarPanelAlignment } from "../../appui-layout-react";
 import { mount } from "../Utils";
 
 class Item extends React.Component implements ToolbarItem {

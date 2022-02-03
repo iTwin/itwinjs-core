@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, GuidString } from "@itwin/core-bentley";
+import type { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { BriefcaseDb, IModelHost, SpatialCategory } from "../core-backend";
+import type { BriefcaseDb} from "../core-backend";
+import { IModelHost, SpatialCategory } from "../core-backend";
 import { HubWrappers } from "./IModelTestUtils";
 import { HubMock, IModelTestUtils } from "./index";
 

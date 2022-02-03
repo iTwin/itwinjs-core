@@ -9,7 +9,7 @@
 import "./AlphaSlider.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 import { UiIModelComponents } from "../UiIModelComponents";
 import { SpecialKey } from "@itwin/appui-abstract";
 

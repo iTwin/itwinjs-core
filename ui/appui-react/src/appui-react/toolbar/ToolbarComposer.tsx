@@ -8,13 +8,16 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import {
-  ActionButton, CommonToolbarItem, ConditionalBooleanValue, GroupButton, ToolbarItemsManager, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiSyncEventArgs,
+import type {
+  ActionButton, CommonToolbarItem, GroupButton, UiSyncEventArgs} from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, ToolbarItemsManager, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
 } from "@itwin/appui-abstract";
 import { Orientation } from "@itwin/core-react";
-import { ToolbarItem, ToolbarOpacitySetting, ToolbarWithOverflow } from "@itwin/components-react";
+import type { ToolbarItem} from "@itwin/components-react";
+import { ToolbarOpacitySetting, ToolbarWithOverflow } from "@itwin/components-react";
 import { Direction, Toolbar, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import type { ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";

@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ReactWrapper, shallow } from "enzyme";
+import type { ReactWrapper} from "enzyme";
+import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as useTargetedModule from "@itwin/core-react/lib/cjs/core-react/utils/hooks/useTargeted";
-import { WidgetTarget, WidgetTargetProps } from "../../../appui-layout-react/zones/target/Target";
+import type { WidgetTargetProps } from "../../../appui-layout-react/zones/target/Target";
+import { WidgetTarget } from "../../../appui-layout-react/zones/target/Target";
 import { mount } from "../../Utils";
 
 describe("<WidgetTarget />", () => {

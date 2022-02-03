@@ -6,18 +6,21 @@
  * @module Rendering
  */
 
-import {
-  Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
+import type {
+  Arc3d, CurvePrimitive, IndexedPolyface, Point2d, Polyface, SolidPrimitive} from "@itwin/core-geometry";
+import { LineSegment3d, LineString3d, Loop, Path, Point3d, Range3d, Transform,
 } from "@itwin/core-geometry";
-import { FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
-import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../GraphicBuilder";
-import { RenderGraphic } from "../../RenderGraphic";
-import { RenderSystem } from "../../RenderSystem";
+import type { FeatureTable, Gradient, RenderTexture } from "@itwin/core-common";
+import { GraphicParams, PackedFeatureTable } from "@itwin/core-common";
+import type { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "../../GraphicBuilder";
+import { GraphicBuilder } from "../../GraphicBuilder";
+import type { RenderGraphic } from "../../RenderGraphic";
+import type { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
 import { GeometryOptions } from "../Primitives";
 import { GeometryAccumulator } from "./GeometryAccumulator";
-import { Geometry } from "./GeometryPrimitives";
-import { MeshList } from "../mesh/MeshPrimitives";
+import type { Geometry } from "./GeometryPrimitives";
+import type { MeshList } from "../mesh/MeshPrimitives";
 
 function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
   const pts3d: Point3d[] = [];

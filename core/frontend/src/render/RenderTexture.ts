@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { Gradient, ImageBuffer, ImageSource, RenderTexture, TextureTransparency } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
+import type { Gradient, ImageBuffer, ImageSource, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import type { IModelConnection } from "../IModelConnection";
 
 /** A key that uniquely identifies a [RenderTexture]($common) in the context of an [[IModelConnection]], used for caching.
  * @see [[TextureCacheOwnership]].

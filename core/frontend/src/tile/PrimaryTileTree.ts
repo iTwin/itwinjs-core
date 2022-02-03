@@ -6,24 +6,28 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { assert, compareBooleans, compareStrings } from "@itwin/core-bentley";
 import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
+import type { FeatureAppearance, HiddenLine,
+  PrimaryTileTreeId, ViewFlagOverrides} from "@itwin/core-common";
 import {
-  BatchType, compareIModelTileTreeIds, EdgeType, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString,
-  PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
+  BatchType, compareIModelTileTreeIds, EdgeType, FeatureAppearanceProvider, iModelTileTreeIdToString, RenderMode,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import type { IModelConnection } from "../IModelConnection";
 import { AnimationNodeId } from "../render/GraphicBranch";
-import { GeometricModel3dState, GeometricModelState } from "../ModelState";
-import { RenderClipVolume } from "../render/RenderClipVolume";
-import { formatAnimationBranchId, RenderScheduleState } from "../RenderScheduleState";
-import { SpatialViewState } from "../SpatialViewState";
-import { SceneContext } from "../ViewContext";
-import { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
+import type { GeometricModel3dState, GeometricModelState } from "../ModelState";
+import type { RenderClipVolume } from "../render/RenderClipVolume";
+import type { RenderScheduleState } from "../RenderScheduleState";
+import { formatAnimationBranchId } from "../RenderScheduleState";
+import type { SpatialViewState } from "../SpatialViewState";
+import type { SceneContext } from "../ViewContext";
+import type { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
+import type { IModelTileTreeParams, TileDrawArgs, TileTree, TileTreeOwner,
+  TileTreeSupplier} from "./internal";
 import {
-  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
-  TileTreeSupplier,
+  IModelTileTree, iModelTileTreeParamsFromJSON, TileGraphicType, TileTreeReference,
 } from "./internal";
 
 interface PrimaryTreeId {

@@ -7,8 +7,8 @@ import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { getTokenCallbackName } from "./certaCommon";
 import { IModelHost } from "@itwin/core-backend";
 import { TestUtility } from "@itwin/oidc-signin-tool/lib/cjs/";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
-import { AccessToken } from "@itwin/core-bentley";
+import type { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
+import type { AccessToken } from "@itwin/core-bentley";
 
 // A backend to use within Certa's `backendInitModule` to setup OIDC sign-in
 

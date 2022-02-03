@@ -9,7 +9,8 @@
 import "./NumberInput.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Input, InputProps } from "@itwin/itwinui-react";
+import type { InputProps } from "@itwin/itwinui-react";
+import { Input } from "@itwin/itwinui-react";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { WebFontIcon } from "../../icons/WebFontIcon";
 

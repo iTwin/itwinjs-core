@@ -6,20 +6,23 @@
  * @module RpcInterface
  */
 
-import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
-import {
-  Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
+import type { GuidString, Id64String} from "@itwin/core-bentley";
+import { Id64, IModelStatus, Logger } from "@itwin/core-bentley";
+import type { CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode,
-  TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
+  GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModelConnectionProps, IModelCoordinatesRequestProps,
+  IModelCoordinatesResponseProps, IModelError, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelProps, SnapRequestProps, SnapResponseProps,
+  TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps} from "@itwin/core-common";
+import {
+  Code, IModel, IModelReadRpcInterface, NoContentError, RpcInterface, RpcManager, SyncMode,
 } from "@itwin/core-common";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import type { Range3dProps } from "@itwin/core-geometry";
+import { Range3d } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
 import { ConcurrentQuery } from "../ConcurrentQuery";
 import { generateGeometrySummaries } from "../GeometrySummary";
-import { DictionaryModel } from "../Model";
+import type { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";

@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ThematicGradientSettings } from "../ThematicDisplay";
-import { AnalysisStyle, AnalysisStyleProps, LegacyAnalysisStyleProps } from "../AnalysisStyle";
+import type { AnalysisStyleProps, LegacyAnalysisStyleProps } from "../AnalysisStyle";
+import { AnalysisStyle } from "../AnalysisStyle";
 
 describe("AnalysisStyle", () => {
   it("round-trips through JSON", () => {

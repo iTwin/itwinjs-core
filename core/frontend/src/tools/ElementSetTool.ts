@@ -6,24 +6,27 @@
  * @module Tools
  */
 
-import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@itwin/core-bentley";
+import type { Id64Arg, Id64Array, Id64String} from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, OrderedId64Array } from "@itwin/core-bentley";
 import { ColorDef, QueryRowFormat } from "@itwin/core-common";
-import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import type { Point3d} from "@itwin/core-geometry";
+import { Point2d, Range2d } from "@itwin/core-geometry";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
-import { HitDetail } from "../HitDetail";
+import type { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import type { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { Pixel } from "../render/Pixel";
-import { SelectionSet } from "../SelectionSet";
-import { DecorateContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
+import type { SelectionSet } from "../SelectionSet";
+import type { DecorateContext } from "../ViewContext";
+import type { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { SelectionMethod } from "./SelectTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled } from "./Tool";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import type { ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 
 /** @alpha */
 export enum ModifyElementSource {

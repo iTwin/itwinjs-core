@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleTypes } from "../Rule";
-import { NavigationRuleBase } from "./NavigationRule";
+import type { ConditionContainer, RuleTypes } from "../Rule";
+import type { NavigationRuleBase } from "./NavigationRule";
 
 /**
  * Child node rules define nodes that are displayed at

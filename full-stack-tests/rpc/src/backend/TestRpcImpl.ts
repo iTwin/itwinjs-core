@@ -2,13 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus, Id64String } from "@itwin/core-bentley";
-import {
-  IModelRpcProps, NoContentError, RpcInterface, RpcInvocation, RpcManager, RpcOperationsProfile, RpcPendingResponse, RpcRequest,
+import type { Id64String } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
+import type {
+  IModelRpcProps, RpcOperationsProfile} from "@itwin/core-common";
+import { NoContentError, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, RpcRequest,
 } from "@itwin/core-common";
+import type {
+  TestOp1Params, TokenValues} from "../common/TestRpcInterface";
 import {
-  AttachedInterface, MobileTestInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode,
-  TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3, TokenValues, WebRoutingInterface, ZeroMajorRpcInterface,
+  AttachedInterface, MobileTestInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestRpcInterface, TestRpcInterface2, TestRpcInterface3, WebRoutingInterface, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 
 export async function testInterfaceResource() {

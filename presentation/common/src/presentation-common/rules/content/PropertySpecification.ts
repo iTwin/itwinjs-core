@@ -6,9 +6,9 @@
  * @module PresentationRules
  */
 
-import { CustomRendererSpecification } from "./modifiers/CustomRendererSpecification";
-import { CategoryIdentifier } from "./modifiers/PropertyCategorySpecification";
-import { PropertyEditorSpecification } from "./modifiers/PropertyEditorsSpecification";
+import type { CustomRendererSpecification } from "./modifiers/CustomRendererSpecification";
+import type { CategoryIdentifier } from "./modifiers/PropertyCategorySpecification";
+import type { PropertyEditorSpecification } from "./modifiers/PropertyEditorsSpecification";
 
 /**
  * A container structure for possible property overrides

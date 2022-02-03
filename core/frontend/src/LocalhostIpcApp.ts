@@ -8,7 +8,7 @@
 
 import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
-import { IModelAppOptions } from "./IModelApp";
+import type { IModelAppOptions } from "./IModelApp";
 
 /** @internal */
 export interface LocalHostIpcAppOpts {

@@ -6,7 +6,7 @@
  * @module Item
  */
 
-import { ItemDefBase } from "./ItemDefBase";
+import type { ItemDefBase } from "./ItemDefBase";
 
 /** Contains a map of Items.
  * @public

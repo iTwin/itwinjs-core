@@ -6,8 +6,9 @@
 import { useEffect, useRef } from "react";
 import { Guid } from "@itwin/core-bentley";
 import { Presentation } from "@itwin/presentation-frontend";
-import { getVisibleDescendants, isTreeModelNode, TreeModelSource, TreeNodeItem } from "@itwin/components-react";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import type { TreeModelSource, TreeNodeItem } from "@itwin/components-react";
+import { getVisibleDescendants, isTreeModelNode } from "@itwin/components-react";
+import type { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /** @internal */
 export interface UseExpandedNodesTrackingProps {

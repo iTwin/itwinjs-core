@@ -9,10 +9,11 @@
 import "./Node.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Checkbox, CheckboxProps, ProgressRadial } from "@itwin/itwinui-react";
+import type { CheckboxProps} from "@itwin/itwinui-react";
+import { Checkbox, ProgressRadial } from "@itwin/itwinui-react";
 import { CheckBoxState } from "../enums/CheckBoxState";
-import { CommonProps } from "../utils/Props";
-import { Omit } from "../utils/typeUtils";
+import type { CommonProps } from "../utils/Props";
+import type { Omit } from "../utils/typeUtils";
 import { ExpansionToggle } from "./ExpansionToggle";
 
 /** Props for node Checkbox renderer

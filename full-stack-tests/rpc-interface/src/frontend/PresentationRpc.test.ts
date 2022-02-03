@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
+import type { IModelConnection } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
-import { ChildNodeSpecificationTypes, ContentSpecificationTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import type { InstanceKey, Ruleset} from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, ContentSpecificationTypes, KeySet, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TestContext } from "./setup/TestContext";
 

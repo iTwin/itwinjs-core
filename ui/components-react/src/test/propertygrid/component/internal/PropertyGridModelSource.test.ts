@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
-import { IMutableGridItemFactory, MutableGridItemFactory } from "../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
-import { IPropertyGridModel } from "../../../../components-react/propertygrid/internal/PropertyGridModel";
+import type { IMutableGridItemFactory} from "../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
+import { MutableGridItemFactory } from "../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
+import type { IPropertyGridModel } from "../../../../components-react/propertygrid/internal/PropertyGridModel";
 import { PropertyGridModelSource } from "../../../../components-react/propertygrid/internal/PropertyGridModelSource";
 import { TestUtils } from "../../../TestUtils";
-import { FlatGridTestUtils as GridUtils, PropertyGridModelTestData } from "./flat-items/FlatGridTestUtils";
+import type { PropertyGridModelTestData } from "./flat-items/FlatGridTestUtils";
+import { FlatGridTestUtils as GridUtils } from "./flat-items/FlatGridTestUtils";
 
 describe("PropertyGridModelSource", () => {
   let factory: IMutableGridItemFactory;

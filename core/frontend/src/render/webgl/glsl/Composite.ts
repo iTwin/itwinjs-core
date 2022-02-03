@@ -7,11 +7,12 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { WebGLContext } from "@itwin/webgl-compatibility";
-import { CompositeGeometry } from "../CachedGeometry";
+import type { WebGLContext } from "@itwin/webgl-compatibility";
+import type { CompositeGeometry } from "../CachedGeometry";
 import { CompositeFlags, TextureUnit } from "../RenderFlags";
-import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
+import type { FragmentShaderBuilder} from "../ShaderBuilder";
+import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import type { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { addWindowToTexCoords, assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";

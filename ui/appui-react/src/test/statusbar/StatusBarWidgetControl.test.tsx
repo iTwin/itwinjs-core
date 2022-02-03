@@ -5,8 +5,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import { WidgetState } from "@itwin/appui-abstract";
-import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
+import type {
+  ConfigurableCreateInfo, StatusBarWidgetControlArgs} from "../../appui-react";
+import { ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarWidgetControl, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 

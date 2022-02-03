@@ -6,21 +6,24 @@
  * @module IModelConnection
  */
 
+import type { GuidString, Id64Arg, Id64Set, Id64String} from "@itwin/core-bentley";
 import {
-  assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
+  assert, BeEvent, GeoServiceStatus, Id64, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@itwin/core-bentley";
-import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
-  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
-  GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
-  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
-  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
-  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
+import type {
+  AxisAlignedBox3d, CodeProps, DbQueryRequest, EcefLocationProps, ElementLoadOptions,
+  ElementProps, EntityQueryParams, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
+  GeometrySummaryRequestProps, IModelConnectionProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement,
+  QueryBinder, QueryOptions, SnapRequestProps, SnapResponseProps,
+  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps} from "@itwin/core-common";
+import { Cartographic, CodeSpec, DbResult, EcefLocation, ECSqlReader, FontMap, GeoCoordStatus, IModel, IModelError, IModelReadRpcInterface, IModelStatus,
+  mapToGeoServiceStatus, NoContentError, Placement2d, Placement3d, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import { BriefcaseConnection } from "./BriefcaseConnection";
-import { CheckpointConnection } from "./CheckpointConnection";
-import { EntityState } from "./EntityState";
+import type { Range3dProps, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import type { BriefcaseConnection } from "./BriefcaseConnection";
+import type { CheckpointConnection } from "./CheckpointConnection";
+import type { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";

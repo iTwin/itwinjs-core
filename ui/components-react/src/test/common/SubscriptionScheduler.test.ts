@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Observable } from "rxjs/internal/Observable";
+import type { Observable } from "rxjs/internal/Observable";
 import { from } from "rxjs/internal/observable/from";
 import { throwError } from "rxjs/internal/observable/throwError";
 import { timer } from "rxjs/internal/observable/timer";
@@ -13,7 +13,7 @@ import { scheduled } from "rxjs/internal/scheduled/scheduled";
 import { asapScheduler } from "rxjs/internal/scheduler/asap";
 import { asyncScheduler } from "rxjs/internal/scheduler/async";
 import { queueScheduler } from "rxjs/internal/scheduler/queue";
-import { ObservableInput, SchedulerLike } from "rxjs/internal/types";
+import type { ObservableInput, SchedulerLike } from "rxjs/internal/types";
 import sinon from "sinon";
 import { scheduleSubscription, SubscriptionScheduler } from "../../components-react/common/SubscriptionScheduler";
 import { extractSequence, waitForUnsubscription } from "./ObservableTestHelpers";

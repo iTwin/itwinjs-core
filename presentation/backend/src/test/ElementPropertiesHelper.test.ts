@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
+import type { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { Content, PresentationError, PropertyValueFormat } from "@itwin/presentation-common";
 import {

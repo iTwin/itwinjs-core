@@ -6,13 +6,16 @@
 import { assert } from "chai";
 import { join } from "path";
 import * as semver from "semver";
+import type { BriefcaseDb, ECSqlStatement, IModelDb, IModelJsNative} from "@itwin/core-backend";
 import {
-  BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb,
-  IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  BisCoreSchema, BriefcaseManager, Element, ElementRefersToElements, ExternalSourceAspect, GenericSchema,
+  IModelHost, IModelJsFs, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
-import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import type { AccessToken, GuidString, Id64String, IModelStatus} from "@itwin/core-bentley";
+import { DbResult, Guid, Id64, Logger, LogLevel } from "@itwin/core-bentley";
+import type { PhysicalElementProps} from "@itwin/core-common";
+import { Code, ColorDef, IModel, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {

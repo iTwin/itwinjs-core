@@ -8,7 +8,8 @@
 
 import * as fs from "fs-extra";
 import { parse } from "json5";
-import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
+import type { JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
 
 /**
  * The properties of a Setting, used by the settings editor. This interface also includes the

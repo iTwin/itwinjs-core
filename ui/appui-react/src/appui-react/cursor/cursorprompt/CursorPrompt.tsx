@@ -8,10 +8,12 @@
 
 import "./CursorPrompt.scss";
 import * as React from "react";
-import { ToolAssistanceInstruction } from "@itwin/core-frontend";
-import { PointProps, RelativePosition } from "@itwin/appui-abstract";
+import type { ToolAssistanceInstruction } from "@itwin/core-frontend";
+import type { PointProps} from "@itwin/appui-abstract";
+import { RelativePosition } from "@itwin/appui-abstract";
 import { BodyText, Icon, Point, Timer } from "@itwin/core-react";
-import { CursorInformation, CursorUpdatedEventArgs } from "../CursorInformation";
+import type { CursorUpdatedEventArgs } from "../CursorInformation";
+import { CursorInformation } from "../CursorInformation";
 import { CursorPopupManager } from "../cursorpopup/CursorPopupManager";
 
 /** @internal */

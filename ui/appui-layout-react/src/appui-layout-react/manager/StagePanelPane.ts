@@ -6,7 +6,7 @@
  * @module StagePanels
  */
 
-import { WidgetZoneId } from "../zones/manager/Zones";
+import type { WidgetZoneId } from "../zones/manager/Zones";
 
 /** Properties used by [[NineZoneStagePanelPaneManager]].
  * @internal

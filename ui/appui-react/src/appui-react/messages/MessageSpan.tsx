@@ -7,8 +7,9 @@
  */
 
 import * as React from "react";
-import { ClassNameProps, MessageRenderer } from "@itwin/core-react";
-import { NotifyMessageType } from "./ReactNotifyMessageDetails";
+import type { ClassNameProps} from "@itwin/core-react";
+import { MessageRenderer } from "@itwin/core-react";
+import type { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 /** @internal */
 export interface MessageSpanProps extends ClassNameProps {

@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
 import { InstanceKey, RelationshipPath } from "../presentation-common";
+import type { RelatedClassInfoJSON, RelatedClassInfoWithOptionalRelationshipJSON,
+  StrippedRelatedClassInfo} from "../presentation-common/EC";
 import {
-  ClassInfo, RelatedClassInfo, RelatedClassInfoJSON, RelatedClassInfoWithOptionalRelationship, RelatedClassInfoWithOptionalRelationshipJSON,
-  StrippedRelatedClassInfo,
+  ClassInfo, RelatedClassInfo, RelatedClassInfoWithOptionalRelationship,
 } from "../presentation-common/EC";
 import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelatedClassInfoWithOptionalRelationship } from "./_helpers/EC";
 import { createRandomECClassInfo } from "./_helpers/random";

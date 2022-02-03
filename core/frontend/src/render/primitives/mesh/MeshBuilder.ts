@@ -7,12 +7,16 @@
  */
 
 import { assert, Dictionary } from "@itwin/core-bentley";
-import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d, Vector3d } from "@itwin/core-geometry";
-import { MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3d, QPoint3dList, TextureMapping } from "@itwin/core-common";
-import { DisplayParams } from "../DisplayParams";
-import { Triangle, TriangleKey, TriangleSet } from "../Primitives";
-import { StrokesPrimitivePointLists } from "../Strokes";
-import { VertexKey, VertexKeyProps, VertexMap } from "../VertexKey";
+import type { IndexedPolyface, Point2d, Polyface, PolyfaceVisitor, Range3d} from "@itwin/core-geometry";
+import { Angle, Point3d, Vector3d } from "@itwin/core-geometry";
+import type { TextureMapping } from "@itwin/core-common";
+import { MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3d, QPoint3dList } from "@itwin/core-common";
+import type { DisplayParams } from "../DisplayParams";
+import type { TriangleKey} from "../Primitives";
+import { Triangle, TriangleSet } from "../Primitives";
+import type { StrokesPrimitivePointLists } from "../Strokes";
+import type { VertexKey, VertexKeyProps} from "../VertexKey";
+import { VertexMap } from "../VertexKey";
 import { Mesh } from "./MeshPrimitives";
 
 // Describes a vertex along with the index of the source vertex in the source PolyfaceVisitor.

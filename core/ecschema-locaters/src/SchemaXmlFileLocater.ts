@@ -5,10 +5,12 @@
 
 import * as path from "path";
 import { DOMParser } from "@xmldom/xmldom";
+import type { ISchemaLocater, SchemaContext, SchemaMatchType} from "@itwin/ecschema-metadata";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
+  ECObjectsError, ECObjectsStatus, ECVersion, Schema, SchemaKey, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
+import type { FileSchemaKey} from "./SchemaFileLocater";
+import { SchemaFileLocater } from "./SchemaFileLocater";
 
 /**
  * A SchemaLocater implementation for locating XML Schema files

@@ -12,8 +12,9 @@ import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcPendingQueue } from "./RpcPendingQueue";
 import { initializeRpcRequest } from "./RpcRequest";
 import { RpcRoutingToken } from "./RpcRoutingToken";
-import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface";
-import { RpcInterfaceEndpoints } from "../../RpcManager";
+import type { RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface";
+import { RpcInterface } from "../../RpcInterface";
+import type { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
 import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 

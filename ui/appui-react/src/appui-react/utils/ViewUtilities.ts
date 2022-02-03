@@ -8,7 +8,8 @@
 
 // cSpell:ignore classname
 
-import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
+import type { ScreenViewport} from "@itwin/core-frontend";
+import { DrawingViewState, OrthographicViewState, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
 
 /**
  * Various View utility methods

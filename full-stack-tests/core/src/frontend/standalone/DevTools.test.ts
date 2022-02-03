@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { LogLevel } from "@itwin/core-bentley";
-import { DevToolsStatsOptions, IModelRpcProps } from "@itwin/core-common";
-import { DevTools, PingTestResult } from "@itwin/core-frontend";
+import type { IModelRpcProps } from "@itwin/core-common";
+import { DevToolsStatsOptions } from "@itwin/core-common";
+import type { PingTestResult } from "@itwin/core-frontend";
+import { DevTools } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
 describe.skip("DevTools", () => {

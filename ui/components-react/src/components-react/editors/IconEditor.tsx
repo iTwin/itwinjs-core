@@ -10,12 +10,13 @@
 import "./IconEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import {
-  IconListEditorParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+import type {
+  IconListEditorParams, PropertyEditorParams, PropertyRecord, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
 import { IconPickerButton } from "../iconpicker/IconPickerButton";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 // cspell:ignore iconpicker

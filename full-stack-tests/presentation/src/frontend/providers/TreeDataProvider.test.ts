@@ -5,8 +5,10 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import type { IModelConnection} from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import type { Ruleset} from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, RuleTypes } from "@itwin/presentation-common";
 import { PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";

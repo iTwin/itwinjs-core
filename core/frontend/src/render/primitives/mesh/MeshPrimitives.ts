@@ -7,18 +7,21 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
+import type { Point2d, Point3d} from "@itwin/core-geometry";
+import { AuxChannel, AuxChannelData, Range3d } from "@itwin/core-geometry";
+import type { Feature, FeatureTable, MeshEdges, MeshPolyline,
+  OctEncodedNormal, RenderMaterial, RenderTexture} from "@itwin/core-common";
 import {
-  ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
-  OctEncodedNormal, PolylineData, PolylineEdgeArgs, PolylineFlags, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
+  ColorIndex, EdgeArgs, FeatureIndex, FeatureIndexType, FillFlags, LinePixels, MeshPolylineList, PolylineData, PolylineEdgeArgs, PolylineFlags, QParams3d, QPoint3dList, SilhouetteEdgeArgs,
 } from "@itwin/core-common";
-import { InstancedGraphicParams } from "../../InstancedGraphicParams";
-import { RenderGraphic } from "../../RenderGraphic";
-import { RenderSystem } from "../../RenderSystem";
+import type { InstancedGraphicParams } from "../../InstancedGraphicParams";
+import type { RenderGraphic } from "../../RenderGraphic";
+import type { RenderSystem } from "../../RenderSystem";
 import { ColorMap } from "../ColorMap";
 import { DisplayParams } from "../DisplayParams";
-import { Triangle, TriangleList } from "../Primitives";
-import { VertexKeyProps } from "../VertexKey";
+import type { Triangle} from "../Primitives";
+import { TriangleList } from "../Primitives";
+import type { VertexKeyProps } from "../VertexKey";
 
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer.
  * @internal

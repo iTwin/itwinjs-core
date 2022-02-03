@@ -6,13 +6,16 @@
  * @module Tiles
  */
 
-import { Cartographic, ImageSource, IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
-import { getJson, request, RequestOptions, Response } from "../../../request/Request";
+import type { Cartographic, ImageSource, MapLayerSettings} from "@itwin/core-common";
+import { IModelStatus, ServerError } from "@itwin/core-common";
+import type { RequestOptions, Response } from "../../../request/Request";
+import { getJson, request } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
+import type { ImageryMapTile, ImageryMapTileTree, QuadId} from "../../internal";
 import {
-  ArcGisErrorCode, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
-  MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId,
+  ArcGisErrorCode, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, MapCartoRectangle,
+  MapLayerImageryProvider, MapLayerImageryProviderStatus,
 } from "../../internal";
 
 // eslint-disable-next-line prefer-const

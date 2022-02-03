@@ -5,12 +5,14 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { AccessToken, DbResult, GuidString, Id64, Id64String, PerfLogger } from "@itwin/core-bentley";
+import type { AccessToken, GuidString, Id64String} from "@itwin/core-bentley";
+import { DbResult, Id64, PerfLogger } from "@itwin/core-bentley";
 import {
   ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, QueryBinder, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
-import {
-  BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, IModelHost, IModelJsFs,
+import type {
+  BriefcaseDb, ChangeSummary, ECSqlStatement} from "@itwin/core-backend";
+import { BriefcaseManager, ChangeSummaryManager, ElementOwnsChildElements, IModelHost, IModelJsFs,
   SpatialCategory,
 } from "@itwin/core-backend";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/core-backend/lib/cjs/test/index";

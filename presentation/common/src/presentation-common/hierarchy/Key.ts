@@ -7,7 +7,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { InstanceKey, InstanceKeyJSON } from "../EC";
+import type { InstanceKeyJSON } from "../EC";
+import { InstanceKey } from "../EC";
 
 /**
  * Standard node types

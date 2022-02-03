@@ -6,11 +6,13 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { BaseMapLayerSettings, ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@itwin/core-common";
-import { DisplayStyleState } from "@itwin/core-frontend";
+import type { MapLayerProps} from "@itwin/core-common";
+import { BaseMapLayerSettings, ColorByName, ColorDef, MapLayerSettings } from "@itwin/core-common";
+import type { DisplayStyleState } from "@itwin/core-frontend";
 import { ColorPickerDialog, ColorSwatch } from "@itwin/imodel-components-react";
 import { WebFontIcon } from "@itwin/core-react";
-import { Select, SelectOption } from "@itwin/itwinui-react";
+import type { SelectOption } from "@itwin/itwinui-react";
+import { Select } from "@itwin/itwinui-react";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { TransparencyPopupButton } from "./TransparencyPopupButton";
 import { useSourceMapContext } from "./MapLayerManager";

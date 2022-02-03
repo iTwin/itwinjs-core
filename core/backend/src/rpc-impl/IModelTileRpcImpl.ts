@@ -6,16 +6,19 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
-import {
-  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
-  IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, TileContentIdentifier,
-  TileContentSource, TileTreeContentIds, TileVersionInfo,
+import type { AccessToken, Id64Array} from "@itwin/core-bentley";
+import { assert, BeDuration, Logger } from "@itwin/core-bentley";
+import type {
+  CloudStorageContainerDescriptor, ElementGraphicsRequestProps, IModelRpcProps, IModelTileTreeProps, TileContentIdentifier, TileTreeContentIds, TileVersionInfo} from "@itwin/core-common";
+import { CloudStorageContainerUrl, CloudStorageTileCache,
+  IModelTileRpcInterface, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse,
+  TileContentSource,
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
-import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
+import type { QueryablePromise } from "../PromiseMemoizer";
+import { PromiseMemoizer } from "../PromiseMemoizer";
 import { RpcTrace } from "../RpcBackend";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 

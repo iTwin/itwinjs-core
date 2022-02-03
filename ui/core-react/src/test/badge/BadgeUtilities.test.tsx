@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount } from "enzyme";
-import * as React from "react";
+import type * as React from "react";
 import { BadgeType } from "@itwin/appui-abstract";
 import { BadgeUtilities } from "../../core-react/badge/BadgeUtilities";
 

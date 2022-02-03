@@ -7,18 +7,21 @@
  */
 
 import memoize from "micro-memoize";
-import { IDisposable, Logger } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import {
+import type { IDisposable} from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type {
   DiagnosticsOptionsWithHandler, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/components-react";
-import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
+import type { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/components-react";
+import type { DiagnosticsProps } from "../common/Diagnostics";
+import { createDiagnosticsOptions } from "../common/Diagnostics";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
-import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
-import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY } from "./Utils";
+import type { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import type { CreateTreeNodeItemProps} from "./Utils";
+import { createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY } from "./Utils";
 
 /**
  * Properties for creating a `PresentationTreeDataProvider` instance.

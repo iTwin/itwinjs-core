@@ -7,12 +7,14 @@
  */
 
 import * as React from "react";
-import { InstanceKey, KeySet } from "@itwin/presentation-common";
-import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@itwin/presentation-frontend";
-import { Table as BaseTable, RowItem, TableProps } from "@itwin/components-react";
-import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
+import type { InstanceKey} from "@itwin/presentation-common";
+import { KeySet } from "@itwin/presentation-common";
+import type { SelectionChangeEventArgs} from "@itwin/presentation-frontend";
+import { Presentation, SelectionHandler } from "@itwin/presentation-frontend";
+import type { Table as BaseTable, RowItem, TableProps } from "@itwin/components-react";
+import type { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { getDisplayName } from "../common/Utils";
-import { IPresentationTableDataProvider } from "./DataProvider";
+import type { IPresentationTableDataProvider } from "./DataProvider";
 
 /**
  * Props that are injected to the TableWithUnifiedSelection HOC component.

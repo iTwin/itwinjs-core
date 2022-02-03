@@ -7,11 +7,13 @@
  */
 
 import * as React from "react";
-import { XAndY } from "@itwin/core-geometry";
+import type { XAndY } from "@itwin/core-geometry";
 import { AngleDescription, LengthDescription } from "@itwin/core-frontend";
-import { AbstractMenuItemProps, IconSpecUtilities, OnCancelFunc, OnNumberCommitFunc, OnValueCommitFunc } from "@itwin/appui-abstract";
+import type { AbstractMenuItemProps, OnCancelFunc, OnNumberCommitFunc, OnValueCommitFunc } from "@itwin/appui-abstract";
+import { IconSpecUtilities } from "@itwin/appui-abstract";
 
-import { PopupInfo, PopupManager } from "../popup/PopupManager";
+import type { PopupInfo} from "../popup/PopupManager";
+import { PopupManager } from "../popup/PopupManager";
 import { MenuItemHelpers } from "../shared/MenuItem";
 import { CalculatorPopup } from "./CalculatorPopup";
 import { MenuButtonPopup } from "./MenuButtonPopup";

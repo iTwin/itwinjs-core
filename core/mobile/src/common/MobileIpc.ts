@@ -6,9 +6,10 @@
  * @module RpcInterface
  */
 
+import type { IpcWebSocketMessage, RpcRequestFulfillment,
+  SerializedRpcRequest} from "@itwin/core-common";
 import {
-  IpcWebSocket, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport, RpcInterface, RpcManager, RpcMarshaling, RpcRequestFulfillment,
-  SerializedRpcRequest,
+  IpcWebSocket, IpcWebSocketMessageType, IpcWebSocketTransport, RpcInterface, RpcManager, RpcMarshaling,
 } from "@itwin/core-common";
 import { MobileEventLoop } from "./MobileEventLoop";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";

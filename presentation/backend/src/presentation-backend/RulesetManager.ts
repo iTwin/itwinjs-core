@@ -6,8 +6,9 @@
  * @module Core
  */
 
-import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
-import { NativePlatformDefinition } from "./NativePlatform";
+import type { Ruleset } from "@itwin/presentation-common";
+import { RegisteredRuleset } from "@itwin/presentation-common";
+import type { NativePlatformDefinition } from "./NativePlatform";
 
 /**
  * Presentation ruleset registry.

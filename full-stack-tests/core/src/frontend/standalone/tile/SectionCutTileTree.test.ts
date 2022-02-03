@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ClipStyle } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import type { IModelConnection, ViewState } from "@itwin/core-frontend";
+import { SnapshotConnection, SpatialViewState } from "@itwin/core-frontend";
 import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 

@@ -6,28 +6,29 @@
  * @module RPC
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcInterface } from "@itwin/core-common";
-import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
-import { ItemJSON } from "./content/Item";
-import { DisplayValueGroupJSON } from "./content/Value";
-import { DiagnosticsOptions, DiagnosticsScopeLogs } from "./Diagnostics";
-import { CompressedClassInfoJSON, InstanceKeyJSON } from "./EC";
-import { ElementProperties } from "./ElementProperties";
-import { PresentationStatus } from "./Error";
-import { NodeKeyJSON } from "./hierarchy/Key";
-import { NodeJSON } from "./hierarchy/Node";
-import { NodePathElementJSON } from "./hierarchy/NodePathElement";
-import { KeySetJSON } from "./KeySet";
-import { LabelDefinitionJSON } from "./LabelDefinition";
-import {
+import type { Id64String } from "@itwin/core-bentley";
+import type { IModelRpcProps} from "@itwin/core-common";
+import { RpcInterface } from "@itwin/core-common";
+import type { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
+import type { ItemJSON } from "./content/Item";
+import type { DisplayValueGroupJSON } from "./content/Value";
+import type { DiagnosticsOptions, DiagnosticsScopeLogs } from "./Diagnostics";
+import type { CompressedClassInfoJSON, InstanceKeyJSON } from "./EC";
+import type { ElementProperties } from "./ElementProperties";
+import type { PresentationStatus } from "./Error";
+import type { NodeKeyJSON } from "./hierarchy/Key";
+import type { NodeJSON } from "./hierarchy/Node";
+import type { NodePathElementJSON } from "./hierarchy/NodePathElement";
+import type { KeySetJSON } from "./KeySet";
+import type { LabelDefinitionJSON } from "./LabelDefinition";
+import type {
   ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
   HierarchyRequestOptions, Paged, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
-import { RulesetVariableJSON } from "./RulesetVariables";
-import { SelectionScope } from "./selection/SelectionScope";
-import { Omit, PagedResponse } from "./Utils";
+import type { RulesetVariableJSON } from "./RulesetVariables";
+import type { SelectionScope } from "./selection/SelectionScope";
+import type { Omit, PagedResponse } from "./Utils";
 
 /**
  * Base options for all presentation RPC requests.

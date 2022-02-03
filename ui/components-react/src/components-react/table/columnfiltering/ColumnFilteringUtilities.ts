@@ -6,8 +6,9 @@
  * @module Table
  */
 
-import { Primitives, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { CellItem, RowItem } from "../TableDataProvider";
+import type { Primitives, PropertyRecord} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { CellItem, RowItem } from "../TableDataProvider";
 
 /** Column Filtering utility methods
  * @internal

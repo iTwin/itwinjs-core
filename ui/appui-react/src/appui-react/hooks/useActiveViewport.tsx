@@ -7,9 +7,11 @@
  */
 
 import { useEffect, useState } from "react";
-import { UiSyncEventArgs } from "@itwin/appui-abstract";
-import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { ActiveContentChangedEventArgs, ContentViewManager } from "../content/ContentViewManager";
+import type { UiSyncEventArgs } from "@itwin/appui-abstract";
+import type { ScreenViewport } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import type { ActiveContentChangedEventArgs} from "../content/ContentViewManager";
+import { ContentViewManager } from "../content/ContentViewManager";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
 /** React hook that maintains the active viewport.

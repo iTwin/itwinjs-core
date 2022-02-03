@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DOMParser } from "@xmldom/xmldom";
-import { ISchemaLocater, SchemaContext } from "../../Context";
+import type { ISchemaLocater, SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
-import { SchemaMatchType } from "../../ECObjects";
+import type { SchemaMatchType } from "../../ECObjects";
 import { Schema } from "../../Metadata/Schema";
-import { SchemaKey } from "../../SchemaKey";
+import type { SchemaKey } from "../../SchemaKey";
 
 export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): any {
   return {

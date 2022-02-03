@@ -6,13 +6,19 @@
  * @module UnifiedSelection
  */
 
-import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@itwin/core-bentley";
-import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
-import { AsyncTasksTracker, Keys, KeySet, SelectionScope } from "@itwin/presentation-common";
-import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
-import { ISelectionProvider } from "./ISelectionProvider";
-import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
-import { getScopeId, SelectionScopesManager } from "./SelectionScopesManager";
+import type { Id64Arg, Id64Array, IDisposable} from "@itwin/core-bentley";
+import { Id64, using } from "@itwin/core-bentley";
+import type { SelectionSetEvent} from "@itwin/core-frontend";
+import { IModelConnection, SelectionSetEventType } from "@itwin/core-frontend";
+import type { Keys, SelectionScope } from "@itwin/presentation-common";
+import { AsyncTasksTracker, KeySet } from "@itwin/presentation-common";
+import type { HiliteSet} from "./HiliteSetProvider";
+import { HiliteSetProvider } from "./HiliteSetProvider";
+import type { ISelectionProvider } from "./ISelectionProvider";
+import type { SelectionChangeEventArgs} from "./SelectionChangeEvent";
+import { SelectionChangeEvent, SelectionChangeType } from "./SelectionChangeEvent";
+import type { SelectionScopesManager } from "./SelectionScopesManager";
+import { getScopeId } from "./SelectionScopesManager";
 
 /**
  * Properties for creating [[SelectionManager]].

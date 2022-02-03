@@ -7,12 +7,13 @@
  */
 
 import * as React from "react";
-import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, RectangleProps } from "@itwin/core-react";
-import {
-  ResizeHandle, TitleBarButton, ToolSettings, ToolSettingsTab, WidgetZoneId, Zone, ZoneManagerProps, ZoneTargetType,
+import type { PointProps } from "@itwin/appui-abstract";
+import type { CommonProps, RectangleProps } from "@itwin/core-react";
+import type {
+  ResizeHandle, WidgetZoneId, ZoneManagerProps, ZoneTargetType} from "@itwin/appui-layout-react";
+import { TitleBarButton, ToolSettings, ToolSettingsTab, Zone,
 } from "@itwin/appui-layout-react";
-import { TargetChangeHandler, WidgetChangeHandler } from "../../frontstage/FrontstageComposer";
+import type { TargetChangeHandler, WidgetChangeHandler } from "../../frontstage/FrontstageComposer";
 import { FrontstageManager } from "../../frontstage/FrontstageManager";
 import { SafeAreaContext } from "../../safearea/SafeAreaContext";
 import { UiFramework } from "../../UiFramework";

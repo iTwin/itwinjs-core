@@ -6,7 +6,8 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames } from "@itwin/appui-abstract";
+import type { DialogButtonDef, DialogItem, DialogItemValue, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyDescription} from "@itwin/appui-abstract";
+import { DialogButtonType, DialogLayoutDataProvider, PropertyChangeStatus, StandardTypeNames } from "@itwin/appui-abstract";
 import { UiDataProvidedDialog } from "../../appui-react";
 import TestUtils, { getButtonWithText, handleError } from "../TestUtils";
 

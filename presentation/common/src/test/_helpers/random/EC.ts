@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import * as ec from "../../../presentation-common/EC";
+import type * as ec from "../../../presentation-common/EC";
 import { createRandomId, nullable } from "./Misc";
 
 /**

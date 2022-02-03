@@ -8,7 +8,8 @@
 
 import { join } from "path";
 import { DbResult, IModelStatus } from "@itwin/core-bentley";
-import { IModelError, StorageValue } from "@itwin/core-common";
+import type { StorageValue } from "@itwin/core-common";
+import { IModelError } from "@itwin/core-common";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";

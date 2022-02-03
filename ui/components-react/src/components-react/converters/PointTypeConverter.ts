@@ -6,11 +6,12 @@
  * @module TypeConverters
  */
 
-import { Primitives, StandardTypeNames } from "@itwin/appui-abstract";
+import type { Primitives} from "@itwin/appui-abstract";
+import { StandardTypeNames } from "@itwin/appui-abstract";
 import { isPromiseLike } from "@itwin/core-react";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
+import type { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
 
 // cSpell:ignore valuetypes
 

@@ -9,16 +9,19 @@
 import "./AccuDrawFieldContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ColorDef } from "@itwin/core-common";
-import { CompassMode, IModelApp, ItemField, ScreenViewport, SelectedViewportChangedArgs } from "@itwin/core-frontend";
+import type { ColorDef } from "@itwin/core-common";
+import type { ScreenViewport, SelectedViewportChangedArgs } from "@itwin/core-frontend";
+import { CompassMode, IModelApp, ItemField } from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
-import { CommonProps, IconSpec, Orientation, UiStateStorage } from "@itwin/core-react";
+import type { CommonProps, IconSpec, UiStateStorage } from "@itwin/core-react";
+import { Orientation } from "@itwin/core-react";
 import { getCSSColorFromDef } from "@itwin/imodel-components-react";
 
 import { AccuDrawInputField } from "./AccuDrawInputField";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { AccuDrawSetCompassModeEventArgs, AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldLockEventArgs, FrameworkAccuDraw } from "./FrameworkAccuDraw";
-import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
+import type { AccuDrawSetCompassModeEventArgs, AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldLockEventArgs} from "./FrameworkAccuDraw";
+import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
+import type { AccuDrawUiSettings } from "./AccuDrawUiSettings";
 
 import angleIconSvg from "./angle.svg?sprite";
 import distanceIconSvg from "./distance.svg?sprite";

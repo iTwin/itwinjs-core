@@ -7,7 +7,7 @@ import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@itwin/c
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
-import { IModelConnection } from "../../../IModelConnection";
+import type { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { ScreenViewport } from "../../../Viewport";

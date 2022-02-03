@@ -9,10 +9,11 @@
 import "./ImageCheckBoxEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import {
-  ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
+import type {
+  ImageCheckBoxParams, PropertyEditorParams, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
 } from "@itwin/appui-abstract";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { ImageCheckBox } from "@itwin/core-react";
 

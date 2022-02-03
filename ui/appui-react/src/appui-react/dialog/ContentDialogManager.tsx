@@ -8,7 +8,8 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { CommonProps, getCssVariableAsNumber } from "@itwin/core-react";
+import type { CommonProps} from "@itwin/core-react";
+import { getCssVariableAsNumber } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
 import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";

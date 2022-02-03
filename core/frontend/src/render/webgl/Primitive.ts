@@ -7,20 +7,21 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
-import { RenderMemory } from "../RenderMemory";
+import type { InstancedGraphicParams } from "../InstancedGraphicParams";
+import type { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";
-import { RenderAreaPattern } from "../RenderSystem";
-import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
+import type { RenderAreaPattern } from "../RenderSystem";
+import type { CachedGeometry} from "./CachedGeometry";
+import { LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { Graphic } from "./Graphic";
 import { InstanceBuffers, InstancedGeometry, isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
-import { RenderCommands } from "./RenderCommands";
-import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
-import { ShaderProgramExecutor } from "./ShaderProgram";
+import type { RenderCommands } from "./RenderCommands";
+import type { Pass, RenderOrder, RenderPass } from "./RenderFlags";
+import type { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
-import { Target } from "./Target";
-import { TechniqueId } from "./TechniqueId";
+import type { Target } from "./Target";
+import type { TechniqueId } from "./TechniqueId";
 
 /** @internal */
 export class Primitive extends Graphic {

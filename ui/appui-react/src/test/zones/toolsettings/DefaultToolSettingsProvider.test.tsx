@@ -5,14 +5,16 @@
 /* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as React from "react";
-import {
-  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
-  SuppressLabelEditorParams,
+import type {
+  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription,
+  SuppressLabelEditorParams} from "@itwin/appui-abstract";
+import { PropertyEditorParamTypes,
 } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
+import type { DefaultToolSettingsProvider, FrontstageProps,
+  SyncToolSettingsPropertiesEventArgs} from "../../../appui-react";
 import {
-  ConfigurableUiManager, CoreTools, DefaultToolSettingsProvider, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
-  SyncToolSettingsPropertiesEventArgs, ToolSettingsManager, Widget, Zone,
+  ConfigurableUiManager, CoreTools, Frontstage, FrontstageManager, FrontstageProvider, ToolSettingsManager, Widget, Zone,
 } from "../../../appui-react";
 import TestUtils from "../../TestUtils";
 

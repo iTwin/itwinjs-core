@@ -10,7 +10,7 @@ import "./Cube.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Matrix3d } from "@itwin/core-geometry";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 
 /** Cube Face enumeration
  * @public

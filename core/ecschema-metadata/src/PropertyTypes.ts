@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { PrimitiveType } from "./ECObjects";
+import type { PrimitiveType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
 /** @beta */

@@ -6,7 +6,7 @@
  * @module Entities
  */
 
-import { GeometricElement2dProps, RelatedElementProps } from "../ElementProps";
+import type { GeometricElement2dProps, RelatedElementProps } from "../ElementProps";
 
 /** @public */
 export interface ViewAttachmentLabelProps extends GeometricElement2dProps {

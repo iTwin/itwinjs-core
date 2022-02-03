@@ -7,18 +7,23 @@
  */
 
 import { BeDuration } from "@itwin/core-bentley";
-import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
-import { SnapRequestProps } from "@itwin/core-common";
-import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
-import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
+import type { CurvePrimitive, XAndY } from "@itwin/core-geometry";
+import { CurveCurve, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import type { SnapRequestProps } from "@itwin/core-common";
+import type { HitListHolder} from "./ElementLocateManager";
+import { ElementLocateManager, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
+import type { HitDetail, HitList} from "./HitDetail";
+import { HitDetailType, HitGeomType, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { CanvasDecoration } from "./render/CanvasDecoration";
-import { IconSprites, Sprite, SpriteLocation } from "./Sprites";
-import { BeButton, BeButtonEvent, BeTouchEvent, InputSource } from "./tools/Tool";
+import type { CanvasDecoration } from "./render/CanvasDecoration";
+import type { Sprite} from "./Sprites";
+import { IconSprites, SpriteLocation } from "./Sprites";
+import type { BeTouchEvent} from "./tools/Tool";
+import { BeButton, BeButtonEvent, InputSource } from "./tools/Tool";
 import { ToolSettings } from "./tools/ToolSettings";
-import { DecorateContext } from "./ViewContext";
-import { Decorator } from "./ViewManager";
-import { ScreenViewport, Viewport } from "./Viewport";
+import type { DecorateContext } from "./ViewContext";
+import type { Decorator } from "./ViewManager";
+import type { ScreenViewport, Viewport } from "./Viewport";
 
 // cspell:ignore dont primitivetools
 

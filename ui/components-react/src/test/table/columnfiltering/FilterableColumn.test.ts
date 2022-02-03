@@ -8,10 +8,11 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { StandardTypeNames } from "@itwin/appui-abstract";
 import { FilterOperator } from "../../../components-react/table/columnfiltering/ColumnFiltering";
-import { TableColumnFilterDescriptor } from "../../../components-react/table/columnfiltering/TableColumnFilterDescriptor";
-import { ReactDataGridColumn, TableColumn } from "../../../components-react/table/component/TableColumn";
+import type { TableColumnFilterDescriptor } from "../../../components-react/table/columnfiltering/TableColumnFilterDescriptor";
+import type { ReactDataGridColumn} from "../../../components-react/table/component/TableColumn";
+import { TableColumn } from "../../../components-react/table/component/TableColumn";
 import { SimpleTableDataProvider } from "../../../components-react/table/SimpleTableDataProvider";
-import { ColumnDescription, RowItem } from "../../../components-react/table/TableDataProvider";
+import type { ColumnDescription, RowItem } from "../../../components-react/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
 
 const columns: ColumnDescription[] = [

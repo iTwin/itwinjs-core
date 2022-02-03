@@ -6,8 +6,10 @@
  * @module ToolSettings
  */
 
-import { IModelApp, InteractiveTool } from "@itwin/core-frontend";
-import { DialogItem, DialogPropertySyncItem, UiEvent } from "@itwin/appui-abstract";
+import type { InteractiveTool } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import type { DialogItem, DialogPropertySyncItem} from "@itwin/appui-abstract";
+import { UiEvent } from "@itwin/appui-abstract";
 import { focusIntoContainer } from "@itwin/core-react";
 import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 

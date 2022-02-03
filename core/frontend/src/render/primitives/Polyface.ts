@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { IndexedPolyface, Transform } from "@itwin/core-geometry";
-import { DisplayParams } from "./DisplayParams";
+import type { IndexedPolyface, Transform } from "@itwin/core-geometry";
+import type { DisplayParams } from "./DisplayParams";
 
 /** @internal */
 export class PolyfacePrimitive {

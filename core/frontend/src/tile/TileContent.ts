@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { ElementAlignedBox3d } from "@itwin/core-common";
-import { RenderGraphic } from "../render/RenderGraphic";
+import type { ElementAlignedBox3d } from "@itwin/core-common";
+import type { RenderGraphic } from "../render/RenderGraphic";
 
 /**
  * Describes the contents of a [[Tile]]. Specific sub-types of [[Tile]] may describe their content using sub-types of this interface.

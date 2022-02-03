@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { NodeKey } from "../../presentation-common";
+import type { NodeKey } from "../../presentation-common";
 
 /**
  * @internal Used for testing only.

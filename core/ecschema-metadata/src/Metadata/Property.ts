@@ -7,24 +7,25 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import {
+import type {
   ArrayPropertyProps, EnumerationPropertyProps, NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
   PrimitivePropertyProps, PropertyProps, StructPropertyProps,
 } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "../Interfaces";
+import type { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "../Interfaces";
 import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "../PropertyTypes";
-import { SchemaItemKey } from "../SchemaKey";
+import type { SchemaItemKey } from "../SchemaKey";
 import { ECName } from "../ECName";
-import { ECClass, StructClass } from "./Class";
-import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import { Enumeration } from "./Enumeration";
-import { KindOfQuantity } from "./KindOfQuantity";
-import { PropertyCategory } from "./PropertyCategory";
-import { RelationshipClass } from "./RelationshipClass";
-import { Schema } from "./Schema";
+import type { ECClass, StructClass } from "./Class";
+import type { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet} from "./CustomAttribute";
+import { serializeCustomAttributes } from "./CustomAttribute";
+import type { Enumeration } from "./Enumeration";
+import type { KindOfQuantity } from "./KindOfQuantity";
+import type { PropertyCategory } from "./PropertyCategory";
+import type { RelationshipClass } from "./RelationshipClass";
+import type { Schema } from "./Schema";
 
 /**
  * A common abstract class for all ECProperty types.

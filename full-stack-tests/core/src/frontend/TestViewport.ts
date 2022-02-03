@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64String, SortedArray } from "@itwin/core-bentley";
-import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
+import type { Id64String} from "@itwin/core-bentley";
+import { SortedArray } from "@itwin/core-bentley";
+import type { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
+import type { IModelConnection, Tile, Viewport} from "@itwin/core-frontend";
 import {
-  IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
+  IModelApp, OffScreenViewport, Pixel, ScreenViewport, TileTreeLoadStatus, ViewRect,
 } from "@itwin/core-frontend";
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {

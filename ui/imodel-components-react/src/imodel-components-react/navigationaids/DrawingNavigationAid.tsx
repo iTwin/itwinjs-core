@@ -11,11 +11,13 @@ import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Constant, Geometry, Matrix3d, Point2d, Point3d, Point4d, Vector3d } from "@itwin/core-geometry";
-import { IModelApp, IModelConnection, ScreenViewport, ViewManager, Viewport, ViewState } from "@itwin/core-frontend";
+import type { IModelConnection, ViewManager, Viewport, ViewState } from "@itwin/core-frontend";
+import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { CommonProps } from "@itwin/core-react";
+import type { CommonProps } from "@itwin/core-react";
 import { UiIModelComponents } from "../UiIModelComponents";
-import { ViewportComponentEvents, ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents";
+import type { ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents";
+import { ViewportComponentEvents } from "../viewport/ViewportComponentEvents";
 
 // cSpell:ignore Quaternion Quaternions unrotate
 /* eslint-disable jsx-a11y/click-events-have-key-events */

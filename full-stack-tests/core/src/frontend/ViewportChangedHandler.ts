@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
+import type { ChangeFlags} from "@itwin/core-frontend";
 import {
-  ChangeFlag, ChangeFlags, MutableChangeFlags, Viewport,
+  ChangeFlag, MutableChangeFlags, Viewport,
 } from "@itwin/core-frontend";
 
 /** Aspects of a Viewport that can become invalidated when its state changes. */

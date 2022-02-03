@@ -5,26 +5,29 @@
 import { expect } from "chai";
 import { from } from "rxjs/internal/observable/from";
 import { finalize } from "rxjs/internal/operators/finalize";
-import { ObservableInput } from "rxjs/internal/types";
+import type { ObservableInput } from "rxjs/internal/types";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeUiEvent } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import { Keys, KeySet, NodeKey } from "@itwin/presentation-common";
+import type { IModelConnection } from "@itwin/core-frontend";
+import type { Keys, NodeKey } from "@itwin/presentation-common";
+import { KeySet } from "@itwin/presentation-common";
 import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
-import {
-  ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager,
+import type {
+  ISelectionProvider, SelectionChangeEventArgs, SelectionHandler, SelectionManager} from "@itwin/presentation-frontend";
+import { Presentation, SelectionChangeType, SelectionHelper,
 } from "@itwin/presentation-frontend";
-import {
+import type {
   AbstractTreeNodeLoaderWithProvider, MutableTreeModelNode, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem,
   TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "@itwin/components-react";
 import { CheckBoxState } from "@itwin/core-react";
 import { renderHook } from "@testing-library/react-hooks";
-import {
-  IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler,
+import type {
+  IPresentationTreeDataProvider} from "../../../presentation-components";
+import { UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler,
 } from "../../../presentation-components";
-import { UnifiedSelectionTreeEventHandlerParams } from "../../../presentation-components/tree/controlled/UseUnifiedSelection";
+import type { UnifiedSelectionTreeEventHandlerParams } from "../../../presentation-components/tree/controlled/UseUnifiedSelection";
 import { PRESENTATION_TREE_NODE_KEY } from "../../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
 

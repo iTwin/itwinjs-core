@@ -6,28 +6,34 @@
  * @module Measure
  */
 
-import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import type { Id64Array, Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
+import type { XAndY, XYAndZ} from "@itwin/core-geometry";
 import {
-  AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ,
+  AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d,
 } from "@itwin/core-geometry";
+import type { GeometryStreamProps, MassPropertiesRequestProps, MassPropertiesResponseProps} from "@itwin/core-common";
 import {
-  BentleyStatus, ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps,
+  BentleyStatus, ColorDef, LinePixels, MassPropertiesOperation,
 } from "@itwin/core-common";
-import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
+import type { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
 import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
-import { HitDetail, HitGeomType } from "../HitDetail";
+import type { HitDetail} from "../HitDetail";
+import { HitGeomType } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { Marker } from "../Marker";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
-import { CanvasDecoration } from "../render/CanvasDecoration";
+import type { CanvasDecoration } from "../render/CanvasDecoration";
 import { GraphicType } from "../render/GraphicBuilder";
-import { DecorateContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
+import type { DecorateContext } from "../ViewContext";
+import type { Viewport } from "../Viewport";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, InputSource } from "./Tool";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import type { BeButtonEvent} from "./Tool";
+import { BeModifierKeys, CoreTools, EventHandled, InputSource } from "./Tool";
+import type { ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 
 function translateBold(key: string) { return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `; }
 

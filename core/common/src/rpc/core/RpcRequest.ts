@@ -7,13 +7,15 @@
  */
 
 import { BeEvent, BentleyStatus, Guid } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
+import type { IModelRpcProps } from "../../IModel";
 import { BackendError, IModelError, NoContentError } from "../../IModelError";
-import { RpcInterface } from "../../RpcInterface";
+import type { RpcInterface } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
-import { RpcNotFoundResponse } from "./RpcControl";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import type { RpcResponseCacheControl } from "./RpcConstants";
+import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus } from "./RpcConstants";
+import type { RpcNotFoundResponse } from "./RpcControl";
+import type { RpcSerializedValue } from "./RpcMarshaling";
+import { RpcMarshaling } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol } from "./RpcProtocol";
 import { CURRENT_REQUEST } from "./RpcRegistry";

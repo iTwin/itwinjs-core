@@ -5,7 +5,8 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, CursorTypeContext, DragManager, PanelSideContext, WidgetTarget } from "../../appui-layout-react";
+import type { DragManager} from "../../appui-layout-react";
+import { addPanelWidget, createNineZoneState, CursorTypeContext, PanelSideContext, WidgetTarget } from "../../appui-layout-react";
 import { createDragStartArgs, TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTarget", () => {

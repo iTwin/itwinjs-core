@@ -6,9 +6,10 @@
  * @module Views
  */
 
-import { compareStrings, Id64, Id64Arg, Id64String, SortedArray } from "@itwin/core-bentley";
-import { FeatureSymbology } from "./render/FeatureSymbology";
-import { Viewport } from "./Viewport";
+import type { Id64Arg, Id64String} from "@itwin/core-bentley";
+import { compareStrings, Id64, SortedArray } from "@itwin/core-bentley";
+import type { FeatureSymbology } from "./render/FeatureSymbology";
+import type { Viewport } from "./Viewport";
 
 /** Per-model category visibility permits the visibility of categories within a [[Viewport]] displaying a [[SpatialViewState]] to be overridden in
  * the context of individual [[GeometricModelState]]s.

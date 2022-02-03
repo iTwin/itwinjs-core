@@ -3,14 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, ReactWrapper } from "enzyme";
+import type { ReactWrapper } from "enzyme";
+import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as ReactAutosuggest from "react-autosuggest";
+import type * as ReactAutosuggest from "react-autosuggest";
 import { fireEvent, render } from "@testing-library/react";
 import { Logger } from "@itwin/core-bentley";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { AutoSuggest, AutoSuggestData } from "../../core-react";
+import type { AutoSuggestData } from "../../core-react";
+import { AutoSuggest } from "../../core-react";
 import TestUtils from "../TestUtils";
 
 describe("AutoSuggest", () => {

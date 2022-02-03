@@ -9,9 +9,10 @@
 import "./BooleanEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PropertyValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
+import type { PropertyValue} from "@itwin/appui-abstract";
+import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Checkbox } from "@itwin/itwinui-react";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import type { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** @internal */

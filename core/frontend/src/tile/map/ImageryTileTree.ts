@@ -8,16 +8,18 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
-import { Cartographic, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
+import type { Cartographic, MapLayerSettings, ViewFlagOverrides } from "@itwin/core-common";
+import { ImageSource, RenderTexture } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { RenderMemory } from "../../render/RenderMemory";
-import { RenderSystem } from "../../render/RenderSystem";
-import { ScreenViewport } from "../../Viewport";
+import type { IModelConnection } from "../../IModelConnection";
+import type { RenderMemory } from "../../render/RenderMemory";
+import type { RenderSystem } from "../../render/RenderSystem";
+import type { ScreenViewport } from "../../Viewport";
+import type { MapLayerImageryProvider, MapTile, MapTilingScheme,
+  RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileTree, TileTreeOwner,
+  TileTreeSupplier} from "../internal";
 import {
-  MapCartoRectangle, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
-  RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
-  TileTreeSupplier,
+  MapCartoRectangle, MapLayerTileTreeReference, QuadId, RealityTile, RealityTileLoader, RealityTileTree, TileLoadPriority, TileTreeLoadStatus,
 } from "../internal";
 
 /** @internal */

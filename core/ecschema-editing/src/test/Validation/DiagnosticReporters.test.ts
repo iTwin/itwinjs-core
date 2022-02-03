@@ -6,10 +6,12 @@
 import { assert, expect } from "chai";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
-import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import type { PrimitiveProperty} from "@itwin/ecschema-metadata";
+import { EntityClass, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { FormatDiagnosticReporter } from "../../ecschema-editing";
-import { MutableClass } from "../../Editing/Mutable/MutableClass";
-import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
+import type { MutableClass } from "../../Editing/Mutable/MutableClass";
+import type { AnyDiagnostic} from "../../Validation/Diagnostic";
+import { createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter";
 
 import sinon = require("sinon");

@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Capabilities } from "../Capabilities";
+import type { WebGLContext} from "../RenderCompatibility";
 import {
-  queryRenderCompatibility, WebGLContext, WebGLFeature, WebGLRenderCompatibilityStatus,
+  queryRenderCompatibility, WebGLFeature, WebGLRenderCompatibilityStatus,
 } from "../RenderCompatibility";
 
 let createContext = (canvas: HTMLCanvasElement, useWebGL2: boolean, contextAttributes?: WebGLContextAttributes): WebGLContext | undefined => {

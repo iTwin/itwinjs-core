@@ -6,13 +6,15 @@
  * @module HubAccess
  */
 
-import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
-import {
-  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
-  IModelVersion, LocalDirName, LocalFileName,
+import type { AccessToken, GuidString, Id64String} from "@itwin/core-bentley";
+import { IModelHubStatus } from "@itwin/core-bentley";
+import type {
+  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
+  IModelVersion, LocalDirName, LocalFileName} from "@itwin/core-common";
+import { IModelError,
 } from "@itwin/core-common";
-import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
-import { TokenArg } from "./IModelDb";
+import type { CheckpointProps, DownloadRequest } from "./CheckpointManager";
+import type { TokenArg } from "./IModelDb";
 
 /** The state of a lock.
  * @public

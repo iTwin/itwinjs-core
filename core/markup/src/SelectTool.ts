@@ -7,16 +7,19 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
+import type { Transform, XAndY } from "@itwin/core-geometry";
+import { Point2d, Point3d, Vector2d } from "@itwin/core-geometry";
+import type { BeTouchEvent, ToolAssistanceInstruction, ToolAssistanceSection} from "@itwin/core-frontend";
 import {
-  BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,
-  ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
+  BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,
+  ToolAssistanceInputMethod,
 } from "@itwin/core-frontend";
-import { ArrayXY, Box, Container, G, Line, Element as MarkupElement, Text as MarkupText, Matrix, Point, Polygon } from "@svgdotjs/svg.js";
+import type { ArrayXY, Box, Container, Element as MarkupElement, Polygon } from "@svgdotjs/svg.js";
+import { G, Line, Text as MarkupText, Matrix, Point } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 import { EditTextTool } from "./TextEdit";
-import { UndoManager } from "./Undo";
+import type { UndoManager } from "./Undo";
 
 // cspell:ignore lmultiply untransform unFlash multiselect
 

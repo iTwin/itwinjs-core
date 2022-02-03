@@ -9,7 +9,8 @@ import {
 } from "@itwin/appui-abstract";
 import TestUtils from "../TestUtils";
 import { MockRender } from "@itwin/core-frontend";
-import { DefaultNavigationTools, StandardNavigationToolsProvider } from "../../appui-react/ui-items-provider/StandardNavigationToolsProvider";
+import type { DefaultNavigationTools} from "../../appui-react/ui-items-provider/StandardNavigationToolsProvider";
+import { StandardNavigationToolsProvider } from "../../appui-react/ui-items-provider/StandardNavigationToolsProvider";
 
 const testToolsArray: DefaultNavigationTools[] = [
   {

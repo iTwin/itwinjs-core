@@ -8,7 +8,8 @@ import * as React from "react";
 import { Provider } from "react-redux";
 import { fireEvent, render } from "@testing-library/react";
 import { connectIModelConnection } from "../../appui-react/redux/connectIModel";
-import { SessionStateActionsProps, sessionStateMapDispatchToProps } from "../../appui-react/redux/SessionState";
+import type { SessionStateActionsProps} from "../../appui-react/redux/SessionState";
+import { sessionStateMapDispatchToProps } from "../../appui-react/redux/SessionState";
 import { UiFramework } from "../../appui-react/UiFramework";
 import TestUtils from "../TestUtils";
 

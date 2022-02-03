@@ -6,7 +6,8 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ElementSeparator, RatioChangeResult } from "../../core-react/elementseparator/ElementSeparator";
+import type { RatioChangeResult } from "../../core-react/elementseparator/ElementSeparator";
+import { ElementSeparator } from "../../core-react/elementseparator/ElementSeparator";
 import { Orientation } from "../../core-react/enums/Orientation";
 
 describe("ElementSeparator", () => {

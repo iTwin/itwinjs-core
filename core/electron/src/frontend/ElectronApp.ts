@@ -2,10 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AsyncMethodsOf, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
-import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
-import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
-import { ITwinElectronApi } from "../backend/ElectronPreload";
+import type { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
+import { ProcessDetector } from "@itwin/core-bentley";
+import type { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
+import type { NativeAppOpts } from "@itwin/core-frontend";
+import { IpcApp, NativeApp } from "@itwin/core-frontend";
+import type { ITwinElectronApi } from "../backend/ElectronPreload";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
 
 /**

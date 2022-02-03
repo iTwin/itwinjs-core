@@ -7,8 +7,9 @@ import { renderHook } from "@testing-library/react-hooks";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
+import type { DragManager} from "../../appui-layout-react";
 import {
-  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
+  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, PanelStateContext,
   PanelTarget, useAllowedPanelTarget,
 } from "../../appui-layout-react";
 import { createDragItemInfo, createDragStartArgs, TestNineZoneProvider } from "../Providers";

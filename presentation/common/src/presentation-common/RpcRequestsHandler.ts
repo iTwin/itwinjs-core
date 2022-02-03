@@ -6,31 +6,34 @@
  * @module RPC
  */
 
-import { Guid, Id64String, IDisposable } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcManager } from "@itwin/core-common";
-import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
-import { ItemJSON } from "./content/Item";
-import { DisplayValueGroupJSON } from "./content/Value";
-import { DiagnosticsScopeLogs } from "./Diagnostics";
-import { InstanceKeyJSON } from "./EC";
-import { ElementProperties } from "./ElementProperties";
+import type { Id64String, IDisposable } from "@itwin/core-bentley";
+import { Guid } from "@itwin/core-bentley";
+import type { IModelRpcProps} from "@itwin/core-common";
+import { RpcManager } from "@itwin/core-common";
+import type { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
+import type { ItemJSON } from "./content/Item";
+import type { DisplayValueGroupJSON } from "./content/Value";
+import type { DiagnosticsScopeLogs } from "./Diagnostics";
+import type { InstanceKeyJSON } from "./EC";
+import type { ElementProperties } from "./ElementProperties";
 import { PresentationError, PresentationStatus } from "./Error";
-import { NodeKeyJSON } from "./hierarchy/Key";
-import { NodeJSON } from "./hierarchy/Node";
-import { NodePathElementJSON } from "./hierarchy/NodePathElement";
-import { KeySetJSON } from "./KeySet";
-import { LabelDefinitionJSON } from "./LabelDefinition";
-import {
+import type { NodeKeyJSON } from "./hierarchy/Key";
+import type { NodeJSON } from "./hierarchy/Node";
+import type { NodePathElementJSON } from "./hierarchy/NodePathElement";
+import type { KeySetJSON } from "./KeySet";
+import type { LabelDefinitionJSON } from "./LabelDefinition";
+import type {
   ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
   HierarchyRequestOptions, Paged, RequestOptions, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
-import {
-  ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
+import type {
+  ContentSourcesRpcResult, PresentationRpcRequestOptions, PresentationRpcResponse} from "./PresentationRpcInterface";
+import { PresentationRpcInterface,
 } from "./PresentationRpcInterface";
-import { RulesetVariableJSON } from "./RulesetVariables";
-import { SelectionScope } from "./selection/SelectionScope";
-import { PagedResponse } from "./Utils";
+import type { RulesetVariableJSON } from "./RulesetVariables";
+import type { SelectionScope } from "./selection/SelectionScope";
+import type { PagedResponse } from "./Utils";
 
 /**
  * Configuration parameters for [[RpcRequestsHandler]].

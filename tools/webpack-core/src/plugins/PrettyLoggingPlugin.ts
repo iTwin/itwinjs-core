@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chalk from "chalk";
-import { Compiler, Stats } from "webpack";
+import type { Compiler, Stats } from "webpack";
 
 type StatsFormatter = (stats: Stats.ToJsonOutput) => Stats.ToJsonOutput;
 

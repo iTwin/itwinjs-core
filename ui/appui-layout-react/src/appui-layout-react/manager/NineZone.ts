@@ -6,14 +6,17 @@
  * @module Zone
  */
 
-import { PointProps } from "@itwin/appui-abstract";
-import { Point, Rectangle, RectangleProps } from "@itwin/core-react";
-import { NestedStagePanelKey, NestedStagePanelsManagerProps } from "../stage-panels/manager/NestedStagePanels";
+import type { PointProps } from "@itwin/appui-abstract";
+import type { RectangleProps } from "@itwin/core-react";
+import { Point, Rectangle } from "@itwin/core-react";
+import type { NestedStagePanelKey, NestedStagePanelsManagerProps } from "../stage-panels/manager/NestedStagePanels";
 import { StagePanelsManager } from "../stage-panels/manager/StagePanels";
 import { StagePanelType } from "../stage-panels/StagePanel";
 import { ToolSettingsWidgetMode } from "../zones/manager/Widget";
-import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "../zones/manager/Zones";
-import { NineZoneNestedStagePanelsManager, NineZoneNestedStagePanelsManagerProps } from "./NestedStagePanels";
+import type { WidgetZoneId, ZonesManagerProps } from "../zones/manager/Zones";
+import { ZonesManager } from "../zones/manager/Zones";
+import type { NineZoneNestedStagePanelsManagerProps } from "./NestedStagePanels";
+import { NineZoneNestedStagePanelsManager } from "./NestedStagePanels";
 import { NineZoneStagePanelManager } from "./StagePanel";
 
 /** Properties used by [[NineZoneManager]].

@@ -6,10 +6,10 @@
  * @module Item
  */
 
-import { StringGetter } from "@itwin/appui-abstract";
-import { Direction } from "@itwin/appui-layout-react";
-import { AnyItemDef } from "./AnyItemDef";
-import { ItemProps } from "./ItemProps";
+import type { StringGetter } from "@itwin/appui-abstract";
+import type { Direction } from "@itwin/appui-layout-react";
+import type { AnyItemDef } from "./AnyItemDef";
+import type { ItemProps } from "./ItemProps";
 
 /** Definition for a Group item that opens a group of items.
  * @public

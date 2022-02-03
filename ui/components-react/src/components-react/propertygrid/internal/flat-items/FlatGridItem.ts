@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { CategorizedPropertyTypes, FlatGridItemType } from "./MutableFlatGridItem";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyCategory } from "../../PropertyDataProvider";
+import type { CategorizedPropertyTypes, FlatGridItemType } from "./MutableFlatGridItem";
+import type { PropertyRecord } from "@itwin/appui-abstract";
+import type { PropertyCategory } from "../../PropertyDataProvider";
 
 /**
  * Base immutable data structure defining common methods and properties for categories and categorized properties

@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Content, Item, LabelCompositeValue, LabelDefinition, Node } from "@itwin/presentation-common";
+import type { Content, Item, LabelCompositeValue, Node } from "@itwin/presentation-common";
+import { LabelDefinition } from "@itwin/presentation-common";
 import { Presentation } from "./Presentation";
 
 const NAMESPACES = ["BisCore", "ECPresentation", "RulesEngine"];

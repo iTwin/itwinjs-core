@@ -8,8 +8,9 @@
 
 // cSpell:ignore valuetypes shortdate
 
-import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
-import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
+import type { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue} from "@itwin/appui-abstract";
+import { PropertyValueFormat } from "@itwin/appui-abstract";
+import type { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
 
 /** Sort compare method for types that support sorting
  * @public

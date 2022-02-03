@@ -6,9 +6,10 @@
  * @module iModels
  */
 
-import {
-  AuthStatus, BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, RepositoryStatus,
-  RpcInterfaceStatus,
+import type {
+  AuthStatus, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction,
+  RpcInterfaceStatus} from "@itwin/core-bentley";
+import { BentleyError, IModelStatus, RepositoryStatus,
 } from "@itwin/core-bentley";
 
 export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@itwin/core-bentley";

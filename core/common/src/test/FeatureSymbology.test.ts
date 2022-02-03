@@ -3,19 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import type { Id64String } from "@itwin/core-bentley";
+import { Id64 } from "@itwin/core-bentley";
 import { ColorDef } from "../ColorDef";
 import { RgbColor } from "../RgbColor";
 import { BatchType, Feature } from "../FeatureTable";
 import { GeometryClass } from "../GeometryParams";
 import { LinePixels } from "../LinePixels";
-import { SubCategoryAppearance } from "../SubCategoryAppearance";
+import type { SubCategoryAppearance } from "../SubCategoryAppearance";
 import { SubCategoryOverride } from "../SubCategoryOverride";
+import type {
+  FeatureAppearanceProps,
+  FeatureAppearanceSource} from "../FeatureSymbology";
 import {
   FeatureAppearance,
-  FeatureAppearanceProps,
   FeatureAppearanceProvider,
-  FeatureAppearanceSource,
   FeatureOverrides,
 } from "../FeatureSymbology";
 

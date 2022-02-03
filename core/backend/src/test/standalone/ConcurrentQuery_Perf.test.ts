@@ -2,10 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, QueryBinder, QueryOptionsBuilder, QueryRowFormat, QueryStats } from "@itwin/core-common";
+import type { QueryStats } from "@itwin/core-common";
+import { DbResult, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { expect } from "chai";
-import { ECSqlStatement } from "../../ECSqlStatement";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
+import type { ECSqlStatement } from "../../ECSqlStatement";
+import type { IModelDb} from "../../IModelDb";
+import { SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 

@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
+import type { UserPreferencesAccess } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
 

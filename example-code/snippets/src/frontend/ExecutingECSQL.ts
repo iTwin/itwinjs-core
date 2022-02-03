@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@itwin/core-bentley";
-import { NavigationValue, QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
+import type { Id64String } from "@itwin/core-bentley";
+import type { NavigationValue} from "@itwin/core-common";
+import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import type { IModelConnection } from "@itwin/core-frontend";
 
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/naming-convention */

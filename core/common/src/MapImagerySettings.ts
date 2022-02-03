@@ -6,9 +6,11 @@
  * @module DisplayStyles
  */
 
-import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
-import { ColorDef, ColorDefProps } from "./ColorDef";
-import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
+import type { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
+import type { ColorDefProps } from "./ColorDef";
+import { ColorDef } from "./ColorDef";
+import type { BaseMapLayerProps, MapLayerProps} from "./MapLayerSettings";
+import { BaseMapLayerSettings, MapLayerSettings } from "./MapLayerSettings";
 
 /** JSON representation of a [[BaseLayerSettings]].
  * @beta

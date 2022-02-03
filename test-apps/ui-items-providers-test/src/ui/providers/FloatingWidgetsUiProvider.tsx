@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import type {
+  AbstractWidgetProps, UiItemsProvider} from "@itwin/appui-abstract";
 import {
-  AbstractWidgetProps,
   StagePanelLocation, StagePanelSection,
   StageUsage,
-  UiItemsManager, UiItemsProvider, WidgetState,
+  UiItemsManager, WidgetState,
 } from "@itwin/appui-abstract";
 import { ViewAttributesWidgetComponent } from "../widgets/ViewAttributesWidget";
 

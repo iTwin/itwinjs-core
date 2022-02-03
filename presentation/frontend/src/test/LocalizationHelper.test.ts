@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { ITwinLocalization } from "@itwin/core-i18n";
+import type { ITwinLocalization } from "@itwin/core-i18n";
 import { Content, Item, LabelDefinition } from "@itwin/presentation-common";
 import {
   createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor,

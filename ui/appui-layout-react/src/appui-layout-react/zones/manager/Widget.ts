@@ -6,10 +6,10 @@
  * @module Zone
  */
 
-import { PointProps } from "@itwin/appui-abstract";
+import type { PointProps } from "@itwin/appui-abstract";
 import { Point } from "@itwin/core-react";
 import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
-import { WidgetZoneId } from "./Zones";
+import type { WidgetZoneId } from "./Zones";
 
 /** Widget properties used in [[ZonesManagerProps]].
  * @internal

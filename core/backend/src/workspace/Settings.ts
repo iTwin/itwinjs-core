@@ -8,8 +8,9 @@
 
 import * as fs from "fs-extra";
 import { parse } from "json5";
-import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
-import { LocalFileName } from "@itwin/core-common";
+import type { JSONSchemaType } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
+import type { LocalFileName } from "@itwin/core-common";
 
 /** The type of a Setting, according to its schema
  * @beta

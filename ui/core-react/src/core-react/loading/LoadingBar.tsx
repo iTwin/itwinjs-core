@@ -9,7 +9,7 @@
 import "./LoadingBar.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 
 /** Properties for [[LoadingBar]] component
  * @public

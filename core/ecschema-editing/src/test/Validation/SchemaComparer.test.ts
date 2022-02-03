@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { AnyECType, AnyProperty, ECClass, EntityClass, Enumeration, Format, KindOfQuantity, PropertyCategory,
-  RelationshipClass, Schema, SchemaContext, Unit,
+import type { AnyECType, AnyProperty, ECClass, EntityClass, Enumeration, Format, KindOfQuantity, PropertyCategory,
+  RelationshipClass, Unit} from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext,
 } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic";
-import { ISchemaChanges, SchemaChanges } from "../../Validation/SchemaChanges";
+import type { AnyDiagnostic} from "../../Validation/Diagnostic";
+import { DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic";
+import type { ISchemaChanges, SchemaChanges } from "../../Validation/SchemaChanges";
 import { SchemaCompareCodes } from "../../Validation/SchemaCompareDiagnostics";
 import { SchemaComparer } from "../../Validation/SchemaComparer";
-import { ISchemaCompareReporter } from "../../Validation/SchemaCompareReporter";
+import type { ISchemaCompareReporter } from "../../Validation/SchemaCompareReporter";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

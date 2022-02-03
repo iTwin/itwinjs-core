@@ -6,9 +6,10 @@
  * @module Tile
  */
 
-import { assert, ByteStream } from "@itwin/core-bentley";
+import type { ByteStream } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { ElementAlignedBox3d } from "../geometry/Placement";
+import type { ElementAlignedBox3d } from "../geometry/Placement";
 import { nextPoint3d64FromByteStream, TileFormat, TileHeader } from "./TileIO";
 
 /** Flags describing the geometry contained within a tile in iMdl format.

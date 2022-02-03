@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyError, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
+import type { RpcSerializedValue, SerializedRpcRequest} from "@itwin/core-common";
 import {
-  IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
+  IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment,
 } from "@itwin/core-common";
 import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
-import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
-import { ElectronRpcRequest } from "./ElectronRpcRequest";
+import type { ElectronRpcProtocol } from "./ElectronRpcProtocol";
+import type { ElectronRpcRequest } from "./ElectronRpcRequest";
 
 const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
 const DATA_CHANNEL = iTwinChannel("rpc.data");

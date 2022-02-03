@@ -6,7 +6,8 @@
  * @module ConfigurableUi
  */
 
-import { ConfigurableUiManager, UiActivityEventArgs, UiIntervalEventArgs } from "./ConfigurableUiManager";
+import type { UiActivityEventArgs, UiIntervalEventArgs } from "./ConfigurableUiManager";
+import { ConfigurableUiManager } from "./ConfigurableUiManager";
 
 /** Time Tracker utility class
  * @internal

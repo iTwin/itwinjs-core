@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { Polyface, Range3d, Transform } from "@itwin/core-geometry";
+import type { Polyface, Range3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
-import {
+import type {
   Tile, TileTreeReference, TileUser,
 } from "./internal";
 

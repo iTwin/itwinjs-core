@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { QuantityError } from "../Exception";
 import { Format } from "../Formatter/Format";
 import { DecimalPrecision, FormatTraits } from "../Formatter/FormatEnums";
-import { FormatProps } from "../Formatter/Interfaces";
+import type { FormatProps } from "../Formatter/Interfaces";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
 describe("Formatting tests:", () => {

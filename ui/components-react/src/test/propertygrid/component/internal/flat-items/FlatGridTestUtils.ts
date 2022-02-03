@@ -3,19 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { CategorizedPropertyTypes, FlatGridItemType, IMutableCategorizedPropertyItem, IMutableFlatGridItem, IMutableGridCategoryItem } from "../../../../../components-react/propertygrid/internal/flat-items/MutableFlatGridItem";
-import { CategoryRecordsDict, MutableGridCategory } from "../../../../../components-react/propertygrid/internal/flat-items/MutableGridCategory";
+import type { CategorizedPropertyTypes, IMutableCategorizedPropertyItem, IMutableFlatGridItem, IMutableGridCategoryItem } from "../../../../../components-react/propertygrid/internal/flat-items/MutableFlatGridItem";
+import { FlatGridItemType } from "../../../../../components-react/propertygrid/internal/flat-items/MutableFlatGridItem";
+import type { CategoryRecordsDict} from "../../../../../components-react/propertygrid/internal/flat-items/MutableGridCategory";
+import { MutableGridCategory } from "../../../../../components-react/propertygrid/internal/flat-items/MutableGridCategory";
 import { AssertionError, expect } from "chai";
 import sinon from "sinon";
 import { MutableCategorizedPrimitiveProperty } from "../../../../../components-react/propertygrid/internal/flat-items/MutableCategorizedPrimitiveProperty";
 import { MutableCategorizedArrayProperty } from "../../../../../components-react/propertygrid/internal/flat-items/MutableCategorizedArrayProperty";
 import { MutableCategorizedStructProperty } from "../../../../../components-react/propertygrid/internal/flat-items/MutableCategorizedStructProperty";
 import shortid from "shortid";
-import { MutableGridItemFactory } from "../../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
-import { CategorizedPropertyItem, FlatGridItem, GridCategoryItem } from "../../../../../components-react/propertygrid/internal/flat-items/FlatGridItem";
-import { PropertyCategory, PropertyData } from "../../../../../components-react/propertygrid/PropertyDataProvider";
+import type { MutableGridItemFactory } from "../../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
+import type { CategorizedPropertyItem, FlatGridItem, GridCategoryItem } from "../../../../../components-react/propertygrid/internal/flat-items/FlatGridItem";
+import type { PropertyCategory, PropertyData } from "../../../../../components-react/propertygrid/PropertyDataProvider";
 import * as faker from "faker";
-import { IPropertyGridModel } from "../../../../../components-react/propertygrid/internal/PropertyGridModel";
+import type { IPropertyGridModel } from "../../../../../components-react/propertygrid/internal/PropertyGridModel";
 
 /** @internal */
 export interface GridModelLastItemData {

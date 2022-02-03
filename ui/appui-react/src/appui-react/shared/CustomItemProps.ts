@@ -6,7 +6,7 @@
  * @module Item
  */
 
-import { ItemProps } from "./ItemProps";
+import type { ItemProps } from "./ItemProps";
 
 /** Definition for a Custom item that renders a React component.
  * @public

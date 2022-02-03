@@ -10,11 +10,13 @@ import "./ContextMenu.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ConditionalBooleanValue, SpecialKey } from "@itwin/appui-abstract";
-import { CommonProps } from "../utils/Props";
+import type { CommonProps } from "../utils/Props";
 import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 import { ContextMenuDirection } from "./ContextMenuDirection";
-import { ContextMenuItem, ContextMenuItemProps } from "./ContextMenuItem";
-import { ContextSubMenu, ContextSubMenuProps } from "./ContextSubMenu";
+import type { ContextMenuItemProps } from "./ContextMenuItem";
+import { ContextMenuItem } from "./ContextMenuItem";
+import type { ContextSubMenuProps } from "./ContextSubMenu";
+import { ContextSubMenu } from "./ContextSubMenu";
 
 /** Properties for the [[ContextMenu]] component
   * @public

@@ -7,8 +7,9 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { MutableSchema } from "./Mutable/MutableSchema";
+import type { CustomAttribute, SchemaContext, SchemaItemKey, SchemaKey} from "@itwin/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, Schema, SchemaMatchType } from "@itwin/ecschema-metadata";
+import type { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
 import { CustomAttributes } from "./CustomAttributes";

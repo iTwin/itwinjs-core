@@ -6,9 +6,11 @@
  * @module Tree
  */
 
-import { Patch, produce } from "immer";
+import type { Patch} from "immer";
+import { produce } from "immer";
 import { BeUiEvent } from "@itwin/core-bentley";
-import { MutableTreeModel, TreeModel } from "./TreeModel";
+import type { TreeModel } from "./TreeModel";
+import { MutableTreeModel } from "./TreeModel";
 
 /**
  * Data structure that describes changes which happened to the tree model

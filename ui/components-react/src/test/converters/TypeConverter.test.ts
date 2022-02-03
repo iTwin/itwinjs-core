@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { PrimitiveValue, PropertyConverterInfo, PropertyDescription } from "@itwin/appui-abstract";
+import type { PrimitiveValue, PropertyConverterInfo, PropertyDescription } from "@itwin/appui-abstract";
 import { TypeConverter } from "../../components-react";
 import TestUtils from "../TestUtils";
 
