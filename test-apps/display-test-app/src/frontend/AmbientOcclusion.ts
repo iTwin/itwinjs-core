@@ -82,7 +82,7 @@ export class AmbientOcclusionEditor {
       id: "viewAttr_AOMaxDistance",
       min: "1.0",
       step: "10.0",
-      max: "2000.0",
+      max: "50000.0",
       value: "0.0",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.maxDistance = parseFloat(slider.value);
