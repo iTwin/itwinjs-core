@@ -6,7 +6,7 @@
  * @module iModels
  */
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
+import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
 import { Element } from "./Element";
@@ -154,6 +154,11 @@ export class IModelCloneContext {
       if (CodeScopeSpec.Type.Repository === this.targetDb.codeSpecs.getById(targetElementProps.code.spec).scopeType) {
         targetElementProps.code.scope = IModel.rootSubjectId;
       }
+    }
+    // unlike other references, code cannot be null. If it is null, use an empty code instead, it will be updated
+    // once pending references are resolved
+    if (targetElementProps.code.scope === Id64.invalid || targetElementProps.code.spec === Id64.invalid) {
+      targetElementProps.code = Code.createEmpty();
     }
     const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName);
     jsClass["onCloned"](this, sourceElement, targetElementProps);
