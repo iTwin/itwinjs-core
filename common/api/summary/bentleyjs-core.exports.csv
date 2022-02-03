@@ -72,6 +72,8 @@ internal;isElectronRenderer: boolean
 deprecated;isElectronRenderer: boolean
 public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf
+internal;isProperSubclassOf
+internal;isSubclassOf
 public;JsonUtils
 public;Listener = (...arg: any[]) => void
 public;LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void
