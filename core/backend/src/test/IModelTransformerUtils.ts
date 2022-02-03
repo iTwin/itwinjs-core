@@ -1316,9 +1316,10 @@ export async function assertIdentityTransformation(
     }
   }
 
-  for await (const [targetElemId] of targetDb.query(
+  for await (const row of targetDb.query(
     "SELECT ECInstanceId FROM bis.Element"
   )) {
+    const targetElemId = row.id;
     if (!targetElemIds.has(targetElemId)) {
       const targetElem = targetDb.elements.getElement(targetElemId);
       targetToSourceElemsMap.set(targetElem, undefined);
@@ -1345,9 +1346,10 @@ export async function assertIdentityTransformation(
   const targetToSourceModelsMap = new Map<Model, Model | undefined>();
   const targetModelIds = new Set<Id64String>();
 
-  for await (const [sourceModelId] of sourceDb.query(
+  for await (const row of sourceDb.query(
     "SELECT ECInstanceId FROM bis.Model"
   )) {
+    const sourceModelId = row.id;
     const targetModelId =
       transformer.context.findTargetElementId(sourceModelId);
     const sourceModel = sourceDb.models.getModel(sourceModelId);
@@ -1370,9 +1372,10 @@ export async function assertIdentityTransformation(
     }
   }
 
-  for await (const [targetModelId] of targetDb.query(
+  for await (const row of targetDb.query(
     "SELECT ECInstanceId FROM bis.Model"
   )) {
+    const targetModelId = row.id;
     if (!targetModelIds.has(targetModelId)) {
       const targetModel = targetDb.models.getModel(targetModelId);
       targetToSourceModelsMap.set(targetModel, undefined);
@@ -1395,7 +1398,7 @@ export async function assertIdentityTransformation(
   expect(modelsOnlyInSourceAsInvariant).to.have.length(0);
   expect(onlyInTargetModels).to.have.length(0);
 
-  const makeRelationKey = (rel: any) => `${rel.sourceECInstanceId}\x00${rel.TargetECInstanceId}`;
+  const makeRelationKey = (rel: any) => `${rel.sourceId}\x00${rel.targetId}`;
   const query = "SELECT * FROM bis.ElementRefersToElements";
   const sourceRelationships = new Map<string, any>();
   for await (const row of sourceDb.query(query)) {
@@ -1405,22 +1408,21 @@ export async function assertIdentityTransformation(
   const targetRelationshipQueue = new Map<string, any>();
   for await (const row of targetDb.query(query)) {
     targetRelationshipQueue.set(makeRelationKey(row), row);
-    debugger;
   }
 
   /* eslint-disable @typescript-eslint/naming-convention */
   for (const relInSource of sourceRelationships.values()) {
-    const isOnlyInSource = onlyInSourceElements.has(relInSource.SourceECInstanceId) && onlyInSourceElements.has(relInSource.TargetECInstanceId);
+    const isOnlyInSource = onlyInSourceElements.has(relInSource.sourceId) && onlyInSourceElements.has(relInSource.targetId);
     if (isOnlyInSource) continue;
-    const relSourceInTarget = transformer.context.findTargetElementId(relInSource.SourceECInstanceId);
+    const relSourceInTarget = transformer.context.findTargetElementId(relInSource.sourceId);
     expect(relSourceInTarget).to.not.equal(Id64.invalid);
-    const relTargetInTarget = transformer.context.findTargetElementId(relInSource.TargetECInstanceId);
+    const relTargetInTarget = transformer.context.findTargetElementId(relInSource.targetId);
     expect(relTargetInTarget).to.not.equal(Id64.invalid);
-    const relInTargetKey = makeRelationKey({ SourceECInstanceId: relSourceInTarget, TargetECInstanceId: relTargetInTarget });
+    const relInTargetKey = makeRelationKey({ sourceId: relSourceInTarget, targetId: relTargetInTarget });
     const relInTarget = targetRelationshipQueue.get(relInTargetKey);
     expect(relInTarget).not.to.be.undefined;
     // this won't work if it has navigation properties (or any remapped property)
-    const makeRelInvariant = ({ SourceECInstanceId: _1, TargetECInstanceId: _2, ECClassId: _3, ECInstanceId: _4, ...rel }: any) => rel;
+    const makeRelInvariant = ({ sourceId: _1, targetId: _2, classId: _3, id: _4, ...rel }: any) => rel;
     expect(makeRelInvariant(relInSource)).to.deep.equal(makeRelInvariant(relInTarget));
     targetRelationshipQueue.delete(relInTargetKey);
   }
