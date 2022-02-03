@@ -5,14 +5,14 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
-import { BisCodeSpec, Code, DefinitionElemProps, ElementAspectProps, EntityMetaData, RelatedElement, RelatedElementProps } from "@bentley/imodeljs-common";
+import { BisCodeSpec, Code, DefinitionElementProps, ElementAspectProps, EntityMetaData, RelatedElement, RelatedElementProps } from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, DefinitionElement, IModelDb, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { Element } from "../../Element";
-import { Schemas } from "../../Schemas";
+import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { Id64Set } from "@bentley/bentleyjs-core";
 
@@ -112,7 +112,7 @@ describe("Class Registry - generated classes", () => {
     const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "ClassRegistryTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
-    await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
+    await imodel.importSchemas(new BackendRequestContext(), [testSchemaPath]); // will throw an exception if import fails
   });
 
   after(() => {
@@ -173,7 +173,7 @@ describe("Class Registry - generated classes", () => {
 
   // if a single inherited class is not generated, the entire hierarchy is considered not-generated
   it("should only generate automatic collectPredecessorIds implementations for generated classes", async () => {
-    await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
+    await imodel.importSchemas(new BackendRequestContext(), [testSchemaPath]); // will throw an exception if import fails
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestElementWithNavProp = imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp");
@@ -213,7 +213,7 @@ describe("Class Registry - generated classes", () => {
   });
 
   it("should get predecessors from its bis superclass", async () => {
-    await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
+    await imodel.importSchemas(new BackendRequestContext(), [testSchemaPath]); // will throw an exception if import fails
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestElementWithNavProp = imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp");

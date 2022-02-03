@@ -1211,7 +1211,7 @@ describe("IModelTransformer", () => {
       </ECSchema>`
     );
 
-    await sourceDb.importSchemas([testSchema1Path]);
+    await sourceDb.importSchemas(new BackendRequestContext(), [testSchema1Path]);
 
     const navPropTargetId = sourceDb.elements.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
@@ -1248,7 +1248,7 @@ describe("IModelTransformer", () => {
     }
 
     const transformer = new ProcessTargetLastTransformer(sourceDb, targetDb);
-    await transformer.processSchemas();
+    await transformer.processSchemas(new BackendRequestContext());
     await transformer.processAll();
 
     targetDb.saveChanges();
@@ -1296,7 +1296,7 @@ describe("IModelTransformer", () => {
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
     const transformer = new IModelTransformer(sourceDb, targetDb);
-    await transformer.processSchemas();
+    await transformer.processSchemas(new BackendRequestContext());
     await transformer.processAll();
 
     targetDb.saveChanges();
@@ -1333,7 +1333,7 @@ describe("IModelTransformer", () => {
       </ECSchema>`
     );
 
-    await sourceDb.importSchemas([testSchema1Path]);
+    await sourceDb.importSchemas(new BackendRequestContext(), [testSchema1Path]);
 
     const myPhysicalModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, "MyPhysicalModel");
     const mySpatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
@@ -1343,7 +1343,7 @@ describe("IModelTransformer", () => {
       category: mySpatialCategId,
       code: Code.createEmpty(),
       userLabel: `MyPhysicalObject`,
-      geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+      geom: IModelTransformerUtils.createBox(Point3d.create(1, 1, 1)),
       placement: Placement3d.fromJSON({ origin: { x: 1 }, angles: {} }),
     } as PhysicalElementProps);
     // because they are definition elements, display styles will be transformed first, but deferred until the excludedElements
@@ -1373,7 +1373,7 @@ describe("IModelTransformer", () => {
     const transformer = new PublicSkipElementTransformer(sourceDb, targetDb);
     const skipElementSpy = sinon.spy(transformer, "skipElement");
 
-    await transformer.processSchemas();
+    await transformer.processSchemas(new BackendRequestContext());
     await transformer.processAll();
     assert(skipElementSpy.calledOnceWith(sinon.match.has("id", myDisplayStyleId)));
 
@@ -1415,7 +1415,7 @@ describe("IModelTransformer", () => {
       </ECSchema>`
     );
 
-    await sourceDb.importSchemas([testSchema1Path]);
+    await sourceDb.importSchemas(new BackendRequestContext(), [testSchema1Path]);
 
     const a1Id = sourceDb.elements.insertElement({
       classFullName: "TestSchema:A",
@@ -1448,7 +1448,7 @@ describe("IModelTransformer", () => {
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
     const transformer = new IModelTransformer(sourceDb, targetDb);
-    await transformer.processSchemas();
+    await transformer.processSchemas(new BackendRequestContext());
     await transformer.processAll();
 
     targetDb.saveChanges();

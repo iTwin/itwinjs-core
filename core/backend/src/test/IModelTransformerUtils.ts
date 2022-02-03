@@ -1334,7 +1334,6 @@ export async function assertIdentityTransformation(
     const rawProps = { ...elem } as Partial<Mutable<Element>>;
     delete rawProps.iModel;
     delete rawProps.id;
-    delete rawProps.isInstanceOfEntity;
     return rawProps;
   });
 
@@ -1389,23 +1388,23 @@ export async function assertIdentityTransformation(
     const rawProps = { ...elem } as Partial<Mutable<Model>>;
     delete rawProps.iModel;
     delete rawProps.id;
-    delete rawProps.isInstanceOfEntity;
     return rawProps;
   });
 
   expect(modelsOnlyInSourceAsInvariant).to.have.length(0);
   expect(onlyInTargetModels).to.have.length(0);
 
-  const makeRelationKey = (rel: any) => `${rel.SourceECInstanceId}\x00${rel.TargetECInstanceId}`;
-  const query: Parameters<IModelDb["query"]> = ["SELECT * FROM bis.ElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }];
+  const makeRelationKey = (rel: any) => `${rel.sourceECInstanceId}\x00${rel.TargetECInstanceId}`;
+  const query = "SELECT * FROM bis.ElementRefersToElements";
   const sourceRelationships = new Map<string, any>();
-  for await (const row of sourceDb.query(...query)) {
+  for await (const row of sourceDb.query(query)) {
     sourceRelationships.set(makeRelationKey(row), row);
   }
 
   const targetRelationshipQueue = new Map<string, any>();
-  for await (const row of targetDb.query(...query)) {
+  for await (const row of targetDb.query(query)) {
     targetRelationshipQueue.set(makeRelationKey(row), row);
+    debugger;
   }
 
   /* eslint-disable @typescript-eslint/naming-convention */
