@@ -14,20 +14,15 @@ describe("QuantityFormatter", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-  });
-
-  after(async () => {
-    await TestUtility.shutdownFrontend();
-  });
-
-  beforeEach(async () => {
     imodel = await SnapshotConnection.openFile("testIModel.bim"); // relative path resolved by BackendTestAssetResolver
     const schemaLocater = new ECSchemaRpcLocater(imodel);
     context = new SchemaContext();
     context.addLocater(schemaLocater);
   });
 
-  afterEach(async () => {
+  after(async () => {
+    await TestUtility.shutdownFrontend();
+
     if (undefined !== imodel)
       await imodel.close();
   });
