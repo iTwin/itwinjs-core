@@ -496,27 +496,29 @@ export class IModelTransformer extends IModelExportHandler {
     };
   }
 
+  // FIXME: gross
+  private findReferenceReadiness(id: Id64String): "done" | "no-model" | "none" {
+    const idInTarget = this.context.findTargetElementId(id);
+    if (Id64.invalid === idInTarget) "none";
+    const isSubModeled = this.sourceDb.models.tryGetSubModel(id);
+    if (isSubModeled) {
+      const modelInTarget = this.targetDb.models.tryGetModelProps(idInTarget) !== undefined;
+      if (!modelInTarget) return "no-model";
+    }
+    return "done";
+  }
+
   /** collect references this element has that are yet to be mapped, and if necessary create a
    * PartiallyCommittedElement for it to track resolution of unmapped references
+   * @returns {boolean}
    */
-  private collectUnmappedReferences(element: Element) {
-    // FIXME: gross
-    const findReferenceReadiness = (id: Id64String): "done" | "no-model" | "none" => {
-      const idInTarget = this.context.findTargetElementId(id);
-      if (Id64.invalid === idInTarget) "none";
-      const isSubModeled = this.sourceDb.models.tryGetSubModel(id);
-      if (isSubModeled) {
-        const modelInTarget = this.targetDb.models.tryGetModelProps(idInTarget) !== undefined;
-        if (!modelInTarget) return "no-model";
-      }
-      return "done";
-    };
+  private collectUnmappedReferences(element: Element): boolean {
 
     const missingPredecessors = new Set<string>();
     const thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
 
     for (const predecessorId of element.getPredecessorIds()) {
-      const referenceReadiness = findReferenceReadiness(predecessorId);
+      const referenceReadiness = this.findReferenceReadiness(predecessorId);
       if (referenceReadiness === "done") continue;
       Logger.logTrace(loggerCategory, `Remapping not found for predecessor '${predecessorId}' of element '${element.id}'`);
       if (!this._partiallyCommittedElements.hasById(element.id))
@@ -527,6 +529,8 @@ export class IModelTransformer extends IModelExportHandler {
       missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
       this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: false}, thisPartialElem);
     }
+
+    return missingPredecessors.size > 0;
   }
 
   /** Cause the specified Element and its child Elements (if applicable) to be exported from the source iModel and imported into the target iModel.
@@ -570,9 +574,10 @@ export class IModelTransformer extends IModelExportHandler {
               this.context.remapElement(id, id);
             }
           }
-          const alreadyExported = this.context.findTargetElementId(id) !== Id64.invalid;
-          if (alreadyExported) return;
-          await this.exporter.exportElement(id); // FIXME: but what if it's submodeled...?
+          const readiness = this.findReferenceReadiness(id);
+          if (readiness === "done") return;
+          if (readiness === "none") await this.exporter.exportElement(id); // must export element first if not done so
+          await this.exporter.exportModel(id);
         }));
       }
 
@@ -607,7 +612,13 @@ export class IModelTransformer extends IModelExportHandler {
           return;
         }
       }
+
       this.collectUnmappedReferences(sourceElement);
+
+      // TODO: untangle targetElementId state...
+      if (targetElementId === Id64.invalid)
+        targetElementId = undefined;
+
       targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
       if (!this._options.wasSourceIModelCopiedToTarget) {
         this.importer.importElement(targetElementProps); // don't need to import if iModel was copied

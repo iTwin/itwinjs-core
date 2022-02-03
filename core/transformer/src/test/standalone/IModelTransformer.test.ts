@@ -48,7 +48,7 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it.only("should transform changes from source to target", async () => {
+  it("should transform changes from source to target", async () => {
     // Source IModelDb
     const sourceDbFile = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
@@ -993,7 +993,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("handles definition element scoped by non-definitional element", async () => {
+  it.only("handles definition element scoped by non-definitional element", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BadPredecessorsExampleSource.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BadPredecessorExampleSource" } });
 

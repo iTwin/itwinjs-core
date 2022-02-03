@@ -370,7 +370,7 @@ export class Element extends Entity implements ElementProps {
    * @note any property listed here must be added to the predecessor ids in [[collectPredecessorIds]]
    * @beta
    */
-  public static readonly requiredReferenceKeys: ReadonlyArray<string> = ["parent", "model"];
+  public static readonly requiredReferenceKeys: ReadonlyArray<string> = ["parent", "model", "code.scope"];
 
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
