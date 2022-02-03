@@ -73,7 +73,7 @@ export function ViewportComponent(props: ViewportProps) {
   // istanbul ignore next
   const handleViewChanged = (vp: Viewport) => {
     // istanbul ignore next
-    if (!(vp.iModel.isOpen || vp.iModel.isBlankConnection))
+    if (!(vp.iModel.isOpen || vp.iModel.isBlank))
       return;
     ViewportComponentEvents.setViewMatrix(vp);
     if (viewClassFullName.current !== vp.view.classFullName) {
@@ -244,7 +244,7 @@ export function ViewportComponent(props: ViewportProps) {
         Logger.logError("ViewportComponent", `A Viewstate or a viewId and imodel must be provided`);
       }
       // istanbul ignore next
-      if (isMounted.current && (currentViewState?.iModel.isOpen || currentViewState?.iModel.isBlankConnection)) {
+      if (isMounted.current && (currentViewState?.iModel.isOpen || currentViewState?.iModel.isBlank)) {
         setInitialViewState(currentViewState?.clone());
       }
     }
@@ -259,7 +259,7 @@ export function ViewportComponent(props: ViewportProps) {
     const parentDiv = viewportDiv.current;
     const viewManager = viewManagerRef.current;
     // istanbul ignore next
-    if (parentDiv && initialViewState && (initialViewState?.iModel.isOpen || initialViewState?.iModel.isBlankConnection) ) {
+    if (parentDiv && initialViewState && (initialViewState?.iModel.isOpen || initialViewState?.iModel.isBlank) ) {
       if (!screenViewportCreated.current) {
         const screenViewport = getScreenViewport(parentDiv, initialViewState);
         screenViewportRef.current = screenViewport;
