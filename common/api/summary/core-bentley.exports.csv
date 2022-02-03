@@ -22,7 +22,6 @@ public;BeUiEvent
 beta;BriefcaseStatus
 public;ByteStream
 beta;ChangeSetStatus
-beta;ClassUtils
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number
 public;compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number
@@ -64,6 +63,8 @@ public;IndexedValue
 public;IndexMap
 public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf
+internal;isProperSubclassOf
+internal;isSubclassOf
 public;JSONSchema
 public;JSONSchemaMap
 public;JSONSchemaSnippet
