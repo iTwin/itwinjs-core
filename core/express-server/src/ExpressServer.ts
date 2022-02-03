@@ -32,7 +32,7 @@ export class IModelJsExpressServer {
 
   private _protocol: WebAppRpcProtocol;
   private _config: IModelJsExpressServerConfig;
-  protected _app: import("express").Application = express();
+  protected _app: express.Application = express();
 
   /** @alpha */
   public get rpcConfiguration(): RpcConfiguration { return this._protocol.configuration; }

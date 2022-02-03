@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // NB: This file is not a CommonJs module - it needs to run in the browser. Do not import or export modules here!
 
-type CertaConfig = import("../CertaConfig").CertaConfig;
+import type { CertaConfig } from "../CertaConfig";
 declare let _CERTA_CONFIG: CertaConfig; // eslint-disable-line @typescript-eslint/naming-convention
 
 ((config: CertaConfig) => {
