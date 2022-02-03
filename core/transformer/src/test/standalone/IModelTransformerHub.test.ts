@@ -483,7 +483,7 @@ describe("IModelTransformerHub", () => {
       // make change directly on Master
       const delta34 = [6, -7]; // update 6, delete 7
       const state4 = [1, 2, -3, 4, 5, 6, -7, 8, 9];
-      maintainPhysicalObjects(masterDb, delta34); // 7 wasn't deleted
+      maintainPhysicalObjects(masterDb, delta34);
       assertPhysicalObjects(masterDb, state4);
       await saveAndPushChanges(masterDb, "State3 -> State4");
       const changesetMasterState4 = masterDb.changeset.id;
