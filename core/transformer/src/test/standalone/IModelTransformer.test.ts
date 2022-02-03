@@ -1671,12 +1671,13 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.skip("local test", async () => {
+  it("local test", async () => {
     // TODO: figure out why geometry serialized is not identical
     // looks like there are some precision issues in some of the geometry. Not sure why the precision is not deterministic
     // it's the same geometry stream, no?
     const geometryConversionTolerance = 1e-10; // FIXME: why is it nondeterministic from the same geometry blob?
-    const sourceDb = SnapshotDb.openFile("/home/mike/Downloads/rra-schema.bim");
+    const sourceDbPath = path.join(__dirname, "..", "assets", "alignments.bim");
+    const sourceDb = SnapshotDb.openFile(sourceDbPath);
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
