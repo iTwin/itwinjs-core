@@ -15,10 +15,11 @@ import type { Element } from "./Element"; // type import to prevent cyclic depen
 
 // the above "./Element" import causes a cyclic dependency in 2.19.x, but not 3.x
 // As such, the runtime module import is done lazily here to avoid the cyclic dependency without moving things around
+/** @internal */
 class LazilyImported {
-  private static _Element: Element | undefined;
+  private static _Element: typeof Element | undefined;
   public static get Element() {
-    return this._Element ??= require("./Element").Element;
+    return this._Element ??= (require("./Element") as typeof import("./Element")).Element;
   }
 }
 
