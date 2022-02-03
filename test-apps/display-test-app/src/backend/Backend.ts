@@ -198,6 +198,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
     });
+    await authClient.signInSilent();
     opts.iModelHost.authorizationClient = authClient;
     await ElectronHost.startup(opts);
     await authClient.signInSilent();
