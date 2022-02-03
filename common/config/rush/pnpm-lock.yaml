@@ -105,7 +105,7 @@ importers:
       '@types/node': 14.14.31
       '@types/semver': ^5.5.0
       '@types/sinon': ^9.0.0
-      '@types/ws': ^6.0.4
+      '@types/ws': ^7.0.0
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -151,7 +151,7 @@ importers:
       '@types/node': 14.14.31
       '@types/semver': 5.5.0
       '@types/sinon': 9.0.11
-      '@types/ws': 6.0.4
+      '@types/ws': 7.4.7
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx2: 3.0.2
@@ -819,7 +819,7 @@ importers:
       '@types/node': 14.14.31
       '@types/qs': ^6.5.0
       '@types/superagent': ^4.1.14
-      '@types/ws': ^6.0.4
+      '@types/ws': ^7.0.0
       chai: ^4.1.2
       chai-as-promised: ^7
       deep-assign: ^2.0.0
@@ -857,7 +857,7 @@ importers:
       '@types/node': 14.14.31
       '@types/qs': 6.9.7
       '@types/superagent': 4.1.14
-      '@types/ws': 6.0.4
+      '@types/ws': 7.4.7
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       dotenv: 10.0.0
@@ -8462,7 +8462,7 @@ packages:
     dependencies:
       '@types/express': 4.17.13
       '@types/express-serve-static-core': 4.17.28
-      '@types/ws': 6.0.4
+      '@types/ws': 7.4.7
     dev: true
 
   /@types/express/4.17.13:
@@ -8896,8 +8896,8 @@ packages:
       source-map: 0.6.1
     dev: true
 
-  /@types/ws/6.0.4:
-    resolution: {integrity: sha512-PpPrX7SZW9re6+Ha8ojZG4Se8AZXgf0GK6zmfqEuCsY49LFDNXO3SByp44X3dFEqtB73lkCDAdUazhAjVPiNwg==}
+  /@types/ws/7.4.7:
+    resolution: {integrity: sha512-JQbbmxZTZehdc2iszGKs5oC3NFnjeay7mtAWrdt7qNtAVK0g19muApzAy4bm9byz79xa2ZnO/BOBC2R8RC5Lww==}
     dependencies:
       '@types/node': 14.14.31
     dev: true
