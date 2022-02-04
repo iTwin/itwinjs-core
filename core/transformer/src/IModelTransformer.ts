@@ -133,12 +133,12 @@ class PartiallyCommittedElement {
   }
 }
 
-class ReferenceReadiness {
+class ElementProcessState {
   public constructor(
-    public needsElem: boolean,
-    public needsModel: boolean,
+    public elemInTarget: boolean,
+    public subModelInTarget: boolean,
   ) {}
-  public get isReady() { return !this.needsElem && !this.needsModel; }
+  public get inTarget() { return !this.elemInTarget && !this.subModelInTarget; }
 }
 
 /** apply a function to each Id64s in a supported container of Id64s */
@@ -511,16 +511,16 @@ export class IModelTransformer extends IModelExportHandler {
   /** returns the processing state of an element
    * if the element is submodeled then it may be in the target but the model isn't yet
    */
-  private findReferenceReadiness(id: Id64String): ReferenceReadiness {
+  private findElementProcessState(id: Id64String): ElementProcessState {
     // TODO: make isSubModeled efficient
     const isSubModeled = this.sourceDb.models.tryGetSubModel(id); // always running this :/
     const idInTarget = this.context.findTargetElementId(id);
-    if (Id64.invalid === idInTarget) return new ReferenceReadiness(true, isSubModeled !== undefined);
+    if (Id64.invalid === idInTarget) return new ElementProcessState(true, isSubModeled !== undefined);
     if (isSubModeled) {
       const modelInTarget = this.targetDb.models.tryGetModelProps(idInTarget) !== undefined;
-      if (!modelInTarget) return new ReferenceReadiness(false, true);
+      if (!modelInTarget) return new ElementProcessState(false, true);
     }
-    return new ReferenceReadiness(false, false);
+    return new ElementProcessState(false, false);
   }
 
   /** collect references this element has that are yet to be mapped, and if necessary create a
@@ -533,8 +533,8 @@ export class IModelTransformer extends IModelExportHandler {
     let thisPartialElem: PartiallyCommittedElement | undefined;
 
     for (const predecessorId of element.getPredecessorIds()) {
-      const referenceReadiness = this.findReferenceReadiness(predecessorId);
-      if (referenceReadiness.isReady) continue;
+      const predecessorState = this.findElementProcessState(predecessorId);
+      if (predecessorState.inTarget) continue;
       Logger.logTrace(loggerCategory, `Deferred resolution of predecessor '${predecessorId}' of element '${element.id}'`);
       // TODO: instead of loading the entire element run a small has query
       const predecessor = this.sourceDb.elements.tryGetElement(predecessorId);
@@ -559,11 +559,11 @@ export class IModelTransformer extends IModelExportHandler {
         if (!this._partiallyCommittedElements.hasById(element.id))
           this._partiallyCommittedElements.setById(element.id, thisPartialElem);
       }
-      if (referenceReadiness.needsModel) {
+      if (predecessorState.subModelInTarget) {
         missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
         this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: true}, thisPartialElem);
       }
-      if (referenceReadiness.needsElem) {
+      if (predecessorState.elemInTarget) {
         // TODO: need to make pending references themselves determine if a model is needed at element resolution time...
         // to avoid this complicated logic here
         missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
@@ -615,10 +615,10 @@ export class IModelTransformer extends IModelExportHandler {
               this.context.remapElement(id, id);
             }
           }
-          const readiness = this.findReferenceReadiness(id);
-          if (readiness.isReady) return;
+          const readiness = this.findElementProcessState(id);
+          if (readiness.inTarget) return;
           await this.exporter.exportElement(id); // must export element first if not done so
-          if (readiness.needsModel) await this.exporter.exportModel(id);
+          if (readiness.subModelInTarget) await this.exporter.exportModel(id);
         }));
       }
 
