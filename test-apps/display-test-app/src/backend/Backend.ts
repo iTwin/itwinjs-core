@@ -196,9 +196,9 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     let authClient;
     if (process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID && process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI && process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES) {
       authClient = new ElectronMainAuthorization({
-        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID,
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI,
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES,
       });
       opts.iModelHost.authorizationClient = authClient;
     }
