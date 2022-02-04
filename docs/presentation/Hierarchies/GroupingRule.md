@@ -270,29 +270,12 @@ Always prefer `"Query"` unless any of the following conditions apply to the hier
 
 On the other hand, `"PostProcess"` can be applied to any hierarchy level, regardless of its composition, but at a cost to performance.
 
-- `Query` groups instances during the query, which can often make use of database indexes and is generally fairly quick. This
-  also means that instances are grouped at the level of a single hierarchy specification and doesn't work when a hierarchy
-  level is built from classes without common base class, using multiple specifications or is merged from multiple nested
-  hierarchy levels using the [`hideNodesInHierarchy` attribute](./InstanceNodesOfSpecificClasses.md#attribute-hidenodesinhierarchy).
+#### Example
 
-  ```ts
-  [[include:Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.Query.Ruleset]]
-  ```
+```ts
+[[include:Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Ruleset]]
+```
 
-  ```ts
-  [[include:Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.Query.Result]]
-  ```
-
-- `PostProcess` groups instances after the whole hierarchy level is built. This is generally useful when the hierarchy level
-  is built from classes without common base class, using multiple specifications or is merged from multiple nested hierarchy levels using the
-  [`hideNodesInHierarchy` attribute](./InstanceNodesOfSpecificClasses.md#attribute-hidenodesinhierarchy). The downside is that
-  the whole hierarchy level needs to be created before showing even the first node - using this way of grouping may
-  cause bad performance for large hierarchy levels.
-
-  ```ts
-  [[include:Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Ruleset]]
-  ```
-
-  ```ts
-  [[include:Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Result]]
-  ```
+| `applicationStage: "Query"`                                                                                                            | `applicationStage: "PostProcess"`                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "application stage" attribute set to "query"](./media/hierarchy-grouping-with-applicationstage-attribute-query.png) | ![Example of using "application stage" attribute set to "post-process"](./media/hierarchy-grouping-with-applicationstage-attribute-postprocess.png) |
