@@ -16,8 +16,8 @@ const loggerCategory: string = FrontendLoggerCategory.RealityData;
  * @internal
  */
 export class ThreeDTileFormatInterpreter  {
-  /**
-   * Gets reality data spatial location and extents
+  /** Gets reality data spatial location and extents
+   * @param json root document file in json format
    * @returns spatial location and volume of interest, in meters, centered around `spatial location`
    * @internal
    */
@@ -84,7 +84,12 @@ export class ThreeDTileFormatInterpreter  {
     const spatialLocation: SpatialLocationAndExtents = { location, worldRange, isGeolocated };
     return spatialLocation;
   }
-
+  /** Gets information to identify the product and engine that create this reality data
+   * Will return undefined if cannot be resolved
+   * @param rootDocjson root document file in json format
+   * @returns information to identify the product and engine that create this reality data
+   * @alpha
+   */
   public static getRealityDataPublisherInfo(rootDocjson: any): PublisherProductInfo {
     const info: PublisherProductInfo = {product: "", engine: "", version: "", rootChildren: ""};
     if (rootDocjson && rootDocjson.root) {

@@ -16,29 +16,33 @@ import { Range3dProps } from "@itwin/core-geometry";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
-/**
- * This interface provide properties to identify the spatial location and extents of a reality data
+/** This interface provide spatial location and volume of interest, in meters, centered around `spatial location`
  * @alpha
  */
 export interface SpatialLocationAndExtents {
+  /** location of the point at the center of the reaity data */
   location: Cartographic | EcefLocationProps;
+  /** extents of the volume around location */
   worldRange: Range3dProps;
+  /** true if this reality data is geolocated */
   isGeolocated: boolean;
 }
 
-/**
- * This interface provides information to identify the product and engine that create this reality data
+/** This interface provides information to identify the product and engine that create this reality data
  * @alpha
  */
 export interface PublisherProductInfo {
+  /** product that create this reality data */
   product: string;
+  /** engine that create this reality data */
   engine: string;
+  /** the version of the engine that create this reality data */
   version: string;
-  rootChildren: string;
+  /** the number of children at the root of this reality data */
+  rootChildren?: string;
 }
 
-/**
- * This interface provide methods used to access a reality data from a reality data provider
+/** This interface provide methods used to access a reality data from a reality data provider
  * @beta
  */
 export interface RealityDataSource {
@@ -49,42 +53,36 @@ export interface RealityDataSource {
   readonly realityData: RealityData | undefined;
   /** The reality data type (e.g.: "RealityMesh3DTiles", OPC, Terrain3DTiles, Cesium3DTiles, ... )*/
   readonly realityDataType: string | undefined;
-  /**
-   * This method returns the URL to obtain the Reality Data properties.
+  /** This method returns the URL to obtain the Reality Data properties.
    * @param iTwinId id of associated iTwin project
    * @returns string containing the URL to reality data.
    */
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
 
-  /**
-   * Gets a reality data root document json
+  /** Gets a reality data root document json
    * @returns tile data json
    * @internal
    */
   getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
-  /**
-   * Gets tile content
+  /** Gets tile content
    * @param name name or path of tile
    * @returns array buffer of tile content
    * @internal
    */
   getTileContent(name: string): Promise<any>;
-  /**
-   * Gets a tileset's app data json
+  /** Gets a tileset's app data json
    * @param name name or path of tile
    * @returns app data json object
    * @internal
    */
   getTileJson(name: string): Promise<any>;
-  /**
-   * Gets spatial location and extents of this reality data source.
+  /** Gets spatial location and extents of this reality data source.
    * Will return undefined if cannot be resolved or is unbounded (cover entire earth eg: Open Street Map Building from Ion Asset)
    * @returns spatial location and extents
    * @alpha
    */
   getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>;
-  /**
-   * Gets information to identify the product and engine that create this reality data
+  /** Gets information to identify the product and engine that create this reality data
    * Will return undefined if cannot be resolved
    * @returns information to identify the product and engine that create this reality data
    * @alpha
@@ -95,8 +93,7 @@ export interface RealityDataSource {
  * @beta
  */
 export namespace RealityDataSource {
-  /**
-   * Create a RealityDataSourceKey from a tilesetUrl.
+  /** Create a RealityDataSourceKey from a tilesetUrl.
    * @param tilesetUrl the reality data attachment url
    * @param inputProvider identify the RealityDataProvider if known, otherwise function will try to extract it from the tilesetUrl
    * @param inputFormat identify the RealityDataFormat if known, otherwise function will try to extract it from the tilesetUrl

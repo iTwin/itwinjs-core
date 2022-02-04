@@ -19,12 +19,12 @@ interface SpatialLocationAndExtents {
 }
 
 /**
- * This class provide methods used to interpret Cesium 3dTile format
+ * This class provide methods used to interpret Orbit Point Cloud (OPC) format
  * @internal
  */
 export class OPCFormatInterpreter  {
-  /**
-   * Gets an OPC file reader from a blobFileUrl
+  /** Gets an OPC file reader from a blobFileUrl
+   * @param blobFileURL the name of the file.
    * @returns return a file reader open to read provided blob file
    * @internal
    */
@@ -45,8 +45,8 @@ export class OPCFormatInterpreter  {
     return fileReader;
   }
 
-  /**
-   * Gets reality data spatial location and extents
+  /** Gets reality data spatial location and extents
+   * @param fileReader a file reader instance obtains from call to getFileReaderFromBlobFileURL
    * @returns spatial location and volume of interest, in meters, centered around `spatial location`
    * @internal
    */
