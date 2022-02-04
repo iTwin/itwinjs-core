@@ -237,7 +237,7 @@ describe("Class Registry - generated classes", () => {
         value: "",
       }),
       parent: new RelatedElement({
-        // since we don't actually insert this element in this test, using an arbitrary id string
+        // since we don't actually insert this element in this test, using an arbitrary non existent id string
         id: "0x0000ffff",
         relClassName: "BisCore:ElementOwnsChildElements",
       }),
