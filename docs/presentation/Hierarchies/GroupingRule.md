@@ -255,10 +255,20 @@ node with multiple grouped ECInstance nodes, it shows a single ECInstances node 
 
 > **Default value:** `"Query"`
 
-> **Performance note:** Grouping at post-processing step requires loading the whole hierarchy level before
-> returning even the first node - avoid using with large numbers of nodes.
+Grouping nodes by label is an expensive operation because it requires the whole hierarchy level to be created before even the first grouped node can be produced. To alleviate the performance impact when this specification is used, two `applicationStage` settings have been introduced:
 
-Stage of hierarchy creation at which the rule is applied.
+- `"Query"` groups instances during ECSql query, which can often make use of database indices and is generally fairly quick. It is chosen as the default option, however, it fails to produce grouping nodes when certain ruleset specifications are involved.
+- `"PostProcess"` groups instances after the whole hierarchy level is built. It incurs a large performance penalty, but it will produce the expected result in all cases.
+
+#### Choosing between `"Query"` and `"PostProcess"`
+
+Always prefer `"Query"` unless any of the following conditions apply to the hierarchy level that is being grouped:
+
+- The hierarchy level is built out of instances that do not share a common base class.
+- The hierarchy level aggregates nodes that have been produced by more than one specification.
+- The hierarchy level contains nodes that have been merged from a nested hierarchy level as a result of [`hideNodesInHierarchy`](./InstanceNodesOfSpecificClasses.md#attribute-hidenodesinhierarchy) or [`hideExpression`](./InstanceNodesOfSpecificClasses.md#attribute-hideexpression) attributes.
+
+On the other hand, `"PostProcess"` can be applied to any hierarchy level, regardless of its composition, but at a cost to performance.
 
 - `Query` groups instances during the query, which can often make use of database indexes and is generally fairly quick. This
   also means that instances are grouped at the level of a single hierarchy specification and doesn't work when a hierarchy
