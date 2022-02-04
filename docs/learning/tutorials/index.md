@@ -7,7 +7,7 @@ Test iModels can be used for local development. There are a few different ways t
 &nbsp;
 &nbsp;
 [!bwc tile heading="Online iModel from sample" linkTo="create-test-imodel-sample" contents="Copy a provided sample iModel for online testing. Quickest." icon="imodel-hub.svg" step="13" width="28%"]
-[!bwc tile heading="Online iModel from local files" linkTo="create-test-imodel-itwin-sync" contents="Create a test iModel from local files for online testing" icon="iModel-Hub-Sync.svg" step="13" width="28%"]
+[!bwc tile heading="Online iModel from local files" linkTo="create-test-imodel-itwin-sync" contents="Create a test iModel from local files for online testing" icon="imodel-hub-sync.svg" step="13" width="28%"]
 [!bwc tile heading="Offline snapshot from local files" linkTo="create-test-imodel-offline" contents="Create a local snapshot file from files on your local computer" icon="document.svg" step="13" width="28%"]
 
 ## Exploring iModels
