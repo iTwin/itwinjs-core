@@ -10,7 +10,7 @@ import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-
 import {
   Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
+  GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode,
   TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
@@ -200,17 +200,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return (el === undefined) ? [] : el.getToolTipMessage();
   }
 
-  /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header. */
-  public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const thumbnail = iModelDb.views.getThumbnail(viewId);
-    if (undefined === thumbnail || 0 === thumbnail.image.length)
-      throw new NoContentError();
-
-    const val = new Uint8Array(thumbnail.image.length + 16); // allocate a new buffer 16 bytes larger than the image size
-    new Uint32Array(val.buffer, 0, 4).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]);    // Put the metadata in the first 16 bytes.
-    val.set(thumbnail.image, 16); // put the image data at offset 16 after metadata
-    return val;
+  /** @deprecated */
+  public async getViewThumbnail(_tokenProps: IModelRpcProps, _viewId: string): Promise<Uint8Array> {
+    throw new NoContentError();
   }
 
   public async getDefaultViewId(tokenProps: IModelRpcProps): Promise<Id64String> {

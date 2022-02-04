@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@itwin/core-geometry";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
-  imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
+  IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
   Tool, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { MarkupApp, MarkupData } from "@itwin/core-markup";
@@ -28,22 +28,6 @@ import { openIModel } from "./openIModel";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
-function saveImage(vp: Viewport) {
-  const buffer = vp.readImageBuffer({ size: new Point2d(768, 768) });
-  if (undefined === buffer) {
-    alert("Failed to read image");
-    return;
-  }
-
-  const url = imageBufferToPngDataUrl(buffer, false);
-  if (undefined === url) {
-    alert("Failed to produce PNG");
-    return;
-  }
-
-  openImageDataUrlInNewWindow(url, "Saved View");
-}
-
 async function zoomToSelectedElements(vp: Viewport) {
   const elems = vp.iModel.selectionSet.elements;
   if (0 < elems.size)
@@ -56,17 +40,6 @@ export class ZoomToSelectedElementsTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       await zoomToSelectedElements(vp);
-
-    return true;
-  }
-}
-
-export class SaveImageTool extends Tool {
-  public static override toolId = "SaveImage";
-  public override async run(_args: any[]): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      saveImage(vp);
 
     return true;
   }

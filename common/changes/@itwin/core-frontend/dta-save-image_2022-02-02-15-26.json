@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix openImageDataUrlInNewWindow displaying an empty window in Electron.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
