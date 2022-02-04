@@ -23,7 +23,6 @@ import {
 import { HandlerResponse, IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-import lodashGet = require("lodash.get"); // REMOVE NO LONGER USED LODASH
 import { PendingReferenceMap } from "./PendingReferenceMap";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
@@ -605,7 +604,7 @@ export class IModelTransformer extends IModelExportHandler {
     const asyncImpl = async () => {
       const elemClass = sourceElement.constructor as typeof Element;
       for (const referenceKey of elemClass.requiredReferenceKeys) {
-        const idContainer = lodashGet(sourceElement, referenceKey); // TODO: REMOVE LODASH
+        const idContainer = sourceElement[referenceKey as keyof Element];
         await Promise.all(mapId64(idContainer, async (id) => {
           if (id === Id64.invalid || id === IModel.rootSubjectId) return; // not allowed to directly export the root subject
           const withinSameIModel = this.sourceDb === this.targetDb;
