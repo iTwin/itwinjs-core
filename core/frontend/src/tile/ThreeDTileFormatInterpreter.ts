@@ -90,7 +90,7 @@ export class ThreeDTileFormatInterpreter  {
    * @returns information to identify the product and engine that create this reality data
    * @alpha
    */
-  public static getRealityDataPublisherInfo(rootDocjson: any): PublisherProductInfo {
+  public static getPublisherProductInfo(rootDocjson: any): PublisherProductInfo {
     const info: PublisherProductInfo = {product: "", engine: "", version: "", rootChildren: ""};
     if (rootDocjson && rootDocjson.root) {
       info.rootChildren = rootDocjson.root.children.length;

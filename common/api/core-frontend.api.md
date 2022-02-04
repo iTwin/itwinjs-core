@@ -7854,7 +7854,7 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
 // @beta
 export interface RealityDataSource {
     // @alpha
-    getRealityDataPublisherInfo(): Promise<PublisherProductInfo | undefined>;
+    getPublisherProductInfo(): Promise<PublisherProductInfo | undefined>;
     // @internal
     getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
     getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
@@ -10442,7 +10442,7 @@ export class ThreeAxes {
 // @internal
 export class ThreeDTileFormatInterpreter {
     // @alpha
-    static getRealityDataPublisherInfo(rootDocjson: any): PublisherProductInfo;
+    static getPublisherProductInfo(rootDocjson: any): PublisherProductInfo;
     static getSpatialLocationAndExtents(json: any): SpatialLocationAndExtents;
 }
 

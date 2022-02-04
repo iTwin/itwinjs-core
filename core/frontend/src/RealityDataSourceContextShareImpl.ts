@@ -236,11 +236,11 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
    * @returns information to identify the product and engine that create this reality data
    * @alpha
    */
-  public async getRealityDataPublisherInfo(): Promise<PublisherProductInfo | undefined> {
+  public async getPublisherProductInfo(): Promise<PublisherProductInfo | undefined> {
     let publisherInfo: PublisherProductInfo | undefined;
     if (this.key.format === RealityDataFormat.ThreeDTile) {
       const rootDocument = await this.getRootDocument(undefined);
-      publisherInfo = ThreeDTileFormatInterpreter.getRealityDataPublisherInfo(rootDocument);
+      publisherInfo = ThreeDTileFormatInterpreter.getPublisherProductInfo(rootDocument);
     }
     return publisherInfo;
   }

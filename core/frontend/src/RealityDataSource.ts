@@ -87,7 +87,7 @@ export interface RealityDataSource {
    * @returns information to identify the product and engine that create this reality data
    * @alpha
    */
-  getRealityDataPublisherInfo(): Promise<PublisherProductInfo | undefined>;
+  getPublisherProductInfo(): Promise<PublisherProductInfo | undefined>;
 }
 /** Utility functions for RealityDataSource
  * @beta
