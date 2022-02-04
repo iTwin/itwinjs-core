@@ -630,6 +630,8 @@ export function BackstageComposerItem({ item }: BackstageComposerItemProps): JSX
 // @internal
 export interface BackstageComposerItemProps {
     readonly item: BackstageItem;
+    // (undocumented)
+    readonly providerId?: string;
 }
 
 // @public
@@ -5978,6 +5980,12 @@ export interface StatusBarItem extends AbstractStatusBarCustomItem {
 // @internal
 export interface StatusBarItemProps extends CommonProps {
     children?: React.ReactNode;
+    // (undocumented)
+    itemPriority?: number;
+    // (undocumented)
+    providerId?: string;
+    // (undocumented)
+    section?: string;
 }
 
 // @beta @deprecated
@@ -7370,6 +7378,8 @@ export class WidgetDef {
     get id(): string;
     // (undocumented)
     static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef): void;
+    // (undocumented)
+    get initialProps(): WidgetProps | undefined;
     // (undocumented)
     get isActive(): boolean;
     // (undocumented)
