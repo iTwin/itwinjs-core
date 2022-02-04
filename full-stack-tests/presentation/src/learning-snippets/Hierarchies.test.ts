@@ -715,8 +715,27 @@ describe("Learning Snippets", () => {
         }]);
 
         const modelClassGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
-        expect(modelClassGroupingNodes).to.have.lengthOf(1).and.to.containSubset([{
+        expect(modelClassGroupingNodes).to.have.lengthOf(7).and.to.containSubset([{
           key: { type: StandardNodeTypes.ECClassGroupingNode },
+          label: { displayValue: "Definition Model" },
+        }, {
+          key: { type: StandardNodeTypes.ECClassGroupingNode },
+          label: { displayValue: "Dictionary Model" },
+        }, {
+          key: { type: StandardNodeTypes.ECClassGroupingNode },
+          label: { displayValue: "Document List" },
+        }, {
+          key: { type: StandardNodeTypes.ECClassGroupingNode },
+          label: { displayValue: "Group Model" },
+        }, {
+          key: { type: StandardNodeTypes.ECClassGroupingNode },
+          label: { displayValue: "Link Model" },
+        }, {
+          key: { type: StandardNodeTypes.ECClassGroupingNode },
+          label: { displayValue: "Physical Model" },
+        }, {
+          key: { type: StandardNodeTypes.ECClassGroupingNode },
+          label: { displayValue: "Repository Model" },
         }]);
       });
 
