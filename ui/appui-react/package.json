@@ -137,7 +137,7 @@
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/presentation-components": "workspace:*",
     "@itwin/itwinui-css": "0.44.1",
-    "@itwin/itwinui-react": "~1.28.0",
+    "@itwin/itwinui-react": "1.29.3",
     "classnames": "^2.3.1",
     "immer": "9.0.6",
     "lodash": "^4.17.10",
