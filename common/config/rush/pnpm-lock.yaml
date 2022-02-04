@@ -4311,7 +4311,7 @@ packages:
   /@axe-core/react/4.3.1:
     resolution: {integrity: sha512-7sgMZbwtSv+DvrnzZLMTfmLGQcTWgIrB6O3NQBP7rKXA61fxt3LNX5Tk6BEs1R+ZKFqoedA5+sNHA5OpgiOz3g==}
     dependencies:
-      axe-core: 4.4.0
+      axe-core: 4.4.1
       requestidlecallback: 0.3.0
     dev: true
 
@@ -6905,7 +6905,7 @@ packages:
       react-dev-utils: 11.0.4
       react-refresh: 0.8.3
       resolve: 1.18.1
-      resolve-url-loader: 3.1.2
+      resolve-url-loader: 3.1.4
       sass: 1.49.7
       sass-loader: 10.2.1_sass@1.49.7+webpack@4.44.2
       semver: 7.3.2
@@ -7005,7 +7005,7 @@ packages:
       react-dev-utils: 11.0.4
       react-refresh: 0.8.3
       resolve: 1.18.1
-      resolve-url-loader: 3.1.2
+      resolve-url-loader: 3.1.4
       sass: 1.49.7
       sass-loader: 10.2.1_sass@1.49.7+webpack@4.44.2
       semver: 7.3.2
@@ -9901,8 +9901,8 @@ packages:
     resolution: {integrity: sha512-V+Nq70NxKhYt89ArVcaNL9FDryB3vQOd+BFXZIfO3RP6rwtj+2yqqqdHEkacutglPaZLkJeuXKCjCJDMGPtPqg==}
     engines: {node: '>=4'}
 
-  /axe-core/4.4.0:
-    resolution: {integrity: sha512-btWy2rze3NnxSSxb7LtNhPYYFrRoFBfjiGzmSc/5Hu47wApO2KNXjP/w7Nv2Uz/Fyr/pfEiwOkcXhDxu0jz5FA==}
+  /axe-core/4.4.1:
+    resolution: {integrity: sha512-gd1kmb21kwNuWr6BQz8fv6GNECPBnUasepcoLbekws23NVBLODdsClRZ+bQ8+9Uomf3Sm3+Vwn0oYG9NvwnJCw==}
     engines: {node: '>=4'}
     dev: true
 
@@ -9925,7 +9925,7 @@ packages:
   /axios/0.25.0:
     resolution: {integrity: sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==}
     dependencies:
-      follow-redirects: 1.14.7_debug@4.3.3
+      follow-redirects: 1.14.7
     transitivePeerDependencies:
       - debug
 
@@ -11697,7 +11697,7 @@ packages:
       postcss-modules-values: 3.0.0
       postcss-value-parser: 4.2.0
       schema-utils: 2.7.1
-      semver: 7.3.5
+      semver: 7.3.2
       webpack: 4.44.2
     dev: true
 
@@ -13542,7 +13542,6 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
-    dev: false
 
   /follow-redirects/1.14.7_debug@4.3.3:
     resolution: {integrity: sha512-+hbxoLbFMbRKDwohX8GkTataGqO6Jb7jGwpAlwgy2bIz25XtRm7KEzJM76R1WiNT5SwZkX4Y75SwBolkpmE7iQ==}
@@ -15579,7 +15578,7 @@ packages:
       jest-resolve: 26.6.2
       natural-compare: 1.4.0
       pretty-format: 26.6.2
-      semver: 7.3.5
+      semver: 7.3.2
     dev: true
 
   /jest-util/26.6.2:
@@ -18597,8 +18596,8 @@ packages:
       supports-color: 5.5.0
     dev: true
 
-  /postcss/7.0.21:
-    resolution: {integrity: sha512-uIFtJElxJo29QC753JzhidoAhvp/e/Exezkdhfmt8AymWT6/5B7W1WmponYWkHk2eg6sONyTch0A3nkMPun3SQ==}
+  /postcss/7.0.36:
+    resolution: {integrity: sha512-BebJSIUMwJHRH0HAQoxN4u1CN86glsrwsW0q7T+/m44eXOUAxSNdHRkNZPYz5vVUbg17hFgOQDE7fZk7li3pZw==}
     engines: {node: '>=6.0.0'}
     dependencies:
       chalk: 2.4.2
@@ -19695,8 +19694,8 @@ packages:
     resolution: {integrity: sha512-qYg9KP24dD5qka9J47d0aVky0N+b4fTU89LN9iDnjB5waksiC49rvMB0PrUJQGoTmH50XPiqOvAjDfaijGxYZw==}
     engines: {node: '>=8'}
 
-  /resolve-url-loader/3.1.2:
-    resolution: {integrity: sha512-QEb4A76c8Mi7I3xNKXlRKQSlLBwjUV/ULFMP+G7n3/7tJZ8MG5wsZ3ucxP1Jz8Vevn6fnJsxDx9cIls+utGzPQ==}
+  /resolve-url-loader/3.1.4:
+    resolution: {integrity: sha512-D3sQ04o0eeQEySLrcz4DsX3saHfsr8/N6tfhblxgZKXxMT2Louargg12oGNfoTRLV09GXhVUe5/qgA5vdgNigg==}
     engines: {node: '>=6.0.0'}
     dependencies:
       adjust-sourcemap-loader: 3.0.0
@@ -19705,7 +19704,7 @@ packages:
       convert-source-map: 1.7.0
       es6-iterator: 2.0.3
       loader-utils: 1.2.3
-      postcss: 7.0.21
+      postcss: 7.0.36
       rework: 1.0.1
       rework-visit: 1.0.0
       source-map: 0.6.1
@@ -19967,7 +19966,7 @@ packages:
       neo-async: 2.6.2
       sass: 1.49.7
       schema-utils: 3.1.1
-      semver: 7.3.5
+      semver: 7.3.2
       webpack: 4.44.2
     dev: true
 
@@ -21408,7 +21407,7 @@ packages:
       lodash: 4.17.21
       make-error: 1.3.6
       mkdirp: 1.0.4
-      semver: 7.3.5
+      semver: 7.3.2
       typescript: 4.4.4
       yargs-parser: 20.2.9
     dev: true
