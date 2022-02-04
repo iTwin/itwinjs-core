@@ -2739,6 +2739,7 @@ export class FrontstageManager {
     static clearFrontstageDefs(): void;
     // @internal (undocumented)
     static clearFrontstageDefsForIModelId(iModelId: string | undefined): void;
+    static clearFrontstageProviders(): void;
     static closeModalFrontstage(): void;
     static closeNestedFrontstage(): Promise<void>;
     static deactivateFrontstageDef(): Promise<void>;

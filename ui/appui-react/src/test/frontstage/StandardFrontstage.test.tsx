@@ -109,7 +109,7 @@ describe("ContentGroupProvider", () => {
   before(async () => {
     await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
   });
 
   after(async () => {
@@ -119,7 +119,7 @@ describe("ContentGroupProvider", () => {
 
   beforeEach(() => {
     sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
   });
 
   it("should exercise base Content Group Provider", async () => {

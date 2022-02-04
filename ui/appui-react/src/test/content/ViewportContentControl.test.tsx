@@ -103,7 +103,7 @@ describe("ViewportContentControl", () => {
     viewportMock.reset();
     viewportMock.setup((viewport) => viewport.view).returns(() => viewMock.object);
 
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
     await FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
