@@ -91,3 +91,5 @@ export * from "./map/MapLayerSources";
 export * from "./map/MapTiledGraphicsProvider";
 export * from "./CesiumAssetProvider";
 export * from "./ContextShareProvider";
+export * from "./ThreeDTileFormatInterpreter";
+export * from "./OPCFormatInterpreter";
