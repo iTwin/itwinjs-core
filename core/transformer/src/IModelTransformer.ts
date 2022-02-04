@@ -11,7 +11,7 @@ import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64Stri
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementDrivesElement, ElementMultiAspect,
+  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement,
   KnownLocations, Model, RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
@@ -23,7 +23,7 @@ import {
 import { HandlerResponse, IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-import lodashGet = require("lodash.get");
+import lodashGet = require("lodash.get"); // REMOVE NO LONGER USED LODASH
 import { PendingReferenceMap } from "./PendingReferenceMap";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
@@ -95,13 +95,15 @@ export interface IModelTransformOptions {
    * It is possible to craft an iModel with dangling predecessors/invalidated relationships by, e.g., deleting certain
    * elements without fixing up references.
    *
-   * @note turning this on passes the issue down to consuming applications, iModels that have invalid element references
+   * @note "reject" will throw an error and reject the transformation upon finding this case
+   * @note "ignore" passes the issue down to consuming applications, iModels that have invalid element references
    *       like this can cause errors, and you should consider adding custom logic in your transformer to remove the
    *       reference depending on your use case.
+   * @note "delete" will replace all dangling references with the invalid id "0". This may be easier to handle for consuming applications
    * @default "reject"
    * @beta
    */
-  danglingPredecessorsBehavior?: "reject" | "ignore";
+  danglingPredecessorsBehavior?: "reject" | "ignore" | "invalidate";
 }
 
 // TODO things to test:
@@ -499,7 +501,7 @@ export class IModelTransformer extends IModelExportHandler {
   // FIXME: gross
   private findReferenceReadiness(id: Id64String): "done" | "no-model" | "none" {
     const idInTarget = this.context.findTargetElementId(id);
-    if (Id64.invalid === idInTarget) "none";
+    if (Id64.invalid === idInTarget) return "none";
     const isSubModeled = this.sourceDb.models.tryGetSubModel(id);
     if (isSubModeled) {
       const modelInTarget = this.targetDb.models.tryGetModelProps(idInTarget) !== undefined;
@@ -515,14 +517,36 @@ export class IModelTransformer extends IModelExportHandler {
   private collectUnmappedReferences(element: Element): boolean {
 
     const missingPredecessors = new Set<string>();
-    const thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
+    let thisPartialElem: PartiallyCommittedElement | undefined;
 
     for (const predecessorId of element.getPredecessorIds()) {
       const referenceReadiness = this.findReferenceReadiness(predecessorId);
       if (referenceReadiness === "done") continue;
-      Logger.logTrace(loggerCategory, `Remapping not found for predecessor '${predecessorId}' of element '${element.id}'`);
-      if (!this._partiallyCommittedElements.hasById(element.id))
-        this._partiallyCommittedElements.setById(element.id, thisPartialElem);
+      Logger.logTrace(loggerCategory, `Deferred resolution of predecessor '${predecessorId}' of element '${element.id}'`);
+      // TODO: instead of loading the entire element run a small has query
+      const predecessor = this.sourceDb.elements.tryGetElement(predecessorId);
+      if (predecessor === undefined) {
+        Logger.logWarning(loggerCategory, `Source element (${element.id}) "${element.getDisplayLabel()}" has a dangling predecessor (${predecessorId})`);
+        switch (this._options.danglingPredecessorsBehavior) {
+          case "invalidate":
+          case "ignore":
+            continue;
+          case "reject":
+            throw new IModelError(
+              IModelStatus.NotFound,
+              `Found a reference to an element "${predecessorId}" that doesn't exist while looking for predecessors of "${element.id}"`
+              + "\nThis must have been caused by an upstream application that changed the iModel."
+              + "\nYou can set the IModelTransformerOptions.danglingPredecessorsBehavior option to 'ignore' to ignore this, but this will leave the iModel"
+              + "\nin a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom"
+              + "\ntransformer to remove the reference and fix affected elements may be suitable."
+            );
+        }
+      }
+      if (thisPartialElem === undefined) {
+        thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
+        if (!this._partiallyCommittedElements.hasById(element.id))
+          this._partiallyCommittedElements.setById(element.id, thisPartialElem);
+      }
       missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
       this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: true}, thisPartialElem);
       if (referenceReadiness === "no-model") continue;
@@ -564,7 +588,7 @@ export class IModelTransformer extends IModelExportHandler {
     const asyncImpl = async () => {
       const elemClass = sourceElement.constructor as typeof Element;
       for (const referenceKey of elemClass.requiredReferenceKeys) {
-        const idContainer = lodashGet(sourceElement, referenceKey); // TODO: test that out-of-order code.scope predecessor is updated correctly AND REMOVE LODASH
+        const idContainer = lodashGet(sourceElement, referenceKey); // TODO: REMOVE LODASH
         await Promise.all(mapId64(idContainer, async (id) => {
           if (id === Id64.invalid || id === IModel.rootSubjectId) return; // not allowed to directly export the root subject
           const withinSameIModel = this.sourceDb === this.targetDb;
