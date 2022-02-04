@@ -9,7 +9,7 @@
 // cSpell: ignore popout
 
 import * as React from "react";
-import { BeButtonEvent, EventHandled, IModelApp, IModelConnection, PrimitiveTool, Tool } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
 import { UiItemsProvidersTest } from "@itwin/ui-items-providers-test";
 
 import {
