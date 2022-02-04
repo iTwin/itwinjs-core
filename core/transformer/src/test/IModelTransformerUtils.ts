@@ -459,7 +459,7 @@ export class IModelTransformer3d extends IModelTransformer {
     this._transform3d = transform3d;
   }
   /** Override transformElement to apply a 3d transform to all GeometricElement3d instances. */
-  protected override onTransformElement(sourceElement: Element): ElementProps {
+  public override onTransformElement(sourceElement: Element): ElementProps {
     const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
     if (sourceElement instanceof GeometricElement3d) { // can check the sourceElement since this IModelTransformer does not remap classes
       const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
@@ -483,7 +483,7 @@ export class PhysicalModelConsolidator extends IModelTransformer {
     this.importer.doNotUpdateElementIds.add(targetModelId);
   }
   /** Override shouldExportElement to remap PhysicalPartition instances. */
-  protected override shouldExportElement(sourceElement: Element): boolean {
+  public override shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
       this.context.remapElement(sourceElement.id, this._targetModelId);
       // NOTE: must allow export to continue so the PhysicalModel sub-modeling the PhysicalPartition is processed
@@ -524,7 +524,7 @@ export class FilterByViewTransformer extends IModelTransformer {
     });
   }
   /** Override of IModelTransformer.shouldExportElement that excludes other ViewDefinition-related elements that are not associated with the *export* ViewDefinition. */
-  protected override shouldExportElement(sourceElement: Element): boolean {
+  public override shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
       return this._exportModelIds.has(sourceElement.id);
     } else if (sourceElement instanceof SpatialViewDefinition) {
@@ -607,7 +607,7 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformElement to make sure that all target Elements have a FederationGuid */
-  protected override onTransformElement(sourceElement: Element): ElementProps {
+  public override onTransformElement(sourceElement: Element): ElementProps {
     const targetElementProps: any = super.onTransformElement(sourceElement);
     if (!targetElementProps.federationGuid) {
       targetElementProps.federationGuid = Guid.createValue();
@@ -627,7 +627,7 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformElementAspect to remap Source*Aspect --> Target*Aspect */
-  protected override onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
+  public override onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
     const targetElementAspectProps: any = super.onTransformElementAspect(sourceElementAspect, targetElementId);
     if ("ExtensiveTestScenario:SourceUniqueAspect" === sourceElementAspect.classFullName) {
       targetElementAspectProps.classFullName = "ExtensiveTestScenarioTarget:TargetUniqueAspect";
@@ -654,7 +654,7 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformRelationship to remap SourceRelWithProps --> TargetRelWithProps */
-  protected override onTransformRelationship(sourceRelationship: Relationship): RelationshipProps {
+  public override onTransformRelationship(sourceRelationship: Relationship): RelationshipProps {
     const targetRelationshipProps: any = super.onTransformRelationship(sourceRelationship);
     if ("ExtensiveTestScenario:SourceRelWithProps" === sourceRelationship.classFullName) {
       targetRelationshipProps.classFullName = "ExtensiveTestScenarioTarget:TargetRelWithProps";
@@ -858,15 +858,15 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
     return 1 + this.getIndentLevelForElement(element);
   }
-  protected override async onExportSchema(schema: Schema): Promise<void> {
+  public override async onExportSchema(schema: Schema): Promise<void> {
     this.writeLine(`[Schema] ${schema.name}`);
     return super.onExportSchema(schema);
   }
-  protected override onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined): void {
+  public override onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined): void {
     this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}${this.formatOperationName(isUpdate)}`);
     super.onExportCodeSpec(codeSpec, isUpdate);
   }
-  protected override onExportFont(font: FontProps, isUpdate: boolean | undefined): void {
+  public override onExportFont(font: FontProps, isUpdate: boolean | undefined): void {
     if (this._firstFont) {
       this.writeSeparator();
       this._firstFont = false;
@@ -874,33 +874,33 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeLine(`[Font] ${font.id}, ${font.name}`);
     super.onExportFont(font, isUpdate);
   }
-  protected override onExportModel(model: Model, isUpdate: boolean | undefined): void {
+  public override onExportModel(model: Model, isUpdate: boolean | undefined): void {
     this.writeSeparator();
     this.writeLine(`[Model] ${model.classFullName}, ${model.id}, ${model.name}${this.formatOperationName(isUpdate)}`);
     super.onExportModel(model, isUpdate);
   }
-  protected override onExportElement(element: Element, isUpdate: boolean | undefined): void {
+  public override onExportElement(element: Element, isUpdate: boolean | undefined): void {
     const indentLevel: number = this.getIndentLevelForElement(element);
     this.writeLine(`[Element] ${element.classFullName}, ${element.id}, ${element.getDisplayLabel()}${this.formatOperationName(isUpdate)}`, indentLevel);
     super.onExportElement(element, isUpdate);
   }
-  protected override onDeleteElement(elementId: Id64String): void {
+  public override onDeleteElement(elementId: Id64String): void {
     this.writeLine(`[Element] ${elementId}, DELETE`);
     super.onDeleteElement(elementId);
   }
-  protected override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
+  public override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
     const indentLevel: number = this.getIndentLevelForElementAspect(aspect);
     this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}${this.formatOperationName(isUpdate)}`, indentLevel);
     super.onExportElementUniqueAspect(aspect, isUpdate);
   }
-  protected override onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
+  public override onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
     const indentLevel: number = this.getIndentLevelForElementAspect(aspects[0]);
     for (const aspect of aspects) {
       this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}`, indentLevel);
     }
     super.onExportElementMultiAspects(aspects);
   }
-  protected override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
+  public override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
     if (this._firstRelationship) {
       this.writeSeparator();
       this._firstRelationship = false;
@@ -908,7 +908,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeLine(`[Relationship] ${relationship.classFullName}, ${relationship.id}${this.formatOperationName(isUpdate)}`);
     super.onExportRelationship(relationship, isUpdate);
   }
-  protected override onDeleteRelationship(relInstanceId: Id64String): void {
+  public override onDeleteRelationship(relInstanceId: Id64String): void {
     this.writeLine(`[Relationship] ${relInstanceId}, DELETE`);
     super.onDeleteRelationship(relInstanceId);
   }
@@ -963,25 +963,25 @@ export class ClassCounter extends IModelExportHandler {
     });
     IModelJsFs.appendFileSync(this.outputFileName, `\n`);
   }
-  protected override onExportModel(model: Model, isUpdate: boolean | undefined): void {
+  public override onExportModel(model: Model, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._modelClassCounts, model.classFullName);
     super.onExportModel(model, isUpdate);
   }
-  protected override onExportElement(element: Element, isUpdate: boolean | undefined): void {
+  public override onExportElement(element: Element, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._elementClassCounts, element.classFullName);
     super.onExportElement(element, isUpdate);
   }
-  protected override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
+  public override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
     super.onExportElementUniqueAspect(aspect, isUpdate);
   }
-  protected override onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
+  public override onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
     for (const aspect of aspects) {
       this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
     }
     super.onExportElementMultiAspects(aspects);
   }
-  protected override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
+  public override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._relationshipClassCounts, relationship.classFullName);
     super.onExportRelationship(relationship, isUpdate);
   }

@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, compareBooleans, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
+  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
@@ -25,12 +25,11 @@ import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { RealityDataSource } from "../RealityDataSource";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
-import { ScreenViewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 import {
-  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams,
-  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
-  TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
+  getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
+  TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 
 function getUrl(content: any) {
@@ -43,6 +42,7 @@ interface RealityTreeId {
   modelId: Id64String;
   maskModelIds?: string;
   deduplicateVertices: boolean;
+  produceGeometry?: boolean;
   toEcefTransform?: Transform;
 }
 
@@ -89,7 +89,8 @@ class RealityTreeSupplier implements TileTreeSupplier {
     if (treeId.maskModelIds)
       await iModel.models.load(CompressedId64Set.decompressSet(treeId.maskModelIds));
 
-    return RealityModelTileTree.createRealityModelTileTree(treeId.rdSourceKey, iModel, treeId.modelId, treeId.transform, treeId.deduplicateVertices);
+    const opts = { deduplicateVertices: treeId.deduplicateVertices, produceGeometry: treeId.produceGeometry };
+    return RealityModelTileTree.createRealityModelTileTree(treeId.rdSourceKey, iModel, treeId.modelId, treeId.transform, opts);
   }
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
@@ -110,6 +111,10 @@ class RealityTreeSupplier implements TileTreeSupplier {
       return cmp;
 
     cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
+    if (0 !== cmp)
+      return cmp;
+
+    cmp = compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry);
     if (0 !== cmp)
       return cmp;
 
@@ -391,11 +396,11 @@ class RealityModelTileLoader extends RealityTileLoader {
   private _viewFlagOverrides: ViewFlagOverrides;
   private readonly _deduplicateVertices: boolean;
 
-  public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap, deduplicateVertices=false) {
-    super();
+  public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap, opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean }) {
+    super(opts?.produceGeometry ?? false);
     this.tree = tree;
     this._batchedIdMap = batchedIdMap;
-    this._deduplicateVertices = deduplicateVertices;
+    this._deduplicateVertices = opts?.deduplicateVertices ?? false;
 
     let clipVolume;
     if (RealityTileRegion.isGlobal(tree.tilesetJson.boundingVolume))
@@ -527,6 +532,7 @@ export namespace RealityModelTileTree {
   export interface ReferenceProps extends ReferenceBaseProps {
     url?: string;
     requestAuthorization?: string;
+    produceGeometry?: boolean;
   }
 
   export abstract class Reference extends TileTreeReference {
@@ -559,7 +565,6 @@ export namespace RealityModelTileTree {
       super();
       this._name = undefined !== props.name ? props.name : "";
       this._modelId = props.modelId ? props.modelId : props.iModel.transientIds.next;
-      this._source = props.source;
       let transform;
       if (undefined !== props.tilesetToDbTransform) {
         const tf = Transform.fromJSON(props.tilesetToDbTransform);
@@ -570,6 +575,7 @@ export namespace RealityModelTileTree {
       }
 
       this._iModel = props.iModel;
+      this._source = props.source;
       if (props.planarClipMask)
         this._planarClipMask = PlanarClipMaskState.create(props.planarClipMask);
 
@@ -635,7 +641,7 @@ export namespace RealityModelTileTree {
     }
   }
 
-  export async function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined, deduplicateVertices: boolean): Promise<TileTree | undefined> {
+  export async function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined, opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean }): Promise<TileTree | undefined> {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdSource) {
@@ -644,7 +650,7 @@ export namespace RealityModelTileTree {
       if (tileTreeId === undefined)
         return undefined;
       const props = await getTileTreeProps(rdSource, tilesetToDb, iModel);
-      const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel), deduplicateVertices);
+      const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel), opts);
       const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
       const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef);
       return new RealityModelTileTree(params);
@@ -708,16 +714,24 @@ export namespace RealityModelTileTree {
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].
  * @internal
  */
-class RealityTreeReference extends RealityModelTileTree.Reference {
+export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
+  private readonly _produceGeometry?: boolean;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
+    this._produceGeometry = props.produceGeometry;
 
     // Maybe we should throw if both props.rdSourceKey && props.url are undefined
-    this._rdSourceKey = props.rdSourceKey ? props.rdSourceKey : props.url ? RealityDataSource.createKeyFromUrl(props.url, RealityDataProvider.ContextShare) :
-      RealityDataSource.createKeyFromUrl("", RealityDataProvider.ContextShare);
+    if (props.rdSourceKey)
+      this._rdSourceKey = props.rdSourceKey;
+    else
+      this._rdSourceKey = RealityDataSource.createKeyFromUrl(props.url ?? "", RealityDataProvider.ContextShare);
+
+    if (this._produceGeometry)
+      this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);
   }
+
   public get treeOwner(): TileTreeOwner {
     const treeId: RealityTreeId = {
       rdSourceKey: this._rdSourceKey,
@@ -725,9 +739,24 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       modelId: this.modelId,
       maskModelIds: this.maskModelIds,
       deduplicateVertices: this._wantWiremesh,
+      produceGeometry: this._produceGeometry,
     };
 
     return realityTreeSupplier.getOwner(treeId, this._iModel);
+  }
+
+  protected override _createGeometryTreeReference(): GeometryTileTreeReference {
+    const ref = new RealityTreeReference({
+      iModel: this._iModel,
+      modelId: this.modelId,
+      source: this._source,
+      rdSourceKey: this._rdSourceKey,
+      name: this._name,
+      produceGeometry: true,
+    });
+
+    assert(undefined !== ref.collectTileGeometry);
+    return ref as GeometryTileTreeReference;
   }
 
   private get _wantWiremesh(): boolean {
@@ -820,7 +849,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     return div;
   }
 
-  public override addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
+  public override addLogoCards(cards: HTMLTableElement): void {
     if (this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset) {
       cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
     }

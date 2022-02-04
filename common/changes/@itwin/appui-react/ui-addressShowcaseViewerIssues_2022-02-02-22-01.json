@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Provide FrontstageManager.clearFrontstageProviders method to clear out static maps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

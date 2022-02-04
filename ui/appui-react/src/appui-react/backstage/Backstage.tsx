@@ -30,7 +30,6 @@ export class BackstageEvent extends UiEvent<BackstageEventArgs> { } // eslint-di
 
 /** Properties for the [[Backstage]] React component.
  * @public
- * @deprecated use [BackstageComposer]($appui-react) instead.
  */
 export interface BackstageProps extends CommonProps {
   isVisible?: boolean;
@@ -48,7 +47,6 @@ interface BackstageState {
 
 /** Backstage React component.
  * @public
- * @deprecated use [BackstageComposer]($appui-react) instead.
  */
 export class Backstage extends React.Component<BackstageProps, BackstageState> { // eslint-disable-line deprecation/deprecation
 

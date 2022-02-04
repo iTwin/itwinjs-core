@@ -573,7 +573,7 @@ export class AppUiSettings implements UserSettingsProvider {
 // @beta
 export function areNoFeatureOverridesActive(): boolean;
 
-// @public @deprecated
+// @public
 export class Backstage extends React.Component<BackstageProps, BackstageState> {
     constructor(props: BackstageProps);
     static get backstageToggleCommand(): import("../shared/CommandItemDef").CommandItemDef;
@@ -630,6 +630,8 @@ export function BackstageComposerItem({ item }: BackstageComposerItemProps): JSX
 // @internal
 export interface BackstageComposerItemProps {
     readonly item: BackstageItem;
+    // (undocumented)
+    readonly providerId?: string;
 }
 
 // @public
@@ -718,7 +720,7 @@ export class BackstageManager {
     toggle(): void;
 }
 
-// @public @deprecated
+// @public
 export interface BackstageProps extends CommonProps {
     // (undocumented)
     header?: React.ReactNode;
@@ -1330,6 +1332,50 @@ export interface ContentControlActivatedEventArgs {
 }
 
 // @public
+export function ContentDialog(props: ContentDialogProps): JSX.Element;
+
+// @public
+export class ContentDialogChangedEvent extends DialogChangedEvent {
+}
+
+// @public
+export class ContentDialogManager {
+    static get activeDialog(): React.ReactNode | undefined;
+    // @internal (undocumented)
+    static closeAll(): void;
+    static closeDialog(id: string): void;
+    static get dialogCount(): number;
+    // @internal (undocumented)
+    static readonly dialogManager: DialogManagerBase;
+    static get dialogs(): import("./DialogManagerBase").DialogInfo[];
+    // (undocumented)
+    static getDialogInfo(id: string): ContentDialogInfo | undefined;
+    static getDialogZIndex(id: string): number;
+    static handlePointerDownEvent(_event: React.PointerEvent, id: string, updateFunc: () => void): void;
+    static initialize(): void;
+    static readonly onContentDialogChangedEvent: ContentDialogChangedEvent;
+    static openDialog(dialog: React.ReactNode, id: string, parentDocument?: Document): void;
+    static update(): void;
+}
+
+// @public
+export interface ContentDialogProps extends DialogProps {
+    // (undocumented)
+    children: React.ReactNode;
+    // (undocumented)
+    dialogId: string;
+    // (undocumented)
+    movable?: boolean;
+}
+
+// @public
+export class ContentDialogRenderer extends React.PureComponent<CommonProps> {
+    constructor(props: CommonProps);
+    // (undocumented)
+    render(): React.ReactNode;
+}
+
+// @public
 export class ContentGroup {
     constructor(contentGroupProps: ContentGroupProps);
     clearContentControls(): void;
@@ -1454,7 +1500,11 @@ export interface ContentToolWidgetComposerProps {
 
 // @public
 export class ContentViewManager {
+    // (undocumented)
+    static addFloatingContentControl(contentControl?: ContentControl): void;
     static contentSupportsCamera(content: ContentControl | undefined): boolean;
+    // (undocumented)
+    static dropFloatingContentControl(contentControl?: ContentControl): void;
     static getActiveContent(): React.ReactNode | undefined;
     static getActiveContentControl(): ContentControl | undefined;
     static isContent3dView(content: ContentControl | undefined): boolean;
@@ -1464,11 +1514,17 @@ export class ContentViewManager {
     static isContentSpatialView(content: ContentControl | undefined): boolean;
     static get isMouseDown(): boolean;
     static readonly onActiveContentChangedEvent: ActiveContentChangedEvent;
+    static readonly onAvailableContentChangedEvent: UiEvent<{
+        contentId: string;
+    }>;
     static readonly onMouseDownChangedEvent: MouseDownChangedEvent;
     static refreshActiveContent(activeContent: React.ReactNode): void;
     static setActiveContent(activeContent?: React.ReactNode, forceEventProcessing?: boolean): void;
     static setMouseDown(mouseDown: boolean): void;
 }
+
+// @internal
+export function ContentWrapper(props: ContentWrapperProps): JSX.Element;
 
 // @public
 export class CoreTools {
@@ -2213,6 +2269,28 @@ export interface ExtensibleToolbarProps {
 // @beta
 export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>): BaseItemState;
 
+// @beta (undocumented)
+export class FloatingContentControl extends ContentControl {
+    constructor(uniqueId: string, name: string, node: React.ReactNode);
+}
+
+// @beta
+export function FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element;
+
+// @beta (undocumented)
+export class FloatingViewportContentControl extends ViewportContentControl {
+    constructor(uniqueId: string, name: string, node: React_2.ReactNode);
+    get reactNode(): React_2.ReactNode;
+    set reactNode(r: React_2.ReactNode);
+}
+
+// @beta (undocumented)
+export interface FloatingViewportContentProps {
+    contentId: string;
+    initialViewState: ViewState;
+    onContextMenu?: (e: React.MouseEvent) => boolean;
+}
+
 // @alpha
 export class FocusToolSettings extends Tool {
     // (undocumented)
@@ -2573,6 +2651,8 @@ export interface FrontstageDeactivatedEventArgs {
 // @public
 export class FrontstageDef {
     // (undocumented)
+    addFloatingContentControl(contentControl?: ContentControl): void;
+    // (undocumented)
     get applicationData(): any | undefined;
     // (undocumented)
     get bottomCenter(): ZoneDef | undefined;
@@ -2604,7 +2684,11 @@ export class FrontstageDef {
     dockPopoutWidgetContainer(widgetContainerId: string): void;
     // @beta
     dockWidgetContainer(widgetId: string): void;
+    // (undocumented)
+    dropFloatingContentControl(contentControl?: ContentControl): void;
     findWidgetDef(id: string): WidgetDef | undefined;
+    // (undocumented)
+    get floatingContentControls(): ContentControl[] | undefined;
     // @beta
     floatWidget(widgetId: string, point?: PointProps, size?: SizeProps): void;
     // (undocumented)
@@ -2739,6 +2823,7 @@ export class FrontstageManager {
     static clearFrontstageDefs(): void;
     // @internal (undocumented)
     static clearFrontstageDefsForIModelId(iModelId: string | undefined): void;
+    static clearFrontstageProviders(): void;
     static closeModalFrontstage(): void;
     static closeNestedFrontstage(): Promise<void>;
     static deactivateFrontstageDef(): Promise<void>;
@@ -5895,6 +5980,12 @@ export interface StatusBarItem extends AbstractStatusBarCustomItem {
 // @internal
 export interface StatusBarItemProps extends CommonProps {
     children?: React.ReactNode;
+    // (undocumented)
+    itemPriority?: number;
+    // (undocumented)
+    providerId?: string;
+    // (undocumented)
+    section?: string;
 }
 
 // @beta @deprecated
@@ -6858,6 +6949,9 @@ export interface UnitSystemSelectorProps {
 }
 
 // @internal (undocumented)
+export function useActiveContentControlId(): string | undefined;
+
+// @internal (undocumented)
 export function useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined;
 
 // @public
@@ -7284,6 +7378,8 @@ export class WidgetDef {
     get id(): string;
     // (undocumented)
     static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef): void;
+    // (undocumented)
+    get initialProps(): WidgetProps | undefined;
     // (undocumented)
     get isActive(): boolean;
     // (undocumented)

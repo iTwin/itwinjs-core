@@ -23,7 +23,7 @@ import { StrokeCountMap } from "../../curve/Query/StrokeCountMap";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
 import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
-import { Geometry } from "../../Geometry";
+import { AxisIndex, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
@@ -46,6 +46,7 @@ import { prettyPrint } from "../testFunctions";
 import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 
 /* eslint-disable no-console */
 
@@ -1171,6 +1172,41 @@ describe("GeometryQuery", () => {
     const path = Path.create(LineSegment3d.createXYXY(1, 2, 3, 4));
     ck.testUndefined(path.getChild(-1));
     ck.testUndefined(path.getChild(3));
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
+
+describe("ClothoidTest", () => {
+  it("ProjectionFromClaude", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // distances in meters
+    const startPoint = Point3d.create(38.049581317, 391.30711461591967);
+    const startRadius = 0.1;
+    const endRadius = 0;
+    const startBearing = Angle.createRadians(0);
+    const endBearing = undefined;
+    const length = 0.013;
+    const startAngle = Angle.createRadians(1.0877954002626353);
+    const spiralToWorld = Transform.createOriginAndMatrix(startPoint, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, startAngle));
+
+    const clothoid = IntegratedSpiral3d.createFrom4OutOf5("clothoid", startRadius, endRadius, startBearing, endBearing, length, undefined, spiralToWorld);
+    if (ck.testPointer(clothoid)) {
+      GeometryCoreTestIO.captureGeometry(allGeometry, clothoid);
+
+      const spacePoint = Point3d.create(36.079385122364806, 392.05867428412268);
+      const detail = clothoid.closestPoint(spacePoint, false);
+
+      if (ck.testPointer(detail) && ck.testPointer(detail.curve)) {
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, spacePoint, 0.003);
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, detail.point, 0.003);
+        ck.testCoordinate(detail.fraction, 0.0, "Expected closest point at start");
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "ClothoidProjectionFromClaude");
+    ck.checkpoint("End ClothoidTest.ProjectionFromClaude");
     expect(ck.getNumErrors()).equals(0);
   });
 });

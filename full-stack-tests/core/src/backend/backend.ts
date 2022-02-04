@@ -9,7 +9,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { WebEditServer } from "@itwin/express-server";
-import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
@@ -20,9 +21,9 @@ import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
-import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
+import { getIModelBankAccess } from "./IModelBankBackendCloudEnv";
 
 /* eslint-disable no-console */
 
@@ -52,7 +53,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       code: newModelCode,
     };
     const modeledElement = iModelDb.elements.createElement(modeledElementProps);
-    return iModelDb.elements.insertElement(modeledElement);
+    return iModelDb.elements.insertElement(modeledElement.toJSON());
   }
 
   public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
@@ -60,13 +61,13 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     const eid = await FullStackTestIpcHandler.createAndInsertPartition(iModelDb, newModelCode);
     const modeledElementRef = new RelatedElement({ id: eid });
     const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
-    return iModelDb.models.insertModel(newModel);
+    return iModelDb.models.insertModel(newModel.toJSON());
   }
 
   public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
     const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
-    const categoryId = iModelDb.elements.insertElement(category);
+    const categoryId = category.insert();
     category.setDefaultAppearance(appearance);
     return categoryId;
   }
@@ -76,22 +77,30 @@ async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
-  // Bootstrap the cloud environment
-  await CloudEnv.initialize();
-
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.hubAccess = new IModelHubBackend(CloudEnv.cloudEnv.imodelClient);
+
+  // Bootstrap the cloud environment
+  const enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
+  if (enableIModelBank) {
+    iModelHost.hubAccess = getIModelBankAccess();
+  } else {
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+  }
+
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 
   if (ProcessDetector.isElectronAppBackend) {
     exposeBackendCallbacks();
-    const authClient = await ElectronMainAuthorization.create({
-      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+    const authClient = new ElectronMainAuthorization({
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "testRedirectUri",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
     });
+    await authClient.signInSilent();
     iModelHost.authorizationClient = authClient;
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
+    await authClient.signInSilent();
 
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);

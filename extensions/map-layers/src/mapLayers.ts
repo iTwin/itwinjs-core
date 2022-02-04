@@ -19,6 +19,8 @@ export class MapLayersUI {
   private static _defaultNs = "mapLayers";
   private static _mapLayersItemsProvider: MapLayersUiItemsProvider;
   private static _mapFeatureInfoItemsProvider: FeatureInfoUiItemsProvider;
+  private static _uiItemsProvider: MapLayersUiItemsProvider;
+  private static _itemsProviderRegistered?: boolean;
 
   private static _iTwinConfig?: UserPreferencesAccess;
   private static _onMapHit?: MapHitEvent;
@@ -51,15 +53,22 @@ export class MapLayersUI {
     if (registerItemsProvider) {
       UiItemsManager.register(MapLayersUI._mapLayersItemsProvider);
       UiItemsManager.register(MapLayersUI._mapFeatureInfoItemsProvider);
-    } else
-      ConfigurableUiManager.registerControl(MapLayersWidgetControl.id, MapLayersWidgetControl);
+    else
+    MapLayersUI._itemsProviderRegistered = registerItemsProvider;
 
     ConfigurableUiManager.registerControl(FeatureInfoWidgetControl.id, FeatureInfoWidgetControl);
   }
 
-  /** Unregisters the GeoTools internationalization service namespace */
+  /** Unregisters internationalization service namespace and UiItemManager / control */
   public static terminate() {
     IModelApp.localization.unregisterNamespace(this.localizationNamespace);
+
+    if (MapLayersUI._itemsProviderRegistered !== undefined) {
+      if (MapLayersUI._itemsProviderRegistered) {
+        UiItemsManager.unregister(MapLayersUI._uiItemsProvider.id);
+      }
+      MapLayersUI._itemsProviderRegistered = undefined;
+    }
   }
 
   /** The internationalization service namespace. */

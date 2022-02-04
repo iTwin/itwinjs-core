@@ -1,0 +1,25 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.core-dialog.active-content-dialog {
+  .core-dialog-area {
+    > .core-dialog-head {
+      color: $buic-text-color-highlight;
+      background-color: $buic-background-titlebar;
+      > .core-dialog-title {
+      font-weight: 800;
+      }
+    }
+  }
+
+  .core-dialog.inactive-content-dialog {
+    .core-dialog-area {
+      > .core-dialog-head {
+        background-color: $buic-background-titlebar-outoffocus;
+      }
+    }
+  }
+}

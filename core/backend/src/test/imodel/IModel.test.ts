@@ -8,7 +8,7 @@ import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { BlobDaemon } from "@bentley/imodeljs-native";
+import { CloudSqlite } from "@bentley/imodeljs-native";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
@@ -229,7 +229,7 @@ describe("iModel", () => {
 
     const newEl = el3;
     newEl.federationGuid = undefined;
-    const newId = imodel2.elements.insertElement(newEl);
+    const newId = imodel2.elements.insertElement(newEl.toJSON());
     assert.isTrue(Id64.isValidId64(newId), "insert worked");
   });
 
@@ -293,7 +293,7 @@ describe("iModel", () => {
       const element: Element = imodel2.elements.createElement(elementProps);
       element.setUserProperties("performanceTest", { s: `String-${i}`, n: i });
 
-      const elementId = imodel2.elements.insertElement(element);
+      const elementId = imodel2.elements.insertElement(element.toJSON());
       assert.isTrue(Id64.isValidId64(elementId));
     }
   });
@@ -886,7 +886,7 @@ describe("iModel", () => {
     newTestElem.asAny.dtUtc = new Date("2015-03-25");
     newTestElem.asAny.p3d = new Point3d(1, 2, 3);
 
-    const newTestElemId = imodel4.elements.insertElement(newTestElem);
+    const newTestElemId = imodel4.elements.insertElement(newTestElem.toJSON());
 
     assert.isTrue(Id64.isValidId64(newTestElemId), "insert worked");
 
@@ -908,7 +908,7 @@ describe("iModel", () => {
     const editElem = newTestElemFetched;
     editElem.asAny.location = loc2;
     try {
-      imodel4.elements.updateElement(editElem);
+      imodel4.elements.updateElement(editElem.toJSON());
     } catch (_err) {
       assert.fail("Element.update failed");
     }
@@ -921,7 +921,7 @@ describe("iModel", () => {
     assert.equal(afterUpdateElemFetched.asAny.arrayOfInt.length, 300);
 
     afterUpdateElemFetched.asAny.arrayOfInt = [99, 3];
-    imodel4.elements.updateElement(afterUpdateElemFetched);
+    imodel4.elements.updateElement(afterUpdateElemFetched.toJSON());
 
     const afterShortenArray = imodel4.elements.getElement(afterUpdateElemFetched.id);
     assert.equal(afterUpdateElemFetched.asAny.arrayOfInt.length, 2);
@@ -929,7 +929,7 @@ describe("iModel", () => {
 
     // Make array longer
     afterShortenArray.asAny.arrayOfInt = [1, 2, 3];
-    imodel4.elements.updateElement(afterShortenArray);
+    imodel4.elements.updateElement(afterShortenArray.toJSON());
     const afterLengthenArray = imodel4.elements.getElement(afterShortenArray.id);
     assert.equal(afterLengthenArray.asAny.arrayOfInt.length, 3);
     assert.deepEqual(afterLengthenArray.asAny.arrayOfInt, [1, 2, 3]);
@@ -1312,7 +1312,7 @@ describe("iModel", () => {
 
     // Update the model
     newModelPersist.isPrivate = false;
-    testImodel.models.updateModel(newModelPersist);
+    testImodel.models.updateModel(newModelPersist.toJSON());
     //  ... and check that it updated the model in the db
     const newModelPersist2 = testImodel.models.getModel(newModelId);
     assert.isFalse(newModelPersist2.isPrivate);
@@ -1483,7 +1483,7 @@ describe("iModel", () => {
         code: Code.createEmpty(),
       };
 
-      id1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
+      id1 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
       assert.isTrue(Id64.isValidId64(id1));
 
       // The second one should point to the first.
@@ -1492,7 +1492,7 @@ describe("iModel", () => {
       elementProps.parent = { id: id1, relClassName: trelClassName };
       (elementProps as any).longProp = 4294967295;     // make sure that we can save values in the range 0 ... UINT_MAX
 
-      id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps));
+      id2 = testImodel.elements.insertElement(testImodel.elements.createElement(elementProps).toJSON());
       assert.isTrue(Id64.isValidId64(id2));
     }
 
@@ -1514,7 +1514,7 @@ describe("iModel", () => {
       // Change el2 to point to itself.
       const el2Modified = testImodel.elements.getElement(id2);
       el2Modified.asAny.relatedElement = { id: id2, relClassName: trelClassName };
-      testImodel.elements.updateElement(el2Modified);
+      testImodel.elements.updateElement(el2Modified.toJSON());
       // Test that el2 points to itself.
       const el2after: Element = testImodel.elements.getElement(id2);
       assert.deepEqual(el2after.asAny.relatedElement.id, id2);
@@ -1525,7 +1525,7 @@ describe("iModel", () => {
       // Test that we can null out the navigation property
       const el2Modified = testImodel.elements.getElement(id2);
       el2Modified.asAny.relatedElement = null;
-      testImodel.elements.updateElement(el2Modified);
+      testImodel.elements.updateElement(el2Modified.toJSON());
       // Test that el2 has no relatedElement property value
       const el2after: Element = testImodel.elements.getElement(id2);
       assert.isUndefined(el2after.asAny.relatedElement);
@@ -2053,10 +2053,10 @@ describe("iModel", () => {
 
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
-      user: "testAccount",
-      container: `imodelblocks-${iModelId}`,
-      auth: "testSAS",
-      dbAlias: "testDb",
+      accountName: "testAccount",
+      containerId: `imodelblocks-${iModelId}`,
+      sasToken: "testSAS",
+      dbName: "testDb",
       storageType: "azure?sas=1",
     };
 
@@ -2064,10 +2064,10 @@ describe("iModel", () => {
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     // Mock BlobDaemon
-    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
+    sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     const daemonErrorResult = { result: DbResult.BE_SQLITE_ERROR, errMsg: "NOT GOOD" };
-    const commandStub = sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+    const commandStub = sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => daemonSuccessResult);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
     const accessToken = "token";
@@ -2111,19 +2111,19 @@ describe("iModel", () => {
 
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
-      user: "testAccount",
-      container: `imodelblocks-${iModelId}`,
-      auth: "testSAS",
-      dbAlias: "testDb",
+      accountName: "testAccount",
+      containerId: `imodelblocks-${iModelId}`,
+      sasToken: "testSAS",
+      dbName: "testDb",
       storageType: "azure?sas=1",
     };
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     // Mock blockcacheVFS daemon
-    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
+    sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
-    sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+    sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => daemonSuccessResult);
 
     const accessToken = "token";
 

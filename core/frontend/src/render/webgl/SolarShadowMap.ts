@@ -9,7 +9,9 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@itwin/core-common";
+import {
+  Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, TextureTransparency, ViewFlags,
+} from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
 import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
@@ -161,12 +163,12 @@ class Bundle implements WebGLDisposable {
     if (undefined === fboSM)
       return undefined;
 
-    const depthTexture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: depthTextureHandle });
+    const depthTexture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: depthTextureHandle, transparency: TextureTransparency.Opaque });
     const evsmGeom = EVSMGeometry.createGeometry(depthTexture.texture.getHandle()!, shadowMapWidth, shadowMapHeight);
     if (undefined === evsmGeom)
       return undefined;
 
-    const shadowMapTexture = new Texture({ type: RenderTexture.Type.Normal, ownership: "external", handle: shadowMapTextureHandle });
+    const shadowMapTexture = new Texture({ type: RenderTexture.Type.Normal, ownership: "external", handle: shadowMapTextureHandle, transparency: TextureTransparency.Opaque });
     const renderCommands = new RenderCommands(target, stack, batch);
     return new Bundle(depthTexture, shadowMapTexture, fbo, fboSM, evsmGeom, renderCommands);
   }
@@ -355,7 +357,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     mapToWorld.multiplyPoint3dArrayQuietNormalize(scratchFrustum.points);       // This frustum represents the shadwowing geometry.  Intersect it with background geometry and expand the range depth to include that intersection.
     const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum);
+      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum, iModel.projectExtents);
       if (!backgroundDepthRange.isNull)
         shadowRange.low.z = Math.min(shadowRange.low.z, backgroundDepthRange.low);
     }

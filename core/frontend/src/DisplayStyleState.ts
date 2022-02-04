@@ -30,7 +30,9 @@ import { ScreenViewport } from "./Viewport";
 export class TerrainDisplayOverrides {
   public wantSkirts?: boolean;
   public wantNormals?: boolean;
+  public produceGeometry?: boolean;
 }
+
 /** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
  * @see [[DisplayStyleState.setOSMBuildingDisplay]].
  * @public
@@ -51,6 +53,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _scheduleState?: RenderScheduleState;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
+  /** @internal */
+  protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
+
   /** Event raised just before the [[scheduleScriptReference]] property is changed. */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
   /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */
@@ -102,29 +107,61 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       }
     }
 
-    this._scheduleState = await this.loadScheduleState();
+    if (undefined !== this.settings.renderTimeline)
+      await this.loadScheduleStateFromTimeline(this.settings.renderTimeline);
+    else
+      this.loadScheduleStateFromScript(this.settings.scheduleScriptProps); // eslint-disable-line deprecation/deprecation
   }
 
-  private async loadScheduleState(): Promise<RenderScheduleState | undefined> {
-    // The script can be stored on a separate RenderTimeline element (new, preferred way); or stuffed into the display style's JSON properties (old, deprecated way).
-    try {
-      let script;
-      let sourceId;
-      if (this.settings.renderTimeline) {
-        const timeline = await this.iModel.elements.loadProps(this.settings.renderTimeline, { renderTimeline: { omitScriptElementIds: true } }) as RenderTimelineProps;
-        if (timeline) {
-          const scriptProps = JSON.parse(timeline.script);
-          script = RenderSchedule.Script.fromJSON(scriptProps);
-          sourceId = this.settings.renderTimeline;
-        }
-      } else if (this.settings.scheduleScriptProps) { // eslint-disable-line deprecation/deprecation
-        // eslint-disable-next-line deprecation/deprecation
-        script = RenderSchedule.Script.fromJSON(this.settings.scheduleScriptProps);
-        sourceId = this.id;
+  private loadScheduleStateFromScript(scriptProps: Readonly<RenderSchedule.ScriptProps> | undefined): void {
+    let newState;
+    if (scriptProps) {
+      try {
+        const script = RenderSchedule.Script.fromJSON(scriptProps);
+        if (script)
+          newState = new RenderScheduleState(this.id, script);
+      } catch (_) {
+        // schedule state is undefined.
       }
+    }
 
-      return (script && sourceId) ? new RenderScheduleState(sourceId, script) : undefined;
-    } catch {
+    if (newState !== this._scheduleState) {
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState);
+      this._scheduleState = newState;
+    }
+  }
+
+  private async loadScheduleStateFromTimeline(timelineId: Id64String): Promise<void> {
+    let newState;
+    try {
+      // If a subsequent call to loadScheduleStateFromTimeline is made while we're awaiting this one, we'll abort this one.
+      const promise = this._queryRenderTimelinePropsPromise = this.queryRenderTimelineProps(timelineId);
+      const timeline = await promise;
+      if (promise !== this._queryRenderTimelinePropsPromise)
+        return;
+
+      if (timeline) {
+        const scriptProps = JSON.parse(timeline.script);
+        const script = RenderSchedule.Script.fromJSON(scriptProps);
+        if (script)
+          newState = new RenderScheduleState(timelineId, script);
+      }
+    } catch (_) {
+      // schedule state is undefined.
+    }
+
+    this._queryRenderTimelinePropsPromise = undefined;
+    if (newState !== this._scheduleState) {
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState);
+      this._scheduleState = newState;
+    }
+  }
+
+  /** @internal */
+  protected async queryRenderTimelineProps(timelineId: Id64String): Promise<RenderTimelineProps | undefined> {
+    try {
+      return await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: true } }) as RenderTimelineProps;
+    } catch (_) {
       return undefined;
     }
   }
@@ -225,15 +262,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get name(): string { return this.code.value; }
 
   /** Change the Id of the [RenderTimeline]($backend) element that hosts the [RenderSchedule.Script]($common) to be applied by this display style for
-   * animating the contents of the view.
+   * animating the contents of the view, and update [[scheduleScriptReference]] using the script associated with the [RenderTimeline]($backend) element.
+   * @see [DisplayStyleSettings.renderTimeline]($common).
    */
   public async changeRenderTimeline(timelineId: Id64String | undefined): Promise<void> {
-    if (timelineId === this.settings.renderTimeline)
-      return;
+    // Potentially trigger async loading of new schedule state.
+    this.settings.renderTimeline = timelineId;
 
-    const script = await this.loadScheduleState();
-    this.onScheduleScriptReferenceChanged.raiseEvent(script);
-    this._scheduleState = script;
+    // Await async loading if necessary.
+    // Note the `await` in loadScheduleStateFromTimeline will resolve before this one [per the spec](https://262.ecma-international.org/6.0/#sec-triggerpromisereactions).
+    if (this._queryRenderTimelinePropsPromise)
+      await this._queryRenderTimelinePropsPromise;
   }
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
@@ -261,6 +300,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @internal
    */
   public setScheduleState(state: RenderScheduleState | undefined): void {
+    if (state === this._scheduleState)
+      return;
+
     this.onScheduleScriptReferenceChanged.raiseEvent(state);
     this._scheduleState = state;
 
@@ -681,25 +723,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   protected registerSettingsEventListeners(): void {
     // eslint-disable-next-line deprecation/deprecation
     this.settings.onScheduleScriptPropsChanged.addListener((scriptProps) => {
-      let newState: RenderScheduleState | undefined;
-      if (scriptProps) {
-        const script = RenderSchedule.Script.fromJSON(scriptProps);
-        if (script)
-          newState = new RenderScheduleState(this.id, script);
-      }
-
-      if (newState !== this._scheduleState) {
-        this.onScheduleScriptReferenceChanged.raiseEvent(newState);
-        this._scheduleState = newState;
-      }
+      if (undefined === this.settings.renderTimeline)
+        this.loadScheduleStateFromScript(scriptProps);
     });
 
     this.settings.onRenderTimelineChanged.addListener((newTimeline) => {
-      if (newTimeline !== this._scheduleState?.sourceId) {
-        // Loading the new script is asynchronous...people should really be using DisplayStyleState.changeRenderTimeline().
-        this.onScheduleScriptReferenceChanged.raiseEvent(undefined);
-        this._scheduleState = undefined;
-      }
+      // Cancel any in-progress loading of script from timeline.
+      this._queryRenderTimelinePropsPromise = undefined;
+
+      if (undefined !== newTimeline)
+        this.loadScheduleStateFromTimeline(newTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
+      else
+        this.loadScheduleStateFromScript(this.settings.scheduleScriptProps); // eslint-disable-line deprecation/deprecation
     });
 
     this.settings.onPlanarClipMaskChanged.addListener((id, newSettings) => {

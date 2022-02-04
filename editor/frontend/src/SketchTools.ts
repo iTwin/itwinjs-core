@@ -51,11 +51,11 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
   protected override get wantAccuSnap(): boolean { return true; }
   protected override get wantDynamics(): boolean { return true; }
 
-  protected get allowJoin(): boolean { return this.isControlDown; } // These could be tool settings...
+  protected get allowJoin(): boolean { return this.isControlDown; }
   protected get allowClosure(): boolean { return this.isControlDown; }
   protected get allowSimplify(): boolean { return true; }
 
-  protected get wantSmartRotation(): boolean { return this.isContinueExistingPath; }
+  protected get wantSmartRotation(): boolean { return this.isContinueExistingPath || this.isControlDown; }
   protected get wantPickableDynamics(): boolean { return false; }
   protected get wantJoin(): boolean { return this.allowJoin; }
   protected get wantClosure(): boolean { return this.isContinueExistingPath && this.allowClosure; }

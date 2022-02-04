@@ -261,6 +261,7 @@ These keysins control the planar masking of reality models.
   * "refs=0|1" where `1` indicates that if the element is a geometry part, the output should include a list of all geometric elements which reference that geometry part. This is **extremely** inefficient and may take a very long time to process in iModels containing many geometric elements.
   * "modal=0|1" where `1` indicates the output should be displayed in a modal dialog.
   * "copy=0|1" where `1` indicates the output should be copied to the system clipboard.
+  * "explodeparts=0|1" where `1` indicates that a summary of the geometry of each geometry part reference should also be output.
 * `fdt select elements` - given a list of element Ids separated by whitespace, replace the contents of the selection set with those Ids.
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
 * `fdt sky sphere` - set the image used for the skybox as a Url or texture Id.
@@ -340,7 +341,6 @@ These keysins control the planar masking of reality models.
 * `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
   * * `id=`: the source aspect Id or element Id.
   * * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.
-
 * `fdt aasamples <nSamples>` - Sets the number of antialias samples for the current viewport where nSamples is the number of samples to use; if 1 or less then antialiasing is turned off, if > 1 then antialiasing is turned on and it will attempt to use that many samples (restricted by the given hardware constraints)
 The following arguments can also be supplied:
   * `all`: (optional) sets it for all open viewports as well as all future viewports
