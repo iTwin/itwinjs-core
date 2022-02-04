@@ -229,9 +229,7 @@ export async function assertIdentityTransformation(
   const targetToSourceElemsMap = new Map<Element, Element | undefined>();
   const targetElemIds = new Set<Id64String>();
 
-  for await (const [sourceElemId] of sourceDb.query(
-    "SELECT ECInstanceId FROM bis.Element"
-  )) {
+  for await (const [sourceElemId] of sourceDb.query("SELECT ECInstanceId FROM bis.Element")) {
     const targetElemId = transformer.context.findTargetElementId(sourceElemId);
     const sourceElem = sourceDb.elements.getElement(sourceElemId);
     const targetElem = targetDb.elements.tryGetElement(targetElemId);

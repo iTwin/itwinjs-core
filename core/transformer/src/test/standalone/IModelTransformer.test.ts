@@ -1837,6 +1837,8 @@ describe("IModelTransformer", () => {
 
     sourceDb.elements.updateElement({id: a4Id, anotherA: {id: a4Id, relClassName: "TestSchema:AtoA"}} as any);
 
+    sourceDb.saveChanges();
+
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "NavPropCycleTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
