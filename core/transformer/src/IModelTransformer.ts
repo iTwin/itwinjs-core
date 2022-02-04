@@ -90,8 +90,8 @@ export interface IModelTransformOptions {
    */
   preserveElementIdsForFiltering?: boolean;
 
-  /** The behavior to use when an element reference (id) is found stored as a predecessor on an element, but the referenced element
-   * does not actually exist
+  /** The behavior to use when an element reference (id) is found stored as a predecessor on an element in the source,
+   * but the referenced element does not actually exist in the source.
    * It is possible to craft an iModel with dangling predecessors/invalidated relationships by, e.g., deleting certain
    * elements without fixing up references.
    *
@@ -99,11 +99,10 @@ export interface IModelTransformOptions {
    * @note "ignore" passes the issue down to consuming applications, iModels that have invalid element references
    *       like this can cause errors, and you should consider adding custom logic in your transformer to remove the
    *       reference depending on your use case.
-   * @note "delete" will replace all dangling references with the invalid id "0". This may be easier to handle for consuming applications
    * @default "reject"
    * @beta
    */
-  danglingPredecessorsBehavior?: "reject" | "ignore" | "invalidate";
+  danglingPredecessorsBehavior?: "reject" | "ignore";
 }
 
 // TODO things to test:
@@ -132,6 +131,14 @@ class PartiallyCommittedElement {
   public forceComplete() {
     this._onComplete();
   }
+}
+
+class ReferenceReadiness {
+  public constructor(
+    public needsElem: boolean,
+    public needsModel: boolean,
+  ) {}
+  public get isReady() { return !this.needsElem && !this.needsModel; }
 }
 
 /** apply a function to each Id64s in a supported container of Id64s */
@@ -501,16 +508,19 @@ export class IModelTransformer extends IModelExportHandler {
     };
   }
 
-  // FIXME: gross
-  private findReferenceReadiness(id: Id64String): "done" | "no-model" | "none" {
+  /** returns the processing state of an element
+   * if the element is submodeled then it may be in the target but the model isn't yet
+   */
+  private findReferenceReadiness(id: Id64String): ReferenceReadiness {
+    // TODO: make isSubModeled efficient
+    const isSubModeled = this.sourceDb.models.tryGetSubModel(id); // always running this :/
     const idInTarget = this.context.findTargetElementId(id);
-    if (Id64.invalid === idInTarget) return "none";
-    const isSubModeled = this.sourceDb.models.tryGetSubModel(id);
+    if (Id64.invalid === idInTarget) return new ReferenceReadiness(true, isSubModeled !== undefined);
     if (isSubModeled) {
       const modelInTarget = this.targetDb.models.tryGetModelProps(idInTarget) !== undefined;
-      if (!modelInTarget) return "no-model";
+      if (!modelInTarget) return new ReferenceReadiness(false, true);
     }
-    return "done";
+    return new ReferenceReadiness(false, false);
   }
 
   /** collect references this element has that are yet to be mapped, and if necessary create a
@@ -524,20 +534,19 @@ export class IModelTransformer extends IModelExportHandler {
 
     for (const predecessorId of element.getPredecessorIds()) {
       const referenceReadiness = this.findReferenceReadiness(predecessorId);
-      if (referenceReadiness === "done") continue;
+      if (referenceReadiness.isReady) continue;
       Logger.logTrace(loggerCategory, `Deferred resolution of predecessor '${predecessorId}' of element '${element.id}'`);
       // TODO: instead of loading the entire element run a small has query
       const predecessor = this.sourceDb.elements.tryGetElement(predecessorId);
       if (predecessor === undefined) {
         Logger.logWarning(loggerCategory, `Source element (${element.id}) "${element.getDisplayLabel()}" has a dangling predecessor (${predecessorId})`);
         switch (this._options.danglingPredecessorsBehavior) {
-          case "invalidate":
           case "ignore":
             continue;
           case "reject":
             throw new IModelError(
               IModelStatus.NotFound,
-              `Found a reference to an element "${predecessorId}" that doesn't exist while looking for predecessors of "${element.id}"`
+              `Found a reference to an element "${predecessorId}" that doesn't exist while looking for predecessors of "${element.id}".`
               + "\nThis must have been caused by an upstream application that changed the iModel."
               + "\nYou can set the IModelTransformerOptions.danglingPredecessorsBehavior option to 'ignore' to ignore this, but this will leave the iModel"
               + "\nin a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom"
@@ -550,11 +559,16 @@ export class IModelTransformer extends IModelExportHandler {
         if (!this._partiallyCommittedElements.hasById(element.id))
           this._partiallyCommittedElements.setById(element.id, thisPartialElem);
       }
-      missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
-      this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: true}, thisPartialElem);
-      if (referenceReadiness === "no-model") continue;
-      missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
-      this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: false}, thisPartialElem);
+      if (referenceReadiness.needsModel) {
+        missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
+        this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: true}, thisPartialElem);
+      }
+      if (referenceReadiness.needsElem) {
+        // TODO: need to make pending references themselves determine if a model is needed at element resolution time...
+        // to avoid this complicated logic here
+        missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
+        this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: false}, thisPartialElem);
+      }
     }
 
     return missingPredecessors.size > 0;
@@ -602,9 +616,9 @@ export class IModelTransformer extends IModelExportHandler {
             }
           }
           const readiness = this.findReferenceReadiness(id);
-          if (readiness === "done") return;
-          if (readiness === "none") await this.exporter.exportElement(id); // must export element first if not done so
-          await this.exporter.exportModel(id);
+          if (readiness.isReady) return;
+          await this.exporter.exportElement(id); // must export element first if not done so
+          if (readiness.needsModel) await this.exporter.exportModel(id);
         }));
       }
 
@@ -785,19 +799,15 @@ export class IModelTransformer extends IModelExportHandler {
     if (this._partiallyCommittedElements.size > 0) {
       Logger.logWarning(
         loggerCategory,
-        `the following elements were never fully resolved:\n${[
+        "the following elements were never fully resolved:"
+        + `\n${[
           ...this._partiallyCommittedElements.keysById(),
-        ].join("\n")}`
+        ].join("\n")}` +
+        "\nThis indicates that either some predecessors were excluded from the transformation"+
+        "\nor the source has dangling predecessors."
       );
-      // FIXME: need more tests for "invalidate" behavior
-      switch (this._options.danglingPredecessorsBehavior) {
-        case "reject":
-          throw Error("There are elements that were never fully committed, but no predecessors caused a rejection.\n"
-          + "This is a bug.");
-        case "ignore":
-          for (const partiallyCommittedElem of this._partiallyCommittedElements.valuesById()) {
-            partiallyCommittedElem.forceComplete();
-          }
+      for (const partiallyCommittedElem of this._partiallyCommittedElements.valuesById()) {
+        partiallyCommittedElem.forceComplete();
       }
     }
   }

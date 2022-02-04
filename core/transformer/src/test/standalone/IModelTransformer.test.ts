@@ -1458,7 +1458,7 @@ describe("IModelTransformer", () => {
     }
   }
 
-  it.only("predecessor deletion is considered invalid when danglingPredecessorsBehavior='reject' and that is the default", async () => {
+  it("predecessor deletion is considered invalid when danglingPredecessorsBehavior='reject' and that is the default", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorSource.bim");
     const [
       sourceDb,
@@ -1512,12 +1512,6 @@ describe("IModelTransformer", () => {
         .filter(({id}) => Id64.isValidId64(id))
         .map(({id}) => id)
     );
-
-    const invalidateResult = await runTransform({danglingPredecessorsBehavior: "invalidate"});
-
-    expect(
-      [...invalidateResult.displayStyleInTarget.settings.excludedElementIds]
-    ).to.deep.equal([]);
 
     sourceDb.close();
     targetDbForRejected.close();
