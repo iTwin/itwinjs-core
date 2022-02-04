@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed MapBox imagery failing to display.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

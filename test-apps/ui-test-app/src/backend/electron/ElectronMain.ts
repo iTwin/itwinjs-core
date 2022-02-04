@@ -33,6 +33,7 @@ export async function initializeElectron(opts?: IModelHostConfiguration) {
     redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
     scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
   });
+  await authClient.signInSilent();
   if (opt.iModelHost?.authorizationClient)
     opt.iModelHost.authorizationClient = authClient;
 
