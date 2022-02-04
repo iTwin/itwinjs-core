@@ -32,12 +32,6 @@ export interface IpcWebSocketMessage {
 
 /** @internal */
 export namespace IpcWebSocketMessage {
-  let _next = -1;
-
-  export function next(): number {
-    return ++_next;
-  }
-
   export function internal(): IpcWebSocketMessage {
     return { type: IpcWebSocketMessageType.Internal, channel: "", sequence: Number.MIN_SAFE_INTEGER };
   }
@@ -109,14 +103,12 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
   }
 
   public send(channel: string, ...data: any[]): void {
-    const sequence = IpcWebSocketMessage.next();
-    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Send, channel, data, sequence });
+    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Send, channel, data, sequence: -1 });
   }
 
   public async invoke(channel: string, methodName: string, ...args: any[]): Promise<any> {
     const requestId = ++this._nextRequest;
-    const sequence = IpcWebSocketMessage.next();
-    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Invoke, channel, method: methodName, data: args, request: requestId, sequence });
+    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Invoke, channel, method: methodName, data: args, request: requestId, sequence: -1 });
 
     return new Promise((resolve) => {
       this._pendingRequests.set(requestId, resolve);
@@ -146,8 +138,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
   }
 
   public send(channel: string, ...data: any[]): void {
-    const sequence = IpcWebSocketMessage.next();
-    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Push, channel, data, sequence });
+    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Push, channel, data, sequence: -1 });
   }
 
   public handle(channel: string, handler: (event: Event, methodName: string, ...args: any[]) => Promise<any>): RemoveFunction {
@@ -173,14 +164,12 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
 
     const response = await handler({} as any, message.method, ...args);
 
-    const sequence = IpcWebSocketMessage.next();
-
     IpcWebSocket.transport.send({
       type: IpcWebSocketMessageType.Response,
       channel: message.channel,
       response: message.request,
       data: response,
-      sequence,
+      sequence: -1,
     });
   }
 }

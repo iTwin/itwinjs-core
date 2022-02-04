@@ -100,8 +100,6 @@ export class TreeNode extends React.Component<TreeNodeProps> {
     if (!this.props.isLoading && this.props.isLeaf)
       offset += EXPANSION_TOGGLE_WIDTH; // Add expansion toggle/loader width if they're not rendered
 
-    const loader = this.props.isLoading ? (<div className="loader"><ProgressRadial size="x-small" indeterminate /></div>) : undefined;
-
     let checkbox: React.ReactNode;
     if (this.props.checkboxProps) {
       const props: NodeCheckboxRenderProps = {
@@ -154,7 +152,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
           style={{ marginLeft: offset }}
           data-testid={this.createSubComponentTestId("contents")}
         >
-          {loader}
+          {this.props.isLoading && <ProgressRadial size="x-small" indeterminate />}
           {toggle}
           {checkbox}
           {icon}

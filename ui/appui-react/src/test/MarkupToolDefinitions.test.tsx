@@ -54,7 +54,7 @@ describe("MarkupToolDefinitions", () => {
   });
 
   it("ToolWidget should render correctly with Markup Tool Definitions", async () => {
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
     await FrontstageManager.setActiveFrontstageDef(undefined);
     setImmediate(async () => {
       await TestUtils.flushAsyncOperations();

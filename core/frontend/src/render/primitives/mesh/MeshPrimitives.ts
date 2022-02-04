@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AuxChannel, AuxChannelData, Point2d, Range3d } from "@itwin/core-geometry";
+import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
   OctEncodedNormal, PolylineData, PolylineEdgeArgs, PolylineFlags, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
@@ -284,12 +284,12 @@ export class Mesh {
       this.features.toFeatureIndex(index);
   }
 
-  public getGraphics(args: MeshGraphicArgs, system: RenderSystem, instances?: InstancedGraphicParams): RenderGraphic | undefined {
+  public getGraphics(args: MeshGraphicArgs, system: RenderSystem, instancesOrViewIndependentOrigin?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
     if (undefined !== this.triangles && this.triangles.length !== 0) {
       if (args.meshArgs.init(this))
-        return system.createTriMesh(args.meshArgs, instances);
+        return system.createTriMesh(args.meshArgs, instancesOrViewIndependentOrigin);
     } else if (undefined !== this.polylines && this.polylines.length !== 0 && args.polylineArgs.init(this)) {
-      return system.createIndexedPolylines(args.polylineArgs, instances);
+      return system.createIndexedPolylines(args.polylineArgs, instancesOrViewIndependentOrigin);
     }
 
     return undefined;

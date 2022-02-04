@@ -106,11 +106,6 @@ export class Settings {
   /** Loads the necessary variables from `process.env`.
    */
   private load() {
-
-    // Parse environment
-    if (undefined !== process.env.ENVIRONMENT)
-      this.env = parseInt(process.env.ENVIRONMENT, 10);
-
     // Parse OIDC
     if (undefined === process.env.OIDC_CLIENT_ID)
       throw new Error("Missing the 'OIDC_CLIENT_ID' setting.");

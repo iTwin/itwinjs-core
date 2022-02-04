@@ -8,18 +8,18 @@ The rules have two types of attributes: for defining *placement* and for definin
 
 ## Attributes
 
-| Name                                                        | Required? | Type                                              | Default |
-| ----------------------------------------------------------- | --------- | ------------------------------------------------- | ------- |
+| Name                                                        | Required? | Type                                                                 | Default |
+| ----------------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
 | *Placement attributes*                                      |
-| [`condition`](#attribute-condition)                         | No        | [ECExpression](./ECExpressions.md#rule-condition) | `""`    |
-| [`requiredSchemas`](#attribute-requiredschemas)             | No        | `RequiredSchemaSpecification[]`                   | `[]`    |
-| [`priority`](#attribute-priority)                           | No        | `number`                                          | `1000`  |
-| [`onlyIfNotHandled`](#attribute-onlyifnothandled)           | No        | `boolean`                                         | `false` |
-| [`stopFurtherProcessing`](#attribute-stopfurtherprocessing) | No        | `boolean`                                         | `false` |
+| [`condition`](#attribute-condition)                         | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+| [`requiredSchemas`](#attribute-requiredschemas)             | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`priority`](#attribute-priority)                           | No        | `number`                                                             | `1000`  |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)           | No        | `boolean`                                                            | `false` |
+| [`stopFurtherProcessing`](#attribute-stopfurtherprocessing) | No        | `boolean`                                                            | `false` |
 | *Branch content attributes*                                 |
-| [`specifications`](#attribute-specifications)               | No        | `ChildNodeSpecification[]`                        | `[]`    |
-| [`customizationRules`](#attribute-customizationrules)       | No        | `CustomizationRule[]`                             | `[]`    |
-| [`subConditions`](#attribute-subconditions)                 | No        | `SubCondition[]`                                  | `[]`    |
+| [`specifications`](#attribute-specifications)               | No        | `ChildNodeSpecification[]`                                           | `[]`    |
+| [`customizationRules`](#attribute-customizationrules)       | No        | `CustomizationRule[]`                                                | `[]`    |
+| [`subConditions`](#attribute-subconditions)                 | No        | `SubCondition[]`                                                     | `[]`    |
 
 ### Attribute: `condition`
 

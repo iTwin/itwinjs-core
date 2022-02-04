@@ -27,7 +27,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "chai": "^4.1.2",
     "yargs": "^16.0.0"

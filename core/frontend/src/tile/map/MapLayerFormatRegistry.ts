@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module MapLayers
+ */
 
 import { assert } from "@itwin/core-bentley";
 import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
-import { RequestBasicCredentials } from "@bentley/itwin-client";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+import { RequestBasicCredentials } from "../../request/Request";
 
 /** @internal */
 export class MapLayerFormat {
@@ -30,6 +32,7 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 export interface MapLayerSourceValidation {
   status: MapLayerSourceStatus;
   subLayers?: MapSubLayerProps[];
+  authInfo?: MapLayerAuthenticationInfo;
 }
 
 /**
@@ -40,7 +43,7 @@ export interface MapLayerOptions {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   AzureMaps?: MapLayerKey;
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  MapBoxImagery?: MapLayerKey;
+  MapboxImagery?: MapLayerKey;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   BingMaps?: MapLayerKey;
   [format: string]: MapLayerKey | undefined;

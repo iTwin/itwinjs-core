@@ -854,7 +854,7 @@ export class IModelTransformer extends IModelExportHandler {
         if (undefined !== json.targetRelInstanceId) {
           const targetRelationship = this.targetDb.relationships.tryGetInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
           if (targetRelationship) {
-            this.importer.deleteRelationship(targetRelationship);
+            this.importer.deleteRelationship(targetRelationship.toJSON());
           }
           this.targetDb.elements.deleteAspect(statement.getValue(0).getId());
         }
@@ -882,7 +882,7 @@ export class IModelTransformer extends IModelExportHandler {
           const json: any = JSON.parse(statement.getValue(2).getString());
           if (undefined !== json.targetRelInstanceId) {
             const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
-            this.importer.deleteRelationship(targetRelationship);
+            this.importer.deleteRelationship(targetRelationship.toJSON());
           }
           aspectDeleteIds.push(statement.getValue(0).getId());
         }

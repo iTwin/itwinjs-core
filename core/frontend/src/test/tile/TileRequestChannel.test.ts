@@ -173,8 +173,8 @@ function mockViewport(iModel: IModelConnection, viewportId = 1): Viewport {
 }
 
 function requestTiles(vp: Viewport, tiles: TestTile[]): void {
-  IModelApp.tileAdmin.clearTilesForViewport(vp);
-  IModelApp.tileAdmin.clearUsageForViewport(vp);
+  IModelApp.tileAdmin.clearTilesForUser(vp);
+  IModelApp.tileAdmin.clearUsageForUser(vp);
   IModelApp.tileAdmin.requestTiles(vp, new Set<Tile>(tiles));
 }
 
