@@ -1075,6 +1075,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "typedoc-plugin-merge-modules",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "typemoq",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
