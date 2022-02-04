@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { HitDetail, IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
-import { FeatureInfoWidgetControl, MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
+import { FeatureInfoUiItemsProvider, FeatureInfoWidgetControl, MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { ConfigurableUiManager } from "@itwin/appui-react";
 import { BeEvent } from "@itwin/core-bentley";
@@ -17,7 +17,8 @@ export type MapHitEvent = BeEvent<(hit: HitDetail) => void>;
  */
 export class MapLayersUI {
   private static _defaultNs = "mapLayers";
-  private static _uiItemsProvider: MapLayersUiItemsProvider;
+  private static _mapLayersItemsProvider: MapLayersUiItemsProvider;
+  private static _mapFeatureInfoItemsProvider: FeatureInfoUiItemsProvider;
 
   private static _iTwinConfig?: UserPreferencesAccess;
   private static _onMapHit?: MapHitEvent;
@@ -45,10 +46,12 @@ export class MapLayersUI {
     await IModelApp.localization.registerNamespace(this.localizationNamespace);
 
     // _uiItemsProvider always created to provide access to localization.
-    MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(IModelApp.localization);
-    if (registerItemsProvider)
-      UiItemsManager.register(MapLayersUI._uiItemsProvider);
-    else
+    MapLayersUI._mapLayersItemsProvider = new MapLayersUiItemsProvider(IModelApp.localization);
+    MapLayersUI._mapFeatureInfoItemsProvider = new FeatureInfoUiItemsProvider(IModelApp.localization);
+    if (registerItemsProvider) {
+      UiItemsManager.register(MapLayersUI._mapLayersItemsProvider);
+      UiItemsManager.register(MapLayersUI._mapFeatureInfoItemsProvider);
+    } else
       ConfigurableUiManager.registerControl(MapLayersWidgetControl.id, MapLayersWidgetControl);
 
     ConfigurableUiManager.registerControl(FeatureInfoWidgetControl.id, FeatureInfoWidgetControl);

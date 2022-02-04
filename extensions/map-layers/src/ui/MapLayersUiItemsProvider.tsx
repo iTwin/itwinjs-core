@@ -41,6 +41,30 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
   }
 }
 
+export class  FeatureInfoUiItemsProvider implements UiItemsProvider {
+  public readonly id = "FeatureInfoUiItemsProvider";
+  public static localization: Localization;
+
+  public constructor(localization: Localization) {
+    MapLayersUiItemsProvider.localization = localization;
+  }
+
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+
+    if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
+      widgets.push({
+        id: "map-layers:mapFeatureInfoWidget",
+        label: IModelApp.localization.getLocalizedString("mapLayers:Widget.Label"),
+        icon: "icon-map",
+        getWidgetContent: () => <MapFeatureInfoWidget />, // eslint-disable-line react/display-name
+      });
+    }
+
+    return widgets;
+  }
+}
+
 /** MapLayersWidgetControl provides a widget to attach and remove maps layers from the active view's display style.
  * ``` tsx
  *  <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
