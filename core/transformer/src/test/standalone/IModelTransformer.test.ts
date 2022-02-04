@@ -27,6 +27,7 @@ import {
   ClassCounter, deepEqualWithFpTolerance, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
+import { IModelTransformOptions } from "../../IModelTransformer";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -993,7 +994,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("handles definition element scoped by non-definitional element", async () => {
+  it("handles definition element scoped by non-definitional element", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BadPredecessorsExampleSource.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BadPredecessorExampleSource" } });
 
@@ -1457,55 +1458,69 @@ describe("IModelTransformer", () => {
     }
   }
 
-  it("predecessor deletion is considered invalid when danglingPredecessorsBehavior='reject' and that is the default", async () => {
+  it.only("predecessor deletion is considered invalid when danglingPredecessorsBehavior='reject' and that is the default", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorSource.bim");
     const [
       sourceDb,
       { displayStyleId, physicalObjects },
     ] = createIModelWithDanglingPredecessor({ name: "DanglingPredecessors", path: sourceDbPath });
 
-    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorTarget.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorTarget-reject.bim");
+    const targetDbForRejected = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
-    const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb);
+    const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected);
     await expect(defaultTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const ignoreDanglingPredecessorsDisabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { danglingPredecessorsBehavior: "reject" });
-    await expect(ignoreDanglingPredecessorsDisabledTransformer.processAll()).to.be.rejectedWith(
+    const rejectDanglingPredecessorsTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected, { danglingPredecessorsBehavior: "reject" });
+    await expect(rejectDanglingPredecessorsTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const ignoreDanglingPredecessorsEnabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { danglingPredecessorsBehavior: "ignore" });
-    await expect(ignoreDanglingPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
-    targetDb.saveChanges();
+    const runTransform = async (opts: Pick<IModelTransformOptions, "danglingPredecessorsBehavior">) => {
+      const thisTransformTargetPath  = IModelTestUtils.prepareOutputFile("IModelTransformer", `DanglingPredecessorTarget-${opts.danglingPredecessorsBehavior}.bim`);
+      const targetDb = SnapshotDb.createEmpty(thisTransformTargetPath, { rootSubject: sourceDb.rootSubject });
+      const transformer = new ShiftElemIdsTransformer(sourceDb, targetDb, opts);
+      await expect(transformer.processAll()).not.to.be.rejected;
+      targetDb.saveChanges();
 
-    expect(sourceDb.elements.tryGetElement(physicalObjects[1].id)).to.be.undefined;
-    const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
-    expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
+      expect(sourceDb.elements.tryGetElement(physicalObjects[1].id)).to.be.undefined;
+      const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
+      expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
 
-    const displayStyleInTargetId = ignoreDanglingPredecessorsEnabledTransformer.context.findTargetElementId(displayStyleId);
-    const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
+      const displayStyleInTargetId = transformer.context.findTargetElementId(displayStyleId);
+      const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
 
-    const physObjsInTarget = physicalObjects.map((physObjInSource) => {
-      const physObjInTargetId = ignoreDanglingPredecessorsEnabledTransformer.context.findTargetElementId(physObjInSource.id);
-      return { ...physObjInSource, id: physObjInTargetId };
-    });
+      const physObjsInTarget = physicalObjects.map((physObjInSource) => {
+        const physObjInTargetId = transformer.context.findTargetElementId(physObjInSource.id);
+        return { ...physObjInSource, id: physObjInTargetId };
+      });
 
-    expect(Id64.isValidId64(physObjsInTarget[0].id)).to.be.true;
-    expect(Id64.isValidId64(physObjsInTarget[1].id)).not.to.be.true;
+      expect(Id64.isValidId64(physObjsInTarget[0].id)).to.be.true;
+      expect(Id64.isValidId64(physObjsInTarget[1].id)).not.to.be.true;
+
+      return { displayStyleInTarget, physObjsInTarget };
+    };
+
+    const ignoreResult = await runTransform({danglingPredecessorsBehavior: "ignore"});
 
     expect(
-      [...displayStyleInTarget.settings.excludedElementIds]
+      [...ignoreResult.displayStyleInTarget.settings.excludedElementIds]
     ).to.deep.equal(
-      physObjsInTarget
+      ignoreResult.physObjsInTarget
         .filter(({id}) => Id64.isValidId64(id))
         .map(({id}) => id)
     );
 
+    const invalidateResult = await runTransform({danglingPredecessorsBehavior: "invalidate"});
+
+    expect(
+      [...invalidateResult.displayStyleInTarget.settings.excludedElementIds]
+    ).to.deep.equal([]);
+
     sourceDb.close();
-    targetDb.close();
+    targetDbForRejected.close();
   });
 
   it("exports aspects of deferred elements", async () => {

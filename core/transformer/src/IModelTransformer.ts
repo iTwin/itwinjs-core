@@ -129,6 +129,9 @@ class PartiallyCommittedElement {
   public static makePredecessorKey(id: Id64String, isModelRef: boolean) {
     return `${isModelRef ? "model" : "element"}${id}`;
   }
+  public forceComplete() {
+    this._onComplete();
+  }
 }
 
 /** apply a function to each Id64s in a supported container of Id64s */
@@ -778,6 +781,7 @@ export class IModelTransformer extends IModelExportHandler {
   public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
 
   private finalizeTransformation() {
+    // if ignoring dangling predecessors, then any unresolved pending references should be force updated
     if (this._partiallyCommittedElements.size > 0) {
       Logger.logWarning(
         loggerCategory,
@@ -785,6 +789,16 @@ export class IModelTransformer extends IModelExportHandler {
           ...this._partiallyCommittedElements.keysById(),
         ].join("\n")}`
       );
+      // FIXME: need more tests for "invalidate" behavior
+      switch (this._options.danglingPredecessorsBehavior) {
+        case "reject":
+          throw Error("There are elements that were never fully committed, but no predecessors caused a rejection.\n"
+          + "This is a bug.");
+        case "ignore":
+          for (const partiallyCommittedElem of this._partiallyCommittedElements.valuesById()) {
+            partiallyCommittedElem.forceComplete();
+          }
+      }
     }
   }
 
