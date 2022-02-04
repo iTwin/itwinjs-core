@@ -211,6 +211,12 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
    */
   public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>  {
     let spatialLocation: SpatialLocationAndExtents | undefined;
+    const fileType = this.realityDataType;
+
+    // Mapping Resource are not currenlty supported
+    if (fileType === "OMR")
+      return undefined;
+
     if (this.key.format === RealityDataFormat.ThreeDTile) {
       const rootDocument = await this.getRootDocument(undefined);
       spatialLocation = ThreeDTileFormatInterpreter.getSpatialLocationAndExtents(rootDocument);
