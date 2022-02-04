@@ -13,11 +13,11 @@ It allows to define these types of groupings:
 The rule works in conjunction with other grouping options available in [hierarchy specifications](./ChildNodeRule.md#attribute-specifications): `groupByClass` and `groupByLabel`. All grouping rules are
 applied in this priority:
 
-1. [Base class grouping](#base-class-grouping) specified using [base class grouping specification](#base-class-grouping) through a grouping rule.
+1. [Base class grouping](#base-class-grouping) specified using base class grouping specification through a grouping rule.
 2. Direct class grouping specified using `groupByClass` attribute at specification level.
-3. [Property grouping](#property-grouping) specified using [property grouping specification](#property-grouping) through a grouping rule.
+3. [Property grouping](#property-grouping) specified using property grouping specification through a grouping rule.
 4. Display label grouping specified using `groupByLabel` attribute at specification level.
-5. [Same label grouping](#same-label-instance-grouping) specified using [same label instance grouping specification](#same-label-instance-grouping) through a grouping rule.
+5. [Same label grouping](#same-label-instance-grouping) specified using same label instance grouping specification through a grouping rule.
 
 The rule itself works in a similar way as hierarchy rules - *rule* identifies *what* to group and it has *specifications* which tell *how* the grouping should be done.
 
