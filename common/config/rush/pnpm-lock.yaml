@@ -1825,9 +1825,11 @@ importers:
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       faker: ^4.1.0
+      fast-sort: ^3.0.2
       ignore-styles: ^5.0.1
       immer: 9.0.6
       internal-tools: workspace:*
+      jsdom: ^17.0.0
       jsdom-global: 3.0.2
       mocha: ^8.3.2
       react: ^17.0.0
@@ -1875,6 +1877,7 @@ importers:
       cpx2: 3.0.2
       deep-equal: 1.1.1
       faker: 4.1.0
+      fast-sort: 3.1.1
       immer: 9.0.6
       mocha: 8.4.0
       react: 17.0.2
@@ -1896,7 +1899,8 @@ importers:
       eslint: 7.32.0
       ignore-styles: 5.0.1
       internal-tools: link:../../tools/internal
-      jsdom-global: 3.0.2
+      jsdom: 17.0.0
+      jsdom-global: 3.0.2_jsdom@17.0.0
       typescript: 4.4.4
 
   ../../full-stack-tests/rpc:
