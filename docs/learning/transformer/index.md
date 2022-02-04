@@ -97,3 +97,15 @@ The following logger categories are provided for use with the [Logger]($bentley)
 - [TransformerLoggerCategory.IModelExporter]($transformer)
 - [TransformerLoggerCategory.IModelTransformer]($transformer)
 - [TransformerLoggerCategory.IModelImporter]($transformer)
+
+## Implementing iModel branching workflows through the transformer
+
+Using the transformer as a framework, it is possible to implement the necessary operations for a branching workflow,
+where *branch iModels* from a *master iModel* form a tree-like change history as branches *synchronize* at distinct points to
+transfer data to the master. The implementation with examples and terminology by the transformer is elaborated in the
+[branching iModels article](./branching-imodels.md).
+
+## ETL examples
+
+More samples of using the transformer to export iModels or subsets of iModels to different formats
+can be found in the [ETL (Extract-Transform-Load) samples repository](https://github.com/iTwin/etl-samples)
