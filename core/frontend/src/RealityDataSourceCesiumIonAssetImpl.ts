@@ -39,7 +39,7 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
    * Create an instance of this class from a source key and iTwin context/
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    if (sourceKey.provider === RealityDataProvider.CesiumIonAsset)
+    if (sourceKey.provider !== RealityDataProvider.CesiumIonAsset)
       return undefined;
     const rdSource = new RealityDataSourceCesiumIonAssetImpl({ sourceKey });
     let tilesetUrl: string | undefined;
