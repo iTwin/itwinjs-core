@@ -135,7 +135,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /example-code                         @iTwin/itwinjs-core-admins
 
 /extensions                           @bsteinbk @calebmshafer
-/extensions/test-extension            @wgoehrig
+/extensions/test-extension            @calebmshafer @wgoehrig @aruniverse
 /extensions/map-layers                @bsteinbk @mdastous-bentley
 
 /full-stack-tests/core                @iTwin/itwinjs-core-admins

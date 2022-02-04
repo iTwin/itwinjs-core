@@ -2,8 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+// Export all types here.
 export * from "./common_types";
 export * from "./frontend_types";
+
+// Export all real values here.
 export {
   InteractiveTool,
   PrimitiveTool,

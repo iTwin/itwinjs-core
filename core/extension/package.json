@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-extension",
-  "version": "3.0.0-extension.1",
+  "version": "3.1.0-dev.19",
   "description": "",
   "typings": "index.d.ts",
   "license": "MIT",
@@ -14,8 +14,7 @@
     "clean": "rimraf .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
-    "lint": "",
-    "// lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
   "keywords": [

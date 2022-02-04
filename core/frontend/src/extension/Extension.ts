@@ -20,11 +20,8 @@ export interface ExtensionManifest {
    * e.g "./lib/main.js"
    */
   readonly main?: string;
-  /** The version of iTwin.js Core. */
-  readonly engines?: { itwinjs: string };
   /** List of activation events this Extension supports. */
   readonly activationEvents?: string[];
-  readonly enableProposedApi?: boolean;
 }
 
 /** @beta */

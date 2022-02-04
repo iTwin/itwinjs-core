@@ -9,9 +9,6 @@ import {
   BeButtonEvent, CoordinateLockOverrides, EventHandled, LocateResponse, PrimitiveTool, ExtensionHost
 } from "@itwin/core-extension";
 
-/** Minimalistic extension tool for a user to pick a set of elements of interest
- * @public
- */
 export class ExtensionSelectTool extends PrimitiveTool {
 
   public static override toolId = "TestExtension.Select";

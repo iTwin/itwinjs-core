@@ -3072,6 +3072,7 @@ export class ExtensionAdmin {
     addBuildExtension(manifestPromise: Promise<any>, mainFunc?: ResolveFunc_2): Promise<void>;
     addExtensionLoader(extensionLoader: ExtensionLoader): void;
     addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
+    // @internal
     onStartup: () => Promise<void>;
     }
 
@@ -3122,11 +3123,6 @@ export interface ExtensionManifest {
     readonly description?: string;
     // (undocumented)
     readonly displayName?: string;
-    // (undocumented)
-    readonly enableProposedApi?: boolean;
-    readonly engines?: {
-        itwinjs: string;
-    };
     readonly main?: string;
     // (undocumented)
     readonly name: string;
@@ -4753,9 +4749,9 @@ export class IModelApp {
     // @internal
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
-    static readonly onBeforeShutdown: BeEvent<() => void>;
     // @internal
-    static readonly onBeforeStartup: BeEvent<() => void>;
+    static readonly onAfterStartup: BeEvent<() => void>;
+    static readonly onBeforeShutdown: BeEvent<() => void>;
     // @beta
     static get publicPath(): string;
     // @alpha

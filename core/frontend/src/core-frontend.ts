@@ -176,7 +176,7 @@ export * from "./RealityDataSource";
  */
 /**
  * @docs-group-description Extensions
- * Classes for creating and managing runtime
+ * Classes for creating and managing Extensions.
  */
 /**
  * @docs-group-description Properties

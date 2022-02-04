@@ -6,7 +6,6 @@
  * @module Extensions
  */
 
-// import { Extension, ExtensionLoader, ExtensionManifest, LocalExtensionProps, PendingExtension } from "./Extension";
 import { IModelApp } from "../IModelApp";
 import { ExtensionManifest, LocalExtensionProps } from "./Extension";
 import { ExtensionLoader } from "./ExtensionLoader";
@@ -43,8 +42,6 @@ enum ActivationEvents {
 /** The Extension Admin controls the list of currently known, loaded and executing an Extension.
  * Handles the loading of Extensions and maintains a list of the currently loaded Extensions.
  *
- * On application startup, an initial list of Extensions is gathered by searching in known locations for
- *
  * @beta
  */
 export class ExtensionAdmin {
@@ -54,35 +51,32 @@ export class ExtensionAdmin {
   /** Defines the set of extensions that are currently known and can be invoked during activation events.  */
   private _installedExtensions: Map<string, LocalExtensionProps> = new Map<string, LocalExtensionProps>();
 
-  /**
-    * Fired when an Extension has been added or removed.
-    */
-
+  /** Fired when an Extension has been added or removed.
+   * @internal
+   */
   public onStartup = async () => {
     await this.activateExtensionEvents(ActivationEvents.onStartupApp);
   };
 
   public constructor() {
-    IModelApp.onBeforeStartup.addListener(this.onStartup);
+    IModelApp.onAfterStartup.addListener(this.onStartup);
   }
 
-  /** Adds an ExtensionLoader to the front of the list of extension loaders in use. Extension loaders will be invoked front to back.
-   * By default, the list consists of public Extension Service context, unless disabled via props.
+  /** Add an ExtensionLoader to the front of the list of extension loaders. Extension loaders are invoked front to back.
    * @param extensionLoader Extension loader to add
    */
   public addExtensionLoaderFront(extensionLoader: ExtensionLoader) {
     this._extensionLoaders.unshift(extensionLoader);
   }
 
-  /** Adds an ExtensionLoader to the list of extension loaders in use.
-    * By default, the list consists of public Extension Service context, unless disabled via props.
-    * @param extensionLoader Extension loader to add
-    */
+  /** Add an ExtensionLoader to the list of extension loaders in use.
+   * @param extensionLoader Extension loader to add
+   */
   public addExtensionLoader(extensionLoader: ExtensionLoader) {
     this._extensionLoaders.push(extensionLoader);
   }
 
-  /** Add an Extension to be bundled during compilation.
+  /** Add an Extension intend to be bundled during compilation.
    * @param manifestLoader A function that loads the manifest file.
    * @param mainFunc The main function to be executed upon
    */
