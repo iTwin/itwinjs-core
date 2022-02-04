@@ -100,7 +100,7 @@ describe("Class Registry", () => {
   });
 });
 
-describe("Class Registry - generated classes", () => {
+describe.only("Class Registry - generated classes", () => {
   let imodel: SnapshotDb;
   const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
 
@@ -167,6 +167,12 @@ describe("Class Registry - generated classes", () => {
       this.derivedNavProp = new RelatedElement(props.derivedNavProp);
     }
   }
+
+  class Derived2 extends DerivedWithNavProp {}
+  class Derived3 extends Derived2 {}
+  class Derived4 extends Derived3 {}
+  class Derived5 extends Derived4 {}
+  class Derived6 extends Derived5 {}
 
   // if a single inherited class is not generated, the entire hierarchy is considered not-generated
   it("should only generate automatic collectPredecessorIds implementations for generated classes", async () => {
