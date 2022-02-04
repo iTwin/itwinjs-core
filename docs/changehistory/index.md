@@ -1225,44 +1225,44 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 
 | Deprecated in @itwin/core-react | Use from @itwin/itwinui-react instead          |
 | ------------------------------- | ---------------------------------------------- |
-| Button                          | Button                                         |
+| Button                          | [Button](https://itwin.github.io/iTwinUI-react/?path=/story/buttons)                                       |
 | ButtonSize                      | `size` prop for itwinui-react Button           |
 | ButtonType                      | `styleType` prop for itwinui-react Button      |
-| Checkbox                        | Checkbox                                       |
-| ExpandableBlock                 | ExpandableBlock                                |
-| Headline                        | Headline                                       |
-| HorizontalTabs                  | HorizontalTabs                                 |
-| Input                           | Input                                          |
-| LabeledInput                    | LabeledInput                                   |
-| LabeledSelect                   | LabeledSelect                                  |
-| LabeledTextarea                 | LabeledTextarea                                |
-| LabeledToggle                   | ToggleSwitch with `labelPosition="right"` prop |
-| LeadingText                     | Leading                                        |
-| ProgressBar                     | ProgressLinear                                 |
-| ProgressSpinner                 | ProgressRadial                                 |
-| Radio                           | Radio                                          |
-| Select                          | Select                                         |
+| Checkbox                        | [Checkbox](https://itwin.github.io/iTwinUI-react/?path=/story/input-checkbox)                                       |
+| ExpandableBlock                 | [ExpandableBlock](https://itwin.github.io/iTwinUI-react/?path=/story/core-expandableblock)                                |
+| Headline                        | [Headline](https://itwin.github.io/iTwinUI-react/?path=/story/typography-headline)                                       |
+| HorizontalTabs                  | [HorizontalTabs](https://itwin.github.io/iTwinUI-react/?path=/story/core-tabs)                                 |
+| Input                           | [Input](https://itwin.github.io/iTwinUI-react/?path=/story/input-input)                                          |
+| LabeledInput                    | [LabeledInput](https://itwin.github.io/iTwinUI-react/?path=/story/input-labeledinput)                                   |
+| LabeledSelect                   | [LabeledSelect](https://itwin.github.io/iTwinUI-react/?path=/story/input-labeledselect)                                  |
+| LabeledTextarea                 | [LabeledTextarea](https://itwin.github.io/iTwinUI-react/?path=/story/input-labeledtextarea)                                |
+| LabeledToggle                   | [ToggleSwitch](https://itwin.github.io/iTwinUI-react/?path=/story/input-toggleswitch--label-right) with `labelPosition="right"` prop |
+| LeadingText                     | [Leading](https://itwin.github.io/iTwinUI-react/?path=/story/typography-leading)                                        |
+| ProgressBar                     | [ProgressLinear](https://itwin.github.io/iTwinUI-react/?path=/story/progressindicators-progresslinear)                                 |
+| ProgressSpinner                 | [ProgressRadial](https://itwin.github.io/iTwinUI-react/?path=/story/progressindicators-progressradial)                                 |
+| Radio                           | [Radio](https://itwin.github.io/iTwinUI-react/?path=/story/input-radio)                                          |
+| Select                          | [Select](https://itwin.github.io/iTwinUI-react/?path=/story/input-select)                                         |
 | SelectOption                    | SelectOption                                   |
-| Slider                          | Slider                                         |
-| SmallText                       | Small                                          |
-| Spinner                         | ProgressRadial with `indeterminate` prop       |
+| Slider                          | [Slider](https://itwin.github.io/iTwinUI-react/?path=/story/input-slider)                                         |
+| SmallText                       | [Small](https://itwin.github.io/iTwinUI-react/?path=/story/typography-small)                                          |
+| Spinner                         | [ProgressRadial](https://itwin.github.io/iTwinUI-react/?path=/story/progressindicators-progressradial--indeterminate) with `indeterminate` prop       |
 | SpinnerSize                     | `size` prop in ProgressRadialProps             |
-| SplitButton                     | SplitButton                                    |
-| Subheading                      | Subheading                                     |
-| Textarea                        | Textarea                                       |
-| Tile                            | Tile                                           |
-| Title                           | Title                                          |
-| Toggle                          | ToggleSwitch                                   |
-| Tooltip                         | Tooltip                                        |
+| SplitButton                     | [SplitButton](https://itwin.github.io/iTwinUI-react/?path=/story/buttons-splitbutton)                                    |
+| Subheading                      | [Subheading](https://itwin.github.io/iTwinUI-react/?path=/story/typography-subheading)                                     |
+| Textarea                        | [Textarea](https://itwin.github.io/iTwinUI-react/?path=/story/input-textarea)                                       |
+| Tile                            | [Tile](https://itwin.github.io/iTwinUI-react/?path=/story/core-tile)                                           |
+| Title                           | [Title](https://itwin.github.io/iTwinUI-react/?path=/story/typography-title)                                          |
+| Toggle                          | [ToggleSwitch](https://itwin.github.io/iTwinUI-react/?path=/story/input-toggleswitch)                                   |
+| Tooltip                         | [Tooltip](https://itwin.github.io/iTwinUI-react/?path=/story/core-tooltip)                                        |
 | TooltipPlacement                | Placement                                      |
 
 | Deprecated in @itwin/components-react | Use from @itwin/itwinui-react instead |
 | ------------------------------------- | ------------------------------------- |
-| Breadcrumb                            | Breadcrumbs                           |
+| Breadcrumb                            | [Breadcrumbs](https://itwin.github.io/iTwinUI-react/?path=/story/core-breadcrumbs)                           |
 
 | Deprecated in @itwin/imodel-components-react | Use from @itwin/itwinui-react instead |
 | -------------------------------------------- | ------------------------------------- |
-| ColorPickerPanel                             | ColorPicker                           |
+| ColorPickerPanel                             | [ColorPicker](https://itwin.github.io/iTwinUI-react/?path=/story/core-colorpicker)                           |
 
 ##### Slider
 
