@@ -91,11 +91,15 @@ export class ClassRegistry {
         generatedClass.prototype,
         "collectPredecessorIds",
         {
-          value(this: typeof generatedClass, predecessorIds: Id64Set) {
-            // first prototype of `this` is the current class, second is its superclass
-            const superImpl: Element["collectPredecessorIds"] = Object.getPrototypeOf(Object.getPrototypeOf(this)).collectPredecessorIds;
+          // prototype of `this` is the class
+          value(this: typeof generatedClass, predecessorIds: Id64Set, _lastSuper: Element = Object.getPrototypeOf(this)) {
+            // FIXME: this change means there's a bug in the current implementation!
+            // we must keep the previous super in order to propagate super calls down the chain
+            _lastSuper = Object.getPrototypeOf(_lastSuper);
+            type HackedCollectPredecessorsIds = (...args: [...Parameters<Element["collectPredecessorIds"]>, Element]) => void;
+            const superImpl: HackedCollectPredecessorsIds = _lastSuper["collectPredecessorIds"];
             // we know it is valid because `generatedClass.is(Element)` and generatedClass is defined here so it can't be Element itself
-            superImpl.call(this, predecessorIds);
+            superImpl.call(this, predecessorIds, _lastSuper);
             for (const navProp of navigationProps) {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
               if (!relatedElem || !Id64.isValid(relatedElem.id)) continue;
