@@ -93,7 +93,8 @@ export class ClassRegistry {
         {
           // prototype of `this` is the class
           value(this: typeof generatedClass, predecessorIds: Id64Set) {
-            const superImpl: Element["collectPredecessorIds"] = Object.getPrototypeOf(generatedClass).collectPredecessorIds;
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            const superImpl: Element["collectPredecessorIds"] = (superclass as typeof Element).prototype["collectPredecessorIds"];
             superImpl.call(this, predecessorIds);
             for (const navProp of navigationProps) {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
