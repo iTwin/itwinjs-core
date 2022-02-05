@@ -129,7 +129,7 @@ export class AccessToken {
    * - The token must include the "Bearer" prefix that identifies JSON Web Tokens (JWTs)
    * - The token is NOT validated in any way other than the basic prefix check described above
    * @param tokenStr String representation of the token
-   * @throws [[BentleyError]] If the token does not have the required prefix
+   * @throws [BentleyError]($bentleyjs-core) If the token does not have the required prefix
    */
   public static fromTokenString(tokenStr: string): AccessToken {
     const accessToken: AccessToken = AccessToken.generateProperTokenType(tokenStr);
