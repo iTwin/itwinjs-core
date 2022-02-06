@@ -86,22 +86,18 @@ export class ClassRegistry {
       .filter(([_propName, prop]) => prop.isNavigation)
       .map(([propName, _prop]) => propName);
 
-    if (generatedClass.is(Element)) {
+    const isElement = (t: typeof Entity): t is typeof Element => t.is(Element);
+
+    if (isElement(superclass)) {
       Object.defineProperty(
         generatedClass.prototype,
         "collectPredecessorIds",
         {
           // first prototype of `this` is its class
-          value(this: typeof generatedClass, predecessorIds: Id64Set, _lastSuper: Element = Object.getPrototypeOf(this)) {
-            // get the super
-            // we must keep the previous super in order to propagate super calls down the chain
-            _lastSuper = Object.getPrototypeOf(_lastSuper);
-            type HackedCollectPredecessorsIds = (...args: [...Parameters<Element["collectPredecessorIds"]>, Element]) => void;
+          value(this: typeof generatedClass, predecessorIds: Id64Set) {
             // eslint-disable-next-line @typescript-eslint/dot-notation
-            const superImpl: HackedCollectPredecessorsIds = _lastSuper["collectPredecessorIds"];
-            // we know the super object will have collectPredecessorIds because `generatedClass.is(Element)` means it either is a subclass of Element
-            // or is Element, and it is not Element because it is declared in this function, so the super class must be Element or a subclass of it
-            superImpl.call(this, predecessorIds, _lastSuper);
+            const superImpl = superclass.prototype["collectPredecessorIds"];
+            superImpl.call(this, predecessorIds);
             for (const navProp of navigationProps) {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
               if (!relatedElem || !Id64.isValid(relatedElem.id)) continue;

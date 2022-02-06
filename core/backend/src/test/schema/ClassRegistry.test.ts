@@ -135,7 +135,9 @@ describe.only("Class Registry - generated classes", () => {
 
   class TestGeneratedClasses extends Schema {
     public static override get schemaName(): string { return "TestGeneratedClasses"; }
-    public static get classes() { return [TestElementWithNavProp]; }
+    public static get classes() {
+      return [ TestElementWithNavProp, DerivedWithNavProp, Derived2, Derived3, Derived4, Derived5, Derived6 ];
+    }
     public static registerSchema() {
       if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
         Schemas.unregisterSchema(this.schemaName);
@@ -145,6 +147,10 @@ describe.only("Class Registry - generated classes", () => {
           ClassRegistry.register(class_, this);
         }
       }
+    }
+
+    public static unregisterSchema() {
+      Schemas.unregisterSchema(this.schemaName);
     }
   }
 
@@ -168,11 +174,21 @@ describe.only("Class Registry - generated classes", () => {
     }
   }
 
-  class Derived2 extends DerivedWithNavProp {}
-  class Derived3 extends Derived2 {}
-  class Derived4 extends Derived3 {}
-  class Derived5 extends Derived4 {}
-  class Derived6 extends Derived5 {}
+  class Derived2 extends DerivedWithNavProp {
+    public static override get className() { return "Derived2"; }
+  }
+  class Derived3 extends Derived2 {
+    public static override get className() { return "Derived3"; }
+  }
+  class Derived4 extends Derived3 {
+    public static override get className() { return "Derived4"; }
+  }
+  class Derived5 extends Derived4 {
+    public static override get className() { return "Derived5"; }
+  }
+  class Derived6 extends Derived5 {
+    public static override get className() { return "Derived6"; }
+  }
 
   // if a single inherited class is not generated, the entire hierarchy is considered not-generated
   it("should only generate automatic collectPredecessorIds implementations for generated classes", async () => {
@@ -264,7 +280,9 @@ describe.only("Class Registry - generated classes", () => {
       }
     }
     class MyTestGeneratedClasses extends TestGeneratedClasses {
-      public static override get classes() { return [MyTestElementWithNavProp]; }
+      public static override get classes() {
+        return [ MyTestElementWithNavProp, Derived2, Derived3, Derived4, Derived5, Derived6 ];
+      }
     }
     MyTestGeneratedClasses.registerSchema();
 
@@ -334,6 +352,75 @@ describe.only("Class Registry - generated classes", () => {
     // (we already know its implementation was called, because testImplPredecessorId is in the derived call's result)
     expect(testElementWithNavPropCollectPredecessorsSpy.called).to.be.true;
 
+    sinon.restore();
+    MyTestGeneratedClasses.unregisterSchema();
+  });
+
+  it.only("should work along a complex chain of overrides", async () => {
+    class MyDerived2 extends Derived2 {
+      public override collectPredecessorIds(predecessorIds: Id64Set) {
+        super.collectPredecessorIds(predecessorIds);
+        predecessorIds.add("derived-2");
+      }
+    }
+    class MyDerived4 extends Derived4 {
+      public override collectPredecessorIds(predecessorIds: Id64Set) {
+        super.collectPredecessorIds(predecessorIds);
+        predecessorIds.add("derived-4");
+      }
+    }
+    class MyTestGeneratedClasses extends TestGeneratedClasses {
+      public static override get classes() {
+        // leaving Derived3,5,6 generated
+        return [ TestElementWithNavProp, MyDerived2, MyDerived4 ];
+      }
+    }
+    MyTestGeneratedClasses.registerSchema();
+
+    const testEntity1Id = imodel.elements.insertElement({
+      classFullName: "TestGeneratedClasses:Derived6",
+      prop: "sample-value-1",
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as TestEntityProps);
+
+    const testEntity2Id = imodel.elements.insertElement({
+      classFullName: "TestGeneratedClasses:TestEntity",
+      prop: "sample-value-2",
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as TestEntityProps);
+
+    const derived6Id = imodel.elements.insertElement({
+      classFullName: Derived6.classFullName,
+      model: IModelDb.dictionaryId,
+      navProp: {
+        id: testEntity1Id,
+        relClassName: "TestGeneratedClasses:ElemRel",
+      },
+      derivedNavProp: {
+        id: testEntity2Id,
+        relClassName: "TestGeneratedClasses:DerivedElemRel",
+      },
+    } as DerivedWithNavPropProps);
+
+    const derived6 = imodel.elements.getElement(derived6Id);
+
+    // This demonstrates that if a non-generated class has a registered non-biscore base, it will still get a generated impl,
+    // which will not include navigation properties of base classes as predecessors if the base class chose to ignore them
+    expect([...derived6.getPredecessorIds()]).to.have.members(
+      [
+        derived6.model,
+        derived6.code.scope,
+        derived6.parent?.id,
+        "derived-4",
+        "derived-2",
+        testEntity1Id,
+        testEntity2Id,
+      ].filter((x) => x !== undefined)
+    );
+
+    MyTestGeneratedClasses.unregisterSchema();
     sinon.restore();
   });
 });
