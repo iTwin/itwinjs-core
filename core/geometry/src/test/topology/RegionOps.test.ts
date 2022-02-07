@@ -635,12 +635,19 @@ function curveLength(source: AnyCurve): number {
   return 0.0;
 }
 
-function testOffset(allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, jointOptions: JointOptions, strokeOptions: StrokeOptions): boolean {
+// baseCurve centered at origin
+function testOffset(allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, jointOptions: JointOptions, strokeOptions?: StrokeOptions): boolean {
   const offsetCurve = RegionOps.constructCurveXYOffset(baseCurve, jointOptions, strokeOptions);
   if (offsetCurve === undefined)
     return false;
+
+  const halfRangeY = offsetCurve.range().yLength() / 2;
+  delta.y += halfRangeY;
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurve, delta.x, delta.y);
-  delta.y += 2 * jointOptions.leftOffsetDistance + offsetCurve.range().yLength();
+  delta.y += halfRangeY;
+
+// START HERE: spot-check distance between base and offset
+
   return true;
 }
 
@@ -830,23 +837,33 @@ describe("CloneSplitCurves", () => {
     const ck = new Checker();
     const delta = Point2d.createZero();
     const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/offsetCurve.imjs", "utf8"))) as CurveChain[];
-    const jointOptions = new JointOptions(0.5);
-    jointOptions.preserveEllipticalArcs = true;   // TEMPORARY restriction, uncomment ellipse lines below when finish B-spline offset code
-    const strokeOptions = new StrokeOptions();
+    const offsetDistance = 0.5;
+    const jointOptions = new JointOptions(offsetDistance);
+    // const strokeOptions = new StrokeOptions();
     for (const chain of inputs) {
       if (chain instanceof Path || chain instanceof Loop) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, delta.x, delta.y);
-        delta.y += chain.range().yLength();
-        const jo = jointOptions.clone();
-        const so = strokeOptions.clone();
-        ck.testTrue(testOffset(allGeometry, delta, chain, jo, so));  // defaults
-        jo.setFrom(jointOptions); jo.leftOffsetDistance *= -1;
-        ck.testTrue(testOffset(allGeometry, delta, chain, jo, so));  // right offset
-        // jo.setFrom(jointOptions); jo.preserveEllipticalArcs = true;
-        // ck.testTrue(testOffset(allGeometry, delta, chain, jo, so));  // preserve ellipses
+        const halfRangeX = offsetDistance + chain.range().xLength() / 2;
+        delta.x += halfRangeX;
 
-        delta.x += 2 * chain.range().xLength();
         delta.y = 0;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, delta.x, delta.y);
+        delta.y += chain.range().yLength() / 2;
+
+        const jo = jointOptions.clone();
+        ck.testTrue(testOffset(allGeometry, delta, chain, jo));  // left offset
+        jo.leftOffsetDistance *= -1;
+        ck.testTrue(testOffset(allGeometry, delta, chain, jo));  // right offset
+
+        if (chain.getChild(0) instanceof Arc3d && !(chain.getChild(0) as Arc3d).isCircular) { // preserve ellipses
+          jo.setFrom(jointOptions); jo.preserveEllipticalArcs = true;
+          ck.testTrue(testOffset(allGeometry, delta, chain, jo));  // left offset
+          jo.leftOffsetDistance *= -1;
+          ck.testTrue(testOffset(allGeometry, delta, chain, jo));  // right offset
+        }
+
+        //jo.setFrom(jointOptions);
+
+        delta.x += halfRangeX;
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "OffsetCurves");
