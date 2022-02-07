@@ -460,7 +460,7 @@ describe("Matrix4d", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("Inverse", () => {
+  it("Inverse", () => {
     const ck = new bsiChecker.Checker();
 
     for (const matrixA of [
@@ -468,7 +468,7 @@ describe("Matrix4d", () => {
         -0.7180980534975014, 0, 0, 513359.37226204335,
         0, -1.267092311832453, 0, 6221930.288732969,
         0, 0, 0.02752494718615039, 0.00028901194545457914,
-        0, 0, 0, 1),  // from RBB
+        0, 0, 0, 1),  // from RBB, failed to invert with matrix.maxAbs() scaling logic
       Matrix4d.createRowValues(0.5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
       Matrix4d.createRowValues(
         1, 0, 0, 0,
