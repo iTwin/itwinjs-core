@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartographic, EcefLocation, EcefLocationProps } from "@itwin/core-common";
+import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS } from "@itwin/core-orbitgt";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
@@ -47,7 +47,7 @@ export class OPCFormatInterpreter  {
    */
   public static async getSpatialLocationAndExtents(fileReader: PointCloudReader): Promise<SpatialLocationAndExtents> {
     let worldRange = new Range3d();
-    let location: Cartographic | EcefLocationProps;
+    let location: Cartographic | EcefLocation;
     let isGeolocated = true;
 
     const bounds = fileReader.getFileBounds();
@@ -73,7 +73,7 @@ export class OPCFormatInterpreter  {
     } else {
       // NoGCS case
       isGeolocated = false;
-      const centerOfEarth: EcefLocationProps = { origin: { x: 0.0, y: 0.0, z: 0.0 }, orientation: { yaw: 0.0, pitch: 0.0, roll: 0.0 } };
+      const centerOfEarth = new EcefLocation({ origin: { x: 0.0, y: 0.0, z: 0.0 }, orientation: { yaw: 0.0, pitch: 0.0, roll: 0.0 } });
       location = centerOfEarth;
       Logger.logTrace(loggerCategory, "OPC RealityData NOT Geolocated", () => ({ ...location }));
     }

@@ -6,13 +6,13 @@
  * @module Tiles
  */
 import { GuidString, Logger } from "@itwin/core-bentley";
-import { Cartographic, EcefLocationProps, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
+import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
 import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
 import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
 import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
-import { Range3dProps } from "@itwin/core-geometry";
+import { Range3d } from "@itwin/core-geometry";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
@@ -21,9 +21,9 @@ const loggerCategory: string = FrontendLoggerCategory.RealityData;
  */
 export interface SpatialLocationAndExtents {
   /** location of the point at the center of the reaity data */
-  location: Cartographic | EcefLocationProps;
+  location: Cartographic | EcefLocation;
   /** extents of the volume around location */
-  worldRange: Range3dProps;
+  worldRange: Range3d;
   /** true if this reality data is geolocated
    * A reality data is geolocated when we can compute a valid position relative to the earth surface.
    * Note that some reality data contains custom coordinate system without any information on the relative position on earth.

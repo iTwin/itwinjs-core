@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { JsonUtils, Logger } from "@itwin/core-bentley";
-import { Cartographic, EcefLocation, EcefLocationProps } from "@itwin/core-common";
+import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Matrix3d, Point3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { PublisherProductInfo, SpatialLocationAndExtents } from "../RealityDataSource";
@@ -31,7 +31,7 @@ export class ThreeDTileFormatInterpreter  {
   public static getSpatialLocationAndExtents(json: any): SpatialLocationAndExtents {
     const worldRange = new Range3d();
     let isGeolocated = true;
-    let location: Cartographic | EcefLocationProps;
+    let location: Cartographic | EcefLocation;
     Logger.logTrace(loggerCategory, "RealityData realityModelFromJson");
 
     if (undefined !== json.root.boundingVolume.region) {
@@ -52,10 +52,10 @@ export class ThreeDTileFormatInterpreter  {
       const ecefToWorld = ecefLocation.getTransform().inverse()!;
       worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
     } else {
-      let worldToEcefTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
+      let worldToEcefTransform = ThreeDTileFormatInterpreter.transformFromJson(json.root.transform);
 
       Logger.logTrace(loggerCategory, "RealityData json.root.transform", () => ({ ...worldToEcefTransform }));
-      const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
+      const range = ThreeDTileFormatInterpreter.rangeFromBoundingVolume(json.root.boundingVolume)!;
       if (undefined === worldToEcefTransform)
         worldToEcefTransform = Transform.createIdentity();
 
@@ -68,7 +68,7 @@ export class ThreeDTileFormatInterpreter  {
       if (worldToEcefTransform.matrix.isIdentity && (earthCenterToRangeCenterRayLenght < 1.0E5 || isNotNearEarthSurface)) {
         isGeolocated = false;
         worldRange.extendRange(Range3d.fromJSON(ecefRange));
-        const centerOfEarth: EcefLocationProps = { origin: { x: 0.0, y: 0.0, z: 0.0 }, orientation: { yaw: 0.0, pitch: 0.0, roll: 0.0 } };
+        const centerOfEarth =  new EcefLocation({ origin: { x: 0.0, y: 0.0, z: 0.0 }, orientation: { yaw: 0.0, pitch: 0.0, roll: 0.0 } });
         location = centerOfEarth;
         Logger.logTrace(loggerCategory, "RealityData NOT Geolocated", () => ({ ...location }));
       } else {
@@ -121,9 +121,7 @@ export class ThreeDTileFormatInterpreter  {
     }
     return info;
   }
-}
 
-class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
     if (undefined === boundingVolume)
       return undefined;
