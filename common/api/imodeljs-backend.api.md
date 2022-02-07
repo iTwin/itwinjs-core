@@ -1860,6 +1860,8 @@ export class Entity implements EntityProps {
     id: Id64String;
     iModel: IModelDb;
     static is(otherClass: typeof Entity): boolean;
+    // @internal
+    static get isGeneratedClass(): boolean;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
