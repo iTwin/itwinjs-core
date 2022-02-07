@@ -502,7 +502,7 @@ describe("Class Registry - generated classes", () => {
           ActualDerivedWithNavProp,
           Derived2,
           Derived4,
-        ].map((e) => e.prototype["collectPredecessorIds"]) // eslint-disable-line @typescript-eslint/dot-notation
+        ].map((e) => e.prototype["collectPredecessorIds"]) // eslint-disable-line dot-notation
       )
     );
 
