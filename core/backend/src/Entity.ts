@@ -95,12 +95,6 @@ export class Entity {
    */
   public static is(otherClass: typeof Entity): boolean { return isSubclassOf(this, otherClass); }
 
-  /** overridden by subclasses to indicate if there are generated non-core schema classes in the inheritance path
-   * BisCore classes are never considered to have been generated
-   * @internal
-   */
-  public static get hasNonGeneratedNonCoreBaseClass() { return false; }
-
   /** whether this JavaScript class was generated for this ECClass because there was no registered custom implementation
    * ClassRegistry overrides this when generating a class
    * @internal

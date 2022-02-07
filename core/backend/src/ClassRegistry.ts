@@ -75,19 +75,32 @@ export class ClassRegistry {
     if (undefined === schema)
       schema = this.generateProxySchema(domainName, iModel); // no schema found, create it too
 
-    // this method relies on the caller having previously created/registered all superclasses
     const superclass = this._classMap.get(entityMetaData.baseClasses[0].toLowerCase());
     if (undefined === superclass)
       throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${name}`);
 
-    // override `hasNonGeneratedNonCoreBaseClass` for this subclass if the condition is met, or just propagate the parent's override
-    const generatedClassHasCustomNonCoreBaseClass =
-      (superclass.schema.schemaName !== "BisCore" && !superclass.isGeneratedClass) ||
-      superclass.hasNonGeneratedNonCoreBaseClass;
+    // user defined class hierarchies may skip a class in the hierarchy, and therefore their JS base class cannot
+    // be used to tell if there are any generated classes in the hierarchy
+    let generatedClassHasNonGeneratedNonCoreAncestor = false;
+    let currentSuperclass = superclass;
+    const MAX_ITERS = 1000;
+    for (let i = 0; i < MAX_ITERS; ++i) {
+      if (currentSuperclass.schema.schemaName === "BisCore") break;
+      if (!currentSuperclass.isGeneratedClass) {
+        generatedClassHasNonGeneratedNonCoreAncestor = true;
+        break;
+      }
+      const superclassMetaData = iModel.classMetaDataRegistry.find(currentSuperclass.classFullName);
+      if (superclassMetaData === undefined)
+        throw new IModelError(IModelStatus.BadSchema, `could not find the metadata for class '${currentSuperclass.name}', class metadata should be loaded by now`);
+      const maybeNextSuperclass = this.getClass(superclassMetaData.baseClasses[0], iModel);
+      if (maybeNextSuperclass === undefined)
+        throw new IModelError(IModelStatus.BadSchema, `could not find the base class of '${currentSuperclass.name}', all generated classes must have a base class`);
+      currentSuperclass = maybeNextSuperclass;
+    }
 
     const generatedClass = class extends superclass {
       public static override get className() { return className; }
-      public static override get hasNonGeneratedNonCoreBaseClass() { return generatedClassHasCustomNonCoreBaseClass; }
       private static [isGeneratedClassTag] = true;
       public static override get isGeneratedClass() { return this.hasOwnProperty(isGeneratedClassTag); }
     };
@@ -105,7 +118,7 @@ export class ClassRegistry {
     // - it derives from `BisCore:Element`
     // - it is not in the `BisCore` schema
     // - there are no manually registered JS implementations of any base classes, (excluding BisCore base classes)
-    if (!generatedClassHasCustomNonCoreBaseClass && isElement(superclass)) {
+    if (!generatedClassHasNonGeneratedNonCoreAncestor && isElement(superclass)) {
       Object.defineProperty(
         generatedClass.prototype,
         "collectPredecessorIds",

@@ -372,40 +372,36 @@ describe.only("Class Registry - generated classes", () => {
     class MyTestGeneratedClasses extends TestGeneratedClasses {
       public static override get classes() {
         // leaving Derived3,5,6 generated
-        return [ TestElementWithNavProp, MyDerived2, MyDerived4 ];
+        return [TestElementWithNavProp, MyDerived2, MyDerived4];
       }
     }
     MyTestGeneratedClasses.registerSchema();
 
     /* eslint-disable @typescript-eslint/naming-convention */
-    const MyDerived3 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived3");
-    const MyDerived5 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived5");
-    const MyDerived6 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived6");
+    const ActualTestElementWithNavProp = imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp");
+    const ActualDerivedWithNavProp = imodel.getJsClass<typeof Element>("TestGeneratedClasses:DerivedWithNavProp");
+    const ActualDerived2 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived2");
+    const ActualDerived3 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived3");
+    const ActualDerived4 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived4");
+    const ActualDerived5 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived5");
+    const ActualDerived6 = imodel.getJsClass<typeof Element>("TestGeneratedClasses:Derived6");
     /* eslint-enable @typescript-eslint/no-redeclare */
 
-    expect(TestElementWithNavProp.hasNonGeneratedNonCoreBaseClass).to.be.false;
-    expect(DerivedWithNavProp.hasNonGeneratedNonCoreBaseClass).to.be.false;
-    expect(MyDerived2.hasNonGeneratedNonCoreBaseClass).to.be.false;
-    expect(MyDerived3.hasNonGeneratedNonCoreBaseClass).to.be.true;
-    expect(MyDerived4.hasNonGeneratedNonCoreBaseClass).to.be.true;
-    expect(MyDerived5.hasNonGeneratedNonCoreBaseClass).to.be.true;
-    expect(MyDerived6.hasNonGeneratedNonCoreBaseClass).to.be.true;
+    expect(ActualTestElementWithNavProp.isGeneratedClass).to.be.false;
+    expect(ActualDerivedWithNavProp.isGeneratedClass).to.be.true;
+    expect(ActualDerived2.isGeneratedClass).to.be.false;
+    expect(ActualDerived3.isGeneratedClass).to.be.true;
+    expect(ActualDerived4.isGeneratedClass).to.be.false;
+    expect(ActualDerived5.isGeneratedClass).to.be.true;
+    expect(ActualDerived6.isGeneratedClass).to.be.true;
 
-    expect(TestElementWithNavProp.isGeneratedClass).to.be.false;
-    expect(DerivedWithNavProp.hasNonGeneratedNonCoreBaseClass).to.be.false;
-    expect(MyDerived2.hasNonGeneratedNonCoreBaseClass).to.be.true;
-    expect(MyDerived3.hasNonGeneratedNonCoreBaseClass).to.be.false;
-    expect(MyDerived4.hasNonGeneratedNonCoreBaseClass).to.be.true;
-    expect(MyDerived5.hasNonGeneratedNonCoreBaseClass).to.be.false;
-    expect(MyDerived6.hasNonGeneratedNonCoreBaseClass).to.be.false;
-
-    assert.hasAllKeys(TestElementWithNavProp.prototype, ["getPredecessorIds"]);
-    assert.hasAllKeys(DerivedWithNavProp.prototype, ["getPredecessorIds"]);
-    assert.hasAllKeys(MyDerived2.prototype, ["getPredecessorIds"]);
-    assert.doesNotHaveAnyKeys(MyDerived3.prototype, ["getPredecessorIds"]); // base is generated so it shouldn't get the automatic impl
-    assert.hasAllKeys(MyDerived4.prototype, ["getPredecessorIds"]); // manually implements so it should have the method
-    assert.doesNotHaveAnyKeys(MyDerived5.prototype, ["getPredecessorIds"]);
-    assert.doesNotHaveAnyKeys(MyDerived6.prototype, ["getPredecessorIds"]);
+    assert.doesNotHaveAllKeys(ActualTestElementWithNavProp.prototype, ["getPredecessorIds"]); // manually does not implement it
+    assert.hasAllKeys(ActualDerivedWithNavProp.prototype, ["getPredecessorIds"]);
+    assert.hasAllKeys(ActualDerived2.prototype, ["getPredecessorIds"]);
+    assert.doesNotHaveAnyKeys(ActualDerived3.prototype, ["getPredecessorIds"]); // base is generated so it shouldn't get the automatic impl
+    assert.hasAllKeys(ActualDerived4.prototype, ["getPredecessorIds"]); // manually implements so it should have the method
+    assert.doesNotHaveAnyKeys(ActualDerived5.prototype, ["getPredecessorIds"]);
+    assert.doesNotHaveAnyKeys(ActualDerived6.prototype, ["getPredecessorIds"]);
 
     const testEntity1Id = imodel.elements.insertElement({
       classFullName: "TestGeneratedClasses:Derived6",
