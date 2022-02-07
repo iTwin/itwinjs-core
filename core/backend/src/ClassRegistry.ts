@@ -138,7 +138,7 @@ export class ClassRegistry {
         {
           // first prototype of `this` is its class
           value(this: typeof generatedClass, predecessorIds: Id64Set) {
-            // eslint-disable-next-line @typescript-eslint/dot-notation
+            // eslint-disable-next-line dot-notation
             const superImpl = superclass.prototype["collectPredecessorIds"];
             superImpl.call(this, predecessorIds);
             for (const navProp of navigationProps) {

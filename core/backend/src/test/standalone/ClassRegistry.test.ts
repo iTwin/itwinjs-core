@@ -492,7 +492,7 @@ describe("Class Registry - generated classes", () => {
           Derived4,
           Derived5, // save as above (so will be removed from set)
           Derived6, // save as above (so will be removed from set)
-        ].map((e) => e.prototype["collectPredecessorIds"]) // eslint-disable-line @typescript-eslint/dot-notation
+        ].map((e) => e.prototype["collectPredecessorIds"]) // eslint-disable-line dot-notation
       )
     ).to.deep.equal(
       new Set(
@@ -502,7 +502,6 @@ describe("Class Registry - generated classes", () => {
           ActualDerivedWithNavProp,
           Derived2,
           Derived4,
-        // eslint-disable-next-line @typescript-eslint/dot-notation
         ].map((e) => e.prototype["collectPredecessorIds"]) // eslint-disable-line @typescript-eslint/dot-notation
       )
     );
