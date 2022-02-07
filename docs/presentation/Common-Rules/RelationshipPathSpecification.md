@@ -1,108 +1,57 @@
-# RelationshipPath Specification
+# Relationship Path Specification
 
-> TypeScript type: [RepeatableRelationshipPathSpecification]($presentation-common).
+> TypeScript type: [RelationshipPathSpecification]($presentation-common).
 
-Relationship path specification and it's *repeatable* counterpart are used to define paths from one ECClass to another, optionally traversing through multiple relationships.
+Relationship path specification is used to define a relationship path to an ECClass.
+
+The specification is always used in a context where source class already exists, so it only requires the relationship and direction. The
+target class can be inferred from the two required attributes or specified with the [`targetClass` attribute](#attribute-targetclass). In case of a
+multi-step path, target of the current step is used as the source of the next step.
 
 ## Attributes
 
-| Name           | Required? | Type                             | Default                   | Meaning                                                                                                                                                                                                              |
-| -------------- | --------- | -------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `relationship` | Yes       | `SingleSchemaClassSpecification` |                           | Specification of the relationship to follow.                                                                                                                                                                         |
-| `direction`    | Yes       | `"Forward" \| "Backward"`        |                           | Direction in which the relationship should be followed.                                                                                                                                                              |
-| `targetClass`  | No        | `SingleSchemaClassSpecification` | Other end of relationship | Specification of the related class.                                                                                                                                                                                  |
-| `count`        | No        | `number \| "*"`                  | 1                         | Number of times the relationship should be traversed. `"*"` makes the step optional, so results of previous step are also included in results of this step, no matter if this step has any output of its own or not. |
+| Name                                      | Required? | Type                             | Default                       |
+| ----------------------------------------- | --------- | -------------------------------- | ----------------------------- |
+| [`relationship`](#attribute-relationship) | Yes       | `SingleSchemaClassSpecification` |                               |
+| [`direction`](#attribute-direction)       | Yes       | `"Forward" \| "Backward"`        |                               |
+| [`targetClass`](#attribute-targetclass)   | No        | `SingleSchemaClassSpecification` | Other end of the relationship |
 
-## Example
+### Attribute: `relationship`
 
-A single-step relationship path which simply jumps from *current* ECClass to *BisCore.PhysicalElement* through *BisCore.ModelModelsElement* relationship:
+This attribute specifies the ECRelationship that should be used to traverse to target class.
 
-```JSON
-{
-  "relationship": { "schemaName": "BisCore", "className": "ModelModelsElement" },
-  "direction": "Forward",
-  "targetClass": { "schemaName": "BisCore", "className": "PhysicalElement" }
-}
+### Attribute: `direction`
+
+This attribute specifies the direction in which the [relationship](#attribute-relationship) should be followed:
+
+- `"Forward"` - the relationship is traversed from source to target of the relationship.
+- `"Backward"` - the relationship is traversed from target to source of the relationship.
+
+### Attribute: `targetClass`
+
+> **Default value:** Target ECClass of the [relationship](#attribute-relationship) if the [direction](#attribute-direction) is `"Forward"` or
+> source ECClass if the [direction](#attribute-direction) is `"Backward"`.
+
+This attribute may be used to specialize the target of the relationship. E.g. when relationship points to a class like `bis.Element`, this
+attribute allows specializing it to `bis.PhysicalElement` or some other `bis.Element` subclass.
+
+## Examples
+
+### Using single-step relationship path
+
+```ts
+[[include:RelationshipPathSpecification.SingleStep.Ruleset]]
 ```
 
-A multi-step relationship path which jumps from *current* ECClass through *BisCore.ElementOwnsChildElements* relationship two times in a backward direction:
+| Input                          | Result                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `bis.PhysicalModel` instance   | ![Result when input is bis physical model instance](./media/relationshippathspecification-singlestep-with-matching-target.png)        |
+| `bis.DefinitionModel` instance | ![Results when input is bis definition model instance](./media/relationshippathspecification-singlestep-with-non-matching-target.png) |
 
-```JSON
-{
-  "relationship": { "schemaName": "BisCore", "className": "ElementOwnsChildElements" },
-  "direction": "Backward",
-  "count": 2
-}
+### Using multi-step relationship path
+
+```ts
+[[include:RelationshipPathSpecification.MultiStep.Ruleset]]
 ```
 
-A two-step relationship path that first jumps from *current* ECClass through *BisCore.ModelModelsElement* and then through *BisCore.ElementOwnsUniqueAspects*:
-
-```JSON
-[{
-  "relationship": { "schemaName": "BisCore", "className": "ModelModelsElement" },
-  "direction": "Forward"
-}, {
-  "relationship": { "schemaName": "BisCore", "className": "ElementOwnsUniqueAspects" },
-  "direction": "Forward"
-}]
-```
-
-A recursive relationship path which recursively walks through a relationship and accumulates all ECInstances it finds:
-
-```JSON
-{
-  "relationship": { "schemaName": "BisCore", "className": "ElementOwnsChildElements" },
-  "direction": "Forward",
-  "count": "*"
-}
-```
-
-A two-step relationship path that first jumps from *current* ECClass through *BisCore.ModelModelsElement*, then recursively walks through *BisCore.ElementOwnsChildElements* relationship and then finds all related *BisCore.ElementUniqueAspect*s:
-
-```JSON
-[{
-  "relationship": { "schemaName": "BisCore", "className": "ModelModelsElement" },
-  "direction": "Forward"
-}, {
-  "relationship": { "schemaName": "BisCore", "className": "ElementOwnsChildElements" },
-  "direction": "Forward",
-  "count": "*"
-}, {
-  "relationship": { "schemaName": "BisCore", "className": "ElementOwnsUniqueAspects" },
-  "direction": "Forward",
-  "targetClass": { "schemaName": "BisCore", "className": "ElementUniqueAspect" }
-}]
-```
-
-A two-step relationship path that finds all *BisCore.Elements* related to *current* ECClass through *BisCore.ModelModelsElement*, then finds all recursively related *BisCore.Element*s to *BisCore.Element*s from the first step through *BisCore.ElementOwnsChildElements* relationship:
-
-```JSON
-[{
-  "relationship": { "schemaName": "BisCore", "className": "ModelModelsElement" },
-  "direction": "Forward"
-}, {
-  "relationship": { "schemaName": "BisCore", "className": "ElementOwnsChildElements" },
-  "direction": "Forward",
-  "count": "*"
-}]
-```
-
-A three-step relationship path that finds all *BisCore.GeometricElement3d* related to *current* ECClass through *BisCore.ModelContainsElements* relationship, then finds all *BisCore.SpatialCategory*s related to *BisCore.GeometricElement3d*s found in the previous step through *BisCore.GeometricElement3dIsInCategory* relationship and finds all *BisCore.SubCategory*s related to *BisCore.SpatialCategory*s found in the previous step through *BisCore.CategoryOwnsSubCategories* relationship. Result includes *BisCore.GeometricElement3d*s, *BisCore.SpatialCategory*s and *BisCore.SubCategory*s:
-
-```JSON
-[{
-  "relationship": { "schemaName": "BisCore", "className": "ModelContainsElements" },
-  "direction": "Forward",
-  "targetClass": { "schemaName": "BisCore", "className": "GeometricElement3d" },
-  "count": "*"
-}, {
-  "relationship": { "schemaName": "BisCore", "className": "GeometricElement3dIsInCategory" },
-  "direction": "Forward",
-  "targetClass": { "schemaName": "BisCore", "className": "SpatialCategory" },
-  "count": "*"
-}, {
-  "relationship": { "schemaName": "BisCore", "className": "CategoryOwnsSubCategories" },
-  "direction": "Forward",
-  "count": "*"
-}]
-```
+![Categories of input model elements](./media/relationshippathspecification-multistep.png)

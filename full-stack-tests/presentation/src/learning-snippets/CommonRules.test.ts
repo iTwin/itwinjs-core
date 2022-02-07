@@ -192,6 +192,91 @@ describe("Learning Snippets", () => {
 
   });
 
+  describe("RelationshipPathSpecification", () => {
+
+    it("using single-step specification", async () => {
+      // __PUBLISH_EXTRACT_START__ RelationshipPathSpecification.SingleStep.Ruleset
+      // This ruleset defines a specification that returns content for given `bis.Model` instances. The
+      // content is created for model elements found by following the `bis.ModelContainsElements`
+      // relationship and picking only `bis.PhysicalElement` type of elements.
+      const ruleset: Ruleset = {
+        id: "example",
+        rules: [{
+          ruleType: RuleTypes.Content,
+          condition: `SelectedNode.IsOfClass("Model", "BisCore")`,
+          specifications: [
+            {
+              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              relationshipPaths: [{
+                relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                direction: RelationshipDirection.Forward,
+                targetClass: { schemaName: "BisCore", className: "PhysicalElement" },
+              }],
+            },
+          ],
+        }],
+      };
+      // __PUBLISH_EXTRACT_END__
+      printRuleset(ruleset);
+
+      // Ensure that all model elements are selected
+      const physicalModelContent = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
+        descriptor: {},
+      });
+      expect(physicalModelContent!.contentSet.length).to.eq(62);
+
+      // Ensure that non-physical model elements are not selected
+      const definitionModelContent = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet([{ className: "BisCore:DefinitionModel", id: "0x16" }]),
+        descriptor: {},
+      });
+      expect(definitionModelContent).to.be.undefined;
+    });
+
+    it("using multi-step specification", async () => {
+      // __PUBLISH_EXTRACT_START__ RelationshipPathSpecification.MultiStep.Ruleset
+      // This ruleset defines a specification that returns content for given `bis.GeometricModel3d` instances. The
+      // content is created for categories of model elements found by following the `bis.ModelContainsElements` and
+      // `bis.GeometricElement3dIsInCategory` relationships.
+      const ruleset: Ruleset = {
+        id: "example",
+        rules: [{
+          ruleType: RuleTypes.Content,
+          condition: `SelectedNode.IsOfClass("GeometricModel3d", "BisCore")`,
+          specifications: [
+            {
+              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              relationshipPaths: [[{
+                relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                direction: RelationshipDirection.Forward,
+              }, {
+                relationship: { schemaName: "BisCore", className: "GeometricElement3dIsInCategory" },
+                direction: RelationshipDirection.Forward,
+              }]],
+            },
+          ],
+        }],
+      };
+      // __PUBLISH_EXTRACT_END__
+      printRuleset(ruleset);
+
+      // Ensure that all model elements are selected
+      const physicalModelContent = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
+        descriptor: {},
+      });
+      expect(physicalModelContent!.contentSet.length).to.eq(1);
+    });
+
+  });
+
 });
 
 function printRuleset(ruleset: Ruleset) {
