@@ -28,7 +28,7 @@ export class AuthorizedBackendRequestContext extends AuthorizedClientRequestCont
   /**
    * Create a new context for agent applications or long running backend operations to pass to various services that require
    * authorization. Uses the authorization information supplied to IModelHost to setup an accessToken within the context.
-   * @throws [[BentleyError]] if the application cannot be authorized.
+   * @throws [BentleyError]($bentleyjs-core) if the application cannot be authorized.
    * @see [[IModelHost.authorizationClient]] to setup authorization for the backend application.
    */
   public static async create(activityId: string = Guid.createValue()): Promise<AuthorizedBackendRequestContext> {

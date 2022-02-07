@@ -258,7 +258,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
   /**
    * Returns a promise that resolves to the AccessToken of the currently authorized user.
    * The token is refreshed as necessary.
-   * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
+   * @throws [BentleyError]($bentleyjs-core) If signIn() was not called, or there was an authorization error.
    */
   public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
     if (this._accessToken)

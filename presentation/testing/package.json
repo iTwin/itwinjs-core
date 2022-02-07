@@ -25,7 +25,7 @@
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
-    "docs": "npm run docs:reference && npm run docs:changelog",
+    "docs": "",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-testing",
     "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-testing/json/file.json --tsIndexFile=presentation-testing.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
