@@ -1557,6 +1557,8 @@ export class Entity {
     id: Id64String;
     iModel: IModelDb;
     static is(otherClass: typeof Entity): boolean;
+    // @internal
+    static get isGeneratedClass(): boolean;
     readonly isInstanceOfEntity: true;
     // @internal (undocumented)
     static get protectedOperations(): string[];
