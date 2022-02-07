@@ -134,6 +134,9 @@ export class ClassRegistry {
               predecessorIds.add(relatedElem.id);
             }
           },
+          // defaults for methods on a prototype (required for sinon to stub out methods on tests)
+          writable: true,
+          configurable: true,
         }
       );
     }
