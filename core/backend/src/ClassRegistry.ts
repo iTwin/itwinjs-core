@@ -82,7 +82,7 @@ export class ClassRegistry {
 
     // override `hasNonGeneratedNonCoreBaseClass` for this subclass if the condition is met, or just propagate the parent's override
     const generatedClassHasCustomNonCoreBaseClass =
-      (superclass.schema.schemaName !== "BisCore" && superclass.isGeneratedClass) ||
+      (superclass.schema.schemaName !== "BisCore" && !superclass.isGeneratedClass) ||
       superclass.hasNonGeneratedNonCoreBaseClass;
 
     const generatedClass = class extends superclass {
