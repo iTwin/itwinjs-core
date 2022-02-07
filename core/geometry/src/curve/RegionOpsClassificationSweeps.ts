@@ -455,7 +455,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     this.groupA.addMember(dataA);
     this.groupB.addMember(dataB);
     const doConnectives = 0;
-    if (doConnectives)
+    if (doConnectives !== 0)
       this.addConnectives();
   }
   /**

@@ -39,6 +39,7 @@ import { PointStreamXYZHandlerBase, VariantPointDataStream } from "../../geometr
 import { MultiLineStringDataVariant } from "../../topology/Triangulation";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Geometry } from "../../Geometry";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 
 /* eslint-disable no-console */
 
@@ -439,9 +440,30 @@ describe("RegionBoolean", () => {
         });
 
         // Near-tangency union from MS Bug#716145. TODO: CURRENTLY FAILS.
-  it.only("NearTangencyUnion", () => {
-    testSelectedTangencySubsets(false, 0, [], [11,12], "TwoArcSubSets");
-    testSelectedTangencySubsets(true, 0, [2,3,4,7,8], [], "FullPolygon");
+  it("NearTangencyUnion", () => {
+    testSelectedTangencySubsets(true, 0, [-1], [], "Base");
+    testSelectedTangencySubsets(false, 0, [],
+      [
+        [0,13],
+        [7, 20],
+        [8,21],
+      ], "ArcSubsetsA");
+    testSelectedTangencySubsets(false, 0, [],
+      [
+        [11, 12],
+        [12, 13],
+        [11, 13],
+        [11, 15],
+        [11, 16],
+        [11, 17],
+      ], "ArcSubsets");
+    const allShuffles = [];
+    const n = 13;
+    for (let i0 = 0; i0 < n; i0 += 1){
+      allShuffles.push([i0, i0 + n]);
+    }
+    testSelectedTangencySubsets(false, 0, [], allShuffles,"ArcShuffle");
+      testSelectedTangencySubsets(true, 0, [2,3,4,7,8], [], "FullPolygon");
     testSelectedTangencySubsets(true, [1,2,3,4,1], [2,3,4,7,8], [], "UpperSymmetricQuad");
     testSelectedTangencySubsets(false, [4,5,6,7,4], [-1], [], "LowerRightLobeQuadA");
     testSelectedTangencySubsets(false, [3,5,6,8,3], [-1], [], "LowerRightLobeQuadB");
@@ -452,7 +474,7 @@ function testSelectedTangencySubsets(
   doImmediateFullBoolean: boolean,
   linestringSimplification: number | number[],
   arcSimplificationIndices: number [],
-  adjacentArcBaseIndices: number[],
+  arcCyclicIndexRanges: number[][], // POSITIVE indices for (k = first; k < last; k++) loop.   Will be modulo'ed into range for access
   outputFileSuffix: string) {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -509,36 +531,43 @@ function testSelectedTangencySubsets(
       }
     }
   }
-  if (adjacentArcBaseIndices.length > 0){
+  if (arcCyclicIndexRanges.length > 0){
       x0 += 5 * delta;
-        y0 = 0;
+    y0 = 0;
+    const circleRadius = 1.0;
         // Extract each arc (with closure chord) as an independent parameter..
         if (loop instanceof Loop) {
           const n = loop.children.length;
-          for (const i0 of adjacentArcBaseIndices) {
-            if (i0 >= n || i0 < 0)
+          for (const indexRange of arcCyclicIndexRanges) {
+            const subsetLoop = new Loop();
+            if (indexRange[0] + n < indexRange[1]) {
+              console.log(`Ignoring index range ${indexRange}`);
               continue;
-            const i1 = (i0 + 1) % n;
-            if (loop.children[i0] instanceof Arc3d && loop.children[i1] instanceof Arc3d) {
-              const arc0 = loop.children[i0];
-              const arc1 = loop.children[i1];
-              // Do these two consecutive arcs join with tangency ?
-              const tangent0 = arc0.fractionToPointAndUnitTangent(1);
-              const tangent1 = arc1.fractionToPointAndUnitTangent(0);
-              console.log({ d: tangent0.origin.distance(tangent1.origin) });
-              if (tangent0.direction.angleTo(tangent1.direction).degrees < 0.1) {
-                y0 += delta;
-                const segment1 = LineSegment3d.create(arc1.endPoint(), arc0.startPoint());
-                const loop1 = Loop.create(arc0, arc1, segment1);
-                captureShiftedClones(allGeometry, [inputs[0], loop1], x0, y0, delta, 0);
-                y0 += delta;
-                const result1 = RegionOps.regionBooleanXY(inputs[0], loop1, RegionBinaryOpType.Union);
-                GeometryCoreTestIO.captureCloneGeometry(allGeometry, result1, x0, y0);
-              }
+            }
+            for (let k = indexRange[0]; k < indexRange[1]; k++) {
+              const i = k % n;
+              const child = loop.children[i];
+              subsetLoop.children.push(child);
+            }
+            const n1 = subsetLoop.children.length;
+            const pointA = subsetLoop.children[n1 - 1].fractionToPoint(1.0);
+            const pointB = subsetLoop.children[0].startPoint();
+            const pointC = pointA.plusXYZ(-40, 0, 0);
+            const pointD = pointA.plusXYZ(0, -40, 0);
+            const segment1 = LineSegment3d.create(pointA, pointB);
+            subsetLoop.children.push(segment1);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pointD, pointA, pointC], x0, y0, 0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, subsetLoop, x0, y0, 0);
+            y0 += delta;
+            captureShiftedClones(allGeometry, [inputs[0], subsetLoop], x0, y0, delta, 0);
+            y0 += delta;
+            const result1 = RegionOps.regionBooleanXY(inputs[0], subsetLoop, RegionBinaryOpType.Union);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, result1, x0, y0);
+            GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, -8, pointA, circleRadius, x0, y0, 0);
+            y0 += 2 * delta;
             }
           }
         }
-      }
   GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", `NearTangencyUnion${  outputFileSuffix}`);
   expect(ck.getNumErrors()).equals(0);
 }
@@ -873,6 +902,43 @@ describe("GeneralSweepBooleans", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "HoleInA");
     expect(ck.getNumErrors()).equals(0);
   });
+  it.only("FullCircle", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+
+    {
+      const circleA = Loop.create(Arc3d.createXY(Point3d.create(0, 0), 5));
+      const circleB = Loop.create(Arc3d.createXY(Point3d.create(4, 0), 5));
+      exerciseAreaBooleans([circleB], [circleA], ck, allGeometry, x0, 0);
+      x0 += 20;
+    }
+    const rectangle1A = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 10, 8, 0, true)));
+    for (const cx of [1, 5]) {
+      const loopB = Loop.create(Arc3d.createXY(Point3d.create(cx, 5), 2));
+      exerciseAreaBooleans([rectangle1A], [loopB], ck, allGeometry, x0, 0);
+      x0 += 20;
+    }
+    for (const startDegrees of [0, 90]){
+      for (const cx of [1, 5]) {
+        const arc0 = Arc3d.createXY(Point3d.create(cx, 5), 2, AngleSweep.createStartEndDegrees(startDegrees, 180));
+        const arc1 = Arc3d.createXY(Point3d.create(cx, 5), 2, AngleSweep.createStartEndDegrees(180, 360));
+        if (startDegrees === 0) {
+          const loopB = Loop.create(arc0, arc1);
+          exerciseAreaBooleans([rectangle1A], [loopB], ck, allGeometry, x0, 0);
+        } else {
+          const closureSegment = LineSegment3d.create(arc1.endPoint(), arc0.startPoint());
+          const loopB = Loop.create(closureSegment, arc0, arc1);
+          exerciseAreaBooleans([rectangle1A], [loopB], ck, allGeometry, x0, 0);
+        }
+        x0 += 20;
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "FullCircle");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("SharedEdgeElimination", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
