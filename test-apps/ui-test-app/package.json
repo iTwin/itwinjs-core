@@ -76,6 +76,7 @@
     "@bentley/icons-generic": "^1.0.15",
     "@itwin/imodels-access-backend": "^1.0.1",
     "@itwin/imodels-access-frontend": "^1.0.1",
+    "@itwin/imodels-client-authoring": "^1.0.1",
     "@itwin/imodels-client-management": "^1.0.1",
     "@itwin/reality-data-client": "^0.7.0",
     "@itwin/appui-abstract": "workspace:*",
