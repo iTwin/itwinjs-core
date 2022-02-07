@@ -172,8 +172,13 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    * overridden to display grouped instances count.
    *
    * **Warning:** Grouping by label and sorting by property value is not possible.
+   *
+   * @deprecated Display value should always be used for grouping. In cases when there's a
+   * need to show grouped instances count suffix, that can be achieved at the UI component
+   * layer by composing UI node's label from node's display label and
+   * [GroupingNodeKey.groupedInstancesCount]($presentation-common).
    */
-  groupingValue?: PropertyGroupingValue;
+  groupingValue?: PropertyGroupingValue; // eslint-disable-line deprecation/deprecation
 
   /**
    * Should the nodes be sorted by display label or the grouping property value. In most
@@ -184,8 +189,10 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    * property value as well.
    *
    * **Warning:** Grouping by label and sorting by property value is not possible.
+   *
+   * @deprecated Property grouping nodes should always be sorted by display label.
    */
-  sortingValue?: PropertyGroupingValue;
+  sortingValue?: PropertyGroupingValue; // eslint-disable-line deprecation/deprecation
 
   /** Ranges into which the grouping values are divided */
   ranges?: PropertyRangeGroupSpecification[];
@@ -196,6 +203,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
  * for grouping and sorting
  *
  * @public
+ * @deprecated The attributes using this enum are deprecated.
  */
 export enum PropertyGroupingValue {
   /** By property value */

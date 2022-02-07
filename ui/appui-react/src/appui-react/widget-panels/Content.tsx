@@ -19,7 +19,10 @@ export function WidgetContent() {
   // istanbul ignore next
   const itemId = widget?.id ?? widget?.label ?? "unknown";
   return (
-    <ScrollableWidgetContent itemId={itemId}>
+    <ScrollableWidgetContent
+      itemId={itemId}
+      providerId={widget?.initialProps?.providerId}
+    >
       {widget?.reactNode}
     </ScrollableWidgetContent>
   );
