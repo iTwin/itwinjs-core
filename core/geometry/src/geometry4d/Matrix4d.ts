@@ -567,6 +567,11 @@ export class Matrix4d implements BeJSONFunctions {
    * @returns undefined if dividing by the determinant looks unsafe.
    */
   public createInverse(result?: Matrix4d): Matrix4d | undefined {
+    const noPerspective = this.asTransform;
+    if (noPerspective !== undefined) {
+      const inverse = noPerspective.inverse();
+      return (inverse !== undefined) ? Matrix4d.createTransform(inverse, result) : undefined;
+    }
     const maxAbs0 = this.maxAbs();
     if (maxAbs0 === 0.0)
       return undefined;

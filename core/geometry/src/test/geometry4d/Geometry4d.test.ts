@@ -460,10 +460,15 @@ describe("Matrix4d", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
-  it("Inverse", () => {
+  it.only("Inverse", () => {
     const ck = new bsiChecker.Checker();
 
     for (const matrixA of [
+      Matrix4d.createRowValues(
+        -0.7180980534975014, 0, 0, 513359.37226204335,
+        0, -1.267092311832453, 0, 6221930.288732969,
+        0, 0, 0.02752494718615039, 0.00028901194545457914,
+        0, 0, 0, 1),  // from RBB
       Matrix4d.createRowValues(0.5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
       Matrix4d.createRowValues(
         1, 0, 0, 0,
