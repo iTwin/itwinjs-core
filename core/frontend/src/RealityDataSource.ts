@@ -42,8 +42,6 @@ export interface PublisherProductInfo {
   engine: string;
   /** the version of the engine that create this reality data */
   version: string;
-  /** the number of children at the root of this reality data */
-  rootChildren?: string;
 }
 
 /** This interface provide methods used to access a reality data from a reality data provider

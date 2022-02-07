@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, SpatialModelState, TileAdmin } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, SpatialModelState, ThreeDTileFormatInterpreter, TileAdmin } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
 import { RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
@@ -193,6 +193,25 @@ describe("RealityDataAccess (#integration)", () => {
         // We expect to be able to return this info for all 3dTile, but it may contain empty string
         if (keyFromInput.format === RealityDataFormat.ThreeDTile)
           expect(pInfo).not.undefined;
+      }
+    }
+  });
+
+  it("should be able to call getFileInfo when RealityDataSource is a 3dTile reality data", async () => {
+    const realityDatas = await getAllRealityDataFromProject();
+    for (const rd of realityDatas) {
+      // Some types are supported and return by Context Share but required extension to be displayed (e.g: OMR)
+      if (isSupportedDisplayType(rd.type)){
+        const keyFromInput: RealityDataSourceKey = createRealityDataListKeyFromITwinRealityData(rd);
+        const rdSource = await RealityDataSource.fromKey(keyFromInput, iTwinId);
+        expect(rdSource).not.undefined;
+        expect(rdSource?.isContextShare).to.be.true;
+        // We expect to be able to return this info for all 3dTile
+        if (rdSource && keyFromInput.format === RealityDataFormat.ThreeDTile) {
+          const rootDocument = await rdSource.getRootDocument(undefined);
+          const fileInfo = ThreeDTileFormatInterpreter.getFileInfo(rootDocument);
+          expect(fileInfo).not.undefined;
+        }
       }
     }
   });

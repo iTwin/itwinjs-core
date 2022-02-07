@@ -4,19 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Cartographic, EcefLocation, EcefLocationProps } from "@itwin/core-common";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import { Range3d } from "@itwin/core-geometry";
 import { ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS } from "@itwin/core-orbitgt";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { DownloaderNode } from "@itwin/core-orbitgt/lib/cjs/system/runtime/DownloaderNode";
 import { Logger } from "@itwin/core-bentley";
+import { SpatialLocationAndExtents } from "../RealityDataSource";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
-
-interface SpatialLocationAndExtents {
-  location: Cartographic | EcefLocationProps;
-  worldRange: Range3dProps;
-  isGeolocated: boolean;
-}
 
 /**
  * This class provide methods used to interpret Orbit Point Cloud (OPC) format

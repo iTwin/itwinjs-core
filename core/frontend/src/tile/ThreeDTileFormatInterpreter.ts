@@ -10,7 +10,14 @@ import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { PublisherProductInfo, SpatialLocationAndExtents } from "../RealityDataSource";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
-
+/** This interface provides information about 3dTile files for this reality data
+ * Currently only used for debbugging
+ * @internal
+ */
+export interface ThreeDTileFileInfo {
+  /** the number of children at the root of this reality data */
+  rootChildren?: number;
+}
 /**
  * This class provide methods used to interpret Cesium 3dTile format
  * @internal
@@ -91,14 +98,26 @@ export class ThreeDTileFormatInterpreter  {
    * @alpha
    */
   public static getPublisherProductInfo(rootDocjson: any): PublisherProductInfo {
-    const info: PublisherProductInfo = {product: "", engine: "", version: "", rootChildren: ""};
+    const info: PublisherProductInfo = {product: "", engine: "", version: ""};
     if (rootDocjson && rootDocjson.root) {
-      info.rootChildren = rootDocjson.root.children.length;
       if (rootDocjson.root.SMPublisherInfo) {
         info.product = rootDocjson.root.SMPublisherInfo.Product ? rootDocjson.root.SMPublisherInfo.Product : "";
         info.engine =  rootDocjson.root.SMPublisherInfo.Publisher ? rootDocjson.root.SMPublisherInfo.Publisher : "";
         info.version = rootDocjson.root.SMPublisherInfo["Publisher Version"] ? rootDocjson.root.SMPublisherInfo["Publisher Version"] : "" ;
       }
+    }
+    return info;
+  }
+  /** Gets information about 3dTile file for this reality data
+   * Will return undefined if cannot be resolved
+   * @param rootDocjson root document file in json format
+   * @returns information about 3dTile file for this reality data
+   * @internal
+   */
+  public static getFileInfo(rootDocjson: any): ThreeDTileFileInfo {
+    const info: ThreeDTileFileInfo = { rootChildren: 0};
+    if (rootDocjson && rootDocjson.root) {
+      info.rootChildren = parseInt(rootDocjson.root.children.length, 10);
     }
     return info;
   }
