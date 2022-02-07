@@ -356,7 +356,7 @@ describe.only("Class Registry - generated classes", () => {
     MyTestGeneratedClasses.unregisterSchema();
   });
 
-  it.only("should work along a complex chain of overrides", async () => {
+  it("should work along a complex chain of overrides", async () => {
     class MyDerived2 extends Derived2 {
       public override collectPredecessorIds(predecessorIds: Id64Set) {
         super.collectPredecessorIds(predecessorIds);
