@@ -7,9 +7,12 @@ def determineDistTag(branchName, currentVer, latestVer, previousVer):
   print ("Branch name: " + branchName + "\nCurrent version: " + currentVer + "\nLatest version: " + latestVer + "\nPrevious version: " + previousVer)
 
   distTag = None
-  # The most common case is the tag will be a nightly tag
   if mainBranch in branchName:
+    # The most common case is the tag will be a nightly tag
     distTag = "nightly"
+  elif "release/2.19.x" in branchName:
+    # Hardcode 'previous' tag for 2.x releases due to mismatch of package names between the 2.x and 3.x major versions
+    distTag = "previous"
   elif "release/" in branchName:
     print ("On a release branch")
 
@@ -161,14 +164,18 @@ else:
 # print("nightly" == determineDistTag("master", "3.1.0-dev.0", "3.0.0", ""))
 # print("nightly" == determineDistTag("master", "3.1.0-dev.0", "", ""))
 # print("nightly" == determineDistTag("master", "", "", ""))
+# print("previous" == determineDistTag("release/2.19.x", "2.19.27", "3.0.0", "2.19.26"))
+# print("previous" == determineDistTag("release/2.19.x", "2.19.27", "3.0.0", ""))
+# print("previous" == determineDistTag("release/2.19.x", "2.19.27", "", ""))
+# print("previous" == determineDistTag("release/2.19.x", "", "", ""))
 # print(None == determineDistTag("release/3.1.x", "3.1.0", "3.2.1", "2.19.24"))
-# print("previous" == determineDistTag("release/2.19.x", "2.19.25", "3.2.1", "2.19.24"))
+# print("previous" == determineDistTag("release/3.0.x", "3.0.1", "4.0.0", "3.0.0"))
 # print("latest" == determineDistTag("release/3.2.x", "3.2.1", "3.1.0", "2.19.24"))
 # print("latest" == determineDistTag("release/3.1.x", "3.1.1", "3.1.0", "2.19.24"))
 # print("rc" == determineDistTag("release/3.1.x", "3.1.1-dev.0", "3.1.0", "2.19.24"))
 # print(None == determineDistTag("release/2.18.x", "2.18.4", "3.1.0", "2.19.24"))
 # print(None == determineDistTag("release/3.0.x", "3.0.1", "3.1.0", "2.19.24"))
-# print("latest" == determineDistTag("release/2.19.x", "2.19.27", "2.19.26", ""))
+# print("latest" == determineDistTag("release/3.0.x", "3.0.1", "3.0.0", ""))
 # print("previous" == determineDistTag("release/3.0.x", "3.0.1", "4.0.0", ""))
 # print(None == determineDistTag("release/3.0.x", "3.0.1", "3.1.0", ""))
 # print("latest" == determineDistTag("release/3.0.x", "3.0.0", "", ""))
