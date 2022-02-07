@@ -117,7 +117,7 @@ export class ClassRegistry {
     // a class only gets an automatic `collectPredecessorIds` implementation if:
     // - it derives from `BisCore:Element`
     // - it is not in the `BisCore` schema
-    // - there are no manually registered JS implementations of any base classes, (excluding BisCore base classes)
+    // - there are no ancestors with manually registered JS implementations, (excluding BisCore base classes)
     if (!generatedClassHasNonGeneratedNonCoreAncestor && isElement(superclass)) {
       Object.defineProperty(
         generatedClass.prototype,
