@@ -24,7 +24,11 @@ export interface SpatialLocationAndExtents {
   location: Cartographic | EcefLocationProps;
   /** extents of the volume around location */
   worldRange: Range3dProps;
-  /** true if this reality data is geolocated */
+  /** true if this reality data is geolocated
+   * A reality data is geolocated when we can compute a valid position relative to the earth surface.
+   * Note that some reality data contains custom coordinate system without any information on the relative position on earth.
+   * These reality data will have a location and worldRange but will be identified by the isGeoLocated set to false.
+   */
   isGeolocated: boolean;
 }
 
