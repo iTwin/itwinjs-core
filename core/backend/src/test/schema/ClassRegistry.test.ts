@@ -100,7 +100,7 @@ describe("Class Registry", () => {
   });
 });
 
-describe.only("Class Registry - generated classes", () => {
+describe("Class Registry - generated classes", () => {
   let imodel: SnapshotDb;
   const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
 
@@ -341,12 +341,11 @@ describe.only("Class Registry - generated classes", () => {
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
     assert.isDefined(ActualDerivedWithNavProp.prototype.getPredecessorIds);
-    // This demonstrates that if a non-generated class has a registered non-biscore base, it will still get a generated impl,
-    // which will not include navigation properties of base classes as predecessors if the base class chose to ignore them
+    // This demonstrates that if a non-generated class has a registered non-biscore base, it will not get a generated impl,
     expect(
       [...derivedElemWithNavProp.getPredecessorIds()]
     ).to.have.members(
-      [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplPredecessorId, testEntity2Id].filter((x) => x !== undefined)
+      [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplPredecessorId].filter((x) => x !== undefined)
     );
     // explicitly check we called the super function
     // (we already know its implementation was called, because testImplPredecessorId is in the derived call's result)
