@@ -62,9 +62,11 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewDialogTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
   SaveContentLayoutTool, TestExtensionUiProviderTool,
 } from "./tools/ImmediateTools";
+
 import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
 import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
+import { InspectUiItemInfoTool } from "./tools/InspectTool";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -286,6 +288,7 @@ export class SampleAppIModelApp {
     RemoveSavedContentLayoutTool.register(this.sampleAppNamespace);
     RestoreSavedContentLayoutTool.register(this.sampleAppNamespace);
     SaveContentLayoutTool.register(this.sampleAppNamespace);
+    InspectUiItemInfoTool.register(this.sampleAppNamespace);
 
     // Register editing tools
     if (this.allowWrite) {

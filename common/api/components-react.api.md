@@ -3599,11 +3599,14 @@ export const ToolbarButtonItem: React.MemoExoticComponent<React.FC<ToolbarButton
 export interface ToolbarButtonItemProps extends CommonProps {
     addGroupSeparator?: boolean;
     badge?: React.ReactNode;
+    groupPriority?: number;
     icon?: React.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
+    itemPriority?: number;
     onClick?: () => void;
     onKeyDown?: (e: React.KeyboardEvent) => void;
+    providerId?: string;
     title: string;
 }
 

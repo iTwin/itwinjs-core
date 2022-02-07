@@ -448,7 +448,7 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetBranch2State2, changesetBranch2State0);
 
       // make changes to Branch2
-      const delta23 = [7, 8];
+      const delta23 = [7, 8]; // insert 7 (without any updates), and 8
       const state3 = [1, 2, -3, 4, 5, 6, 7, 8];
       maintainPhysicalObjects(branchDb2, delta23);
       assertPhysicalObjects(branchDb2, state3);
@@ -456,22 +456,33 @@ describe("IModelTransformerHub", () => {
       const changesetBranch2State3 = branchDb2.changeset.id;
       assert.notEqual(changesetBranch2State3, changesetBranch2State2);
 
-      // merge changes made on Branch2 back to Master
+      // make conflicting changes to master
+      const delta3Master = [7, 7, 9]; // insert 7 and update it so it conflicts with the branch, insert 9 too
+      const state3Master = [1, 2, -3, 4, 5, 6, 7, 9];
+      maintainPhysicalObjects(masterDb, delta3Master);
+      assertPhysicalObjects(masterDb, state3Master);
+      await saveAndPushChanges(masterDb, "State2 -> State3M");
+      const changesetMasterState3M = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState3M, changesetMasterState2);
+
+      // merge changes made on Branch2 back to Master with a conflict
       const branch2ToMaster = new IModelTransformer(branchDb2, masterDb, {
         isReverseSynchronization: true, // provenance stored in source/branch
       });
+      const state3Merged = [1, 2, -3, 4, 5, 6, 7, 8, 9];
       await branch2ToMaster.processChanges(accessToken, changesetBranch2State3);
       branch2ToMaster.dispose();
-      assertPhysicalObjects(masterDb, state3);
+      assertPhysicalObjects(masterDb, state3Merged); // source wins conflicts
+      assertPhysicalObjectUpdated(masterDb, 7); // if it was updated, then the master version of it won
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
-      await saveAndPushChanges(masterDb, "State2 -> State3");
+      await saveAndPushChanges(masterDb, "State3M -> State3");
       const changesetMasterState3 = masterDb.changeset.id;
       assert.notEqual(changesetMasterState3, changesetMasterState2);
       branchDb2.saveChanges(); // saves provenance locally in case of re-merge
 
       // make change directly on Master
       const delta34 = [6, -7]; // update 6, delete 7
-      const state4 = [1, 2, -3, 4, 5, 6, -7, 8];
+      const state4 = [1, 2, -3, 4, 5, 6, -7, 8, 9];
       maintainPhysicalObjects(masterDb, delta34);
       assertPhysicalObjects(masterDb, state4);
       await saveAndPushChanges(masterDb, "State3 -> State4");
@@ -480,7 +491,7 @@ describe("IModelTransformerHub", () => {
 
       // merge Master to Branch1
       const masterToBranch1 = new IModelTransformer(masterDb, branchDb1);
-      await masterToBranch1.processChanges(accessToken, changesetMasterState3);
+      await masterToBranch1.processChanges(accessToken, changesetMasterState2);
       masterToBranch1.dispose();
       assertPhysicalObjects(branchDb1, state4);
       assertPhysicalObjectUpdated(branchDb1, 6);
@@ -489,7 +500,7 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetBranch1State4, changesetBranch1State2);
 
       const masterDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
-      assert.equal(masterDbChangesets.length, 3);
+      assert.equal(masterDbChangesets.length, 4);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeset of masterDbChangesets) {
         assert.isDefined(masterDbChangeset.id);
@@ -631,7 +642,7 @@ describe("IModelTransformerHub", () => {
           classFullName: PhysicalObject.classFullName,
           model: modelId,
           category: categoryId,
-          code: Code.createEmpty(),
+          code: new Code({ spec: IModelDb.rootSubjectId, scope: IModelDb.rootSubjectId, value: n.toString() }),
           userLabel: n.toString(),
           geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
           placement: {
