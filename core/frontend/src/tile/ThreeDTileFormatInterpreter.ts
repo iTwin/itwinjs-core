@@ -121,7 +121,11 @@ export class ThreeDTileFormatInterpreter  {
     }
     return info;
   }
-
+  /** Convert a boundingVolume into a range
+   * @param boundingVolume the bounding volume to convert
+   * @returns the range or undefined if cannot convert
+   * @internal
+   */
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
     if (undefined === boundingVolume)
       return undefined;
@@ -148,11 +152,16 @@ export class ThreeDTileFormatInterpreter  {
     }
     return undefined;
   }
-
+  /** Convert a boundingVolume into a range
+   * @internal
+   */
   public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
     const minToleranceRatio = .5;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
+  /** Convert a boundingVolume into a range
+   * @internal
+   */
   public static transformFromJson(jTrans: number[] | undefined): Transform | undefined {
     return (jTrans === undefined) ? undefined : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
   }

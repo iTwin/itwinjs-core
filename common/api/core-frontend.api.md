@@ -75,6 +75,7 @@ import { DisplayStyleProps } from '@itwin/core-common';
 import { DisplayStyleSettings } from '@itwin/core-common';
 import { DisplayStyleSettingsProps } from '@itwin/core-common';
 import { EasingFunction } from '@itwin/core-common';
+import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
@@ -9720,8 +9721,8 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
 // @alpha
 export interface SpatialLocationAndExtents {
     isGeolocated: boolean;
-    location: Cartographic | EcefLocationProps;
-    worldRange: Range3dProps;
+    location: Cartographic | EcefLocation;
+    worldRange: Range3d;
 }
 
 // @public
@@ -10449,6 +10450,12 @@ export class ThreeDTileFormatInterpreter {
     // @alpha
     static getPublisherProductInfo(rootDocjson: any): PublisherProductInfo;
     static getSpatialLocationAndExtents(json: any): SpatialLocationAndExtents;
+    // (undocumented)
+    static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number;
+    // (undocumented)
+    static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined;
+    // (undocumented)
+    static transformFromJson(jTrans: number[] | undefined): Transform | undefined;
 }
 
 // @public
