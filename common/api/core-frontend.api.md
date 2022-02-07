@@ -10450,11 +10450,8 @@ export class ThreeDTileFormatInterpreter {
     // @alpha
     static getPublisherProductInfo(rootDocjson: any): PublisherProductInfo;
     static getSpatialLocationAndExtents(json: any): SpatialLocationAndExtents;
-    // (undocumented)
     static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number;
-    // (undocumented)
     static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined;
-    // (undocumented)
     static transformFromJson(jTrans: number[] | undefined): Transform | undefined;
 }
 
