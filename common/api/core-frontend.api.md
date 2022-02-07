@@ -7188,7 +7188,7 @@ export interface OnViewExtentsError {
 // @internal
 export class OPCFormatInterpreter {
     static getFileReaderFromBlobFileURL(blobFileURL: string): Promise<PointCloudReader>;
-    static getSpatialLocationAndExtents(fileReader: PointCloudReader): Promise<SpatialLocationAndExtents_2>;
+    static getSpatialLocationAndExtents(fileReader: PointCloudReader): Promise<SpatialLocationAndExtents>;
 }
 
 // @beta
@@ -7624,7 +7624,6 @@ export enum PrimitiveVisibility {
 export interface PublisherProductInfo {
     engine: string;
     product: string;
-    rootChildren?: string;
     version: string;
 }
 
@@ -10440,7 +10439,13 @@ export class ThreeAxes {
 }
 
 // @internal
+export interface ThreeDTileFileInfo {
+    rootChildren?: number;
+}
+
+// @internal
 export class ThreeDTileFormatInterpreter {
+    static getFileInfo(rootDocjson: any): ThreeDTileFileInfo;
     // @alpha
     static getPublisherProductInfo(rootDocjson: any): PublisherProductInfo;
     static getSpatialLocationAndExtents(json: any): SpatialLocationAndExtents;

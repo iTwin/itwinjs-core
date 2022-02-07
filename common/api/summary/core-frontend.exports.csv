@@ -578,6 +578,7 @@ public;TextureImage
 public;TextureImageSource = HTMLImageElement | ImageBuffer
 public;TextureOwnership = TextureCacheOwnership | "external"
 internal;ThreeAxes
+internal;ThreeDTileFileInfo
 internal;ThreeDTileFormatInterpreter
 public;class Tile
 public;TileAdmin
