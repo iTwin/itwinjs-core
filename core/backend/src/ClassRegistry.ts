@@ -13,6 +13,8 @@ import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 
+const isGeneratedClassTag = Symbol("isGeneratedClassTag");
+
 /** The mapping between a BIS class name (in the form "schema:class") and its JavaScript constructor function
  * @public
  */
@@ -78,17 +80,32 @@ export class ClassRegistry {
     if (undefined === superclass)
       throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${name}`);
 
-    const generatedClass = class extends superclass { public static override get className() { return className; } };
-    // the above line creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
+    // override `hasNonGeneratedNonCoreBaseClass` for this subclass if the condition is met, or just propagate the parent's override
+    const generatedClassHasCustomNonCoreBaseClass =
+      (superclass.schema.schemaName !== "BisCore" && superclass.isGeneratedClass) ||
+      superclass.hasNonGeneratedNonCoreBaseClass;
+
+    const generatedClass = class extends superclass {
+      public static override get className() { return className; }
+      public static override get hasNonGeneratedNonCoreBaseClass() { return generatedClassHasCustomNonCoreBaseClass; }
+      private static [isGeneratedClassTag] = true;
+      public static override get isGeneratedClass() { return this.hasOwnProperty(isGeneratedClassTag); }
+    };
+
+    // the above creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
 
     const navigationProps = Object.entries(entityMetaData.properties)
       .filter(([_propName, prop]) => prop.isNavigation)
       .map(([propName, _prop]) => propName);
 
-    const isElement = (t: typeof Entity): t is typeof Element => t.is(Element);
+    const isElement = (t: typeof Entity): t is typeof Element => t.is(Element); // Entity.is check but with type information to avoid casts later
 
-    if (isElement(superclass)) {
+    // a class only gets an automatic `collectPredecessorIds` implementation if:
+    // - it derives from `BisCore:Element`
+    // - it is not in the `BisCore` schema
+    // - there are no manually registered JS implementations of any base classes, (excluding BisCore base classes)
+    if (!generatedClassHasCustomNonCoreBaseClass && isElement(superclass)) {
       Object.defineProperty(
         generatedClass.prototype,
         "collectPredecessorIds",
