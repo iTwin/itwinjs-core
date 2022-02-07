@@ -117,7 +117,7 @@ export class ThreeDTileFormatInterpreter  {
   public static getFileInfo(rootDocjson: any): ThreeDTileFileInfo {
     const info: ThreeDTileFileInfo = { rootChildren: 0};
     if (rootDocjson && rootDocjson.root) {
-      info.rootChildren = parseInt(rootDocjson.root.children.length, 10);
+      info.rootChildren = rootDocjson.root.children.length;
     }
     return info;
   }
