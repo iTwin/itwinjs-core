@@ -10,6 +10,7 @@ export * from "./BentleyError";
 export * from "./BentleyLoggerCategory";
 export * from "./BeSQLite";
 export * from "./ByteStream";
+export * from "./ClassUtils";
 export * from "./Compare";
 export * from "./CompressedId64Set";
 export * from "./Dictionary";

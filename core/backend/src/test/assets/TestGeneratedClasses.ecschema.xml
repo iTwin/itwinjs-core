@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestGeneratedClasses" alias="tgc" version="1.0.0"
+    xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+
+    <ECEntityClass typeName="TestEntity" description="a sample entity for the end of the test relationships">
+        <BaseClass>bis:DefinitionElement</BaseClass>
+        <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="ElemRel" strength="referencing" description="elem rel 1" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="TestElementWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestEntity"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="NonElemRel" strength="referencing" description="non elem rel 2" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="TestNonElementWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestEntity"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="DerivedElemRel" strength="referencing" description="elem rel 3" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="DerivedWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestEntity"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="TestNonElementWithNavProp" description="A test domain class that doesn't derive from Bis:Element and has a nav prop.">
+        <BaseClass>bis:ElementMultiAspect</BaseClass>
+        <ECNavigationProperty propertyName="navProp" relationshipName="NonElemRel" direction="Forward"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestElementWithNavProp" description="A test domain class that derives from Bis:Element and has a nav prop.">
+        <BaseClass>bis:DefinitionElement</BaseClass>
+        <ECNavigationProperty propertyName="navProp" relationshipName="ElemRel" direction="Forward"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="DerivedWithNavProp" description="A test domain class that derives a class in this schema and has a nav prop.">
+        <BaseClass>TestElementWithNavProp</BaseClass>
+        <ECNavigationProperty propertyName="derivedNavProp" relationshipName="DerivedElemRel" direction="Forward"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Derived2">
+        <BaseClass>DerivedWithNavProp</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Derived3">
+        <BaseClass>Derived2</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Derived4">
+        <BaseClass>Derived3</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Derived5">
+        <BaseClass>Derived4</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Derived6">
+        <BaseClass>Derived5</BaseClass>
+    </ECEntityClass>
+
+</ECSchema>
