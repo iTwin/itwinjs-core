@@ -18,7 +18,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --tsIndexFile=backend-itwin-client.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --excludes=@types --tsIndexFile=backend-itwin-client.ts --onlyJson",
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "npm run copy:test-assets",

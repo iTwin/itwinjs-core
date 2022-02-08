@@ -108,7 +108,6 @@ export class NormalizedBlossTransition extends NormalizedTransition {
   }
 }
 /**
-/**
  * Transition functions for biquadratic transition
  * * Curvature is a pair of joining quadratics.
  * * In lower half of the interval, the quadratic is from (0,0) to (0.5, 0.5) with zero slope at origin

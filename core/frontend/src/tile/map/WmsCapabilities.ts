@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Views
+ */
+
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { MapSubLayerProps } from "@bentley/imodeljs-common";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
 import { MapCartoRectangle, WmsUtilities } from "../internal";
 import WMS = require("wms-capabilities");
-
-/** @packageDocumentation
- * @module Views
- */
 
 /**
  * fetch XML from HTTP request
