@@ -6,29 +6,29 @@ Produces ECInstance nodes that are related to some source ECInstance. The source
 
 ## Attributes
 
-| Name                                                                        | Required? | Type                                                                                  | Default     |
-| --------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------- | ----------- |
+| Name                                                                        | Required? | Type                                                                                                      | Default     |
+| --------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------- | ----------- |
 | *Filtering*                                                                 |
-| [`relationshipPaths`](#attribute-relationshippaths)                         | Yes       | [`RelationshipPathSpecification[]`](../Common-Rules/RelationshipPathSpecification.md) |             |
-| [`instanceFilter`](#attribute-instancefilter)                               | No        | [ECExpression](./ECExpressions.md#instance-filter)                                    | `""`        |
-| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy)                   | No        | `boolean`                                                                             | `false`     |
-| [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                                                             | `false`     |
-| [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                                      | `""`        |
-| [`suppressSimilarAncestorsCheck`](#attribute-suppresssimilarancestorscheck) | No        | `boolean`                                                                             | `false`     |
+| [`relationshipPaths`](#attribute-relationshippaths)                         | Yes       | [`RepeatableRelationshipPathSpecification[]`](../Common-Rules/RepeatableRelationshipPathSpecification.md) |             |
+| [`instanceFilter`](#attribute-instancefilter)                               | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                        | `""`        |
+| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy)                   | No        | `boolean`                                                                                                 | `false`     |
+| [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                                                                                 | `false`     |
+| [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                                                          | `""`        |
+| [`suppressSimilarAncestorsCheck`](#attribute-suppresssimilarancestorscheck) | No        | `boolean`                                                                                                 | `false`     |
 | *Ordering*                                                                  |
-| [`priority`](#attribute-priority)                                           | No        | `number`                                                                              | `1000`      |
-| [`doNotSort`](#attribute-donotsort)                                         | No        | `boolean`                                                                             | `false`     |
+| [`priority`](#attribute-priority)                                           | No        | `number`                                                                                                  | `1000`      |
+| [`doNotSort`](#attribute-donotsort)                                         | No        | `boolean`                                                                                                 | `false`     |
 | *Grouping*                                                                  |
-| [`groupByClass`](#attribute-groupbyclass)                                   | No        | `boolean`                                                                             | `true`      |
-| [`groupByLabel`](#attribute-groupbylabel)                                   | No        | `boolean`                                                                             | `true`      |
+| [`groupByClass`](#attribute-groupbyclass)                                   | No        | `boolean`                                                                                                 | `true`      |
+| [`groupByLabel`](#attribute-groupbylabel)                                   | No        | `boolean`                                                                                                 | `true`      |
 | *Misc.*                                                                     |
-| [`hasChildren`](#attribute-haschildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                                    | `"Unknown"` |
-| [`relatedInstances`](#attribute-relatedinstances)                           | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)   | `[]`        |
-| [`nestedRules`](#attribute-nestedrules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                               | `[]`        |
+| [`hasChildren`](#attribute-haschildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                                                        | `"Unknown"` |
+| [`relatedInstances`](#attribute-relatedinstances)                           | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)                       | `[]`        |
+| [`nestedRules`](#attribute-nestedrules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                                                   | `[]`        |
 
 ### Attribute: `relationshipPaths`
 
-Specifies a chain of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) that forms a path from a source instance to the output instances. When this array is empty, the specification produces no results.
+Specifies a chain of [relationship path specifications](../Common-Rules/RepeatableRelationshipPathSpecification.md) that forms a path from a source instance to the output instances. When this array is empty, the specification produces no results.
 
 ```ts
 [[include:Hierarchies.RelatedInstanceNodesSpecification.RelationshipPaths.Ruleset]]

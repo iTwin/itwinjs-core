@@ -6,26 +6,26 @@ Returns content for instances related to the selected (input) instances.
 
 ## Attributes
 
-| Name                                                      | Required? | Type                                                                                  | Default |
-| --------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------- | ------- |
+| Name                                                      | Required? | Type                                                                                                      | Default |
+| --------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------- | ------- |
 | *Filtering*                                               |
-| [`relationshipPaths`](#attribute-relationshippaths)       | Yes       | [`RelationshipPathSpecification[]`](../Common-Rules/RelationshipPathSpecification.md) |
-| [`instanceFilter`](#attribute-instancefilter)             | No        | [ECExpression](./ECExpressions.md#instance-filter)                                    | `""`    |
-| [`onlyIfNotHandled`](#attribute-onlyifnothandled)         | No        | `boolean`                                                                             | `false` |
+| [`relationshipPaths`](#attribute-relationshippaths)       | Yes       | [`RepeatableRelationshipPathSpecification[]`](../Common-Rules/RepeatableRelationshipPathSpecification.md) |
+| [`instanceFilter`](#attribute-instancefilter)             | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                        | `""`    |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)         | No        | `boolean`                                                                                                 | `false` |
 | *Ordering*                                                |
-| [`priority`](#attribute-priority)                         | No        | `number`                                                                              | `1000`  |
+| [`priority`](#attribute-priority)                         | No        | `number`                                                                                                  | `1000`  |
 | *Content Modifiers*                                       |
-| [`relatedProperties`](#attribute-relatedproperties)       | No        | `RelatedPropertiesSpecification[]`                                                    | `[]`    |
-| [`calculatedProperties`](#attribute-calculatedproperties) | No        | `CalculatedPropertiesSpecification[]`                                                 | `[]`    |
-| [`propertyCategories`](#attribute-propertycategories)     | No        | `PropertyCategorySpecification[]`                                                     | `[]`    |
-| [`propertyOverrides`](#attribute-propertyoverrides)       | No        | `PropertySpecification[]`                                                             | `[]`    |
-| [`showImages`](#attribute-showimages)                     | No        | `boolean`                                                                             | `false` |
+| [`relatedProperties`](#attribute-relatedproperties)       | No        | `RelatedPropertiesSpecification[]`                                                                        | `[]`    |
+| [`calculatedProperties`](#attribute-calculatedproperties) | No        | `CalculatedPropertiesSpecification[]`                                                                     | `[]`    |
+| [`propertyCategories`](#attribute-propertycategories)     | No        | `PropertyCategorySpecification[]`                                                                         | `[]`    |
+| [`propertyOverrides`](#attribute-propertyoverrides)       | No        | `PropertySpecification[]`                                                                                 | `[]`    |
+| [`showImages`](#attribute-showimages)                     | No        | `boolean`                                                                                                 | `false` |
 | *Misc.*                                                   |
-| [`relatedInstances`](#attribute-relatedinstances)         | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)   | `[]`    |
+| [`relatedInstances`](#attribute-relatedinstances)         | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)                       | `[]`    |
 
 ### Attribute: `relationshipPaths`
 
-Specifies a chain of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) that forms a path from an input instance to the output instances. When this array is empty, the specification produces no results.
+Specifies a chain of [relationship path specifications](../Common-Rules/RepeatableRelationshipPathSpecification.md) that forms a path from an input instance to the output instances. When this array is empty, the specification produces no results.
 
 ```ts
 [[include:ContentRelatedInstances.RelationshipPaths.Ruleset]]
