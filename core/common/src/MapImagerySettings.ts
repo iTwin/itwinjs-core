@@ -8,7 +8,7 @@
 
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerProps, MapLayerSettings, MapLayerSettingsBase } from "./MapLayerSettings";
+import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerPropsBase, MapLayerSettings } from "./MapLayerSettings";
 
 /** JSON representation of a [[BaseLayerSettings]].
  * @beta
@@ -26,8 +26,8 @@ export type BaseLayerProps = BaseMapLayerProps | ColorDefProps;
  */
 export interface MapImageryProps {
   backgroundBase?: BaseLayerProps;
-  backgroundLayers?: MapLayerProps[];
-  overlayLayers?: MapLayerProps[];
+  backgroundLayers?: MapLayerPropsBase[];
+  overlayLayers?: MapLayerPropsBase[];
 }
 
 /** The base layer for a [[MapImagerySettings]].
@@ -56,18 +56,18 @@ export class MapImagerySettings {
   private _backgroundLayers = new Array<MapLayerSettings>();
   private _overlayLayers = new Array<MapLayerSettings>();
 
-  private constructor(base: BaseLayerSettings, backgroundLayerProps?: MapLayerProps[], overlayLayersProps?: MapLayerProps[]) {
+  private constructor(base: BaseLayerSettings, backgroundLayerProps?: MapLayerPropsBase[], overlayLayersProps?: MapLayerPropsBase[]) {
     this._backgroundBase = base;
     if (backgroundLayerProps) {
       for (const layerProps of backgroundLayerProps) {
-        const layer = MapLayerSettingsBase.fromJSON(layerProps);
+        const layer = MapLayerSettings.fromJSON(layerProps);
         if (layer)
           this._backgroundLayers.push(layer);
       }
     }
     if (overlayLayersProps) {
       for (const overlayLayerProps of overlayLayersProps) {
-        const overlayLayer = MapLayerSettingsBase.fromJSON(overlayLayerProps);
+        const overlayLayer = MapLayerSettings.fromJSON(overlayLayerProps);
         if (overlayLayer)
           this._overlayLayers.push(overlayLayer);
       }

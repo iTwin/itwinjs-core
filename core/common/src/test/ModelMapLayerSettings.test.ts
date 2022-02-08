@@ -17,7 +17,6 @@ describe("ModelMapLayerSettings", () => {
     expect(output.modelId).to.equal(expected.modelId);
     expect(output.transparency).to.equal(expected.transparency);
     expect(output.transparentBackground).to.equal(expected.transparentBackground);
-    expect(output.isBase).to.equal(expected.isBase);
   };
 
   it("round-trips through JSON", () => {

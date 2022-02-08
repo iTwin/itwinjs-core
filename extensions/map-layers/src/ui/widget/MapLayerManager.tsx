@@ -7,22 +7,22 @@
 // the following quiet warning caused by react-beautiful-dnd package
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import "./MapLayerManager.scss";
-import * as React from "react";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { assert, BentleyError } from "@itwin/core-bentley";
-import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings, ModelMapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings, MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import {
   ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
+import * as React from "react";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { MapLayerPreferences, MapLayerSourceChangeType } from "../../MapLayerPreferences";
 import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
 import { MapLayerDroppable } from "./MapLayerDroppable";
+import "./MapLayerManager.scss";
 import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
 
 /** @internal */
@@ -66,7 +66,7 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
     const layerSettings = displayStyleLayers[layerIdx];
     const isOverlay = !getBackgroundMap;
     const layerProvider = viewport.getMapLayerImageryProvider(layerIdx, isOverlay);
-    const popSubLayers = populateSubLayers && !(layerSettings instanceof ModelMapLayerSettings);
+    const popSubLayers = populateSubLayers && (layerSettings instanceof ImageMapLayerSettings);
     layers.push({
       visible: layerSettings.visible,
       name: layerSettings.name,

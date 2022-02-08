@@ -6,7 +6,8 @@
  * @module Tiles
  */
 
-import { MapLayerSettings, ModelMapLayerSettings } from "@itwin/core-common";
+import { assert } from "@itwin/core-bentley";
+import { ImageMapLayerSettings, MapLayerSettings, ModelMapLayerSettings } from "@itwin/core-common";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -45,6 +46,10 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
   if (layerSettings instanceof ModelMapLayerSettings) {
     return createModelMapLayerTileTreeReference(layerSettings, layerIndex, iModel);
-  } else
+  } else if (layerSettings instanceof ImageMapLayerSettings)
     return IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(layerSettings, layerIndex, iModel);
+  else {
+    assert (false);
+    return undefined;
+  }
 }

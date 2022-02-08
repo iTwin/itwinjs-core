@@ -11,7 +11,7 @@ import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
   BaseLayerSettings, BaseMapLayerSettings, CartographicRange, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
-  MapLayerSettings, MapLayerSettingsBase, MapSubLayerProps, ModelMapLayerSettings, RenderSchedule, RenderTimelineProps,
+  MapLayerSettings, MapSubLayerProps, ModelMapLayerSettings, RenderSchedule, RenderTimelineProps,
   SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
@@ -407,7 +407,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   public attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex = -1): void {
-    const layerSettings = MapLayerSettingsBase.fromJSON(props);
+    const layerSettings = MapLayerSettings.fromJSON(props);
     if (undefined === layerSettings)
       return;
 
@@ -492,7 +492,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (undefined === mapLayerSettings)
       return;
 
-    if (mapLayerSettings instanceof ModelMapLayerSettings) {
+    if (!(mapLayerSettings instanceof ImageMapLayerSettings)) {
       assert (false);
       return;
     }
@@ -523,6 +523,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
 
       return MapCartoRectangle.create(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
+    }
+    if (! (mapLayerSettings instanceof ImageMapLayerSettings)) {
+      assert(false);
+      return undefined;
     }
 
     const imageryProvider = IModelApp.mapLayerFormatRegistry.createImageryProvider(mapLayerSettings);
