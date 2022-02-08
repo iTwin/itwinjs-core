@@ -20,7 +20,7 @@ with its related instance and allow using the related instance for:
 
 ### Attribute: `relationshipPath`
 
-Specifies a chain of [relationship path specifications](../RelationshipPathSpecification.md) that forms a path from the primary instance to the related instances.
+Specifies a chain of [relationship path specifications](./RelationshipPathSpecification.md) that forms a path from the primary instance to the related instances.
 
 ### Attribute: `alias`
 

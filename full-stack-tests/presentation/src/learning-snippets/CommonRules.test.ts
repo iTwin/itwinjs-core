@@ -153,7 +153,7 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
 
-      // __PUBLISH_EXTRACT_START__ RelatedInstanceSpecification.UsingForCustomization.Ruleset
+      // __PUBLISH_EXTRACT_START__ RelatedInstanceSpecification.UsingForCustomization.Result
       // Every node should have its full class name in extended data
       const nodes = await Presentation.presentation.getNodes({
         imodel,
