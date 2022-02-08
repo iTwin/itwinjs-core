@@ -105,7 +105,7 @@ importers:
       '@types/node': 14.14.31
       '@types/semver': ^5.5.0
       '@types/sinon': ^9.0.0
-      '@types/ws': ^6.0.4
+      '@types/ws': ^7.0.0
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -151,7 +151,7 @@ importers:
       '@types/node': 14.14.31
       '@types/semver': 5.5.0
       '@types/sinon': 9.0.11
-      '@types/ws': 6.0.4
+      '@types/ws': 7.4.7
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       cpx2: 3.0.2
@@ -255,7 +255,6 @@ importers:
       '@types/node': 14.14.31
       '@types/sinon': ^9.0.0
       '@xmldom/xmldom': ^0.7.0
-      almost-equal: ^1.1.0
       benchmark: ^2.1.4
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -266,8 +265,6 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~4.4.0
-    dependencies:
-      almost-equal: 1.1.0
     devDependencies:
       '@bentley/units-schema': 1.0.7
       '@itwin/build-tools': link:../../tools/build
@@ -828,7 +825,7 @@ importers:
       '@types/node': 14.14.31
       '@types/qs': ^6.5.0
       '@types/superagent': ^4.1.14
-      '@types/ws': ^6.0.4
+      '@types/ws': ^7.0.0
       chai: ^4.1.2
       chai-as-promised: ^7
       deep-assign: ^2.0.0
@@ -866,7 +863,7 @@ importers:
       '@types/node': 14.14.31
       '@types/qs': 6.9.7
       '@types/superagent': 4.1.15
-      '@types/ws': 6.0.4
+      '@types/ws': 7.4.7
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       dotenv: 10.0.0
@@ -1441,7 +1438,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': ~1.28.0
+      '@itwin/itwinui-react': 1.29.3
       '@itwin/presentation-common': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
@@ -1494,7 +1491,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': 1.28.0_react@17.0.2
+      '@itwin/itwinui-react': 1.29.3_react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@testing-library/react': 12.1.2_react@17.0.2
       '@testing-library/react-hooks': 7.0.2_react@17.0.2
@@ -1616,7 +1613,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.8.2
+      '@itwin/electron-authorization': ^0.8.3
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
@@ -1840,9 +1837,11 @@ importers:
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       faker: ^4.1.0
+      fast-sort: ^3.0.2
       ignore-styles: ^5.0.1
       immer: 9.0.6
       internal-tools: workspace:*
+      jsdom: ^17.0.0
       jsdom-global: 3.0.2
       mocha: ^8.3.2
       react: ^17.0.0
@@ -1890,6 +1889,7 @@ importers:
       cpx2: 3.0.2
       deep-equal: 1.1.1
       faker: 4.1.0
+      fast-sort: 3.1.1
       immer: 9.0.6
       mocha: 8.4.0
       react: 17.0.2
@@ -1911,7 +1911,8 @@ importers:
       eslint: 7.32.0
       ignore-styles: 5.0.1
       internal-tools: link:../../tools/internal
-      jsdom-global: 3.0.2
+      jsdom: 17.0.0
+      jsdom-global: 3.0.2_jsdom@17.0.0
       typescript: 4.4.4
 
   ../../full-stack-tests/rpc:
@@ -2501,7 +2502,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-mobile': workspace:*
       '@itwin/core-quantity': workspace:*
-      '@itwin/electron-authorization': ^0.8.2
+      '@itwin/electron-authorization': ^0.8.3
       '@itwin/eslint-plugin': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodels-access-backend': ^1.0.1
@@ -2593,7 +2594,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.8.2
+      '@itwin/electron-authorization': ^0.8.3
       '@itwin/eslint-plugin': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
@@ -2855,7 +2856,7 @@ importers:
       '@itwin/core-electron': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
-      '@itwin/electron-authorization': ^0.8.2
+      '@itwin/electron-authorization': ^0.8.3
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-client-authoring': ^1.0.1
@@ -2922,12 +2923,12 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
-      '@itwin/electron-authorization': ^0.8.2
+      '@itwin/electron-authorization': ^0.8.3
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': ~1.28.0
+      '@itwin/itwinui-react': 1.29.3
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -2971,7 +2972,7 @@ importers:
       '@itwin/express-server': link:../../core/express-server
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': 1.28.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.29.3_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -3020,7 +3021,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': ~1.28.0
+      '@itwin/itwinui-react': 1.29.3
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -3048,7 +3049,7 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': 1.28.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.29.3_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -3098,7 +3099,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.8.2
+      '@itwin/electron-authorization': ^0.8.3
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/frontend-devtools': workspace:*
@@ -3106,9 +3107,10 @@ importers:
       '@itwin/imodel-components-react': workspace:*
       '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-access-frontend': ^1.0.1
+      '@itwin/imodels-client-authoring': ^1.0.1
       '@itwin/imodels-client-management': ^1.0.1
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': ~1.28.0
+      '@itwin/itwinui-react': 1.29.3
       '@itwin/map-layers': workspace:*
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
@@ -3180,9 +3182,10 @@ importers:
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/imodels-access-backend': 1.0.1
       '@itwin/imodels-access-frontend': 1.0.1
+      '@itwin/imodels-client-authoring': 1.0.1
       '@itwin/imodels-client-management': 1.0.1
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': 1.28.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.29.3_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../extensions/map-layers
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
@@ -3632,7 +3635,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': ~1.28.0
+      '@itwin/itwinui-react': 1.29.3
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
       '@types/chai': ^4.1.4
@@ -3672,7 +3675,7 @@ importers:
       uuid: ^7.0.3
     dependencies:
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': 1.28.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.29.3_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       immer: 9.0.6
       uuid: 7.0.3
@@ -3736,7 +3739,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': ~1.28.0
+      '@itwin/itwinui-react': 1.29.3
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -3798,7 +3801,7 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/core-telemetry': link:../../core/telemetry
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': 1.28.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.29.3_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-components': link:../../presentation/components
       classnames: 2.3.1
       immer: 9.0.6
@@ -3881,7 +3884,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': ~1.28.0
+      '@itwin/itwinui-react': 1.29.3
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
       '@testing-library/user-event': ^13.2.1
@@ -3952,7 +3955,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': 1.28.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.29.3_react-dom@17.0.2+react@17.0.2
       '@types/shortid': 0.0.29
       callable-instance2: 1.0.0
       classnames: 2.3.1
@@ -4039,7 +4042,7 @@ importers:
       '@itwin/core-i18n': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': ~1.28.0
+      '@itwin/itwinui-react': 1.29.3
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
       '@testing-library/user-event': ^13.2.1
@@ -4093,7 +4096,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': 1.28.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.29.3_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       dompurify: 2.3.5
       lodash: 4.17.21
@@ -4166,7 +4169,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': ~1.28.0
+      '@itwin/itwinui-react': 1.29.3
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
       '@testing-library/user-event': ^13.2.1
@@ -4219,7 +4222,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.44.1
-      '@itwin/itwinui-react': 1.28.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.29.3_react-dom@17.0.2+react@17.0.2
       callable-instance2: 1.0.0
       classnames: 2.3.1
       eventemitter2: 5.0.1
@@ -7402,9 +7405,6 @@ packages:
       - debug
     dev: false
 
-  /@itwin/itwinui-css/0.43.0:
-    resolution: {integrity: sha512-L35i6HKtBsf7ecZxJdeFMANerQ4Oyty90u9N439ewy0S5vsDxHYSCshFqFy9EdkigyHeFmAnJDZX3GxeARmPGw==}
-
   /@itwin/itwinui-css/0.44.1:
     resolution: {integrity: sha512-J0zSBKLPoEAMPGV/Sw2+VkrQH432HejACXvymUbSGaqBYodIcCm6JPAlMbjeJlNZgU2auQbyPr4tbe1U6AwIWw==}
 
@@ -7446,13 +7446,13 @@ packages:
       react: 17.0.2
     dev: true
 
-  /@itwin/itwinui-react/1.28.0_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-8OOs2o+eGGDRu0QQ6oIFyjs2GwNQZbeKOoM5j63Y846SiwwN7RbGl2rg304iYAq05LY8L2up7n0JfvK3ng8Cjg==}
+  /@itwin/itwinui-react/1.29.3_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-c3W2DaGofVaZCe0Z6ldChFBy+GBqBXrMz0Ap6awBLX6FwHcFzwcOxBo0BaCWLoIFl8BFv94mbrRh9zkk1m7ZbA==}
     peerDependencies:
       react: ^16.8.6 || ^17.0.0
       react-dom: ^16.8.6 || ^17.0.0
     dependencies:
-      '@itwin/itwinui-css': 0.43.0
+      '@itwin/itwinui-css': 0.44.1
       '@itwin/itwinui-icons-react': 1.5.1_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-illustrations-react': 1.2.0_react-dom@17.0.2+react@17.0.2
       '@tippyjs/react': 4.2.6_react-dom@17.0.2+react@17.0.2
@@ -7464,13 +7464,13 @@ packages:
       react-transition-group: 4.4.2_react-dom@17.0.2+react@17.0.2
     dev: false
 
-  /@itwin/itwinui-react/1.28.0_react@17.0.2:
-    resolution: {integrity: sha512-8OOs2o+eGGDRu0QQ6oIFyjs2GwNQZbeKOoM5j63Y846SiwwN7RbGl2rg304iYAq05LY8L2up7n0JfvK3ng8Cjg==}
+  /@itwin/itwinui-react/1.29.3_react@17.0.2:
+    resolution: {integrity: sha512-c3W2DaGofVaZCe0Z6ldChFBy+GBqBXrMz0Ap6awBLX6FwHcFzwcOxBo0BaCWLoIFl8BFv94mbrRh9zkk1m7ZbA==}
     peerDependencies:
       react: ^16.8.6 || ^17.0.0
       react-dom: ^16.8.6 || ^17.0.0
     dependencies:
-      '@itwin/itwinui-css': 0.43.0
+      '@itwin/itwinui-css': 0.44.1
       '@itwin/itwinui-icons-react': 1.5.1_react@17.0.2
       '@itwin/itwinui-illustrations-react': 1.2.0_react@17.0.2
       '@tippyjs/react': 4.2.6_react@17.0.2
@@ -8503,7 +8503,7 @@ packages:
     dependencies:
       '@types/express': 4.17.13
       '@types/express-serve-static-core': 4.17.28
-      '@types/ws': 6.0.4
+      '@types/ws': 7.4.7
     dev: true
 
   /@types/express/4.17.13:
@@ -8937,8 +8937,8 @@ packages:
       source-map: 0.6.1
     dev: true
 
-  /@types/ws/6.0.4:
-    resolution: {integrity: sha512-PpPrX7SZW9re6+Ha8ojZG4Se8AZXgf0GK6zmfqEuCsY49LFDNXO3SByp44X3dFEqtB73lkCDAdUazhAjVPiNwg==}
+  /@types/ws/7.4.7:
+    resolution: {integrity: sha512-JQbbmxZTZehdc2iszGKs5oC3NFnjeay7mtAWrdt7qNtAVK0g19muApzAy4bm9byz79xa2ZnO/BOBC2R8RC5Lww==}
     dependencies:
       '@types/node': 14.14.31
     dev: true
@@ -9945,7 +9945,7 @@ packages:
   /axios/0.25.0:
     resolution: {integrity: sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==}
     dependencies:
-      follow-redirects: 1.14.7_debug@4.3.3
+      follow-redirects: 1.14.7
     transitivePeerDependencies:
       - debug
 
@@ -13562,7 +13562,6 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
-    dev: false
 
   /follow-redirects/1.14.7_debug@4.3.3:
     resolution: {integrity: sha512-+hbxoLbFMbRKDwohX8GkTataGqO6Jb7jGwpAlwgy2bIz25XtRm7KEzJM76R1WiNT5SwZkX4Y75SwBolkpmE7iQ==}
@@ -22323,7 +22322,7 @@ packages:
   /wide-align/1.1.5:
     resolution: {integrity: sha512-eDMORYaPNZ4sQIuuYPDHdQvf4gyCF9rEEV/yPxGfwPkRodwEgiMUUXTx/dex+Me0wxx53S+NgUHaP7y3MGlDmg==}
     dependencies:
-      string-width: 1.0.2
+      string-width: 4.2.3
     dev: false
 
   /widest-line/3.1.0:

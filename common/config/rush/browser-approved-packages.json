@@ -32,7 +32,7 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "backend", "common", "frontend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@itwin/appui-abstract",
@@ -132,15 +132,15 @@
     },
     {
       "name": "@itwin/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -316,7 +316,7 @@
     },
     {
       "name": "@xmldom/xmldom",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "agentkeepalive",
@@ -324,7 +324,7 @@
     },
     {
       "name": "almost-equal",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "autoprefixer",
@@ -528,7 +528,7 @@
     },
     {
       "name": "fast-sort",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "file-loader",
@@ -616,7 +616,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "jsdom-global",
