@@ -115,10 +115,9 @@ export class ThreeDTileFormatInterpreter  {
    * @internal
    */
   public static getFileInfo(rootDocjson: any): ThreeDTileFileInfo {
-    const info: ThreeDTileFileInfo = { rootChildren: 0};
-    if (rootDocjson && rootDocjson.root) {
-      info.rootChildren = rootDocjson.root.children.length;
-    }
+    const info: ThreeDTileFileInfo = {
+      rootChildren: rootDocjson?.root?.children?.length ?? 0,
+    };
     return info;
   }
   /** Convert a boundingVolume into a range
