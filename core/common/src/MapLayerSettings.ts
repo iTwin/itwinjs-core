@@ -204,7 +204,7 @@ export abstract class MapLayerSettingsBase {
   public static fromJSON(json: MapLayerProps): MapLayerSettings | undefined {
     if ("url" in json)
       return ImageMapLayerSettings.fromJSON(json);
-    else if ("modelId in json")
+    else if ("modelId" in json)
       return ModelMapLayerSettings.fromJSON(json);
     assert (false);
     return undefined;
