@@ -87,11 +87,11 @@ export class Entity implements EntityProps {
   public static get protectedOperations(): string[] { return []; }
 
   /** return whether this Entity class is a subclass of another Entity class
+   * @beta
    * @note the subclass-ness is checked according to JavaScript inheritance, to check the underlying raw EC class's
    * inheritance, you can use [ECClass.is]($ecschema-metadata)
    * @note this should have a type of `is<T extends typeof Entity>(otherClass: T): this is T` but can't because of
    * typescript's restriction on the `this` type in static methods
-   * @beta
    */
   public static is(otherClass: typeof Entity): boolean { return isSubclassOf(this, otherClass); }
 
