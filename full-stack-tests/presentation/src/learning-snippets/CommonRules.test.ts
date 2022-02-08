@@ -26,6 +26,49 @@ describe("Learning Snippets", () => {
     await terminate();
   });
 
+  describe("MultiSchemaClasses", () => {
+
+    it("uses all attributes", async () => {
+      // __PUBLISH_EXTRACT_START__ MultiSchemaClasses.Ruleset
+      // This specification selects instances of `bis.PhysicalModel` and `bis.SpatialCategory` classes.
+      // Classes that derive from classes specified in `classNames` this list will not be included due to
+      // `arePolymorphic` attribute being set to `false`.
+      const ruleset: Ruleset = {
+        id: "example",
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: {
+              schemaName: "BisCore",
+              classNames: ["PhysicalModel", "SpatialCategory"],
+              arePolymorphic: false,
+            },
+          }],
+        }],
+      };
+      // __PUBLISH_EXTRACT_END__
+      printRuleset(ruleset);
+
+      // Ensure that `bis.PhysicalModel` and `bis.SpatialCategory` instances are selected.
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {},
+      });
+
+      expect(content!.contentSet).to.have.lengthOf(2);
+      expect(content!.contentSet).to.containSubset([{
+        primaryKeys: [{ className: "BisCore:PhysicalModel" }],
+      }]);
+      expect(content!.contentSet).to.containSubset([{
+        primaryKeys: [{ className: "BisCore:SpatialCategory" }],
+      }]);
+    });
+
+  });
+
   describe("RelatedInstanceSpecification", () => {
 
     it("using in instance filter", async () => {
