@@ -220,9 +220,7 @@ export class IModelApp {
   public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session. */
   public static get tileAdmin(): TileAdmin { return this._tileAdmin; }
-  /** The [[QuantityFormatter]] for this session.
-   * @alpha
-   */
+  /** The [[QuantityFormatter]] for this session. */
   public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
   /** The [[ToolAdmin]] for this session. */
   public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }
