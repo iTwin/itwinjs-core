@@ -52,8 +52,12 @@ export async function certa(environment: string, config: CertaConfig): Promise<v
   // Source map any errors in this backend process
   require("source-map-support").install();
 
+  let cleanUpCallback: undefined | (() => Promise<void>);
   if (config.backendInitModule)
-    await require(config.backendInitModule);
+    cleanUpCallback = await require(config.backendInitModule);
 
   await runner.runTests(config);
+
+  if (cleanUpCallback)
+    await cleanUpCallback();
 }

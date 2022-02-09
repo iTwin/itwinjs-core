@@ -24,6 +24,6 @@ export class NodeTestRunner {
     require(frontendBundle);
 
     // Execute tests
-    mocha.run((failedCount) => process.exit(failedCount));
+    mocha.run((failedCount) => process.exitCode = failedCount);
   }
 }

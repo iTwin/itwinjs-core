@@ -64,7 +64,7 @@ export class ChromeTestRunner {
     if (config.cover)
       writeCoverageData(coverage);
 
-    process.exit(failures);
+    process.exitCode = failures;
   }
 }
 
