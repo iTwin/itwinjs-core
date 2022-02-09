@@ -449,6 +449,12 @@ export class ToolWithSettings extends PrimitiveTool {
       return this.exitTool();
   }
 
+  public override async exitTool() {
+    // eslint-disable-next-line no-console
+    console.log("tool exit");
+    await super.exitTool();
+  }
+
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
     this.initializeToolSettingPropertyValues([

@@ -101,10 +101,16 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
 export interface BackstageItemProps extends CommonProps {
     badge?: React.ReactNode;
     children?: string;
+    // (undocumented)
+    groupPriority?: number;
     icon?: React.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
+    // (undocumented)
+    itemPriority?: number;
     onClick?: () => void;
+    // (undocumented)
+    providerId?: string;
     safeAreaInsets?: SafeAreaInsets;
     subtitle?: string;
 }
@@ -1905,6 +1911,8 @@ export interface ScrollableWidgetContentProps {
     // (undocumented)
     children?: React.ReactNode;
     itemId?: string;
+    // (undocumented)
+    providerId?: string;
 }
 
 // @internal (undocumented)

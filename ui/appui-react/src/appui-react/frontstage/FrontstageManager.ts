@@ -359,6 +359,14 @@ export class FrontstageManager {
    */
   public static clearFrontstageDefs(): void {
     FrontstageManager._frontstageDefs.clear();
+    FrontstageManager._activeFrontstageDef = undefined;
+  }
+
+  /** Clears the Frontstage Providers and the defs that may have been created from them.
+   */
+  public static clearFrontstageProviders(): void {
+    FrontstageManager._frontstageProviders.clear();
+    FrontstageManager.clearFrontstageDefs();
   }
 
   private static getFrontstageKey(frontstageId: string) {
