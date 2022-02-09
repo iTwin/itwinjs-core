@@ -1,11 +1,12 @@
 {
   "name": "@itwin/core-extension",
-  "version": "3.1.0-dev.19",
-  "description": "",
+  "version": "3.1.0-dev.27",
+  "description": "iTwin.js Extension API",
   "typings": "index.d.ts",
   "license": "MIT",
   "repository": {
-    "type": "git"
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/extension"
   },
   "scripts": {
     "compile": "",
@@ -14,7 +15,7 @@
     "clean": "rimraf .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint -f visualstudio \"./src/**/*.{js,ts}\" 1>&2",
     "test": ""
   },
   "keywords": [
@@ -34,13 +35,14 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }
