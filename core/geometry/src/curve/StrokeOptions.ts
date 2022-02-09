@@ -63,6 +63,10 @@ export class StrokeOptions {
   public needColors?: boolean;
   /** default number of strokes for a circle. */
   public defaultCircleStrokes = 16;
+  /** ask if angleTol is specified */
+  public get hasAngleTol(): boolean { return this.angleTol !== undefined && Math.abs(this.angleTol.radians) > 0.0; }
+  /** ask if chordTol is specified */
+  public get hasChordTol(): boolean { return this.chordTol !== undefined && this.chordTol > 0.0; }
   /** ask if maxEdgeLength is specified */
   public get hasMaxEdgeLength(): boolean { return this.maxEdgeLength !== undefined && this.maxEdgeLength > 0.0; }
 

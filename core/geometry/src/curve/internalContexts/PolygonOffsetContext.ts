@@ -634,7 +634,7 @@ class CurveXYOffsetContext implements IStrokeHandler {
       this._fitOptions.isChordLenKnots = 1;
   }
   private pushOffsetPoint(xyz: Point3d, tangent: Vector3d) {
-    if (!Geometry.isSmallMetricDistance(xyz.x) || !Geometry.isSmallMetricDistance(xyz.y))
+    if (!Geometry.isSmallMetricDistance(tangent.x) || !Geometry.isSmallMetricDistance(tangent.y))
       this._fitOptions.fitPoints.push(xyz.plusScaled(tangent.unitPerpendicularXY(this._v0), this._offsetDistance));
   }
   public needPrimaryGeometryForStrokes() { return true; }

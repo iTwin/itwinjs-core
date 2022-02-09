@@ -20,6 +20,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
@@ -42,7 +43,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
 import * as fs from "fs";
-import { StrokeOptions } from "../../core-geometry";
+import { RecursiveCurveProcessor } from "../../curve/CurveProcessor";
 
 const diegoPathA = [
   {
@@ -635,20 +636,98 @@ function curveLength(source: AnyCurve): number {
   return 0.0;
 }
 
-// baseCurve centered at origin
-function testOffset(allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, jointOptions: JointOptions, strokeOptions?: StrokeOptions): boolean {
+class HasEllipticalArcProcessor extends RecursiveCurveProcessor {
+  private _hasEllipticalArc: boolean;
+  public constructor() { super(); this._hasEllipticalArc = false; }
+  public override announceCurvePrimitive(data: CurvePrimitive, _indexInParent = -1): void {
+    if (data instanceof Arc3d && !data.isCircular)
+      this._hasEllipticalArc = true;
+  }
+  public claimResult(): boolean { return this._hasEllipticalArc; }
+}
+
+class HasStrokablePrimitiveProcessor extends RecursiveCurveProcessor {
+  private _hasStrokablePrimitive: boolean;
+  public constructor() { super(); this._hasStrokablePrimitive = false; }
+  public override announceCurvePrimitive(data: CurvePrimitive, _indexInParent = -1): void {
+    if (!(data instanceof LineSegment3d) && !(data instanceof LineString3d) && !(data instanceof Arc3d && data.isCircular))
+      this._hasStrokablePrimitive = true;
+  }
+  public claimResult(): boolean { return this._hasStrokablePrimitive; }
+}
+
+// for best geometry capture, baseCurve should be centered at origin
+function testOffsetSingle(ck: Checker, allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, jointOptions: JointOptions, strokeOptions?: StrokeOptions): void {
   const offsetCurve = RegionOps.constructCurveXYOffset(baseCurve, jointOptions, strokeOptions);
-  if (offsetCurve === undefined)
-    return false;
+  if (ck.testDefined(offsetCurve, "Offset computed")) {
+    // spot-check some curve-curve distances, starting with smaller curve
+    if (!jointOptions.preserveEllipticalArcs) {
+      let tolFactor = 100 * (strokeOptions?.hasAngleTol ? strokeOptions.angleTol!.degrees : 1);
+      for (const cp of baseCurve.children) {
+        if (cp instanceof Arc3d && !cp.isCircular) tolFactor *= 10; // ellipse approximations are sloppier
+        for (let u = 0.0738; u < 1.0; u += 0.0467) {
+          const basePt = cp.fractionToPoint(u);
+          const offsetDetail = offsetCurve!.closestPoint(basePt);
+          if (ck.testDefined(offsetDetail, "Closest point to offset computed") && offsetDetail !== undefined) {
+            let projectsToVertex = offsetDetail.fraction === 0 || offsetDetail.fraction === 1;
+            if (!projectsToVertex && cp instanceof LineString3d) {
+              const scaledParam = offsetDetail.fraction * (cp.numPoints() - 1);
+              projectsToVertex = Geometry.isAlmostEqualNumber(scaledParam, Math.trunc(scaledParam));
+            }
+            if (!projectsToVertex) {  // avoid measuring projections to linestring vertices as they usually exceed offset distance
+              if (!ck.testCoordinateWithToleranceFactor(offsetDetail.point.distance(basePt), Math.abs(jointOptions.leftOffsetDistance), tolFactor, "Offset distance spot check")) {
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseCurve, delta.x, delta.y);
+                GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, basePt, 0.05, delta.x, delta.y);
+                GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, offsetDetail.point, 0.05, delta.x, delta.y);
+              }
+            }
+          }
+        }
+      }
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurve, delta.x, delta.y);
+  }
+}
 
-  const halfRangeY = offsetCurve.range().yLength() / 2;
+function testOffsetBothSides(ck: Checker, allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, jointOptions: JointOptions, strokeOptions?: StrokeOptions): void {
+  const halfRangeY = baseCurve.range().yLength() / 2;
   delta.y += halfRangeY;
-  GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurve, delta.x, delta.y);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseCurve, delta.x, delta.y);
+
+  testOffsetSingle(ck, allGeometry, delta, baseCurve, jointOptions, strokeOptions);  // offset on given offset
+  const jo = jointOptions.clone();
+  jo.leftOffsetDistance *= -1;
+  testOffsetSingle(ck, allGeometry, delta, baseCurve, jo, strokeOptions);    // offset on other side
+
   delta.y += halfRangeY;
+}
 
-// START HERE: spot-check distance between base and offset
-
-  return true;
+function testOffset(ck: Checker, allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, jointOptions: JointOptions, strokeOptions?: StrokeOptions): void {
+  testOffsetBothSides(ck, allGeometry, delta, baseCurve, jointOptions, strokeOptions);
+  // toggle ellipse preservation
+  if (true) {
+    const processor = new HasEllipticalArcProcessor();
+    baseCurve.announceToCurveProcessor(processor);
+    if (processor.claimResult()) {
+      const jo = jointOptions.clone();
+      jo.preserveEllipticalArcs = !jo.preserveEllipticalArcs;
+      testOffsetBothSides(ck, allGeometry, delta, baseCurve, jo, strokeOptions);
+    }
+  }
+  // test tightened strokes
+  if (strokeOptions?.hasAngleTol || strokeOptions?.hasChordTol || strokeOptions?.hasMaxEdgeLength) {
+    const processor = new HasStrokablePrimitiveProcessor();
+    baseCurve.announceToCurveProcessor(processor);
+    if (processor.claimResult()) {
+      const jo = jointOptions.clone();
+      jo.preserveEllipticalArcs = false;
+      const so = strokeOptions.clone();
+      so.angleTol!.setDegrees(so.angleTol!.degrees / 2);
+      so.chordTol! /= 2;
+      so.maxEdgeLength! /= 2;
+      testOffsetBothSides(ck, allGeometry, delta, baseCurve, jo, so);
+    }
+  }
 }
 
 describe("CloneSplitCurves", () => {
@@ -839,31 +918,14 @@ describe("CloneSplitCurves", () => {
     const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/offsetCurve.imjs", "utf8"))) as CurveChain[];
     const offsetDistance = 0.5;
     const jointOptions = new JointOptions(offsetDistance);
-    // const strokeOptions = new StrokeOptions();
+    const strokeOptions = StrokeOptions.createForCurves();
     for (const chain of inputs) {
       if (chain instanceof Path || chain instanceof Loop) {
         const halfRangeX = offsetDistance + chain.range().xLength() / 2;
         delta.x += halfRangeX;
-
-        delta.y = 0;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, delta.x, delta.y);
-        delta.y += chain.range().yLength() / 2;
-
-        const jo = jointOptions.clone();
-        ck.testTrue(testOffset(allGeometry, delta, chain, jo));  // left offset
-        jo.leftOffsetDistance *= -1;
-        ck.testTrue(testOffset(allGeometry, delta, chain, jo));  // right offset
-
-        if (chain.getChild(0) instanceof Arc3d && !(chain.getChild(0) as Arc3d).isCircular) { // preserve ellipses
-          jo.setFrom(jointOptions); jo.preserveEllipticalArcs = true;
-          ck.testTrue(testOffset(allGeometry, delta, chain, jo));  // left offset
-          jo.leftOffsetDistance *= -1;
-          ck.testTrue(testOffset(allGeometry, delta, chain, jo));  // right offset
-        }
-
-        //jo.setFrom(jointOptions);
-
+        testOffset(ck, allGeometry, delta, chain, jointOptions, strokeOptions);
         delta.x += halfRangeX;
+        delta.y = 0;
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "OffsetCurves");
