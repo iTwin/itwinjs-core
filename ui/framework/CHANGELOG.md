@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Thu, 03 Feb 2022 15:13:06 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Feb 2022 15:49:54 GMT and should not be manually modified.
+
+## 2.19.30
+Wed, 09 Feb 2022 15:49:54 GMT
+
+### Updates
+
+- Typedoc version upgrade
 
 ## 2.19.29
 Thu, 03 Feb 2022 15:13:06 GMT
