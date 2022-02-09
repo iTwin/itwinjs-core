@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-orbitgt",
-      "comment": "Fix well-known text parsing for KrovakEN",
+      "comment": "Add well-known text parsing for KrovakEN",
       "type": "none"
     }
   ],
