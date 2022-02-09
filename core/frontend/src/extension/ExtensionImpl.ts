@@ -26,7 +26,7 @@ export class ToolProvider implements UiItemsProvider {
 
   public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
     const toolbarItem = ToolbarItemUtilities.createActionButton(this._toolId, 0, this._toolIcon, this._toolLabel, async () => { await IModelApp.tools.run(this._toolId); });
-    return stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal ? [toolbarItem] : [];
+    return stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical ? [toolbarItem] : [];
   }
 }
 

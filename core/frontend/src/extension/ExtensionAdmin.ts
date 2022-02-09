@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import { ExtensionManifest, LocalExtensionProps } from "./Extension";
+import { ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
 import { ExtensionLoader } from "./ExtensionLoader";
 
 /** The Extensions loading system has 3 goals:
@@ -32,8 +32,6 @@ import { ExtensionLoader } from "./ExtensionLoader";
  *      - The Extension has the full manifest but is not currently enabled and will not be executed based on the
  *        activation events.
  */
-
-type ResolveFunc = (() => Promise<any>);
 
 enum ActivationEvents {
   onStartupApp = "onStartupApp",

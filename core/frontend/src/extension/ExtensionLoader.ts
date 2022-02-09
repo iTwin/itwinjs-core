@@ -6,7 +6,7 @@
  * @module Extensions
  */
 
-import { ExtensionManifest, LocalExtensionProps } from "./Extension";
+import { ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
 
 /** The minimum information required to download an Extension
  * @beta
@@ -19,7 +19,7 @@ export interface ExtensionLoaderProps {
 /** @beta */
 export interface BuiltInExtensionLoaderProps {
   manifest: Promise<any>;
-  loader: (() => Promise<any>);
+  loader: ResolveFunc;
 }
 
 /** Describes what is needed in order to write an Extension Loader.

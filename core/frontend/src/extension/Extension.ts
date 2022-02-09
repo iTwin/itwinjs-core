@@ -6,22 +6,30 @@
  * @module Extensions
  */
 
-type ResolveFunc = (() => Promise<any>);
+export type ResolveFunc = () => Promise<any>;
+
+export type ActivationEvent = "onStartupApp";
 
 /** Defines the format of an Extension manifest
  * @beta
 */
 export interface ExtensionManifest {
+  /** The extension name */
   readonly name: string;
+  /** The extension display name */
   readonly displayName?: string;
+  /** The extension version */
   readonly version: string;
+  /** The extension description */
   readonly description?: string;
+  /** The extension author */
+  readonly author: string;
   /** The main module file to load. This should be a path to the javascript file
    * e.g "./lib/main.js"
    */
   readonly main?: string;
   /** List of activation events this Extension supports. */
-  readonly activationEvents?: string[];
+  readonly activationEvents: ActivationEvent[];
 }
 
 /** @beta */
