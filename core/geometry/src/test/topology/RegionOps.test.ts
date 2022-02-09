@@ -911,7 +911,7 @@ describe("CloneSplitCurves", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("OffsetCurves", () => {
+  it("OffsetCurves", () => {
     const allGeometry: GeometryQuery[] = [];
     const ck = new Checker();
     const delta = Point2d.createZero();

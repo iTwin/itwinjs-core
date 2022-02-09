@@ -5383,6 +5383,8 @@ export class StrokeOptions {
     static createForCurves(): StrokeOptions;
     static createForFacets(): StrokeOptions;
     defaultCircleStrokes: number;
+    get hasAngleTol(): boolean;
+    get hasChordTol(): boolean;
     get hasMaxEdgeLength(): boolean;
     maxEdgeLength?: number;
     minStrokesPerPrimitive?: number;
