@@ -107,7 +107,7 @@ async function init() {
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
     FullStackTestIpcHandler.register();
-    shutdown = () => NativeHost.shutdown();
+    shutdown = async () => NativeHost.shutdown();
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
