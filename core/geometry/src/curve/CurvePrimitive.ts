@@ -32,6 +32,8 @@ import { GeometryQuery } from "./GeometryQuery";
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
+import { CurveXYOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { OffsetOptions } from "./OffsetOptions";
 
 /** Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
  *  - "arc" => [[Arc3d]]
@@ -64,6 +66,7 @@ export type AnnounceNumberNumber = (a0: number, a1: number) => void;
  * @public
  */
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
+
 /**
  * A curve primitive is bounded
  * A curve primitive maps fractions in 0..1 to points in space.
@@ -611,6 +614,20 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return results;
   }
 
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * * The default implementation returns a B-spline curve approximation of the offset.
+   * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
+   *   for an aggregate instance (one whose collectCurvePrimitivesGo() override recurses, e.g., LineString3d,
+   *   CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const handler = new CurveXYOffsetContext(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
+  }
 }
 
 /** Intermediate class for managing the parentCurve announcements from an IStrokeHandler */

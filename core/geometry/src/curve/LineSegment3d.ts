@@ -11,7 +11,7 @@ import { Clipper } from "../clipping/ClipUtils";
 import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
@@ -21,6 +21,7 @@ import { CurveIntervalRole, CurveLocationDetail } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { LineString3d } from "./LineString3d";
+import { OffsetOptions } from "./OffsetOptions";
 import { StrokeOptions } from "./StrokeOptions";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
@@ -324,5 +325,19 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
     return LineSegment3d.create(this.fractionToPoint(fractionA), this.fractionToPoint(fractionB));
+  }
+
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const offsetVec = Vector3d.createStartEnd(this._point0, this._point1);
+    if (offsetVec.normalizeInPlace()) {
+      offsetVec.rotate90CCWXY(offsetVec);
+      const offsetDist = OffsetOptions.getOffsetDistance(offsetDistanceOrOptions);
+      return LineSegment3d.create(this._point0.plusScaled(offsetVec, offsetDist), this._point1.plusScaled(offsetVec, offsetDist));
+    }
+    return undefined;
   }
 }

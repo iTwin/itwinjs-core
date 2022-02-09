@@ -27,7 +27,7 @@ import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveChain, Cur
 import { CurveCurve } from "./CurveCurve";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
-import { CurveChainWireOffsetContext, JointOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { CurveChainWireOffsetContext, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
 import { Path } from "./Path";
@@ -42,7 +42,7 @@ import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } fr
 import { UnionRegion } from "./UnionRegion";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { ParityRegion } from "./ParityRegion";
-import { StrokeOptions } from "./StrokeOptions";
+import { JointOptions, OffsetOptions } from "./OffsetOptions";
 /**
  * Possible return types from
  * @public
@@ -334,7 +334,7 @@ export class RegionOps {
     /**
    * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will not detect self intersection among widely separated edges.
-   * * If offsetDistance is given as a number, default JointOptions are applied.
+   * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
    *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
    *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to single intersection point.
@@ -343,11 +343,10 @@ export class RegionOps {
    *      * have uniform turn angle less than `options.maxChamferDegrees`
    *      * each line segment (except first and last) touches the arc at its midpoint.
    * @param curves base curves.
-   * @param offsetDistance offset distance (positive to left of curve, negative to right) or full JointOptions.
-   * @param strokeOptions optional options for computing B-spline curve offsets.
+   * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
-  public static constructCurveXYOffset(curves: Path | Loop, offsetDistance: number | JointOptions, strokeOptions: StrokeOptions | undefined = undefined): CurveCollection | undefined {
-    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, offsetDistance, strokeOptions);
+  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined {
+    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, offsetDistanceOrOptions);
   }
   /**
    * Test if point (x,y) is IN, OUT or ON a polygon.
