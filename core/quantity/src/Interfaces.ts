@@ -62,7 +62,6 @@ export interface UnitConversionSpec {
 export interface UnitConversion {
   factor: number;
   offset: number;
-  error: boolean;
 }
 
 /** Interface that defines potential parse units that may be found in user's string input of a quantity value.

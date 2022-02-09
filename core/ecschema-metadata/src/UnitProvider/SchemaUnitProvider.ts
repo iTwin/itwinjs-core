@@ -143,7 +143,6 @@ export class SchemaUnitProvider implements UnitsProvider {
     return {
       factor: conversion.factor,
       offset: conversion.offset,
-      error: false,
     };
   }
 
