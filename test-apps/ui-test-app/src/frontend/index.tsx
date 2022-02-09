@@ -67,6 +67,7 @@ import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
 import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
+import { InspectUiItemInfoTool } from "./tools/InspectTool";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -288,6 +289,7 @@ export class SampleAppIModelApp {
     RemoveSavedContentLayoutTool.register(this.sampleAppNamespace);
     RestoreSavedContentLayoutTool.register(this.sampleAppNamespace);
     SaveContentLayoutTool.register(this.sampleAppNamespace);
+    InspectUiItemInfoTool.register(this.sampleAppNamespace);
 
     // Register editing tools
     if (this.allowWrite) {
@@ -390,12 +392,17 @@ export class SampleAppIModelApp {
     let stageId: string;
     const defaultFrontstage = this.allowWrite ? EditFrontstage.stageId : ViewsFrontstage.stageId;
 
+    try{
     // Reset QuantityFormatter UnitsProvider with new iModelConnection
-    const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-    const context = new SchemaContext();
-    context.addLocater(schemaLocater);
-    IModelApp.quantityFormatter.unitsProvider = new SchemaUnitProvider(context);
-    await IModelApp.quantityFormatter.onInitialized();
+      const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
+      const context = new SchemaContext();
+      context.addLocater(schemaLocater);
+      IModelApp.quantityFormatter.unitsProvider = new SchemaUnitProvider(context);
+      await IModelApp.quantityFormatter.onInitialized();
+    } catch (_) {
+      IModelApp.quantityFormatter.resetToUseInternalUnitsProvider(); // this resets it to internal BasicUnitsProvider
+      await IModelApp.quantityFormatter.onInitialized();
+    }
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);

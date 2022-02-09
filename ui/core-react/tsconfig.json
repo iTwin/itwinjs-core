@@ -1,6 +1,7 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
     "jsx": "react",
     "types": ["sinon-chai", "chai-as-promised", "mocha", "chai-jest-snapshot"]
   },

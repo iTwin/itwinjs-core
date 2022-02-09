@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.1.0-dev.21",
+  "version": "3.1.0-dev.26",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -38,10 +38,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.1.0-dev.21",
-    "@itwin/core-common": "workspace:^3.1.0-dev.21",
-    "@itwin/core-geometry": "workspace:^3.1.0-dev.21",
-    "@itwin/ecschema-metadata": "workspace:^3.1.0-dev.21"
+    "@itwin/core-bentley": "workspace:^3.1.0-dev.26",
+    "@itwin/core-common": "workspace:^3.1.0-dev.26",
+    "@itwin/core-geometry": "workspace:^3.1.0-dev.26",
+    "@itwin/ecschema-metadata": "workspace:^3.1.0-dev.26"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -62,7 +62,7 @@
     "@types/node": "14.14.31",
     "@types/semver": "^5.5.0",
     "@types/sinon": "^9.0.0",
-    "@types/ws": "^6.0.4",
+    "@types/ws": "^7.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",

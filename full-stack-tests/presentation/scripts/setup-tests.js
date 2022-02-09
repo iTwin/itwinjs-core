@@ -6,8 +6,14 @@ const chai = require("chai");
 const faker = require("faker");
 const chaiJestSnapshot = require("chai-jest-snapshot");
 const chaiAsPromised = require("chai-as-promised");
+const jsdom = require("jsdom");
 
 console.log(`Backend PID: ${process.pid}`);
+
+// Do not log JSDOM errors into console
+require("jsdom-global")(undefined, {
+  virtualConsole: (new jsdom.VirtualConsole()).sendTo(console, { omitJSDOMErrors: true }),
+});
 
 // Fix node's module loader to strip ?sprite from SVG imports
 const m = require("module");
