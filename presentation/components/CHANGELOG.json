@@ -2,6 +2,75 @@
   "name": "@itwin/presentation-components",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/presentation-components_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "rename to @itwin/presentation-components"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Make property category grouping enabled by default."
+          },
+          {
+            "comment": "`usePresentationTreeNodeLoader`: Redesign the way tree component reloads when `enableHierarchyAutoUpdate` is set."
+          },
+          {
+            "comment": "Remove `IPresentationTreeDataProvider.loadHierarchy`."
+          },
+          {
+            "comment": "Fixed SameInstance nested properties bug when merged cells with multiple nested content items were not created properly."
+          },
+          {
+            "comment": "Created an additional nodeLoader used only when filtering Tree Component. That fixed the bug when spinner was not showing when filtering was in progress. "
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Removed deprecated `DEPRECATED_controlledTreeWithFilteringSupport` and `DEPRECATED_controlledTreeWithVisibleNodes`."
+          },
+          {
+            "comment": "Remove `immer` dependency."
+          },
+          {
+            "comment": "Ignore lint errors for deprecated Table component."
+          },
+          {
+            "comment": "Update to React 17."
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "Remove react 16 peer dependency."
+          },
+          {
+            "comment": "Update to latest types/react package"
+          },
+          {
+            "comment": "Lock down and update version numbers so docs will build."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/presentation-components_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

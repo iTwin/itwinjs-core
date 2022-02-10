@@ -2,6 +2,30 @@
   "name": "@itwin/webgl-compatibility",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/webgl-compatibility_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Fix transparency and shadows on iOS>=15 for non-M1 iOS devices."
+          },
+          {
+            "comment": "rename to @itwin/webgl-compatibility"
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "Update workaround for buggy Intel integrated GPUs."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/webgl-compatibility_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",
