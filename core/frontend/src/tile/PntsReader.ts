@@ -38,62 +38,6 @@ interface PointCloudProps {
   colors?: Uint8Array;
 }
 
-async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps | undefined> {
-  try {
-    const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
-    const mesh = await dracoLoader.parse(buf, { });
-    if (mesh.topology !== "point-list")
-      return undefined;
-
-    const pos = mesh.attributes.POSITION?.value;
-    if (!pos || (pos.length % 3) !== 0)
-      return undefined;
-
-    let colors = mesh.attributes.RGB?.value ?? mesh.attributes.COLOR_0?.value;
-    if (!colors) {
-      const rgba = mesh.attributes.RGBA?.value;
-      if (rgba && (rgba.length % 4) === 0) {
-        // We currently don't support alpha channel for point clouds - strip it.
-        colors = new Uint8Array(3 * rgba.length / 4);
-        let j = 0;
-        for (let i = 0; i < rgba.length; i += 4) {
-          colors[j++] = rgba[i];
-          colors[j++] = rgba[i + 1];
-          colors[j++] = rgba[i + 2];
-        }
-      }
-    }
-
-    let posRange: Range3d;
-    const bbox = mesh.header?.boundingBox;
-    if (bbox) {
-      posRange = Range3d.createXYZXYZ(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
-    } else {
-      posRange = Range3d.createNull();
-      for (let i = 0; i < pos.length; i += 3)
-        posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
-    }
-
-    const params = QParams3d.fromRange(posRange);
-    const pt = Point3d.createZero();
-    const qpt = QPoint3d.create(pt, params);
-    const points = new Uint16Array(pos.length);
-    for (let i = 0; i < pos.length; i += 3) {
-      pt.set(pos[i], pos[i + 1], pos[i + 2]);
-      qpt.init(pt, params);
-      points[i] = qpt.x;
-      points[i + 1] = qpt.y;
-      points[i + 2] = qpt.z;
-    }
-
-    return { points, params, colors: colors instanceof Uint8Array ? colors : undefined };
-  } catch (err) {
-    Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded point cloud");
-    Logger.logException(FrontendLoggerCategory.Render, err);
-    return undefined;
-  }
-}
-
 interface BinaryBodyReference {
   byteOffset: number;
 }
@@ -110,7 +54,7 @@ interface CommonPntsProps {
   RGB565?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
 
   extensions?: {
-    "3DTILES_draco_point_compression"?: DracoPointCloud;
+    "3DTILES_draco_point_compression"?: DracoPointCloud; // eslint-disable-line @typescript-eslint/naming-convention
   };
 
   // The following are currently ignored.
@@ -126,7 +70,7 @@ type QuantizedPntsProps = CommonPntsProps & {
   QUANTIZED_VOLUME_SCALE: number[]; // eslint-disable-line @typescript-eslint/naming-convention
 
   POSITION?: never; // eslint-disable-line @typescript-eslint/naming-convention
-}
+};
 
 type UnquantizedPntsProps = CommonPntsProps & {
   POSITION: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
@@ -134,7 +78,7 @@ type UnquantizedPntsProps = CommonPntsProps & {
   POSITION_QUANTIZED?: never; // eslint-disable-line @typescript-eslint/naming-convention
   QUANTIZED_VOLUME_OFFSET?: never; // eslint-disable-line @typescript-eslint/naming-convention
   QUANTIZED_VOLUME_SCALE?: never; // eslint-disable-line @typescript-eslint/naming-convention
-}
+};
 
 type PntsProps = QuantizedPntsProps | UnquantizedPntsProps;
 
@@ -145,6 +89,7 @@ function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps)
     return new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGB.byteOffset, nComponents);
 
   if (pnts.RGBA) {
+    // ###TODO support point cloud transparency.
     const rgb = new Uint8Array(nComponents);
     const rgba = new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGBA.byteOffset, nComponents);
     for (let i = 0; i < nComponents; i += 4) {
@@ -210,6 +155,63 @@ function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): Poin
   return { params, points, colors };
 }
 
+async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps | undefined> {
+  try {
+    const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
+    const mesh = await dracoLoader.parse(buf, { });
+    if (mesh.topology !== "point-list")
+      return undefined;
+
+    const pos = mesh.attributes.POSITION?.value;
+    if (!pos || (pos.length % 3) !== 0)
+      return undefined;
+
+    let colors = mesh.attributes.RGB?.value ?? mesh.attributes.COLOR_0?.value;
+    if (!colors) {
+      // ###TODO support point cloud transparency.
+      const rgba = mesh.attributes.RGBA?.value;
+      if (rgba && (rgba.length % 4) === 0) {
+        // We currently don't support alpha channel for point clouds - strip it.
+        colors = new Uint8Array(3 * rgba.length / 4);
+        let j = 0;
+        for (let i = 0; i < rgba.length; i += 4) {
+          colors[j++] = rgba[i];
+          colors[j++] = rgba[i + 1];
+          colors[j++] = rgba[i + 2];
+        }
+      }
+    }
+
+    let posRange: Range3d;
+    const bbox = mesh.header?.boundingBox;
+    if (bbox) {
+      posRange = Range3d.createXYZXYZ(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
+    } else {
+      posRange = Range3d.createNull();
+      for (let i = 0; i < pos.length; i += 3)
+        posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
+    }
+
+    const params = QParams3d.fromRange(posRange);
+    const pt = Point3d.createZero();
+    const qpt = QPoint3d.create(pt, params);
+    const points = new Uint16Array(pos.length);
+    for (let i = 0; i < pos.length; i += 3) {
+      pt.set(pos[i], pos[i + 1], pos[i + 2]);
+      qpt.init(pt, params);
+      points[i] = qpt.x;
+      points[i + 1] = qpt.y;
+      points[i + 2] = qpt.z;
+    }
+
+    return { points, params, colors: colors instanceof Uint8Array ? colors : undefined };
+  } catch (err) {
+    Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded point cloud");
+    Logger.logException(FrontendLoggerCategory.Render, err);
+    return undefined;
+  }
+}
+
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
  */
@@ -251,7 +253,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     props.colors = new Uint8Array(3 * featureValue.POINTS_LENGTH);
     const rgba = featureValue.CONSTANT_RGBA;
     if (rgba) {
-      // ###TODO currently we ignore alpha channel.
+      // ###TODO support point cloud transparency.
       for (let i = 0; i < featureValue.POINTS_LENGTH * 3; i += 3) {
         props.colors[i] = rgba[0];
         props.colors[i + 1] = rgba[1];
