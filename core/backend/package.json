@@ -43,6 +43,11 @@
     "@itwin/core-geometry": "workspace:^3.1.0-dev.27",
     "@itwin/ecschema-metadata": "workspace:^3.1.0-dev.27"
   },
+  "peerDependenciesMeta": {
+    "@itwin/ecschema-metadata": {
+      "optional": true
+    }
+  },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
