@@ -138,6 +138,39 @@ type UnquantizedPntsProps = CommonPntsProps & {
 
 type PntsProps = QuantizedPntsProps | UnquantizedPntsProps;
 
+function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps): Uint8Array | undefined {
+  const nPts = pnts.POINTS_LENGTH;
+  const nComponents = 3 * nPts;
+  if (pnts.RGB)
+    return new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGB.byteOffset, nComponents);
+
+  if (pnts.RGBA) {
+    const rgb = new Uint8Array(nComponents);
+    const rgba = new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGBA.byteOffset, nComponents);
+    for (let i = 0; i < nComponents; i += 4) {
+      rgb[i + 0] = rgba[i + 0];
+      rgb[i + 1] = rgba[i + 1];
+      rgb[i + 2] = rgba[i + 2];
+    }
+
+    return rgb;
+  } else if (pnts.RGB565) {
+    // Each color is 16 bits: 5 red, 6 green, 5 blue.
+    const crgb = new Uint16Array(stream.arrayBuffer, dataOffset + pnts.RGB565.byteOffset, nPts);
+    const rgb = new Uint8Array(nComponents);
+    for (let i = 0; i < nPts; i++) {
+      const c = crgb[i];
+      rgb[i + 0] = (c >> 11) & 0x1f;
+      rgb[i + 1] = (c >> 5) & 0x3f;
+      rgb[i + 2] = c & 0x1f;
+    }
+
+    return rgb;
+  }
+
+  return undefined;
+}
+
 function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): PointCloudProps | undefined {
   const nPts = pnts.POINTS_LENGTH;
   let params: QParams3d;
@@ -173,11 +206,8 @@ function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): Poin
     }
   }
 
-  return {
-    params,
-    points,
-    colors: pnts.RGB ? new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGB.byteOffset, 3 * nPts) : undefined,
-  };
+  const colors = readPntsColors(stream, dataOffset, pnts);
+  return { params, points, colors };
 }
 
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
@@ -198,7 +228,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
 
   let props: PointCloudProps | undefined;
   const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
-  const draco: DracoPointCloud | undefined = featureValue.extensions ? featureValue.extensions["3DTILES_draco_point_compression"] : undefined;
+  const draco = featureValue.extensions ? featureValue.extensions["3DTILES_draco_point_compression"] : undefined;
   if (draco) {
     try {
       const buf = new Uint8Array(stream.arrayBuffer, dataOffset + draco.byteOffset, draco.byteLength);
@@ -217,11 +247,22 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     props.params = QParams3d.fromOriginAndScale(props.params.origin.plus(Vector3d.fromJSON(featureValue.RTC_CENTER)), props.params.scale);
 
   if (!props.colors) {
+    // ###TODO we really should support uniform color instead of allocating an RGB value per point...
     props.colors = new Uint8Array(3 * featureValue.POINTS_LENGTH);
-    props.colors.fill(0xff, 0, props.colors.length);    // TBD... Default color?
+    const rgba = featureValue.CONSTANT_RGBA;
+    if (rgba) {
+      // ###TODO currently we ignore alpha channel.
+      for (let i = 0; i < featureValue.POINTS_LENGTH * 3; i += 3) {
+        props.colors[i] = rgba[0];
+        props.colors[i + 1] = rgba[1];
+        props.colors[i + 2] = rgba[2];
+      }
+    } else {
+      // Default to white.
+      props.colors.fill(0xff, 0, props.colors.length);
+    }
   }
 
-  // ###TODO? Do we expect a batch table? not currently handled...
   const featureTable = new FeatureTable(1, modelId, BatchType.Primary);
   const features = new Mesh.Features(featureTable);
   features.add(new Feature(modelId), 1);
