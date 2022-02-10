@@ -12,23 +12,8 @@ import * as React from "react";
 import { ActionButton, RelativePosition } from "@itwin/appui-abstract";
 import { Popup, useRefState } from "@itwin/core-react";
 import { ToolbarButtonItemProps } from "./Item";
-import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
+import { useToolbarPopupAutoHideContext, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { toToolbarPopupRelativePosition } from "./PopupItemWithDrag";
-
-/**
- * Context used by Toolbar items to know if popup panel should be hidden - via AutoHide.
- * @public
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const ToolbarPopupAutoHideContext = React.createContext<boolean>(false);
-
-/**
- * React hook used to retrieve the ToolbarPopupAutoHideContext.
- *  @public
- */
-export function useToolbarPopupAutoHideContext() {
-  return React.useContext(ToolbarPopupAutoHideContext);
-}
 
 /** @public */
 export interface ToolbarPopupContextProps {
