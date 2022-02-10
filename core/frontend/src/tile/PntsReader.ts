@@ -94,28 +94,88 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
   }
 }
 
-interface PntsProps {
-  POSITION_QUANTIZED?: { byteOffset: number }; // eslint-disable-line @typescript-eslint/naming-convention
-  QUANTIZED_VOLUME_OFFSET?: number[]; // eslint-disable-line @typescript-eslint/naming-convention
-  QUANTIZED_VOLUME_SCALE?: number[]; // eslint-disable-line @typescript-eslint/naming-convention
-  POINTS_LENGTH?: number; // eslint-disable-line @typescript-eslint/naming-convention
-  RGB?: { byteOffset: number }; // eslint-disable-line @typescript-eslint/naming-convention
+interface BinaryBodyReference {
+  byteOffset: number;
 }
 
-function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): PointCloudProps | undefined {
-  const offset = pnts.QUANTIZED_VOLUME_OFFSET;
-  const scale = pnts.QUANTIZED_VOLUME_SCALE;
-  const qpos = pnts.POSITION_QUANTIZED;
-  const nPts = pnts.POINTS_LENGTH;
-  if (!offset || !scale || !qpos || !nPts)
-    return undefined;
+/** [3D tiles specification section 10.3](https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#199).
+ * [JSON schema](https://github.com/CesiumGS/3d-tiles/blob/main/specification/schema/pnts.featureTable.schema.json).
+ */
+interface CommonPntsProps {
+  POINTS_LENGTH: number; // eslint-disable-line @typescript-eslint/naming-convention
+  RTC_CENTER?: number[]; // eslint-disable-line @typescript-eslint/naming-convention
+  CONSTANT_RGBA?: number[]; // eslint-disable-line @typescript-eslint/naming-convention
+  RGB?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  RGBA?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  RGB565?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
 
-  const qOrigin = new Point3d(offset[0], offset[1], offset[2]);
-  const qScale = new Point3d(Quantization.computeScale(scale[0]), Quantization.computeScale(scale[1]), Quantization.computeScale(scale[2]));
+  extensions?: {
+    "3DTILES_draco_point_compression"?: DracoPointCloud;
+  };
+
+  // The following are currently ignored.
+  NORMAl?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  NORMAL_OCT16P?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  BATCH_ID?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  BATCH_LENGTH?: number; // eslint-disable-line @typescript-eslint/naming-convention
+}
+
+type QuantizedPntsProps = CommonPntsProps & {
+  POSITION_QUANTIZED: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  QUANTIZED_VOLUME_OFFSET: number[]; // eslint-disable-line @typescript-eslint/naming-convention
+  QUANTIZED_VOLUME_SCALE: number[]; // eslint-disable-line @typescript-eslint/naming-convention
+
+  POSITION?: never; // eslint-disable-line @typescript-eslint/naming-convention
+}
+
+type UnquantizedPntsProps = CommonPntsProps & {
+  POSITION: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+
+  POSITION_QUANTIZED?: never; // eslint-disable-line @typescript-eslint/naming-convention
+  QUANTIZED_VOLUME_OFFSET?: never; // eslint-disable-line @typescript-eslint/naming-convention
+  QUANTIZED_VOLUME_SCALE?: never; // eslint-disable-line @typescript-eslint/naming-convention
+}
+
+type PntsProps = QuantizedPntsProps | UnquantizedPntsProps;
+
+function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): PointCloudProps | undefined {
+  const nPts = pnts.POINTS_LENGTH;
+  let params: QParams3d;
+  let points: Uint16Array;
+
+  if (pnts.POSITION_QUANTIZED) {
+    const qpos = pnts.POSITION_QUANTIZED;
+    const offset = pnts.QUANTIZED_VOLUME_OFFSET;
+    const scale = pnts.QUANTIZED_VOLUME_SCALE;
+
+    const qOrigin = new Point3d(offset[0], offset[1], offset[2]);
+    const qScale = new Point3d(Quantization.computeScale(scale[0]), Quantization.computeScale(scale[1]), Quantization.computeScale(scale[2]));
+
+    params = QParams3d.fromOriginAndScale(qOrigin, qScale);
+    points = new Uint16Array(stream.arrayBuffer, dataOffset + qpos.byteOffset, 3 * nPts);
+  } else {
+    const nCoords = nPts * 3;
+    const fpts = new Float32Array(stream.arrayBuffer, dataOffset + pnts.POSITION.byteOffset, 3 * nPts);
+    const range = Range3d.createNull();
+    for (let i = 0; i < nCoords; i += 3)
+      range.extendXYZ(fpts[i], fpts[i + 1], fpts[i + 2]);
+
+    params = QParams3d.fromRange(range);
+    const qpt = new QPoint3d();
+    const fpt = new Point3d();
+    points = new Uint16Array(3 * nPts);
+    for (let i = 0; i < nCoords; i += 3) {
+      fpt.set(fpts[i], fpts[i + 1], fpts[i + 2]);
+      qpt.init(fpt, params);
+      points[i] = qpt.x;
+      points[i + 1] = qpt.y;
+      points[i + 2] = qpt.z;
+    }
+  }
 
   return {
-    params: QParams3d.fromOriginAndScale(qOrigin, qScale),
-    points: new Uint16Array(stream.arrayBuffer, dataOffset + qpos.byteOffset, 3 * nPts),
+    params,
+    points,
     colors: pnts.RGB ? new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGB.byteOffset, 3 * nPts) : undefined,
   };
 }
@@ -131,7 +191,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   const featureTableJsonOffset = stream.curPos;
   const featureStrData = stream.nextBytes(header.featureTableJsonLength);
   const featureStr = utf8ToString(featureStrData);
-  const featureValue = JSON.parse(featureStr as string);
+  const featureValue = JSON.parse(featureStr as string) as PntsProps;
 
   if (undefined === featureValue)
     return undefined;
