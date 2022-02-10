@@ -2,6 +2,72 @@
   "name": "@itwin/core-bentley",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/core-bentley_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Drop deprecated ElectronUtils and Id methods."
+          },
+          {
+            "comment": "make ChangeSetApplyOption @internal - to be removed in future"
+          },
+          {
+            "comment": "add MarkRequired utility type"
+          },
+          {
+            "comment": "assert accepts a function for condition and/or message, and does nothing unless NODE_ENV-development or explicitly enabled."
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Add ByteStream.nextUint24."
+          },
+          {
+            "comment": "added UnexpectedErrors class"
+          },
+          {
+            "comment": "allow intercept log and filter it"
+          },
+          {
+            "comment": "Add various utility types."
+          },
+          {
+            "comment": "rename to @itwin/core-bentley"
+          },
+          {
+            "comment": "Support for Node 16"
+          },
+          {
+            "comment": "Deprecate ByteStream constructor in favor of less error-prone initialization methods."
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Deprecated Config and removed config.app usage"
+          },
+          {
+            "comment": "remove ChangeSetApplyOption"
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "Switching to consume new Projects-Client"
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "added JSONSchema"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-bentley_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

@@ -1,6 +1,23 @@
 # Change Log - @itwin/editor-common
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- fix code for breaking change to .query() method
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Aquire locks for built-in edit commands.
+- Added ability to convert iModel coordinates to or from any Geographic CRS
+- rename to @itwin/editor-common
+- Allow sweep/spin of open path to create a sheet.
+- Basic solid modeling operations are now covered.
+- Fix for IModel._ecefTrans not being updated when setting IModel._ecefLocation.
+- New solid modeling ipc interface  
+- More solid modeling functionality.
+- New tools to sweep/spin faces and delete faces/imprinted edges.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT

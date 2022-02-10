@@ -1,6 +1,40 @@
 # Change Log - @itwin/appui-layout-react
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Update Floating Widget to allow overflow so popups like from Select component will properly display.
+- rename to @itwin/appui-layout-react
+- Update snapshots
+- Support for TypeDoc v0.22.7. Fix various broken docs links.
+- Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined.
+- update immer to fix security warning
+- Deprecate obsolete APIs. Publish beta APIs from last release.
+- Remove link to learning doc that's no longer delivered.
+- Upgraded itwinui-react to 1.16.2. Fixed editor sizes.
+- Update styling on some status field items for better popup alignment.
+- Allow widgets supplied by a UiItemsProvider to specify a default state of floating.
+- Update to latest itwinui-react
+- Clean up css for status bar entries to avoid unwanted text wrapping
+- Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js
+- Rename ui directories to match new package names.
+- Initialize popout window size and position when popping out from floating state to avoid crash.
+- Update to React 17.
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- Remove react 16 peer dependency.
+- Remove WidgetProvider and associated events.
+- fix bad styling on message center status bar item.
+- Replaced ui-core Slider with one from iTwinUi-react.
+- Update to latest types/react package
+- reset to use overflow hidden in floating widgets as it messes up auto-sizing and re-sizing.
+- Add support for widget tab icons in UI-2
+- Update widget tab styling to provide padding between icon and active stripe.
+- Lock down and update version numbers so docs will build.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -264,7 +298,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 - Update unit tests for resizeObserver fix.
 - Update test to account for different number of calls to getBoundingClientRect.
-- Update to latest classnames package
+- Update to latest classnames package 
 
 ## 2.15.6
 Wed, 26 May 2021 15:55:19 GMT
@@ -595,7 +629,7 @@ Thu, 20 Aug 2020 20:57:10 GMT
 - lock down @types/react version at 16.9.43 to prevent build error from csstype dependency
 - Added Table component keyboard row selection. Miscellaneous a11y fixes.
 - Switch to ESLint
-- Add drop shadow to toolsettings overflow popup.
+- Add drop shadow to toolsettings overflow popup.  
 - Close widget overflow popup when tab is clicked.
 - Add corner resize handles to floating widgets.
 - Add preferredPanelWidgetSize to TabState.
@@ -702,7 +736,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Ability to drag docked tool settings to widget mode.
 - Support for floating widget targets.
-- Fix safe area insets for bottom zones w/o footer.
+- Fix safe area insets for bottom zones w/o footer. 
 - Keep active tab visible.
 - Reparent widget content when dragging widget around.
 - Floating widget stacking order.

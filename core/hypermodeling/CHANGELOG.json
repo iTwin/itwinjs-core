@@ -2,6 +2,33 @@
   "name": "@itwin/hypermodeling-frontend",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/hypermodeling-frontend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "fix ecsql row format"
+          },
+          {
+            "comment": "use new @itwin package names"
+          },
+          {
+            "comment": "rename to @itwin/hypermodeling-frontend"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "tool.run and tool.parseAndRun are now async methods"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/hypermodeling-frontend_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",
