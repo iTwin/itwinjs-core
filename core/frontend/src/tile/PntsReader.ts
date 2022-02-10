@@ -58,7 +58,7 @@ interface CommonPntsProps {
   };
 
   // The following are currently ignored.
-  NORMAl?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  NORMAL?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
   NORMAL_OCT16P?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
   BATCH_ID?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
   BATCH_LENGTH?: number; // eslint-disable-line @typescript-eslint/naming-convention
