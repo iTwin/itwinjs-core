@@ -13,7 +13,9 @@ The [QuantityFormatter]($frontend) is a class that formats and parses quantity v
 
 ### QuantityType
 
-There are nine built-in quantity types, see [QuantityType]($frontend). The QuantityFormatter defines default formatting specification for each of these types per unit system. Custom quantity types that implement the [CustomQuantityTypeDefinition]($frontend) interface may also be registered with the QuantityFormatter, see method `registerQuantityType`. See example implementation of a custom type [here](https://github.com/iTwin/itwinjs-core/blob/5905cb1a48c4d790b5389d7f0ea141bc3ce95f23/test-apps/ui-test-app/src/frontend/api/BearingQuantityType.ts).
+There are nine built-in quantity types, see [QuantityType]($frontend). The QuantityFormatter defines default formatting specification for each of these types per unit system. During IModelApp initialization a call to initialize the QuantityFormatter is made. During this initialization `FormatterSpecs` [FormatterSpec]($quantity) and `ParserSpecs` [ParserSpec]($quantity) for each quantity type are generated asynchronously. This allows caller to get these objects via synchronous calls. Any time the unit system is set, a format is overridden, or a units provider is assigned the cached specs are updated.
+
+ Custom quantity types that implement the [CustomQuantityTypeDefinition]($frontend) interface may also be registered with the QuantityFormatter, see method `registerQuantityType`. See example implementation of a custom type [here](https://github.com/iTwin/itwinjs-core/blob/5905cb1a48c4d790b5389d7f0ea141bc3ce95f23/test-apps/ui-test-app/src/frontend/api/BearingQuantityType.ts).
 
 #### Overriding Default Formats
 
@@ -185,5 +187,3 @@ Common Terms:
   - CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
 - FormatterSpec - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all units defined in the format. This is done to avoid any async calls by the UnitsProvider during the formatting process.
 - ParserSpec - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all other units in the same phenomenon. This is done to avoid async calls by the UnitsProvider and also done to allow a user to enter 43" even when in "metric" unit system and have the string properly converted to meters.
-
-
