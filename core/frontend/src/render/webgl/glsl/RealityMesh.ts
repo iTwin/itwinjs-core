@@ -18,7 +18,7 @@ import { FeatureMode, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } fr
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addVaryingColor } from "./Color";
-import { addShaderFlags, addUInt32s } from "./Common";
+import { addEyeSpace, addShaderFlags, addUInt32s } from "./Common";
 import { decodeDepthRgb, unquantize2d } from "./Decode";
 import { addFeatureSymbology, addHiliter, FeatureSymbologyOptions } from "./FeatureSymbology";
 import { addAltPickBufferOutputs, addPickBufferOutputs, assignFragColor } from "./Fragment";
@@ -303,6 +303,7 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
 
   frag.addFunction(addUInt32s);
   frag.addFunction(testInside);
+  addEyeSpace(builder);
   frag.addFunction(applyTexture);
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeFragmentBaseColor);
   builder.frag.addUniform("u_baseColor", VariableType.Vec4, (prog) => {
