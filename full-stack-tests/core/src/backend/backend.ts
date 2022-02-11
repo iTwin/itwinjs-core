@@ -12,7 +12,7 @@ import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import {
-  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, IpcHost, LocalhostIpcHost, NativeHost, PhysicalModel, PhysicalPartition, SpatialCategory,
+  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
@@ -90,7 +90,7 @@ async function init() {
 
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 
-  let shutdown: () => Promise<void>;
+  let shutdown: undefined | (() => Promise<void>);
 
   if (ProcessDetector.isElectronAppBackend) {
     exposeBackendCallbacks();
@@ -107,7 +107,6 @@ async function init() {
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
     FullStackTestIpcHandler.register();
-    shutdown = async () => NativeHost.shutdown();
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 

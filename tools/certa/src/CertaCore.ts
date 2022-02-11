@@ -11,6 +11,7 @@ import { startDebugger } from "./utils/SpawnUtils";
 
 export interface CertaTestRunner {
   readonly supportsCoverage: boolean;
+  readonly supportsCleanup: boolean;
   initialize?(config: CertaConfig): Promise<void>;
   runTests(config: CertaConfig): Promise<void>;
 }
@@ -58,6 +59,6 @@ export async function certa(environment: string, config: CertaConfig): Promise<v
 
   await runner.runTests(config);
 
-  if (cleanUpCallback)
+  if (cleanUpCallback && runner.supportsCleanup)
     await cleanUpCallback();
 }

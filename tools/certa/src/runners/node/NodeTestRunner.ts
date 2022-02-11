@@ -9,6 +9,7 @@ declare const global: any;
 
 export class NodeTestRunner {
   public static readonly supportsCoverage = true;
+  public static readonly supportsCleanup = true;
   public static async runTests(config: CertaConfig): Promise<void> {
     // Initialize mocha
     global.mocha = new Mocha();
