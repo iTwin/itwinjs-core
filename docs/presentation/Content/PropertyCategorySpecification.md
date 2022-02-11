@@ -21,8 +21,14 @@ See [property categorization page](./PropertyCategorization.md) for more details
 
 ### Attribute: `id`
 
-Category identifier used to reference the category definition from property overrides or other category definitions. The identifier has to be unique at the
-scope of it's definition.
+Category identifier used to reference the category definition from property overrides or other category definitions. The identifier has to be unique
+within the list of category definitions where this specification is used.
+
+```ts
+[[include:Content.Customization.PropertyCategorySpecification.Id.Ruleset]]
+```
+
+![Example of referencing category by "id"](./media/propertycategoryspecification-with-id-attribute.png)
 
 ### Attribute: `parentId`
 

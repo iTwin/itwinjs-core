@@ -159,6 +159,46 @@ describe("Learning Snippets", () => {
 
       describe("PropertyCategorySpecification", () => {
 
+        it("allows referencing by `id`", async () => {
+          // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Id.Ruleset
+          // There's a content rule for returning content of given `bis.Subject` instance. The rule contains a custom
+          // category specification that is referenced by properties override, putting all properties into the
+          // "Custom" category.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.Content,
+              specifications: [{
+                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                propertyCategories: [{
+                  id: "custom-category",
+                  label: "Custom",
+                }],
+                propertyOverrides: [{
+                  name: "*",
+                  categoryId: "custom-category",
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // Ensure the field is assigned a category with correct label
+          const content = (await Presentation.presentation.getContent({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+            descriptor: {},
+          }))!;
+          expect(content.descriptor.fields.length).to.be.greaterThan(0);
+          content.descriptor.fields.forEach((field) => {
+            expect(field.category).to.containSubset({
+              label: "Custom",
+            });
+          });
+        });
+
         it("uses `label` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Label.Ruleset
           // There's a content rule for returning content of given `bis.Subject` instance. In addition,
