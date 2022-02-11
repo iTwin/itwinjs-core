@@ -11,7 +11,7 @@ const jsdom = require("jsdom");
 console.log(`Backend PID: ${process.pid}`);
 
 // Do not log JSDOM errors into console
-require("jsdom-global")(undefined, {
+require("global-jsdom")(undefined, {
   virtualConsole: (new jsdom.VirtualConsole()).sendTo(console, { omitJSDOMErrors: true }),
 });
 
