@@ -20,7 +20,7 @@ The default property category is a category that gets assigned to properties tha
 
 > **Default value:** `[]`
 
-Specifications that define schema requirements for the rule to take effect. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+Lists schema requirements that need to be met for the rule to take effect. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
 
 ```ts
 [[include:Content.Customization.DefaultPropertyCategoryOverride.RequiredSchemas.Ruleset]]
