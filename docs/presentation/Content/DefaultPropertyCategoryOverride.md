@@ -32,7 +32,7 @@ Lists schema requirements that need to be met for the rule to take effect. See m
 
 > **Default value:** `1000`
 
-Defines the order of the rule. Higher priority rule takes precedence over lower priority rules and, since only one rule of this type takes effect when creating content, overrides them.
+Controls rule priority. Because there can only be one default category, default category override with the highest priority value will override all other rules of the same type.
 
 ```ts
 [[include:Content.Customization.DefaultPropertyCategoryOverride.Priority.Ruleset]]
