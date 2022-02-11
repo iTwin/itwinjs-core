@@ -19,6 +19,7 @@ export const PRESENTATION_TREE_NODE_KEY = "__presentation-components/key";
 /** @internal */
 export interface CreateTreeNodeItemProps {
   appendChildrenCountForGroupingNodes?: boolean;
+  customizeTreeNodeItem?: (item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) => void;
 }
 
 /** @internal */
@@ -44,6 +45,8 @@ export function createTreeNodeItem(
     label: createNodeLabelRecord(node, !!props?.appendChildrenCountForGroupingNodes),
   };
   assignOptionalTreeNodeItemFields(item, node, parentId);
+  const customizeItemCallback = props?.customizeTreeNodeItem ?? customizeTreeNodeItem;
+  customizeItemCallback(item, node);
   return item;
 }
 
@@ -60,6 +63,8 @@ export function createPartialTreeNodeItem(
   }
 
   assignOptionalTreeNodeItemFields(item, node, parentId);
+  const customizeItemCallback = props.customizeTreeNodeItem ?? customizeTreeNodeItem;
+  customizeItemCallback(item, node);
   return item;
 }
 
@@ -93,6 +98,12 @@ function assignOptionalTreeNodeItemFields(
     item.autoExpand = true;
   }
 
+  if (node.extendedData) {
+    item.extendedData = node.extendedData;
+  }
+}
+
+export function customizeTreeNodeItem(item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) {
   if (node.imageId) {
     item.icon = node.imageId;
   }
@@ -111,10 +122,6 @@ function assignOptionalTreeNodeItemFields(
   const style = createTreeNodeItemStyle(node);
   if (Object.keys(style).length > 0) {
     item.style = style;
-  }
-
-  if (node.extendedData) {
-    item.extendedData = node.extendedData;
   }
 }
 

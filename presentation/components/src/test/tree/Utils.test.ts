@@ -51,6 +51,17 @@ describe("Utils", () => {
       const treeNode = createTreeNodeItem(node, undefined, { appendChildrenCountForGroupingNodes: true });
       expect(treeNode).to.matchSnapshot();
     });
+
+    it("uses provided callback to customize tree node", () => {
+      const node = createRandomECInstancesNode();
+      const treeNode = createTreeNodeItem(node, undefined, {
+        customizeTreeNodeItem: (item) => {
+          item.icon = "custom-icon";
+          item.description = "custom-description";
+        },
+      });
+      expect(treeNode).to.matchSnapshot();
+    });
   });
 
   describe("createPartialTreeNodeItem", () => {
@@ -71,6 +82,22 @@ describe("Utils", () => {
     it("does not set a presentation tree node key when input does not have a key", () => {
       const node = createPartialTreeNodeItem({}, undefined, {});
       expect(PRESENTATION_TREE_NODE_KEY in node).to.be.false;
+    });
+
+    it("uses provided callback to customize tree node", () => {
+      const treeNode = createPartialTreeNodeItem(
+        {
+          key: { type: "", version: 0, pathFromRoot: [] },
+          label: LabelDefinition.fromLabelString("test"),
+        }, undefined,
+        {
+          customizeTreeNodeItem: (item) => {
+            item.icon = "custom-icon";
+            item.description = "custom-description";
+          },
+        },
+      );
+      expect(treeNode).to.matchSnapshot();
     });
   });
 
