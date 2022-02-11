@@ -14,6 +14,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  *
  * @see [More details]($docs/presentation/Customization/StyleOverride.md)
  * @public
+ * @deprecated Use [[ExtendedDataRule]] instead.
  */
 export interface StyleOverride extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */

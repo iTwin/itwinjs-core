@@ -45,7 +45,7 @@ export function createTreeNodeItem(
     label: createNodeLabelRecord(node, !!props?.appendChildrenCountForGroupingNodes),
   };
   assignOptionalTreeNodeItemFields(item, node, parentId);
-  const customizeItemCallback = props?.customizeTreeNodeItem ?? customizeTreeNodeItem;
+  const customizeItemCallback = props?.customizeTreeNodeItem ?? customizeTreeNodeItem; // eslint-disable-line deprecation/deprecation
   customizeItemCallback(item, node);
   return item;
 }
@@ -63,7 +63,7 @@ export function createPartialTreeNodeItem(
   }
 
   assignOptionalTreeNodeItemFields(item, node, parentId);
-  const customizeItemCallback = props.customizeTreeNodeItem ?? customizeTreeNodeItem;
+  const customizeItemCallback = props.customizeTreeNodeItem ?? customizeTreeNodeItem; // eslint-disable-line deprecation/deprecation
   customizeItemCallback(item, node);
   return item;
 }
@@ -103,18 +103,22 @@ function assignOptionalTreeNodeItemFields(
   }
 }
 
+/**
+ * Applies customization from Node to TreeNodeItem.
+ * @deprecated
+ */
 export function customizeTreeNodeItem(item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) {
-  if (node.imageId) {
-    item.icon = node.imageId;
+  if (node.imageId) { // eslint-disable-line deprecation/deprecation
+    item.icon = node.imageId; // eslint-disable-line deprecation/deprecation
   }
 
-  if (node.isCheckboxVisible) {
+  if (node.isCheckboxVisible) { // eslint-disable-line deprecation/deprecation
     item.isCheckboxVisible = true;
-    if (node.isChecked) {
+    if (node.isChecked) { // eslint-disable-line deprecation/deprecation
       item.checkBoxState = CheckBoxState.On;
     }
 
-    if (!node.isCheckboxEnabled) {
+    if (!node.isCheckboxEnabled) { // eslint-disable-line deprecation/deprecation
       item.isCheckboxDisabled = true;
     }
   }

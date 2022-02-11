@@ -35,7 +35,7 @@ describe("Utils", () => {
 
     it("creates tree node with custom label styles", () => {
       const node = createRandomECInstancesNode();
-      node.fontStyle = "Bold Italic";
+      node.fontStyle = "Bold Italic"; // eslint-disable-line deprecation/deprecation
       const treeNode = createTreeNodeItem(node);
       expect(treeNode).to.matchSnapshot();
     });

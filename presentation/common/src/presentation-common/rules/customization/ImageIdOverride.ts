@@ -14,6 +14,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  *
  * @see [More details]($docs/presentation/Customization/ImageIdOverride.md)
  * @public
+ * @deprecated Use [[ExtendedDataRule]] instead.
  */
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */

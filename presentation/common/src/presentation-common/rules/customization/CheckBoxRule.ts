@@ -16,6 +16,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  *
  * @see [More details]($docs/presentation/Customization/CheckBoxRule.md)
  * @public
+ * @deprecated Use [[ExtendedDataRule]] instead.
  */
 export interface CheckBoxRule extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */
