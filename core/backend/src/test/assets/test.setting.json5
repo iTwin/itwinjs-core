@@ -32,7 +32,7 @@
     "editor/lineHeight": 11,
     "workspace/container/alias": [
         {
-            "name": "Public Data",
+            "name": "public-data",
             "id": "public-data-1"
         },
         {
@@ -42,7 +42,7 @@
     ],
     "workspace/fontDbs": [
         {
-            "containerName": "Public Data",
+            "containerName": "public-data",
             "dbName": "fonts"
         }
     ],

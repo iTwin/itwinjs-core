@@ -121,8 +121,8 @@ export interface Settings {
    * @param defaultValue value returned if settingName is not present in any SettingDictionary or resolver never returned a value.
    * @returns the resolved setting value.
    */
-  resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
   resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue: T): T;
+  resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
 
   /** Get the highest priority setting for a SettingName.
    * @param settingName The name of the setting

@@ -156,7 +156,7 @@ describe("WorkspaceFile", () => {
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
-    const fontsDb = makeEditableDb("Public Data", "fonts");
+    const fontsDb = makeEditableDb("public-data", "fonts");
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();
@@ -174,13 +174,14 @@ describe("WorkspaceFile", () => {
       "workspace/container/alias": [
         { name: "default-icons", id: "icons-01" },
         { name: "default-lang", id: "lang-05" },
-        { name: "Public Data", id: "fonts-02" },
+        { name: "public-data", id: "fonts-02" },
         { name: "default-key", id: "key-05" },
       ],
     };
     settings.addDictionary("imodel-02", SettingsPriority.iModel, setting2);
     expect(workspace.resolveContainerId(fontList[0])).equals("fonts-02");
     expect(workspace.resolveContainerId({ containerId: "public-data-1" })).equals("public-data-1");
+    expect(workspace.resolveContainerId({ containerName: "public-data-3" })).equals("public-data-3");
     await expect(workspace.getWorkspaceDb(fontList[0])).to.be.rejectedWith("not found");
 
     settings.dropDictionary("imodel-02");
