@@ -6,16 +6,19 @@
 
 import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
-import { Version } from "@bentley/imodelhub-client";
-import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { AccessTokenAdapter, BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { IModelsClient, NamedVersion } from "@itwin/imodels-client-authoring";
 
 export class IModelTransformerTestAppHost {
+  public static iModelClient?: IModelsClient;
+
   public static async startup(): Promise<void> {
     const iModelHost = new IModelHostConfiguration();
-    iModelHost.hubAccess = new IModelHubBackend();
+    IModelTransformerTestAppHost.iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    iModelHost.hubAccess = new BackendIModelsAccess(IModelTransformerTestAppHost.iModelClient);
 
     const opt = {
       electronHost: {
@@ -45,14 +48,15 @@ export class IModelTransformerTestAppHost {
         + "Please see the .env.template file on how to set up environment variables."
       );
       return new Promise<AccessToken>(async (resolve, reject) => {
-        const client = await ElectronMainAuthorization.create({
+        const client = new ElectronMainAuthorization({
           clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
           redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
           scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
         });
+        await client.signInSilent();
         this._authClient = client;
 
-        ElectronMainAuthorization.onUserStateChanged.addOnce((token) => {
+        ElectronMainAuthorization.onUserStateChanged.addOnce((token: AccessToken) => {
           if (token !== "") {
             resolve(token);
           } else {
@@ -98,10 +102,11 @@ export namespace IModelHubUtils {
   }
 
   /** Call the specified function for each (named) Version of the specified iModel. */
-  export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: Version) => void): Promise<void> {
-    assert(IModelHost.hubAccess instanceof IModelHubBackend);
-    const namedVersions = await IModelHost.hubAccess.iModelClient.versions.get(accessToken, iModelId);
-    for (const namedVersion of namedVersions) {
+  export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: NamedVersion) => void): Promise<void> {
+    if (!IModelTransformerTestAppHost.iModelClient)
+      throw new Error("IModelTransformerTestAppHost.startup has not been called.");
+
+    for await (const namedVersion of IModelTransformerTestAppHost.iModelClient.namedVersions.getRepresentationList({iModelId, authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken)})) {
       func(namedVersion);
     }
   }

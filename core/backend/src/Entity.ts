@@ -11,10 +11,16 @@ import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-com
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
-/** Base class for all Entities in an iModel. Every subclass of Entity handles one BIS class.
+/** Represents an entity in an [[IModelDb]] such as an [[Element]], [[Model]], or [[Relationship]].
+ * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
+ * An Entity is typically instantiated from an [EntityProps]($common) and can be converted back to this representation via [[Entity.toJSON]].
  * @public
  */
-export class Entity implements EntityProps {
+export class Entity {
+  /** An immutable property used to discriminate between [[Entity]] and [EntityProps]($common), used to inform the TypeScript compiler that these two types
+   * are never substitutable for one another. To obtain an EntityProps from an Entity, use [[Entity.toJSON]].
+   */
+  public readonly isInstanceOfEntity: true = true;
   /** The Schema that defines this class. */
   public static schema: typeof Schema;
 
@@ -53,7 +59,9 @@ export class Entity implements EntityProps {
     this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]), false);
   }
 
-  /** @internal */
+  /** Obtain the JSON representation of this Entity. Subclasses of [[Entity]] typically override this method to return their corresponding sub-type of [EntityProps]($common) -
+   * for example, [[GeometricElement.toJSON]] returns a [GeometricElementProps]($common).
+   */
   public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;

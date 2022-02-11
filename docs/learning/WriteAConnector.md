@@ -154,7 +154,7 @@ iModel uses BIS schemas to describe the persistence model of the digital twin. A
 
 #### Changeset
 
-A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [ChangeSet]($imodelhub-client)
+A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [Changeset](./Glossary.md#changeset)
 
 ## The basics of writing a Connector
 
@@ -412,15 +412,10 @@ The node packages you'll need can be installed using
 $npm install  @itwin/core-bentley
 $npm install  @itwin/ecschema-metadata
 $npm install  @itwin/core-geometry
-$npm install  @bentley/imodelhub-client
 $npm install  @itwin/core-backend
 $npm install  @itwin/core-common
-$npm install  @bentley/itwin-client
-$npm install  @bentley/rbac-client
-$npm install  @bentley/telemetry-client
 
 $npm install  --save-dev @itwin/build-tools
-$npm install  --save-dev @bentley/config-loader
 $npm install  --save-dev @itwin/eslint-plugin
 $npm install  --save-dev @itwin/oidc-signin-tool
 

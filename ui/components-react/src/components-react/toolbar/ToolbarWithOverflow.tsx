@@ -175,6 +175,9 @@ export function GroupPopupItem({ item, addGroupSeparator }: { item: GroupButton,
     return <PopupItemWithDrag
       key={item.id}
       itemId={item.id}
+      providerId={item.providerId}
+      itemPriority={item.itemPriority}
+      groupPriority={item.groupPriority}
       icon={IconHelper.getIconReactNode(item.icon, item.internalData)}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       title={title}
@@ -186,6 +189,9 @@ export function GroupPopupItem({ item, addGroupSeparator }: { item: GroupButton,
   return <PopupItem
     key={item.id}
     itemId={item.id}
+    providerId={item.providerId}
+    itemPriority={item.itemPriority}
+    groupPriority={item.groupPriority}
     icon={IconHelper.getIconReactNode(item.icon, item.internalData)}
     isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
     title={title}
@@ -208,6 +214,9 @@ export function ActionItem({ item, addGroupSeparator }: { item: ActionButton, ad
 
   return <ToolbarButtonItem
     itemId={item.id}
+    providerId={item.providerId}
+    itemPriority={item.itemPriority}
+    groupPriority={item.groupPriority}
     key={item.id}
     isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
     title={title}

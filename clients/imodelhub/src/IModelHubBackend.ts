@@ -7,7 +7,8 @@
  */
 
 import { join } from "path";
-import { ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { UserCancelledError } from "./itwin-client/FileHandler";
+import { ProgressCallback, ProgressInfo } from "./itwin-client/Request";
 import {
   AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg, CheckpointArg,
   CheckpointProps, CreateNewIModelProps, IModelDb, IModelHost, IModelIdArg, IModelJsFs, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, SnapshotDb, TokenArg,
@@ -311,7 +312,7 @@ export class IModelHubBackend implements BackendHubAccess {
       throw new IModelError(BriefcaseStatus.VersionNotFound, "no checkpoints not found");
 
     const cancelRequest: any = {};
-    const progressCallback: ProgressCallback = (progress) => {
+    const progressCallback: ProgressCallback = (progress: ProgressInfo) => {
       if (arg.onProgress && arg.onProgress(progress.loaded, progress.total!) !== 0)
         cancelRequest.cancel?.();
     };
@@ -332,10 +333,10 @@ export class IModelHubBackend implements BackendHubAccess {
       throw new Error("Invalid V2 checkpoint in iModelHub");
 
     return {
-      container: containerAccessKeyContainer,
-      auth: containerAccessKeySAS,
-      user: containerAccessKeyAccount,
-      dbAlias: containerAccessKeyDbName,
+      containerId: containerAccessKeyContainer,
+      sasToken: containerAccessKeySAS,
+      accountName: containerAccessKeyAccount,
+      dbName: containerAccessKeyDbName,
       storageType: "azure?sas=1",
     };
   }
@@ -361,13 +362,12 @@ export class IModelHubBackend implements BackendHubAccess {
     if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
       throw new IModelError(IModelStatus.NotFound, "invalid V2 checkpoint");
 
-    const transfer = new IModelHost.platform.CloudDbTransfer({
-      direction: "download",
-      container: containerAccessKeyContainer,
-      auth: containerAccessKeySAS,
+    const transfer = new IModelHost.platform.CloudDbTransfer("download", {
+      containerId: containerAccessKeyContainer,
+      sasToken: containerAccessKeySAS,
       storageType: "azure?sas=1",
-      user: containerAccessKeyAccount,
-      dbAlias: containerAccessKeyDbName,
+      accountName: containerAccessKeyAccount,
+      dbName: containerAccessKeyDbName,
       writeable: false,
       localFile: arg.localFile,
     });

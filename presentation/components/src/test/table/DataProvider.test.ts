@@ -2,27 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
-import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { RowItem } from "@itwin/components-react";
+import { EmptyLocalization } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
+import { HorizontalAlignment, SortDirection } from "@itwin/core-react";
 import {
   Content, DefaultContentDisplayTypes, Descriptor, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError,
   SortDirection as PresentationSortDirection, RelationshipMeaning, ValuesDictionary,
 } from "@itwin/presentation-common";
 import {
-  createRandomECInstanceKey, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestSimpleContentField, PromiseContainer,
+  createRandomECInstanceKey, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestSimpleContentField,
+  PromiseContainer,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { RowItem } from "@itwin/components-react";
-import { HorizontalAlignment, SortDirection } from "@itwin/core-react";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
-import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { PresentationTableDataProvider, TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE } from "../../presentation-components/table/DataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 
@@ -51,12 +48,7 @@ describe("TableDataProvider", () => {
     const mocks = mockPresentationManager();
     presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
-    const localize = new ITwinLocalization({
-      urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    });
-    await localize.initialize(["iModelJS"]);
-    Presentation.setLocalization(localize);
-    await initializeLocalization();
+    Presentation.setLocalization(new EmptyLocalization());
 
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
     provider.keys = new KeySet([createRandomECInstanceKey()]);
@@ -321,7 +313,7 @@ describe("TableDataProvider", () => {
       (provider as any).getContentDescriptor = () => descriptor;
       const cols = await provider.getColumns();
       expect(cols.length).to.be.eq(1);
-      expect(cols).to.matchSnapshot();
+      expect(cols[0].key).to.eq("/DisplayLabel/");
     });
 
     it("extracts nested fields from their nested content field when its relationship meaning is `SameInstance`", async () => {

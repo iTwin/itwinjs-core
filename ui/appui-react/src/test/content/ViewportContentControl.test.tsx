@@ -11,7 +11,7 @@ import { MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { ViewportComponentEvents } from "@itwin/imodel-components-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,
-  CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,
+  CoreTools, FloatingContentControl, FloatingViewportContentControl, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,
   ViewportContentControl, Widget, Zone,
 } from "../../appui-react";
 import TestUtils, { mount, storageMock } from "../TestUtils";
@@ -59,6 +59,7 @@ describe("ViewportContentControl", () => {
     public override get viewport(): ScreenViewport | undefined { return viewportMock.object; }
 
   }
+
   class Frontstage1 extends FrontstageProvider {
     public static stageId = "Test1";
     public get id(): string {
@@ -103,7 +104,7 @@ describe("ViewportContentControl", () => {
     viewportMock.reset();
     viewportMock.setup((viewport) => viewport.view).returns(() => viewMock.object);
 
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
     await FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
@@ -206,6 +207,56 @@ describe("ViewportContentControl", () => {
     expect(spyMethod.called).to.be.true;
 
     remove();
+  });
+
+  it("Can add and locate floating Content", async () => {
+    const floatingNode = <div />;
+    class TestFloatingContentControl extends FloatingContentControl {
+      constructor() {
+        super("TestFloatingContentControl", "TestFloatingContentControl", floatingNode);
+      }
+      // public override get viewport(): ScreenViewport | undefined { return viewportMock.object; }
+    }
+    const floatingViewportNode = <div />;
+
+    class TestFloatingViewportContentControl extends FloatingViewportContentControl {
+      constructor() {
+        super("TestFloatingViewportContentControl", "TestFloatingViewportContentControl", null);
+      }
+      public override get viewport(): ScreenViewport | undefined { return viewportMock.object; }
+    }
+
+    const frontstageProvider = new Frontstage1();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+
+    if (frontstageDef) {
+      expect(ContentLayoutManager.activeLayout?.id).to.eq("uia:singleView");
+      const contentControl = ContentViewManager.getActiveContentControl();
+      expect(contentControl).to.not.be.undefined;
+
+      const floatingControl = new TestFloatingContentControl();
+
+      ContentViewManager.addFloatingContentControl(floatingControl);
+      ContentViewManager.setActiveContent(floatingControl.reactNode);
+
+      let activeControl = ContentViewManager.getActiveContentControl();
+      expect(activeControl).to.be.eql(floatingControl);
+
+      ContentViewManager.dropFloatingContentControl(floatingControl);
+
+      const floatingViewportControl = new TestFloatingViewportContentControl();
+      ContentViewManager.addFloatingContentControl(floatingViewportControl);
+      floatingViewportControl.reactNode = floatingViewportNode;
+
+      ContentViewManager.setActiveContent(floatingViewportControl.reactNode);
+
+      activeControl = ContentViewManager.getActiveContentControl();
+      expect(activeControl).to.be.eql(floatingViewportControl);
+
+      ContentViewManager.dropFloatingContentControl(floatingViewportControl);
+    }
   });
 
 });

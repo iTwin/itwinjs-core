@@ -17,6 +17,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
 import { disposeTileTreesForGeometricModels } from "./tile/internal";
+import { Viewport } from "./Viewport";
 
 /** Keeps track of changes to models, buffering them until synchronization points.
  * While a GraphicalEditingScope is open, the changes are buffered until the scope exits, at which point they are processed.
@@ -131,12 +132,12 @@ class ModelChangeMonitor {
   }
 
   private invalidateScenes(changedModels: Iterable<Id64String>): void {
-    for (const vp of IModelApp.tileAdmin.viewports) {
-      if (vp.iModel === this._briefcase) {
+    for (const user of IModelApp.tileAdmin.tileUsers) {
+      if (user instanceof Viewport && user.iModel === this._briefcase) {
         for (const modelId of changedModels) {
-          if (vp.view.viewsModel(modelId)) {
-            vp.invalidateScene();
-            vp.setFeatureOverrideProviderChanged();
+          if (user.view.viewsModel(modelId)) {
+            user.invalidateScene();
+            user.setFeatureOverrideProviderChanged();
             break;
           }
         }

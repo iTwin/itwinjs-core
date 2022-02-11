@@ -22,7 +22,7 @@ import { RenderMemory } from "../RenderMemory";
 import { RenderSystem, TerrainTexture } from "../RenderSystem";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -135,6 +135,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public override get hasFeatures(): boolean { return this._realityMeshParams.featureID !== undefined; }
   public override get supportsThematicDisplay() { return true; }
   public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
+  public get transform(): Transform | undefined { return this._transform; }
 
   private constructor(private _realityMeshParams: RealityMeshGeometryParams, public textureParams: RealityTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean, private _isTerrain: boolean) {
     super(_realityMeshParams);
@@ -231,14 +232,14 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
   public get techniqueId(): TechniqueId { return TechniqueId.RealityMesh; }
 
-  public getRenderPass(target: Target): RenderPass {
+  public override getPass(target: Target) {
     if (target.isDrawingShadowMap)
-      return RenderPass.None;
+      return "none";
 
     if (this._baseIsTransparent || (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines))
-      return RenderPass.Translucent;
+      return "translucent";
 
-    return RenderPass.OpaqueGeneral;
+    return "opaque";
   }
   public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
 

@@ -646,13 +646,20 @@ export class AppTools {
       execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.localization.getLocalizedString("SampleApp:buttons.errorMessageBox"))),
     });
   }
+  public static get noIconMessageBoxCommand() {
+    return new CommandItemDef({
+      commandId: "noIconMessage",
+      labelKey: "SampleApp:buttons.noIconMessageBox",
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.noIconMessageBox"))),
+    });
+  }
 
   public static get successMessageBoxCommand() {
     return new CommandItemDef({
       commandId: "successMessage",
       iconSpec: "icon-status-success",
       labelKey: "SampleApp:buttons.successMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Success, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
     });
   }
 
@@ -726,6 +733,20 @@ export class AppTools {
         const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
           message,
           MessageBoxIconType.Warning);
+        window.alert(`Closing message box ... value is ${value}`);
+      },
+    });
+  }
+
+  public static get openMessageBoxCommand3() {
+    return new CommandItemDef({
+      commandId: "openMessageBox3",
+      iconSpec: "icon-status-warning",
+      labelKey: "SampleApp:buttons.openMessageBox",
+      execute: async () => {
+        const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
+          "Are you sure you want to remove this item?",
+          MessageBoxIconType.Critical);
         window.alert(`Closing message box ... value is ${value}`);
       },
     });

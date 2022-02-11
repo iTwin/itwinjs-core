@@ -39,6 +39,6 @@ The iTwin.js API provides for a way to validate (check compatibility) and upgrad
   - acquiring a schema lock to avoid concurrent schema changes by different users
   - opening the local briefcase
   - making the necessary schema changes to the briefcase
-  - capturing these schema changes (if any) as a ChangeSet and pushing it to iModel Hub
+  - capturing these schema changes (if any) as a Changeset and pushing it to iModel Hub
   - releasing the schema lock
   - closing the local briefcase

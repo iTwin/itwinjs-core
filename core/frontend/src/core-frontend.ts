@@ -89,6 +89,7 @@ export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
+export * from "./render/RenderMaterial";
 export * from "./render/RenderMemory";
 export * from "./render/RenderPlan";
 export * from "./render/RenderPlanarClassifier";
@@ -217,5 +218,9 @@ export * from "./RealityDataSource";
  * @docs-group-description UserPreferences
  * APIs for working with user preferences in an iModelApp.
  * See [the learning articles]($docs/learning/frontend/preferences.md).
+ */
+/**
+ * @docs-group-description MapLayers
+ * Classes supporting map layers display.
  */
 
