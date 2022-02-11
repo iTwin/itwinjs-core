@@ -58,10 +58,12 @@ export class MapSubLayerSettings {
     this.parent = parent;
     this.children = children;
   }
+
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static fromJSON(json: MapSubLayerProps): MapSubLayerSettings {
     return new MapSubLayerSettings(json.name, json.title, json.visible, (json.id === json.name) ? undefined : json.id, json.parent, json.children);
   }
+
   public toJSON(): MapSubLayerProps {
     const props: MapSubLayerProps = { name: this.name, visible: this.visible };
 
@@ -95,10 +97,12 @@ export class MapSubLayerSettings {
     };
     return MapSubLayerSettings.fromJSON(props)!;
   }
+
   /** @internal */
   public displayMatches(other: MapSubLayerSettings): boolean {
     return this.name === other.name && this.visible === other.visible;
   }
+
   /** return true if this sublayer is named. */
   public get isNamed(): boolean { return this.name.length > 0; }
 
@@ -312,6 +316,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
 
     return props;
   }
+
   /** Create a copy of this MapLayerSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
    * @returns A MapLayerSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
@@ -326,6 +331,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
 
     return clone;
   }
+
   /** @internal */
   protected override cloneProps(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerProps {
     const props = super.cloneProps(changedProps) as ImageMapLayerProps;
@@ -353,6 +359,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
 
     return true;
   }
+
   /** Return a sublayer matching id -- or undefined if not found */
   public subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined {
     return id === undefined ? undefined : this.subLayers.find((subLayer) => subLayer.id === id);
@@ -420,6 +427,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.password = password;
   }
 }
+
 /** Normalized representation of a [[ModelMapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
  * Model map layers are produced from models, typically from two dimensional geometry that may originate in a GIS system.
  * One or more map layers may be included within [[MapImagerySettings]] object.
@@ -437,17 +445,20 @@ export class ModelMapLayerSettings extends MapLayerSettings {
     super(name, visible, transparency, transparentBackground);
     this.modelId = modelId;
   }
+
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static override fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings {
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
     return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground);
   }
+
   /** return JSON representation of this MapLayerSettings object */
   public override toJSON(): ModelMapLayerProps {
     const props = super._toJSON() as ModelMapLayerProps;
     props.modelId = this.modelId;
     return props;
   }
+
   /** Create a copy of this MapLayerSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
    * @returns A MapLayerSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
@@ -455,6 +466,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
   public clone(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerSettings {
     return ModelMapLayerSettings.fromJSON(this.cloneProps(changedProps));
   }
+
   /** @internal */
   protected override cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps {
     const props = super.cloneProps(changedProps) as ModelMapLayerProps;
@@ -469,6 +481,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
 
     return this.modelId === other.modelId;
   }
+
   /** Return true if all sublayers are invisible (always false as model layers do not include sublayers). */
   public get allSubLayersInvisible(): boolean {
     return false;
@@ -563,6 +576,7 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
             imagerySet = "AerialWithLabels";
             break;
         }
+
         name = `Bing Maps: ${ImageMapLayerSettings.mapTypeName(provider.type)}`;
         url = `https://dev.virtualearth.net/REST/v1/Imagery/Metadata/${imagerySet}?o=json&incl=ImageryProviders&key={bingKey}`;
         break;
@@ -581,6 +595,7 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
             url = "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/";
             break;
         }
+
         break;
     }
 
