@@ -1881,7 +1881,7 @@ export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
 }
 
-// @beta
+// @public
 export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "checkbox";
@@ -2201,7 +2201,7 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
-// @beta
+// @public
 export interface CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "checkbox" | "text" | "select";
@@ -2219,7 +2219,7 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
     viewport?: never;
 }
 
-// @beta
+// @public
 export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
     isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
     primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
@@ -3210,7 +3210,7 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
-// @beta
+// @public
 export interface FormatterParserSpecsProvider {
     // (undocumented)
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
@@ -3220,7 +3220,7 @@ export interface FormatterParserSpecsProvider {
     quantityType: QuantityTypeArg;
 }
 
-// @beta
+// @public
 export interface FormattingUnitSystemChangedArgs {
     // (undocumented)
     readonly system: UnitSystemKey;
@@ -3522,7 +3522,7 @@ export interface GetPixelDataWorldPointArgs {
     y: number;
 }
 
-// @beta
+// @public
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
 // @public
@@ -4669,7 +4669,6 @@ export class IModelApp {
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @beta
     static get publicPath(): string;
-    // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @beta
@@ -5207,16 +5206,16 @@ export interface IpcAppOptions {
     iModelApp?: IModelAppOptions;
 }
 
-// @beta
+// @public
 export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec;
 
-// @beta
+// @public
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
 
-// @beta
+// @public
 export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
 
-// @beta
+// @public
 export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
 
 // @alpha (undocumented)
@@ -7279,7 +7278,7 @@ export enum OutputMessageType {
     Toast = 0
 }
 
-// @beta
+// @public
 export interface OverrideFormatEntry {
     // (undocumented)
     imperial?: FormatProps;
@@ -7649,19 +7648,19 @@ export class QuadId {
     row: number;
 }
 
-// @beta
+// @public
 export interface QuantityFormatOverridesChangedArgs {
     readonly overrideEntry?: OverrideFormatEntry;
     readonly typeKey: QuantityTypeKey;
     readonly unitSystem?: UnitSystemKey;
 }
 
-// @beta
+// @public
 export interface QuantityFormatsChangedArgs {
     readonly quantityType: string;
 }
 
-// @beta
+// @public
 export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
     // (undocumented)
@@ -7736,7 +7735,7 @@ export class QuantityFormatter implements UnitsProvider {
     set unitsProvider(unitsProvider: UnitsProvider);
     }
 
-// @beta
+// @public
 export enum QuantityType {
     // (undocumented)
     Angle = 2,
@@ -7758,10 +7757,10 @@ export enum QuantityType {
     Volume = 4
 }
 
-// @beta
+// @public
 export type QuantityTypeArg = QuantityType | string;
 
-// @beta
+// @public
 export interface QuantityTypeDefinition {
     description: string;
     generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
@@ -7774,7 +7773,7 @@ export interface QuantityTypeDefinition {
     readonly type: QuantityTypeArg;
 }
 
-// @beta
+// @public
 export type QuantityTypeKey = string;
 
 // @beta
@@ -10342,7 +10341,7 @@ export interface TerrainTileContent extends TileContent {
     };
 }
 
-// @beta
+// @public
 export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "text";
@@ -10352,7 +10351,7 @@ export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpe
     setString: (props: FormatProps, value: string) => FormatProps;
 }
 
-// @beta
+// @public
 export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "select";
@@ -11803,7 +11802,7 @@ export class UniqueTileUserSets {
     remove(user: TileUser): void;
     }
 
-// @beta
+// @public
 export interface UnitFormattingSettingsProvider {
     loadOverrides(imodel: IModelConnection | undefined): Promise<void>;
     readonly maintainOverridesPerIModel: boolean;
@@ -11816,7 +11815,7 @@ export interface UnitFormattingSettingsProvider {
     storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
 }
 
-// @beta
+// @public
 export type UnitNameKey = string;
 
 // @internal (undocumented)

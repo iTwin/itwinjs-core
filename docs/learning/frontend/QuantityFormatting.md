@@ -50,12 +50,10 @@ A units provider is used to define all available units and provides conversion f
       const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
       const context = new SchemaContext();
       context.addLocater(schemaLocater);
-      IModelApp.quantityFormatter.unitsProvider = new SchemaUnitProvider(context);
-      await IModelApp.quantityFormatter.onInitialized();
+      await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(context));
     } catch (_) {
       // in case IModel does not have a Units schema reset to use BasicUnitsProvider
-      IModelApp.quantityFormatter.resetToUseInternalUnitsProvider();
-      await IModelApp.quantityFormatter.onInitialized();
+      await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider();
     }
 
     // ready to store the IModelConnection in the IModelApps redux store
@@ -314,4 +312,4 @@ The composite format below we will provide a unit in meters and produce a format
 
 #### AlternateUnitLabelsProvider
 
-The [AlternateUnitLabelsProvider]($quantity) interface allows users to  specify a set of alternate labels which may be encountered during parsing of strings. By default only the input unit label and the labels of other units in the same Unit Family, as well as the label of units in a Composite format are used.
+The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a set of alternate labels which may be encountered during parsing of strings. By default only the input unit label and the labels of other units in the same Unit Family/Phenomenon, as well as the label of units in a Composite format are used.
