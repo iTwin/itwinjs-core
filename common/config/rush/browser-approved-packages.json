@@ -447,10 +447,6 @@
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
-      "name": "draco3d",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "electron",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -528,7 +524,7 @@
     },
     {
       "name": "fast-sort",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "file-loader",

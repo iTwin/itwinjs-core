@@ -1,6 +1,26 @@
 # Change Log - @itwin/frontend-devtools
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Update release tags
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Added keyins for setting images to be used for sky sphere or sky cube.
+- fix ecsql row format
+- Now use 'DisplayStyleState.backgroundMapBase' instead of 'DisplayStyleState.changeBaseMapProps' to update the mapImagery.
+- Support -1 to modify all reality models.  Fix messages
+- rename to @itwin/frontend-devtools
+- Fix typo.
+- Add support for inverting planar clip mask (inside vs outside)
+- Replace usage of I18N with generic Localization interface.
+-  Renamed an iModel's parent container to iTwin
+- tool.run and tool.parseAndRun are now async methods
+- Add `fdt bgcolor` keyin for changing the viewport's background color.
+- Replace `fdt toggle wiremesh` keyin with `fdt wiremesh` that produces real wiremesh.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT

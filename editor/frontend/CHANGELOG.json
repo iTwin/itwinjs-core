@@ -2,6 +2,93 @@
   "name": "@itwin/editor-frontend",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/editor-frontend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height."
+          },
+          {
+            "comment": "fix code for breaking change to .query() method"
+          },
+          {
+            "comment": "Create interpolation curve for through points construction."
+          },
+          {
+            "comment": "InterpolationCurve3d support"
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Dynamics should honor appearance overrides appliled to original element. Added blend tools."
+          },
+          {
+            "comment": "Updated to Electron 14"
+          },
+          {
+            "comment": "Added ability to convert iModel coordinates to or from any Geographic CRS"
+          },
+          {
+            "comment": "Support multi-select of sub-entities."
+          },
+          {
+            "comment": "Provide default tool assistance for face/edge/vertex selection phase."
+          },
+          {
+            "comment": "rename to @itwin/editor-frontend"
+          },
+          {
+            "comment": "Allow sweep/spin of open path to create a sheet."
+          },
+          {
+            "comment": "Don't try to locate sub-entity under cursor until previous request completes."
+          },
+          {
+            "comment": "Create bcurve from control points now supports closure."
+          },
+          {
+            "comment": "Basic solid modeling operations are now covered."
+          },
+          {
+            "comment": "Improve error messages for \"editor project location save\"."
+          },
+          {
+            "comment": "Don't hide original elements until we get a result. Cache filterHit status."
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "Update to use new tool setting helper methods."
+          },
+          {
+            "comment": "New solid modeling ipc interface  "
+          },
+          {
+            "comment": "More solid modeling functionality."
+          },
+          {
+            "comment": "Add tool settings for solid modeling tools."
+          },
+          {
+            "comment": "New tools to sweep/spin faces and delete faces/imprinted edges."
+          },
+          {
+            "comment": "tool.run and tool.parseAndRun are now async methods"
+          },
+          {
+            "comment": "Added tool setting helper methods."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/editor-frontend_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

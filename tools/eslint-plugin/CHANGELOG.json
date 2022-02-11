@@ -2,6 +2,30 @@
   "name": "@itwin/eslint-plugin",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/eslint-plugin_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Drop support for ESLint 6.x"
+          },
+          {
+            "comment": "rename to @itwin/eslint-plugin"
+          },
+          {
+            "comment": "add required-barrel-modules feature"
+          },
+          {
+            "comment": "switch to typed version of dot-notation rule"
+          },
+          {
+            "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/eslint-plugin_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

@@ -1,6 +1,25 @@
 # Change Log - @itwin/editor-backend
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- fix code for breaking change to .query() method
+- Upgrade target to ES2019
+- Dynamics should honor appearance overrides appliled to original element. Added blend tools.
+- Aquire locks for built-in edit commands.
+- Updated to Electron 14
+- Added ability to convert iModel coordinates to or from any Geographic CRS
+- rename to @itwin/editor-backend
+- Basic solid modeling operations are now covered.
+- Don't hide original elements until we get a result. Cache filterHit status.
+- Fix for IModel._ecefTrans not being updated when setting IModel._ecefLocation.
+- New solid modeling ipc interface
+- More solid modeling functionality.
+- New tools to sweep/spin faces and delete faces/imprinted edges.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
