@@ -2,6 +2,102 @@
   "name": "@itwin/core-geometry",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/core-geometry_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add clonePartialCurve for spirals. Proper length computation for partial spirals."
+          },
+          {
+            "comment": "Create interpolation curve for through points construction."
+          },
+          {
+            "comment": "InterpolationCurve3d support"
+          },
+          {
+            "comment": "add HalfEdgeGraphOps.expandConvexFaces"
+          },
+          {
+            "comment": "Add curve tests to increase coverage"
+          },
+          {
+            "comment": "add periodic B-spline curve ctor"
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Fix bug in polygon booleans when inputs are disjoint"
+          },
+          {
+            "comment": "In wire offset, improve handling of arcs offset beyond their center"
+          },
+          {
+            "comment": "When a UnionOfConvexClipPlaneSets clips a polyface, aggressively stitch shards."
+          },
+          {
+            "comment": "Produce triangles (instead of quads) (when requested) in AddUVGridBody."
+          },
+          {
+            "comment": "Documentation file for ClipPlane structures"
+          },
+          {
+            "comment": "When building planes for a ClipShape, pre-filter the shape edges to remove danglers that violate triangulation requirements"
+          },
+          {
+            "comment": "Correct problems with all-convex mask clips"
+          },
+          {
+            "comment": "ClipUtilities.createComplementaryClips -- method to create a UnionOfConvexClipPlaneSets which covers the space outside of a ConvexClipPlaneSet"
+          },
+          {
+            "comment": "Correct implementation of \"mask\" ClipPrimitive"
+          },
+          {
+            "comment": "Implement appendPolygonClip in deep boolean trees."
+          },
+          {
+            "comment": "When building index for CurveChainWithDistanceIndex, refer to primary primitives rather than to stroked pieces."
+          },
+          {
+            "comment": "Various code coverage.   Fix infinitie loop in \"out of graph\" case in InsertAndRetriangulateContext"
+          },
+          {
+            "comment": "Fix poor accuracy of closestPoint for BSplineCurve3dH and Integrated Spirals"
+          },
+          {
+            "comment": "Tests of area analysis for road section project.  Shared-edge annotation from constructAllXYRegions"
+          },
+          {
+            "comment": "Fix plane constructions on xy clipper from polyline offset"
+          },
+          {
+            "comment": "Apply tolerance when determining if ClipShape polygon is closed."
+          },
+          {
+            "comment": "rename to @itwin/core-geometry"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Switching to consume new Projects-Client"
+          },
+          {
+            "comment": "Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Moved Point3d.interpolatePointAndTangent to Ray3d.interpolatePointAndTangent."
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-geometry_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

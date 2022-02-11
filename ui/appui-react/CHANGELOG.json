@@ -2,6 +2,276 @@
   "name": "@itwin/appui-react",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/appui-react_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update ClearHideIsolateEmphasize Tool button definition to work on Models and Categories as well as Elements."
+          },
+          {
+            "comment": "The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height."
+          },
+          {
+            "comment": "Update colorpicker to support RGB input"
+          },
+          {
+            "comment": "fix code for breaking change to .query() method"
+          },
+          {
+            "comment": "Existing ruleset configurations were updated to no longer use deprecated rule versions for iModel.js 3.0."
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "export CategoryVisibilityHandler"
+          },
+          {
+            "comment": "Fix ecsql row format"
+          },
+          {
+            "comment": "getAccessToken always returns a token"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "updated @itwin/browser-authorization to 0.3.1"
+          },
+          {
+            "comment": "rename to @itwin/appui-react"
+          },
+          {
+            "comment": "Added UserInfo from itwin-client"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Made ConfigurableUiManager.closeUi() public"
+          },
+          {
+            "comment": "Removed OIDC signin/signout and UserProfileBackstageItem"
+          },
+          {
+            "comment": "Improve performance of determining visibility state of element and element grouping nodes."
+          },
+          {
+            "comment": "Removed 'ModelsTreeProps.enablePreloading' flag"
+          },
+          {
+            "comment": "Promote standard UI providers from beta to public"
+          },
+          {
+            "comment": "Initialize StateManager store if necessary during UiFramework initialization."
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Remove use of UiItemsArbiter"
+          },
+          {
+            "comment": "Remove UserInfo completely"
+          },
+          {
+            "comment": "Update snapshots"
+          },
+          {
+            "comment": "Replaced ContextRegistry with generalized ITwinAccess interface"
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Removed references to the deleted config-loader package"
+          },
+          {
+            "comment": "tool.run and tool.parseAndRun are now async methods"
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          },
+          {
+            "comment": "Refactor SynchUiEventDispatcher to use new UiEventDispatcher from appui-abstract. Deprecate obsolete code."
+          },
+          {
+            "comment": "Refactored part of AccuDraw UI & Providing AccuDraw UI documentation"
+          },
+          {
+            "comment": "Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined."
+          },
+          {
+            "comment": "Add missing public/beta types to the barrel file."
+          },
+          {
+            "comment": "Add required `width` and `height` props for `CategoryTree`, `ModelsTree` and `SpatialContainmentTree`."
+          },
+          {
+            "comment": "Remove `IModelConnectedCategoryTree`, `IModelConnectedModelsTree` and `IModelConnectedSpatialContainmentTree`."
+          },
+          {
+            "comment": "Remove deprecated `CategoryTreeWithSearchBox`."
+          },
+          {
+            "comment": "Remove deprecated `VisibilityComponent`, `VisibilityWidget` and related types."
+          },
+          {
+            "comment": "Clean up deprecated Drag & Drop related APIs"
+          },
+          {
+            "comment": "Add state variable to control display of view overlay in the viewports."
+          },
+          {
+            "comment": "Update to default to using UI2.0/AppUI."
+          },
+          {
+            "comment": "Deprecate and promote apis"
+          },
+          {
+            "comment": "Deprecate obsolete APIs. Publish beta APIs from last release."
+          },
+          {
+            "comment": "Update links in API doc comments."
+          },
+          {
+            "comment": "Make it possible to set label and execute function for BackstageAppButton"
+          },
+          {
+            "comment": "Upgraded itwinui-react to 1.16.2. Fixed editor sizes."
+          },
+          {
+            "comment": "Ensure duplicate items provided via UiItemProviders are filtered out and only one item per Id is used. "
+          },
+          {
+            "comment": "Add ability to remove stage launcher entry from backstage if only one stage is available."
+          },
+          {
+            "comment": "Remove files generated by bad merge"
+          },
+          {
+            "comment": "Fix bug where ConditionalStringValue used in some status bar components would cause a crash."
+          },
+          {
+            "comment": "Ensure nineZoneState is not set in FrontstageDef until 'isReady' is set."
+          },
+          {
+            "comment": "Add support for all existing Indicator Props."
+          },
+          {
+            "comment": "Updates to enable frontstageDef to be cached per iModelConnection."
+          },
+          {
+            "comment": "Add initializeStateFromUserSettingsProviders to initialize UI state."
+          },
+          {
+            "comment": "Update ShowHideManager defaults"
+          },
+          {
+            "comment": "Update comment."
+          },
+          {
+            "comment": "Fix warning shown in unit test by ensuring setState is only processed if state component is mounted."
+          },
+          {
+            "comment": "Allow widgets supplied by a UiItemsProvider to specify a default state of floating."
+          },
+          {
+            "comment": "Deprecated HorizontalTabs in ui-core. Removed older deprecated items. Updated NextVersion.md."
+          },
+          {
+            "comment": "Update to latest itwinui-react"
+          },
+          {
+            "comment": "Clean up css for status bar entries to avoid unwanted text wrapping."
+          },
+          {
+            "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js"
+          },
+          {
+            "comment": "Moved iTwinUI style overrides to ui-core from ui-framework"
+          },
+          {
+            "comment": "Rename ui directories to match new package names."
+          },
+          {
+            "comment": "Deprecated Task/Workflow. Promoted AccuDraw UI to @beta. Added AccuDraw and NavigationAids learning docs."
+          },
+          {
+            "comment": "Fix bug that sets the icon on MessageBox.NoSymbol the Success icon."
+          },
+          {
+            "comment": "Add prop that prevents popup button panel from unmounting when closed."
+          },
+          {
+            "comment": "Update to React 17."
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "Remove react 16 peer dependency."
+          },
+          {
+            "comment": "Filter out duplicate tools that may be registered in different UiItemProviders. First one in wins."
+          },
+          {
+            "comment": "Remove itwinUi css overrides."
+          },
+          {
+            "comment": "UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally."
+          },
+          {
+            "comment": "Remove package react-split-pane."
+          },
+          {
+            "comment": "Remove WidgetProvider and associated events."
+          },
+          {
+            "comment": "Fixed z-index of status messages to be on top of a dialog"
+          },
+          {
+            "comment": "Update Tool Setting for UI 1.0 to fix refresh bug."
+          },
+          {
+            "comment": "BaseUiItemsProvider class and refactor \"standard\" providers to subclass it."
+          },
+          {
+            "comment": "Undeprecate necessary UI 1.0 classes/interfaces"
+          },
+          {
+            "comment": "Update standard UI item providers to require a providerId so more than one instance may be used within an app.  Usually by different packages providing stages."
+          },
+          {
+            "comment": "Replaced ui-core Slider with one from iTwinUi-react. Update DefaultViewOverlay to opt-in to dislay of view overlays."
+          },
+          {
+            "comment": "Update to latest types/react package"
+          },
+          {
+            "comment": "reset to use overflow hidden in floating widgets as it messes up auto-sizing and re-sizing."
+          },
+          {
+            "comment": "Add support for widget tab icons in UI-2"
+          },
+          {
+            "comment": "Update CSS used for ToolSettingEntries in grid layout."
+          },
+          {
+            "comment": "Get WidgetState and PanelState from NinzoneState when running in UI 2 mode - single source of truth."
+          },
+          {
+            "comment": "Lock down and update version numbers so docs will build."
+          },
+          {
+            "comment": "Hide widgets with Hidden defaultState when frontstage is activated."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/appui-react_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

@@ -2,6 +2,33 @@
   "name": "@itwin/core-webpack-tools",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/core-webpack-tools_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update BackendDefaultsPlugin to use new CopyStaticAssetsPlugin which will copy assets using a glob pattern"
+          },
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "Update the CopyBentleyStaticResourcesPlugin to support the `@itwin` scope in addition to the `@bentley` scope."
+          },
+          {
+            "comment": "Add node-fetch to the BackendDefaultPlugin list of ignored optional dependencies"
+          },
+          {
+            "comment": "rename to @itwin/core-webpack-tools"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-webpack-tools_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

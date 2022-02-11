@@ -2,6 +2,30 @@
   "name": "@itwin/core-i18n",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/core-i18n_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "change dependency of deprecated i18next-xhr to i18next-http"
+          },
+          {
+            "comment": "use new @itwin package names"
+          },
+          {
+            "comment": "rename to @itwin/core-i18n"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-i18n_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",
