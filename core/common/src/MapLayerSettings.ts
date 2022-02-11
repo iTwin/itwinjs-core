@@ -152,8 +152,6 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
    * ###TODO This does not belong in the props object. It should never be persisted.
    */
   accessKey?: MapLayerKey;
-  /** Is a base layer.  Defaults to 'false'. */
-  isBase?: boolean;
 
   /** @internal */
   modelId?: never;
@@ -175,8 +173,6 @@ export interface ModelMapLayerProps extends CommonMapLayerProps {
   subLayers?: never;
   /** @internal */
   accessKey?: never;
-  /** @internal */
-  isBase?: never;
 }
 
 /** JSON representation of a [[MapLayerSettings]].
@@ -276,7 +272,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public userName?: string;
   public password?: string;
   public accessKey?: MapLayerKey;
-  public readonly isBase: boolean;
   public readonly subLayers: MapSubLayerSettings[];
   public override get source(): string { return this.url; }
 
@@ -286,7 +281,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     super(props.name, props.visible, props.transparency, transparentBackground);
 
     this.formatId = props.formatId;
-    this.isBase = true === props.isBase;
     this.url = props.url;
     this.accessKey = props.accessKey;
     this.subLayers = [];
@@ -309,7 +303,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     const props = super._toJSON() as ImageMapLayerProps;
     props.url = this.url;
     props.formatId = this.formatId;
-    props.isBase = this.isBase;
 
     if (this.subLayers.length > 0)
       props.subLayers = this.subLayers.map((x) => x.toJSON());
@@ -604,7 +597,6 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
       formatId,
       url,
       transparentBackground: false,
-      isBase: true,
       visible: !options?.invisible,
       transparency: options?.transparency,
     });

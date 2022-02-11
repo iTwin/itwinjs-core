@@ -27,7 +27,6 @@ describe("MapUrlDialog", () => {
     name: "Test Map",
     visible: true,
     transparentBackground: true,
-    isBase: false,
     subLayers: sampleWmsSubLayers,
     accessKey: undefined,
     transparency: 0,

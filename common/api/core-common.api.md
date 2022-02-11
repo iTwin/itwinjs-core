@@ -4384,7 +4384,6 @@ export interface ImageGraphicProps {
 export interface ImageMapLayerProps extends CommonMapLayerProps {
     accessKey?: MapLayerKey;
     formatId: string;
-    isBase?: boolean;
     // @internal (undocumented)
     modelId?: never;
     subLayers?: MapSubLayerProps[];
@@ -4408,8 +4407,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // (undocumented)
     static fromJSON(props: ImageMapLayerProps): ImageMapLayerSettings;
     getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
-    // (undocumented)
-    readonly isBase: boolean;
     isSubLayerVisible(subLayer: MapSubLayerSettings): boolean;
     // @internal (undocumented)
     protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
@@ -5440,8 +5437,6 @@ export interface ModelMapLayerProps extends CommonMapLayerProps {
     accessKey?: never;
     // @internal (undocumented)
     formatId?: never;
-    // @internal (undocumented)
-    isBase?: never;
     modelId: Id64String;
     // @internal (undocumented)
     subLayers?: never;
