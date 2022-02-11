@@ -1,6 +1,33 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Removed deprecated rules for iModel.js 3.0.
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- rename contextId -> iTwinId
+- Added 'BaseNodeKey.version' property and 'NodeKey.equals' function to compare keys taking their versions into account.
+- rename to @itwin/presentation-common
+- Added `excludedClasses` attribute to `ContentInstancesOfSpecificClassesSpecification` and `InstanceNodesOfSpecificClassesSpecification` specifications.
+- Added 'onlyIfNotHandled' property support to all content rule specifications
+- Update `SelectClassInfo.pathFromInputToSelectClass` type definition to match reality - the relationship may not always be set.
+- Clean up deprecated APIs
+- Added API to get properties of all elements.
+- Added `getContentSources` RPC to retrieve information about where content for specific types of elements comes from.
+- Fixed processing of merged content values under nested content field.
+- Remove ability to get multiple element properties over RPC.
+- Add `getContentInstanceKeys` RPC to efficiently get content instance keys.
+- Remove `priority` attribute from presentation request options type.
+- Optimize `KeySetJSON` size by compressing instance IDs.
+- Remove `PresentationRpcInterface.loadHierarchy`.
+- The `condition` attribute should be defined on both `ChildNodeRule` and `RootNodeRule`.
+- Added `ignoreCategories` parameter in `createFieldHierarchies` function for adding all of the nested properties to parent field's child fields without considering categories. 
+- Removed `PresentationUnitSystem`  in favor of `UnitSystemKey` from `@itwin/core-quantity`.
+- remove ClientRequestContext.current
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT

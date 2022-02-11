@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-orbitgt",
+      "comment": "Add well-known text parsing for KrovakEN",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-orbitgt"
+}

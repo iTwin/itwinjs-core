@@ -89,6 +89,7 @@ beta;CheckboxFormatPropEditorSpec
 public;CheckpointConnection 
 public;ClipEventType
 public;Cluster
+beta;CollectTileStatus = "accept" | "reject" | "continue"
 alpha;CompassMode
 public;ComputeChordToleranceArgs
 internal;ContextMode
@@ -190,6 +191,7 @@ internal;GeographicTilingScheme
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
+beta;GeometryTileTreeReference 
 internal;GeoServices
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
@@ -396,6 +398,7 @@ public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
 public;OnViewExtentsError
+internal;OPCFormatInterpreter
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
@@ -432,6 +435,7 @@ beta;PreferenceArg
 beta;PreferenceKeyArg
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
+alpha;PublisherProductInfo
 internal;QuadId
 beta;QuantityFormatOverridesChangedArgs
 beta;QuantityFormatsChangedArgs
@@ -452,24 +456,28 @@ public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
 internal;ReadonlyTileUserSet 
-internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
+internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
 beta;RealityDataSource
 beta;RealityDataSource
+internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey
 alpha;createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined
-internal;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
+alpha;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
 internal;RealityTile 
+internal;RealityTileContent 
 internal;RealityTileDrawArgs 
+alpha;RealityTileGeometry
 internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
+internal;RealityTreeReference 
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
@@ -481,7 +489,6 @@ internal;RenderMaterialSource
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
-internal;class RenderRealityMeshGeometry 
 internal;RenderScheduleState 
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
 internal;RenderSkyCubeParams
@@ -492,6 +499,7 @@ public;RenderSystem
 beta;RenderSystemDebugControl
 internal;class RenderTarget 
 internal;RenderTargetDebugControl
+internal;class RenderTerrainGeometry 
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 internal;RootIModelTile = Tile &
@@ -536,6 +544,7 @@ public;SnapMode
 public;SnapshotConnection 
 public;SnapStatus
 internal;class SpatialClassifierTileTreeReference 
+alpha;SpatialLocationAndExtents
 public;SpatialLocationModelState 
 public;SpatialModelState 
 internal;SpatialTileTreeReferences 
@@ -569,6 +578,8 @@ public;TextureImage
 public;TextureImageSource = HTMLImageElement | ImageBuffer
 public;TextureOwnership = TextureCacheOwnership | "external"
 internal;ThreeAxes
+internal;ThreeDTileFileInfo
+internal;ThreeDTileFormatInterpreter
 public;class Tile
 public;TileAdmin
 public;TileAdmin
@@ -581,6 +592,8 @@ internal;addToScene(provider: TiledGraphicsProvider, context: SceneContext): voi
 internal;isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean
 public;TileDrawArgParams
 public;TileDrawArgs
+beta;TileGeometryCollector
+beta;TileGeometryCollectorOptions
 public;TileGraphicType
 public;TileLoadPriority
 public;TileLoadStatus

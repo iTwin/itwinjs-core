@@ -6,14 +6,15 @@ import * as fs from "fs";
 import * as path from "path";
 import { IModelHostConfiguration } from "@itwin/core-backend";
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
+import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { Presentation } from "@itwin/presentation-backend";
+import { getSupportedRpcs } from "../common/rpcs";
+import { loggerCategory } from "../common/TestAppConfiguration";
+import { initializeElectron } from "./electron/ElectronMain";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
-import { initializeElectron } from "./electron/ElectronMain";
-import { loggerCategory } from "../common/TestAppConfiguration";
-import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
-import { getSupportedRpcs } from "../common/rpcs";
-import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
@@ -27,7 +28,8 @@ import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
     initializeLogging();
 
     const iModelHost = new IModelHostConfiguration();
-    iModelHost.hubAccess = new BackendIModelsAccess();
+    const iModelClient = new  IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
 
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {

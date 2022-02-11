@@ -11,7 +11,7 @@ Returns content for instances related to the selected (input) instances.
 | *Filtering*                                               |
 | [`relationshipPaths`](#attribute-relationshippaths)       | Yes       | [`RelationshipPathSpecification[]`](../Common-Rules/RelationshipPathSpecification.md) |
 | [`instanceFilter`](#attribute-instancefilter)             | No        | [ECExpression](./ECExpressions.md#instance-filter)                                    | `""`    |
-| [`onlyIfNotHandled`](#attribute-onlyifnothandled)         | No        | boolean                                                                               | `false` |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)         | No        | `boolean`                                                                             | `false` |
 | *Ordering*                                                |
 | [`priority`](#attribute-priority)                         | No        | `number`                                                                              | `1000`  |
 | *Content Modifiers*                                       |

@@ -59,12 +59,14 @@ import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import {
-  OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
+  OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewDialogTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
   SaveContentLayoutTool, TestExtensionUiProviderTool,
 } from "./tools/ImmediateTools";
+
 import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
 import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
+import { InspectUiItemInfoTool } from "./tools/InspectTool";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -281,10 +283,12 @@ export class SampleAppIModelApp {
     ToolWithDynamicSettings.register(this.sampleAppNamespace);
     OpenComponentExamplesPopoutTool.register(this.sampleAppNamespace);
     OpenCustomPopoutTool.register(this.sampleAppNamespace);
+    OpenViewDialogTool.register(this.sampleAppNamespace);
     OpenViewPopoutTool.register(this.sampleAppNamespace);
     RemoveSavedContentLayoutTool.register(this.sampleAppNamespace);
     RestoreSavedContentLayoutTool.register(this.sampleAppNamespace);
     SaveContentLayoutTool.register(this.sampleAppNamespace);
+    InspectUiItemInfoTool.register(this.sampleAppNamespace);
 
     // Register editing tools
     if (this.allowWrite) {
@@ -736,7 +740,7 @@ async function main() {
 
   const mapLayerOpts = {
     BingMaps: SampleAppIModelApp.testAppConfiguration.bingMapsKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.bingMapsKey } : undefined,
-    Mapbox: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
+    MapboxImagery: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "access_token", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
   };
 
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});

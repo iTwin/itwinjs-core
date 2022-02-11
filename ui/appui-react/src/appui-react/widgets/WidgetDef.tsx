@@ -143,6 +143,7 @@ export class WidgetDef {
   private _canPopout?: boolean;
   private _floatingContainerId?: string;
   private _defaultFloatingPosition: PointProps | undefined;
+  private _initialProps?: WidgetProps;
 
   private _tabLocation: TabLocation = {
     side: "left",
@@ -180,6 +181,7 @@ export class WidgetDef {
   public get isFloating(): boolean { return this.state === WidgetState.Floating; }
   public get iconSpec(): string | ConditionalStringValue | React.ReactNode { return this._iconSpec; }
   public get badgeType(): BadgeType | undefined { return this._badgeType; }
+  public get initialProps(): WidgetProps | undefined { return this._initialProps; }
 
   public get widgetType(): WidgetType { return this._widgetType; }
   public set widgetType(type: WidgetType) { this._widgetType = type; }
@@ -207,6 +209,7 @@ export class WidgetDef {
   }
 
   public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
+    me._initialProps = widgetProps;
     if (widgetProps.label)
       me.setLabel(widgetProps.label);
     else if (widgetProps.labelKey)

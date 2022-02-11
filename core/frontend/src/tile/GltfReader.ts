@@ -6,13 +6,18 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
-import { Angle, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import {
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, Id64String, JsonUtils, Logger, utf8ToString,
+} from "@itwin/core-bentley";
+import {
+  Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Polyface, Range2d, Range3d, Transform, Vector3d,
+} from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { getImageSourceFormatForMimeType, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -22,9 +27,11 @@ import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
+import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { TileContent } from "./internal";
+import { RealityTileGeometry, TileContent } from "./internal";
+import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -136,6 +143,12 @@ interface GltfChildOfRootProperty extends GltfProperty {
   name?: string;
 }
 
+interface DracoMeshCompression {
+  bufferView: GltfId;
+  // TEXCOORD_0, POSITION, etc
+  attributes: { [k: string]: number | undefined };
+}
+
 /** A unit of geometry belonging to a [[GltfMesh]]. */
 interface GltfMeshPrimitive extends GltfProperty {
   /** Maps the name of each mesh attribute semantic to the Id of the [[GltfAccessor]] providing the attribute's data. */
@@ -160,6 +173,11 @@ interface GltfMeshPrimitive extends GltfProperty {
        */
       indices?: GltfId;
     };
+    /** The [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md) extension
+     * allows glTF to support geometry compressed with Draco geometry compression.
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    KHR_draco_mesh_compression?: DracoMeshCompression;
   };
 }
 
@@ -686,8 +704,8 @@ export class GltfReaderProps {
 }
 
 /** The GltfMeshData contains the raw GLTF mesh data. If the data is suitable to create a [[RealityMesh]] directly, basically in the quantized format produced by
-  * ContextCapture, then a RealityMesh is created directly from this data.  Otherwise, the mesh primitive is populated from the raw data and a MeshPrimitive
-  * is generated.   The MeshPrimitve path is much less efficient but should be rarely used.
+  * ContextCapture, then a RealityMesh is created directly from this data. Otherwise, the mesh primitive is populated from the raw data and a MeshPrimitive
+  * is generated. The MeshPrimitve path is much less efficient but should be rarely used.
   *
   * @internal
   */
@@ -749,6 +767,11 @@ function colorFromMaterial(material: GltfMaterial, isTransparent: boolean): Colo
 
 class TransformStack {
   private readonly _stack: Array<Transform | undefined> = [];
+
+  public constructor(transform?: Transform) {
+    if (transform)
+      this._stack.push(transform);
+  }
 
   public get transform(): Transform | undefined {
     return this._stack.length > 0 ? this._stack[this._stack.length - 1] : undefined;
@@ -878,6 +901,7 @@ export abstract class GltfReader {
   protected readonly _sceneNodes: GltfId[];
   protected _computedContentRange?: ElementAlignedBox3d;
   private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) => compareTextureKeys(lhs, rhs));
+  private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -922,6 +946,27 @@ export abstract class GltfReader {
     return this.traverseNodes(this._sceneNodes);
   }
 
+  private getTileTransform(transformToRoot?: Transform, pseudoRtcBias?: Vector3d): Transform | undefined {
+    let transform;
+
+    if (this._returnToCenter || pseudoRtcBias || this._yAxisUp || transformToRoot) {
+      if (this._returnToCenter)
+        transform = Transform.createTranslation(this._returnToCenter.clone());
+      else if (pseudoRtcBias)
+        transform = Transform.createTranslationXYZ(pseudoRtcBias.x, pseudoRtcBias.y, pseudoRtcBias.z);
+      else
+        transform = Transform.createIdentity();
+
+      if (this._yAxisUp)
+        transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
+
+      if (transformToRoot)
+        transform = transformToRoot.multiplyTransformTransform(transform);
+    }
+
+    return transform;
+  }
+
   protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf };
@@ -955,24 +1000,11 @@ export abstract class GltfReader {
     else
       renderGraphic = this._system.createGraphicList(renderGraphicList);
 
-    let transform;
+    const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
     let range = contentRange;
-    if (this._returnToCenter || pseudoRtcBias || this._yAxisUp || transformToRoot) {
-      if (this._returnToCenter)
-        transform = Transform.createTranslation(this._returnToCenter.clone());
-      else if (pseudoRtcBias)
-        transform = Transform.createTranslationXYZ(pseudoRtcBias.x, pseudoRtcBias.y, pseudoRtcBias.z);
-      else
-        transform = Transform.createIdentity();
-
-      if (this._yAxisUp)
-        transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
-
-      if (transformToRoot)
-        transform = transformToRoot.multiplyTransformTransform(transform);
-
-      range = transform.inverse()!.multiplyRange(contentRange);
-    }
+    const invTransform = transform?.inverse();
+    if (invTransform)
+      range = invTransform.multiplyRange(contentRange);
 
     if (featureTable)
       renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
@@ -991,9 +1023,21 @@ export abstract class GltfReader {
     };
   }
 
-  private graphicFromMeshData(gltfMesh: GltfMeshData, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams) {
+  public readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals = false, needParams = false): RealityTileGeometry {
+    const transformStack = new TransformStack(this.getTileTransform(transformToRoot));
+    const polyfaces: Polyface[] = [];
+    for (const nodeKey of this._sceneNodes) {
+      const node = this._nodes[nodeKey];
+      if (node)
+        this.readNodeAndCreatePolyfaces(polyfaces, node, transformStack, needNormals, needParams);
+    }
+
+    return { polyfaces };
+  }
+
+  private graphicFromMeshData(gltfMesh: GltfMeshData, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     if (!gltfMesh.points || !gltfMesh.pointRange)
-      return;
+      return gltfMesh.primitive.getGraphics(meshGraphicArgs, this._system, instances);
 
     const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
@@ -1045,18 +1089,7 @@ export abstract class GltfReader {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
         const meshGraphicArgs = new MeshGraphicArgs();
-        const meshes = [];
-        for (const primitive of nodeMesh.primitives) {
-          const geometry = this.readMeshPrimitive(primitive, featureTable, thisBias);
-          if (geometry) {
-            meshes.push(geometry);
-            if (this._computedContentRange && geometry.pointRange) {
-              const invTransform = thisTransform?.inverse();
-              const meshRange = invTransform ? invTransform.multiplyRange(geometry.pointRange) : geometry.pointRange;
-              this._computedContentRange.extendRange(meshRange);
-            }
-          }
-        }
+        const meshes = this.readMeshPrimitives(node, featureTable, thisTransform, thisBias);
 
         let renderGraphic: RenderGraphic | undefined;
         if (0 !== meshes.length) {
@@ -1097,6 +1130,68 @@ export abstract class GltfReader {
 
     transformStack.pop();
     return TileReadStatus.Success;
+  }
+
+  private readNodeAndCreatePolyfaces(polyfaces: Polyface[], node: GltfNode, transformStack: TransformStack, needNormals: boolean, needParams: boolean): void {
+    // IMPORTANT: Do not return without popping this node from the stack.
+    transformStack.push(node);
+    const meshes = this.readMeshPrimitives(node);
+
+    for (const mesh of meshes) {
+      const polyface = this.polyfaceFromGltfMesh(mesh, transformStack.transform, needNormals, needParams);
+      if (polyface)
+        polyfaces.push(polyface);
+    }
+
+    if (node.children) {
+      for (const childId of node.children) {
+        const child = this._nodes[childId];
+        if (child)
+          this.readNodeAndCreatePolyfaces(polyfaces, child, transformStack, needNormals, needParams);
+      }
+    }
+  }
+
+  private polyfaceFromGltfMesh(mesh: GltfMeshData, transform: Transform | undefined , needNormals: boolean, needParams: boolean): Polyface | undefined {
+    if (!mesh.pointQParams || !mesh.points || !mesh.indices)
+      return undefined;
+
+    const { points, pointQParams, normals, uvs, uvQParams, indices } = mesh;
+
+    const includeNormals = needNormals && undefined !== normals;
+    const includeParams = needParams && undefined !== uvQParams && undefined !== uvs;
+
+    const polyface = IndexedPolyface.create(includeNormals, includeParams);
+    for (let i = 0; i < points.length; ) {
+      const point = pointQParams.unquantize(points[i++], points[i++], points[i++]);
+      if (transform)
+        transform.multiplyPoint3d(point, point);
+
+      polyface.addPoint(point);
+    }
+
+    if (includeNormals && normals)
+      for (let i = 0; i < normals.length; )
+        polyface.addNormal(OctEncodedNormal.decodeValue(normals[i++]));
+
+    if (includeParams && uvs && uvQParams)
+      for (let i = 0; i < uvs.length; )
+        polyface.addParam(uvQParams.unquantize(uvs[i++], uvs[i++]));
+
+    let j = 0;
+    for (const index of indices) {
+      polyface.addPointIndex(index);
+      if (includeNormals)
+        polyface.addNormalIndex(index);
+
+      if (includeParams)
+        polyface.addParamIndex(index);
+
+      if (0 === (++j % 3))
+        polyface.terminateFacet();
+    }
+
+    return polyface;
   }
 
   // ###TODO what is the actual type of `json`?
@@ -1269,6 +1364,28 @@ export abstract class GltfReader {
     return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
   }
 
+  private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d): GltfMeshData[] {
+    const meshes: GltfMeshData[] = [];
+    for (const meshKey of getNodeMeshIds(node)) {
+      const nodeMesh = this._meshes[meshKey];
+      if (nodeMesh?.primitives) {
+        for (const primitive of nodeMesh.primitives) {
+          const mesh = this.readMeshPrimitive(primitive, featureTable, thisBias);
+          if (mesh) {
+            meshes.push(mesh);
+            if (this._computedContentRange && mesh.pointRange) {
+              const invTransform = thisTransform?.inverse();
+              const meshRange = invTransform ? invTransform.multiplyRange(mesh.pointRange) : mesh.pointRange;
+              this._computedContentRange.extendRange(meshRange);
+            }
+          }
+        }
+      }
+    }
+
+    return meshes;
+  }
+
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
     const materialName = JsonUtils.asString(primitive.material);
     const material = 0 < materialName.length ? this._materials[materialName] : undefined;
@@ -1338,16 +1455,9 @@ export abstract class GltfReader {
       }
     }
 
-    if (primitive.extensions?.KHR_draco_mesh_compression) {
-      return undefined; // Defer Draco decompression until web workers implementation.
-      /*
-      const dracoExtension = primitive.extensions.KHR_draco_mesh_compression;
-      const bufferView = this._bufferViews[dracoExtension.bufferView];
-      if (undefined === bufferView) return undefined;
-      const bufferData = this._binaryData.subarray(bufferView.byteOffset, bufferView.byteOffset + bufferView.byteLength);
-
-      return DracoDecoder.readDracoMesh(mesh, primitive, bufferData, dracoExtension.attributes); */
-    }
+    const draco = primitive.extensions?.KHR_draco_mesh_compression;
+    if (draco)
+      return this.readDracoMeshPrimitive(mesh.primitive, draco) ? mesh : undefined;
 
     this.readBatchTable(mesh.primitive, primitive);
 
@@ -1402,6 +1512,69 @@ export abstract class GltfReader {
     }
 
     return mesh;
+  }
+
+  private readDracoMeshPrimitive(mesh: Mesh, ext: DracoMeshCompression): boolean {
+    const draco = this._dracoMeshes.get(ext);
+    if (!draco || "triangle-list" !== draco.topology)
+      return false;
+
+    const indices = draco.indices?.value;
+    if (!indices || (indices.length % 3) !== 0)
+      return false;
+
+    const pos = draco.attributes.POSITION?.value;
+    if (!pos || (pos.length % 3) !== 0)
+      return false;
+
+    // ###TODO: I have yet to see a draco-encoded mesh with interleaved attributes. Currently not checking.
+    const triangle = new Triangle();
+    for (let i = 0; i < indices.length; i += 3) {
+      triangle.setIndices(indices[i], indices[i + 1], indices[i + 2]);
+      mesh.addTriangle(triangle);
+    }
+
+    let posRange: Range3d;
+    const bbox = draco.header?.boundingBox;
+    if (bbox) {
+      posRange = Range3d.createXYZXYZ(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
+    } else {
+      posRange = Range3d.createNull();
+      for (let i = 0; i < pos.length; i += 3)
+        posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
+    }
+
+    mesh.points.params.setFromRange(posRange);
+    const pt = Point3d.createZero();
+    for (let i = 0; i < pos.length; i += 3) {
+      pt.set(pos[i], pos[i + 1], pos[i + 2]);
+      mesh.points.add(pt);
+    }
+
+    const normals = draco.attributes.NORMAL?.value;
+    if (normals && (normals.length % 3) === 0) {
+      const vec = Vector3d.createZero();
+      for (let i = 0; i < normals.length; i += 3) {
+        vec.set(normals[i], normals[i + 1], normals[i + 2]);
+        mesh.normals.push(OctEncodedNormal.fromVector(vec));
+      }
+    }
+
+    const uvs = draco.attributes.TEXCOORD_0?.value;
+    if (uvs && (uvs.length & 2) === 0)
+      for (let i = 0; i < uvs.length; i += 2)
+        mesh.uvParams.push(new Point2d(uvs[i], uvs[i + 1]));
+
+    const batchIds = draco.attributes._BATCHID?.value;
+    if (batchIds && mesh.features) {
+      const featureIndices = [];
+      for (const batchId of batchIds)
+        featureIndices.push(batchId);
+
+      mesh.features.setIndices(featureIndices);
+    }
+
+    return true;
   }
 
   private deduplicateVertices(mesh: GltfMeshData): boolean {
@@ -1695,6 +1868,35 @@ export abstract class GltfReader {
   }
 
   protected async resolveResources(): Promise<void> {
+    // Load any external images and buffers.
+    await this._resolveResources();
+
+    // If any meshes are draco-compressed, dynamically load the decoder module and then decode the meshes.
+    const dracoMeshes: DracoMeshCompression[] = [];
+
+    for (const node of this.traverseScene()) {
+      for (const meshId of getNodeMeshIds(node)) {
+        const mesh = this._meshes[meshId];
+        if (mesh?.primitives)
+          for (const primitive of mesh.primitives)
+            if (primitive.extensions?.KHR_draco_mesh_compression)
+              dracoMeshes.push(primitive.extensions.KHR_draco_mesh_compression);
+      }
+    }
+
+    if (dracoMeshes.length === 0)
+      return;
+
+    try {
+      const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
+      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
+    } catch (err) {
+      Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
+      Logger.logException(FrontendLoggerCategory.Render, err);
+    }
+  }
+
+  private async _resolveResources(): Promise<void> {
     // ###TODO traverse the scene nodes to find resources referenced by them, instead of resolving everything - some resources may not
     // be required for the scene.
     const promises: Array<Promise<void>> = [];
@@ -1715,6 +1917,22 @@ export abstract class GltfReader {
       await Promise.all(promises);
     } catch (_) {
     }
+  }
+
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
+    const bv = this._bufferViews[ext.bufferView];
+    if (!bv || !bv.byteLength)
+      return;
+
+    let buf = this._buffers[bv.buffer]?.resolvedBuffer;
+    if (!buf)
+      return;
+
+    const offset = bv.byteOffset ?? 0;
+    buf = buf.subarray(offset, offset + bv.byteLength);
+    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
+    if (mesh)
+      this._dracoMeshes.set(ext, mesh);
   }
 
   private resolveUrl(uri: string): string | undefined {

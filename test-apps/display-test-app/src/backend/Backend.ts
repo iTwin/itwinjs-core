@@ -193,13 +193,18 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
-    const authClient = await ElectronMainAuthorization.create({
-      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-    });
-    opts.iModelHost.authorizationClient = authClient;
+    let authClient;
+    if (process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID && process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI && process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES) {
+      authClient = new ElectronMainAuthorization({
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID,
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI,
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES,
+      });
+      opts.iModelHost.authorizationClient = authClient;
+    }
     await ElectronHost.startup(opts);
+    if (authClient)
+      await authClient.signInSilent();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
   } else if (ProcessDetector.isIOSAppBackend) {
     await IOSHost.startup(opts);

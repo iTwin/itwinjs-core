@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
 
 .uifw-card {
   background-color: $buic-background-card;
+  @include uicore-z-index(content-card-popup);
 
   .uifw-card-content {
     padding: 6px 10px;

@@ -15,13 +15,14 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
-  EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps,
-  GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
-  IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps,
-  ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, RpcActivity,
-  SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData,
-  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps,
+  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
+  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
+  QueryOptions, QueryOptionsBuilder, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
+  SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
+  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -2026,9 +2027,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         return;
       }
 
-      if (undefined !== ret.error) {
+      if (ret.error) {
         reject(new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`));
-      } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
+      } else if (ret.result && typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
         const res = ret.result;
         const iModelId = this._iModel.iModelId;
 

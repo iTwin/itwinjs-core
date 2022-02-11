@@ -10,6 +10,7 @@ import { CertaConfig } from "../../CertaConfig";
 
 export class ElectronTestRunner {
   public static readonly supportsCoverage = false;
+  public static readonly supportsCleanup = false;
   public static async initialize(config: CertaConfig): Promise<void> {
     // Restart under electron if we're running in node
     if (!("electron" in process.versions))

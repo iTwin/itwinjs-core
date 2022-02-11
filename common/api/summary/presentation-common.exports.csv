@@ -283,6 +283,7 @@ public;PropertyEditorSliderParameters
 public;PropertyEditorSpecification
 public;PropertyGroup 
 public;PropertyGroupingValue
+deprecated;PropertyGroupingValue
 public;PropertyInfo
 public;PropertyInfo
 public;PropertyInfoJSON

@@ -1838,7 +1838,7 @@ describe("Frontstage local storage wrapper", () => {
 
       afterEach(() => {
         UiItemsManager.unregister("TestUi2Provider");
-        FrontstageManager.clearFrontstageDefs();
+        FrontstageManager.clearFrontstageProviders();
         FrontstageManager.setActiveFrontstageDef(undefined);
         FrontstageManager.nineZoneSize = undefined;
       });
