@@ -557,12 +557,26 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   public set unitsProvider(unitsProvider: UnitsProvider) {
+    this.setUnitsProvider(unitsProvider); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }
+
+  /** async method to set a units provider and reload caches */
+  public async setUnitsProvider(unitsProvider: UnitsProvider) {
     this._unitsProvider = unitsProvider;
+    // force all cached data to be reinitialized
+    await IModelApp.quantityFormatter.onInitialized();
+
+    // force default tool to start so any tool that may be using cached data will not be using bad data.
+    if (IModelApp.toolAdmin)
+      await IModelApp.toolAdmin.startDefaultTool();
     this.onUnitsProviderChanged.emit();
   }
 
-  public resetToUseInternalUnitsProvider() {
-    this.unitsProvider = new BasicUnitsProvider();
+  public async resetToUseInternalUnitsProvider() {
+    if (this._unitsProvider instanceof BasicUnitsProvider)
+      return;
+
+    await this.setUnitsProvider(new BasicUnitsProvider());
   }
 
   public async registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean) {

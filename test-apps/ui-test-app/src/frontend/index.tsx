@@ -397,11 +397,9 @@ export class SampleAppIModelApp {
       const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
       const context = new SchemaContext();
       context.addLocater(schemaLocater);
-      IModelApp.quantityFormatter.unitsProvider = new SchemaUnitProvider(context);
-      await IModelApp.quantityFormatter.onInitialized();
+      await IModelApp.quantityFormatter.setUnitsProvider (new SchemaUnitProvider(context));
     } catch (_) {
-      IModelApp.quantityFormatter.resetToUseInternalUnitsProvider(); // this resets it to internal BasicUnitsProvider
-      await IModelApp.quantityFormatter.onInitialized();
+      await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider(); // this resets it to internal BasicUnitsProvider
     }
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
