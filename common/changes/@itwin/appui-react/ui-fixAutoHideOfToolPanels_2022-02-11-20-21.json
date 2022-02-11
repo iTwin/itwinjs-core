@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Update ToolbarAutoHidePopup context when widgets autohide.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
