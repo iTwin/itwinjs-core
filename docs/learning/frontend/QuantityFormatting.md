@@ -13,7 +13,7 @@ The [QuantityFormatter]($frontend) is a class that formats and parses quantity v
 
 ### QuantityType
 
-There are nine built-in quantity types, see [QuantityType]($frontend). The QuantityFormatter defines default formatting specification for each of these types per unit system. During IModelApp initialization a call to initialize the QuantityFormatter is made. During this initialization `FormatterSpecs` [FormatterSpec]($quantity) and `ParserSpecs` [ParserSpec]($quantity) for each quantity type are generated asynchronously. This allows caller to get these objects via synchronous calls. Any time the unit system is set, a format is overridden, or a units provider is assigned the cached specs are updated.
+There are nine built-in quantity types, see [QuantityType]($frontend). The QuantityFormatter defines default formatting specification for each of these types per unit system. During IModelApp initialization a call to initialize the QuantityFormatter is made. During this initialization [FormatterSpec]($quantity)s and [ParserSpec]($quantity)s for each quantity type are generated asynchronously. This allows caller to get these objects via synchronous calls. Any time the unit system is set, a format is overridden, or a units provider is assigned the cached specs are updated.
 
  Custom quantity types that implement the [CustomQuantityTypeDefinition]($frontend) interface may also be registered with the QuantityFormatter, see method `registerQuantityType`. See example implementation of a custom type [here](https://github.com/iTwin/itwinjs-core/blob/5905cb1a48c4d790b5389d7f0ea141bc3ce95f23/test-apps/ui-test-app/src/frontend/api/BearingQuantityType.ts).
 
@@ -175,15 +175,143 @@ The default angle format (FormatProps) is used during parsing to supply the defa
 
 ## Quantity Package
 
-The Quantity Package `@itwinjs\core-quantity` defines interfaces and classes used to specify formatting and a provide info to parse strings into quantity values. It should be noted that most of the classes and interfaces used in this package are based on the native C++ code that formats quantities on the back-end. The purpose of this frontend package was to produce the same formatted strings without requiring constant calls to the backend to do the work.
+The Quantity Package `@itwinjs\core-quantity` defines interfaces and classes used to specify formatting and provide information needed to parse strings into quantity values. It should be noted that most of the classes and interfaces used in this package are based on the native C++ code that formats quantities on the back-end. The purpose of this frontend package was to produce the same formatted strings without requiring constant calls to the backend to do the work.
 
 Common Terms:
 
-- Unit/UnitProps - A named unit of measure which can be located by its name or label.
-- UnitsProvider - A class that will provide UnitProps given its name or label. It will also provide [UnitConversion]($quantity) to convert from one unit to another.
-- Phenomenon - The physical quantity that this unit measures (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
+- Unit/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label.
+- [UnitsProvider]($quantity) - A class that will also locate the UnitProps for a unit given name or label. This class will also provide a [UnitConversion]($quantity) to convert from one unit to another.
+- Unit Family/[Phenomenon]($ecschema-metadata) - The physical quantity that this unit measures (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
 - Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel.
 - Format/FormatProp - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
   - CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
 - FormatterSpec - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all units defined in the format. This is done to avoid any async calls by the UnitsProvider during the formatting process.
-- ParserSpec - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all other units in the same phenomenon. This is done to avoid async calls by the UnitsProvider and also done to allow a user to enter 43" even when in "metric" unit system and have the string properly converted to meters.
+- ParserSpec - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all other units in the same phenomenon. This is done to avoid async calls by the UnitsProvider and also done to allow a user to enter `43in` even when in "metric" unit system and have the string properly converted to meters.
+
+### FormatProps
+
+For a detailed description of all the setting supported by FormatProp see the EC documentation on [Format](../../bis/ec/ec-format.md).
+
+### Formatting Examples
+
+Below are a couple examples of formatting values using methods directly from the @itwinjs/core-quantity package. The UnitsProvider used in the examples below can be seen [here](https://github.com/iTwin/itwinjs-core/blob/f3c8ee1d57ebb3e7b097a7e09201969fb57773ea/core/quantity/src/test/TestUtils/TestHelper.ts#L79). As discussed above, there are UnitProviders that can read units defined in the active IModel, and there is a basic provider that can be used when not IModel is open.
+
+#### Numeric Format
+
+  The example below uses a simple numeric format and generates formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units, the unit passed in is the unit returned with the unit label appended if "showUnitLabel" trait is set.
+
+```ts
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes", "use1000Separator"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: " ",
+      thousandSeparator: ",",
+      decimalSeparator: ".",
+    };
+
+    // generate a Format from FormatProps to display 4 decimal place value
+    const format = new Format("4d");
+    // load the format props into the format, since unit provider is used to validate units the call must be asynchronous.
+    await format.fromJSON(unitsProvider, formatData);
+
+    // define input/output unit
+    const unitName = "Units.FT";
+    const unitLabel = "ft";
+    const unitFamily = "Units.LENGTH";
+    const inUnit = new BasicUnit(unitName, unitLabel, unitFamily);
+
+    const magnitude = -12.5416666666667;
+
+    // create the formatter spec - the name is not used by the formatter it is only
+    // provided so user can cache formatter spec and then retrieve spec via its name.
+    const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+
+    // apply the formatting held in FormatterSpec
+    const formattedValue = spec.applyFormatting(magnitude);
+
+    // result in formattedValue of "-12.5417 ft"
+```
+
+#### Composite Format
+
+The composite format below we will provide a unit in meters and produce a formatted string showing feet and inches to a precision of 1/8th inch.
+
+```ts
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "-",
+        units: [
+          {
+            label: "'",
+            name: "Units.FT",
+          },
+          {
+            label: "\"",
+            name: "Units.IN",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 8,
+      type: "Fractional",
+      uomSeparator: "",
+    };
+
+    // generate a Format from FormatProps to display feet and inches
+    const format = new Format("fi8");
+    // load the format props into the format, since unit provider is used to validate units the call must be asynchronous.
+    await format.fromJSON(unitsProvider, formatData);
+
+    // define input unit
+    const unitName = "Units.M";
+    const unitLabel = "m";
+    const unitFamily = "Units.LENGTH";
+    const inUnit = new BasicUnit(unitName, unitLabel, unitFamily);
+
+    const magnitude = 1.0;
+
+    // create the formatter spec - the name is not used by the formatter it is only
+    // provided so user can cache formatter spec and then retrieve spec via its name.
+    const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+
+    // apply the formatting held in FormatterSpec
+    const formattedValue = spec.applyFormatting(magnitude);
+
+    // result in formattedValue of 3'-3 3/8"
+```
+
+### Parsing Values
+
+```ts
+  // define output unit and also used to determine the unit family used during parsing
+  const outUnit = await unitsProvider.findUnitByName("Units.M");
+
+  const formatData = {
+    composite: {
+      includeZero: true,
+      spacer: "-",
+      units: [{ label: "'", name: "Units.FT" }, { label: "\"", name: "Units.IN" }],
+    },
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 8,
+    type: "Fractional",
+    uomSeparator: "",
+  };
+
+  // generate a Format from FormatProps used to determine possible labels
+  const format = new Format("test");
+  await format.fromJSON(unitsProvider, formatData);
+
+  const inString = "2FT 6IN";
+
+  // create the parserSpec spec which will hold all unit conversions from possible units to the output unit
+  const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit, unitsProvider);
+  const parseResult = parserSpec.parseToQuantityValue(inString);
+  //  parseResult.value 0.762  (value in meters)
+```
+
+#### AlternateUnitLabelsProvider
+
+The [AlternateUnitLabelsProvider]($quantity) interface allows users to  specify a set of alternate labels which may be encountered during parsing of strings. By default only the input unit label and the labels of other units in the same Unit Family, as well as the label of units in a Composite format are used.
