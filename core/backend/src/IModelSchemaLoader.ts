@@ -7,31 +7,34 @@ import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb } from "./IModelDb";
-import type { Schema as SchemaType } from "@itwin/ecschema-metadata";
+import type { ISchemaLocater as ISchemaLocaterType, Schema as SchemaType } from "@itwin/ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-var-requires  */
+
+let Schema: any;
+let SchemaContext: any;
+let SchemaKey: any;
+let SchemaMatchType: any;
+let ECVersion: any;
 
 /** The ecschema-metadata package is now an optional dependency. If the package
  * has not been installed, the exception is caught below. All the types will be
  * undefined, and an exception is throw in the IModelSchemaLoader constructor.
  */
-function loadMetadata(): any {
+function loadMetadata(): boolean {
   try {
-    return require("@itwin/ecschema-metadata");
+    const metadata = require("@itwin/ecschema-metadata");
+    Schema = metadata.Schema;
+    SchemaContext = metadata.SchemaContext;
+    SchemaKey =metadata.SchemaKey;
+    SchemaMatchType =metadata.SchemaMatchType;
+    ECVersion = metadata.ECVersion;
+    return true;
   } catch {
+    return false;
   }
-  return undefined;
 }
-
-const metadata = loadMetadata();
-const Schema = metadata ? metadata.Schema : undefined;
-const SchemaContext = metadata ? metadata.SchemaContext : undefined;
-const SchemaKey = metadata ? metadata.SchemaKey : undefined;
-const SchemaMatchType = metadata ?  metadata.SchemaMatchType : undefined;
-const ECVersion = metadata ? metadata.ECVersion : undefined;
-const ISchemaLocater = metadata ? metadata.ISchemaLocater : undefined;
-type ISchemaLocaterType = typeof ISchemaLocater;
 
 /**
  * A utility class for retrieving EC Schema objects from an iModel. Loaded schemas are held in memory within
@@ -46,7 +49,7 @@ export class IModelSchemaLoader {
   /** @internal */
   public constructor(private _iModel: IModelDb) {
     // If the ecschema-metadata package was not installed inform the caller.
-    if (metadata === undefined)
+    if (!loadMetadata())
       throw new IModelError(IModelStatus.NotFound, "IModelSchemaLoader requires that @bentley/ecschema-metadata be installed.");
 
     this._context = new SchemaContext();

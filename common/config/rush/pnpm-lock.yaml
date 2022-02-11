@@ -103,6 +103,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/multiparty': ^0.0.31
       '@types/node': 14.14.31
+      '@types/proxyquire': ^1.3.28
       '@types/semver': ^5.5.0
       '@types/sinon': ^9.0.0
       '@types/ws': ^7.0.0
@@ -120,6 +121,7 @@ importers:
       mocha: ^8.3.2
       multiparty: ^4.2.1
       nyc: ^15.1.0
+      proxyquire: ^2.1.3
       rimraf: ^3.0.2
       semver: ^5.5.0
       sinon: ^9.0.2
@@ -149,6 +151,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/multiparty': 0.0.31
       '@types/node': 14.14.31
+      '@types/proxyquire': 1.3.28
       '@types/semver': 5.5.0
       '@types/sinon': 9.0.11
       '@types/ws': 7.4.7
@@ -161,6 +164,7 @@ importers:
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
       nyc: 15.1.0
+      proxyquire: 2.1.3
       rimraf: 3.0.2
       sinon: 9.2.4
       typescript: 4.4.4
@@ -8715,6 +8719,10 @@ packages:
       '@types/retry': 0.12.1
     dev: true
 
+  /@types/proxyquire/1.3.28:
+    resolution: {integrity: sha512-SQaNzWQ2YZSr7FqAyPPiA3FYpux2Lqh3HWMZQk47x3xbMCqgC/w0dY3dw9rGqlweDDkrySQBcaScXWeR+Yb11Q==}
+    dev: true
+
   /@types/puppeteer/2.0.1:
     resolution: {integrity: sha512-G8vEyU83Bios+dzs+DZGpAirDmMqRhfFBJCkFrg+A5+6n5EPPHxwBLImJto3qjh0mrBXbLBCyuahhhtTrAfR5g==}
     dependencies:
@@ -13441,6 +13449,14 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: true
 
+  /fill-keys/1.0.2:
+    resolution: {integrity: sha1-mo+jb06K1jTjv2tPPIiCVRRS6yA=}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      is-object: 1.0.2
+      merge-descriptors: 1.0.1
+    dev: true
+
   /fill-range/4.0.0:
     resolution: {integrity: sha1-1USBHUKPmOsGpj3EAtJAPDKMOPc=}
     engines: {node: '>=0.10.0'}
@@ -14922,6 +14938,10 @@ packages:
   /is-obj/2.0.0:
     resolution: {integrity: sha512-drqDG3cbczxxEJRoOXcOjtdp1J/lyp1mNn0xaznRs8+muBhgQcrnbspox5X5fOw0HnMnbfDzvnEMEtqDEJEo8w==}
     engines: {node: '>=8'}
+
+  /is-object/1.0.2:
+    resolution: {integrity: sha512-2rRIahhZr2UWb45fIOuvZGpFtz0TyOZLf32KxBbSoUCeZR495zCKlWUKKUByk3geS2eAs7ZAABt0Y/Rx0GiQGA==}
+    dev: true
 
   /is-path-cwd/2.2.0:
     resolution: {integrity: sha512-w942bTcih8fdJPJmQHFzkS76NEP8Kzzvmw92cXsazb8intwLqPibPPdXf4ANdKV3rYMuuQYGIWtvz9JilB3NFQ==}
@@ -16868,6 +16888,10 @@ packages:
       yargs: 16.2.0
       yargs-parser: 20.2.4
       yargs-unparser: 2.0.0
+
+  /module-not-found-error/1.0.1:
+    resolution: {integrity: sha1-z4tP9PKWQGdNbN0CsOO8UjwrvcA=}
+    dev: true
 
   /moment-timezone/0.5.34:
     resolution: {integrity: sha512-3zAEHh2hKUs3EXLESx/wsgw6IQdusOT8Bxm3D9UrHPQR7zlMmzwybC8zHEM1tQ4LJwP7fcxrWr8tuBg05fFCbg==}
@@ -18846,6 +18870,14 @@ packages:
 
   /proxy-from-env/1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
+
+  /proxyquire/2.1.3:
+    resolution: {integrity: sha512-BQWfCqYM+QINd+yawJz23tbBM40VIGXOdDw3X344KcclI/gtBbdWF6SlQ4nK/bYhF9d27KYug9WzljHC6B9Ysg==}
+    dependencies:
+      fill-keys: 1.0.2
+      module-not-found-error: 1.0.1
+      resolve: 1.19.0
+    dev: true
 
   /prr/1.0.1:
     resolution: {integrity: sha1-0/wRS6BplaRexok/SEzrHXj19HY=}
