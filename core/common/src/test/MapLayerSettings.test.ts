@@ -68,7 +68,6 @@ describe("ImageMapLayerSettings", () => {
     expect(output.url).to.equal(expected.url);
     expect(output.transparency).to.equal(expected.transparency);
     expect(output.transparentBackground).to.equal(expected.transparentBackground);
-    expect(output.isBase).to.equal(expected.isBase);
 
     if (expected.subLayers) {
       expect(output.subLayers).not.to.be.undefined;
