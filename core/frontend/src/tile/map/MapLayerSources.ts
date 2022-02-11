@@ -100,7 +100,10 @@ export class MapLayerSource {
   public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
     // When MapLayerSetting is created from a MapLayerSource, sub-layers and credentials need to be set separately.
     const layerSettings = ImageMapLayerSettings.fromJSON({ ...this, subLayers });
-    layerSettings?.setCredentials(this.userName, this.password);
+    if (this.userName !== undefined || this.password !== undefined) {
+      layerSettings?.setCredentials(this.userName, this.password);
+    }
+
     return layerSettings;
   }
 
