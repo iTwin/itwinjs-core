@@ -14,14 +14,14 @@
   $arrow-shadow: $icon-shadow;
   position: relative;
 
-  > * {
+  >* {
     &:not(.components-triangle) {
       height: 100%;
       width: 100%;
     }
   }
 
-  > .components-triangle {
+  >.components-triangle {
     border-radius: 0;
     position: absolute;
     right: $margin-from-triangle-to-stroke;
@@ -36,7 +36,7 @@
     );
   }
 
-  &:active > .components-triangle {
+  &:active >.components-triangle {
     filter: $no-shadow;
 
     @include triangle-bottom-right-color($pressed-icon-color);
@@ -44,7 +44,7 @@
 
   &.components-active {
     &:not(:active):not(.components-disabled) {
-      > .components-triangle {
+      >.components-triangle {
         filter: $no-shadow;
 
         @include triangle-bottom-right-color($active-icon-color);
@@ -53,7 +53,7 @@
   }
 
   &.components-disabled {
-    > .components-triangle {
+    >.components-triangle {
       @include triangle-bottom-right-color($disabled-icon-color);
     }
   }
@@ -63,7 +63,7 @@
       color: $disabled-icon-color;
     }
 
-    > .components-triangle {
+    >.components-triangle {
       @include triangle-bottom-right-color($disabled-icon-color);
     }
   }
