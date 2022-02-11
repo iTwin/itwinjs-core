@@ -14,7 +14,7 @@ import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
+import { OffsetOptions, PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -43,7 +43,6 @@ import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
 import * as fs from "fs";
 import { RecursiveCurveProcessor } from "../../curve/CurveProcessor";
-import { OffsetOptions } from "../../curve/OffsetOptions";
 
 const diegoPathA = [
   {
@@ -670,13 +669,12 @@ function testOffsetSingle(ck: Checker, allGeometry: GeometryQuery[], delta: Poin
           const offsetDetail = offsetCurve!.closestPoint(basePt);
           if (ck.testDefined(offsetDetail, "Closest point to offset computed") && offsetDetail !== undefined) {
             let projectsToVertex = offsetDetail.fraction === 0 || offsetDetail.fraction === 1;
-            if (!projectsToVertex && cp instanceof LineString3d) {
-              const scaledParam = offsetDetail.fraction * (cp.numPoints() - 1);
+            if (!projectsToVertex && offsetDetail.curve instanceof LineString3d) {
+              const scaledParam = offsetDetail.fraction * (offsetDetail.curve.numPoints() - 1);
               projectsToVertex = Geometry.isAlmostEqualNumber(scaledParam, Math.trunc(scaledParam));
             }
             if (!projectsToVertex) {  // avoid measuring projections to linestring vertices as they usually exceed offset distance
               if (!ck.testCoordinateWithToleranceFactor(offsetDetail.point.distance(basePt), Math.abs(options.leftOffsetDistance), tolFactor, "Offset distance spot check")) {
-                GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseCurve, delta.x, delta.y);
                 GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, basePt, 0.05, delta.x, delta.y);
                 GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, offsetDetail.point, 0.05, delta.x, delta.y);
               }

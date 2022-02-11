@@ -5,16 +5,9 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Clipper } from "../clipping/ClipUtils";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BezierCurve3d } from "../bspline/BezierCurve3d";
-import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
-import { DirectSpiral3d } from "./spiral/DirectSpiral3d";
-import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -25,15 +18,21 @@ import { Transform } from "../geometry3d/Transform";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { Newton1dUnboundedApproximateDerivative, NewtonEvaluatorRtoR } from "../numerics/Newton";
 import { GaussMapper } from "../numerics/Quadrature";
-import { Arc3d } from "./Arc3d";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
-import { CurveXYOffsetContext } from "./internalContexts/PolygonOffsetContext";
-import { OffsetOptions } from "./OffsetOptions";
+import { LineString3d } from "./LineString3d";
+import type { Arc3d } from "./Arc3d";
+import type { LineSegment3d } from "./LineSegment3d";
+import type { BSplineCurve3d } from "../bspline/BSplineCurve";
+import type { BezierCurve3d } from "../bspline/BezierCurve3d";
+import type { DirectSpiral3d } from "./spiral/DirectSpiral3d";
+import type { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
+import type { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
+import type { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
+import type { AkimaCurve3d } from "../bspline/AkimaCurve3d";
+import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 
 /** Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
  *  - "arc" => [[Arc3d]]
@@ -46,12 +45,12 @@ import { OffsetOptions } from "./OffsetOptions";
  * @see [[AnyCurvePrimitive]] for a union type that supports compile-time type narrowing.
  * @public
  */
-export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve";
+ export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve";
 
 /** Union type for subclasses of [[CurvePrimitive]]. Specific subclasses can be discriminated at compile- or run-time using [[CurvePrimitive.curvePrimitiveType]].
  * @public
  */
-export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d | AkimaCurve3d;
+ export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d | AkimaCurve3d;
 
 /** function signature for callback which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive.
  * @public
@@ -616,18 +615,11 @@ export abstract class CurvePrimitive extends GeometryQuery {
 
   /**
    * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
-   * * The default implementation returns a B-spline curve approximation of the offset.
    * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
-   *   for an aggregate instance (one whose collectCurvePrimitivesGo() override recurses, e.g., LineString3d,
-   *   CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
+   *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
    */
-  public constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
-    const options = OffsetOptions.create(offsetDistanceOrOptions);
-    const handler = new CurveXYOffsetContext(this, options.leftOffsetDistance);
-    this.emitStrokableParts(handler, options.strokeOptions);
-    return handler.claimResult();
-  }
+  public abstract constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
 }
 
 /** Intermediate class for managing the parentCurve announcements from an IStrokeHandler */

@@ -24,7 +24,7 @@ import { Path } from "../../curve/Path";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Geometry } from "../../Geometry";
-import { JointOptions } from "../../curve/OffsetOptions";
+import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
 
 const chainCollectorInputDirectory = "./src/test/testInputs/ChainCollector/";
 const noOffset0 = "aecc_alignment";

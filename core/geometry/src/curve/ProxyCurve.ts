@@ -15,9 +15,9 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import { LineString3d } from "./LineString3d";
-import { OffsetOptions } from "./OffsetOptions";
-import { StrokeOptions } from "./StrokeOptions";
+import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
+import type { LineString3d } from "./LineString3d";
+import type { StrokeOptions } from "./StrokeOptions";
 
 /**
  * A ProxyCurve is expected to be used as a base class for

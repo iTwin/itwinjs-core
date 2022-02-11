@@ -6,12 +6,9 @@
  * @module Curve
  */
 
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { BSplineCurveOps } from "../../bspline/BSplineCurveOps";
-import { InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Arc3d } from "../Arc3d";
@@ -22,9 +19,9 @@ import { CurvePrimitive } from "../CurvePrimitive";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
-import { JointOptions, OffsetOptions } from "../OffsetOptions";
 import { Path } from "../Path";
 import { RegionOps } from "../RegionOps";
+import { StrokeOptions } from "../StrokeOptions";
 
 /**
  * Classification of contortions at a joint.
@@ -37,6 +34,124 @@ enum JointMode {
   Trim = -1,
   JustGeometry = 3,
   Gap = 4,
+}
+
+/**
+ * * Control parameters for joint construction.
+ * * Decision order is:
+ *   * if turn angle is greater than minArcDegrees, make an arc.
+ *   * if turn angle is less than or equal maxChamferTurnDegrees, extend curves along tangent to single intersection point.
+ *   * if turn angle is greater than maxChamferTurnDegrees,  construct multiple lines that are tangent to the turn circle "from the outside",
+ *           with each equal turn less than maxChamferTurnDegrees.
+ *   * otherwise make single edge.
+ * @public
+ */
+ export class JointOptions {
+  /** smallest arc to construct.
+   * * If this control angle is large, arcs are never created.
+   */
+  public minArcDegrees = 180.0;
+  public maxChamferTurnDegrees = 90;
+  /** Offset distance, positive to left of base curve. */
+  public leftOffsetDistance: number = 0;
+  /** Whether to offset elliptical arcs as elliptical arcs (true) or as B-spline curves (false, default). */
+  public preserveEllipticalArcs = false;
+
+  /** Construct JointOptions.
+   * * leftOffsetDistance is required
+   * * minArcDegrees and maxChamferDegrees are optional.
+   */
+  constructor(leftOffsetDistance: number, minArcDegrees = 180, maxChamferDegrees = 90, preserveEllipticalArcs = false) {
+    this.leftOffsetDistance = leftOffsetDistance;
+    this.minArcDegrees = minArcDegrees;
+    this.maxChamferTurnDegrees = maxChamferDegrees;
+    this.preserveEllipticalArcs = preserveEllipticalArcs;
+  }
+
+  /** Return a deep clone. */
+  public clone(): JointOptions {
+    return new JointOptions(this.leftOffsetDistance, this.minArcDegrees, this.maxChamferTurnDegrees, this.preserveEllipticalArcs);
+  }
+
+  /** Copy values of input options */
+  public setFrom(other: JointOptions) {
+    this.leftOffsetDistance = other.leftOffsetDistance;
+    this.minArcDegrees = other.minArcDegrees;
+    this.maxChamferTurnDegrees = other.maxChamferTurnDegrees;
+    this.preserveEllipticalArcs = other.preserveEllipticalArcs;
+  }
+
+  /**
+   * Parse a number or JointOptions up to JointOptions:
+   * * If leftOffsetDistanceOptions is a number, create a JointOptions with other options set to default values.
+   * * If leftOffsetDistanceOrOptions is a JointOptions, return it unchanged.
+   * @param leftOffsetDistanceOrOptions
+   */
+  public static create(leftOffsetDistanceOrOptions: number | JointOptions): JointOptions {
+    if (leftOffsetDistanceOrOptions instanceof JointOptions)
+      return leftOffsetDistanceOrOptions;
+    // if (Number.isFinite(leftOffsetDistanceOrOptions))
+    return new JointOptions(leftOffsetDistanceOrOptions);
+  }
+  /** return true if the options indicate this amount of turn should be handled with an arc. */
+  public needArc(theta: Angle): boolean {
+    return Math.abs(theta.degrees) >= this.minArcDegrees;
+  }
+  /** Test if turn by theta should be output as single point. */
+  public numChamferPoints(theta: Angle): number {
+    const degrees = Math.abs(theta.degrees);
+    const stepDegrees = Geometry.clamp(this.maxChamferTurnDegrees, 10, 120);
+    if (degrees <= stepDegrees)
+      return 1;
+    return Math.ceil(degrees / stepDegrees);
+  }
+}
+
+/**
+ * Options for offsetting a curve.
+ * @public
+ */
+ export class OffsetOptions {
+  /** Options for offsetting and joining CurvePrimitives */
+  public jointOptions: JointOptions;
+  /** Options for generating a B-spline curve offset */
+  public strokeOptions: StrokeOptions;
+
+  /** Options that are provided are captured. */
+  constructor(offsetDistanceOrOptions: number | JointOptions, strokeOptions?: StrokeOptions) {
+    this.jointOptions = JointOptions.create(offsetDistanceOrOptions);
+    this.strokeOptions = (strokeOptions !== undefined) ? strokeOptions : StrokeOptions.createForCurves();
+  }
+
+  public get minArcDegrees(): number { return this.jointOptions.minArcDegrees; }
+  public set minArcDegrees(value: number) { this.jointOptions.minArcDegrees = value; }
+  public get maxChamferTurnDegrees(): number { return this.jointOptions.maxChamferTurnDegrees; }
+  public set maxChamferTurnDegrees(value: number) { this.jointOptions.maxChamferTurnDegrees = value; }
+  public get leftOffsetDistance(): number { return this.jointOptions.leftOffsetDistance; }
+  public set leftOffsetDistance(value: number) { this.jointOptions.leftOffsetDistance = value; }
+  public get preserveEllipticalArcs(): boolean { return this.jointOptions.preserveEllipticalArcs; }
+  public set preserveEllipticalArcs(value: boolean) { this.jointOptions.preserveEllipticalArcs = value; }
+
+  /** Convert variant input into OffsetOptions.
+   * * If a JointOptions is provided, it is captured.
+   * * If an OffsetOptions is provided, a reference to it is returned. */
+  public static create(offsetDistanceOrOptions: number | JointOptions | OffsetOptions): OffsetOptions {
+    if (offsetDistanceOrOptions instanceof OffsetOptions)
+      return offsetDistanceOrOptions;
+    return new OffsetOptions(offsetDistanceOrOptions);
+  }
+
+  /** Convert variant input into offset distance */
+  public static getOffsetDistance(offsetDistanceOrOptions: number | JointOptions | OffsetOptions): number {
+    if (typeof offsetDistanceOrOptions === "number")
+      return offsetDistanceOrOptions;
+    return offsetDistanceOrOptions.leftOffsetDistance;
+  }
+
+  /** Return a deep clone. */
+  public clone(): OffsetOptions {
+    return new OffsetOptions(this.jointOptions.clone(), this.strokeOptions.clone());
+  }
 }
 
 /**
@@ -508,67 +623,6 @@ export class PolygonWireOffsetContext {
         return Path.create(chain);
     }
     return undefined;
-  }
-}
-
-/**
- * Context for constructing the xy-offset of a CurvePrimitive by interpolating the xy-offsets of computed strokes.
- * @internal
- */
-export class CurveXYOffsetContext implements IStrokeHandler {
-  private _offsetDistance: number;
-  private _fitOptions: InterpolationCurve3dOptions;
-
-  // temporary workspace
-  private _p0 = Point3d.createZero();
-  private _p1 = Point3d.createZero();
-  private _v0 = Vector3d.createZero();
-  private _v1 = Vector3d.createZero();
-  private _r0 = Ray3d.createZero();
-
-  public constructor(cp: CurvePrimitive, offsetDistance: number) {
-    this._offsetDistance = offsetDistance;
-    this._fitOptions = new InterpolationCurve3dOptions();
-    const startTangent = cp.fractionToPointAndUnitTangent(0.0, this._r0).direction.clone();
-    const endTangent = cp.fractionToPointAndUnitTangent(1.0, this._r0).direction.negate();  // points into curve
-    this._fitOptions.startTangent = startTangent;
-    this._fitOptions.endTangent = endTangent;
-    if (this._fitOptions.closed = (cp.startPoint(this._p0).isAlmostEqual(cp.endPoint(this._p1)) && startTangent.isParallelTo(endTangent, true)))
-      this._fitOptions.isChordLenKnots = 1;
-  }
-  private pushOffsetPoint(xyz: Point3d, tangent: Vector3d) {
-    if (!Geometry.isSmallMetricDistance(tangent.x) || !Geometry.isSmallMetricDistance(tangent.y))
-      this._fitOptions.fitPoints.push(xyz.plusScaled(tangent.unitPerpendicularXY(this._v0), this._offsetDistance));
-  }
-  public needPrimaryGeometryForStrokes() { return true; }
-  public startParentCurvePrimitive(_cp: CurvePrimitive) { }
-  public startCurvePrimitive(_cp: CurvePrimitive) { }
-  public endCurvePrimitive(_cp: CurvePrimitive) { }
-  public endParentCurvePrimitive(_cp: CurvePrimitive) { }
-  public announceIntervalForUniformStepStrokes(cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number): void {
-    for (let i = 0; i <= numStrokes; ++i) { // announce both start and end; adjacent duplicates will be filtered by c2 cubic fit logic
-      const fraction = Geometry.interpolate(fraction0, i / numStrokes, fraction1);
-      const ray = cp.fractionToPointAndDerivative(fraction, this._r0);
-      this.pushOffsetPoint(ray.origin, ray.direction);
-    }
-  }
-  public announceSegmentInterval(_cp: CurvePrimitive, point0: Point3d, point1: Point3d, numStrokes: number, _fraction0: number, _fraction1: number): void {
-    if (numStrokes > 0) {
-      const tangent = Vector3d.createStartEnd(point0, point1, this._v1);
-      for (let i = 0; i <= numStrokes; ++i) { // announce both start and end; adjacent duplicates will be filtered by c2 cubic fit logic
-        this.pushOffsetPoint(point0.interpolate(i / numStrokes, point1, this._p0), tangent);
-      }
-    }
-  }
-  public announcePointTangent(xyz: Point3d, _fraction: number, tangent: Vector3d): void {
-    this.pushOffsetPoint(xyz, tangent);
-  }
-  /**
-   * Construct a C2 cubic interpolating B-spline curve through the collected xy-offset points.
-   * @returns the xy-offset curve
-   */
-  public claimResult(): BSplineCurve3d | undefined {
-    return BSplineCurveOps.createThroughPointsC2Cubic(this._fitOptions);
   }
 }
 

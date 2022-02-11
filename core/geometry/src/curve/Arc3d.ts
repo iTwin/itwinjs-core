@@ -28,8 +28,9 @@ import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./Cur
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { LineString3d } from "./LineString3d";
-import { OffsetOptions } from "./OffsetOptions";
 import { StrokeOptions } from "./StrokeOptions";
+import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
+import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 /**
@@ -1026,7 +1027,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         return undefined; // zero radius
       }
     }
-    return super.constructOffsetXY(offsetDistanceOrOptions);
+    // default impl
+    const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
   }
 }
 /**

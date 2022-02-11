@@ -27,7 +27,7 @@ import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveChain, Cur
 import { CurveCurve } from "./CurveCurve";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
-import { CurveChainWireOffsetContext, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { CurveChainWireOffsetContext, JointOptions, OffsetOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
 import { Path } from "./Path";
@@ -42,7 +42,6 @@ import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } fr
 import { UnionRegion } from "./UnionRegion";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { ParityRegion } from "./ParityRegion";
-import { JointOptions, OffsetOptions } from "./OffsetOptions";
 /**
  * Possible return types from
  * @public

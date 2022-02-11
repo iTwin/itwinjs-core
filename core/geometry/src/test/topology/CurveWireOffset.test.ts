@@ -23,7 +23,7 @@ import { Arc3d } from "../../curve/Arc3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { JointOptions } from "../../curve/OffsetOptions";
+import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
 
 /**
  * Exercise PolygonWireOffset and output to a file.
