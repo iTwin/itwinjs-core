@@ -117,6 +117,7 @@ public;ColorDef
 public;ColorDefProps = number
 internal;ColorIndex
 public;CommonLoggerCategory
+beta;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
@@ -404,9 +405,7 @@ beta;MapImageryProps
 beta;MapImagerySettings
 beta;MapLayerKey
 beta;MapLayerProps = ImageMapLayerProps | ModelMapLayerProps
-beta;MapLayerPropsBase
-beta;MapLayerSettings = ImageMapLayerSettings | ModelMapLayerSettings
-beta;class MapLayerSettingsBase
+beta;class MapLayerSettings
 beta;MapSubLayerProps
 beta;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
