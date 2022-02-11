@@ -417,7 +417,7 @@ export class AccuSnap implements Decorator {
     if (!this.errorKey)
       return;
 
-    this.explanation = IModelApp.localization.getLocalizedStringWithNamespace("iModelJs", this.errorKey);
+    this.explanation = IModelApp.localization.getLocalizedString(`iModelJs:${this.errorKey}`);
     if (!this.explanation)
       return;
 
