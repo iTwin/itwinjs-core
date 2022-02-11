@@ -58,10 +58,12 @@ export class MapSubLayerSettings {
     this.parent = parent;
     this.children = children;
   }
+
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static fromJSON(json: MapSubLayerProps): MapSubLayerSettings {
     return new MapSubLayerSettings(json.name, json.title, json.visible, (json.id === json.name) ? undefined : json.id, json.parent, json.children);
   }
+
   public toJSON(): MapSubLayerProps {
     const props: MapSubLayerProps = { name: this.name, visible: this.visible };
 
@@ -95,10 +97,12 @@ export class MapSubLayerSettings {
     };
     return MapSubLayerSettings.fromJSON(props)!;
   }
+
   /** @internal */
   public displayMatches(other: MapSubLayerSettings): boolean {
     return this.name === other.name && this.visible === other.visible;
   }
+
   /** return true if this sublayer is named. */
   public get isNamed(): boolean { return this.name.length > 0; }
 
@@ -112,56 +116,67 @@ export class MapSubLayerSettings {
   public get idString(): string { return (typeof this.id === "number") ? this.id.toString(10) : this.id; }
 }
 
-/** JSON representation of the basic settings associated with a map layer.  One or more map layers may be included within a [[MapImageryProps]] object.
+/** JSON representation of properties common to both [[ImageMapLayerProps]] and [[ModelMapLayerProps]].
  * @see [[MapImageryProps]]
  * @beta
  */
-export interface MapLayerPropsBase {
+export interface CommonMapLayerProps {
   /** Controls visibility of layer. Defaults to 'true'. */
   visible?: boolean;
 
-  /** Name */
+  /** A user-friendly name for the layer. */
   name: string;
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing,
-   * or false to indicate the transparency should not be overridden. Default value: 0.
-   * If omitted, defaults to 0. */
+   * or false to indicate the transparency should not be overridden.
+   * Default value: 0.
+   */
   transparency?: number;
-  /** True to indicate background is transparent.  Defaults to 'true'. */
+  /** True to indicate background is transparent.
+   * Default: true.
+   */
   transparentBackground?: boolean;
-
 }
 
-/** JSON representation of the settings for an image based map layer. Extends [[MapLayerPropsBase]] that includes basic settings and adds the image based properties.
- * @see [[MapImageryProps]]
- * @see [[ModelMapLayerProps]] for the model map layer properties.
+/** JSON representation of an [[ImageMapLayer]].
+ * @see [[MapImagerySettings]].
  * @beta
  */
-export interface ImageMapLayerProps extends MapLayerPropsBase {
+export interface ImageMapLayerProps extends CommonMapLayerProps {
   /** URL */
   url: string;
   /** Identifies the map layers source.*/
   formatId: string;
   /** Source layers. If undefined all layers are displayed. */
   subLayers?: MapSubLayerProps[];
-
   /** Access Key for the Layer, like a subscription key or access token.
-   * TODO This does not belong in the props object. It should never be persisted.
+   * ###TODO This does not belong in the props object. It should never be persisted.
    */
   accessKey?: MapLayerKey;
-  /** Is a base layer.  Defaults to 'false'. */
-  isBase?: boolean;
-}
-/** JSON representation of the settings for an model based map layer. Extends [[MapLayerPropsBase]] that includes basic settings and adds the id of the layer model.
- * @see [[MapImageryProps]]
- * @see [[ImageMapLayerProps]] for the image map layer properties.
- * @beta
- */
-export interface ModelMapLayerProps extends MapLayerPropsBase {
-  modelId: Id64String;
+
+  /** @internal */
+  modelId?: never;
 }
 
-/**
- * Map layer properties, either [[ImageMapLayerProps]] or [[ModelMapLayerProps]]
+/** JSON representation of a [[ModelMapLayer]].
+ * @see [[MapImagerySettings]].
+ * @beta
+ */
+export interface ModelMapLayerProps extends CommonMapLayerProps {
+  /** The Id of the [GeometricModel]($backend) containing the geometry to be drawn by the layer. */
+  modelId: Id64String;
+
+  /** @internal */
+  url?: never;
+  /** @internal */
+  formatId?: never;
+  /** @internal */
+  subLayers?: never;
+  /** @internal */
+  accessKey?: never;
+}
+
+/** JSON representation of a [[MapLayerSettings]].
+ * @see [[MapImagerySettings]].
  * @beta
  */
 export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
@@ -188,7 +203,8 @@ export abstract class MapLayerSettings {
   public readonly transparency: number;
   public readonly transparentBackground: boolean;
   public abstract get allSubLayersInvisible(): boolean;
-  public abstract clone(changedProps: Partial<MapLayerPropsBase>): MapLayerSettings;
+  public abstract clone(changedProps: Partial<MapLayerProps>): MapLayerSettings;
+  public abstract toJSON(): MapLayerProps;
 
   /** @internal */
   protected constructor(name: string, visible = true, transparency: number = 0, transparentBackground = true) {
@@ -197,23 +213,18 @@ export abstract class MapLayerSettings {
     this.transparentBackground = transparentBackground;
     this.transparency = transparency;
   }
-  /** Construct from JSON, performing validation and applying default values for undefined fields.
-   *  Creates [[ImageMapLayerSettings]] if [[ImageMapLayerProps.url]] exists, [[ModelMapLayerSettings]] if [[ModelMapLayerProps.url]] exists or undefined otherwise.
-   */
-  public static fromJSON(json: MapLayerPropsBase): MapLayerSettings | undefined {
-    if ("url" in json)
-      return ImageMapLayerSettings.fromJSON(json as ImageMapLayerProps);
-    else if ("modelId" in json)
-      return ModelMapLayerSettings.fromJSON(json as ModelMapLayerProps);
-    assert (false);
-    return undefined;
+
+  /** Create a map layer settings from its JSON representation. */
+  public static fromJSON(props: MapLayerProps): MapLayerSettings {
+    return undefined !== props.modelId ? ModelMapLayerSettings.fromJSON(props) : ImageMapLayerSettings.fromJSON(props);
   }
 
-  /** return base JSON representation of this MapLayerSettings object
-   * @internal
-   */
-  public toJSON(): MapLayerPropsBase {
-    const props: MapLayerPropsBase = { name: this.name };
+  /** @internal */
+  protected _toJSON(): CommonMapLayerProps {
+    const props: CommonMapLayerProps = {
+      name: this.name,
+      visible: this.visible,
+    };
 
     if (0 !== this.transparency)
       props.transparency = this.transparency;
@@ -221,13 +232,11 @@ export abstract class MapLayerSettings {
     if (this.transparentBackground === false)
       props.transparentBackground = this.transparentBackground;
 
-    props.visible = this.visible;
-
     return props;
   }
 
   /** @internal */
-  protected cloneProps(changedProps: Partial<MapLayerPropsBase>): MapLayerPropsBase {
+  protected cloneProps(changedProps: Partial<MapLayerProps>): CommonMapLayerProps {
     return {
       name: undefined !== changedProps.name ? changedProps.name : this.name,
       visible: undefined !== changedProps.visible ? changedProps.visible : this.visible,
@@ -238,14 +247,7 @@ export abstract class MapLayerSettings {
 
   /** @internal */
   public displayMatches(other: MapLayerSettings): boolean {
-    if (this.name !== other.name
-      || this.visible !== other.visible
-      || this.transparency !== other.transparency
-      || this.transparentBackground !== other.transparentBackground) {
-      return false;
-    }
-
-    return true;
+    return this.name === other.name && this.visible === other.visible && this.transparency === other.transparency && this.transparentBackground === other.transparentBackground;
   }
 
   /** Return a unique string identifying the layers source... The URL for image layer or modelID for model layer  */
@@ -270,52 +272,44 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public userName?: string;
   public password?: string;
   public accessKey?: MapLayerKey;
-  public readonly isBase: boolean;
   public readonly subLayers: MapSubLayerSettings[];
   public override get source(): string { return this.url; }
 
   /** @internal */
-  protected constructor(url: string, name: string, formatId: string, visible = true,
-    jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0,
-    transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey) {
-    super(name, visible, transparency, transparentBackground);
-    this.formatId = formatId;
-    this.isBase = isBase;
-    this.url = url;
-    this.userName = userName;
-    this.password = password;
-    this.accessKey = accessKey;
-    this.subLayers = new Array<MapSubLayerSettings>();
-    if (jsonSubLayers !== undefined) {
-      let hasUnnamedGroups = false;
-      for (const jsonSubLayer of jsonSubLayers) {
-        const subLayer = MapSubLayerSettings.fromJSON(jsonSubLayer);
-        if (undefined !== subLayer) {
-          this.subLayers.push(subLayer);
-          if (subLayer.children?.length !== 0 && !subLayer.isNamed && !hasUnnamedGroups)
-            hasUnnamedGroups = true;
-        }
-      }
+  protected constructor(props: ImageMapLayerProps) {
+    const transparentBackground = props.transparentBackground ?? true;
+    super(props.name, props.visible, props.transparency, transparentBackground);
+
+    this.formatId = props.formatId;
+    this.url = props.url;
+    this.accessKey = props.accessKey;
+    this.subLayers = [];
+    if (!props.subLayers)
+      return;
+
+    for (const subLayerProps of props.subLayers) {
+      const subLayer = MapSubLayerSettings.fromJSON(subLayerProps);
+      if (subLayer)
+        this.subLayers.push(subLayer);
     }
   }
-  /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static override fromJSON(json: ImageMapLayerProps): ImageMapLayerSettings {
-    const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new this(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, undefined, undefined, json.accessKey);
+
+  public static override fromJSON(props: ImageMapLayerProps): ImageMapLayerSettings {
+    return new this(props);
   }
+
   /** return JSON representation of this MapLayerSettings object */
   public override toJSON(): ImageMapLayerProps {
-    const props: ImageMapLayerProps = {...super.toJSON(), url: this.url, formatId: this.formatId, isBase: this.isBase };
-    if (this.subLayers.length > 0) {
-      props.subLayers = [];
-      this.subLayers.forEach((subLayer) => {
-        const subLayerJson = subLayer.toJSON();
-        if (subLayerJson)
-          props.subLayers!.push(subLayerJson);
-      });
-    }
+    const props = super._toJSON() as ImageMapLayerProps;
+    props.url = this.url;
+    props.formatId = this.formatId;
+
+    if (this.subLayers.length > 0)
+      props.subLayers = this.subLayers.map((x) => x.toJSON());
+
     return props;
   }
+
   /** Create a copy of this MapLayerSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
    * @returns A MapLayerSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
@@ -330,16 +324,19 @@ export class ImageMapLayerSettings extends MapLayerSettings {
 
     return clone;
   }
+
   /** @internal */
   protected override cloneProps(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerProps {
-    const baseProps = super.cloneProps(changedProps);
-    return {... baseProps,
-      formatId: undefined !== changedProps.formatId ? changedProps.formatId : this.formatId,
-      url: undefined !== changedProps.url ? changedProps.url : this.url,
-      accessKey: undefined !== changedProps.accessKey ? changedProps.accessKey : this.accessKey,
-      subLayers: undefined !== changedProps.subLayers ? changedProps.subLayers : this.subLayers,
-    };
+    const props = super.cloneProps(changedProps) as ImageMapLayerProps;
+
+    props.formatId = changedProps.formatId ?? this.formatId;
+    props.url = changedProps.url ?? this.url;
+    props.accessKey = changedProps.accessKey ?? this.accessKey;
+    props.subLayers = changedProps.subLayers ?? this.subLayers;
+
+    return props;
   }
+
   /** @internal */
   public override displayMatches(other: MapLayerSettings): boolean {
     if (! (other instanceof ImageMapLayerSettings) || !super.displayMatches(other))
@@ -355,6 +352,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
 
     return true;
   }
+
   /** Return a sublayer matching id -- or undefined if not found */
   public subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined {
     return id === undefined ? undefined : this.subLayers.find((subLayer) => subLayer.id === id);
@@ -422,6 +420,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.password = password;
   }
 }
+
 /** Normalized representation of a [[ModelMapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
  * Model map layers are produced from models, typically from two dimensional geometry that may originate in a GIS system.
  * One or more map layers may be included within [[MapImagerySettings]] object.
@@ -439,16 +438,20 @@ export class ModelMapLayerSettings extends MapLayerSettings {
     super(name, visible, transparency, transparentBackground);
     this.modelId = modelId;
   }
+
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static override fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings {
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
     return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground);
   }
+
   /** return JSON representation of this MapLayerSettings object */
   public override toJSON(): ModelMapLayerProps {
-    const props = super.toJSON();
-    return { ... props, modelId: this.modelId };
+    const props = super._toJSON() as ModelMapLayerProps;
+    props.modelId = this.modelId;
+    return props;
   }
+
   /** Create a copy of this MapLayerSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
    * @returns A MapLayerSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
@@ -456,11 +459,14 @@ export class ModelMapLayerSettings extends MapLayerSettings {
   public clone(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerSettings {
     return ModelMapLayerSettings.fromJSON(this.cloneProps(changedProps));
   }
+
   /** @internal */
   protected override cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps {
-    const baseProps = super.cloneProps(changedProps);
-    return {... baseProps, modelId: undefined !== changedProps.modelId ? changedProps.modelId : this.modelId };
+    const props = super.cloneProps(changedProps) as ModelMapLayerProps;
+    props.modelId = changedProps.modelId ?? this.modelId;
+    return props;
   }
+
   /** @internal */
   public override displayMatches(other: MapLayerSettings): boolean {
     if (!(other instanceof ModelMapLayerSettings) || !super.displayMatches(other))
@@ -468,6 +474,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
 
     return this.modelId === other.modelId;
   }
+
   /** Return true if all sublayers are invisible (always false as model layers do not include sublayers). */
   public get allSubLayersInvisible(): boolean {
     return false;
@@ -519,16 +526,19 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
   }
 
   /** @internal */
-  public override cloneProps(changedProps: Partial<MapLayerProps>): BaseMapLayerProps {
+  public override cloneProps(changedProps: Partial<BaseMapLayerProps>): BaseMapLayerProps {
     const props = super.cloneProps(changedProps) as BaseMapLayerProps;
-    if (this.provider)
+
+    if (changedProps.provider)
+      props.provider = changedProps.provider;
+    else if (this.provider)
       props.provider = this.provider.toJSON();
 
     return props;
   }
 
   /** Create a copy of this layer. */
-  public override clone(changedProps: Partial<MapLayerProps>): BaseMapLayerSettings {
+  public override clone(changedProps: Partial<BaseMapLayerProps>): BaseMapLayerSettings {
     const prevUrl = this.url;
     const clone = BaseMapLayerSettings.fromJSON(this.cloneProps(changedProps))!;
 
@@ -559,6 +569,7 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
             imagerySet = "AerialWithLabels";
             break;
         }
+
         name = `Bing Maps: ${ImageMapLayerSettings.mapTypeName(provider.type)}`;
         url = `https://dev.virtualearth.net/REST/v1/Imagery/Metadata/${imagerySet}?o=json&incl=ImageryProviders&key={bingKey}`;
         break;
@@ -577,6 +588,7 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
             url = "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/";
             break;
         }
+
         break;
     }
 
@@ -585,7 +597,6 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
       formatId,
       url,
       transparentBackground: false,
-      isBase: true,
       visible: !options?.invisible,
       transparency: options?.transparency,
     });

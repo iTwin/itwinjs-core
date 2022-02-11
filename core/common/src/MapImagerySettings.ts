@@ -8,7 +8,7 @@
 
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerPropsBase, MapLayerSettings } from "./MapLayerSettings";
+import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
 
 /** JSON representation of a [[BaseLayerSettings]].
  * @beta
@@ -26,8 +26,8 @@ export type BaseLayerProps = BaseMapLayerProps | ColorDefProps;
  */
 export interface MapImageryProps {
   backgroundBase?: BaseLayerProps;
-  backgroundLayers?: MapLayerPropsBase[];
-  overlayLayers?: MapLayerPropsBase[];
+  backgroundLayers?: MapLayerProps[];
+  overlayLayers?: MapLayerProps[];
 }
 
 /** The base layer for a [[MapImagerySettings]].
@@ -56,7 +56,7 @@ export class MapImagerySettings {
   private _backgroundLayers = new Array<MapLayerSettings>();
   private _overlayLayers = new Array<MapLayerSettings>();
 
-  private constructor(base: BaseLayerSettings, backgroundLayerProps?: MapLayerPropsBase[], overlayLayersProps?: MapLayerPropsBase[]) {
+  private constructor(base: BaseLayerSettings, backgroundLayerProps?: MapLayerProps[], overlayLayersProps?: MapLayerProps[]) {
     this._backgroundBase = base;
     if (backgroundLayerProps) {
       for (const layerProps of backgroundLayerProps) {
