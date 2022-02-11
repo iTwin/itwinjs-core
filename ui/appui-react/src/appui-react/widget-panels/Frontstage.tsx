@@ -227,17 +227,17 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
       onKeyDown={handleKeyDown}
       role="presentation"
     >
-        <NineZone
-          dispatch={dispatch}
-          labels={labels}
-          state={nineZone}
-          tab={tabElement}
-          showWidgetIcon={showWidgetIcon}
-          toolSettingsContent={toolSettingsContent}
-          widgetContent={widgetContent}
-        >
-          {widgetPanelsFrontstage}
-        </NineZone>
+      <NineZone
+        dispatch={dispatch}
+        labels={labels}
+        state={nineZone}
+        tab={tabElement}
+        showWidgetIcon={showWidgetIcon}
+        toolSettingsContent={toolSettingsContent}
+        widgetContent={widgetContent}
+      >
+        {widgetPanelsFrontstage}
+      </NineZone>
     </div>
   );
 }
