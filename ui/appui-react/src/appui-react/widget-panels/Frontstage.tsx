@@ -16,6 +16,7 @@ import * as React from "react";
 import { assert, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
 import { Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
+import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
   addPanelWidget, addTab, addWidgetTabToFloatingPanel, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
   createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, isFloatingLocation,
@@ -41,24 +42,29 @@ import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
 import { useEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 import { FrameworkRootState } from "../redux/StateManager";
 import { useSelector } from "react-redux";
+import { useUiVisibility } from "../hooks/useUiVisibility";
 
 const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "middle", "end"];
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const activeModalFrontstageInfo = useActiveModalFrontstageInfo();
+  const uiIsVisible = useUiVisibility();
+
   return (
     <>
-      <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
-      <WidgetPanelsToolSettings />
-      <WidgetPanels
-        className="uifw-widgetPanels"
-        centerContent={<WidgetPanelsToolbars />}
-      >
-        <WidgetPanelsFrontstageContent />
-      </WidgetPanels>
-      <WidgetPanelsStatusBar />
-      <FloatingWidgets />
+      <ToolbarPopupAutoHideContext.Provider value={!uiIsVisible}>
+        <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
+        <WidgetPanelsToolSettings />
+        <WidgetPanels
+          className="uifw-widgetPanels"
+          centerContent={<WidgetPanelsToolbars />}
+        >
+          <WidgetPanelsFrontstageContent />
+        </WidgetPanels>
+        <WidgetPanelsStatusBar />
+        <FloatingWidgets />
+      </ToolbarPopupAutoHideContext.Provider>
     </>
   );
 });
