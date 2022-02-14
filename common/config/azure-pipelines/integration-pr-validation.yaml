@@ -23,7 +23,7 @@ variables:
   - group: iTwin.js Integration Test Users
 
 jobs:
-  - job: Node_14_x
+  - job: Integration Tests
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     strategy:
       matrix:
@@ -71,7 +71,7 @@ jobs:
           Node_Version: $(nodeVersion)
 
   # Pull request validation
-  - job: Node_14_x
+  - job: Integration Tests (PR Validation)
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
     pool:
       vmImage: ubuntu-latest
