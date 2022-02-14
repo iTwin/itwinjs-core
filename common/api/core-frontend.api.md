@@ -75,6 +75,7 @@ import { DisplayStyleProps } from '@itwin/core-common';
 import { DisplayStyleSettings } from '@itwin/core-common';
 import { DisplayStyleSettingsProps } from '@itwin/core-common';
 import { EasingFunction } from '@itwin/core-common';
+import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
@@ -204,6 +205,7 @@ import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
 import { Point4d } from '@itwin/core-geometry';
+import { PointCloudReader } from '@itwin/core-orbitgt';
 import { PointWithStatus } from '@itwin/core-common';
 import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
@@ -1881,7 +1883,7 @@ export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
 }
 
-// @beta
+// @public
 export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "checkbox";
@@ -2201,7 +2203,7 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
-// @beta
+// @public
 export interface CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "checkbox" | "text" | "select";
@@ -2219,7 +2221,7 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
     viewport?: never;
 }
 
-// @beta
+// @public
 export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
     isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
     primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
@@ -3210,7 +3212,7 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
-// @beta
+// @public
 export interface FormatterParserSpecsProvider {
     // (undocumented)
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
@@ -3220,7 +3222,7 @@ export interface FormatterParserSpecsProvider {
     quantityType: QuantityTypeArg;
 }
 
-// @beta
+// @public
 export interface FormattingUnitSystemChangedArgs {
     // (undocumented)
     readonly system: UnitSystemKey;
@@ -3522,7 +3524,7 @@ export interface GetPixelDataWorldPointArgs {
     y: number;
 }
 
-// @beta
+// @public
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
 // @public
@@ -4669,7 +4671,6 @@ export class IModelApp {
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @beta
     static get publicPath(): string;
-    // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @beta
@@ -5207,16 +5208,16 @@ export interface IpcAppOptions {
     iModelApp?: IModelAppOptions;
 }
 
-// @beta
+// @public
 export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec;
 
-// @beta
+// @public
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
 
-// @beta
+// @public
 export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
 
-// @beta
+// @public
 export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
 
 // @alpha (undocumented)
@@ -7184,6 +7185,12 @@ export interface OnViewExtentsError {
     onExtentsError?: (status: ViewStatus) => ViewStatus;
 }
 
+// @internal
+export class OPCFormatInterpreter {
+    static getFileReaderFromBlobFileURL(blobFileURL: string): Promise<PointCloudReader>;
+    static getSpatialLocationAndExtents(fileReader: PointCloudReader): Promise<SpatialLocationAndExtents>;
+}
+
 // @beta
 export function openImageDataUrlInNewWindow(url: string, title?: string): void;
 
@@ -7279,7 +7286,7 @@ export enum OutputMessageType {
     Toast = 0
 }
 
-// @beta
+// @public
 export interface OverrideFormatEntry {
     // (undocumented)
     imperial?: FormatProps;
@@ -7613,6 +7620,13 @@ export enum PrimitiveVisibility {
     Uninstanced = 2
 }
 
+// @alpha
+export interface PublisherProductInfo {
+    engine: string;
+    product: string;
+    version: string;
+}
+
 // @internal (undocumented)
 export class QuadId {
     constructor(level: number, column: number, row: number);
@@ -7649,34 +7663,32 @@ export class QuadId {
     row: number;
 }
 
-// @beta
+// @public
 export interface QuantityFormatOverridesChangedArgs {
     readonly overrideEntry?: OverrideFormatEntry;
     readonly typeKey: QuantityTypeKey;
     readonly unitSystem?: UnitSystemKey;
 }
 
-// @beta
+// @public
 export interface QuantityFormatsChangedArgs {
     readonly quantityType: string;
 }
 
-// @beta
+// @public
 export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
     // (undocumented)
     protected _activeFormatSpecsByType: Map<string, FormatterSpec>;
     // (undocumented)
     protected _activeParserSpecsByType: Map<string, ParserSpec>;
+    // (undocumented)
     get activeUnitSystem(): UnitSystemKey;
     // (undocumented)
     protected _activeUnitSystem: UnitSystemKey;
     addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
-    // (undocumented)
     get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
-    // (undocumented)
     clearAllOverrideFormats(): Promise<void>;
-    // (undocumented)
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
@@ -7687,19 +7699,15 @@ export class QuantityFormatter implements UnitsProvider {
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
     // (undocumented)
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
-    // (undocumented)
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
-    // (undocumented)
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
-    // (undocumented)
     getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
     // (undocumented)
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
-    // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     // (undocumented)
@@ -7718,25 +7726,20 @@ export class QuantityFormatter implements UnitsProvider {
     parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult;
     // (undocumented)
     protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition>;
-    // (undocumented)
     get quantityTypesRegistry(): Map<string, QuantityTypeDefinition>;
-    // (undocumented)
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
     reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
-    // (undocumented)
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
-    // (undocumented)
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
     setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider): Promise<void>;
     // (undocumented)
     protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
-    // (undocumented)
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
     }
 
-// @beta
+// @public
 export enum QuantityType {
     // (undocumented)
     Angle = 2,
@@ -7758,10 +7761,10 @@ export enum QuantityType {
     Volume = 4
 }
 
-// @beta
+// @public
 export type QuantityTypeArg = QuantityType | string;
 
-// @beta
+// @public
 export interface QuantityTypeDefinition {
     description: string;
     generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
@@ -7774,7 +7777,7 @@ export interface QuantityTypeDefinition {
     readonly type: QuantityTypeArg;
 }
 
-// @beta
+// @public
 export type QuantityTypeKey = string;
 
 // @beta
@@ -7838,9 +7841,13 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
 
 // @beta
 export interface RealityDataSource {
+    // @alpha
+    getPublisherProductInfo(): Promise<PublisherProductInfo | undefined>;
     // @internal
     getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
     getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    // @alpha
+    getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>;
     // @internal
     getTileContent(name: string): Promise<any>;
     // @internal
@@ -7866,7 +7873,7 @@ export namespace RealityDataSource {
     export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
     // @alpha
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
-    // @internal
+    // @alpha
     export function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
 }
 
@@ -9699,6 +9706,13 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
     abstract get isPlanar(): boolean;
 }
 
+// @alpha
+export interface SpatialLocationAndExtents {
+    isGeolocated: boolean;
+    location: Cartographic | EcefLocation;
+    worldRange: Range3d;
+}
+
 // @public
 export class SpatialLocationModelState extends SpatialModelState {
     // @internal (undocumented)
@@ -10342,7 +10356,7 @@ export interface TerrainTileContent extends TileContent {
     };
 }
 
-// @beta
+// @public
 export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "text";
@@ -10352,7 +10366,7 @@ export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpe
     setString: (props: FormatProps, value: string) => FormatProps;
 }
 
-// @beta
+// @public
 export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "select";
@@ -10411,6 +10425,22 @@ export class ThreeAxes {
     readonly y: Vector3d;
     // (undocumented)
     readonly z: Vector3d;
+}
+
+// @internal
+export interface ThreeDTileFileInfo {
+    rootChildren?: number;
+}
+
+// @internal
+export class ThreeDTileFormatInterpreter {
+    static getFileInfo(rootDocjson: any): ThreeDTileFileInfo;
+    // @alpha
+    static getPublisherProductInfo(rootDocjson: any): PublisherProductInfo;
+    static getSpatialLocationAndExtents(json: any): SpatialLocationAndExtents;
+    static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number;
+    static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined;
+    static transformFromJson(jTrans: number[] | undefined): Transform | undefined;
 }
 
 // @public
@@ -11803,7 +11833,7 @@ export class UniqueTileUserSets {
     remove(user: TileUser): void;
     }
 
-// @beta
+// @public
 export interface UnitFormattingSettingsProvider {
     loadOverrides(imodel: IModelConnection | undefined): Promise<void>;
     readonly maintainOverridesPerIModel: boolean;
@@ -11816,7 +11846,7 @@ export interface UnitFormattingSettingsProvider {
     storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
 }
 
-// @beta
+// @public
 export type UnitNameKey = string;
 
 // @internal (undocumented)

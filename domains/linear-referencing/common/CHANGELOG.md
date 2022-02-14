@@ -1,6 +1,14 @@
 # Change Log - @itwin/linear-referencing-common
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019
+- rename to @itwin/linear-referencing-common
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT

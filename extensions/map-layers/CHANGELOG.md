@@ -1,6 +1,37 @@
 # Change Log - @itwin/map-layers
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Layers could not be added through MapLayers widget when UserPreferences was not set. Fix various issues related to user preferences.
+- Fixed various CSS issues in map-layers widget after recent UI framework changes.
+- No longer display username/password fields by default in the custom map layers dialog: If validation fails and reports authentication is needed, we then ask end-user for credentials.
+- Use QuantityNumericInput for 'Elevation Offset' and 'Model Height' fields instead of hardcoded units.
+- Migrated from Toggle to ToggleSwitch component in map-layers widget
+- rename contextId -> iTwinId
+- Unregister maplayers itemsProvider and widget control on terminate.
+- Now use 'DisplayStyleState.backgroundMapBase' instead of 'DisplayStyleState.changeBaseMapProps' to update the mapImagery.
+- use new @itwin package names
+- rename to @itwin/map-layers
+- remove ClientRequestContext and its subclasses
+- Replace usage of I18N with generic Localization interface.
+-  Renamed an iModel's parent container to iTwin
+- Ignore lint warning for deprecated class
+- Upgraded itwinui-react to 1.16.2. Fixed editor sizes.
+- Update to latest itwinui-react
+- Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js
+- Update to React 17.
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- Replace deprecated ThemedSelect component with iTwinUI-react Select component.
+- Remove itwinUi css overrides.
+- Replaced ui-core Slider with one from iTwinUi-react.
+- Update to latest types/react package
+- Lock down and update version numbers so docs will build.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -259,7 +290,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 ### Updates
 
-- Fix 'npm run cover' that would never complete.
+- Fix 'npm run cover' that would never complete. 
 - Exposed the map masking option in the map layers settings UI.
 - Move map tile trees to Viewport to handle synching correctly
 - Update to latest classnames package
@@ -334,7 +365,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 
 ### Updates
 
-- Restored base layer visibility button in map manager.
+- Restored base layer visibility button in map manager. 
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
 
@@ -359,7 +390,7 @@ Thu, 18 Feb 2021 22:10:13 GMT
 ### Updates
 
 - Provide default props to map-layers widget when used as an extension.
-- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted.
+- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted. 
 
 ## 2.11.2
 Thu, 18 Feb 2021 02:50:59 GMT

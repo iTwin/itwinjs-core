@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Added non-existent property to EntityProps to make the compiler discriminate between EntityProps and Entity.",
+      "comment": "",
       "type": "none"
     }
   ],

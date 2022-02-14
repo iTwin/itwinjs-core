@@ -85,7 +85,7 @@ internal;CesiumIonAssetProvider
 internal;ChangeFlag
 public;ChangeFlags
 public;ChangeViewedModel2dOptions
-beta;CheckboxFormatPropEditorSpec 
+public;CheckboxFormatPropEditorSpec 
 public;CheckpointConnection 
 public;ClipEventType
 public;Cluster
@@ -113,9 +113,9 @@ public;CreateTextureArgs
 public;CreateTextureFromSourceArgs
 internal;CurrentInputState
 internal;CurrentState
-beta;CustomFormatPropEditorSpec
+public;CustomFormatPropEditorSpec
 public;CustomGraphicBuilderOptions 
-beta;CustomQuantityTypeDefinition 
+public;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
@@ -170,8 +170,8 @@ public;FlashSettingsOptions = Mutable
 public;FlyViewTool 
 internal;formatAnimationBranchId(modelId: Id64String, branchId: number): string
 beta;class FormattedQuantityDescription 
-beta;FormatterParserSpecsProvider
-beta;FormattingUnitSystemChangedArgs
+public;FormatterParserSpecsProvider
+public;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
@@ -203,7 +203,7 @@ internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 public;GetPixelDataWorldPointArgs
-beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
+public;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 public;GlobalAlignmentOptions
 public;GlobalLocation
 public;GlobalLocationArea
@@ -304,10 +304,10 @@ internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
 public;IpcApp
 public;IpcAppOptions
-beta;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
-beta;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
-beta;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
-beta;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
+public;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
+public;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
+public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
+public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
 beta;ITwinIdArg
 public;KeyinParseError
@@ -398,6 +398,7 @@ public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
 public;OnViewExtentsError
+internal;OPCFormatInterpreter
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
@@ -406,7 +407,7 @@ public;OsmBuildingDisplayOptions
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
-beta;OverrideFormatEntry
+public;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 public;ParseAndRunResult
@@ -434,14 +435,15 @@ beta;PreferenceArg
 beta;PreferenceKeyArg
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
+alpha;PublisherProductInfo
 internal;QuadId
-beta;QuantityFormatOverridesChangedArgs
-beta;QuantityFormatsChangedArgs
-beta;QuantityFormatter 
-beta;QuantityType
-beta;QuantityTypeArg = QuantityType | string
-beta;QuantityTypeDefinition
-beta;QuantityTypeKey = string
+public;QuantityFormatOverridesChangedArgs
+public;QuantityFormatsChangedArgs
+public;QuantityFormatter 
+public;QuantityType
+public;QuantityTypeArg = QuantityType | string
+public;QuantityTypeDefinition
+public;QuantityTypeKey = string
 beta;QueryScreenFeaturesOptions
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 beta;QueryTileFeaturesOptions
@@ -461,7 +463,7 @@ internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): Realit
 alpha;createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined
-internal;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
+alpha;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
@@ -542,6 +544,7 @@ public;SnapMode
 public;SnapshotConnection 
 public;SnapStatus
 internal;class SpatialClassifierTileTreeReference 
+alpha;SpatialLocationAndExtents
 public;SpatialLocationModelState 
 public;SpatialModelState 
 internal;SpatialTileTreeReferences 
@@ -566,8 +569,8 @@ internal;TerrainDisplayOverrides
 internal;class TerrainMeshProvider
 internal;TerrainTexture
 internal;TerrainTileContent 
-beta;TextInputFormatPropEditorSpec 
-beta;TextSelectFormatPropEditorSpec 
+public;TextInputFormatPropEditorSpec 
+public;TextSelectFormatPropEditorSpec 
 public;TextureCacheKey = string | Gradient.Symb
 public;TextureCacheOwnership
 internal;TextureDrapeMap = Map
@@ -575,6 +578,8 @@ public;TextureImage
 public;TextureImageSource = HTMLImageElement | ImageBuffer
 public;TextureOwnership = TextureCacheOwnership | "external"
 internal;ThreeAxes
+internal;ThreeDTileFileInfo
+internal;ThreeDTileFormatInterpreter
 public;class Tile
 public;TileAdmin
 public;TileAdmin
@@ -646,8 +651,8 @@ public;UniformContext
 public;UniformParams
 public;UniformType
 internal;UniqueTileUserSets
-beta;UnitFormattingSettingsProvider
-beta;UnitNameKey = string
+public;UnitFormattingSettingsProvider
+public;UnitNameKey = string
 internal;UpsampledMapTile 
 beta;UserPreferencesAccess
 public;VaryingType

@@ -12,7 +12,7 @@ import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import {
-  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
+  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
@@ -84,11 +84,13 @@ async function init() {
   if (enableIModelBank) {
     iModelHost.hubAccess = getIModelBankAccess();
   } else {
-    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   }
 
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
+
+  let shutdown: undefined | (() => Promise<void>);
 
   if (ProcessDetector.isElectronAppBackend) {
     exposeBackendCallbacks();
@@ -110,8 +112,8 @@ async function init() {
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const server = new WebEditServer(rpcConfig.protocol);
-    await server.initialize(port);
+    const webEditServer = new WebEditServer(rpcConfig.protocol);
+    const httpServer = await webEditServer.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
     await LocalhostIpcHost.startup({ iModelHost, localhostIpcHost: { noServer: true } });
@@ -119,6 +121,10 @@ async function init() {
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
     FullStackTestIpcHandler.register();
+    shutdown = async () => {
+      await new Promise((resolve) => httpServer.close(resolve));
+      await IpcHost.shutdown();
+    };
   }
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
@@ -127,6 +133,7 @@ async function init() {
   Logger.setLevel("core-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("core-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
+  return shutdown;
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */

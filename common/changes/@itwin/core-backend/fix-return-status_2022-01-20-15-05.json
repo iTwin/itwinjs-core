@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Correct return status for processGeometryStream and createBRepGeometry.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
