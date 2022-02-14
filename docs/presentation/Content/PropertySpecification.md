@@ -94,9 +94,9 @@ This attribute allows showing or hiding a property, even when it's hidden at ECS
 
 ### Attribute: `doNotHideOtherPropertiesOnDisplayOverride`
 
-> **Default value:** `undefined`
+> **Default value:** `false`
 
-This is a flag to control behavior of `isDisplayed` override when it's set to `true`. By default, forcing property display hides all other properties. Setting `doNotHideOtherPropertiesOnDisplayOverride` to `true` disables that behavior and prevents forcing property display of one property from hiding other properties.
+This attribute controls whether making the property visible using [`isDisplayed`](#attribute-isdisplayed) should automatically hide all other properties of the same class. When `true`, this behavior is disabled.
 
 ```ts
 [[include:Content.Customization.PropertySpecification.DoNotHideOtherPropertiesOnDisplayOverride.Ruleset]]
