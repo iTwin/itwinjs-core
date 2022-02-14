@@ -11,7 +11,7 @@ This specification allows including related instance properties into the content
 | [`propertiesSource`](#attribute-propertiessource)                                 | Yes       | [`RelationshipPathSpecification`](../Common-Rules/RelationshipPathSpecification.md) |                     |
 | [`handleTargetClassPolymorphically`](#attribute-handletargetclasspolymorphically) | No        | `boolean`                                                                           | `false`             |
 | [`relationshipMeaning`](#attribute-relationshipmeaning)                           | No        | `"SameInstance" \| "RelatedInstance"`                                               | `"RelatedInstance"` |
-| [`properties`](#attribute-properties)                                             | No        | `Array<string \| PropertySpecification> \| "_none_" \| "*"`                         | `"**"`              |
+| [`properties`](#attribute-properties)                                             | No        | `Array<string \| PropertySpecification> \| "_none_" \| "*"`                         | `"*"`               |
 | [`autoExpand`](#attribute-autoexpand)                                             | No        | `boolean`                                                                           | `false`             |
 | [`skipIfDuplicate`](#attribute-skipifduplicate)                                   | No        | `boolean`                                                                           | `false`             |
 | [`nestedRelatedProperties`](#attribute-nestedrelatedproperties)                   | No        | [`RelatedPropertiesSpecification[]`](#related-properties-specification)             | `[]`                |
