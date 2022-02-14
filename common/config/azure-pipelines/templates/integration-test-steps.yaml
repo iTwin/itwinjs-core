@@ -38,7 +38,7 @@ steps:
     displayName: "Run Backend Tests"
     condition: succeededOrFailed()
 
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
+  - script: "npm run test:integration"
     workingDirectory: "full-stack-tests/core"
     displayName: "Run Core Full Stack Tests"
     condition: succeededOrFailed()
