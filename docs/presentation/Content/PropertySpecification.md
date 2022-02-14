@@ -78,13 +78,11 @@ See [property categorization page](./PropertyCategorization.md) for more details
 
 > **Default value:** `undefined`
 
-This attribute allows showing or hiding a property, even when it's hidden at ECSchema level using a custom attribute:
+This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the ECShcema. The allowed settings are:
 
-- `undefined` means the property is loaded as requested by the ECSchema.
-- `true` force displays the property, even when hidden through ECSchema. **Warning:** setting this to `true` automatically
-  hides all other properties of the same class, unless [`doNotHideOtherPropertiesOnDisplayOverride` attribute](#attribute-donothideotherpropertiesondisplayoverride)
-  tells otherwise.
-- `false` force hides the property, even when it's not hidden through ECSchema.
+- Omitted or `undefined`: property visibility is controlled by the ECSchema.
+- `true`: property is made visible. **Warning:** this will automatically hide all other properties of the same class. If this behavior is not desirable, set [`doNotHideOtherPropertiesOnDisplayOverride` attribute](#attribute-donothideotherpropertiesondisplayoverride) to `true`.
+- `false`: property is made hidden.
 
 ```ts
 [[include:Content.Customization.PropertySpecification.IsDisplayed.Ruleset]]
