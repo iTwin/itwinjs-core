@@ -1,10 +1,12 @@
 # Quantity Formatting
 
-There are two ways to format quantity values in an IModelApp. The most primitive way is to use the [Formatter]($quantity) in `core-quantity` package. The second and in some cases the more convenient way is to use the [QuantityFormatter]($frontend) in the `core-frontend` package. The `QuantityFormatter` is limited to formatting and parsing values for a fixed set of quantity types.
+The iTwin.js offers two ways to format quantity values. The more primitive interface is found in the [Formatter]($quantity) in `core-quantity` package.
+
+A more convenient interface to format and parse values is the [QuantityFormatter]($frontend) in the `core-frontend` package.  It is limited to formatting and parsing values for a fixed set of quantity types.
 
 ## QuantityFormatter
 
-The [QuantityFormatter]($frontend) is a class that formats and parses quantity values. This class is used on the front-end to format quantities for interactive tools, such as the different measure tools. It is also used to parse strings back into quantity values. The Quantity Formatter is not used to format properties stored in the iModel, as that is work is done on the back-end via the Presentation layer. The QuantityFormatter can be set to format values in the same unit system as that being used by the back-end. There are four Unit Systems definitions that is shared between the back-end Presentation Manager and the front-end Quantity Formatter and there are:
+The [QuantityFormatter]($frontend) class formats quantities for interactive tools, such as the different measure tools, and is used to parse strings back into quantity values. The QuantityFormatter is not used to format properties stored in the iModel, as that is work is done on the back-end via the Presentation layer, but the QuantityFormatter can be set to format values in the same unit system as that used by the back-end. There are four Unit Systems definitions that is shared between the back-end Presentation Manager and the front-end QuantityFormatter:
 
 - "metric"
 - "imperial"
@@ -13,13 +15,13 @@ The [QuantityFormatter]($frontend) is a class that formats and parses quantity v
 
 ### QuantityType
 
-There are nine built-in quantity types, see [QuantityType]($frontend). The QuantityFormatter defines default formatting specification for each of these types per unit system. During IModelApp initialization a call to initialize the QuantityFormatter is made. During this initialization `FormatterSpecs` [FormatterSpec]($quantity) and `ParserSpecs` [ParserSpec]($quantity) for each quantity type are generated asynchronously. This allows caller to get these objects via synchronous calls. Any time the unit system is set, a format is overridden, or a units provider is assigned the cached specs are updated.
+There are nine built-in quantity types (see [QuantityType]($frontend)). The QuantityFormatter defines default a formatting specification for each of these types per unit system. IModelApp initialization calls the QuantityFormatter initialization, during which [FormatterSpec]($quantity) and [ParserSpec]($quantity) for each quantity type are generated asynchronously. This allows caller to get these objects via synchronous calls. Any time the unit system is set, a format is overridden, or a units provider is assigned the cached specs are updated.
 
  Custom quantity types that implement the [CustomQuantityTypeDefinition]($frontend) interface may also be registered with the QuantityFormatter, see method `registerQuantityType`. See example implementation of a custom type [here](https://github.com/iTwin/itwinjs-core/blob/5905cb1a48c4d790b5389d7f0ea141bc3ce95f23/test-apps/ui-test-app/src/frontend/api/BearingQuantityType.ts).
 
 #### Overriding Default Formats
 
-The `QuantityFormat` provides the method `setOverrideFormats` to allow the default format to be overridden. A class that implements the [UnitFormattingSettingsProvider]($frontend) interface can be set with the QuantityFormatter to persist these format overrides. This provider can then monitor the current session to load the overrides when necessary. The class [LocalUnitFormatProvider]($frontend) can be set using the following to register to store settings to local storage and to maintain overrides by iModel.
+The `QuantityFormat` provides the method `setOverrideFormats` which allows the default format to be overridden.  These overrides may be persisted by implementing the [UnitFormattingSettingsProvider]($frontend) interface in the QuantityFormatter. This provider can then monitor the current session to load the overrides when necessary. The class [LocalUnitFormatProvider]($frontend) can be used store settings to local storage and to maintain overrides by iModel as shown below:
 
 ```ts
     await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(IModelApp.quantityFormatter, true));
@@ -29,11 +31,9 @@ This allows both the Presentation Unit System and the format overrides, set by t
 
 ### AlternateUnitLabelsProvider
 
-The [QuantityFormatter]($frontend) provides a default set of alternate unit labels which are used when parsing strings to quantities. The
-interface [AlternateUnitLabelsProvider]($quantity) defines how alternate units are defined. One commonly specified alternate label is "^" used to
-specify degrees, which is much easier to type then trying to figure out how to enter a "°",  which is the default label for degree.
+The [QuantityFormatter]($frontend) provides a default set of alternate unit labels which are used when parsing strings to quantities. The interface [AlternateUnitLabelsProvider]($quantity) defines how alternate units are defined. One commonly specified alternate label is "^" to specify degrees, much easier to type than trying to figure out how to enter the default label for degree, "°".
 
-To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) as shown in the examples below.
+To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) as shown in the examples below:
 
   ```ts
   IModelApp.quantityFormatter.addAlternateLabels("Units.ARC_DEG", "^");
@@ -42,7 +42,7 @@ To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) as sh
 
 ### Units Provider
 
-A units provider is used to define all available units and provides conversion factors between different units. The [QuantityFormatter]($frontend) has a default units provider [BasicUnitsProvider]($frontend) that only defines units needed by the set of QuantityTypes the formatter supports. Most IModels contain a `Units` schema. If this is the case, an SchemaUnitsProvider may be defined when an IModel is opened. The parent application must opt-in to using an IModel specific UnitsProvider using the following technique.
+A units provider is used to define all available units and provides conversion factors between units. The [QuantityFormatter]($frontend) has a default units provider [BasicUnitsProvider]($frontend) that only defines units needed by the set of QuantityTypes the formatter supports. Most IModels contain a `Units` schema. If this is the case, an SchemaUnitsProvider may be defined when an IModel is opened. The parent application must opt-in to using an IModel specific UnitsProvider using the following technique:
 
 ```ts
     // Reset QuantityFormatter UnitsProvider with new iModelConnection
