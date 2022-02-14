@@ -390,6 +390,7 @@ export class FrontstageManager {
 
   /** @internal */
   public static clearFrontstageDefsForIModelId(iModelId: string | undefined) {
+    // istanbul ignore next
     if (!iModelId)
       return;
     const keysToRemove: string[] = [];
@@ -434,6 +435,7 @@ export class FrontstageManager {
    * @returns  FrontstageDef with a given id if found, or undefined if not found.
    */
   public static async getFrontstageDef(id?: string): Promise<FrontstageDef | undefined> {
+    // istanbul ignore next
     if (!id)
       return FrontstageManager.activeFrontstageDef;
 
