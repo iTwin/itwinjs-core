@@ -12,7 +12,6 @@ import type { AccuSnap } from "../AccuSnap";
 import type { NotificationManager } from "../NotificationManager";
 import type { ViewManager } from "../ViewManager";
 import type { ElementLocateManager } from "../ElementLocateManager";
-import type { Localization } from "@itwin/core-common";
 import type { RenderSystem } from "../render/RenderSystem";
 
 /**
@@ -27,6 +26,5 @@ export class ExtensionHost {
   public static get viewManager(): ViewManager { return IModelApp.viewManager; }
   public static get locateManager(): ElementLocateManager { return IModelApp.locateManager; } // internal ?
   public static get accuSnap(): AccuSnap { return IModelApp.accuSnap; }
-  public static get localization(): Localization { return IModelApp.localization; } // re think this, should be contribution point
   public static get renderSystem(): RenderSystem { return IModelApp.renderSystem; } // re think this, should be smaller interface
 }

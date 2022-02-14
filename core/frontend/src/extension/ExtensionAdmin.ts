@@ -10,11 +10,11 @@ import { IModelApp } from "../IModelApp";
 import { ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
 import { ExtensionLoader } from "./ExtensionLoader";
 
-/** The Extensions loading system has 3 goals:
+/** The Extensions loading system has the following goals:
  *   1. Only fetch what is needed when it is required
  *      1. Load a manifest file
  *      2. Load the the main module when necessary
- *   2. Download the needed files from
+ *   2. Download the extension's files
  *
  * 2 ways to load an Extension into the system:
  *
@@ -34,7 +34,7 @@ import { ExtensionLoader } from "./ExtensionLoader";
  */
 
 enum ActivationEvents {
-  onStartupApp = "onStartupApp",
+  onStartup = "onStartup",
 }
 
 /** The Extension Admin controls the list of currently known, loaded and executing an Extension.
@@ -53,7 +53,7 @@ export class ExtensionAdmin {
    * @internal
    */
   public onStartup = async () => {
-    await this.activateExtensionEvents(ActivationEvents.onStartupApp);
+    await this.activateExtensionEvents(ActivationEvents.onStartup);
   };
 
   public constructor() {
@@ -78,7 +78,7 @@ export class ExtensionAdmin {
    * @param manifestLoader A function that loads the manifest file.
    * @param mainFunc The main function to be executed upon
    */
-  public async addBuildExtension(manifestPromise: Promise<any>, mainFunc?: ResolveFunc): Promise<void> {
+  public async addBuildExtension(manifestPromise: Promise<ExtensionManifest>, mainFunc?: ResolveFunc): Promise<void> {
     const manifest = await this.getManifest(manifestPromise);
     this._installedExtensions.set(manifest.name, { manifest, mainFunc });
   }
@@ -99,20 +99,9 @@ export class ExtensionAdmin {
   /** Resolves an import function provided for build-time Extensions that should return a valid
    * Extension Manifest.
    */
-  private async getManifest(loader: Promise<any>): Promise<ExtensionManifest> {
-    const raw = await loader;
-    const manifest = this.parseManifest(raw);
+  private async getManifest(loader: Promise<ExtensionManifest>): Promise<ExtensionManifest> {
+    const manifest =  await loader;
     return manifest;
-  }
-
-  private async parseManifest(raw: unknown): Promise<ExtensionManifest> {
-    try {
-      if ("object" === typeof (raw))
-        return raw as ExtensionManifest;
-      if ("string" === typeof (raw))
-        return JSON.parse(raw) as ExtensionManifest;
-    } catch (err: any) { }
-    throw new Error("Extension is invalid: package.json is not JSON.");
   }
 
   // Important: The Function constructor is used here to isolate the context in which the Extension javascript has access.

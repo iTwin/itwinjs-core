@@ -519,6 +519,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/eslint-plugin': workspace:*
       eslint: ^7.11.0
       rimraf: ^3.0.2
     dependencies:
@@ -526,6 +527,7 @@ importers:
       '@itwin/core-frontend': link:../frontend
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       eslint: 7.32.0
       rimraf: 3.0.2
 

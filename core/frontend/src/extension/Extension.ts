@@ -8,7 +8,7 @@
 
 export type ResolveFunc = () => Promise<any>;
 
-export type ActivationEvent = "onStartupApp";
+export type ActivationEvent = "onStartup";
 
 /** Defines the format of an Extension manifest
  * @beta
