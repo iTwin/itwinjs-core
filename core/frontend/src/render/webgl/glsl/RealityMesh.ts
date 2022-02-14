@@ -91,7 +91,8 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
  vec4 texCol = TEXTURE(sampler, uv);
  float alpha = layerAlpha * texCol.a;
  if (alpha > 0.05) {
-  col.rgb = (1.0 - alpha) * col.rgb + alpha * texCol.rgb;
+   vec3 texRgb = texCol.rgb / texCol.a;
+  col.rgb = (1.0 - alpha) * col.rgb + alpha * texRgb;
   if (isProjected) {
     vec4 featureTexel = TEXTURE(sampler, vec2(uv.x, (1.0 + classPos.y) / imageCount));
     classifierId = addUInt32s(params[1], featureTexel * 255.0) / 255.0;
