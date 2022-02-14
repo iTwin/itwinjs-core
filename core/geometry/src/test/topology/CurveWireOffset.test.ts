@@ -8,6 +8,7 @@
 import { expect } from "chai";
 import { AnyCurve } from "../../curve/CurveChain";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
@@ -23,7 +24,6 @@ import { Arc3d } from "../../curve/Arc3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
 
 /**
  * Exercise PolygonWireOffset and output to a file.

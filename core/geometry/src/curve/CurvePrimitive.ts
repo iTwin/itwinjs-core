@@ -5,9 +5,16 @@
 /** @packageDocumentation
  * @module Curve
  */
+import type { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Clipper } from "../clipping/ClipUtils";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import type { AkimaCurve3d } from "../bspline/AkimaCurve3d";
+import type { BSplineCurve3d } from "../bspline/BSplineCurve";
+import type { BezierCurve3d } from "../bspline/BezierCurve3d";
+import type { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
+import type { DirectSpiral3d } from "./spiral/DirectSpiral3d";
+import type { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -18,20 +25,13 @@ import { Transform } from "../geometry3d/Transform";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { Newton1dUnboundedApproximateDerivative, NewtonEvaluatorRtoR } from "../numerics/Newton";
 import { GaussMapper } from "../numerics/Quadrature";
+import type { Arc3d } from "./Arc3d";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
-import { StrokeOptions } from "./StrokeOptions";
-import { LineString3d } from "./LineString3d";
-import type { Arc3d } from "./Arc3d";
 import type { LineSegment3d } from "./LineSegment3d";
-import type { BSplineCurve3d } from "../bspline/BSplineCurve";
-import type { BezierCurve3d } from "../bspline/BezierCurve3d";
-import type { DirectSpiral3d } from "./spiral/DirectSpiral3d";
-import type { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
-import type { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
-import type { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
-import type { AkimaCurve3d } from "../bspline/AkimaCurve3d";
+import { LineString3d } from "./LineString3d";
+import { StrokeOptions } from "./StrokeOptions";
 import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 
 /** Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
@@ -45,12 +45,12 @@ import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
  * @see [[AnyCurvePrimitive]] for a union type that supports compile-time type narrowing.
  * @public
  */
- export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve";
+export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve";
 
 /** Union type for subclasses of [[CurvePrimitive]]. Specific subclasses can be discriminated at compile- or run-time using [[CurvePrimitive.curvePrimitiveType]].
  * @public
  */
- export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d | AkimaCurve3d;
+export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d | AkimaCurve3d;
 
 /** function signature for callback which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive.
  * @public

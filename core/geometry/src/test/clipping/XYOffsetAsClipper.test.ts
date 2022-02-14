@@ -24,6 +24,7 @@ import { OffsetHelpers } from "../../curve/internalContexts/MultiChainCollector"
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { Path } from "../../curve/Path";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
+import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Arc3d } from "../../curve/Arc3d";
@@ -33,7 +34,6 @@ import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Loop } from "../../curve/Loop";
-import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
 
 function captureClippedPolygon(allGeometry: GeometryQuery[], points: Point3d[], clipper: UnionOfConvexClipPlaneSets,
   x0: number,

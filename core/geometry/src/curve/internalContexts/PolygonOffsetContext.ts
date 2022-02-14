@@ -46,7 +46,7 @@ enum JointMode {
  *   * otherwise make single edge.
  * @public
  */
- export class JointOptions {
+export class JointOptions {
   /** smallest arc to construct.
    * * If this control angle is large, arcs are never created.
    */
@@ -111,7 +111,7 @@ enum JointMode {
  * Options for offsetting a curve.
  * @public
  */
- export class OffsetOptions {
+export class OffsetOptions {
   /** Options for offsetting and joining CurvePrimitives */
   public jointOptions: JointOptions;
   /** Options for generating a B-spline curve offset */
