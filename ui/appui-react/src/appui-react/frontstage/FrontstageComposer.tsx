@@ -656,6 +656,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         const widget = prevState.nineZone.zones.widgets[widgetId];
         if (isOpening && widget.tabIndex === tabIndex)
           return null;
+        // istanbul ignore next
         if (!isOpening && widget.tabIndex !== tabIndex)
           return null;
         const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabClick(widgetId, tabIndex, prevState.nineZone);
