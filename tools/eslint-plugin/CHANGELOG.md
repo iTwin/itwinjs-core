@@ -1,6 +1,17 @@
 # Change Log - @itwin/eslint-plugin
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Drop support for ESLint 6.x
+- rename to @itwin/eslint-plugin
+- add required-barrel-modules feature
+- switch to typed version of dot-notation rule
+- Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT

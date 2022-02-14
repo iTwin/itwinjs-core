@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Entity no longer implements EntityProps.",
+      "comment": "",
       "type": "none"
     }
   ],

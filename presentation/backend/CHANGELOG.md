@@ -1,6 +1,34 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Existing ruleset configurations were updated to no longer use deprecated rule versions for iModel.js 3.0.
+- Upgrade target to ES2019
+- fix ecsql row format
+- rename to @itwin/presentation-backend
+- remove ClientRequestContext and its subclasses
+- Clean up deprecated APIs
+- Added API to get properties of all elements.
+- Added `PresentationManager.getContentSources` API to retrieve information about where content for specific types of elements comes from.
+- Fix class and schema names in RelatedProperties rule for ElementOwnsUniqueAspect relationship.
+- Fix Presentation IPC handler not being registered until the first Presentation request is made.
+- Enforce valid page options on getElementProperties request when requesting properties of multiple elements.
+- Fix for getElementProperties request when requesting all elements of specific classes
+- Use async iterator when getting properties of multiple elements.
+- Add `getContentInstanceKeys` RPC to efficiently get content instance keys.
+- Restructure backend's initialization props
+- Remove `PresentationManager.loadHierarchy` API.
+- Fix ruleset variables storing in IPC apps
+- Updated `RulesetEmbedder` to allow calling callbacks before and after Model/Element is inserted or updated
+- Changed uses of `PresentationUnitSystem` to `UnitSystemKey`.
+- Always create unique ruleset id when handling nodes requests
+- remove ClientRequestContext.current
+- remove requestContext argument from importSchemas
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -804,7 +832,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fixed `PresentationRpcImpl.computeSelection` for "model", "category" and "element" scope to return specific class names instead of "BisCore:Model", "BisCore:Category" or "BisCore:Element"
 - Allow requesting content with descriptor overrides instead of descriptor. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content
 - Do not attempt to handle transient element ids when computing selection based on scope
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

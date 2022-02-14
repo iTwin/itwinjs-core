@@ -2,6 +2,27 @@
   "name": "@itwin/core-markup",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/core-markup_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "rename to @itwin/core-markup"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "tool.run and tool.parseAndRun are now async methods"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-markup_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

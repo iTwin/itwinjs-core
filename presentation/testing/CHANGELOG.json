@@ -2,6 +2,36 @@
   "name": "@itwin/presentation-testing",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/presentation-testing_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix code for breaking change to .query() method"
+          },
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "fix ecsql row format"
+          },
+          {
+            "comment": "rename to @itwin/presentation-testing"
+          },
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/presentation-testing_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

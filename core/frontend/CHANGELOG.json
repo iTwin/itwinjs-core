@@ -2,6 +2,360 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/core-frontend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove alternateLabels from UnitProps and require them to be provided via AlternateUnitLabelsProvider."
+          },
+          {
+            "comment": "Improve performance of schedule scripts containing large numbers of transform nodes."
+          },
+          {
+            "comment": "Fix striping artifact produced by ambient occlusion in views with very large frustums."
+          },
+          {
+            "comment": "Render 2d map when terrain data is not available."
+          },
+          {
+            "comment": "Make onRestartTool explicitly async"
+          },
+          {
+            "comment": "Add support for producing larger tiles."
+          },
+          {
+            "comment": "The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height."
+          },
+          {
+            "comment": "remove unused ClientRequestContext.useContextForRpc"
+          },
+          {
+            "comment": "improve concurrent query changes"
+          },
+          {
+            "comment": "SolidFill mode chooses an edge color to contrast with the element color and the background color."
+          },
+          {
+            "comment": "Remove usage-logging-client"
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Add support for indexed edges in tile graphics to reduce memory footprint and number of draw calls."
+          },
+          {
+            "comment": "Allow the same tile to be drawn repeatedly and efficiently in same Viewport with different symbology overrides."
+          },
+          {
+            "comment": "Ensure edges are always requested if TileAdmin.alwaysRequestEdges is true."
+          },
+          {
+            "comment": "Fix flickering with TwoWayViewportSync when one of the viewport's frustum is animated."
+          },
+          {
+            "comment": "Fix WebGL view not updating when dropping second viewport."
+          },
+          {
+            "comment": "Ensure DisplayStyleState.scheduleScript is synchronized with changes to DisplayStyleSettings.renderTimeline and DisplayStyleSettings.scheduleScriptProps."
+          },
+          {
+            "comment": "convertTouchMoveStartToButtonDownAndMotion stopped working with change to not await snap."
+          },
+          {
+            "comment": "'onPostInstall' doing the animation logic on ViewGlobeLocationTool was redundant when done in addition to ViewGlobeLocationTool.parseAndRun. We got away with it before the Tool parseAndRun async change by the convenient luck of the flow of the non-async code. This removes '_doLocationView' from ViewGlobeLocationTool.parseAndRun."
+          },
+          {
+            "comment": "Improve conformance with the glTF 2.0 spec."
+          },
+          {
+            "comment": "Fix caching of gradient textures."
+          },
+          {
+            "comment": "Removed ViewState.isCameraEnabled."
+          },
+          {
+            "comment": "large textures"
+          },
+          {
+            "comment": "Correct loop for collating imagery tiles to map mesh primitives"
+          },
+          {
+            "comment": "Omit terrain skirts if the background map has a transparent clip mask applied."
+          },
+          {
+            "comment": "Fix viewport using terrain settings from previous display style when display style is reassigned."
+          },
+          {
+            "comment": "Fix iOS15 overlay draws."
+          },
+          {
+            "comment": "Deprecated Viewport.readImage in favor of Viewport.readImageBuffer."
+          },
+          {
+            "comment": "Sky cube primitive buffers must be bound when attempting to draw a sky cube."
+          },
+          {
+            "comment": "Clean up SkyBox and GroundPlane APIs."
+          },
+          {
+            "comment": "Tweak terrain skirt height calculation to match previous"
+          },
+          {
+            "comment": "Correct calculation for up vector when looking at globe location"
+          },
+          {
+            "comment": "Fix ViewCreator3d spatial criterion to account for NULL."
+          },
+          {
+            "comment": "fix ecsql row format"
+          },
+          {
+            "comment": "Fix Open Street Map Building display"
+          },
+          {
+            "comment": "Added support for Fresnel effect."
+          },
+          {
+            "comment": "Update FrontendHubAccess api to use ChangesetIndexAndId"
+          },
+          {
+            "comment": "Fix issue that would prevent higher resolutions tiles to be fetch from ArcGIS server."
+          },
+          {
+            "comment": "Improved map layers validation when authentication is required."
+          },
+          {
+            "comment": "Added support for EPSG:4326 in WMS imagery provider."
+          },
+          {
+            "comment": "getAccessToken always returns a token"
+          },
+          {
+            "comment": "Add readGltfGraphics for producing graphics from a glTF asset."
+          },
+          {
+            "comment": "Support smooth transition to globally centered views"
+          },
+          {
+            "comment": "Fix some oversights in implementation of glTF."
+          },
+          {
+            "comment": "Added support for view-independent decoration graphics."
+          },
+          {
+            "comment": "Support creating a GraphicBuilder without a Viewport."
+          },
+          {
+            "comment": "Implemented a different clustering algorithm in MarkerSet."
+          },
+          {
+            "comment": "Add IModelApp.publicPath for users to override where core public assets are fetched from"
+          },
+          {
+            "comment": "Supports instanced rendering of area pattern symbols."
+          },
+          {
+            "comment": "LocalhostIpcHost, display-test-app support for R/W web (via orchestrator)"
+          },
+          {
+            "comment": "Added ability to convert iModel coordinates to or from any Geographic CRS"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "Fix erroneous AccuDraw activation."
+          },
+          {
+            "comment": "make ViewState3d.lookAt take named arguments"
+          },
+          {
+            "comment": "Added lookAtPerspectiveOrOrtho to ViewState3d"
+          },
+          {
+            "comment": "Dropped DisplayStyleState.changeBaseMapProps. Added new DisplayStyleState.backgroundMapBase setter."
+          },
+          {
+            "comment": "Fix problem with RealityDataSourceKey string convertion"
+          },
+          {
+            "comment": "Promote RealityDataSource and RealityDataSourceKey API to beta and update documentation"
+          },
+          {
+            "comment": "Remove optimization that keep RealityDataSource from key in a list."
+          },
+          {
+            "comment": "Add Support for APIM RDS url to create RealityDataSourceKey from tilesetUrl"
+          },
+          {
+            "comment": "ViewCreator3d no longer throws if no 3d models are found; instead it uses the project extents as the view extents."
+          },
+          {
+            "comment": "moved RealityDataAccessProps from core-frontend to core-common"
+          },
+          {
+            "comment": "Impose default minimum spatial tolerance of 1mm."
+          },
+          {
+            "comment": "Support color mixing when overriding point cloud color"
+          },
+          {
+            "comment": "rename to @itwin/core-frontend"
+          },
+          {
+            "comment": "Support reading non-binary glTF assets."
+          },
+          {
+            "comment": "Fix non-locatable override for point clouds"
+          },
+          {
+            "comment": "separate OnViewExtentsError from ViewChangeOptions "
+          },
+          {
+            "comment": "Support to open OPC file from any server"
+          },
+          {
+            "comment": "Enhancements and improvements to particle systems."
+          },
+          {
+            "comment": "Removed WebAppViewer"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Removed config.app usage"
+          },
+          {
+            "comment": "Add support for inverting planar clip mask (inside vs outside)"
+          },
+          {
+            "comment": "Remove deprecated APIs for 3.0."
+          },
+          {
+            "comment": "Support transparency overrides for point clouds"
+          },
+          {
+            "comment": "Moved `UnitSystemKey` to `@itwin/core-quantity`."
+          },
+          {
+            "comment": "Simplify RealitydataAccessProps interface and usage in iModel.js"
+          },
+          {
+            "comment": "Generalize the way to attach a reality data by adding a RealityDataSourceKey to ContextRealityModelProps"
+          },
+          {
+            "comment": "Enhance RealityDataSource class"
+          },
+          {
+            "comment": "Reduce ellipsoid occlusion tolerance to avoid misdisplayed tiles over horizon with depth off."
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Replace hard-coded Cesium ION key with TileAdminProps.cesiumIonKey to be supplied at IModelApp.startup."
+          },
+          {
+            "comment": "remove previously deprecated apis"
+          },
+          {
+            "comment": "Remove the default Bing Maps and MapBox Imagery keys from source. There are no longer any default keys available for use and apps will need to provide the keys necessary."
+          },
+          {
+            "comment": "Mvoe map imagery provider from BackgroundMapSettings to MapImagerySettings.backgroundBase."
+          },
+          {
+            "comment": "remove IModelWriteRpcInterface"
+          },
+          {
+            "comment": "Remove deprecate QuantityFormatter methods"
+          },
+          {
+            "comment": "fix usage or lack thereof of tile/internal barrel module"
+          },
+          {
+            "comment": "rename contexId to iTwinId"
+          },
+          {
+            "comment": "Removed NativeAppAuthorization"
+          },
+          {
+            "comment": "Improve display of textured meshes when the texture image contains a mix of transparent and opaque pixels."
+          },
+          {
+            "comment": "rename IModelReadRpcInterface.openForRead to getConnectionProps"
+          },
+          {
+            "comment": "Simplify RenderTexture creation APIs."
+          },
+          {
+            "comment": "Avoid skipping tool dynamics frame when new graphic is still pending."
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Altered to use abstract Reality Data interface"
+          },
+          {
+            "comment": "Rework and correct child availability of tiled imagery formats.  Added EPSG:4326 support for WMTS."
+          },
+          {
+            "comment": "Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their own azure environment."
+          },
+          {
+            "comment": "Add TwoWayViewportFrustumSync to synchronize only the frusta of two viewports."
+          },
+          {
+            "comment": "tool.run and tool.parseAndRun are now async methods"
+          },
+          {
+            "comment": "Added tool setting helper methods."
+          },
+          {
+            "comment": "Ensure memory consumed by instanced geometry is accurately reported."
+          },
+          {
+            "comment": "Add support for blending transparent viewport background with HTML elements beneath the viewport."
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          },
+          {
+            "comment": "Protect logoCard styling from app's CSS and make sure the logoCard opens in the correct window for pop-out viewports."
+          },
+          {
+            "comment": "Refactored part of AccuDraw UI & Providing AccuDraw UI documentation"
+          },
+          {
+            "comment": "Fix bug that sets the icon on MessageBox.NoSymbol the Success icon."
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "Update LatLong display precision to 4 decimal points."
+          },
+          {
+            "comment": "Default cameraOn in 3d ViewCreator"
+          },
+          {
+            "comment": "FeatureAppearance transparency by default ignores render mode and transparency view flag."
+          },
+          {
+            "comment": "Adding WebEditServer (test scenarios only for now)."
+          },
+          {
+            "comment": "Add support for wiremesh display of design models and reality models."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-frontend_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

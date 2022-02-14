@@ -1,6 +1,17 @@
 # Change Log - @itwin/webgl-compatibility
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Fix transparency and shadows on iOS>=15 for non-M1 iOS devices.
+- rename to @itwin/webgl-compatibility
+- remove ClientRequestContext.current
+- Update workaround for buggy Intel integrated GPUs.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
