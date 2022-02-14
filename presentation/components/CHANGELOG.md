@@ -1,6 +1,32 @@
 # Change Log - @itwin/presentation-components
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- rename contextId -> iTwinId
+- rename to @itwin/presentation-components
+- remove ClientRequestContext and its subclasses
+- Clean up deprecated APIs
+- Make property category grouping enabled by default.
+- `usePresentationTreeNodeLoader`: Redesign the way tree component reloads when `enableHierarchyAutoUpdate` is set.
+- Remove `IPresentationTreeDataProvider.loadHierarchy`.
+- Fixed SameInstance nested properties bug when merged cells with multiple nested content items were not created properly.
+- Created an additional nodeLoader used only when filtering Tree Component. That fixed the bug when spinner was not showing when filtering was in progress. 
+- Replace usage of I18N with generic Localization interface.
+-  Renamed an iModel's parent container to iTwin
+- Removed deprecated `DEPRECATED_controlledTreeWithFilteringSupport` and `DEPRECATED_controlledTreeWithVisibleNodes`.
+- Remove `immer` dependency.
+- Ignore lint errors for deprecated Table component.
+- Update to React 17.
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- Remove react 16 peer dependency.
+- Update to latest types/react package
+- Lock down and update version numbers so docs will build.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -1014,7 +1040,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it.
+- Deprecated dev-cors-proxy-server and use of it. 
 - Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
 - Updated to TypeScript 3.1
 - React to Tree API changes

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/editor-backend",
-      "comment": "",
+      "comment": "Correct return status for processGeometryStream and createBRepGeometry.",
       "type": "none"
     }
   ],

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Entity no longer implements EntityProps.",
+      "comment": "Correct return status for processGeometryStream and createBRepGeometry.",
       "type": "none"
     }
   ],

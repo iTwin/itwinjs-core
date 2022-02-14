@@ -1,6 +1,41 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Add clonePartialCurve for spirals. Proper length computation for partial spirals.
+- Create interpolation curve for through points construction.
+- InterpolationCurve3d support
+- add HalfEdgeGraphOps.expandConvexFaces
+- Add curve tests to increase coverage
+- add periodic B-spline curve ctor
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Fix bug in polygon booleans when inputs are disjoint
+- In wire offset, improve handling of arcs offset beyond their center
+- When a UnionOfConvexClipPlaneSets clips a polyface, aggressively stitch shards.
+- Produce triangles (instead of quads) (when requested) in AddUVGridBody.
+- Documentation file for ClipPlane structures
+- When building planes for a ClipShape, pre-filter the shape edges to remove danglers that violate triangulation requirements
+- Correct problems with all-convex mask clips
+- ClipUtilities.createComplementaryClips -- method to create a UnionOfConvexClipPlaneSets which covers the space outside of a ConvexClipPlaneSet
+- Correct implementation of "mask" ClipPrimitive
+- Implement appendPolygonClip in deep boolean trees.
+- When building index for CurveChainWithDistanceIndex, refer to primary primitives rather than to stroked pieces.
+- Various code coverage.   Fix infinitie loop in "out of graph" case in InsertAndRetriangulateContext
+- Fix poor accuracy of closestPoint for BSplineCurve3dH and Integrated Spirals
+- Tests of area analysis for road section project.  Shared-edge annotation from constructAllXYRegions
+- Fix plane constructions on xy clipper from polyline offset
+- Apply tolerance when determining if ClipShape polygon is closed.
+- rename to @itwin/core-geometry
+- remove ClientRequestContext and its subclasses
+- Switching to consume new Projects-Client
+- Renamed an iModel's parent container to iTwin
+- Moved Point3d.interpolatePointAndTangent to Ray3d.interpolatePointAndTangent.
+- Support for TypeDoc v0.22.7. Fix various broken docs links.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -759,7 +794,7 @@ Fri, 22 Nov 2019 14:03:34 GMT
 
 ### Updates
 
-- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal
+- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
 - Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
 - Intersect Ray with Sphere
 - Spherical patch range; optional result in range3d.corners()
@@ -890,7 +925,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Triangulation bug (multiple holes not linked correctly)
 - Fix broken links
 - Put sourcemap in npm package.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - New code for regularizing a single face.
 - Upgrade TypeDoc dependency to 0.14.2
 
