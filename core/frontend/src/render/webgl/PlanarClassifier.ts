@@ -467,10 +467,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined === viewState)
       return;
 
-    // TBD - Refine resolution calculation -- increase height based on viewing angle.
-    // But make sure that we don't make it larger than the hardware supports, keeping in mind that we will be doubling the height later.
-    const requiredHeight = Math.min(Math.max(context.target.viewRect.width, context.target.viewRect.height), System.instance.capabilities.maxTextureSize / 2);
-    const requiredWidth = requiredHeight;
+    const requiredHeight = context.target.viewRect.height;
+    const requiredWidth = context.target.viewRect.width;
 
     if (requiredWidth !== this._width || requiredHeight !== this._height)
       this.dispose();
