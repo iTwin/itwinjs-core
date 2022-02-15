@@ -432,8 +432,7 @@ export class HalfEdgeGraphMerge {
               // NO leave nodeA and thetaA   ignore nodeB -- later step will get the outside of its banana.
             } else {
               HalfEdge.pinch(nodeA, nodeB);
-              const doNullFaceMarkup = true;
-              if (doNullFaceMarkup && Angle.isAlmostEqualRadiansAllowPeriodShift(thetaA, thetaB)) {
+              if (Angle.isAlmostEqualRadiansAllowPeriodShift(thetaA, thetaB)) {
                 const nodeA1 = nodeA.faceSuccessor;
                 const nodeB1 = nodeB.edgeMate;
                 // WE TRUST -- nodeA1 and node B1 must have identical xy.
