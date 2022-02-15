@@ -30,7 +30,7 @@ Name of the ECProperty to apply overrides to. A `"*"` may be specified to match 
 
 There may be multiple property specifications that apply to a single property and there may be conflicts between different attributes. The `overridesPriority` attribute is here to help
 solve the problem - if multiple specifications attempt to override the same attribute, the override of specification with highest `overridesPriority` value is used. The order of overrides
-from specification with the same `overridesPriority` is undefined.
+from specification with the same `overridesPriority` is defined by the order they appear in the overrides list.
 
 ```ts
 [[include:Content.Customization.PropertySpecification.OverridesPriority.Ruleset]]
