@@ -66,7 +66,7 @@ See [property categorization page](./PropertyCategorization.md) page for more de
 
 ### Attribute: `properties`
 
-> **Default value:** `*`
+> **Default value:** `"*"`
 
 List of names or definitions of related class properties that should be included in the content. In addition, a couple of special values are allowed:
 
