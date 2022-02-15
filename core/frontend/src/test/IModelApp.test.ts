@@ -162,7 +162,7 @@ describe("IModelApp", () => {
     expect(IModelApp.renderSystem).instanceof(MockRender.System);
   });
 
-  it("Is globally accessible via window while active", async () => {
+  it("Is globally accessible via window while active when not in production", async () => {
     const debug = window as { iModelAppForDebugger?: typeof IModelApp };
     expect(debug.iModelAppForDebugger).not.to.be.undefined;
     expect(debug.iModelAppForDebugger).to.equal(IModelApp);
