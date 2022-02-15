@@ -4,6 +4,7 @@
 # Runs against master on a weekly schedule, in the future this should be a required check before bumping versions.
 
 trigger: none
+pr: none
 
 schedules:
 - cron: "0 0 * * Sun"
