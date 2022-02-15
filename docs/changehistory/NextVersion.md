@@ -50,3 +50,7 @@ display-test-app provides [an example tool](https://github.com/iTwin/itwinjs-cor
 ## Floating content views in AppUI
 
 ![Floating iModel Content Dialog](../learning/ui/appui/images/FloatingViewport.png "Floating iModel Content Dialog")
+
+## Font Workspaces
+
+It is now possible to store and load fonts from a Font Workspace. See [Fonts]($docs/learning/backend/Fonts.md) for more details.

@@ -1,0 +1,17 @@
+{
+  "name": "@itwin/workspace-editor",
+  "entries": [
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/workspace-editor_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "new"
+          }
+        ]
+      }
+    }
+  ]
+}

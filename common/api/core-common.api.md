@@ -1831,8 +1831,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1703936,
-    Major = 26,
+    Combined = 1769472,
+    Major = 27,
     Minor = 0
 }
 
@@ -3226,13 +3226,16 @@ export interface FlatBufferGeometryStream {
 }
 
 // @public
+export type FontId = number;
+
+// @public
 export class FontMap {
     constructor(props?: FontMapProps);
     // (undocumented)
     addFonts(fonts: FontProps[]): void;
     // (undocumented)
     readonly fonts: Map<number, FontProps>;
-    getFont(arg: string | number): FontProps | undefined;
+    getFont(arg: string | FontId): FontProps | undefined;
     // (undocumented)
     toJSON(): FontMapProps;
 }
@@ -3245,11 +3248,8 @@ export interface FontMapProps {
 
 // @public
 export interface FontProps {
-    // (undocumented)
-    id: number;
-    // (undocumented)
+    id: FontId;
     name: string;
-    // (undocumented)
     type: FontType;
 }
 
@@ -8608,7 +8608,7 @@ export class TestRpcManager {
 export class TextString {
     constructor(props: TextStringProps);
     bold?: boolean;
-    font: number;
+    font: FontId;
     // (undocumented)
     height: number;
     italic?: boolean;
@@ -8637,7 +8637,7 @@ export interface TextStringPrimitive {
 // @public
 export interface TextStringProps {
     bold?: boolean;
-    font: number;
+    font: FontId;
     // (undocumented)
     height: number;
     italic?: boolean;

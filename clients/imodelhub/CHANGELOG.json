@@ -1,6 +1,12 @@
 {
-  "name": "@bentley/imodelhub-client",
+  "name": "@bentley/imodelbank-client",
   "entries": [
+    {
+      "version": "3.0.0",
+      "tag": "@bentley/imodelbank-client_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {}
+    },
     {
       "version": "2.19.28",
       "tag": "@bentley/imodelhub-client_v2.19.28",

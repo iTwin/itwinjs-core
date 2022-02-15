@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Stop exiting with process.exit() and add ability for a \"backendInitModule\" to supply a cleanup callback to execute after tests complete.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}

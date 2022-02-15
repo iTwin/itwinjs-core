@@ -63,6 +63,8 @@ public;IndexedValue
 public;IndexMap
 public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf
+internal;isProperSubclassOf
+internal;isSubclassOf
 public;JSONSchema
 public;JSONSchemaMap
 public;JSONSchemaSnippet

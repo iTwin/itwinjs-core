@@ -402,6 +402,7 @@ public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
 public;OnViewExtentsError
+internal;OPCFormatInterpreter
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
@@ -438,6 +439,7 @@ beta;PreferenceArg
 beta;PreferenceKeyArg
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
+alpha;PublisherProductInfo
 internal;QuadId
 beta;QuantityFormatOverridesChangedArgs
 beta;QuantityFormatsChangedArgs
@@ -465,7 +467,7 @@ internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): Realit
 alpha;createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined
-internal;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
+alpha;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
@@ -546,6 +548,7 @@ public;SnapMode
 public;SnapshotConnection 
 public;SnapStatus
 internal;class SpatialClassifierTileTreeReference 
+alpha;SpatialLocationAndExtents
 public;SpatialLocationModelState 
 public;SpatialModelState 
 internal;SpatialTileTreeReferences 
@@ -579,6 +582,8 @@ public;TextureImage
 public;TextureImageSource = HTMLImageElement | ImageBuffer
 public;TextureOwnership = TextureCacheOwnership | "external"
 internal;ThreeAxes
+internal;ThreeDTileFileInfo
+internal;ThreeDTileFormatInterpreter
 public;class Tile
 public;TileAdmin
 public;TileAdmin

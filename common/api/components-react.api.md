@@ -3684,6 +3684,9 @@ export class ToolbarPanelAlignmentHelpers {
 }
 
 // @public
+export const ToolbarPopupAutoHideContext: React.Context<boolean>;
+
+// @public
 export const ToolbarPopupContext: React.Context<ToolbarPopupContextProps>;
 
 // @public (undocumented)
@@ -4210,6 +4213,9 @@ export function useRenderedStringValue(record: PropertyRecord, stringValueCalcul
     stringValue?: string;
     element: React.ReactNode;
 };
+
+// @public
+export function useToolbarPopupAutoHideContext(): boolean;
 
 // @public
 export function useToolbarPopupContext(): ToolbarPopupContextProps;

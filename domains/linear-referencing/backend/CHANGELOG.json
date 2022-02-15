@@ -2,6 +2,21 @@
   "name": "@itwin/linear-referencing-backend",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/linear-referencing-backend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "rename to @itwin/linear-referencing-backend"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/linear-referencing-backend_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

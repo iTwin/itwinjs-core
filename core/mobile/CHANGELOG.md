@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-mobile
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019
+- use new @itwin package names
+- rename to @itwin/core-mobile
+- remove ClientRequestContext and its subclasses
+- Removed config.app usage
+- remove ClientRequestContext.current
+- Flattened MobileAuthorizationClient heirarchy
+- Bumped dotenv and removed deprecated @types/dotenv
+- Removed references to the deleted config-loader package
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT

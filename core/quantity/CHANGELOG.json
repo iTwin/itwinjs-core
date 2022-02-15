@@ -2,6 +2,30 @@
   "name": "@itwin/core-quantity",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/core-quantity_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove alternateLabels from UnitProps and require them to be provided via AlternateUnitLabelsProvider"
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "use new @itwin package names"
+          },
+          {
+            "comment": "rename to @itwin/core-quantity"
+          },
+          {
+            "comment": "Added `UnitSystemKey` to identify different unit systems."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-quantity_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",
