@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "ui-test-app now utilizes the SchemaUnitProvider class from @itwin/ecschema-metadata to retrieve unit definitions.",
+      "comment": "Now initializing Unit alternate display labels from UNIT_EXTRA_DATA. Minimal changes to support Units schema retrieval from backend iModels.",
       "type": "none"
     }
   ],
