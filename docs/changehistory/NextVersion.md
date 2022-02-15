@@ -48,3 +48,7 @@ display-test-app provides [an example tool](https://github.com/iTwin/itwinjs-cor
 The [FloatingViewportContent]($appui-react) component has been added to support the display an IModel view within a modeless [ContentDialog]($appui-react). These "floating" viewports are displayed above the "fixed" viewports and below other UI items. See example `OpenViewDialogTool` in `ui-test-app` that opens a "floating" viewport in file [ImmediateTools.tsx](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/tools/ImmediateTools.tsx). See example below with floating content in dialog labeled "IModel View (1)".
 
 ![Floating iModel Content Dialog](../learning/ui/appui/images/FloatingViewport.png "Floating iModel Content Dialog")
+
+## Font Workspaces
+
+It is now possible to store and load fonts from a Font Workspace. See [Fonts]($docs/learning/backend/Fonts.md) for more details.
