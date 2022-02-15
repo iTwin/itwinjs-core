@@ -6,6 +6,7 @@
 #
 # Note: Currently a subset of all integration tests
 
+trigger: none
 pr:
   autoCancel: true
   drafts: false
