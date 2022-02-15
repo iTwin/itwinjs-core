@@ -529,8 +529,6 @@ export function showSignOptionToString(showSign: ShowSignOption): string;
 // @beta
 export interface UnitConversion {
     // (undocumented)
-    error: boolean;
-    // (undocumented)
     factor: number;
     // (undocumented)
     offset: number;
