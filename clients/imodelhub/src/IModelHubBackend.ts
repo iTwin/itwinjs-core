@@ -369,7 +369,7 @@ export class IModelHubBackend implements BackendHubAccess {
       accountName: containerAccessKeyAccount,
       dbName: containerAccessKeyDbName,
       writeable: false,
-      localFile: arg.localFile,
+      localFileName: arg.localFile,
     });
 
     let timer: NodeJS.Timeout | undefined;

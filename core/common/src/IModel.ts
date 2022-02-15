@@ -143,9 +143,9 @@ export interface OpenDbKey {
  */
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   /** @internal */
-  readonly lazyBlockCache?: boolean;
+  readonly skipFileCheck?: boolean;
   /** @internal */
-  readonly autoUploadBlocks?: boolean;
+  readonly uriParams?: string;
   /**
    * The "base" name that can be used for creating temporary files related to this Db.
    * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.

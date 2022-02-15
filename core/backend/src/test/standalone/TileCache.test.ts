@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
 import { CloudSqlite } from "@bentley/imodeljs-native";
-import { DbResult, Guid, Logger } from "@itwin/core-bentley";
+import { Guid, Logger } from "@itwin/core-bentley";
 import {
   BatchType, ContentIdProvider, defaultTileOptions, EdgeType, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
 } from "@itwin/core-common";
@@ -143,8 +143,7 @@ describe("TileCache, open v2", async () => {
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
-    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
-    sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => daemonSuccessResult);
+    sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => { });
     // Mock blockcacheVFS daemon
     sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
 

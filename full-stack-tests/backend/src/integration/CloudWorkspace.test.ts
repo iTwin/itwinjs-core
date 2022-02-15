@@ -31,9 +31,9 @@ describe("Cloud workspace containers", () => {
 
     const testContainerName = "test-container";
     const testDbName = "testDb";
-    const container = workspace.getContainer({ containerName: testContainerName });
+    const container = workspace.getContainer({ containerName: testContainerName, cloudProps: { ...containerProps, ...accountProps } });
     const ws1 = new EditableWorkspaceDb(testDbName, container);
-    const dbName = ws1.localFile;
+    const dbName = ws1.localFileName;
     if (IModelJsFs.existsSync(dbName))
       IModelJsFs.unlinkSync(dbName);
 
@@ -49,7 +49,7 @@ describe("Cloud workspace containers", () => {
     await ws1.upload(cloudAccess);
 
     IModelJsFs.unlinkSync(dbName);
-    let ws2 = await container.getWorkspaceDb({ dbName: testDbName, cloudProps: { ...containerProps, ...accountProps } });
+    let ws2 = await container.getWorkspaceDb({ dbName: testDbName });
     let val = ws2.getString("string 1");
     expect(val).equals("value of string 1");
     ws2.container.dropWorkspaceDb(ws2);
@@ -64,7 +64,7 @@ describe("Cloud workspace containers", () => {
     await CloudSqlite.deleteDb({ ...ws3, ...cloudAccess });
     await ws3.upload(cloudAccess);
 
-    ws2 = await container.getWorkspaceDb({ dbName: testDbName, cloudProps: { ...containerProps, ...accountProps } });
+    ws2 = await container.getWorkspaceDb({ dbName: testDbName });
     val = ws2.getString("string 1");
     expect(val).equals(newVal);
     ws2.container.dropWorkspaceDb(ws2);

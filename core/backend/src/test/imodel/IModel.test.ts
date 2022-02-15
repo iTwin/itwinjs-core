@@ -2065,9 +2065,7 @@ describe("iModel", () => {
 
     // Mock BlobDaemon
     sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
-    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
-    const daemonErrorResult = { result: DbResult.BE_SQLITE_ERROR, errMsg: "NOT GOOD" };
-    const commandStub = sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => daemonSuccessResult);
+    const commandStub = sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => { });
 
     process.env.BLOCKCACHE_DIR = "/foo/";
     const accessToken = "token";
@@ -2092,7 +2090,7 @@ describe("iModel", () => {
     assert.include(infoLogStub.args[1][1], "reattached checkpoint");
 
     errorLogStub.resetHistory();
-    commandStub.callsFake(async () => daemonErrorResult);
+    commandStub.callsFake(async () => { throw new Error("attach failed"); });
     await expect(checkpoint.reattachDaemon(accessToken)).to.eventually.be.rejectedWith("attach failed");
 
     checkpoint.close();
@@ -2122,8 +2120,7 @@ describe("iModel", () => {
 
     // Mock blockcacheVFS daemon
     sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
-    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
-    sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => daemonSuccessResult);
+    sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => { });
 
     const accessToken = "token";
 

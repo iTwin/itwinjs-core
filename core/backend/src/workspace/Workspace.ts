@@ -16,6 +16,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
+import { IModelHost } from "../IModelHost";
 
 // cspell:ignore rowid
 
@@ -87,13 +88,13 @@ export type ContainerNameOrId = { containerName: WorkspaceContainerName, contain
  * @beta
  */
 export type WorkspaceContainerProps = ContainerNameOrId & {
-  cloudProps?: CloudSqlite.TransferProps;
+  cloudProps?: CloudSqlite.ContainerAccessProps;
 };
 
 /** Properties of a WorkspaceDb
  * @beta
  */
-export type WorkspaceDbProps = WorkspaceContainerProps & {
+export type WorkspaceDbProps = ContainerNameOrId & {
   /** the name of the WorkspaceDb */
   dbName: WorkspaceDbName;
 };
@@ -120,7 +121,7 @@ export interface WorkspaceDb {
   /** event raised when this WorkspaceDb is closed. */
   readonly onClosed: BeEvent<() => void>;
   /** The name of the local file for holding this WorkspaceDb. */
-  readonly localFile: LocalDirName;
+  readonly localFileName: LocalDirName;
   /** Get a string resource from this WorkspaceDb, if present. */
   getString(rscName: WorkspaceResourceName): string | undefined;
 
@@ -146,6 +147,8 @@ export interface WorkspaceDb {
   getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
 }
 
+export type WorkspaceCloudCacheProps = Optional<CloudSqlite.CacheProps, "name">;
+
 /**
  * Options for constructing a [[Workspace]].
  * @beta
@@ -156,6 +159,8 @@ export interface WorkspaceOpts {
    * @note if not supplied, defaults to `iTwin/Workspace` in the user-local folder.
    */
   containerDir?: LocalDirName;
+
+  cloudCache?: WorkspaceCloudCacheProps;
 }
 
 /**
@@ -168,6 +173,7 @@ export interface Workspace {
   readonly containerDir: LocalDirName;
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
+  readonly cloudCache?: IModelJsNative.CloudCache;
 
   getContainer(props: WorkspaceContainerProps): WorkspaceContainer;
 
@@ -201,6 +207,8 @@ export interface WorkspaceContainer {
   readonly filesDir: LocalDirName;
   readonly id: WorkspaceContainerId;
   readonly workspace: Workspace;
+  readonly cloudContainer?: IModelJsNative.CloudContainer;
+
   /** @internal */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
 
@@ -209,6 +217,10 @@ export interface WorkspaceContainer {
   dropWorkspaceDb(container: WorkspaceDb): void;
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
   close(): void;
+  /** attach this container to its cloud service */
+  attach(): Promise<void>;
+  /** detach this container from its cloud service */
+  detach(): Promise<void>;
 }
 
 /** @internal */
@@ -217,9 +229,26 @@ export class ITwinWorkspace implements Workspace {
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
 
+  private _cloudCacheProps?: WorkspaceCloudCacheProps;
+  private _cloudCache?: IModelJsNative.CloudCache;
+  public get cloudCache(): IModelJsNative.CloudCache {
+    if (undefined === this._cloudCache) {
+      const cacheProps: CloudSqlite.CacheProps = {
+        rootDir: join(this.containerDir, "cloud"),
+        cacheSize: "10G",
+        ... this._cloudCacheProps,
+        name: "workspace",
+      };
+      IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
+      this._cloudCache = new IModelHost.platform.CloudCache(cacheProps);
+    }
+    return this._cloudCache;
+  }
+
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
     this.settings = settings;
     this.containerDir = opts?.containerDir ?? join(NativeLibrary.defaultLocalDir, "iTwin", "Workspace");
+    this._cloudCacheProps = opts?.cloudCache;
   }
 
   public addContainer(toAdd: ITwinWorkspaceContainer) {
@@ -232,7 +261,7 @@ export class ITwinWorkspace implements Workspace {
     if (undefined === id)
       throw new Error(`can't resolve workspace container name [${props.containerName}]`);
 
-    return this._containers.get(id) ?? new ITwinWorkspaceContainer(this, id);
+    return this._containers.get(id) ?? new ITwinWorkspaceContainer(this, id, props.cloudProps);
   }
 
   public async getWorkspaceDb(props: WorkspaceDbProps): Promise<WorkspaceDb> {
@@ -276,6 +305,8 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   public readonly workspace: ITwinWorkspace;
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainerId;
+
+  public readonly cloudContainer?: IModelJsNative.CloudContainer | undefined;
   private _wsDbs = new Map<WorkspaceDbName, ITwinWorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
@@ -289,12 +320,24 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
       throw new Error(`invalid containerId: [${id}]`);
   }
 
-  public constructor(workspace: ITwinWorkspace, id: WorkspaceContainerId) {
+  public constructor(workspace: ITwinWorkspace, id: WorkspaceContainerId, cloudProps?: CloudSqlite.TransferProps) {
     ITwinWorkspaceContainer.validateContainerId(id);
     this.workspace = workspace;
     this.id = id;
+    if (cloudProps)
+      this.cloudContainer = new IModelHost.platform.CloudContainer(cloudProps);
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
+  }
+
+  public async attach(): Promise<void> {
+    if (false === this.cloudContainer?.isAttached)
+      await this.cloudContainer.attach(this.workspace.cloudCache);
+  }
+
+  public async detach(): Promise<void> {
+    if (true === this.cloudContainer?.isAttached)
+      await this.cloudContainer.detach();
   }
 
   public addWorkspaceDb(toAdd: ITwinWorkspaceDb) {
@@ -304,12 +347,10 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   }
 
   public async getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerName">): Promise<WorkspaceDb> {
+    await this.attach();
     const db = this._wsDbs.get(props.dbName) ?? new ITwinWorkspaceDb(props.dbName, this);
-    if (!db.isOpen) {
-      if (props.cloudProps)
-        await CloudSqlite.downloadDb({ ...db, ...props.cloudProps, containerId: this.id });
+    if (!db.isOpen)
       db.open();
-    }
     return db;
   }
 
@@ -341,8 +382,8 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   public readonly sqliteDb = new SQLiteDb(); // eslint-disable-line @typescript-eslint/naming-convention
   public readonly dbName: WorkspaceDbName;
   public readonly container: WorkspaceContainer;
-  public localFile: LocalFileName;
   public readonly onClosed = new BeEvent<() => void>();
+  public localFileName: LocalFileName;
 
   protected static noLeadingOrTrailingSpaces(name: string, msg: string) {
     if (name.trim() !== name)
@@ -372,12 +413,17 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     ITwinWorkspaceDb.validateDbName(dbName);
     this.dbName = dbName;
     this.container = container;
-    this.localFile = join(container.dirName, `${dbName}.${workspaceDbFileExt}`);
+    this.localFileName = join(container.dirName, `${dbName}.${workspaceDbFileExt}`);
     container.addWorkspaceDb(this);
   }
 
   public open(): void {
-    this.sqliteDb.openDb(this.localFile, OpenMode.Readonly);
+    const cloudContainer = this.container.cloudContainer;
+    if (cloudContainer) {
+      this.sqliteDb.nativeDb.openDb(`/${cloudContainer.alias}/${this.dbName}`, OpenMode.Readonly, { skipFileCheck: true, uriParams: cloudContainer.uriParams });
+    } else {
+      this.sqliteDb.openDb(this.localFileName, OpenMode.Readonly);
+    }
   }
 
   public close(): void {
@@ -462,7 +508,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   }
 
   public override open() {
-    this.sqliteDb.openDb(this.localFile, OpenMode.ReadWrite);
+    this.sqliteDb.openDb(this.localFileName, OpenMode.ReadWrite);
   }
 
   public override close() {
@@ -490,8 +536,8 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
 
   /** Create a new, empty, EditableWorkspaceDb for importing Workspace resources. */
   public create() {
-    IModelJsFs.recursiveMkDirSync(dirname(this.localFile));
-    this.sqliteDb.createDb(this.localFile);
+    IModelJsFs.recursiveMkDirSync(dirname(this.localFileName));
+    this.sqliteDb.createDb(this.localFileName);
     this.sqliteDb.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
     this.sqliteDb.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
     this.sqliteDb.saveChanges();

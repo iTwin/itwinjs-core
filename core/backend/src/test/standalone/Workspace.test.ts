@@ -24,8 +24,8 @@ describe("WorkspaceFile", () => {
     const wsFile = new EditableWorkspaceDb(dbName, container);
 
     IModelJsFs.purgeDirSync(container.filesDir);
-    if (IModelJsFs.existsSync(wsFile.localFile))
-      IModelJsFs.unlinkSync(wsFile.localFile);
+    if (IModelJsFs.existsSync(wsFile.localFileName))
+      IModelJsFs.unlinkSync(wsFile.localFileName);
     wsFile.create();
     return wsFile;
   }
@@ -145,7 +145,6 @@ describe("WorkspaceFile", () => {
   });
 
   it("resolve workspace alias", async () => {
-
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultDb = makeEditableDb("default", "db1");
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));

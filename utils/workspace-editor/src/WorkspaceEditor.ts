@@ -9,8 +9,7 @@ import { join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite,
-  EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, ITwinWorkspaceDb, WorkspaceContainerId, WorkspaceDbName,
+  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, ITwinWorkspaceDb, WorkspaceDbName,
   WorkspaceResourceName,
 } from "@itwin/core-backend";
 import { DbResult, StopWatch } from "@itwin/core-bentley";
@@ -19,21 +18,10 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 // cspell:ignore nodir
 /* eslint-disable id-blacklist,no-console */
 
-/** Properties for accessing a blob storage account. */
-interface BlobAccountProps {
-  /** Token that provides required access (read/write/create/etc.) for blob store operation. */
-  sasToken: string;
-  /** Name for blob store user account */
-  accountName: string;
-  /** The string that identifies the storage type. Default = "azure?sas=1" */
-  storageType: string;
-}
-
 /** Allows overriding the location of WorkspaceDbs. If not present, defaults to `${homedir}/iTwin/Workspace` */
-interface EditorOpts extends BlobAccountProps {
+interface EditorOpts extends CloudSqlite.ContainerProps {
   /** Directory for WorkspaceDbs */
   directory?: LocalDirName;
-  containerId: WorkspaceContainerId;
 }
 
 /** Id of WorkspaceDb for operation */
@@ -75,10 +63,7 @@ interface ListOptions extends WorkspaceDbOpt {
   blobs?: boolean;
 }
 
-interface TransferOptions extends BlobAccountProps, WorkspaceDbOpt {
-  /** If present, name of local file for download.  */
-  localFile?: string;
-}
+type TransferOptions = CloudSqlite.TransferDbProps;
 
 /** Options for uploading a WorkspaceDb to blob storage */
 interface UploadOptions extends TransferOptions {
@@ -211,7 +196,7 @@ async function removeResource(args: RemoveResourceOpts) {
 }
 
 function getDbFileName(args: WorkspaceDbOpt): LocalFileName {
-  return new ITwinWorkspaceDb(args.dbName, IModelHost.appWorkspace.getContainer(args)).localFile;
+  return new ITwinWorkspaceDb(args.dbName, IModelHost.appWorkspace.getContainer(args)).localFileName;
 }
 
 /** Vacuum a local WorkspaceDb file, usually immediately prior to uploading. */
@@ -223,8 +208,8 @@ async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
 
 /** Either upload or download a WorkspaceDb to/from a WorkspaceContainer. Shows progress % during transfer */
 async function performTransfer(direction: CloudSqlite.TransferDirection, args: TransferOptions) {
-  const localFile = args.localFile ?? getDbFileName(args);
-  const info = `${direction} ${localFile}, containerId=${args.containerId}, WorkspaceDbName=${args.dbName} : `;
+  const localFileName = args.localFileName ?? getDbFileName(args);
+  const info = `${direction} ${localFileName}, containerId=${args.containerId}, WorkspaceDbName=${args.dbName} : `;
 
   let last = 0;
   const onProgress = (loaded: number, total: number) => {
@@ -238,7 +223,7 @@ async function performTransfer(direction: CloudSqlite.TransferDirection, args: T
   };
   process.stdout.write(info);
   const timer = new StopWatch(direction, true);
-  await CloudSqlite.transferDb(direction, { ...args, localFile, onProgress });
+  await CloudSqlite.transferDb(direction, { ...args, localFileName, onProgress });
   readline.cursorTo(process.stdout, info.length);
   process.stdout.write(`complete, ${timer.elapsedSeconds.toString()} seconds`);
 }
@@ -256,9 +241,31 @@ async function downloadWorkspaceDb(args: TransferOptions) {
 }
 
 /** Delete a WorkspaceDb from a WorkspaceContainer. */
-async function deleteWorkspaceDb(args: BlobAccountProps & WorkspaceDbOpt) {
+async function deleteWorkspaceDb(args: CloudSqlite.AccountProps & WorkspaceDbOpt) {
   await CloudSqlite.deleteDb(args);
   console.log(`deleted WorkspaceDb [${args.dbName}] from containerId: ${args.containerId}`);
+}
+
+/** query the list of WorkspaceDb in a WorkspaceContainer. */
+async function queryWorkspaceDbs(args: CloudSqlite.AccountProps & WorkspaceDbOpt) {
+  let cloudProps: CloudSqlite.ContainerAccessProps | undefined;
+  if (args.sasToken) {
+    cloudProps = {
+      sasToken: args.sasToken,
+      accountName: args.accountName,
+      containerId: args.containerId,
+      storageType: args.storageType,
+    };
+  }
+  const container = IModelHost.appWorkspace.getContainer({ ...args, cloudProps });
+  await container.attach();
+  const dbs = container.cloudContainer?.queryDatabases();
+  if (dbs === undefined)
+    throw new Error(`cloud container [${args.containerId}] cannot be attached`);
+
+  for (const db of dbs) {
+    console.log(`db: ${db}`);
+  }
 }
 
 /** Start `IModelHost`, then run a WorkspaceEditor command. Errors are logged to console. */
@@ -353,6 +360,11 @@ async function main() {
     command: "delete <dbName>",
     describe: "delete a WorkspaceDb from cloud storage",
     handler: runCommand(deleteWorkspaceDb),
+  });
+  Yargs.command({
+    command: "queryDbs",
+    describe: "query the list of WorkspaceDb in a cloud storage",
+    handler: runCommand(queryWorkspaceDbs),
   });
   Yargs.command({
     command: "vacuum <dbName>",

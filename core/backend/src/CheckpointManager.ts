@@ -9,7 +9,7 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@itwin/core-bentley";
+import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -107,34 +107,32 @@ export class Downloads {
  * @internal
 */
 export class V2CheckpointManager {
-  private static async getCommandArgs(checkpoint: CheckpointProps): Promise<CloudSqlite.DaemonCommandArg> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: LocalFileName, expiryTimestamp: number }> {
+    if (!process.env.BLOCKCACHE_DIR)
+      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
+
+    let args: CloudSqlite.DaemonCommandArg;
     try {
       const v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
       if (!v2props)
         throw new Error("no checkpoint");
 
-      return { ...v2props, daemonDir: process.env.BLOCKCACHE_DIR, writeable: false };
+      args = { ...v2props, rootDir: process.env.BLOCKCACHE_DIR, name: "daemon", writeable: false };
     } catch (err: any) {
       throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
-  }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: LocalFileName, expiryTimestamp: number }> {
-    const args = await this.getCommandArgs(checkpoint);
-    if (undefined === args.daemonDir || args.daemonDir === "")
-      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
-
-    // We can assume that a BCVDaemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
-    const attachResult = await CloudSqlite.Daemon.command("attach", args);
-    if (attachResult.result !== DbResult.BE_SQLITE_OK) {
-      const error = `Daemon attach failed: ${attachResult.errMsg}`;
+    // We can assume that a Daemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
+    try {
+      await CloudSqlite.Daemon.command("attach", args);
+    } catch (e: any) {
+      const error = `Daemon attach failed: ${e.message}`;
       if (checkpoint.expectV2)
         Logger.logError(loggerCategory, error);
 
-      throw new IModelError(attachResult.result, error);
+      throw new IModelError(e.errorNumber, error);
     }
     const sasTokenExpiry = new URLSearchParams(args.sasToken).get("se");
-
     return { filePath: CloudSqlite.Daemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 };
   }
 
