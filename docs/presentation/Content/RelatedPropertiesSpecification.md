@@ -98,7 +98,7 @@ attribute. The attribute tells UI components showing the properties that they sh
 
 > **Default value:** `false`
 
-The attribute specifies whether the specification should be ignored if it duplicates another higher priority specification for the same relationship.
+Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.
 
 ```ts
 [[include:Content.Customization.RelatedPropertiesSpecification.SkipIfDuplicate.Ruleset]]
