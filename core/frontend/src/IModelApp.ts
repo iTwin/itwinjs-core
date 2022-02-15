@@ -333,7 +333,7 @@ export class IModelApp {
     opts = opts ?? {};
     this._securityOptions = opts.security ?? {};
 
-    if (process.env.NODE_ENV !== "production") {
+    if (process.env.NODE_ENV === "development") {
       // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
       (window as IModelAppForDebugger).iModelAppForDebugger = this;
     }
@@ -411,7 +411,7 @@ export class IModelApp {
     this.onBeforeShutdown.raiseEvent();
     this.onBeforeShutdown.clear();
 
-    if (process.env.NODE_ENV !== "production") {
+    if (process.env.NODE_ENV === "development") {
       (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
     }
 
