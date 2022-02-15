@@ -322,13 +322,15 @@ export class HalfEdgeGraphMerge {
   // This should need to be upgraded to account for higher derivatives in the case of higher-than-tangent match.
   private static curvatureSortKey(node: HalfEdge): number {
     const cld = node.edgeTag as CurveLocationDetail;
-    const fraction = cld.fraction;
-    const curve = cld.curve;
-    if (curve) {
-      let radius  = curve.fractionToSignedXYRadiusOfCurvature(fraction);
-      if (node.sortData !== undefined && node.sortData < 0)
-        radius = -radius;
-      return radius;
+    if (cld !== undefined) {
+      const fraction = cld.fraction;
+      const curve = cld.curve;
+      if (curve) {
+        let radius = curve.fractionToSignedXYRadiusOfCurvature(fraction);
+        if (node.sortData !== undefined && node.sortData < 0)
+          radius = -radius;
+        return radius;
+      }
     }
     return 0.0;
   }
@@ -430,7 +432,7 @@ export class HalfEdgeGraphMerge {
               // NO leave nodeA and thetaA   ignore nodeB -- later step will get the outside of its banana.
             } else {
               HalfEdge.pinch(nodeA, nodeB);
-              const doNullFaceMarkup = false;
+              const doNullFaceMarkup = true;
               if (doNullFaceMarkup && Angle.isAlmostEqualRadiansAllowPeriodShift(thetaA, thetaB)) {
                 const nodeA1 = nodeA.faceSuccessor;
                 const nodeB1 = nodeB.edgeMate;

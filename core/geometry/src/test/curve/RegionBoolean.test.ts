@@ -441,7 +441,7 @@ describe("RegionBoolean", () => {
         });
 
         // Near-tangency union from MS Bug#716145. TODO: CURRENTLY FAILS.
-  it.only("NearTangencyUnion", () => {
+  it("NearTangencyUnion", () => {
     testSelectedTangencySubsets(true, 0, [-1], [], "Base");
     testSelectedTangencySubsets(false, 0, [],
       [
@@ -903,7 +903,7 @@ describe("GeneralSweepBooleans", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "HoleInA");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("FullCircle", () => {
+  it("FullCircle", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
