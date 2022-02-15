@@ -13,9 +13,9 @@ import { CoreTools } from "../tools/CoreToolDefinitions";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { ToolWidgetComposer } from "./ToolWidgetComposer";
 import { BackstageAppButton } from "./BackstageAppButton";
+import { useUiVisibility } from "../hooks/useUiVisibility";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
  * @public
@@ -29,20 +29,6 @@ export interface BasicToolWidgetProps {
   additionalHorizontalItems?: CommonToolbarItem[];
   /** optional set of additional items to include in vertical toolbar */
   additionalVerticalItems?: CommonToolbarItem[];
-}
-
-/** @internal */
-// istanbul ignore next
-export function useUiVisibility() {
-  const [uiIsVisible, setUiIsVisible] = React.useState(UiFramework.getIsUiVisible());
-  React.useEffect(() => {
-    const handleUiVisibilityChanged = ((args: UiVisibilityEventArgs): void => setUiIsVisible(args.visible));
-    UiFramework.onUiVisibilityChanged.addListener(handleUiVisibilityChanged);
-    return () => {
-      UiFramework.onUiVisibilityChanged.removeListener(handleUiVisibilityChanged);
-    };
-  }, []);
-  return uiIsVisible;
 }
 
 /** Default Tool Widget for standard "review" applications. Provides standard tools to review, and measure elements.
