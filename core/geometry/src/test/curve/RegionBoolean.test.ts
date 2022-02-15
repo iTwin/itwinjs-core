@@ -40,6 +40,7 @@ import { MultiLineStringDataVariant } from "../../topology/Triangulation";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging";
 
 /* eslint-disable no-console */
 
@@ -440,7 +441,7 @@ describe("RegionBoolean", () => {
         });
 
         // Near-tangency union from MS Bug#716145. TODO: CURRENTLY FAILS.
-  it("NearTangencyUnion", () => {
+  it.only("NearTangencyUnion", () => {
     testSelectedTangencySubsets(true, 0, [-1], [], "Base");
     testSelectedTangencySubsets(false, 0, [],
       [
@@ -491,7 +492,7 @@ function testSelectedTangencySubsets(
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
   captureShiftedClones(allGeometry, inputs, x0, y0, delta, 0);
   if (doImmediateFullBoolean) {
-    exerciseAreaBooleans([inputs[0]], [inputs[1]], ck, allGeometry, 0, 0);
+    exerciseAreaBooleans([inputs[0]], [inputs[1]], ck, allGeometry, 0, 0, false);
 }
   x0 += 4 * delta;
   // Extract each arc (with closure chord) as an independent parameter..
@@ -811,12 +812,12 @@ describe("GeneralSweepBooleans", () => {
     let y0 = 0;
     for (const rectangle1 of [rectangle1B, rectangle1A, rectangle1B]) {
       let x0 = -xStep;
-      exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep, y0);
-      exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep, y0);
-      exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep, y0);
-      exerciseAreaBooleans([rectangle1], [rectangle2], ck, allGeometry, x0 += xStep, y0);
-      exerciseAreaBooleans([rectangle1], [rectangle2, area3], ck, allGeometry, x0 += xStep, y0);
-      exerciseAreaBooleans([rectangle1], [area4], ck, allGeometry, x0 += xStep, y0);
+      exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep, y0, false);
+      exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep, y0, false);
+      exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep, y0, false);
+      exerciseAreaBooleans([rectangle1], [rectangle2], ck, allGeometry, x0 += xStep, y0, false);
+      exerciseAreaBooleans([rectangle1], [rectangle2, area3], ck, allGeometry, x0 += xStep, y0, false);
+      exerciseAreaBooleans([rectangle1], [area4], ck, allGeometry, x0 += xStep, y0, false);
       y0 += 100;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "Rectangles");
@@ -854,9 +855,9 @@ describe("GeneralSweepBooleans", () => {
     const highRectangle = Loop.create(LineString3d.create(Sample.createRectangle(0, 3, 2, 4, 0, true)));
     const tallRectangleA = Loop.create(LineString3d.create(Sample.createRectangle(1, -1, 2, 5, 0, true)));
     const tallRectangleB = Loop.create(LineString3d.create(Sample.createRectangle(1, -1, 1.5, 5, 0, true)));
-    exerciseAreaBooleans([lowRectangle], [highRectangle], ck, allGeometry, 0, 0);
-    exerciseAreaBooleans([tallRectangleA], [lowRectangle, highRectangle], ck, allGeometry, 10, 0);
-    exerciseAreaBooleans([tallRectangleB], [lowRectangle, highRectangle], ck, allGeometry, 20, 0);
+    exerciseAreaBooleans([lowRectangle], [highRectangle], ck, allGeometry, 0, 0, false);
+    exerciseAreaBooleans([tallRectangleA], [lowRectangle, highRectangle], ck, allGeometry, 10, 0, false);
+    exerciseAreaBooleans([tallRectangleB], [lowRectangle, highRectangle], ck, allGeometry, 20, 0, false);
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "Disjoints");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -876,11 +877,11 @@ describe("GeneralSweepBooleans", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, x0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, x0, 50);
     const dx = 100.0;
-    exerciseAreaBooleans(outer, inner, ck, allGeometry, (x0 += dx), -dy);
+    exerciseAreaBooleans(outer, inner, ck, allGeometry, (x0 += dx), -dy, false);
     for (const a of outer) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, a, x0 += 2 * dx, 0);
       for (const b of inner) {
-        exerciseAreaBooleans([a], [b], ck, allGeometry, x0 += dx, 0);
+        exerciseAreaBooleans([a], [b], ck, allGeometry, x0 += dx, 0, false);
       }
     }
 
@@ -897,7 +898,7 @@ describe("GeneralSweepBooleans", () => {
     let x0 = 0;
     for (const yB of [-0.5, 0.5, 6.5, 7.5, 3.0]) {
       const rectangle2 = Loop.create(LineString3d.create(Sample.createRectangle(5, yB, 6, yB + 1, 0, true)));
-      exerciseAreaBooleans([region], [rectangle2], ck, allGeometry, x0 += dx, 0);
+      exerciseAreaBooleans([region], [rectangle2], ck, allGeometry, x0 += dx, 0, false);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "HoleInA");
     expect(ck.getNumErrors()).equals(0);
@@ -910,13 +911,13 @@ describe("GeneralSweepBooleans", () => {
     {
       const circleA = Loop.create(Arc3d.createXY(Point3d.create(0, 0), 5));
       const circleB = Loop.create(Arc3d.createXY(Point3d.create(4, 0), 5));
-      exerciseAreaBooleans([circleB], [circleA], ck, allGeometry, x0, 0);
+      exerciseAreaBooleans([circleB], [circleA], ck, allGeometry, x0, 0, false);
       x0 += 20;
     }
     const rectangle1A = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 10, 8, 0, true)));
     for (const cx of [1, 5]) {
       const loopB = Loop.create(Arc3d.createXY(Point3d.create(cx, 5), 2));
-      exerciseAreaBooleans([rectangle1A], [loopB], ck, allGeometry, x0, 0);
+      exerciseAreaBooleans([rectangle1A], [loopB], ck, allGeometry, x0, 0, false);
       x0 += 20;
     }
     for (const startDegrees of [0, 90]){
@@ -925,11 +926,11 @@ describe("GeneralSweepBooleans", () => {
         const arc1 = Arc3d.createXY(Point3d.create(cx, 5), 2, AngleSweep.createStartEndDegrees(180, 360));
         if (startDegrees === 0) {
           const loopB = Loop.create(arc0, arc1);
-          exerciseAreaBooleans([rectangle1A], [loopB], ck, allGeometry, x0, 0);
+          exerciseAreaBooleans([rectangle1A], [loopB], ck, allGeometry, x0, 0, false);
         } else {
           const closureSegment = LineSegment3d.create(arc1.endPoint(), arc0.startPoint());
           const loopB = Loop.create(closureSegment, arc0, arc1);
-          exerciseAreaBooleans([rectangle1A], [loopB], ck, allGeometry, x0, 0);
+          exerciseAreaBooleans([rectangle1A], [loopB], ck, allGeometry, x0, 0, false);
         }
         x0 += 20;
       }
@@ -1020,16 +1021,27 @@ describe("GeneralSweepBooleans", () => {
 });
 
 function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
-  ck: Checker, allGeometry: GeometryQuery[], x0: number, y0Start: number) {
+  ck: Checker, allGeometry: GeometryQuery[], x0: number, y0Start: number, showVertexNeighborhoods: boolean) {
   const areas = [];
   const range = RegionOps.curveArrayRange(dataA.concat(dataB));
   const yStep = Math.max(15.0, 2.0 * range.yLength());
   let y0 = y0Start;
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, dataA, x0, y0);
+  y0 += yStep;
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, dataB, x0, y0);
+  const vertexNeighborhoodFunction = (edgeData: VertexNeighborhoodSortData[]) => {
+    console.log({ nodeCount: edgeData.length });
+    for (const data of edgeData) {
+      console.log (` id: ${data.node.id}  x: ${  data.node.x}, y: ${  data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature} `);
+    }
+  };
   for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
     y0 += yStep;
+    if (showVertexNeighborhoods && opType === RegionBinaryOpType.Union)
+      HalfEdgeGraphMerge.announceVertexNeighborhoodFunction = vertexNeighborhoodFunction;
     const result = RegionOps.regionBooleanXY(dataA, dataB, opType);
+    if (showVertexNeighborhoods)
+      HalfEdgeGraphMerge.announceVertexNeighborhoodFunction = undefined;
     areas.push(RegionOps.computeXYArea(result!)!);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y0);
   }

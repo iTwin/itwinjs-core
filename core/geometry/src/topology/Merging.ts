@@ -30,17 +30,24 @@ export class GraphSplitData {
   public constructor() {
   }
 }
-
-class IndexKey {
+/**
+ * Structure for data used when sorting outbound edges "around a node"
+ */
+export class VertexNeighborhoodSortData {
   public index: number;
-  public key: number;
+  public radiusOfCurvature: number;
   public node: HalfEdge;
-  public constructor(index: number, key: number, node: HalfEdge) {
+  public radians?: number;
+  public constructor(index: number, key: number, node: HalfEdge, radians?: number) {
     this.index = index;
-    this.key = key;
+    this.radiusOfCurvature = key;
     this.node = node;
+    this.radians = radians;
   }
 }
+
+/** Function signature for announcing a vertex neighborhood during sorting. */
+export type AnnounceVertexNeighborhoodSortData = (data: VertexNeighborhoodSortData[]) => any;
 /**
  * * Assorted methods used in algorithms on HalfEdgeGraph.
  * @internal
@@ -263,14 +270,34 @@ export class HalfEdgeGraphMerge {
     }
     return kC;
   }
+  private static _announceVertexNeighborhoodFunction?: AnnounceVertexNeighborhoodSortData;
+/**
+ * public property setter for a function to be called with sorted edge data around a vertex.
+ */
+  public static set announceVertexNeighborhoodFunction(func: AnnounceVertexNeighborhoodSortData | undefined) { this._announceVertexNeighborhoodFunction = func; }
+  private static doAnnounceVertexNeighborhood(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number) {
+    if (this._announceVertexNeighborhoodFunction) {
+      const sortData: VertexNeighborhoodSortData[] = [];
+      // build and share the entire vertex order
+      for (let k = k0; k < k1; k++){
+      const index = clusters.getExtraData(order[k], 1);
+      const theta = clusters.getExtraData(order[k], 0);
+      const node = allNodes[index];
+      const signedDistance = this.curvatureSortKey(node);
+      sortData.push(new VertexNeighborhoodSortData(order[k], signedDistance, node, theta));
+      }
+      this._announceVertexNeighborhoodFunction(sortData);
+    }
+
+  }
   // assumptions about cluster array:
   //   * data order is: x,y,theta, nodeIndex
   //   * theta and nodeIndex are the "extra" data.
   //   * only want to do anything here when curves are present.
   //   * k0<=k<k1 are around a vertex
   //   * These are sorted by theta.
-  public static secondarySortAroundVertex(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number) {
-    const sortData: IndexKey[] = [];
+  private static secondarySortAroundVertex(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number) {
+    const sortData: VertexNeighborhoodSortData[] = [];
 
     for (let k = k0; k < k1;) {
       const kB = this.getCommonThetaEndIndex(clusters, order,k, k1);
@@ -280,9 +307,9 @@ export class HalfEdgeGraphMerge {
           const index = clusters.getExtraData(order[kA], 1);
           const node = allNodes[index];
           const signedDistance = this.curvatureSortKey(node);
-          sortData.push(new IndexKey(order[kA], signedDistance, node));
+          sortData.push(new VertexNeighborhoodSortData(order[kA], signedDistance, node));
         }
-        sortData.sort((a: IndexKey, b: IndexKey) => (a.key - b.key));
+        sortData.sort((a: VertexNeighborhoodSortData, b: VertexNeighborhoodSortData) => (a.radiusOfCurvature - b.radiusOfCurvature));
         for (let i = 0; i < sortData.length; i++){
           order[k + i] = sortData[i].index;
         }
@@ -376,6 +403,7 @@ export class HalfEdgeGraphMerge {
           // console.log({ k0, k1, x: xy.x, y: xy.y });
           if (k1 > k0 + 1)
             this.secondarySortAroundVertex(clusters, order, allNodes, k0, k1);
+          this.doAnnounceVertexNeighborhood(clusters, order, allNodes, k0, k1);
           const iA = clusters.getExtraData(order[k0], 1);
           thetaA = clusters.getExtraData(order[k0], 0);
           const nodeA0 = allNodes[iA];
