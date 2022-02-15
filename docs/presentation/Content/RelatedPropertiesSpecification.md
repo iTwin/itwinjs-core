@@ -18,13 +18,19 @@ This specification allows including related instance properties into the content
 
 ### Attribute: `propertiesSource`
 
-[Specification of the relationship path](../Common-Rules/RelationshipPathSpecification.md) to follow when looking for related properties.
+Specifies a chain of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) that forms a path from the content instance to the related instance(s) whose properties should additionally be loaded.
+
+The path may point to more than one related instance, so the result always stores related properties in a form of a struct-array, where each struct represents a single related instance. However, often there's only one related instance and in that case a UI component displaying the result may choose to "destructure" the struct-array. An example of such component is the Property Grid:
 
 ```ts
 [[include:Content.Customization.RelatedPropertiesSpecification.PropertiesSource.Ruleset]]
 ```
 
 ![Example of using the "properties source" attribute](./media/relatedpropertiesspecification-with-propertiessource-attribute.png)
+
+Here's how the result looks like if there's more than one related instance:
+
+![Example of using the "properties source" attribute pointing to multiple related instances](./media/relatedpropertiesspecification-with-propertiessource-attribute-with-multiple-targets.png)
 
 ### Attribute: `handleTargetClassPolymorphically`
 
