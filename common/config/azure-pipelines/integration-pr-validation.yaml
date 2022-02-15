@@ -6,11 +6,8 @@
 #
 # Note: Currently a subset of all integration tests
 
-trigger:
-  - master
-  - release/*
-
 pr:
+  autoCancel: true
   drafts: false
   branches:
     include:
@@ -23,7 +20,6 @@ variables:
 
 jobs:
   - job: Integration_Tests_PR_Validation
-    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
     pool:
       vmImage: ubuntu-latest
     steps:
