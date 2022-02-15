@@ -52,7 +52,7 @@
     },
     {
       "name": "@itwin/browser-authorization",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/build-tools",
@@ -255,6 +255,14 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@loaders.gl/core",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@loaders.gl/draco",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
     },
@@ -435,6 +443,10 @@
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
+      "name": "draco3d",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "electron",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -512,7 +524,7 @@
     },
     {
       "name": "fast-sort",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "file-loader",
@@ -600,7 +612,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "jsdom-global",

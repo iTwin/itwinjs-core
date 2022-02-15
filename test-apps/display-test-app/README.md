@@ -208,7 +208,11 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
 * `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files).
 * `dta version compare` - emulate version comparison.
-* `dta save image` - open a new window containing a snapshot of the contents of the selected viewport.
+* `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
+  * `w=width` - the desired width of the image in pixels. e.g. `w=640`.
+  * `h=height` - the desired height of the image in pixels. e.g. `h=480`.
+  * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
+  * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
 * `dta zoom selected` - zoom the selected viewport to the elements in the selection set.
 * `dta incident markers` - toggle incident marker demo in the selected viewport.

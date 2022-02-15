@@ -95,7 +95,7 @@ export abstract class RealityTileLoader {
     switch (format) {
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-        let graphic = readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
+        let graphic = await readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
         if (graphic && tile.transformToRoot && !tile.transformToRoot.isIdentity) {
           const transformBranch = new GraphicBranch(true);
           transformBranch.add(graphic);

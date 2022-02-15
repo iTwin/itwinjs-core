@@ -75,6 +75,7 @@ import { DisplayStyleProps } from '@itwin/core-common';
 import { DisplayStyleSettings } from '@itwin/core-common';
 import { DisplayStyleSettingsProps } from '@itwin/core-common';
 import { EasingFunction } from '@itwin/core-common';
+import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
@@ -204,6 +205,7 @@ import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
 import { Point4d } from '@itwin/core-geometry';
+import { PointCloudReader } from '@itwin/core-orbitgt';
 import { PointWithStatus } from '@itwin/core-common';
 import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
@@ -3337,6 +3339,7 @@ export enum FrontendLoggerCategory {
     Package = "core-frontend",
     // @alpha
     RealityData = "core-frontend.RealityData",
+    Render = "core-frontend.Render",
     Request = "core-frontend.Request"
 }
 
@@ -4859,7 +4862,8 @@ export namespace IModelConnection {
     export class Views {
         // @internal
         constructor(_iModel: IModelConnection);
-        getThumbnail(viewId: Id64String): Promise<ThumbnailProps>;
+        // @deprecated (undocumented)
+        getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
         load(viewDefinitionId: Id64String): Promise<ViewState>;
         queryDefaultViewId(): Promise<Id64String>;
@@ -5705,7 +5709,7 @@ export interface MapLayerOptions {
     // (undocumented)
     BingMaps?: MapLayerKey;
     // (undocumented)
-    MapBoxImagery?: MapLayerKey;
+    MapboxImagery?: MapLayerKey;
 }
 
 // @internal
@@ -7182,6 +7186,12 @@ export interface OnViewExtentsError {
     onExtentsError?: (status: ViewStatus) => ViewStatus;
 }
 
+// @internal
+export class OPCFormatInterpreter {
+    static getFileReaderFromBlobFileURL(blobFileURL: string): Promise<PointCloudReader>;
+    static getSpatialLocationAndExtents(fileReader: PointCloudReader): Promise<SpatialLocationAndExtents>;
+}
+
 // @beta
 export function openImageDataUrlInNewWindow(url: string, title?: string): void;
 
@@ -7611,6 +7621,13 @@ export enum PrimitiveVisibility {
     Uninstanced = 2
 }
 
+// @alpha
+export interface PublisherProductInfo {
+    engine: string;
+    product: string;
+    version: string;
+}
+
 // @internal (undocumented)
 export class QuadId {
     constructor(level: number, column: number, row: number);
@@ -7832,13 +7849,17 @@ export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
 }
 
 // @internal
-export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
+export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined>;
 
 // @beta
 export interface RealityDataSource {
+    // @alpha
+    getPublisherProductInfo(): Promise<PublisherProductInfo | undefined>;
     // @internal
     getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
     getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    // @alpha
+    getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>;
     // @internal
     getTileContent(name: string): Promise<any>;
     // @internal
@@ -7855,6 +7876,8 @@ export interface RealityDataSource {
 
 // @beta
 export namespace RealityDataSource {
+    // @internal
+    export function createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey;
     // @alpha
     export function createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
     // @alpha
@@ -7862,7 +7885,7 @@ export namespace RealityDataSource {
     export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
     // @alpha
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
-    // @internal
+    // @alpha
     export function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
 }
 
@@ -9695,6 +9718,13 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
     abstract get isPlanar(): boolean;
 }
 
+// @alpha
+export interface SpatialLocationAndExtents {
+    isGeolocated: boolean;
+    location: Cartographic | EcefLocation;
+    worldRange: Range3d;
+}
+
 // @public
 export class SpatialLocationModelState extends SpatialModelState {
     // @internal (undocumented)
@@ -10407,6 +10437,22 @@ export class ThreeAxes {
     readonly y: Vector3d;
     // (undocumented)
     readonly z: Vector3d;
+}
+
+// @internal
+export interface ThreeDTileFileInfo {
+    rootChildren?: number;
+}
+
+// @internal
+export class ThreeDTileFormatInterpreter {
+    static getFileInfo(rootDocjson: any): ThreeDTileFileInfo;
+    // @alpha
+    static getPublisherProductInfo(rootDocjson: any): PublisherProductInfo;
+    static getSpatialLocationAndExtents(json: any): SpatialLocationAndExtents;
+    static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number;
+    static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined;
+    static transformFromJson(jTrans: number[] | undefined): Transform | undefined;
 }
 
 // @public
@@ -12682,9 +12728,9 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     enforceZUp(pivotPoint: Point3d): boolean;
     // (undocumented)
-    static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions): void;
+    static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions & MarginOptions): void;
     // @internal (undocumented)
-    static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions): void;
+    static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions & MarginOptions): void;
     // @internal (undocumented)
     forcedHandle: ViewHandleType;
     // (undocumented)
@@ -12776,7 +12822,7 @@ export abstract class ViewManip extends ViewTool {
     // @internal (undocumented)
     viewHandles: ViewHandleArray;
     // (undocumented)
-    static zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions): Promise<boolean>;
+    static zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions & MarginOptions): Promise<boolean>;
 }
 
 // @public
@@ -12824,7 +12870,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     changeModelDisplay(models: Id64Arg, display: boolean): boolean;
     changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void;
     changeView(view: ViewState, _opts?: ViewChangeOptions): void;
-    changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void>;
+    changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions & MarginOptions): Promise<void>;
     changeViewedModels(modelIds: Id64Arg): boolean;
     clearAlwaysDrawn(): void;
     clearNeverDrawn(): void;
@@ -13086,12 +13132,12 @@ export abstract class Viewport implements IDisposable, TileUser {
     worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void;
     worldToViewArray(pts: Point3d[]): void;
     get worldToViewMap(): Map4d;
-    zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & OnViewExtentsError): ViewStatus;
-    zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
-    zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void>;
-    zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
-    zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & ZoomToOptions): void;
-    zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions): void;
+    zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & MarginOptions & OnViewExtentsError): ViewStatus;
+    zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void;
+    zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & MarginOptions & ZoomToOptions): Promise<void>;
+    zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void;
+    zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void;
+    zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions & MarginOptions): void;
 }
 
 // @public

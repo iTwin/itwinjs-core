@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Remove unecessary dependency on itwin/browser-authorization",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
