@@ -440,7 +440,6 @@ describe("RegionBoolean", () => {
         expect(ck.getNumErrors()).equals(0);
         });
 
-        // Near-tangency union from MS Bug#716145. TODO: CURRENTLY FAILS.
   it("NearTangencyUnion", () => {
     testSelectedTangencySubsets(true, 0, [-1], [], "Base");
     testSelectedTangencySubsets(false, 0, [],
