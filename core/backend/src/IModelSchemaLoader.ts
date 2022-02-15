@@ -27,8 +27,8 @@ function loadMetadata(): boolean {
     const metadata = require("@itwin/ecschema-metadata");
     Schema = metadata.Schema;
     SchemaContext = metadata.SchemaContext;
-    SchemaKey =metadata.SchemaKey;
-    SchemaMatchType =metadata.SchemaMatchType;
+    SchemaKey = metadata.SchemaKey;
+    SchemaMatchType = metadata.SchemaMatchType;
     ECVersion = metadata.ECVersion;
     return true;
   } catch {

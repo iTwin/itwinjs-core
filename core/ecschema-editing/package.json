@@ -39,10 +39,10 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@types/almost-equal": "1.1.0",
     "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -63,8 +63,8 @@
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.1.0-dev.27",
-    "@itwin/ecschema-metadata": "workspace:^3.1.0-dev.27",
-    "@itwin/core-quantity": "workspace:^3.1.0-dev.27"
+    "@itwin/core-quantity": "workspace:^3.1.0-dev.27",
+    "@itwin/ecschema-metadata": "workspace:^3.1.0-dev.27"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

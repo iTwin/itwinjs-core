@@ -38,8 +38,8 @@
     "@bentley/units-schema": "^1.0.5",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "^4.1.4",
@@ -62,7 +62,6 @@
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.1.0-dev.27",
     "@itwin/core-quantity": "workspace:^3.1.0-dev.27"
-
   },
   "dependencies": {
     "almost-equal": "^1.1.0"
