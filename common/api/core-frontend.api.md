@@ -11257,7 +11257,7 @@ export abstract class TileTreeReference {
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
     protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
-    // (undocumented)
+    // @alpha
     getMapFeatureInfo(_hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // @internal (undocumented)
