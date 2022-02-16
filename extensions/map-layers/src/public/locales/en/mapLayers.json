@@ -78,7 +78,8 @@
     "SettingsButtonTooltip": "Settings"
   },
   "FeatureInfoWidget": {
-    "Label": "Map Layers Info"
+    "Label": "Map Layers Info",
+    "NoRecords": "No Records"
   },
   "LayerMenu": {
     "Detach": "Detach",

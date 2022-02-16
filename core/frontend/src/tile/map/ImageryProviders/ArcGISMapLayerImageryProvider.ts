@@ -18,9 +18,6 @@ import {
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 
-// eslint-disable-next-line prefer-const
-let doToolTips = true;
-
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   private _maxDepthFromLod = 0;
@@ -184,24 +181,18 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     return IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText });
   }
 
-  public override async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
-    await super.getToolTip(strings, quadId, carto, tree);
-    if (!doToolTips)
-      return;
-
-    if (!this._querySupported)
-      return;
-
-    const stringSet = new Set<string>();
+  // Translates the provided Cartographic into a EPSG:3857 point, and retrieve information.
+  // tolerance is in pixels
+  private async getIdentifyData(quadId: QuadId, carto: Cartographic, tolerance: number): Promise<any>   {
     const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const x = this.getEPSG3857X(carto.longitudeDegrees);
     const y = this.getEPSG3857Y(carto.latitudeDegrees);
-    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=1&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
+    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
     const url = await this.appendSecurityToken(tmpUrl);
 
     let json = await getJson(url);
     if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
-      // Token might have expired, make a second attempt by forcing new token.
+    // Token might have expired, make a second attempt by forcing new token.
       if (this._settings.userName && this._settings.userName.length > 0) {
         ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
         json = await getJson(url);
@@ -211,16 +202,29 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       // have to provide credentials again.  Change the layer status so we
       // don't make additional invalid requests..
       if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
-        // Check again layer status, it might have change during await.
+      // Check again layer status, it might have change during await.
         if (this.status === MapLayerImageryProviderStatus.Valid) {
           this.status = MapLayerImageryProviderStatus.RequireAuth;
           const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 
-        return;
+        return undefined;
       }
     }
+
+    return json;
+  }
+
+  // Makes an identify request to ESRI MapService server, and return it as a list of formatted strings
+  public override async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
+    await super.getToolTip(strings, quadId, carto, tree);
+
+    if (!this._querySupported)
+      return;
+
+    const stringSet = new Set<string>();
+    const json = await this.getIdentifyData(quadId, carto, 1);
 
     if (json && Array.isArray(json.results)) {
       for (const result of json.results) {
@@ -235,40 +239,12 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     }
   }
 
+  // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
   public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
-
     if (!this._querySupported)
       return;
 
-    const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
-    const x = this.getEPSG3857X(carto.longitudeDegrees);
-    const y = this.getEPSG3857Y(carto.latitudeDegrees);
-    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=5&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
-    const url = await this.appendSecurityToken(tmpUrl);
-
-    let json = await getJson(url);
-    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
-      // Token might have expired, make a second attempt by forcing new token.
-      if (this._settings.userName && this._settings.userName.length > 0) {
-        ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
-        json = await getJson(url);
-      }
-
-      // OK at this point, if response still contain a token error, we assume end-user will
-      // have to provide credentials again.  Change the layer status so we
-      // don't make additional invalid requests..
-      if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
-        // Check again layer status, it might have change during await.
-        if (this.status === MapLayerImageryProviderStatus.Valid) {
-          this.status = MapLayerImageryProviderStatus.RequireAuth;
-          const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
-        }
-
-        return;
-      }
-    }
-
+    const json = await this.getIdentifyData(quadId, carto,5 );
     if (json && Array.isArray(json.results)) {
       const layerInfo: MapLayerFeatureInfo = {layerName: this._settings.name};
 
@@ -300,7 +276,6 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
       featureInfos.push(layerInfo);
     }
-
   }
 
   protected getLayerString(prefix = "show"): string {
