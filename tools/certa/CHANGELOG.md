@@ -1,6 +1,17 @@
 # Change Log - @itwin/certa
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019
+- Updated to Electron 14
+- rename to @itwin/certa
+- Support for Node 16
+- remove ClientRequestContext and its subclasses
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -371,7 +382,7 @@ Fri, 18 Dec 2020 18:24:01 GMT
 ### Updates
 
 - Fix occasional hang in Electron when a timeout occurs loading the app
-- Upgraded electron version.
+- Upgraded electron version. 
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT

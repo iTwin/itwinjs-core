@@ -2,6 +2,36 @@
   "name": "@itwin/core-electron",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/core-electron_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "Updated to Electron 14"
+          },
+          {
+            "comment": "use new @itwin package names"
+          },
+          {
+            "comment": "rename to @itwin/core-electron"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "Removed ElectronAuthorizationBackend and related files"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-electron_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

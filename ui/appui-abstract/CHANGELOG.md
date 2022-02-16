@@ -1,6 +1,37 @@
 # Change Log - @itwin/appui-abstract
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Add onUnregister function to UiItemsProviderInterface to allow provider to do cleanup.
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- rename to @itwin/appui-abstract
+- remove ClientRequestContext and its subclasses
+- Replace usage of I18N with generic Localization interface.
+- Remove UiItemsArbiter.
+- remove ClientRequestContext.current
+- Add non-static class to handle UiSync messages.
+- Refactored part of AccuDraw UI & Providing AccuDraw UI documentation
+- Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined.
+- Deprecate and promote apis
+- Deprecate obsolete APIs. Publish beta APIs from last release.
+- Deprecate UI 1.0 props
+- Add comment about isPressed property.
+- Allow widgets supplied by a UiItemsProvider to specify a default state of floating.
+- Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js
+- Rename ui directories to match new package names.
+- Fix bug that sets the icon on MessageBox.NoSymbol the Success icon.
+- Update to React 17
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally.
+- Remove old aribiter related functions that are not used.
+- Add BaseUiItemsProvider class
+- Replaced ui-core Slider with one from iTwinUi-react. 
+- Add support for widget tab icons in UI-2
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -662,7 +693,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - In source documentation. Some learning docs & API changes.
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Started ui-components Learning doc section
-- Update doc tags for automatic UI creation
+- Update doc tags for automatic UI creation 
 - Refactor to remove duplicate ComponentGenerator instantiation. Rename files and components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
 - Add ConditionalBoolean support for isHidden and isDisabled properties.

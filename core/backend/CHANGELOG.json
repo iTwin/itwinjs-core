@@ -2,6 +2,186 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/core-backend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add briefcaseAlias argument to acquireNewBriefcaseId"
+          },
+          {
+            "comment": "make one method to acquire both shared and exclusive locks"
+          },
+          {
+            "comment": "Add GeometryClass to ExportGraphics"
+          },
+          {
+            "comment": "Update SQLiteDb to public release tag"
+          },
+          {
+            "comment": "initial support for cloud-based WorkspaceContainers"
+          },
+          {
+            "comment": "added IModelDb.workspace"
+          },
+          {
+            "comment": "improve concurrent query changes"
+          },
+          {
+            "comment": "Skip full schema load that cause OOM error on node backend"
+          },
+          {
+            "comment": "Do not reopen connection on schema change"
+          },
+          {
+            "comment": "Remove usage-logging-client"
+          },
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "Entity no longer implements EntityProps."
+          },
+          {
+            "comment": "suppress error logging during test that expect errors"
+          },
+          {
+            "comment": "add test and improved concurrent query support"
+          },
+          {
+            "comment": "fix flaky test"
+          },
+          {
+            "comment": "Update BackendHubAccess api to use ChangesetIndexAndId"
+          },
+          {
+            "comment": "Add new GeoServices class and first method to interpret WKT or complete GCS JSON.\""
+          },
+          {
+            "comment": "getAccessToken always returns a token"
+          },
+          {
+            "comment": "Fix an exception when attempting to pull changes into a briefcase that already has all the changes."
+          },
+          {
+            "comment": "LocalhostIpcHost, display-test-app support for R/W web (via orchestrator)"
+          },
+          {
+            "comment": "Added ability to convert iModel coordinates to or from any Geographic CRS"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "Tests for solid kernel severe error exceptions."
+          },
+          {
+            "comment": "throw rather than returning status from IModelDb.saveFileProperty and IModelDb.deleteFileProperty"
+          },
+          {
+            "comment": "use db.locks to release all locks"
+          },
+          {
+            "comment": "rename to @itwin/core-backend"
+          },
+          {
+            "comment": "export blobdaemon, blobdaemoncommandargs from imodeljs-native"
+          },
+          {
+            "comment": "Log the error that we catch when v2 checkpoint fails to open"
+          },
+          {
+            "comment": "use BentleyError.getErrorProps(e) instead of just logging e"
+          },
+          {
+            "comment": "Introduce no-non-null-assertion lint rule."
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Removed config.app usage"
+          },
+          {
+            "comment": "Remove deprecated APIs for 3.0."
+          },
+          {
+            "comment": "allow apps to set safety interval for reattaching deamon"
+          },
+          {
+            "comment": "removed several previously-deprecated apis"
+          },
+          {
+            "comment": "remove IModelWriteRpcInterface"
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "Renamed all occurrences of the term revision0 to version0."
+          },
+          {
+            "comment": "rework locks"
+          },
+          {
+            "comment": "Removed NativeAppAuthorizationBackend"
+          },
+          {
+            "comment": "Removed two unit tests for reproj and added one"
+          },
+          {
+            "comment": "added RpcTrace"
+          },
+          {
+            "comment": "Bumped dotenv and removed deprecated @types/dotenv"
+          },
+          {
+            "comment": "Replaced ContextRegistry with generalized ITwinAccess interface"
+          },
+          {
+            "comment": "Switching to consume new Projects-Client"
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Removed references to the deleted config-loader package"
+          },
+          {
+            "comment": "split imodel-transformer out of imodel-backend package"
+          },
+          {
+            "comment": "remove use of \"any\" types in SqliteStatement"
+          },
+          {
+            "comment": "IModelDb.getTextureImage is async."
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          },
+          {
+            "comment": "only export necessary schemas during imodel transformation"
+          },
+          {
+            "comment": "Improved log message when v2 checkpoint downloaded is not for the changeset requested"
+          },
+          {
+            "comment": "caching options for changed elements processing"
+          },
+          {
+            "comment": "Adding WebEditServer (test scenarios only for now)"
+          },
+          {
+            "comment": "add persistent iModel-based settings"
+          },
+          {
+            "comment": "initial implementation of Workspace and Settings"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-backend_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

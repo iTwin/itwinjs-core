@@ -2,6 +2,39 @@
   "name": "@itwin/ecschema-editing",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/ecschema-editing_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added delete class from schema and delete property from class as well as corresponding tests"
+          },
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "Added the setVersion method to the Editor class to allow the update of a Schema version."
+          },
+          {
+            "comment": "rename to @itwin/ecschema-editing"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Removing deprecated editing and validation types from ecschema-metadata."
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "Added CreateElement, CreateElementUniqueAspect and CreateElementMultiAspect to schema editing API."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/ecschema-editing_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

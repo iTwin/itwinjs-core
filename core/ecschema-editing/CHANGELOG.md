@@ -1,6 +1,20 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Added delete class from schema and delete property from class as well as corresponding tests
+- Upgrade target to ES2019
+- Added the setVersion method to the Editor class to allow the update of a Schema version.
+- rename to @itwin/ecschema-editing
+- Replace usage of I18N with generic Localization interface.
+- Removing deprecated editing and validation types from ecschema-metadata.
+- remove ClientRequestContext.current
+- Added CreateElement, CreateElementUniqueAspect and CreateElementMultiAspect to schema editing API.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT

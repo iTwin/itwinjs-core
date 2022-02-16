@@ -14,6 +14,8 @@ import { Transform } from "../../geometry3d/Transform";
 import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
 import { Geometry } from "../../Geometry";
 import { LineString3d } from "../LineString3d";
+import { CurveOffsetXYHandler } from "../internalContexts/CurveOffsetXYHandler";
+import { OffsetOptions } from "../internalContexts/PolygonOffsetContext";
 /**
  * This is the set of valid type names for "integrated" spirals
  * * Behavior is expressed by a `NormalizedTransition` snap function.
@@ -160,5 +162,18 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
       return rigidData;
     }
     return undefined;
+  }
+
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
+   *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
   }
 }

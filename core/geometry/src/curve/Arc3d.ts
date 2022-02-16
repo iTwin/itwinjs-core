@@ -29,6 +29,8 @@ import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimi
 import { GeometryQuery } from "./GeometryQuery";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
+import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
+import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 /**
@@ -1000,6 +1002,35 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       detJ = - detJ;
     const wedgeArea = Math.cos(alpha) * Math.sin(alpha);
     return (alpha - wedgeArea) * detJ;
+  }
+
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    if (this.isCircular || options.preserveEllipticalArcs) {
+      const arcXY = this.cloneAtZ();
+      const sign = arcXY.sweep.sweepRadians * arcXY.matrixRef.coffs[8] >= 0.0 ? 1.0 : -1.0;
+      const r0 = arcXY.matrixRef.columnXMagnitude();
+      const r0new = r0 - sign * options.leftOffsetDistance;
+      const r90 = this.isCircular ? r0 : arcXY.matrixRef.columnYMagnitude();
+      const r90new = this.isCircular ? r0new : r90 - sign * options.leftOffsetDistance;
+      if (!Geometry.isSmallMetricDistance(r0new) && (r0 * r0new > 0.0) && (this.isCircular || (!Geometry.isSmallMetricDistance(r90new) && (r90 * r90new > 0.0)))) {
+        const factor0 = r0new / r0;
+        const factor90 = this.isCircular ? factor0 : r90new / r90;
+        const matrix = arcXY.matrixClone();
+        matrix.scaleColumnsInPlace(factor0, factor90, 1.0);
+        return Arc3d.createRefs(arcXY.center.clone(), matrix, arcXY.sweep.clone());
+      } else {
+        return undefined; // zero radius
+      }
+    }
+    // default impl
+    const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
   }
 }
 /**
