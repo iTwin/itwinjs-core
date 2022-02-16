@@ -422,13 +422,6 @@ export class ViewsFrontstage extends FrontstageProvider {
                   },
                 }}
                 fillZone={true} />,
-              <Widget
-                id={FeatureInfoWidgetControl.id}
-                label={FeatureInfoWidgetControl.label}
-                control={FeatureInfoWidgetControl}
-                iconSpec={FeatureInfoWidgetControl.iconSpec}
-                applicationData={{ showLoadProgressAnimation: true }}
-              />,
             ]}
           />
         }
@@ -463,6 +456,13 @@ export class ViewsFrontstage extends FrontstageProvider {
                   applicationData={{ iModelConnection }}
                 />,
                 <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+                <Widget
+                  id={FeatureInfoWidgetControl.id}
+                  label={FeatureInfoWidgetControl.label}
+                  control={FeatureInfoWidgetControl}
+                  iconSpec={FeatureInfoWidgetControl.iconSpec}
+                  applicationData={{ showLoadProgressAnimation: true }}
+                />,
               ]}
           />
         }
