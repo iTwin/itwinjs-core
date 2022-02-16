@@ -169,6 +169,24 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return undefined;
   }
 
+  /** Construct signed distance from a point on the curve to its center of curvature (in xy only).
+   * * Positive is to the left of the xy tangent.
+   * * negative is to the right of the xy tangent.
+   * * linear curve is 0.
+   */
+   public fractionToSignedXYRadiusOfCurvature(fraction: number): number {
+    const plane = this.fractionToPointAnd2Derivatives(fraction);
+     if (!plane)
+       return 0.0;
+      const cross = plane.vectorU.crossProductXY(plane.vectorV);
+     const b = plane.vectorU.magnitude();
+     if (b === 0.0)
+       return 0.0;
+     const r = Geometry.conditionalDivideCoordinate(b * b * b, cross);
+     if (r !== undefined)
+       return r;
+     return 0.0;
+  }
   /**
    * Construct a point extrapolated along tangent at fraction.
    * @param fraction fractional position on the primitive
