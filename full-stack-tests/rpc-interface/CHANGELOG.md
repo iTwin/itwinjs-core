@@ -1,6 +1,27 @@
 # Change Log - @itwin/rpcinterface-full-stack-tests
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- fix code for breaking change to .query() method
+- Cleaned up tests and snapshots to no longer use presentation rules which are deprecated for iModel.js 3.0.
+- Upgrade target to ES2019
+- fix ecsql row format
+- rename contextId -> iTwinId
+-  Swap old @bentley/reality-data-client with new @itwin/relaity-data-client, Update DisplayTestApp and add two new utility function and update API
+- use new @itwin package names
+- rename to @itwin/rpcinterface-full-stack-tests
+- remove ClientRequestContext and its subclasses
+- Removed config.app usage
+- Added a test for `PresentationRpcInterface.getContentSources` RPC
+- Bumped dotenv and removed deprecated @types/dotenv
+- Replaced ContextRegistry with generalized ITwinAccess interface
+-  Renamed an iModel's parent container to iTwin
+- Removed references to the deleted config-loader package
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -606,9 +627,9 @@ Wed, 06 May 2020 13:17:49 GMT
 - Fix issue with detecting whether or not to run a test suite.
 - react to renaming of imodeljs-clients
 - update tests to utilize FrontendAuthorizationClient
-- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration".
-- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration".
-- Options to download/open briefcase. Differentiated RemoteBriefcaseConnection and LocalBriefcaseConnection.
+- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration". 
+- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration". 
+- Options to download/open briefcase. Differentiated RemoteBriefcaseConnection and LocalBriefcaseConnection. 
 - React to changes in presentation APIs
 - react to new clients packages from imodeljs-clients
 - Upgrade to Rush 5.23.2

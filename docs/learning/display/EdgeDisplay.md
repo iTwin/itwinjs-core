@@ -7,8 +7,8 @@ In many CAD-oriented workflows, visualization of the edges of a surface can be a
 iTwin.js supports four built-in [RenderMode]($common)s that - among other things - affect how edges and surfaces are displayed.
 
 - Wireframe: Only edges are drawn.
-- Smooth shaded: Surfaces are drawn with materials and lighting. Edges are can optionally be displayed as well.
-- Solid fill: Surfaces are drawn without materials or lighting, using the underlying element colors. The edges of each surface are displayed in a shade of grey chosen for best contrast with both the element color and view's background color.
+- Smooth shaded: Surfaces are drawn with materials and lighting. Edges can optionally be displayed as well.
+- Solid fill: Surfaces are drawn without materials or lighting, using the underlying element colors. The edges of each surface are displayed in a shade of grey chosen for best contrast with both the element color and the view's background color.
 - Hidden line: Surfaces are drawn without materials or lighting, using the view's background color. Edges are displayed using the underlying element colors.
 
 The latter two modes are somewhat old-fashioned; more visually pleasing results can generally be achieved using smooth-shaded mode with visible edges enabled.

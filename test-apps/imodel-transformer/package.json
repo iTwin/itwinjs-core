@@ -23,7 +23,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-transformer": "workspace:*",
-    "@itwin/electron-authorization": "^0.8.2",
+    "@itwin/electron-authorization": "^0.8.3",
     "@itwin/imodels-access-backend": "^1.0.1",
     "@itwin/imodels-client-authoring": "^1.0.1",
     "dotenv": "^10.0.0",

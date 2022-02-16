@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix spelling error in function documentation.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

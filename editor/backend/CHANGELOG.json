@@ -2,6 +2,54 @@
   "name": "@itwin/editor-backend",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/editor-backend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix code for breaking change to .query() method"
+          },
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "Dynamics should honor appearance overrides appliled to original element. Added blend tools."
+          },
+          {
+            "comment": "Aquire locks for built-in edit commands."
+          },
+          {
+            "comment": "Updated to Electron 14"
+          },
+          {
+            "comment": "Added ability to convert iModel coordinates to or from any Geographic CRS"
+          },
+          {
+            "comment": "rename to @itwin/editor-backend"
+          },
+          {
+            "comment": "Basic solid modeling operations are now covered."
+          },
+          {
+            "comment": "Don't hide original elements until we get a result. Cache filterHit status."
+          },
+          {
+            "comment": "Fix for IModel._ecefTrans not being updated when setting IModel._ecefLocation."
+          },
+          {
+            "comment": "New solid modeling ipc interface"
+          },
+          {
+            "comment": "More solid modeling functionality."
+          },
+          {
+            "comment": "New tools to sweep/spin faces and delete faces/imprinted edges."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/editor-backend_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

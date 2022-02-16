@@ -3,25 +3,72 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, Assertion, expect, util } from "chai";
 import * as path from "path";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, Mutable } from "@itwin/core-bentley";
 import { Schema } from "@itwin/ecschema-metadata";
-import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Geometry, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalSchema,
   GeometricElement3d, GeometryPart, IModelDb, IModelJsFs, InformationPartitionElement, InformationRecordModel, Model, ModelSelector,
-  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps,
+  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Relationship, RelationshipProps,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import {
   Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
-  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, SkyBoxImageType,
+  GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
+
+declare global {
+  namespace Chai {
+    interface Deep {
+      // might be better to implement .approximately.deep.equal, but this is simpler
+      equalWithFpTolerance(actual: any, tolerance: number): Assertion;
+    }
+  }
+}
+
+const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
+
+export function deepEqualWithFpTolerance(a: any, b: any, tolerance: number): boolean {
+  if (a === b) return true;
+  if (typeof a !== typeof b)
+    return false;
+  switch (typeof a) {
+    case "number":
+      return isAlmostEqualNumber(a, b, tolerance);
+    case "string":
+    case "boolean":
+    case "function":
+    case "symbol":
+    case "undefined":
+      return false; // these objects can only be strict equal which was already tested
+    case "object":
+      if ((a === null) !== (b === null))
+        return false;
+      return Object.keys(a).every((key) => key in a && key in b && deepEqualWithFpTolerance(a[key], b[key], tolerance));
+    default: // bigint unhandled
+      throw Error("unhandled deep compare type");
+  }
+}
+
+Assertion.addMethod("equalWithFpTolerance", function equalWithFpTolerance(expected: any, tolerance: number) {
+  const actual = this._obj;
+  const isDeep = util.flag(this, "deep");
+  this.assert(
+    isDeep
+      ? deepEqualWithFpTolerance(expected, actual, tolerance)
+      : isAlmostEqualNumber(expected, actual, tolerance),
+    `expected ${isDeep ? "deep equality of " : " "}#{exp} and #{act} with a tolerance of ${tolerance}`,
+    `expected ${isDeep ? "deep inequality of " : " "}#{exp} and #{act} with a tolerance of ${tolerance}`,
+    expected,
+    actual
+  );
+});
 
 export class IModelTransformerTestUtils {
   public static createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {
@@ -170,6 +217,212 @@ export class IModelTransformerTestUtils {
   }
 }
 
+export async function assertIdentityTransformation(
+  sourceDb: IModelDb,
+  targetDb: IModelDb,
+  transformer: IModelTransformer,
+  { expectedElemsOnlyInSource = [] }: { expectedElemsOnlyInSource?: Partial<ElementProps>[] } = {}
+) {
+  const geometryConversionTolerance = 1e-10;
+
+  const sourceToTargetElemsMap = new Map<Element, Element | undefined>();
+  const targetToSourceElemsMap = new Map<Element, Element | undefined>();
+  const targetElemIds = new Set<Id64String>();
+
+  for await (const [sourceElemId] of sourceDb.query(
+    "SELECT ECInstanceId FROM bis.Element"
+  )) {
+    const targetElemId = transformer.context.findTargetElementId(sourceElemId);
+    const sourceElem = sourceDb.elements.getElement(sourceElemId);
+    const targetElem = targetDb.elements.tryGetElement(targetElemId);
+    // expect(targetElem.toExist)
+    sourceToTargetElemsMap.set(sourceElem, targetElem);
+    if (targetElem) {
+      targetElemIds.add(targetElemId);
+      targetToSourceElemsMap.set(targetElem, sourceElem);
+      for (const [propName, prop] of Object.entries(
+        sourceElem.getClassMetaData()!.properties
+      ) ?? []) {
+        if (prop.isNavigation) {
+          let relationTargetInSourceId!: Id64String;
+          let relationTargetInTargetId!: Id64String;
+          expect(sourceElem.classFullName).to.equal(targetElem.classFullName);
+          // some custom handled classes make it difficult to inspect the element props directly with the metadata prop name
+          // so we query the prop instead of the checking for the property on the element
+          const sql = `SELECT ${propName}.Id from ${sourceElem.classFullName} WHERE ECInstanceId=:id`;
+          sourceDb.withPreparedStatement(sql, (stmt) => {
+            stmt.bindId("id", sourceElemId);
+            stmt.step();
+            relationTargetInSourceId = stmt.getValue(0).getId() ?? Id64.invalid;
+          });
+          targetDb.withPreparedStatement(sql, (stmt) => {
+            stmt.bindId("id", targetElemId);
+            expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
+            relationTargetInTargetId = stmt.getValue(0).getId() ?? Id64.invalid;
+          });
+          const mappedRelationTargetInTargetId =
+            transformer.context.findTargetElementId(relationTargetInSourceId);
+          expect(relationTargetInTargetId).to.equal(
+            mappedRelationTargetInTargetId
+          );
+        } else {
+          expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
+            sourceElem.asAny[propName],
+            geometryConversionTolerance
+          );
+        }
+      }
+      const quickClone = (obj: any) => JSON.parse(JSON.stringify(obj));
+      const expectedSourceElemJsonProps = quickClone(sourceElem.jsonProperties);
+
+      // START jsonProperties TRANSFORMATION EXCEPTIONS
+      // the transformer does not propagate source channels which are stored in Subject.jsonProperties.Subject.Job
+      if (sourceElem instanceof Subject) {
+        if (sourceElem.jsonProperties?.Subject?.Job) {
+          if (!expectedSourceElemJsonProps.Subject)
+            expectedSourceElemJsonProps.Subject = {};
+          expectedSourceElemJsonProps.Subject.Job = undefined;
+        }
+      }
+      if (sourceElem instanceof DisplayStyle3d && expectedSourceElemJsonProps.styles?.environment?.sky) {
+        const sky = expectedSourceElemJsonProps.styles.environment.sky;
+        const image = sky.image;
+        if (sky.image?.texture === Id64.invalid)
+          delete image.texture;
+        if (!sky.image)
+          sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
+        if (!sky.twoColor)
+          expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
+        if (sky.file === "")
+          delete sky.file;
+      }
+      // END jsonProperties TRANSFORMATION EXCEPTIONS
+      const _eq = deepEqualWithFpTolerance( // kept for conditional breakpoints
+        expectedSourceElemJsonProps,
+        targetElem.jsonProperties,
+        geometryConversionTolerance
+      );
+      expect(targetElem.jsonProperties).to.deep.equalWithFpTolerance(
+        expectedSourceElemJsonProps,
+        geometryConversionTolerance
+      );
+    }
+  }
+
+  for await (const [targetElemId] of targetDb.query(
+    "SELECT ECInstanceId FROM bis.Element"
+  )) {
+    if (!targetElemIds.has(targetElemId)) {
+      const targetElem = targetDb.elements.getElement(targetElemId);
+      targetToSourceElemsMap.set(targetElem, undefined);
+    }
+  }
+
+  const onlyInSourceElements = new Map([...sourceToTargetElemsMap]
+    .filter(([_inSource, inTarget]) => inTarget === undefined)
+    .map(([inSource]) => [inSource.id, inSource]));
+  const onlyInTargetElements = new Map([...targetToSourceElemsMap]
+    .filter(([_inTarget, inSource]) => inSource === undefined)
+    .map(([inTarget]) => [inTarget.id, inTarget]));
+  const elementsOnlyInSourceAsInvariant = [...onlyInSourceElements.values()].map((elem) => {
+    const rawProps = { ...elem } as Partial<Mutable<Element>>;
+    delete rawProps.iModel;
+    delete rawProps.id;
+    delete rawProps.isInstanceOfEntity;
+    return rawProps;
+  });
+
+  expect(elementsOnlyInSourceAsInvariant).to.deep.equal(expectedElemsOnlyInSource);
+  expect(onlyInTargetElements).to.have.length(0);
+
+  const sourceToTargetModelsMap = new Map<Model, Model | undefined>();
+  const targetToSourceModelsMap = new Map<Model, Model | undefined>();
+  const targetModelIds = new Set<Id64String>();
+
+  for await (const [sourceModelId] of sourceDb.query(
+    "SELECT ECInstanceId FROM bis.Model"
+  )) {
+    const targetModelId =
+      transformer.context.findTargetElementId(sourceModelId);
+    const sourceModel = sourceDb.models.getModel(sourceModelId);
+    const targetModel = targetDb.models.tryGetModel(targetModelId);
+    // expect(targetModel.toExist)
+    sourceToTargetModelsMap.set(sourceModel, targetModel);
+    if (targetModel) {
+      targetModelIds.add(targetModelId);
+      targetToSourceModelsMap.set(targetModel, sourceModel);
+      const expectedSourceModelJsonProps = { ...sourceModel.jsonProperties };
+      const _eq = deepEqualWithFpTolerance(
+        expectedSourceModelJsonProps,
+        targetModel.jsonProperties,
+        geometryConversionTolerance
+      );
+      expect(targetModel.jsonProperties).to.deep.equalWithFpTolerance(
+        expectedSourceModelJsonProps,
+        geometryConversionTolerance
+      );
+    }
+  }
+
+  for await (const [targetModelId] of targetDb.query(
+    "SELECT ECInstanceId FROM bis.Model"
+  )) {
+    if (!targetModelIds.has(targetModelId)) {
+      const targetModel = targetDb.models.getModel(targetModelId);
+      targetToSourceModelsMap.set(targetModel, undefined);
+    }
+  }
+
+  const onlyInSourceModels = [...sourceToTargetModelsMap]
+    .filter(([_inSource, inTarget]) => inTarget === undefined)
+    .map(([inSource]) => inSource);
+  const onlyInTargetModels = [...targetToSourceModelsMap]
+    .filter(([_inTarget, inSource]) => inSource === undefined)
+    .map(([inTarget]) => inTarget);
+  const modelsOnlyInSourceAsInvariant = onlyInSourceModels.map((elem) => {
+    const rawProps = { ...elem } as Partial<Mutable<Model>>;
+    delete rawProps.iModel;
+    delete rawProps.id;
+    delete rawProps.isInstanceOfEntity;
+    return rawProps;
+  });
+
+  expect(modelsOnlyInSourceAsInvariant).to.have.length(0);
+  expect(onlyInTargetModels).to.have.length(0);
+
+  const makeRelationKey = (rel: any) => `${rel.SourceECInstanceId}\x00${rel.TargetECInstanceId}`;
+  const query: Parameters<IModelDb["query"]> = ["SELECT * FROM bis.ElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames }];
+  const sourceRelationships = new Map<string, any>();
+  for await (const row of sourceDb.query(...query)) {
+    sourceRelationships.set(makeRelationKey(row), row);
+  }
+
+  const targetRelationshipQueue = new Map<string, any>();
+  for await (const row of targetDb.query(...query)) {
+    targetRelationshipQueue.set(makeRelationKey(row), row);
+  }
+
+  /* eslint-disable @typescript-eslint/naming-convention */
+  for (const relInSource of sourceRelationships.values()) {
+    const isOnlyInSource = onlyInSourceElements.has(relInSource.SourceECInstanceId) && onlyInSourceElements.has(relInSource.TargetECInstanceId);
+    if (isOnlyInSource) continue;
+    const relSourceInTarget = transformer.context.findTargetElementId(relInSource.SourceECInstanceId);
+    expect(relSourceInTarget).to.not.equal(Id64.invalid);
+    const relTargetInTarget = transformer.context.findTargetElementId(relInSource.TargetECInstanceId);
+    expect(relTargetInTarget).to.not.equal(Id64.invalid);
+    const relInTargetKey = makeRelationKey({ SourceECInstanceId: relSourceInTarget, TargetECInstanceId: relTargetInTarget });
+    const relInTarget = targetRelationshipQueue.get(relInTargetKey);
+    expect(relInTarget).not.to.be.undefined;
+    // this won't work if it has navigation properties (or any remapped property)
+    const makeRelInvariant = ({ SourceECInstanceId: _1, TargetECInstanceId: _2, ECClassId: _3, ECInstanceId: _4, ...rel }: any) => rel;
+    expect(makeRelInvariant(relInSource)).to.deep.equal(makeRelInvariant(relInTarget));
+    targetRelationshipQueue.delete(relInTargetKey);
+  }
+  /* eslint-enable @typescript-eslint/naming-convention */
+
+  expect(targetRelationshipQueue.size).to.equal(0);
+}
+
 export class TransformerExtensiveTestScenario {
   public static async prepareTargetDb(targetDb: IModelDb): Promise<void> {
     // Import desired target schemas
@@ -194,10 +447,9 @@ export class TransformerExtensiveTestScenario {
     assert.isTrue(targetDb.codeSpecs.hasName("InformationRecords"));
     assert.isFalse(targetDb.codeSpecs.hasName("SourceCodeSpec"));
     assert.isFalse(targetDb.codeSpecs.hasName("ExtraCodeSpec"));
+
     // Font
-    if (Platform.platformName.startsWith("win")) {
-      assert.exists(targetDb.fontMap.getFont("Arial"));
-    }
+    assert.exists(targetDb.fontMap.getFont("Arial"));
     // Subject
     const subjectId: Id64String = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, targetSubjectName))!;
     assert.isTrue(Id64.isValidId64(subjectId));

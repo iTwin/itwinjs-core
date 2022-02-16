@@ -1,6 +1,38 @@
 # Change Log - @itwin/editor-frontend
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height.
+- fix code for breaking change to .query() method
+- Create interpolation curve for through points construction.
+- InterpolationCurve3d support
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Dynamics should honor appearance overrides appliled to original element. Added blend tools.
+- Updated to Electron 14
+- Added ability to convert iModel coordinates to or from any Geographic CRS
+- Support multi-select of sub-entities.
+- Provide default tool assistance for face/edge/vertex selection phase.
+- rename to @itwin/editor-frontend
+- Allow sweep/spin of open path to create a sheet.
+- Don't try to locate sub-entity under cursor until previous request completes.
+- Create bcurve from control points now supports closure.
+- Basic solid modeling operations are now covered.
+- Improve error messages for "editor project location save".
+- Don't hide original elements until we get a result. Cache filterHit status.
+- Replace usage of I18N with generic Localization interface.
+- remove ClientRequestContext.current
+- Update to use new tool setting helper methods.
+- New solid modeling ipc interface  
+- More solid modeling functionality.
+- Add tool settings for solid modeling tools.
+- New tools to sweep/spin faces and delete faces/imprinted edges.
+- tool.run and tool.parseAndRun are now async methods
+- Added tool setting helper methods.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT

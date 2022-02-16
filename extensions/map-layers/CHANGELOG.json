@@ -2,6 +2,90 @@
   "name": "@itwin/map-layers",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/map-layers_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Layers could not be added through MapLayers widget when UserPreferences was not set. Fix various issues related to user preferences."
+          },
+          {
+            "comment": "Fixed various CSS issues in map-layers widget after recent UI framework changes."
+          },
+          {
+            "comment": "No longer display username/password fields by default in the custom map layers dialog: If validation fails and reports authentication is needed, we then ask end-user for credentials."
+          },
+          {
+            "comment": "Use QuantityNumericInput for 'Elevation Offset' and 'Model Height' fields instead of hardcoded units."
+          },
+          {
+            "comment": "Migrated from Toggle to ToggleSwitch component in map-layers widget"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "Unregister maplayers itemsProvider and widget control on terminate."
+          },
+          {
+            "comment": "Now use 'DisplayStyleState.backgroundMapBase' instead of 'DisplayStyleState.changeBaseMapProps' to update the mapImagery."
+          },
+          {
+            "comment": "use new @itwin package names"
+          },
+          {
+            "comment": "rename to @itwin/map-layers"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Ignore lint warning for deprecated class"
+          },
+          {
+            "comment": "Upgraded itwinui-react to 1.16.2. Fixed editor sizes."
+          },
+          {
+            "comment": "Update to latest itwinui-react"
+          },
+          {
+            "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js"
+          },
+          {
+            "comment": "Update to React 17."
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "Replace deprecated ThemedSelect component with iTwinUI-react Select component."
+          },
+          {
+            "comment": "Remove itwinUi css overrides."
+          },
+          {
+            "comment": "Replaced ui-core Slider with one from iTwinUi-react."
+          },
+          {
+            "comment": "Update to latest types/react package"
+          },
+          {
+            "comment": "Lock down and update version numbers so docs will build."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/map-layers_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

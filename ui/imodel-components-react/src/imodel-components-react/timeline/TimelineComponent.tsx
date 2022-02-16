@@ -10,13 +10,13 @@ import "./TimelineComponent.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { GenericUiEventArgs, UiAdmin } from "@itwin/appui-abstract";
-import { ContextMenu, ContextMenuDirection, ContextMenuItem } from "@itwin/core-react";
 import { toDateString, toTimeString, UiComponents } from "@itwin/components-react";
 import { UiIModelComponents } from "../UiIModelComponents";
 import { InlineEdit } from "./InlineEdit";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
 import { PlayButton, PlayerButton } from "./PlayerButton";
 import { Scrubber } from "./Scrubber";
+import { DropdownMenu, MenuDivider, MenuItem } from "@itwin/itwinui-react";
 
 // cspell:ignore millisec
 
@@ -97,8 +97,6 @@ export interface TimelineComponentProps {
 }
 /** @internal */
 interface TimelineComponentState {
-  /** Settings popup is opened or closed */
-  isSettingsOpen: boolean;
   /**  True if timeline is currently playing, false if paused */
   isPlaying: boolean;
   /** Minimized mode (For future use. This will always be true) */
@@ -121,7 +119,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   private _timeLastCycle = 0;
   private _requestFrame = 0;
   private _unmounted = false;
-  private _settings: HTMLElement | null = null;
   private _repeatLabel: string;
   private _removeListener?: () => void;
   private _standardTimelineMenuItems: TimelineMenuItemProps[] = [
@@ -134,7 +131,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     super(props);
 
     this.state = {
-      isSettingsOpen: false,
       isPlaying: false,
       minimized: true,
       currentDuration: props.initialDuration ? props.initialDuration : /* istanbul ignore next */ 0,
@@ -356,19 +352,11 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     this._onSetTotalDuration(milliseconds);
   };
 
-  private _onSettingsClick = () => {
-    this.setState((prevState) => ({ isSettingsOpen: !prevState.isSettingsOpen }));
-  };
-
-  private _onCloseSettings = () => {
-    this.setState({ isSettingsOpen: false });
-  };
-
   private _changeRepeatSetting = (newValue?: boolean) => {
     // istanbul ignore else
     if (newValue !== undefined) {
       this.setState(
-        () => ({ repeat: newValue, isSettingsOpen: false }),
+        () => ({ repeat: newValue}),
         () => {
           // istanbul ignore else
           if (this.props.onSettingsChange) {
@@ -380,7 +368,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
 
   private _onRepeatChanged = () => {
     this.setState(
-      (prevState) => ({ repeat: !prevState.repeat, isSettingsOpen: false }),
+      (prevState) => ({ repeat: !prevState.repeat}),
       () => {
         // istanbul ignore else
         if (this.props.onSettingsChange) {
@@ -400,7 +388,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
 
   private _onSetTotalDuration = (milliseconds: number) => {
     this.setState(
-      { totalDuration: milliseconds, isSettingsOpen: false },
+      { totalDuration: milliseconds},
       () => {
         // istanbul ignore else
         if (this.props.onSettingsChange) {
@@ -408,60 +396,61 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
         }
       });
   };
-  private _createMenuItemNodes(itemList: TimelineMenuItemProps[], currentTimelineDuration: number): React.ReactNode[] {
-    const itemNodes: React.ReactNode[] = [];
 
-    itemList.forEach((item: TimelineMenuItemProps, index: number) => {
-      const reactItem = this._createMenuItemNode(item, index, currentTimelineDuration);
-      // istanbul ignore else
-      if (reactItem)
-        itemNodes.push(reactItem);
-    });
-
-    return itemNodes;
-  }
-
-  private _createMenuItemNode(item: TimelineMenuItemProps, index: number, currentTimelineDuration: number): React.ReactNode {
-    let node: React.ReactNode = null;
+  private _createMenuItemNode(item: TimelineMenuItemProps, index: number, currentTimelineDuration: number, close: () => void): JSX.Element {
     const label = item.label;
-    const iconSpec = currentTimelineDuration === item.timelineDuration ? "icon icon-checkmark" : undefined;
-
-    node = (
-      <ContextMenuItem key={index} onSelect={() => this._onSetTotalDuration(item.timelineDuration)} icon={iconSpec} >
+    const checked = currentTimelineDuration === item.timelineDuration;
+    const icon = checked ? <span className="icon icon-checkmark" />:<span />;
+    return (
+      <MenuItem key={index} icon={icon}
+        onClick={() => {this._onSetTotalDuration(item.timelineDuration); close();}} >
         {label}
-      </ContextMenuItem>
+      </MenuItem>
     );
-    return node;
   }
 
   private _renderSettings = () => {
-    const { totalDuration } = this.state;
-    let contextMenuItems: Array<TimelineMenuItemProps> = [];
+    const createMenuItemNodes = (close: () => void): JSX.Element[] => {
 
-    if (!this.props.appMenuItems) {
-      contextMenuItems = this._standardTimelineMenuItems;
-    } else {
-      if (this.props.appMenuItemOption === "append") {
-        contextMenuItems = this._standardTimelineMenuItems.concat(this.props.appMenuItems);
-      } else if (this.props.appMenuItemOption === "prefix") {
-        contextMenuItems = this.props.appMenuItems.concat(this._standardTimelineMenuItems);
+      const { totalDuration } = this.state;
+      let contextMenuItems: Array<TimelineMenuItemProps> = [];
+
+      if (!this.props.appMenuItems) {
+        contextMenuItems = this._standardTimelineMenuItems;
       } else {
-        contextMenuItems = this.props.appMenuItems;
+        if (this.props.appMenuItemOption === "append") {
+          contextMenuItems = this._standardTimelineMenuItems.concat(this.props.appMenuItems);
+        } else if (this.props.appMenuItemOption === "prefix") {
+          contextMenuItems = this.props.appMenuItems.concat(this._standardTimelineMenuItems);
+        } else {
+          contextMenuItems = this.props.appMenuItems;
+        }
       }
-    }
+
+      const itemNodes: JSX.Element[] = [];
+      let keyIndex = 0;
+      if (this.state.includeRepeat) {
+        const checked = this.state.repeat;
+        const icon = checked ? <span className="icon icon-checkmark" />:<span />;
+        itemNodes.push (<MenuItem key={++keyIndex} onClick={()=>{this._onRepeatChanged(); close();}} icon={icon}>
+          {this._repeatLabel}
+        </MenuItem>);
+        itemNodes.push (<MenuDivider key={++keyIndex} />);
+      }
+
+      contextMenuItems.forEach((item: TimelineMenuItemProps, index: number) => {
+        itemNodes.push(this._createMenuItemNode(item, index+keyIndex+1, totalDuration, close));
+      });
+
+      return itemNodes;
+    };
 
     return (
-      <>
-        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
-        <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick}
+      <DropdownMenu menuItems={createMenuItemNodes}>
+        <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2"
           role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
         ></span>
-        <ContextMenu opened={this.state.isSettingsOpen} onOutsideClick={this._onCloseSettings} direction={ContextMenuDirection.BottomRight} data-testid="timeline-contextmenu-div">
-          {this.state.includeRepeat && <ContextMenuItem icon={this.state.repeat && "icon icon-checkmark"} onSelect={this._onRepeatChanged}>{this._repeatLabel}</ContextMenuItem>}
-          {this.state.includeRepeat && <div className="separator" role="separator" />}
-          {this._createMenuItemNodes(contextMenuItems, totalDuration)}
-        </ContextMenu>
-      </>
+      </DropdownMenu>
     );
   };
 

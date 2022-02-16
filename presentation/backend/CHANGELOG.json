@@ -2,6 +2,81 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/presentation-backend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Existing ruleset configurations were updated to no longer use deprecated rule versions for iModel.js 3.0."
+          },
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "fix ecsql row format"
+          },
+          {
+            "comment": "rename to @itwin/presentation-backend"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Added API to get properties of all elements."
+          },
+          {
+            "comment": "Added `PresentationManager.getContentSources` API to retrieve information about where content for specific types of elements comes from."
+          },
+          {
+            "comment": "Fix class and schema names in RelatedProperties rule for ElementOwnsUniqueAspect relationship."
+          },
+          {
+            "comment": "Fix Presentation IPC handler not being registered until the first Presentation request is made."
+          },
+          {
+            "comment": "Enforce valid page options on getElementProperties request when requesting properties of multiple elements."
+          },
+          {
+            "comment": "Fix for getElementProperties request when requesting all elements of specific classes"
+          },
+          {
+            "comment": "Use async iterator when getting properties of multiple elements."
+          },
+          {
+            "comment": "Add `getContentInstanceKeys` RPC to efficiently get content instance keys."
+          },
+          {
+            "comment": "Restructure backend's initialization props"
+          },
+          {
+            "comment": "Remove `PresentationManager.loadHierarchy` API."
+          },
+          {
+            "comment": "Fix ruleset variables storing in IPC apps"
+          },
+          {
+            "comment": "Updated `RulesetEmbedder` to allow calling callbacks before and after Model/Element is inserted or updated"
+          },
+          {
+            "comment": "Changed uses of `PresentationUnitSystem` to `UnitSystemKey`."
+          },
+          {
+            "comment": "Always create unique ruleset id when handling nodes requests"
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "remove requestContext argument from importSchemas"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/presentation-backend_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",
