@@ -34,6 +34,14 @@ Can now be expressed as follows (note no IModelConnection is required):
 
   [MapLayerProps]($common) has been split into [ImageMapLayerProps]($common) and [ModelMapLayerProps]($common) to differentiate properties the previously supported image layers and the new model layers. [MapLayerSettings]($common) has been split into [ImageMapLayerSettings]($common) and [ModelMapLayerSettings]($common) in a similar manner.  Applications can continue to attach map layers through [DisplayStyleState.attachMapLayer]($frontend).
 
+  In the image below 2D GIS data is displayed as model geometry and does not align correctly with the 3D map terrain.
+
+  ![Gis as model](assets/gis-as-map-layer.png "2D GIS deta displayed as model")
+
+   When displayed as a map layer the same 2D GIS data is  correctly draped on to the terrain surface.
+
+  ![GIS as map layer](assets/gis-as-model.png "2D GIS deta displayed as map layer")
+
 ## Obtain geometry from terrain and reality models
 
 - [TileGeometryCollector]($core-frontend), which specifies the level of detail, spatial volume, and other criteria for determining which tile meshes to obtain; and
