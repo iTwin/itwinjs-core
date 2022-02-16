@@ -9,8 +9,7 @@ import { Localization } from "@itwin/core-common";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
 import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";
-import { MapFeatureInfoOptions, MapLayerOptions } from "./Interfaces";
-import { MapFeatureInfoWidget } from "./widget/FeatureInfoWidget";
+import { MapLayerOptions } from "./Interfaces";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {
   public readonly id = "MapLayersUiItemsProvider";
@@ -41,30 +40,6 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
   }
 }
 
-export class  FeatureInfoUiItemsProvider implements UiItemsProvider {
-  public readonly id = "FeatureInfoUiItemsProvider";
-  public static localization: Localization;
-
-  public constructor(localization: Localization) {
-    MapLayersUiItemsProvider.localization = localization;
-  }
-
-  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
-
-    if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
-      widgets.push({
-        id: "map-layers:mapFeatureInfoWidget",
-        label: IModelApp.localization.getLocalizedString("mapLayers:Widget.Label"),
-        icon: "icon-map",
-        getWidgetContent: () => <MapFeatureInfoWidget />, // eslint-disable-line react/display-name
-      });
-    }
-
-    return widgets;
-  }
-}
-
 /** MapLayersWidgetControl provides a widget to attach and remove maps layers from the active view's display style.
  * ``` tsx
  *  <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
@@ -83,16 +58,5 @@ export class MapLayersWidgetControl extends WidgetControl {
     super(info, mapLayerOptions);
 
     this.reactNode = <MapLayersWidget mapLayerOptions={mapLayerOptions} />;
-  }
-}
-
-export class FeatureInfoWidgetControl extends WidgetControl {
-  public static id = "FeatureInfoWidget";
-  public static iconSpec = "icon-map";
-  public static label = "FeatureInfoWidgetControl";
-  constructor(info: ConfigurableCreateInfo, featureInfoOpts: MapFeatureInfoOptions) {
-    super(info, featureInfoOpts);
-
-    super.reactNode = <MapFeatureInfoWidget featureInfoOpts={featureInfoOpts}/>;
   }
 }

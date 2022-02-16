@@ -6,7 +6,7 @@
  * @module PropertyGrid
  */
 
-import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
+import {  PropertyRecord } from "@itwin/appui-abstract";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@itwin/components-react";
 import { BeEvent } from "@itwin/core-bentley";
 import { HitDetail } from "@itwin/core-frontend";
@@ -39,9 +39,9 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
   }
 
   private async handleMapHit(mapHit: HitDetail)  {
+    this.records = {};
+    this.categories = [];
     if (mapHit?.isMapHit) {
-      this.records = {};
-      this.categories = [];
       this.onDataLoadStateChanged.raiseEvent(MapFeatureInfoLoadState.DataLoadStart);
       const mapInfo = await mapHit.viewport.getMapFeatureInfo(mapHit);
       this.onDataLoadStateChanged.raiseEvent(MapFeatureInfoLoadState.DataLoadEnd);
@@ -80,8 +80,8 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
             this.addCategory(layerCategory);
         }
       }
-      this.onDataChanged.raiseEvent();
     }
+    this.onDataChanged.raiseEvent();
   }
 
   public addSubCategory(categoryName: string) {

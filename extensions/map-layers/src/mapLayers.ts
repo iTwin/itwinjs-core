@@ -3,12 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { HitDetail, IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
-import { FeatureInfoUiItemsProvider, FeatureInfoWidgetControl, MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
+import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { ConfigurableUiManager } from "@itwin/appui-react";
 import { BeEvent } from "@itwin/core-bentley";
+import { FeatureInfoUiItemsProvider, FeatureInfoWidgetControl } from "./ui/FeatureInfoUiItemsProvider";
 
 export type MapHitEvent = BeEvent<(hit: HitDetail) => void>;
+export interface FeatureInfoOpts
+{
+  // HitDetail Event whenever the map is clicked. t
+  // Typically the HitDetail object is provided by ElementLocateManager.doLocate.
+  // Every time this event is raised, FeatureInfoWidget will attempt to retrieve data from MapLayerImageryProviders.
+  onMapHit: MapHitEvent;
+}
+
 /** MapLayersUI is use when the package is used as a dependency to another app.
  * '''ts
  *  await MapLayersUI.initialize(registerItemsProvider);
@@ -40,9 +49,14 @@ export class MapLayersUI {
    *
    * If an iTwinConfig is provided, it will be used to load the MapLayerSources that are stored.
    */
-  public static async initialize(registerItemsProvider = true, iTwinConfig?: UserPreferencesAccess, onMapHit?: MapHitEvent): Promise<void> {
+  public static async initialize(
+    registerItemsProvider = true,
+    iTwinConfig?: UserPreferencesAccess,
+    fInfoOps?: FeatureInfoOpts
+  ): Promise<void> {
+
     MapLayersUI._iTwinConfig = iTwinConfig;
-    MapLayersUI._onMapHit = onMapHit;
+    MapLayersUI._onMapHit = fInfoOps?.onMapHit;
 
     // register namespace containing localized strings for this package
     await IModelApp.localization.registerNamespace(this.localizationNamespace);
@@ -52,8 +66,13 @@ export class MapLayersUI {
     MapLayersUI._mapFeatureInfoItemsProvider = new FeatureInfoUiItemsProvider(IModelApp.localization);
     if (registerItemsProvider) {
       UiItemsManager.register(MapLayersUI._mapLayersItemsProvider);
-      UiItemsManager.register(MapLayersUI._mapFeatureInfoItemsProvider);
-    else
+
+      // Register the FeatureInfo widget only if MapHit was provided.
+      if (MapLayersUI._onMapHit) {
+        UiItemsManager.register(MapLayersUI._mapFeatureInfoItemsProvider);
+      }
+    }
+
     MapLayersUI._itemsProviderRegistered = registerItemsProvider;
 
     ConfigurableUiManager.registerControl(FeatureInfoWidgetControl.id, FeatureInfoWidgetControl);
@@ -65,7 +84,11 @@ export class MapLayersUI {
 
     if (MapLayersUI._itemsProviderRegistered !== undefined) {
       if (MapLayersUI._itemsProviderRegistered) {
-        UiItemsManager.unregister(MapLayersUI._uiItemsProvider.id);
+        UiItemsManager.unregister(MapLayersUI._mapLayersItemsProvider.id);
+
+        if (MapLayersUI._onMapHit) {
+          UiItemsManager.unregister(MapLayersUI._mapFeatureInfoItemsProvider.id);
+        }
       }
       MapLayersUI._itemsProviderRegistered = undefined;
     }
