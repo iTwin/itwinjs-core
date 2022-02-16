@@ -53,6 +53,10 @@ The [FloatingViewportContent]($appui-react) component has been added to support 
 
 It is now possible to store and load fonts from a Font Workspace. See [Fonts]($docs/learning/backend/Fonts.md) for more details.
 
+## Promote QuantityFormatter from beta to public
+
+The [QuantityFormatter]($core-frontend), accessed via `IModelApp.quantityFormatter`, is now public and provides a set of APIs to format and parse standard quantity types. For more documentation and samples see [Quantity Formatting]($docs/learning/frontend/QuantityFormatting.md).
+
 ## New SchemaUnitProvider
 
 It is now possible to retrieve `Units` from schemas stored in IModels. The new [SchemaUnitProvider]($ecschema-metadata) can now be created and used by the [QuantityFormatter]($core-frontend) or any method in the `core-quantity` package that requires a [UnitsProvider]($quantity). Below is an example, extracted from `ui-test-app`, that demonstrates how to register the IModel-specific `UnitsProvider` as the IModelConnection is created. This new provider will provide access to a wide variety of Units that were not available in the standalone `BasicUnitsProvider`.
