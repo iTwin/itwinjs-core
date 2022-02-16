@@ -984,7 +984,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.attachToView();
   }
 
-  private attachToView(): void {
+  protected attachToView(): void {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
     this.view.attachToViewport(this);
@@ -1125,7 +1125,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     }
   }
 
-  private detachFromView(): void {
+  protected detachFromView(): void {
     this._detachFromView.forEach((f) => f());
     this._detachFromView.length = 0;
 
@@ -3351,6 +3351,17 @@ export interface OffScreenViewportOptions {
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
+  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
+  private _drawingToSheetTransform?: Transform;
+  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
+  public get drawingToSheetTransform(): Transform | undefined {
+    return this._drawingToSheetTransform;
+  }
+  public set drawingToSheetTransform(transform: Transform | undefined) {
+    this.detachFromView();
+    this._drawingToSheetTransform = transform;
+    this.attachToView();
+  }
 
   public static create(options: OffScreenViewportOptions): OffScreenViewport {
     return this.createViewport(options.view, IModelApp.renderSystem.createOffscreenTarget(options.viewRect), options.lockAspectRatio);
