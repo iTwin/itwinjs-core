@@ -52,3 +52,21 @@ The [FloatingViewportContent]($appui-react) component has been added to support 
 ## Font Workspaces
 
 It is now possible to store and load fonts from a Font Workspace. See [Fonts]($docs/learning/backend/Fonts.md) for more details.
+
+## New SchemaUnitProvider
+
+It is now possible to retrieve `Units` from schemas stored in IModels. The new [SchemaUnitProvider]($ecschema-metadata) can now be created and used by the [QuantityFormatter]($core-frontend) or any method in the `core-quantity` package that requires a [UnitsProvider]($quantity). Below is an example, extracted from `ui-test-app`, that demonstrates how to register the IModel-specific `UnitsProvider` as the IModelConnection is created. This new provider will provide access to a wide variety of Units that were not available in the standalone `BasicUnitsProvider`.
+
+```ts
+    try{
+    // Reset QuantityFormatter UnitsProvider with new iModelConnection
+      const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
+      const context = new SchemaContext();
+      context.addLocater(schemaLocater);
+      await IModelApp.quantityFormatter.setUnitsProvider (new SchemaUnitProvider(context));
+    } catch (_) {
+      await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider(); // reset to use internal BasicUnitsProvider
+    }
+
+    UiFramework.setIModelConnection(iModelConnection, true);
+```
