@@ -2198,11 +2198,6 @@ export const expandWidget: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | React.ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | React.JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: React.Key | null;
@@ -2219,6 +2214,11 @@ export const expandWidget: (base: {
                 } | any | null | undefined;
                 readonly type: string | React.JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -4703,7 +4703,7 @@ export enum SelectionScope {
 }
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "activeSelectionScope" | "availableSelectionScopes">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
 
 // @public @deprecated
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -4920,11 +4920,6 @@ export const setPanelSize: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | import("react").ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | import("react").JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: import("react").Key | null;
@@ -4941,6 +4936,11 @@ export const setPanelSize: (base: {
                 } | any | null | undefined;
                 readonly type: string | import("react").JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -5108,11 +5108,6 @@ export const setWidgetLabel: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | React.ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | React.JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: React.Key | null;
@@ -5129,6 +5124,11 @@ export const setWidgetLabel: (base: {
                 } | any | null | undefined;
                 readonly type: string | React.JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -5277,11 +5277,6 @@ export const setWidgetState: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | React.ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | React.JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: React.Key | null;
@@ -5298,6 +5293,11 @@ export const setWidgetState: (base: {
                 } | any | null | undefined;
                 readonly type: string | React.JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -5510,11 +5510,6 @@ export const showWidget: (base: {
             readonly id: string;
             readonly label: string;
             readonly iconSpec?: boolean | React.ReactText | {
-                readonly stringGetter: () => string;
-                readonly syncEventIds: readonly string[];
-                readonly value: string;
-                readonly refresh: () => boolean;
-            } | {
                 readonly type: string | React.JSXElementConstructor<any>;
                 readonly props: any;
                 readonly key: React.Key | null;
@@ -5531,6 +5526,11 @@ export const showWidget: (base: {
                 } | any | null | undefined;
                 readonly type: string | React.JSXElementConstructor<any>;
                 readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
             } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
@@ -7739,7 +7739,7 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
 
 // @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React.JSXElementConstructor<P> & C) => {
@@ -7797,7 +7797,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget">>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {
