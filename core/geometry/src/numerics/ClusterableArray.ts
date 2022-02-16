@@ -23,7 +23,7 @@ export class ClusterableArray extends GrowableBlockedArray {
   //  (This is pretty strange)
   // The sort vector is (1,c, c*c, ...)
   // Setting c = 1 makes it 1,1,1 which may be useful for visual scans during debug.
-  // c with some inobvious digits makes it unlikely that there will be multiple points on a perpendicular to the sort vector.
+  // c with some non-obvious digits makes it unlikely that there will be multiple points on a perpendicular to the sort vector.
   private static readonly _vectorFactor = 0.8732;  // use 1.0 to rig easy tests.
   /** Return a component of the sort vector. */
   public static sortVectorComponent(index: number): number {
@@ -121,7 +121,7 @@ export class ClusterableArray extends GrowableBlockedArray {
     this._data[i0 + 1 + this._numCoordinatePerPoint + i] = value;
   }
 
-  /** this value is used as cluster terminator in the Uint232rray of indcies. */
+  /** this value is used as cluster terminator in the Uint232Array of indices. */
   public static readonly clusterTerminator = 0xFFffFFff;
   /** Test if `x` is the cluster terminator value. */
   public static isClusterTerminator(x: number): boolean { return x === ClusterableArray.clusterTerminator; }

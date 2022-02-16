@@ -1251,7 +1251,7 @@ export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocation
 
 // @internal
 export interface AttachToViewportArgs {
-    // (undocumented)
+    drawingToSheetTransform?: Transform;
     invalidateDecorations: () => void;
 }
 
@@ -7107,6 +7107,9 @@ export class OffScreenViewport extends Viewport {
     static create(options: OffScreenViewportOptions): OffScreenViewport;
     // @internal
     static createViewport(view: ViewState, target: RenderTarget, lockAspectRatio?: boolean): OffScreenViewport;
+    // @internal
+    get drawingToSheetTransform(): Transform | undefined;
+    set drawingToSheetTransform(transform: Transform | undefined);
     // @internal (undocumented)
     get isAspectRatioLocked(): boolean;
     // (undocumented)
@@ -12827,6 +12830,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @internal
     applyViewState(val: ViewState): void;
     get areAllTileTreesLoaded(): boolean;
+    // @internal
+    protected attachToView(): void;
     // (undocumented)
     get auxCoordSystem(): AuxCoordSystemState;
     // @internal (undocumented)
@@ -12869,6 +12874,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     set debugBoundingBoxes(boxes: TileBoundingBoxes);
     // @internal (undocumented)
     protected _decorationsValid: boolean;
+    // @internal
+    protected detachFromView(): void;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
     get devicePixelRatio(): number;
     // @internal
