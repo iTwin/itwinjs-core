@@ -280,11 +280,17 @@ export interface UnitFormattingSettingsProvider {
 export class QuantityFormatter implements UnitsProvider {
   private _unitsProvider: UnitsProvider = new BasicUnitsProvider();
   private _alternateUnitLabelsRegistry = new AlternateUnitLabelsRegistry(getDefaultAlternateUnitLabels());
+  /** Registry containing available quantity type definitions. */
   protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
+  /** Active UnitSystem key - must be one of "imperial", "metric", "usCustomary", or "usSurvey". */
   protected _activeUnitSystem: UnitSystemKey = "imperial";
+  /** Map of FormatSpecs for all available QuantityTypes and the active Unit System */
   protected _activeFormatSpecsByType = new Map<QuantityTypeKey, FormatterSpec>();
+  /** Map of ParserSpecs for all available QuantityTypes and the active Unit System */
   protected _activeParserSpecsByType = new Map<QuantityTypeKey, ParserSpec>();
+  /** Map of FormatSpecs that have been overriden from the default. */
   protected _overrideFormatPropsByUnitSystem = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
+  /** Optional object that gets called to store and retrieve format overrides. */
   protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
 
   /** Set the settings provider and if not iModel specific initialize setting for user. */
@@ -330,6 +336,7 @@ export class QuantityFormatter implements UnitsProvider {
     return overrideMap.get(quantityTypeKey);
   }
 
+  /** Method used to register all QuantityTypes defined in QuantityType enum. */
   protected async initializeQuantityTypesRegistry() {
     // QuantityType.Length
     const lengthUnit = await this.findUnitByName("Units.M");

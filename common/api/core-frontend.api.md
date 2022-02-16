@@ -7678,13 +7678,9 @@ export interface QuantityFormatsChangedArgs {
 // @public
 export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
-    // (undocumented)
     protected _activeFormatSpecsByType: Map<string, FormatterSpec>;
-    // (undocumented)
     protected _activeParserSpecsByType: Map<string, ParserSpec>;
-    // (undocumented)
     get activeUnitSystem(): UnitSystemKey;
-    // (undocumented)
     protected _activeUnitSystem: UnitSystemKey;
     addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
     get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
@@ -7692,12 +7688,9 @@ export class QuantityFormatter implements UnitsProvider {
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
-    // (undocumented)
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
-    // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
-    // (undocumented)
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
@@ -7705,14 +7698,11 @@ export class QuantityFormatter implements UnitsProvider {
     getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
     getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
-    // (undocumented)
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
-    // (undocumented)
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
-    // (undocumented)
     protected initializeQuantityTypesRegistry(): Promise<void>;
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
@@ -7721,10 +7711,8 @@ export class QuantityFormatter implements UnitsProvider {
     onInitialized(): Promise<void>;
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
     readonly onUnitsProviderChanged: BeUiEvent<void>;
-    // (undocumented)
     protected _overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<string, FormatProps>>;
     parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult;
-    // (undocumented)
     protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition>;
     get quantityTypesRegistry(): Map<string, QuantityTypeDefinition>;
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
@@ -7735,7 +7723,6 @@ export class QuantityFormatter implements UnitsProvider {
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
     setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider): Promise<void>;
     setUnitsProvider(unitsProvider: UnitsProvider): Promise<void>;
-    // (undocumented)
     protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
