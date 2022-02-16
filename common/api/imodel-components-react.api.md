@@ -247,6 +247,27 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
     round?: boolean;
 }
 
+// @internal @deprecated
+export class ContextMenu extends React.Component<ContextMenuProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal @deprecated
+export class ContextMenuItem extends React.Component<MenuItem> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal @deprecated
+export interface ContextMenuProps extends CommonProps {
+    isOpened: boolean;
+    items?: MenuItem[];
+    onClickOutside?: () => void;
+    parent: HTMLElement | null;
+    position: RelativePosition;
+}
+
 // @public
 export class Cube extends React.PureComponent<CubeProps> {
     // (undocumented)
@@ -662,6 +683,16 @@ export enum MapMode {
     Closed = "map-closed",
     // (undocumented)
     Opened = "map-opened"
+}
+
+// @internal @deprecated
+export interface MenuItem {
+    checked?: boolean;
+    disabled?: boolean;
+    icon?: string;
+    isSeparator?: boolean;
+    name?: string;
+    onClick?: () => void;
 }
 
 // @internal @deprecated
