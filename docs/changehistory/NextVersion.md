@@ -36,11 +36,11 @@ Can now be expressed as follows (note no IModelConnection is required):
 
   In the image below 2D GIS data is displayed as model geometry and does not align correctly with the 3D map terrain.
 
-  ![Gis as model](assets/gis-as-map-layer.png "2D GIS deta displayed as model")
+  ![Gis as model](assets/gis-as-map-layer.jpg "2D GIS deta displayed as model")
 
-   When displayed as a map layer the same 2D GIS data is  correctly draped on to the terrain surface.
+   When displayed as a map layer the same 2D GIS data is  correctly draped on the terrain surface.
 
-  ![GIS as map layer](assets/gis-as-model.png "2D GIS deta displayed as map layer")
+  ![GIS as map layer](assets/gis-as-model.jpg "2D GIS deta displayed as map layer")
 
 ## Obtain geometry from terrain and reality models
 
