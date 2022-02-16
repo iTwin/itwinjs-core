@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { DbResult, Id64, Id64Set, IModelStatus, Logger } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Set, IModelStatus, isSubclassOf, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { Element } from "./Element";
@@ -86,15 +86,14 @@ export class ClassRegistry {
       .filter(([_propName, prop]) => prop.isNavigation)
       .map(([propName, _prop]) => propName);
 
-    if (generatedClass.is(Element)) {
+    if (superclass.is(Element)) {
       Object.defineProperty(
         generatedClass.prototype,
         "collectPredecessorIds",
         {
-          // prototype of `this` is the class
           value(this: typeof generatedClass, predecessorIds: Id64Set) {
             // eslint-disable-next-line @typescript-eslint/unbound-method
-            const superImpl: Element["collectPredecessorIds"] = (superclass as typeof Element).prototype["collectPredecessorIds"];
+            const superImpl = (superclass as typeof Element).prototype["collectPredecessorIds"];
             superImpl.call(this, predecessorIds);
             for (const navProp of navigationProps) {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
