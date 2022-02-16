@@ -136,7 +136,11 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "integration-testing" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/ecschema-rpcinterface-impl",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
