@@ -24,6 +24,7 @@ import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { getIModelBankAccess } from "./IModelBankBackendCloudEnv";
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
 /* eslint-disable no-console */
 
@@ -126,6 +127,8 @@ async function init() {
       await IpcHost.shutdown();
     };
   }
+
+  ECSchemaRpcImpl.register();
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
