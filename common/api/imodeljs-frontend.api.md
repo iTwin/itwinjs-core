@@ -1215,6 +1215,7 @@ export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, o
 // @internal
 export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
 
+<<<<<<< HEAD:common/api/imodeljs-frontend.api.md
 // @public
 export type AsyncFunction = (...args: any) => Promise<any>;
 
@@ -1227,6 +1228,12 @@ export type AsyncMethodsOf<T> = {
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: string);
     static create(activityId?: string): Promise<AuthorizedFrontendRequestContext>;
+=======
+// @internal
+export interface AttachToViewportArgs {
+    drawingToSheetTransform?: Transform;
+    invalidateDecorations: () => void;
+>>>>>>> f989c33195 (Transform spatial view attachment's clip from drawing to sheet. (#3218)):common/api/core-frontend.api.md
 }
 
 // @public
@@ -6804,6 +6811,9 @@ export class OffScreenViewport extends Viewport {
     static create(options: OffScreenViewportOptions): OffScreenViewport;
     // @internal
     static createViewport(view: ViewState, target: RenderTarget, lockAspectRatio?: boolean): OffScreenViewport;
+    // @internal
+    get drawingToSheetTransform(): Transform | undefined;
+    set drawingToSheetTransform(transform: Transform | undefined);
     // @internal (undocumented)
     get isAspectRatioLocked(): boolean;
     // (undocumented)
@@ -12259,6 +12269,8 @@ export abstract class Viewport implements IDisposable {
     // @internal
     applyViewState(val: ViewState): void;
     get areAllTileTreesLoaded(): boolean;
+    // @internal
+    protected attachToView(): void;
     // (undocumented)
     get auxCoordSystem(): AuxCoordSystemState;
     // @internal (undocumented)
@@ -12300,6 +12312,8 @@ export abstract class Viewport implements IDisposable {
     set debugBoundingBoxes(boxes: TileBoundingBoxes);
     // @internal (undocumented)
     protected _decorationsValid: boolean;
+    // @internal
+    protected detachFromView(): void;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
     get devicePixelRatio(): number;
     // @internal
