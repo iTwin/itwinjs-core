@@ -11,16 +11,14 @@
 import "./PopoutToggle.scss";
 import * as React from "react";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
-import popoutToggleSvg from "./window-popout.svg?sprite";
 import { Icon } from "@itwin/core-react";
-import { IconSpecUtilities } from "@itwin/appui-abstract";
 import { ActiveTabIdContext } from "./Widget";
+import { SvgWindowPopout } from "@itwin/itwinui-icons-react";
 
 /** @internal */
 export const PopoutToggle = React.memo(function PopoutToggle() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const dispatch = React.useContext(NineZoneDispatchContext);
   const activeTabId = React.useContext(ActiveTabIdContext);
-  const iconSpec = IconSpecUtilities.createSvgIconSpec(popoutToggleSvg);
   const popoutTitle = useLabel("popoutActiveTab");
   return (
     <button
@@ -33,7 +31,7 @@ export const PopoutToggle = React.memo(function PopoutToggle() { // eslint-disab
       }}
       title={popoutTitle}
     >
-      <Icon iconSpec={iconSpec} />
+      <Icon iconSpec={<SvgWindowPopout />} />
     </button >
   );
 });

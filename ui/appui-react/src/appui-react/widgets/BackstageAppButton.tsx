@@ -7,14 +7,13 @@
  */
 
 import * as React from "react";
-import widgetIconSvg from "@bentley/icons-generic/icons/home.svg?sprite";
-import { IconSpecUtilities } from "@itwin/appui-abstract";
 import { Icon, useWidgetOpacityContext } from "@itwin/core-react";
 import { AppButton } from "@itwin/appui-layout-react";
 import { BackstageManager } from "../backstage/BackstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { SvgHome } from "@itwin/itwinui-icons-react";
 
 /**
  * Properties for the [[BackstageAppButton]] React component
@@ -36,7 +35,7 @@ export interface BackstageAppButtonProps {
 export function BackstageAppButton(props: BackstageAppButtonProps) {
   const backstageToggleCommand = React.useMemo(() => BackstageManager.getBackstageToggleCommand(props.icon), [props.icon]);
   const backstageLabel = React.useMemo(() => props.label || backstageToggleCommand.tooltip, [backstageToggleCommand.tooltip, props.label]);
-  const [icon, setIcon] = React.useState(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
+  const [icon, setIcon] = React.useState(props.icon ? props.icon : <SvgHome />);
   const isInitialMount = React.useRef(true);
   const useSmallAppButton = "1" !== useFrameworkVersion();
   const divClassName = useSmallAppButton ? "uifw-app-button-small" : undefined;
@@ -56,7 +55,7 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
       isInitialMount.current = false;
       onElementRef(ref);
     } else {
-      setIcon(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
+      setIcon(props.icon ? props.icon : <SvgHome />);
     }
   }, [props.icon, onElementRef]);
 

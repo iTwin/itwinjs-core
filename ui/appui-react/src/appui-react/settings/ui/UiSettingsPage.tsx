@@ -8,7 +8,6 @@
 
 // cSpell:ignore configurableui checkmark
 
-import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg?sprite";
 import "./UiSettingsPage.scss";
 import * as React from "react";
 import { SettingsTabEntry } from "@itwin/core-react";
@@ -16,8 +15,9 @@ import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
-import { IconSpecUtilities, UiSyncEventArgs } from "@itwin/appui-abstract";
+import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react";
+import { SvgWindowSettings } from "@itwin/itwinui-icons-react";
 
 /** UiSettingsPage displaying the active UI settings. This page lets users set the following settings.
  *
@@ -213,7 +213,7 @@ export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFr
   return {
     itemPriority, tabId: "uifw:UiStateStorage",
     label: UiFramework.translate("settings.uiSettingsPage.label"),
-    icon: IconSpecUtilities.createSvgIconSpec(widowSettingsIconSvg),
+    icon: <SvgWindowSettings />,
     page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,
     isDisabled: false,
     tooltip: UiFramework.translate("settings.uiSettingsPage.tooltip"),
