@@ -34,6 +34,8 @@ import { BSpline1dNd } from "./BSpline1dNd";
 import { BSplineCurveOps } from "./BSplineCurveOps";
 import { InterpolationCurve3dOptions } from "./InterpolationCurve3d";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
+import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
+import { OffsetOptions } from "../curve/internalContexts/PolygonOffsetContext";
 
 /**
  * Base class for BSplineCurve3d and BSplineCurve3dH.
@@ -293,6 +295,19 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
       }
     }
     return numFound;
+  }
+
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
+   *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
   }
 
 }

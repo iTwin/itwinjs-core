@@ -26,6 +26,7 @@ import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMo
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
+import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "./LineSegment3d";
 import { StrokeCountMap } from "./Query/StrokeCountMap";
 import { StrokeOptions } from "./StrokeOptions";
@@ -1268,6 +1269,26 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     } else {
       collectorArray.push(this);
     }
+  }
+
+  /**
+   * Construct an offset of each segment as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offset segments. Use RegionOps.constructCurveXYOffset() to return a fully joined offset.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const offsets: CurvePrimitive[] = [];
+    for (const seg of this.collectCurvePrimitives(undefined, true, true)) {
+      const offset = seg.constructOffsetXY(options);
+      if (offset !== undefined) {
+        if (offset instanceof CurvePrimitive)
+          offsets.push(offset);
+        else if (Array.isArray(offset))
+          offset.forEach((cp) => offsets.push(cp));
+      }
+    }
+    return offsets;
   }
 }
 /** An AnnotatedLineString3d is a linestring with additional surface-related data attached to each point
