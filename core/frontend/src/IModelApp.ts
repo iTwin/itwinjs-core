@@ -331,8 +331,10 @@ export class IModelApp {
     opts = opts ?? {};
     this._securityOptions = opts.security ?? {};
 
-    // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
-    (window as IModelAppForDebugger).iModelAppForDebugger = this;
+    if (process.env.NODE_ENV === "development") {
+      // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
+      (window as IModelAppForDebugger).iModelAppForDebugger = this;
+    }
 
     this.sessionId = opts.sessionId ?? Guid.createValue();
     this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iTwin.js
@@ -407,7 +409,9 @@ export class IModelApp {
     this.onBeforeShutdown.raiseEvent();
     this.onBeforeShutdown.clear();
 
-    (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
+    if (process.env.NODE_ENV === "development") {
+      (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
+    }
 
     this._wantEventLoop = false;
     window.removeEventListener("resize", IModelApp.requestNextAnimation);

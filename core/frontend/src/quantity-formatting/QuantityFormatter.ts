@@ -177,7 +177,7 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
     return fallbackProps;
   }
 
-  public async generateFormatterSpec(formatProps: FormatProps, unitsProvider: UnitsProvider) {
+  public async generateFormatterSpec(formatProps: FormatProps, unitsProvider: UnitsProvider): Promise<FormatterSpec> {
     const format = await Format.createFromJSON(this.key, unitsProvider, formatProps);
     return FormatterSpec.create(format.name, format, unitsProvider, this.persistenceUnit);
   }
@@ -394,11 +394,9 @@ export class QuantityFormatter implements UnitsProvider {
       formatPropsByType.set(entry, this.getFormatPropsByQuantityTypeEntryAndSystem(entry, systemKey));
     });
 
-    const formatPropPromises = new Array<Promise<void>>();
     for (const [entry, formatProps] of formatPropsByType) {
-      formatPropPromises.push(this.loadFormatAndParserSpec(entry, formatProps));
+      await this.loadFormatAndParserSpec(entry, formatProps);
     }
-    await Promise.all(formatPropPromises);
   }
 
   private getFormatPropsByQuantityTypeEntryAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
@@ -511,8 +509,27 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   public set unitsProvider(unitsProvider: UnitsProvider) {
+    this.setUnitsProvider(unitsProvider); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }
+
+  /** async method to set a units provider and reload caches */
+  public async setUnitsProvider(unitsProvider: UnitsProvider) {
     this._unitsProvider = unitsProvider;
+    // force all cached data to be reinitialized
+    await IModelApp.quantityFormatter.onInitialized();
+
+    // force default tool to start so any tool that may be using cached data will not be using bad data.
+    if (IModelApp.toolAdmin)
+      await IModelApp.toolAdmin.startDefaultTool();
     this.onUnitsProviderChanged.emit();
+  }
+
+  /** Async call typically used after IModel is closed to reset UnitsProvider to default one that does not require an Units schema. */
+  public async resetToUseInternalUnitsProvider() {
+    if (this._unitsProvider instanceof BasicUnitsProvider)
+      return;
+
+    await this.setUnitsProvider(new BasicUnitsProvider());
   }
 
   /** Async call to register a CustomQuantityType and load the FormatSpec and ParserSpec for the new type. */
@@ -798,8 +815,8 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   // keep following to maintain existing API of implementing UnitsProvider
-  public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
-    return this._unitsProvider.findUnit(unitLabel, phenomenon, unitSystem);
+  public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
+    return this._unitsProvider.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
   }
 
   /** Returns all defined units for the specified Unit Family/Phenomenon. */

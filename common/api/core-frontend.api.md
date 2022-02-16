@@ -7693,7 +7693,7 @@ export class QuantityFormatter implements UnitsProvider {
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
     // (undocumented)
-    findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
+    findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
@@ -7729,10 +7729,13 @@ export class QuantityFormatter implements UnitsProvider {
     get quantityTypesRegistry(): Map<string, QuantityTypeDefinition>;
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
     reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
+    // (undocumented)
+    resetToUseInternalUnitsProvider(): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
     setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider): Promise<void>;
+    setUnitsProvider(unitsProvider: UnitsProvider): Promise<void>;
     // (undocumented)
     protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
     get unitsProvider(): UnitsProvider;
