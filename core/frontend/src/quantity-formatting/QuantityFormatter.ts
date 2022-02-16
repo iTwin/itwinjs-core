@@ -154,6 +154,7 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
     return this._description ?? this.label;
   }
 
+  /** Get a default format to show quantity in persistence unit with precision or 6 decimal places.  */
   public getDefaultFormatPropsBySystem(requestedSystem: UnitSystemKey): FormatProps {
     // Fallback same as Format "DefaultRealU" in Formats ecschema
     const fallbackProps: FormatProps = {
@@ -588,6 +589,7 @@ export class QuantityFormatter implements UnitsProvider {
       return IModelApp.toolAdmin.startDefaultTool();
   }
 
+  /** Retrieve the active [[UnitSystemKey]] which is used to determine what formats are to be used to display quantities */
   public get activeUnitSystem(): UnitSystemKey { return this._activeUnitSystem; }
 
   /** Clear any formatting override for specified quantity type, but only for the "active" Unit System. */
@@ -642,11 +644,12 @@ export class QuantityFormatter implements UnitsProvider {
     }
   }
 
-  /** Converts a QuantityTypeArg into a QuantityTypeKey/string value. */
+  /** Converts a QuantityTypeArg into a QuantityTypeKey/string value that can be used to lookup custom and standard quantity types. */
   public getQuantityTypeKey(type: QuantityTypeArg): string {
     return getQuantityTypeKey(type);
   }
 
+  /** Return [[QuantityTypeDefinition]] if type has been registered. Standard QuantityTypes are automatically registered. */
   public getQuantityDefinition(type: QuantityTypeArg) {
     return this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
   }
@@ -658,6 +661,7 @@ export class QuantityFormatter implements UnitsProvider {
     return this._activeFormatSpecsByType.get(this.getQuantityTypeKey(type));
   }
 
+  /** Asynchronous Call to get a FormatterSpec for a QuantityType. This formatter spec can be used to synchronously format quantities. */
   public async generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps) {
     const quantityTypeDefinition = this.quantityTypesRegistry.get(this.getQuantityTypeKey(type));
     if (quantityTypeDefinition)
@@ -666,7 +670,7 @@ export class QuantityFormatter implements UnitsProvider {
     throw new Error(`Unable to generate FormatSpec for QuantityType ${type}`);
   }
 
-  /** Asynchronous Call to get a FormatterSpec of a QuantityType.
+  /** Asynchronous Call to get a FormatterSpec for a QuantityType and a Unit System. This formatter spec can be used to synchronously format quantities.
    * @param type        One of the built-in quantity types supported.
    * @param system      Requested unit system key. Note it is more efficient to use setActiveUnitSystem to set up formatters for all
    * quantity types of a unit system.
@@ -787,6 +791,7 @@ export class QuantityFormatter implements UnitsProvider {
     return "imperial";
   }
 
+  /** Return true if the QuantityType is using an override format. */
   public hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean {
     const quantityTypeKey = this.getQuantityTypeKey(type);
 
@@ -815,6 +820,7 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   // keep following to maintain existing API of implementing UnitsProvider
+  /** Find [UnitProp] for a specific unit label. */
   public async findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     return this._unitsProvider.findUnit(unitLabel, schemaName, phenomenon, unitSystem);
   }
@@ -824,6 +830,7 @@ export class QuantityFormatter implements UnitsProvider {
     return this._unitsProvider.getUnitsByFamily(phenomenon);
   }
 
+  /** Find [UnitProp] for a specific unit name. */
   public async findUnitByName(unitName: string): Promise<UnitProps> {
     return this._unitsProvider.findUnitByName(unitName);
   }
