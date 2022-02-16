@@ -2,6 +2,33 @@
   "name": "@itwin/ecschema-metadata",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/ecschema-metadata_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added delete class from schema and delete property from class as well as corresponding tests"
+          },
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "rename to @itwin/ecschema-metadata"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Removing deprecated editing and validation types from ecschema-metadata."
+          },
+          {
+            "comment": "remove alpha toXmlString method and its implicit xmldom dependency"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/ecschema-metadata_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

@@ -23,7 +23,7 @@ import { EnumerationPropertyProps } from '@itwin/ecschema-metadata';
 import { EnumerationProps } from '@itwin/ecschema-metadata';
 import { Format } from '@itwin/ecschema-metadata';
 import { FormatProps } from '@itwin/ecschema-metadata';
-import { FormatType } from '@itwin/ecschema-metadata';
+import { FormatType } from '@itwin/core-quantity';
 import { InvertedUnit } from '@itwin/ecschema-metadata';
 import { InvertedUnitProps } from '@itwin/ecschema-metadata';
 import { ISchemaPartVisitor } from '@itwin/ecschema-metadata';

@@ -136,7 +136,11 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "integration-testing" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/ecschema-rpcinterface-impl",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -441,10 +445,6 @@
     {
       "name": "dotenv-expand",
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
-    },
-    {
-      "name": "draco3d",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "electron",

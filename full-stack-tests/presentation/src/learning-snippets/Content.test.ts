@@ -708,10 +708,9 @@ describe("Learning Snippets", () => {
 
         expect(content!.contentSet.length).to.eq(4);
         expect(content!.descriptor.fields).to.containSubset([{
-          label: "3D Display Style",
+          label: "Display Style",
           nestedFields: [{ label: "Model" }, { label: "Code" }, { label: "User Label" }, { label: "Is Private" }],
-        }]
-        ).and.to.have.lengthOf(18);
+        }]).and.to.have.lengthOf(18);
       });
 
       it("uses `calculatedProperties` attribute", async () => {
