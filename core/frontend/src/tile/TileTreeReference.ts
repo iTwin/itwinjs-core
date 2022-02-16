@@ -70,6 +70,9 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Optionally return a tooltip describing the hit. */
   public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> { return undefined; }
 
+  /** Optionally return a MapLayerFeatureInfo object describing the hit.].
+   * @alpha
+   */
   public async getMapFeatureInfo(_hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>  { return undefined; }
 
   /** Optionally add any decorations specific to this reference. For example, map tile trees may add a logo image and/or copyright attributions.
