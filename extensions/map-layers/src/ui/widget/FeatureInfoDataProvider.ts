@@ -19,7 +19,12 @@ import { MapLayersUI } from "../../mapLayers";
  */
 
 export enum MapFeatureInfoLoadState {DataLoadStart, DataLoadEnd}
-export declare type MapFeatureInfoLoadSListener = (state: MapFeatureInfoLoadState) => void;
+export declare type MapFeatureInfoLoadListener = (state: MapFeatureInfoLoadState) => void;
+
+export interface MapFeatureInfoDataUpdate {
+  recordCount: number;
+}
+export declare type MapFeatureInfoDataUpdatedListener = (data: MapFeatureInfoDataUpdate) => void;
 
 export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyData {
   public label: PropertyRecord = PropertyRecord.fromString("");
@@ -27,7 +32,8 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
   public categories: PropertyCategory[] = [];
   public records: { [categoryName: string]: PropertyRecord[] } = {};
   public onDataChanged = new PropertyDataChangeEvent();
-  public onDataLoadStateChanged = new BeEvent<MapFeatureInfoLoadSListener>();
+  public onDataLoadStateChanged = new BeEvent<MapFeatureInfoLoadListener>();
+  public onDataUpdated = new BeEvent<MapFeatureInfoDataUpdatedListener>();
   constructor() {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     MapLayersUI.onMapHit?.addListener(this.handleMapHit, this);
@@ -41,6 +47,7 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
   private async handleMapHit(mapHit: HitDetail)  {
     this.records = {};
     this.categories = [];
+    let recordCount = 0;
     if (mapHit?.isMapHit) {
       this.onDataLoadStateChanged.raiseEvent(MapFeatureInfoLoadState.DataLoadStart);
       const mapInfo = await mapHit.viewport.getMapFeatureInfo(mapHit);
@@ -78,9 +85,12 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
           }
           if (layerCatIdx === -1 && nbRecords>0)
             this.addCategory(layerCategory);
+
+          recordCount = recordCount + nbRecords;
         }
       }
     }
+    this.onDataUpdated.raiseEvent({recordCount});
     this.onDataChanged.raiseEvent();
   }
 

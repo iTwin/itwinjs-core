@@ -79,7 +79,7 @@
   },
   "FeatureInfoWidget": {
     "Label": "Map Layers Info",
-    "NoRecords": "No Records"
+    "NoRecords": "No Results"
   },
   "LayerMenu": {
     "Detach": "Detach",
