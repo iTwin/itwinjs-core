@@ -185,6 +185,7 @@ export class IModelTransformer extends IModelExportHandler {
       /* eslint-enable deprecation/deprecation */
     }
     this.targetDb = this.importer.targetDb;
+    this.targetDb.nativeDb.enableChangesetSizeStats(true);
     // initialize the IModelCloneContext
     this.context = new IModelCloneContext(this.sourceDb, this.targetDb);
   }
@@ -518,6 +519,13 @@ export class IModelTransformer extends IModelExportHandler {
       }
     }
     targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
+
+    // save changes to the target every 500 megabytes to prevent unbounded memory usage
+    const _500mgb = 500 * 1024 * 1024;
+    if (this.targetDb.nativeDb.getChangesetSize() > _500mgb) {
+      this.targetDb.saveChanges();
+    }
+
     if (!this._options.wasSourceIModelCopiedToTarget) {
       this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
     }
@@ -708,8 +716,11 @@ export class IModelTransformer extends IModelExportHandler {
       throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true");
     }
     const aspectDeleteIds: Id64String[] = [];
-    const sql = `SELECT ECInstanceId,Identifier,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
-    for await (const [elemId, identifier, jsonProperties] of this.targetDb.query(sql, QueryBinder.from({ scopeId: this.targetScopeElementId, kind: ExternalSourceAspect.Kind.Relationship }), { usePrimaryConn: true, "rowFormat"})) {
+    for await (const [elemId, identifier, jsonProperties] of this.targetDb.query(
+      `SELECT ECInstanceId,Identifier,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`,
+      QueryBinder.from({ scopeId: this.targetScopeElementId, kind: ExternalSourceAspect.Kind.Relationship }),
+      { usePrimaryConn: true },
+    )) {
       const sourceRelInstanceId: Id64String = Id64.fromJSON(identifier);
       if (undefined === this.sourceDb.relationships.tryGetInstanceProps(ElementRefersToElements.classFullName, sourceRelInstanceId)) {
         const json: any = JSON.parse(jsonProperties);
