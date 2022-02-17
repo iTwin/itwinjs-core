@@ -677,7 +677,7 @@ export class IModelApp {
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: `${this.publicPath}images/about-imodeljs.svg`,
-      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
+      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("iModelJs:Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
       notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
@@ -712,6 +712,6 @@ export class IModelApp {
         key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
-    return this.localization.getLocalizedString(`${key.scope}.${key.val}`, key);
+    return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
   }
 }

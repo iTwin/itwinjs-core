@@ -98,7 +98,7 @@ export abstract class ViewTool extends InteractiveTool {
   public override async run(..._args: any[]): Promise<boolean> {
     const toolAdmin = IModelApp.toolAdmin;
     if (undefined !== this.viewport && this.viewport === toolAdmin.markupView) {
-      IModelApp.notifications.outputPromptByKey("Viewing.NotDuringMarkup");
+      IModelApp.notifications.outputPromptByKey("iModelJs:Viewing.NotDuringMarkup");
       return false;
     }
 
