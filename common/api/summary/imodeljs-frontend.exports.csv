@@ -46,6 +46,7 @@ internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?:
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
 public;AsyncFunction = (...args: any) => Promise
 public;AsyncMethodsOf
+internal;AttachToViewportArgs
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
