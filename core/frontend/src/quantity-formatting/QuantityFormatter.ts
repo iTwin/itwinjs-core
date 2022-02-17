@@ -18,17 +18,38 @@ import { CustomFormatPropEditorSpec } from "./QuantityTypesEditorSpecs";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
 
-/** Defines standard format types for tools that need to display measurements to user.
+/**
+ * Defines standard format types for tools that need to display measurements to user.
  * @public
  */
-export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6, Stationing = 7, LengthSurvey = 8, LengthEngineering = 9 }
+export enum QuantityType {
+  /** Length which is stored in meters. Typically formatted to display in meters or feet-inches based on unit system. */
+  Length = 1,
+  /** Angular value which is stored in radians. Typically formatted to display degrees or Degrees-Minute-Seconds based on unit system. */
+  Angle = 2,
+  /** Area value store in meters squared. Typically formatted to display in meters squared or feet squared based on unit system. */
+  Area = 3,
+  /** Volume value which is stored in meters cubed. Typically formatted to display in meters cubed or feet cubed based on unit system. */
+  Volume = 4,
+  /** LatLong is an angular value which is stored in radians. Typically formatted to display degrees or Degrees-Minute-Seconds based on unit system. */
+  LatLong = 5,
+  /** Coordinate value which is stored in meters. Typically formatted to display in meters or feet based on unit system. */
+  Coordinate = 6,
+  /** Stationing is a distance value stored in meters. Typically formatted to display `xxx+xx` or `xx+xxx` based on unit system. */
+  Stationing = 7,
+  /** LengthSurvey is a distance value stored in meters. Typically formatted to display in meters or US Survey Feet. */
+  LengthSurvey = 8,
+  /** LengthEngineering is a distance value stored in meters. Typically formatted to display either meters or feet based on unit system. */
+  LengthEngineering = 9
+}
 
-/** Type the can be used to uniquely identify a Quantity Type.
+/**
+ * Used to uniquely identify the type or quantity. [[QuantityType]] are built-in types and `string` are used for custom quantity types.
  * @public
  */
 export type QuantityTypeArg = QuantityType | string;
 
-/** String used to uniquely identify a QuantityType in the quantity registry. See function `getQuantityTypeKey`.
+/** String used to uniquely identify a QuantityType in the quantity registry. See function [[QuantityType.getQuantityTypeKey]].
  * @public
  */
 export type QuantityTypeKey = string;
