@@ -22,12 +22,7 @@ variables:
   - group: iModel.js Integration Test Users
 
 jobs:
-<<<<<<< HEAD
-  - job: Node_14_x
-    condition: succeeded()
-=======
   - job: Integration_Tests_PR_Validation
->>>>>>> 508c054dd9 (Run integration tests on all platforms (#3208))
     pool:
       vmImage: ubuntu-latest
     steps:
