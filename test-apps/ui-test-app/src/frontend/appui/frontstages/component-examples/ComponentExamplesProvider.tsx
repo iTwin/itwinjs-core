@@ -12,7 +12,7 @@ import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
 } from "@itwin/core-frontend";
-import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { Format, FormatProps, FormatterSpec, FormatTraits, getTraitString, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@itwin/appui-abstract";
 import {
   adjustDateToTimezone, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
@@ -83,7 +83,7 @@ function MySettingsPage() {
 }
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
-  const traitStr = Format.getTraitString(trait);
+  const traitStr = getTraitString(trait);
   if (undefined === traitStr)
     return;
   let formatTraits: string[] | undefined;

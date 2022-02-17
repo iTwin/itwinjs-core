@@ -87,6 +87,7 @@ export * from "./appui-react/hooks/useAnalysisAnimationDataProvider";
 export * from "./appui-react/hooks/useFrameworkVersion";
 export * from "./appui-react/hooks/useScheduleAnimationDataProvider";
 export * from "./appui-react/hooks/useSolarDataProvider";
+export * from "./appui-react/hooks/useUiVisibility";
 
 export * from "./appui-react/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./appui-react/imodel-components/category-tree/CategoriesTree";

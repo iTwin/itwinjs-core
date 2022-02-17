@@ -36,7 +36,7 @@ export function ItemsAppendedSampleTimeline() {
 }
 
 export function ItemsPrefixedSampleTimeline() {
-  const duration = 500;
+  const duration = 50000;
   const startDate = new Date(2014, 6, 6);
   const endDate = new Date(2017, 8, 12);
   const prefixMenuItems: TimelineMenuItemProps[] = [

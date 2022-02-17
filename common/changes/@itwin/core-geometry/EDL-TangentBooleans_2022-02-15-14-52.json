@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Add secondary sort (based on curvature) to around-the-vertex ordering in planar subdivision with curves",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
