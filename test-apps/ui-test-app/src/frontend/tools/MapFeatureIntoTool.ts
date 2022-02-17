@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  BeButtonEvent, EventHandled, HitDetail, IModelApp, LocateResponse, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, ToolAssistance, ToolAssistanceImage,
+  BeButtonEvent, EventHandled, HitDetail, IModelApp, LocateResponse, PrimitiveTool,
 } from "@itwin/core-frontend";
 import {  WidgetState } from "@itwin/appui-abstract";
 
-import { SampleAppIModelApp } from "..";
 import { FrontstageManager } from "@itwin/appui-react";
 
 import { FeatureInfoWidgetControl } from "@itwin/map-layers";
