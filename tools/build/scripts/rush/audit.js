@@ -42,9 +42,13 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
     "GHSA-c36v-fmgq-m8hx", // https://github.com/advisories/GHSA-c36v-fmgq-m8hx
     "GHSA-whgm-jr23-g3j9", // https://github.com/advisories/GHSA-whgm-jr23-g3j9
     "GHSA-r683-j2x4-v87g", // https://github.com/advisories/GHSA-r683-j2x4-v87g
+<<<<<<< HEAD:tools/build/scripts/rush/audit.js
     "GHSA-74fj-2j2h-c42q", // https://github.com/advisories/GHSA-74fj-2j2h-c42q
     "GHSA-w5p7-h5w8-2hfq", // https://github.com/advisories/GHSA-w5p7-h5w8-2hfq
     "GHSA-wpg7-2c88-r8xv", // https://github.com/advisories/GHSA-wpg7-2c88-r8xv
+=======
+    "GHSA-rqff-837h-mm52" // https://github.com/advisories/GHSA-rqff-837h-mm52
+>>>>>>> e9431a0f2d (Suppress npm audit failure (#3230)):tools/internal/scripts/rush/audit.js
   ];
 
   let shouldFailBuild = false;
