@@ -58,7 +58,7 @@ import { GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./ViewRect";
-import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
+import { AttachToViewportArgs, ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
@@ -967,7 +967,8 @@ export abstract class Viewport implements IDisposable {
     this.attachToView();
   }
 
-  private attachToView(): void {
+  /** @internal */
+  protected attachToView(): void {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
     this.view.attachToViewport();
@@ -1105,7 +1106,8 @@ export abstract class Viewport implements IDisposable {
     }
   }
 
-  private detachFromView(): void {
+  /** @internal */
+  protected detachFromView(): void {
     this._detachFromView.forEach((f) => f());
     this._detachFromView.length = 0;
 
@@ -3328,6 +3330,17 @@ export interface OffScreenViewportOptions {
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
+  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
+  private _drawingToSheetTransform?: Transform;
+  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
+  public get drawingToSheetTransform(): Transform | undefined {
+    return this._drawingToSheetTransform;
+  }
+  public set drawingToSheetTransform(transform: Transform | undefined) {
+    this.detachFromView();
+    this._drawingToSheetTransform = transform;
+    this.attachToView();
+  }
 
   public static create(options: OffScreenViewportOptions): OffScreenViewport {
     return this.createViewport(options.view, IModelApp.renderSystem.createOffscreenTarget(options.viewRect), options.lockAspectRatio);
