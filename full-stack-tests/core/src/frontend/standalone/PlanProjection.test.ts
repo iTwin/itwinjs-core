@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
 import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
@@ -14,6 +14,9 @@ describe("Plan projections", () => {
   let mirukuru: IModelConnection;
 
   before(async () => {
+    assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
+    assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
+
     const opts = {
       electronApp: { rpcInterfaces },
       iModelApp: {
@@ -21,6 +24,17 @@ describe("Plan projections", () => {
           // Test wants to read the color of exactly one pixel, specified in CSS pixels. Ignore device pixel ratio.
           dpiAwareViewports: false,
         },
+        mapLayerOptions: {
+          BingMaps: { // eslint-disable-line
+            key: "key",
+            value: process.env.TEST_BING_MAPS_KEY!, // will be caught in the assert above if undefined.
+          },
+          MapboxImagery: { // eslint-disable-line
+            key: "access_token",
+            value: process.env.TEST_MAPBOX_KEY!, // will be caught in the assert above if undefined.
+          },
+        },
+
       },
     };
 
