@@ -137,7 +137,7 @@ export interface CommonMapLayerProps {
   transparentBackground?: boolean;
 }
 
-/** JSON representation of an [[ImageMapLayer]].
+/** JSON representation of an [[ImageMapLayerSettings]].
  * @see [[MapImagerySettings]].
  * @beta
  */
@@ -157,7 +157,7 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
   modelId?: never;
 }
 
-/** JSON representation of a [[ModelMapLayer]].
+/** JSON representation of a [[ModelMapLayerSettings]].
  * @see [[MapImagerySettings]].
  * @beta
  */
