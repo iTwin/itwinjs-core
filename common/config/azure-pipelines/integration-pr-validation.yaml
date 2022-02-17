@@ -6,7 +6,9 @@
 #
 # Note: Currently a subset of all integration tests
 
-trigger: none
+trigger:
+  - master
+  - release/*
 pr:
   autoCancel: true
   drafts: false
