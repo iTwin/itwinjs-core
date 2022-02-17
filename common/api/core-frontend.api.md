@@ -3214,17 +3214,13 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
 
 // @public
 export interface FormatterParserSpecsProvider {
-    // (undocumented)
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
-    // (undocumented)
     createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
-    // (undocumented)
     quantityType: QuantityTypeArg;
 }
 
 // @public
 export interface FormattingUnitSystemChangedArgs {
-    // (undocumented)
     readonly system: UnitSystemKey;
 }
 
@@ -7291,13 +7287,9 @@ export enum OutputMessageType {
 
 // @public
 export interface OverrideFormatEntry {
-    // (undocumented)
     imperial?: FormatProps;
-    // (undocumented)
     metric?: FormatProps;
-    // (undocumented)
     usCustomary?: FormatProps;
-    // (undocumented)
     usSurvey?: FormatProps;
 }
 
@@ -7733,23 +7725,14 @@ export class QuantityFormatter implements UnitsProvider {
 
 // @public
 export enum QuantityType {
-    // (undocumented)
     Angle = 2,
-    // (undocumented)
     Area = 3,
-    // (undocumented)
     Coordinate = 6,
-    // (undocumented)
     LatLong = 5,
-    // (undocumented)
     Length = 1,
-    // (undocumented)
     LengthEngineering = 9,
-    // (undocumented)
     LengthSurvey = 8,
-    // (undocumented)
     Stationing = 7,
-    // (undocumented)
     Volume = 4
 }
 

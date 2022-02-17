@@ -23,23 +23,23 @@ import { CustomFormatPropEditorSpec } from "./QuantityTypesEditorSpecs";
  * @public
  */
 export enum QuantityType {
-  /** Length which is stored in meters. Typically formatted to display in meters or feet-inches based on unit system. */
+  /** Length which is stored in meters. Typically formatted to display in meters or feet-inches based on active unit system. */
   Length = 1,
-  /** Angular value which is stored in radians. Typically formatted to display degrees or Degrees-Minute-Seconds based on unit system. */
+  /** Angular value which is stored in radians. Typically formatted to display degrees or Degrees-Minute-Seconds based on active unit system. */
   Angle = 2,
-  /** Area value store in meters squared. Typically formatted to display in meters squared or feet squared based on unit system. */
+  /** Area value store in meters squared. Typically formatted to display in meters squared or feet squared based on active unit system. */
   Area = 3,
-  /** Volume value which is stored in meters cubed. Typically formatted to display in meters cubed or feet cubed based on unit system. */
+  /** Volume value which is stored in meters cubed. Typically formatted to display in meters cubed or feet cubed based on active unit system. */
   Volume = 4,
-  /** LatLong is an angular value which is stored in radians. Typically formatted to display degrees or Degrees-Minute-Seconds based on unit system. */
+  /** LatLong is an angular value which is stored in radians. Typically formatted to display degrees or Degrees-Minute-Seconds based on active unit system. */
   LatLong = 5,
-  /** Coordinate value which is stored in meters. Typically formatted to display in meters or feet based on unit system. */
+  /** Coordinate/Location value which is stored in meters. Typically formatted to display in meters or feet based on active unit system. */
   Coordinate = 6,
-  /** Stationing is a distance value stored in meters. Typically formatted to display `xxx+xx` or `xx+xxx` based on unit system. */
+  /** Stationing is a distance value stored in meters. Typically formatted to display `xxx+xx` or `xx+xxx` based on active unit system. */
   Stationing = 7,
-  /** LengthSurvey is a distance value stored in meters. Typically formatted to display in meters or US Survey Feet. */
+  /** LengthSurvey is a distance value stored in meters. Typically formatted to display in meters or US Survey Feet based on active unit system.. */
   LengthSurvey = 8,
-  /** LengthEngineering is a distance value stored in meters. Typically formatted to display either meters or feet based on unit system. */
+  /** LengthEngineering is a distance value stored in meters. Typically formatted to display either meters or feet based on active unit system. */
   LengthEngineering = 9
 }
 
@@ -119,9 +119,9 @@ export interface QuantityTypeDefinition {
   description: string;
   /* Provide a default FormatProps for a unit system. */
   getDefaultFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
-  /** Generate a [FormatterSpec]$(core-quantity) that will be called to format values.*/
+  /** Async function to generate a [FormatterSpec]$(core-quantity) that will be called to format values.*/
   generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
-  /** Generate a [ParserSpec]$(core-quantity) that will be called to parse a string into a quantity value.*/
+  /** Async function to generate a [ParserSpec]$(core-quantity) that will be called to parse a string into a quantity value.*/
   generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider, alternateUnitLabelsProvider?: AlternateUnitLabelsProvider) => Promise<ParserSpec>;
 }
 
@@ -214,9 +214,13 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
  * @public
  */
 export interface OverrideFormatEntry {
+  /** Override format for "imperial" unit system */
   imperial?: FormatProps;
+  /** Override format for "metric" unit system */
   metric?: FormatProps;
+  /** Override format for "usCustomary" unit system */
   usCustomary?: FormatProps;
+  /** Override format for "usSurvey" unit system */
   usSurvey?: FormatProps;
 }
 
@@ -224,8 +228,11 @@ export interface OverrideFormatEntry {
  * @public
  */
 export interface FormatterParserSpecsProvider {
+  /** Custom quantity id */
   quantityType: QuantityTypeArg;
+  /** Async function to return FormatterSpec for a custom quantity type */
   createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
+  /** Async function to return ParserSpec for a custom quantity type */
   createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
 }
 
@@ -233,7 +240,7 @@ export interface FormatterParserSpecsProvider {
  * @public
  */
 export interface FormattingUnitSystemChangedArgs {
-  /* string that defines unit system activated. */
+  /** string that defines unit system activated. */
   readonly system: UnitSystemKey;
 }
 
