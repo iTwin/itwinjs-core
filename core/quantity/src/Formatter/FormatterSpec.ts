@@ -71,7 +71,7 @@ export class FormatterSpec {
         if (convertFromUnit) {
           unitConversion = await unitsProvider.getConversion(convertFromUnit, unit[0]);
         } else {
-          unitConversion = ({ factor: 1.0, offset: 0.0 }) as UnitConversion;
+          unitConversion = { factor: 1.0, offset: 0.0 };
         }
         const unitLabel = (unit[1] && unit[1]!.length > 0) ? unit[1]! : unit[0].label;
         const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion, system: unit[0].system }) as UnitConversionSpec;
