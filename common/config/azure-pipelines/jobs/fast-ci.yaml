@@ -5,6 +5,7 @@ trigger:
   - release/*
 
 pr:
+  autoCancel: true
   drafts: false
   branches:
     include:
