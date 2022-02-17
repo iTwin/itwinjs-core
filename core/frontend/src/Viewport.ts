@@ -949,27 +949,29 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit)));
 
-    const results = await Promise.all(promises);
+    const featureInfo: MapFeatureInfo = {};
 
     const worldPoint = hit.hitPoint.clone();
-    let cartoHitPoint: Cartographic|undefined;
     const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      cartoHitPoint = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+      featureInfo.hitPoint = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
     }
 
-    const featureInfo: MapFeatureInfo = {hitPoint: cartoHitPoint};
-    for (const result of results)
-      if (result !== undefined) {
+    try {
+      const results = await Promise.all(promises);
 
-        if (featureInfo.layerInfo === undefined) {
-          featureInfo.layerInfo = [];
+      for (const result of results)
+        if (result !== undefined) {
+
+          if (featureInfo.layerInfo === undefined) {
+            featureInfo.layerInfo = [];
+          }
+
+          featureInfo.layerInfo.push(...result);
         }
-
-        featureInfo.layerInfo.push(...result);
-      }
+    } catch {
+    }
     return featureInfo;
-
   }
 
   /** If this event has one or more listeners, collection of timing statistics related to rendering frames is enabled. Frame statistics will be received by the listeners whenever a frame is finished rendering.

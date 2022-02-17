@@ -25,9 +25,9 @@ import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference, getCesiumTerrainProvider, ImageryMapLayerTreeReference, ImageryMapTileTree,
-  MapCartoRectangle, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs,
-  TileLoadPriority, TileParams, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
-  MapLayerFeatureInfo,
+  MapCartoRectangle, MapLayerFeatureInfo, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile,
+  TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile,
+  WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint = Point3d.create();
@@ -785,7 +785,15 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const worldPoint = hit.hitPoint.clone();
-    const cartoGraphic = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+    let cartoGraphic: Cartographic|undefined;
+    try {
+      cartoGraphic = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+    } catch {
+    }
+    if (!cartoGraphic) {
+      return undefined;
+    }
+
     const strings = [];
     const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
     if (imageryTreeRef !== undefined) {
@@ -797,8 +805,15 @@ export class MapTileTreeReference extends TileTreeReference {
           const imageryTree = imageryTreeRef.treeOwner.tileTree as ImageryMapTileTree;
           if (imageryTree) {
             for (const imageryTile of terrainTile.imageryTiles) {
-              if (imageryTree === imageryTile.imageryTree && imageryTile.rectangle.containsCartographic(cartoGraphic))
-                await func (imageryTreeRef, imageryTile.quadId, cartoGraphic, imageryTree);
+              if (imageryTree === imageryTile.imageryTree && imageryTile.rectangle.containsCartographic(cartoGraphic)) {
+                try {
+                  await func (imageryTreeRef, imageryTile.quadId, cartoGraphic, imageryTree);
+                } catch {
+                  // continue iterating even though we got a failure.
+                }
+
+              }
+
             }
           }
         }
@@ -825,7 +840,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (carto) {
       strings.push(`Latitude: ${carto.latitudeDegrees.toFixed(4)}`);
       strings.push(`Longitude: ${carto.longitudeDegrees.toFixed(4)}`);
-      if (this.settings.applyTerrain) {
+      if (this.settings.applyTerrain && tree.terrainExaggeration !== 0.0) {
         const geodeticHeight = (carto.height - tree.bimElevationBias) / tree.terrainExaggeration;
         strings.push(`Height (Meters) Geodetic: ${geodeticHeight.toFixed(1)} Sea Level: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
       }
