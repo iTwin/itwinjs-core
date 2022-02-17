@@ -930,7 +930,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     const promises = new Array<Promise<string | HTMLElement | undefined>>();
     if (this.displayStyle) {
       this.displayStyle.forEachTileTreeRef(async (tree) => {
-        promises.push(tree.getToolTip(hit));
+        promises.push(tree.getToolTip(hit).catch(() => undefined));
       });
     }
     this.forEachMapTreeRef(async (tree) => promises.push(tree.getToolTip(hit)));
@@ -947,8 +947,9 @@ export abstract class Viewport implements IDisposable, TileUser {
   public async getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo> {
     const promises = new Array<Promise<MapLayerFeatureInfo[]  | undefined>>();
 
-    this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit)));
-
+    // Execute 'getMapFeatureInfo' on every tree, and make sure to handle exception for each call,
+    // so that we get still get results even though a tree has failed.
+    this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit).catch(() => undefined)));
     const featureInfo: MapFeatureInfo = {};
 
     const worldPoint = hit.hitPoint.clone();
@@ -957,20 +958,16 @@ export abstract class Viewport implements IDisposable, TileUser {
       featureInfo.hitPoint = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
     }
 
-    try {
-      const results = await Promise.all(promises);
+    const results = await Promise.all(promises);
+    for (const result of results)
+      if (result !== undefined) {
 
-      for (const result of results)
-        if (result !== undefined) {
-
-          if (featureInfo.layerInfo === undefined) {
-            featureInfo.layerInfo = [];
-          }
-
-          featureInfo.layerInfo.push(...result);
+        if (featureInfo.layerInfo === undefined) {
+          featureInfo.layerInfo = [];
         }
-    } catch {
-    }
+
+        featureInfo.layerInfo.push(...result);
+      }
     return featureInfo;
   }
 
