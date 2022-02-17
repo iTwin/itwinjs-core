@@ -835,7 +835,11 @@ export class MapTileTreeReference extends TileTreeReference {
       carto = cartoGraphic;
       await imageryTree.imageryLoader.getToolTip(strings, quadId, cartoGraphic, imageryTree);
     };
-    await this.forEachImageryTileHit(hit, getTooltipFunc);
+    try {
+      await this.forEachImageryTileHit(hit, getTooltipFunc);
+    } catch {
+      // No results added
+    }
 
     if (carto) {
       strings.push(`Latitude: ${carto.latitudeDegrees.toFixed(4)}`);
@@ -861,9 +865,17 @@ export class MapTileTreeReference extends TileTreeReference {
     if (imageryTreeRef !== undefined) {
 
       const getFeatureInfoFunc = async (_imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic,imageryTree: ImageryMapTileTree ) => {
-        await imageryTree.imageryLoader.getMapFeatureInfo(info, quadId, cartoGraphic, imageryTree);
+        try {
+          await imageryTree.imageryLoader.getMapFeatureInfo(info, quadId, cartoGraphic, imageryTree);
+        } catch {
+        }
       };
-      await this.forEachImageryTileHit(hit, getFeatureInfoFunc);
+      try {
+        await this.forEachImageryTileHit(hit, getFeatureInfoFunc);
+      } catch {
+        // No results added
+      }
+
     }
 
     return info;
