@@ -10,7 +10,7 @@ import { rpcInterfaces } from "../../common/RpcInterfaces";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 
-describe("Plan projections", () => {
+describe("Plan projections (#integration)", () => {
   let mirukuru: IModelConnection;
 
   before(async () => {
