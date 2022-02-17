@@ -1107,7 +1107,7 @@ export abstract class ViewState extends ElementState {
    * @see [[detachFromViewport]] from the inverse operation.
    * @internal
    */
-  public attachToViewport(): void {
+  public attachToViewport(_args: AttachToViewportArgs): void {
     if (this.isAttachedToViewport)
       throw new Error("Attempting to attach a ViewState that is already attached to a Viewport");
 
