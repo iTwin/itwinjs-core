@@ -74,8 +74,6 @@ export class MapLayersUI {
     }
 
     MapLayersUI._itemsProviderRegistered = registerItemsProvider;
-
-    ConfigurableUiManager.registerControl(FeatureInfoWidgetControl.id, FeatureInfoWidgetControl);
   }
 
   /** Unregisters internationalization service namespace and UiItemManager / control */
