@@ -2430,7 +2430,7 @@ export class SnapshotDb extends IModelDb {
     const key = CheckpointManager.getKey(checkpoint);
     // NOTE: Currently the key contains a ':' which can not be part of a filename on windows, so it can not be used as the tempFileBase.
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
-    const snapshot = SnapshotDb.openFile(filePath, { skipFileCheck: true, key, tempFileBase });
+    const snapshot = SnapshotDb.openFile(filePath, { key, tempFileBase });
     snapshot._iTwinId = checkpoint.iTwinId;
 
     try {

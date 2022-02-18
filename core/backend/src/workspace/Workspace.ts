@@ -320,7 +320,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
       throw new Error(`invalid containerId: [${id}]`);
   }
 
-  public constructor(workspace: ITwinWorkspace, id: WorkspaceContainerId, cloudProps?: CloudSqlite.TransferProps) {
+  public constructor(workspace: ITwinWorkspace, id: WorkspaceContainerId, cloudProps?: CloudSqlite.ContainerAccessProps) {
     ITwinWorkspaceContainer.validateContainerId(id);
     this.workspace = workspace;
     this.id = id;
@@ -419,11 +419,8 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
 
   public open(): void {
     const cloudContainer = this.container.cloudContainer;
-    if (cloudContainer) {
-      this.sqliteDb.nativeDb.openDb(`/${cloudContainer.alias}/${this.dbName}`, OpenMode.Readonly, { skipFileCheck: true, uriParams: cloudContainer.uriParams });
-    } else {
-      this.sqliteDb.openDb(this.localFileName, OpenMode.Readonly);
-    }
+    const dbName = cloudContainer ? `/${cloudContainer.alias}/${this.dbName}` : this.localFileName;
+    this.sqliteDb.nativeDb.openDb(dbName, OpenMode.Readonly, cloudContainer);
   }
 
   public close(): void {
@@ -547,8 +544,9 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     return CloudSqlite.copyDb(oldVersion, newVersion, cloudProps);
   }
 
-  public async upload(cloudProps: CloudSqlite.TransferProps) {
-    return CloudSqlite.uploadDb({ ...cloudProps, ...this });
+  public async upload(args: CloudSqlite.TransferDbProps) {
+    if (this.container.cloudContainer)
+      return CloudSqlite.uploadDb(this.container.cloudContainer, args);
   }
 
   /** Add a new string resource to this WorkspaceDb.
