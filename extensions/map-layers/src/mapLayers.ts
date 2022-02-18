@@ -5,9 +5,8 @@
 import { HitDetail, IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
-import { ConfigurableUiManager } from "@itwin/appui-react";
 import { BeEvent } from "@itwin/core-bentley";
-import { FeatureInfoUiItemsProvider, FeatureInfoWidgetControl } from "./ui/FeatureInfoUiItemsProvider";
+import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
 
 export type MapHitEvent = BeEvent<(hit: HitDetail) => void>;
 export interface FeatureInfoOpts
