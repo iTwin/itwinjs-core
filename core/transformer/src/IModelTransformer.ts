@@ -100,6 +100,14 @@ export interface IModelTransformOptions {
    * @beta
    */
   danglingPredecessorsBehavior?: "reject" | "ignore";
+
+  /** The sqlite session changeset size threshold to saveChanges upon.
+   * You can finetune this parameter for performance, sqlite memory usage can grow unbounded
+   * with this set to very high, so you can prevent out-of-memory errors by lowering this.
+   * @note the saveChanges will only be triggered when the transformer is processing an element
+   * @default 5*100*1024*1024 500mgb
+   */
+  sessionChangesetSizeSaveThreshold?: number;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -127,8 +135,8 @@ export class IModelTransformer extends IModelExportHandler {
   /** The set of Elements that were deferred during a prior transformation pass. */
   protected _deferredElementIds = new Set<Id64String>();
 
-  /** the options that were used to initialize this transformer */
-  private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingPredecessorsBehavior">;
+  /** the options that were used to initialize this transformer, with defaults applied */
+  private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingPredecessorsBehavior" | "sessionChangesetSizeSaveThreshold">;
 
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
@@ -141,12 +149,14 @@ export class IModelTransformer extends IModelExportHandler {
   public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions) {
     super();
     // initialize IModelTransformOptions
+    const _500mgb = 500 * 1024 * 1024;
     this._options = {
       ...options,
       // non-falsy defaults
       cloneUsingBinaryGeometry: options?.cloneUsingBinaryGeometry ?? true,
       targetScopeElementId: options?.targetScopeElementId ?? IModel.rootSubjectId,
       danglingPredecessorsBehavior: options?.danglingPredecessorsBehavior ?? "reject",
+      sessionChangesetSizeSaveThreshold: options?.sessionChangesetSizeSaveThreshold ?? _500mgb,
     };
     this._isFirstSynchronization = this._options.wasSourceIModelCopiedToTarget ? true : undefined;
     // initialize exporter and sourceDb
@@ -520,9 +530,8 @@ export class IModelTransformer extends IModelExportHandler {
     }
     targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
 
-    // save changes to the target every 500 megabytes to prevent unbounded memory usage
-    const _500mgb = 500 * 1024 * 1024;
-    if (this.targetDb.nativeDb.getChangesetSize() > _500mgb) {
+    // sqlite can use a lot of memory if you aren't saving changes
+    if (this.targetDb.nativeDb.getChangesetSize() > this._options.sessionChangesetSizeSaveThreshold) {
       this.targetDb.saveChanges();
     }
 
@@ -674,6 +683,10 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public override onExportRelationship(sourceRelationship: Relationship): void {
     const targetRelationshipProps: RelationshipProps = this.onTransformRelationship(sourceRelationship);
+    // sqlite can use a lot of memory if you aren't saving changes
+    if (this.targetDb.nativeDb.getChangesetSize() > this._options.sessionChangesetSizeSaveThreshold) {
+      this.targetDb.saveChanges();
+    }
     const targetRelationshipInstanceId: Id64String = this.importer.importRelationship(targetRelationshipProps);
     if (!this._options.noProvenance && Id64.isValidId64(targetRelationshipInstanceId)) {
       const aspectProps: ExternalSourceAspectProps = this.initRelationshipProvenance(sourceRelationship, targetRelationshipInstanceId);
