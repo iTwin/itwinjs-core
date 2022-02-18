@@ -135,6 +135,7 @@ import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { ImageBuffer } from '@itwin/core-common';
 import { ImageBufferFormat } from '@itwin/core-common';
+import { ImageMapLayerSettings } from '@itwin/core-common';
 import { ImageSource } from '@itwin/core-common';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
@@ -179,6 +180,7 @@ import { MessageSeverity } from '@itwin/appui-abstract';
 import { ModelGeometryChanges } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
 import { ModelIdAndGeometryGuid } from '@itwin/core-common';
+import { ModelMapLayerSettings } from '@itwin/core-common';
 import { ModelProps } from '@itwin/core-common';
 import { ModelQueryParams } from '@itwin/core-common';
 import { ModelSelectorProps } from '@itwin/core-common';
@@ -236,6 +238,7 @@ import { RealityDataAccess } from '@itwin/core-common';
 import { RealityDataFormat } from '@itwin/core-common';
 import { RealityDataProvider } from '@itwin/core-common';
 import { RealityDataSourceKey } from '@itwin/core-common';
+import { RealityDataStatus } from '@itwin/core-bentley';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -307,6 +310,7 @@ import { ViewDetails } from '@itwin/core-common';
 import { ViewDetails3d } from '@itwin/core-common';
 import { ViewFlagOverrides } from '@itwin/core-common';
 import { ViewFlags } from '@itwin/core-common';
+import { ViewFlagsProperties } from '@itwin/core-common';
 import { ViewQueryParams } from '@itwin/core-common';
 import { ViewStateProps } from '@itwin/core-common';
 import { WebGLContext } from '@itwin/webgl-compatibility';
@@ -1127,7 +1131,7 @@ export interface ArcGisGenerateTokenOptions {
 
 // @internal (undocumented)
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
-    constructor(settings: MapLayerSettings);
+    constructor(settings: ImageMapLayerSettings);
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
@@ -1341,7 +1345,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
 // @internal (undocumented)
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
-    constructor(settings: MapLayerSettings);
+    constructor(settings: ImageMapLayerSettings);
     // (undocumented)
     constructUrl(y: number, x: number, zoom: number): Promise<string>;
     // (undocumented)
@@ -1615,7 +1619,7 @@ export class BingLocationProvider {
 
 // @internal (undocumented)
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
-    constructor(settings: MapLayerSettings);
+    constructor(settings: ImageMapLayerSettings);
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
@@ -1883,7 +1887,7 @@ export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
 }
 
-// @beta
+// @public
 export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "checkbox";
@@ -2064,7 +2068,13 @@ export function createDefaultViewFlagOverrides(options: {
 export function createEmptyRenderPlan(): RenderPlan;
 
 // @internal (undocumented)
+export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
+
+// @internal (undocumented)
 export function createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference;
+
+// @internal (undocumented)
+export function createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined;
 
 // @internal (undocumented)
 export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference;
@@ -2203,7 +2213,7 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
-// @beta
+// @public
 export interface CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "checkbox" | "text" | "select";
@@ -2221,7 +2231,7 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
     viewport?: never;
 }
 
-// @beta
+// @public
 export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
     isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
     primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
@@ -2479,14 +2489,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal
     detachMapLayerByIndex(index: number, isOverlay: boolean): void;
     // @internal (undocumented)
-    detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void;
+    detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void;
     detachRealityModelByNameAndUrl(name: string, url: string): boolean;
     // @internal (undocumented)
     get displayTerrain(): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     equalState(other: DisplayStyleState): boolean;
     // @internal (undocumented)
-    findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean): number;
+    findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean): number;
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
     // @internal (undocumented)
     forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void;
@@ -2512,7 +2522,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get globeMode(): GlobeMode;
     // @internal (undocumented)
-    hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean;
+    hasAttachedMapLayer(name: string, source: string, isOverlay: boolean): boolean;
     hasAttachedRealityModel(name: string, url: string): boolean;
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
@@ -3212,19 +3222,15 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
-// @beta
+// @public
 export interface FormatterParserSpecsProvider {
-    // (undocumented)
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
-    // (undocumented)
     createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
-    // (undocumented)
     quantityType: QuantityTypeArg;
 }
 
-// @beta
+// @public
 export interface FormattingUnitSystemChangedArgs {
-    // (undocumented)
     readonly system: UnitSystemKey;
 }
 
@@ -3524,7 +3530,7 @@ export interface GetPixelDataWorldPointArgs {
     y: number;
 }
 
-// @beta
+// @public
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
 // @public
@@ -4017,6 +4023,8 @@ export interface GraphicBranchOptions {
     frustum?: GraphicBranchFrustum;
     hline?: HiddenLine.Settings;
     iModel?: IModelConnection;
+    // @internal
+    secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
 }
 
 // @public
@@ -4462,7 +4470,7 @@ export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 // @internal
 export class ImageryMapLayerFormat extends MapLayerFormat {
     // (undocumented)
-    static createMapLayerTree(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
+    static createMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined;
 }
 
 // @internal
@@ -4472,10 +4480,6 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     get castsShadows(): boolean;
     // (undocumented)
     get imageryProvider(): MapLayerImageryProvider | undefined;
-    // (undocumented)
-    iModel: IModelConnection;
-    // (undocumented)
-    get layerName(): string;
     get treeOwner(): TileTreeOwner;
 }
 
@@ -4671,7 +4675,6 @@ export class IModelApp {
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @beta
     static get publicPath(): string;
-    // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @beta
@@ -5209,16 +5212,16 @@ export interface IpcAppOptions {
     iModelApp?: IModelAppOptions;
 }
 
-// @beta
+// @public
 export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec;
 
-// @beta
+// @public
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
 
-// @beta
+// @public
 export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
 
-// @beta
+// @public
 export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
 
 // @alpha (undocumented)
@@ -5493,7 +5496,7 @@ export enum ManipulatorToolEvent {
 
 // @internal
 export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
-    constructor(settings: MapLayerSettings);
+    constructor(settings: ImageMapLayerSettings);
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
@@ -5568,6 +5571,9 @@ export enum MapLayerAuthType {
 }
 
 // @internal (undocumented)
+export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
+
+// @internal (undocumented)
 export class MapLayerFormat {
     // (undocumented)
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
@@ -5587,9 +5593,9 @@ export class MapLayerFormatRegistry {
     // (undocumented)
     get configOptions(): MapLayerOptions;
     // (undocumented)
-    createImageryMapLayerTree(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
+    createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
     // (undocumented)
-    createImageryProvider(layerSettings: MapLayerSettings): MapLayerImageryProvider | undefined;
+    createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // (undocumented)
@@ -5601,7 +5607,7 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 
 // @internal
 export abstract class MapLayerImageryProvider {
-    constructor(_settings: MapLayerSettings, _usesCachedTiles: boolean);
+    constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
     // (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
     // (undocumented)
@@ -5671,7 +5677,7 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
-    protected readonly _settings: MapLayerSettings;
+    protected readonly _settings: ImageMapLayerSettings;
     // (undocumented)
     status: MapLayerImageryProviderStatus;
     // (undocumented)
@@ -5734,7 +5740,7 @@ export class MapLayerSource {
         transparentBackground: boolean | undefined;
     };
     // (undocumented)
-    toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined;
+    toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined;
     // (undocumented)
     transparentBackground?: boolean;
     // (undocumented)
@@ -5793,18 +5799,28 @@ export interface MapLayerSourceValidation {
 
 // @internal (undocumented)
 export abstract class MapLayerTileTreeReference extends TileTreeReference {
-    constructor(_layerSettings: MapLayerSettings, _layerIndex: number);
+    constructor(_layerSettings: MapLayerSettings, _layerIndex: number, iModel: IModelConnection);
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     // (undocumented)
-    protected get _imageryProvider(): MapLayerImageryProvider | undefined;
+    get imageryProvider(): MapLayerImageryProvider | undefined;
+    // (undocumented)
+    iModel: IModelConnection;
+    // (undocumented)
+    get isOpaque(): boolean;
+    // (undocumented)
+    get layerIndex(): number;
     // (undocumented)
     protected _layerIndex: number;
+    // (undocumented)
+    get layerName(): string;
     set layerSettings(layerSettings: MapLayerSettings);
     // (undocumented)
     get layerSettings(): MapLayerSettings;
     // (undocumented)
     protected _layerSettings: MapLayerSettings;
+    // (undocumented)
+    get transparency(): number | undefined;
     // (undocumented)
     protected get _transparency(): number | undefined;
 }
@@ -5819,7 +5835,7 @@ export interface MapLayerTokenEndpoint {
 
 // @internal (undocumented)
 export class MapTile extends RealityTile {
-    constructor(params: TileParams, mapTree: MapTileTree, quadId: QuadId, _patch: TilePatch, rectangle: MapCartoRectangle, heightRange: Range1d | undefined, _cornerRays: Ray3d[] | undefined);
+    constructor(params: RealityTileParams, mapTree: MapTileTree, quadId: QuadId, _patch: TilePatch, rectangle: MapCartoRectangle, heightRange: Range1d | undefined, _cornerRays: Ray3d[] | undefined);
     // (undocumented)
     addBoundingGraphic(builder: GraphicBuilder, color: ColorDef): void;
     // (undocumented)
@@ -5831,7 +5847,7 @@ export class MapTile extends RealityTile {
     // (undocumented)
     protected _collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
-    static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result: Point3d[], heightRange?: Range1d): Point3d[];
+    static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result?: Point3d[], heightRange?: Range1d): Point3d[];
     // (undocumented)
     protected _cornerRays: Ray3d[] | undefined;
     // (undocumented)
@@ -5987,6 +6003,8 @@ export abstract class MapTileProjection {
     // (undocumented)
     get ellipsoidPatch(): EllipsoidPatch | undefined;
     // (undocumented)
+    getGlobalPoint(u: number, v: number, z: number, result?: Point3d): Point3d;
+    // (undocumented)
     abstract getPoint(u: number, v: number, height: number, result?: Point3d): Point3d;
     // (undocumented)
     abstract get localRange(): Range3d;
@@ -5998,7 +6016,9 @@ export abstract class MapTileProjection {
 export class MapTileTree extends RealityTileTree {
     constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean);
     // (undocumented)
-    addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings): void;
+    addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number): void;
+    // (undocumented)
+    addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
     // (undocumented)
     baseColor?: ColorDef;
     // (undocumented)
@@ -6006,9 +6026,11 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     bimElevationBias: number;
     // (undocumented)
-    clearImageryLayers(): void;
+    clearImageryTreesAndClassifiers(): void;
     // (undocumented)
     clearLayers(): void;
+    // (undocumented)
+    protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]): void;
     // (undocumented)
     createGlobeChild(params: TileParams, quadId: QuadId, _rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, heightRange?: Range1d): MapTile;
     // (undocumented)
@@ -6051,6 +6073,8 @@ export class MapTileTree extends RealityTileTree {
     isOverlay: boolean;
     // (undocumented)
     get isTransparent(): boolean;
+    // (undocumented)
+    layerClassifiers: Map<number, RenderPlanarClassifier>;
     // (undocumented)
     loadReprojectionCache(tile: MapTile): Promise<void>;
     // (undocumented)
@@ -6103,7 +6127,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
-    getLayerImageryTreeRef(index: number): ImageryMapLayerTreeReference | undefined;
+    getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
     // (undocumented)
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // (undocumented)
@@ -6113,7 +6137,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference | undefined;
     // (undocumented)
-    initializeImagery(): boolean;
+    initializeLayers(context: SceneContext): boolean;
     // (undocumented)
     get isGlobal(): boolean;
     // (undocumented)
@@ -6823,6 +6847,21 @@ export interface ModelDisplayTransformProvider {
     getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
 }
 
+// @internal (undocumented)
+export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
+    constructor(layerSettings: MapLayerSettings, _classifier: SpatialClassifier, layerIndex: number, iModel: IModelConnection, _source?: DisplayStyleState | undefined);
+    // (undocumented)
+    get activeClassifier(): SpatialClassifier;
+    // (undocumented)
+    protected createTreeId(): PrimaryTileTreeId;
+    // (undocumented)
+    get isPlanar(): boolean;
+    // (undocumented)
+    get treeOwner(): TileTreeOwner;
+    // (undocumented)
+    get viewFlags(): Partial<ViewFlagsProperties>;
+}
+
 // @public
 export class ModelSelectorState extends ElementState {
     constructor(props: ModelSelectorProps, iModel: IModelConnection);
@@ -7290,15 +7329,11 @@ export enum OutputMessageType {
     Toast = 0
 }
 
-// @beta
+// @public
 export interface OverrideFormatEntry {
-    // (undocumented)
     imperial?: FormatProps;
-    // (undocumented)
     metric?: FormatProps;
-    // (undocumented)
     usCustomary?: FormatProps;
-    // (undocumented)
     usSurvey?: FormatProps;
 }
 
@@ -7514,7 +7549,7 @@ export namespace Pixel {
 }
 
 // @internal (undocumented)
-export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
+export type PlanarClassifierMap = Map<string, RenderPlanarClassifier>;
 
 // @internal (undocumented)
 export interface PlanarClassifierTarget {
@@ -7667,62 +7702,46 @@ export class QuadId {
     row: number;
 }
 
-// @beta
+// @public
 export interface QuantityFormatOverridesChangedArgs {
     readonly overrideEntry?: OverrideFormatEntry;
     readonly typeKey: QuantityTypeKey;
     readonly unitSystem?: UnitSystemKey;
 }
 
-// @beta
+// @public
 export interface QuantityFormatsChangedArgs {
     readonly quantityType: string;
 }
 
-// @beta
+// @public
 export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
-    // (undocumented)
     protected _activeFormatSpecsByType: Map<string, FormatterSpec>;
-    // (undocumented)
     protected _activeParserSpecsByType: Map<string, ParserSpec>;
     get activeUnitSystem(): UnitSystemKey;
-    // (undocumented)
     protected _activeUnitSystem: UnitSystemKey;
     addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
-    // (undocumented)
     get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
-    // (undocumented)
     clearAllOverrideFormats(): Promise<void>;
-    // (undocumented)
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
-    // (undocumented)
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
-    // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
-    // (undocumented)
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
-    // (undocumented)
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
-    // (undocumented)
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
-    // (undocumented)
     getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
-    // (undocumented)
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
-    // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
-    // (undocumented)
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
-    // (undocumented)
     protected initializeQuantityTypesRegistry(): Promise<void>;
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
@@ -7731,58 +7750,40 @@ export class QuantityFormatter implements UnitsProvider {
     onInitialized(): Promise<void>;
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
     readonly onUnitsProviderChanged: BeUiEvent<void>;
-    // (undocumented)
     protected _overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<string, FormatProps>>;
     parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult;
-    // (undocumented)
     protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition>;
-    // (undocumented)
     get quantityTypesRegistry(): Map<string, QuantityTypeDefinition>;
-    // (undocumented)
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
     reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
-    // (undocumented)
     resetToUseInternalUnitsProvider(): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
-    // (undocumented)
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
-    // (undocumented)
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
     setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider): Promise<void>;
     setUnitsProvider(unitsProvider: UnitsProvider): Promise<void>;
-    // (undocumented)
     protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
-    // (undocumented)
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
     }
 
-// @beta
+// @public
 export enum QuantityType {
-    // (undocumented)
     Angle = 2,
-    // (undocumented)
     Area = 3,
-    // (undocumented)
     Coordinate = 6,
-    // (undocumented)
     LatLong = 5,
-    // (undocumented)
     Length = 1,
-    // (undocumented)
     LengthEngineering = 9,
-    // (undocumented)
     LengthSurvey = 8,
-    // (undocumented)
     Stationing = 7,
-    // (undocumented)
     Volume = 4
 }
 
-// @beta
+// @public
 export type QuantityTypeArg = QuantityType | string;
 
-// @beta
+// @public
 export interface QuantityTypeDefinition {
     description: string;
     generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
@@ -7795,7 +7796,7 @@ export interface QuantityTypeDefinition {
     readonly type: QuantityTypeArg;
 }
 
-// @beta
+// @public
 export type QuantityTypeKey = string;
 
 // @beta
@@ -7856,6 +7857,11 @@ export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
 
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined>;
+
+// @alpha
+export class RealityDataError extends BentleyError {
+    constructor(errorNumber: RealityDataStatus, message: string, getMetaData?: LoggingMetaData);
+}
 
 // @beta
 export interface RealityDataSource {
@@ -7921,8 +7927,6 @@ export namespace RealityModelTileTree {
         addToScene(context: SceneContext): void;
         // (undocumented)
         protected _classifier?: SpatialClassifierTileTreeReference;
-        // (undocumented)
-        get classifiers(): SpatialClassifiers | undefined;
         // (undocumented)
         collectStatistics(stats: RenderMemory.Statistics): void;
         // (undocumented)
@@ -8108,9 +8112,11 @@ export interface RealityTileContent extends TileContent {
 
 // @internal (undocumented)
 export class RealityTileDrawArgs extends TileDrawArgs {
-    constructor(args: TileDrawArgs, worldToViewMap: Map4d, frustumPlanes: FrustumPlanes, maxSelectionCount?: number | undefined);
+    constructor(args: TileDrawArgs, worldToViewMap: Map4d, frustumPlanes: FrustumPlanes, maxSelectionCount?: number | undefined, _secondaryClassifiers?: Map<number, RenderPlanarClassifier> | undefined);
     // (undocumented)
     maxSelectionCount?: number | undefined;
+    // (undocumented)
+    get secondaryClassifiers(): Map<number, RenderPlanarClassifier> | undefined;
     // (undocumented)
     get worldToViewMap(): Map4d;
     }
@@ -8224,6 +8230,8 @@ export class RealityTileTree extends TileTree {
     cartesianRange: Range3d;
     // (undocumented)
     cartesianTransitionDistance: number;
+    // (undocumented)
+    protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]): void;
     collectTileGeometry(collector: TileGeometryCollector): void;
     // (undocumented)
     createTile(props: TileParams): RealityTile;
@@ -8731,7 +8739,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderTerrainGeometry | undefined;
     // @internal (undocumented)
-    createRealityMeshGraphic(_terrainGeometry: RenderTerrainGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
+    createRealityMeshGraphic(_params: RealityMeshGraphicParams): RenderGraphic | undefined;
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined;
@@ -8877,7 +8885,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     abstract drawFrame(sceneMilSecElapsed?: number): void;
     // (undocumented)
-    getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined;
+    getPlanarClassifier(_id: string): RenderPlanarClassifier | undefined;
     // (undocumented)
     getTextureDrape(_id: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
@@ -9719,9 +9727,13 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
     // (undocumented)
     abstract get activeClassifier(): SpatialClassifier | undefined;
     // (undocumented)
-    abstract get classifiers(): SpatialClassifiers;
+    get isOpaque(): boolean;
     // (undocumented)
     abstract get isPlanar(): boolean;
+    // (undocumented)
+    get transparency(): number | undefined;
+    // (undocumented)
+    abstract get viewFlags(): Partial<ViewFlagsProperties>;
 }
 
 // @alpha
@@ -10350,6 +10362,8 @@ export class TerrainTexture {
     // (undocumented)
     readonly clipRectangle?: Range2d | undefined;
     // (undocumented)
+    cloneWithClip(clipRectangle: Range2d): TerrainTexture;
+    // (undocumented)
     featureId: number;
     // (undocumented)
     readonly layerIndex: number;
@@ -10374,7 +10388,7 @@ export interface TerrainTileContent extends TileContent {
     };
 }
 
-// @beta
+// @public
 export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "text";
@@ -10384,7 +10398,7 @@ export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpe
     setString: (props: FormatProps, value: string) => FormatProps;
 }
 
-// @beta
+// @public
 export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "select";
@@ -10877,6 +10891,8 @@ export class TileDrawArgs {
     // @internal (undocumented)
     produceGraphics(): RenderGraphic | undefined;
     readonly readyTiles: Set<Tile>;
+    // @internal (undocumented)
+    get secondaryClassifiers(): Map<number, RenderPlanarClassifier> | undefined;
     get symbologyOverrides(): FeatureSymbology.Overrides | undefined;
     get tileSizeModifier(): number;
     readonly tree: TileTree;
@@ -11254,7 +11270,7 @@ export interface TileTreeSupplier {
 
 // @internal
 export class TileUrlImageryProvider extends MapLayerImageryProvider {
-    constructor(settings: MapLayerSettings);
+    constructor(settings: ImageMapLayerSettings);
     // (undocumented)
     constructUrl(row: number, column: number, level: number): Promise<string>;
     // (undocumented)
@@ -11851,7 +11867,7 @@ export class UniqueTileUserSets {
     remove(user: TileUser): void;
     }
 
-// @beta
+// @public
 export interface UnitFormattingSettingsProvider {
     loadOverrides(imodel: IModelConnection | undefined): Promise<void>;
     readonly maintainOverridesPerIModel: boolean;
@@ -11864,7 +11880,7 @@ export interface UnitFormattingSettingsProvider {
     storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
 }
 
-// @beta
+// @public
 export type UnitNameKey = string;
 
 // @internal (undocumented)
@@ -13892,7 +13908,7 @@ export interface WmsCrsSupport {
 
 // @internal (undocumented)
 export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
-    constructor(settings: MapLayerSettings);
+    constructor(settings: ImageMapLayerSettings);
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
@@ -14177,7 +14193,7 @@ export namespace WmtsCapability {
 
 // @internal (undocumented)
 export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
-    constructor(settings: MapLayerSettings);
+    constructor(settings: ImageMapLayerSettings);
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)

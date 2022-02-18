@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { JsonUtils, Logger } from "@itwin/core-bentley";
+import { JsonUtils, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Matrix3d, Point3d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { PublisherProductInfo, SpatialLocationAndExtents } from "../RealityDataSource";
+import { PublisherProductInfo, RealityDataError, SpatialLocationAndExtents } from "../RealityDataSource";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 /** This interface provides information about 3dTile files for this reality data
@@ -26,68 +26,84 @@ export class ThreeDTileFormatInterpreter  {
   /** Gets reality data spatial location and extents
    * @param json root document file in json format
    * @returns spatial location and volume of interest, in meters, centered around `spatial location`
+   * @throws [[RealityDataError]] if source is invalid or cannot be read
    * @internal
    */
   public static getSpatialLocationAndExtents(json: any): SpatialLocationAndExtents {
     const worldRange = new Range3d();
     let isGeolocated = true;
     let location: Cartographic | EcefLocation;
-    Logger.logTrace(loggerCategory, "RealityData realityModelFromJson");
+    Logger.logTrace(loggerCategory, "RealityData getSpatialLocationAndExtents");
+    if (undefined === json?.root) {
+      Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - no root in json`);
+      // return first 1024 char from the json
+      const getMetaData: LoggingMetaData = () => {return {json: JSON.stringify(json).substring(0,1024)};};
+      const error = new RealityDataError(RealityDataStatus.InvalidData, "Invalid or unknown data - no root in json", getMetaData);
+      throw error;
+    }
+    try {
+      if (undefined !== json?.root?.boundingVolume?.region) {
+        const region = JsonUtils.asArray(json.root.boundingVolume.region);
 
-    if (undefined !== json.root.boundingVolume.region) {
-      const region = JsonUtils.asArray(json.root.boundingVolume.region);
-
-      Logger.logTrace(loggerCategory, "RealityData json.root.boundingVolume.region", () => ({ ...region }));
-      if (undefined === region) {
-        Logger.logError(loggerCategory, `Error realityModelFromJson - region undefined`);
-        throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
-      }
-      const ecefLow = (Cartographic.fromRadians({ longitude: region[0], latitude: region[1], height: region[4] })).toEcef();
-      const ecefHigh = (Cartographic.fromRadians({ longitude: region[2], latitude: region[3], height: region[5] })).toEcef();
-      const ecefRange = Range3d.create(ecefLow, ecefHigh);
-      const cartoCenter = Cartographic.fromRadians({ longitude: (region[0] + region[2]) / 2.0, latitude: (region[1] + region[3]) / 2.0, height: (region[4] + region[5]) / 2.0 });
-      location = cartoCenter;
-      const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
-      // iModelDb.setEcefLocation(ecefLocation);
-      const ecefToWorld = ecefLocation.getTransform().inverse()!;
-      worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
-    } else {
-      let worldToEcefTransform = ThreeDTileFormatInterpreter.transformFromJson(json.root.transform);
-
-      Logger.logTrace(loggerCategory, "RealityData json.root.transform", () => ({ ...worldToEcefTransform }));
-      const range = ThreeDTileFormatInterpreter.rangeFromBoundingVolume(json.root.boundingVolume)!;
-      if (undefined === worldToEcefTransform)
-        worldToEcefTransform = Transform.createIdentity();
-
-      const ecefRange = worldToEcefTransform.multiplyRange(range); // range in model -> range in ecef
-      const ecefCenter = worldToEcefTransform.multiplyPoint3d(range.center); // range center in model -> range center in ecef
-      const cartoCenter = Cartographic.fromEcef(ecefCenter); // ecef center to cartographic center
-      const isNotNearEarthSurface = cartoCenter && (cartoCenter.height < -5000); // 5 km under ground!
-      const earthCenterToRangeCenterRayLenght = range.center.magnitude();
-
-      if (worldToEcefTransform.matrix.isIdentity && (earthCenterToRangeCenterRayLenght < 1.0E5 || isNotNearEarthSurface)) {
-        isGeolocated = false;
-        worldRange.extendRange(Range3d.fromJSON(ecefRange));
-        const centerOfEarth =  new EcefLocation({ origin: { x: 0.0, y: 0.0, z: 0.0 }, orientation: { yaw: 0.0, pitch: 0.0, roll: 0.0 } });
-        location = centerOfEarth;
-        Logger.logTrace(loggerCategory, "RealityData NOT Geolocated", () => ({ ...location }));
-      } else {
-        let ecefLocation: EcefLocation;
-        const locationOrientation = YawPitchRollAngles.tryFromTransform(worldToEcefTransform);
-        // Fix Bug 445630: [RDV][Regression] Orientation of georeferenced Reality Mesh is wrong.
-        // Use json.root.transform only if defined and not identity -> otherwise will use a transform computed from cartographic center.
-        if (!worldToEcefTransform.matrix.isIdentity && locationOrientation !== undefined && locationOrientation.angles !== undefined)
-          ecefLocation = new EcefLocation({ origin: locationOrientation.origin, orientation: locationOrientation.angles.toJSON() });
-        else
-          ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
-        location = ecefLocation;
-        Logger.logTrace(loggerCategory, "RealityData is worldToEcefTransform.matrix.isIdentity", () => ({ isIdentity: worldToEcefTransform!.matrix.isIdentity }));
+        Logger.logTrace(loggerCategory, "RealityData json.root.boundingVolume.region", () => ({ ...region }));
+        if (undefined === region) {
+          Logger.logError(loggerCategory, `Error getSpatialLocationAndExtents - region undefined`);
+          throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
+        }
+        const ecefLow = (Cartographic.fromRadians({ longitude: region[0], latitude: region[1], height: region[4] })).toEcef();
+        const ecefHigh = (Cartographic.fromRadians({ longitude: region[2], latitude: region[3], height: region[5] })).toEcef();
+        const ecefRange = Range3d.create(ecefLow, ecefHigh);
+        const cartoCenter = Cartographic.fromRadians({ longitude: (region[0] + region[2]) / 2.0, latitude: (region[1] + region[3]) / 2.0, height: (region[4] + region[5]) / 2.0 });
+        location = cartoCenter;
+        const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
         // iModelDb.setEcefLocation(ecefLocation);
         const ecefToWorld = ecefLocation.getTransform().inverse()!;
         worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
-        Logger.logTrace(loggerCategory, "RealityData ecefToWorld", () => ({ ...ecefToWorld }));
+      } else {
+        let worldToEcefTransform = ThreeDTileFormatInterpreter.transformFromJson(json.root.transform);
+
+        Logger.logTrace(loggerCategory, "RealityData json.root.transform", () => ({ ...worldToEcefTransform }));
+        const range = ThreeDTileFormatInterpreter.rangeFromBoundingVolume(json.root.boundingVolume)!;
+        if (undefined === worldToEcefTransform)
+          worldToEcefTransform = Transform.createIdentity();
+
+        const ecefRange = worldToEcefTransform.multiplyRange(range); // range in model -> range in ecef
+        const ecefCenter = worldToEcefTransform.multiplyPoint3d(range.center); // range center in model -> range center in ecef
+        const cartoCenter = Cartographic.fromEcef(ecefCenter); // ecef center to cartographic center
+        const isNotNearEarthSurface = cartoCenter && (cartoCenter.height < -5000); // 5 km under ground!
+        const earthCenterToRangeCenterRayLenght = range.center.magnitude();
+
+        if (worldToEcefTransform.matrix.isIdentity && (earthCenterToRangeCenterRayLenght < 1.0E5 || isNotNearEarthSurface)) {
+          isGeolocated = false;
+          worldRange.extendRange(Range3d.fromJSON(ecefRange));
+          const centerOfEarth =  new EcefLocation({ origin: { x: 0.0, y: 0.0, z: 0.0 }, orientation: { yaw: 0.0, pitch: 0.0, roll: 0.0 } });
+          location = centerOfEarth;
+          Logger.logTrace(loggerCategory, "RealityData NOT Geolocated", () => ({ ...location }));
+        } else {
+          let ecefLocation: EcefLocation;
+          const locationOrientation = YawPitchRollAngles.tryFromTransform(worldToEcefTransform);
+          // Fix Bug 445630: [RDV][Regression] Orientation of georeferenced Reality Mesh is wrong.
+          // Use json.root.transform only if defined and not identity -> otherwise will use a transform computed from cartographic center.
+          if (!worldToEcefTransform.matrix.isIdentity && locationOrientation !== undefined && locationOrientation.angles !== undefined)
+            ecefLocation = new EcefLocation({ origin: locationOrientation.origin, orientation: locationOrientation.angles.toJSON() });
+          else
+            ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
+          location = ecefLocation;
+          Logger.logTrace(loggerCategory, "RealityData is worldToEcefTransform.matrix.isIdentity", () => ({ isIdentity: worldToEcefTransform!.matrix.isIdentity }));
+          // iModelDb.setEcefLocation(ecefLocation);
+          const ecefToWorld = ecefLocation.getTransform().inverse()!;
+          worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
+          Logger.logTrace(loggerCategory, "RealityData ecefToWorld", () => ({ ...ecefToWorld }));
+        }
       }
+    } catch (e) {
+      Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - cannot interpret json`);
+      // return first 1024 char from the json
+      const getMetaData: LoggingMetaData = () => {return {json: JSON.stringify(json).substring(0,1024)};};
+      const error = new RealityDataError(RealityDataStatus.InvalidData, "Invalid or unknown data", getMetaData);
+      throw error;
     }
+
     const spatialLocation: SpatialLocationAndExtents = { location, worldRange, isGeolocated };
     return spatialLocation;
   }

@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { assert, expect } from "chai";
-
 import {
   ArcGISMapLayerImageryProvider,
   BingMapsImageryLayerProvider,
@@ -18,7 +17,7 @@ import {
 } from "../../../tile/internal";
 
 const getSampleLayerSettings = ((formatId: string) => {
-  return MapLayerSettings.fromJSON({
+  return ImageMapLayerSettings.fromJSON({
     formatId, url: "https://localhost/service", name: `Test ${formatId}`,
   });
 });

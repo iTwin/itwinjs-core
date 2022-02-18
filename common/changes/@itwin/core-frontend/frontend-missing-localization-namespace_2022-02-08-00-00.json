@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Supplied missing 'iModelJs' namespace in some calls to getLocalizedString.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

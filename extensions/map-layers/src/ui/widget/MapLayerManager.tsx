@@ -7,22 +7,22 @@
 // the following quiet warning caused by react-beautiful-dnd package
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import "./MapLayerManager.scss";
-import * as React from "react";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { assert, BentleyError } from "@itwin/core-bentley";
-import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings, MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import {
   ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
+import * as React from "react";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { MapLayerPreferences, MapLayerSourceChangeType } from "../../MapLayerPreferences";
 import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
 import { MapLayerDroppable } from "./MapLayerDroppable";
+import "./MapLayerManager.scss";
 import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
 
 /** @internal */
@@ -66,13 +66,14 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
     const layerSettings = displayStyleLayers[layerIdx];
     const isOverlay = !getBackgroundMap;
     const layerProvider = viewport.getMapLayerImageryProvider(layerIdx, isOverlay);
+    const popSubLayers = populateSubLayers && (layerSettings instanceof ImageMapLayerSettings);
     layers.push({
       visible: layerSettings.visible,
       name: layerSettings.name,
-      url: layerSettings.url,
+      source: layerSettings.source,
       transparency: layerSettings.transparency,
       transparentBackground: layerSettings.transparentBackground,
-      subLayers: populateSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
+      subLayers: popSubLayers ? getSubLayerProps(layerSettings.subLayers) : undefined,
       showSubLayers: false,
       isOverlay,
       provider: layerProvider,
@@ -281,7 +282,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     if (!activeViewport || !activeViewport.displayStyle)
       return;
 
-    const indexInDisplayStyle = activeViewport.displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+    const indexInDisplayStyle = activeViewport.displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
     if (indexInDisplayStyle < 0)
       return;
 
@@ -309,7 +310,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       const isVisible = !mapLayerSettings.visible;
 
       const displayStyle = activeViewport.displayStyle;
-      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
       if (-1 !== indexInDisplayStyle) {
         // update the display style
         displayStyle.changeMapLayerProps({ visible: isVisible }, indexInDisplayStyle, mapLayerSettings.isOverlay);
@@ -360,10 +361,10 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       else if (destination.droppableId === "backgroundMapLayers" && backgroundMapLayers)
         toMapLayer = backgroundMapLayers[destination.index];
       if (toMapLayer)
-        toIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(toMapLayer.name, toMapLayer.url, toMapLayer.isOverlay);
+        toIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(toMapLayer.name, toMapLayer.source, toMapLayer.isOverlay);
     }
 
-    const fromIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(fromMapLayer.name, fromMapLayer.url, fromMapLayer.isOverlay);
+    const fromIndexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(fromMapLayer.name, fromMapLayer.source, fromMapLayer.isOverlay);
     if (fromIndexInDisplayStyle < 0)
       return;
 
