@@ -339,8 +339,8 @@ alpha;MapFeatureInfo
 alpha;MapFeatureInfoRecord 
 internal;MapLayerAuthenticationInfo
 beta;MapLayerAuthType
-alpha;MapLayerFeatureInfo
 internal;MapLayerClassifiers = Map
+alpha;MapLayerFeatureInfo
 internal;MapLayerFormat
 internal;MapLayerFormatRegistry
 internal;MapLayerFormatType = typeof MapLayerFormat
@@ -465,6 +465,7 @@ public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
 internal;ReadonlyTileUserSet 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
+alpha;RealityDataError 
 beta;RealityDataSource
 beta;RealityDataSource
 internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey
