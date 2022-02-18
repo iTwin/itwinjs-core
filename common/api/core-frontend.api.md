@@ -236,6 +236,7 @@ import { RealityDataAccess } from '@itwin/core-common';
 import { RealityDataFormat } from '@itwin/core-common';
 import { RealityDataProvider } from '@itwin/core-common';
 import { RealityDataSourceKey } from '@itwin/core-common';
+import { RealityDataStatus } from '@itwin/core-bentley';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -7856,6 +7857,11 @@ export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
 
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined>;
+
+// @alpha
+export class RealityDataError extends BentleyError {
+    constructor(errorNumber: RealityDataStatus, message: string, getMetaData?: LoggingMetaData);
+}
 
 // @beta
 export interface RealityDataSource {
