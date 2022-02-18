@@ -392,15 +392,9 @@ export class SampleAppIModelApp {
     let stageId: string;
     const defaultFrontstage = this.allowWrite ? EditFrontstage.stageId : ViewsFrontstage.stageId;
 
-    try{
     // Reset QuantityFormatter UnitsProvider with new iModelConnection
-      const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-      const context = new SchemaContext();
-      context.addLocater(schemaLocater);
-      await IModelApp.quantityFormatter.setUnitsProvider (new SchemaUnitProvider(context));
-    } catch (_) {
-      await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider(); // this resets it to internal BasicUnitsProvider
-    }
+    const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
+    await IModelApp.quantityFormatter.setUnitsProvider (new SchemaUnitProvider(schemaLocater));
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
