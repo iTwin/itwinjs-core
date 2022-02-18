@@ -5587,6 +5587,9 @@ export enum MapLayerAuthType {
     None = 1
 }
 
+// @internal (undocumented)
+export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
+
 // @alpha (undocumented)
 export interface MapLayerFeatureInfo {
     // (undocumented)
@@ -5594,9 +5597,6 @@ export interface MapLayerFeatureInfo {
     // (undocumented)
     layerName: string;
 }
-
-// @internal (undocumented)
-export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
 // @internal (undocumented)
 export class MapLayerFormat {
