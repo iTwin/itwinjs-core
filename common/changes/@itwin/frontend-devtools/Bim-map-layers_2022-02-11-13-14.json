@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-devtools",
+      "comment": "Added `fdt attach model maplayer` keyin.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-devtools"
+}

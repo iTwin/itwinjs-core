@@ -7,10 +7,10 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings } from "@itwin/core-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
+import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
+import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import { ScreenViewport } from "../../Viewport";
 import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 
@@ -43,7 +43,7 @@ export abstract class MapLayerImageryProvider {
   public get useGeographicTilingScheme() { return false;}
   public cartoRange?: MapCartoRectangle;
   protected get _filterByCartoRange() { return true; }
-  constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean) {
+  constructor(protected readonly _settings: ImageMapLayerSettings, protected _usesCachedTiles: boolean) {
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
     this._geographicTilingScheme = new GeographicTilingScheme(2, 1, true);
   }

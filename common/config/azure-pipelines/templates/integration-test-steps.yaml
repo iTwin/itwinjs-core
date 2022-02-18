@@ -42,13 +42,13 @@ steps:
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
     workingDirectory: "full-stack-tests/core"
     displayName: "Run Core Full Stack Tests"
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
 
   # MacOS and Windows agents work without any virtual display
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/core"
     displayName: "Run Core Full Stack Tests"
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/rpc-interface"
