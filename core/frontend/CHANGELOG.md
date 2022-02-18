@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 15 Feb 2022 19:17:16 GMT and should not be manually modified.
+This log was last generated on Fri, 18 Feb 2022 18:39:22 GMT and should not be manually modified.
+
+## 2.19.32
+Fri, 18 Feb 2022 18:39:22 GMT
+
+### Updates
+
+- Fix transform applied to spatial view when drawn through a view attachment.
 
 ## 2.19.31
 Tue, 15 Feb 2022 19:17:16 GMT

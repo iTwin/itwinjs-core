@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.19.32",
+      "tag": "@bentley/imodeljs-frontend_v2.19.32",
+      "date": "Fri, 18 Feb 2022 18:39:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix transform applied to spatial view when drawn through a view attachment."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.31",
       "tag": "@bentley/imodeljs-frontend_v2.19.31",
       "date": "Tue, 15 Feb 2022 19:17:16 GMT",
