@@ -21,11 +21,12 @@ export class SchemaUnitProvider implements UnitsProvider {
 
   /**
    *
-   * @param contextOrLocater The SchemaContext that contains the Units schema or the ISchemaLocater used to locate the schema. If the later, a new
-   * SchemaContext will be created and the locater will be added to the context.
+   * @param contextOrLocater The SchemaContext or a different ISchemaLocater implementation used to retrieve the schema. The SchemaContext
+   * class implements the ISchemaLocater interface. If the provided locater is not a SchemaContext instance a new SchemaContext will be
+   * created and the locater will be added.
    * @param _unitExtraData Additional data like alternate display label not found in Units Schema to match with Units; Defaults to empty array.
    */
-  constructor(contextOrLocater: SchemaContext|ISchemaLocater, private _unitExtraData: UnitExtraData[] = []){
+  constructor(contextOrLocater: ISchemaLocater, private _unitExtraData: UnitExtraData[] = []){
     if (contextOrLocater instanceof SchemaContext) {
       this._context = contextOrLocater;
     } else {
