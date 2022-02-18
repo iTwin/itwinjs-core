@@ -158,6 +158,25 @@ export class AttachMapOverlayTool extends AttachMapLayerTool {
 }
 
 // @beta
+export class AttachModelMapLayerTool extends Tool {
+    constructor(_formatId: string);
+    // (undocumented)
+    protected _formatId: string;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    parseAndRun(...args: string[]): Promise<boolean>;
+    // (undocumented)
+    run(nameIn?: string): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class AttachRealityModelTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;

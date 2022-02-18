@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
-import { Cartographic, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { RenderMemory } from "../../render/RenderMemory";
@@ -221,7 +221,7 @@ class ImageryTileLoader extends RealityTileLoader {
 }
 
 interface ImageryMapLayerTreeId {
-  settings: MapLayerSettings;
+  settings: ImageMapLayerSettings;
 }
 
 /** Supplies a TileTree that can load and draw tiles based on our imagery provider.
@@ -278,21 +278,17 @@ const imageryTreeSupplier = new ImageryMapLayerTreeSupplier();
  * @internal
  */
 export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
-  public iModel: IModelConnection;
-
   public constructor(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection) {
-    super(layerSettings, layerIndex);
-    this.iModel = iModel;
+    super(layerSettings, layerIndex, iModel);
   }
 
   public override get castsShadows() { return false; }
-  public get layerName() { return this._layerSettings.name; }
 
   /** Return the owner of the TileTree to draw. */
   public get treeOwner(): TileTreeOwner {
     return this.iModel.tiles.getTileTreeOwner({ settings: this._layerSettings }, imageryTreeSupplier);
   }
-  public get imageryProvider(): MapLayerImageryProvider | undefined {
+  public override get imageryProvider(): MapLayerImageryProvider | undefined {
     const tree = this.treeOwner.load();
     if (!tree || !(tree instanceof ImageryMapTileTree))
       return undefined;

@@ -5,23 +5,23 @@
 /* eslint-disable deprecation/deprecation */
 // cSpell:ignore droppable Sublayer Basemap
 
-import * as React from "react";
-import { BaseMapLayerSettings, ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@itwin/core-common";
-import { DisplayStyleState } from "@itwin/core-frontend";
-import { ColorPickerDialog, ColorSwatch } from "@itwin/imodel-components-react";
-import { WebFontIcon } from "@itwin/core-react";
-import { Select, SelectOption } from "@itwin/itwinui-react";
 import { ModalDialogManager } from "@itwin/appui-react";
-import { TransparencyPopupButton } from "./TransparencyPopupButton";
-import { useSourceMapContext } from "./MapLayerManager";
-import "./BasemapPanel.scss";
+import { BaseMapLayerSettings, ColorByName, ColorDef, ImageMapLayerSettings, MapLayerProps } from "@itwin/core-common";
+import { DisplayStyleState } from "@itwin/core-frontend";
+import { WebFontIcon } from "@itwin/core-react";
+import { ColorPickerDialog, ColorSwatch } from "@itwin/imodel-components-react";
+import { Select, SelectOption } from "@itwin/itwinui-react";
+import * as React from "react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import "./BasemapPanel.scss";
+import { useSourceMapContext } from "./MapLayerManager";
+import { TransparencyPopupButton } from "./TransparencyPopupButton";
 
 function getBaseMapFromStyle(displayStyle: DisplayStyleState | undefined) {
   if (!displayStyle)
     return undefined;
 
-  if (displayStyle.settings.mapImagery.backgroundBase instanceof MapLayerSettings || displayStyle.settings.mapImagery.backgroundBase instanceof ColorDef)
+  if (displayStyle.settings.mapImagery.backgroundBase instanceof ImageMapLayerSettings || displayStyle.settings.mapImagery.backgroundBase instanceof ColorDef)
     return displayStyle.settings.mapImagery.backgroundBase.toJSON();
 
   return undefined;
@@ -127,7 +127,7 @@ export function BasemapPanel() {
   }, [bases, activeViewport, bgColor]);
 
   const [baseMapVisible, setBaseMapVisible] = React.useState(() => {
-    if (activeViewport && activeViewport.displayStyle.backgroundMapBase instanceof MapLayerSettings) {
+    if (activeViewport && activeViewport.displayStyle.backgroundMapBase instanceof ImageMapLayerSettings) {
       return activeViewport.displayStyle.backgroundMapBase.visible;
     }
     return false;

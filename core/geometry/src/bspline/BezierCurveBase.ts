@@ -22,6 +22,8 @@ import { Point4d } from "../geometry4d/Point4d";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { Bezier1dNd } from "./Bezier1dNd";
 import { KnotVector } from "./KnotVector";
+import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
+import { OffsetOptions } from "../curve/internalContexts/PolygonOffsetContext";
 
 /**
  * Base class for CurvePrimitive (necessarily 3D) with _polygon.
@@ -234,8 +236,9 @@ export abstract class BezierCurveBase extends CurvePrimitive {
       if (this.degree < 3)
         radians1 *= 3;  // so quadratics aren't under-stroked
       const radians2 = Math.sqrt(radians1 * sumRadians);
+      const minCount = this.degree; // NOTE: this means 1) a small, nontrivial, straight Bezier is over-stroked, and 2) options.minStrokesPerPrimitive is ignored
       numStrokes = StrokeOptions.applyAngleTol(options,
-        StrokeOptions.applyMaxEdgeLength(options, this.degree, length2), radians2, 0.1);
+        StrokeOptions.applyMaxEdgeLength(options, minCount, length2), radians2, 0.1);
       if (options) {
         numStrokes = options.applyChordTolToLengthAndRadians(numStrokes, sumLength, radians1);
       }
@@ -243,4 +246,16 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     return numStrokes;
   }
 
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
+   *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
+  }
 }

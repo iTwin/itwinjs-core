@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
+import { MobileHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
@@ -23,8 +24,9 @@ async function init() {
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
   // create a basic express web server
-  const server = new TestServer(rpcConfig.protocol);
-  await server.initialize(port);
+  const testServer = new TestServer(rpcConfig.protocol);
+  const httpServer = await testServer.initialize(port);
+
   // eslint-disable-next-line no-console
   console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
@@ -35,6 +37,10 @@ async function init() {
 
   // eslint-disable-next-line no-console
   console.log(`Mobile backend for rpc full-stack-tests listening on port ${mobilePort}`);
+  return () => {
+    httpServer.close();
+    MobileHost.onEnterBackground.raiseEvent();
+  };
 }
 
 function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {

@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
@@ -86,6 +86,20 @@ export class Entity {
 
   /** @internal */
   public static get protectedOperations(): string[] { return []; }
+
+  /** return whether this Entity class is a subclass of another Entity class
+   * @note the subclass-ness is checked according to JavaScript inheritance, to check the underlying raw EC class's
+   * inheritance, you can use [ECClass.is]($ecschema-metadata)
+   * @note this should have a type of `is<T extends typeof Entity>(otherClass: T): this is T` but can't because of
+   * typescript's restriction on the `this` type in static methods
+   */
+  public static is(otherClass: typeof Entity): boolean { return isSubclassOf(this, otherClass); }
+
+  /** whether this JavaScript class was generated for this ECClass because there was no registered custom implementation
+   * ClassRegistry overrides this when generating a class
+   * @internal
+   */
+  public static get isGeneratedClass() { return false; }
 }
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.

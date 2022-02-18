@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add RealityDataError in  RealityDataSource API",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

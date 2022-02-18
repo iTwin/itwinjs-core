@@ -599,6 +599,11 @@ class OrthographicAttachment {
     this._toSheet = Transform.createRefs(origin, matrix);
     this._fromSheet = this._toSheet.inverse()!;
 
+    // If the attached view is a section drawing, it may itself have an attached spatial view with a clip.
+    // The clip needs to be transformed into sheet space.
+    if (view.isDrawingView())
+      this._viewport.drawingToSheetTransform = this._toSheet;
+
     // ###TODO? If we also apply the attachment's clip to the attached view, we may get additional culling during tile selection.
     // However the attached view's frustum is already clipped by intersection with sheet view's frustum, and additional clipping planes
     // introduce additional computation, so possibly not worth it.

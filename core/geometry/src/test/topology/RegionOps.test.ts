@@ -14,7 +14,7 @@ import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
+import { OffsetOptions, PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -42,6 +42,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
 import * as fs from "fs";
+import { RecursiveCurveProcessor } from "../../curve/CurveProcessor";
 
 const diegoPathA = [
   {
@@ -634,6 +635,115 @@ function curveLength(source: AnyCurve): number {
   return 0.0;
 }
 
+class HasEllipticalArcProcessor extends RecursiveCurveProcessor {
+  private _hasEllipticalArc: boolean;
+  public constructor() { super(); this._hasEllipticalArc = false; }
+  public override announceCurvePrimitive(data: CurvePrimitive, _indexInParent = -1): void {
+    if (data instanceof Arc3d && !data.isCircular)
+      this._hasEllipticalArc = true;
+  }
+  public claimResult(): boolean { return this._hasEllipticalArc; }
+}
+
+class HasStrokablePrimitiveProcessor extends RecursiveCurveProcessor {
+  private _hasStrokablePrimitive: boolean;
+  private _preserveEllipticalArcs: boolean;
+  private _checkChildrenOnly: boolean;
+  public constructor(preserveEllipticalArcs: boolean = false, checkChildrenOnly: boolean = false) {
+    super();
+    this._hasStrokablePrimitive = false;
+    this._preserveEllipticalArcs = preserveEllipticalArcs;
+    this._checkChildrenOnly = checkChildrenOnly;
+  }
+  public override announceCurvePrimitive(data: CurvePrimitive, indexInParent = -1): void {
+    if (data instanceof LineSegment3d || data instanceof LineString3d || (data instanceof Arc3d && (data.isCircular || this._preserveEllipticalArcs)))
+      return; // not strokable
+    if (!this._checkChildrenOnly || indexInParent >= 1)
+      this._hasStrokablePrimitive = true;
+  }
+  public claimResult(): boolean { return this._hasStrokablePrimitive; }
+}
+
+// for best geometry capture, baseCurve should be centered at origin
+function testOffsetSingle(ck: Checker, allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, options: OffsetOptions): void {
+  const offsetCurve = RegionOps.constructCurveXYOffset(baseCurve, options);
+  if (ck.testDefined(offsetCurve, "Offset computed")) {
+    // spot-check some curve-curve distances, starting with smaller curve
+    if (!options.preserveEllipticalArcs) {
+      let tolFactor = 100 * (options.strokeOptions.hasAngleTol ? options.strokeOptions.angleTol!.degrees : 1);
+      for (const cp of baseCurve.children) {
+        if (cp instanceof Arc3d && !cp.isCircular) tolFactor *= 10; // ellipse approximations are sloppier
+        for (let u = 0.0738; u < 1.0; u += 0.0467) {
+          const basePt = cp.fractionToPoint(u);
+          const offsetDetail = offsetCurve!.closestPoint(basePt);
+          if (ck.testDefined(offsetDetail, "Closest point to offset computed") && offsetDetail !== undefined) {
+            let projectsToVertex = offsetDetail.fraction === 0 || offsetDetail.fraction === 1;
+            if (!projectsToVertex && offsetDetail.curve instanceof LineString3d) {
+              const scaledParam = offsetDetail.fraction * (offsetDetail.curve.numPoints() - 1);
+              projectsToVertex = Geometry.isAlmostEqualNumber(scaledParam, Math.trunc(scaledParam));
+            }
+            if (!projectsToVertex) {  // avoid measuring projections to linestring vertices as they usually exceed offset distance
+              if (!ck.testCoordinateWithToleranceFactor(offsetDetail.point.distance(basePt), Math.abs(options.leftOffsetDistance), tolFactor, "Offset distance spot check")) {
+                GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, basePt, 0.05, delta.x, delta.y);
+                GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, offsetDetail.point, 0.05, delta.x, delta.y);
+              }
+            }
+          }
+        }
+      }
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetCurve, delta.x, delta.y);
+  }
+}
+
+function testOffsetBothSides(ck: Checker, allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, options: OffsetOptions): void {
+  const halfRangeY = baseCurve.range().yLength() / 2;
+  delta.y += halfRangeY;
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseCurve, delta.x, delta.y);
+
+  testOffsetSingle(ck, allGeometry, delta, baseCurve, options);   // offset on given offset
+  options.leftOffsetDistance *= -1;
+  testOffsetSingle(ck, allGeometry, delta, baseCurve, options);   // offset on other side
+  options.leftOffsetDistance *= -1;  // undo
+
+  delta.y += halfRangeY;
+}
+
+function testOffset(ck: Checker, allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, options: OffsetOptions): void {
+  if (true) { // TODO: temporarily disable some inputs until clonePartialCurve is implemented for B-spline curves
+    const processor = new HasStrokablePrimitiveProcessor(options.preserveEllipticalArcs, true);
+    baseCurve.announceToCurveProcessor(processor);
+    if (processor.claimResult())
+      return;
+  }
+  testOffsetBothSides(ck, allGeometry, delta, baseCurve, options);
+  // toggle ellipse preservation
+  if (true) {
+    const processor = new HasEllipticalArcProcessor();
+    baseCurve.announceToCurveProcessor(processor);
+    if (processor.claimResult()) {
+      options.preserveEllipticalArcs = !options.preserveEllipticalArcs;
+      testOffsetBothSides(ck, allGeometry, delta, baseCurve, options);
+      options.preserveEllipticalArcs = !options.preserveEllipticalArcs; // undo
+    }
+  }
+  // test tightened strokes
+  if (options.strokeOptions.hasAngleTol || options.strokeOptions.hasChordTol || options.strokeOptions.hasMaxEdgeLength) {
+    const processor = new HasStrokablePrimitiveProcessor(options.preserveEllipticalArcs);
+    baseCurve.announceToCurveProcessor(processor);
+    if (processor.claimResult()) {
+      const opts = options.clone();
+      opts.preserveEllipticalArcs = false;
+      opts.strokeOptions.angleTol?.setDegrees(opts.strokeOptions.angleTol?.degrees / 2);
+      if (opts.strokeOptions.hasChordTol)
+        opts.strokeOptions.chordTol! /= 2;
+      if (opts.strokeOptions.hasMaxEdgeLength)
+        opts.strokeOptions.maxEdgeLength! /= 2;
+      testOffsetBothSides(ck, allGeometry, delta, baseCurve, opts);
+    }
+  }
+}
+
 describe("CloneSplitCurves", () => {
   it("PathSplits", () => {
     const allGeometry: GeometryQuery[] = [];
@@ -812,10 +922,29 @@ describe("CloneSplitCurves", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "ChainAndOffset");
-
     expect(ck.getNumErrors()).equals(0);
-
   });
+
+  it("OffsetCurves", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    const delta = Point2d.createZero();
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/offsetCurve.imjs", "utf8"))) as CurveChain[];
+    const offsetDistance = 0.5;
+    const options = new OffsetOptions(offsetDistance);
+    for (const chain of inputs) {
+      if (chain instanceof Path || chain instanceof Loop) {
+        const halfRangeX = offsetDistance + chain.range().xLength() / 2;
+        delta.x += halfRangeX;
+        testOffset(ck, allGeometry, delta, chain, options);
+        delta.x += halfRangeX;
+        delta.y = 0;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "OffsetCurves");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("InOutSplits", () => {
     const allGeometry: GeometryQuery[] = [];
     const ck = new Checker();
