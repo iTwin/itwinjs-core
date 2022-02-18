@@ -6,10 +6,11 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import { Checkbox } from "@itwin/itwinui-react";
+import { fireEvent, render } from "@testing-library/react";
+import { TreeNode as Node } from "../../core-react";
 import { CheckBoxState } from "../../core-react/enums/CheckBoxState";
 import { ExpansionToggle } from "../../core-react/tree/ExpansionToggle";
-import { TreeNode as Node } from "../../core-react";
-import { Checkbox } from "@itwin/itwinui-react";
 
 describe("<Node />", () => {
   it("should render", () => {
@@ -117,7 +118,7 @@ describe("<Node />", () => {
     expect(callback).to.not.be.called;
   });
 
-  it("should not call checkboxProps.onClick callback when checkbox is clicked", () => {
+  it("should not call checkboxProps.onClick callback when checkbox label is clicked", () => {
     const callback = sinon.spy();
     const wrapper = mount(<Node label="a" level={0} checkboxProps={{ onClick: callback }} />);
     const checkboxLabel = wrapper.find(Checkbox).find("label");
@@ -126,6 +127,20 @@ describe("<Node />", () => {
     const checkboxInput = wrapper.find(Checkbox).find("input");
     checkboxInput.simulate("click");
     expect(callback).to.not.be.called;
+  });
+
+  it("does not call node onClick callback when checkbox is clicked", () => {
+    const handleOnClick = sinon.fake();
+    const { getByRole } = render(<Node label="a" level={0} onClick={handleOnClick} checkboxProps={{}} />);
+    fireEvent.click(getByRole("checkbox").parentElement!);
+    expect(handleOnClick).to.not.have.been.called;
+  });
+
+  it("calls node onClick callback when not checkbox is clicked", () => {
+    const handleOnClick = sinon.fake();
+    const { getByText } = render(<Node label="a" level={0} onClick={handleOnClick} checkboxProps={{}} />);
+    fireEvent.click(getByText("a"));
+    expect(handleOnClick).to.have.been.calledOnce;
   });
 
   it("should safely handle click events with undefined handlers", () => {
@@ -156,5 +171,4 @@ describe("<Node />", () => {
     content.simulate("contextmenu");
     expect(callback).to.be.calledOnce;
   });
-
 });

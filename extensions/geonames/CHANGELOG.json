@@ -2,6 +2,42 @@
   "name": "@itwin/geonames-extension",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/geonames-extension_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height."
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "use new @itwin package names"
+          },
+          {
+            "comment": "rename to @itwin/geonames-extension"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Removed references to the deleted config-loader package"
+          },
+          {
+            "comment": "tool.run and tool.parseAndRun are now async methods"
+          },
+          {
+            "comment": "removed unneeded reference to svg-sprite-loader"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/geonames-extension_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

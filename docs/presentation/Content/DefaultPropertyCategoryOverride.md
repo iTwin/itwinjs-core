@@ -1,4 +1,4 @@
-# DefaultPropertyCategoryOverride
+# Default Property Category Override
 
 > TypeScript type: [DefaultPropertyCategoryOverride]($presentation-common).
 
@@ -8,26 +8,44 @@ The default property category is a category that gets assigned to properties tha
 
 ## Attributes
 
-| Name                 | Required? | Type                                                                  | Default | Meaning                                                                                  |
-| -------------------- | --------- | --------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------- |
-| *Picking attributes* |
-| `requiredSchemas`    | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md)  | `[]`    | Specifications that define schema requirements for the rule to take effect.              |
-| `priority`           | No        | `number`                                                              | `1000`  | Defines the order in which presentation rules are evaluated.                             |
-| `onlyIfNotHandled`   | No        | `boolean`                                                             | `false` | Should this rule be ignored if there is already an existing rule with a higher priority. |
-| *Content Modifiers*  |
-| `specification`      | Yes       | [`PropertyCategorySpecification`](./PropertyCategorySpecification.md) |         | Specification for the custom property category                                           |
+| Name                                            | Required? | Type                                                                  | Default |
+| ----------------------------------------------- | --------- | --------------------------------------------------------------------- | ------- |
+| *Picking attributes*                            |
+| [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md)  | `[]`    |
+| [`priority`](#attribute-priority)               | No        | `number`                                                              | `1000`  |
+| *Content Modifiers*                             |
+| [`specification`](#attribute-specification)     | Yes       | [`PropertyCategorySpecification`](./PropertyCategorySpecification.md) |         |
 
-## Example
+### Attribute: `requiredSchemas`
 
-```JSON
-{
-  "ruleType": "DefaultPropertyCategoryOverride",
-  "requiredSchemas": [{ "name": "BisCore", "minVersion": "1.0.1" }],
-  "priority": 9999,
-  "onlyIfNotHandled": true,
-  "specification": {
-    "id": "default",
-    "label": "General Properties"
-  }
-}
+> **Default value:** `[]`
+
+Lists schema requirements that need to be met for the rule to take effect. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+
+```ts
+[[include:Content.Customization.DefaultPropertyCategoryOverride.RequiredSchemas.Ruleset]]
 ```
+
+![Example of using "required schemas" attribute](./media/defaultpropertycategoryoverride-with-requiredschemas-attribute.png)
+
+### Attribute: `priority`
+
+> **Default value:** `1000`
+
+Controls rule priority. Because there can only be one default category, default category override with the highest priority value will override all other rules of the same type.
+
+```ts
+[[include:Content.Customization.DefaultPropertyCategoryOverride.Priority.Ruleset]]
+```
+
+![Example of using "priority" attribute](./media/defaultpropertycategoryoverride-with-priority-attribute.png)
+
+### Attribute: `specification`
+
+Specification for the custom property category.
+
+```ts
+[[include:Content.Customization.DefaultPropertyCategoryOverride.Specification.Ruleset]]
+```
+
+![Example of using "specification" attribute](./media/defaultpropertycategoryoverride-with-specification-attribute.png)

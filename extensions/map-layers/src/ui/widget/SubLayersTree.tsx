@@ -2,11 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { useResizeDetector } from "react-resize-detector";
-import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
-import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, HighlightableTreeProps, ITreeDataProvider,
   MutableTreeModel,
@@ -14,11 +10,15 @@ import {
   SelectionMode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeEventHandler, TreeImageLoader, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem, TreeNodeLoader,
   TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useTreeModel,
 } from "@itwin/components-react";
-import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
+import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
 import { Input } from "@itwin/itwinui-react";
+import * as React from "react";
+import { useResizeDetector } from "react-resize-detector";
 import { StyleMapLayerSettings } from "../Interfaces";
-import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import "./SubLayersTree.scss";
 
 interface ToolbarProps {
@@ -58,11 +58,11 @@ function getSubLayerProps(subLayerSettings: MapSubLayerSettings[]): MapSubLayerP
   return subLayerSettings.map((subLayer) => subLayer.toJSON());
 }
 
-function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean): StyleMapLayerSettings {
+function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: boolean): StyleMapLayerSettings {
   return {
     visible: settings.visible,
     name: settings.name,
-    url: settings.url,
+    source: settings.source,
     transparency: settings.transparency,
     transparentBackground: settings.transparentBackground,
     subLayers: settings.subLayers ? getSubLayerProps(settings.subLayers) : undefined,
@@ -108,12 +108,13 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     const vp = IModelApp.viewManager.selectedView;
     const displayStyle = vp?.displayStyle;
     if (displayStyle && vp) {
-      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
+      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(mapLayer.name, mapLayer.source, mapLayer.isOverlay) : -1;
       displayStyle.changeMapSubLayerProps({ visible: true }, -1, indexInDisplayStyle, mapLayer.isOverlay);
       vp.invalidateRenderPlan();
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer) {
-        setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
+        if (updatedMapLayer instanceof ImageMapLayerSettings)
+          setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
       }
     }
   }, [mapLayer]);
@@ -122,10 +123,10 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     const vp = IModelApp.viewManager.selectedView;
     const displayStyle = vp?.displayStyle;
     if (displayStyle && vp) {
-      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
+      const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(mapLayer.name, mapLayer.source, mapLayer.isOverlay) : -1;
       displayStyle.changeMapSubLayerProps({ visible: false }, -1, indexInDisplayStyle, mapLayer.isOverlay);
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
-      if (updatedMapLayer) {
+      if (updatedMapLayer && updatedMapLayer instanceof ImageMapLayerSettings) {
         setMapLayer(getStyleMapLayerSettings(updatedMapLayer, mapLayer.isOverlay));
       }
       vp.invalidateRenderPlan();
@@ -288,7 +289,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
       next: (changes) => {
         const vp = IModelApp.viewManager.selectedView;
         const displayStyle = vp?.displayStyle;
-        const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(this._mapLayer.name, this._mapLayer.url, this._mapLayer.isOverlay) : -1;
+        const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndSource(this._mapLayer.name, this._mapLayer.source, this._mapLayer.isOverlay) : -1;
         changes.forEach((change) => {
           const isSelected = (change.newState === CheckBoxState.On);
 
