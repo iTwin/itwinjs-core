@@ -1887,7 +1887,7 @@ export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
 }
 
-// @beta
+// @public
 export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "checkbox";
@@ -2207,7 +2207,7 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
-// @beta
+// @public
 export interface CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "checkbox" | "text" | "select";
@@ -2225,7 +2225,7 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
     viewport?: never;
 }
 
-// @beta
+// @public
 export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
     isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
     primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
@@ -3216,19 +3216,15 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
-// @beta
+// @public
 export interface FormatterParserSpecsProvider {
-    // (undocumented)
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
-    // (undocumented)
     createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
-    // (undocumented)
     quantityType: QuantityTypeArg;
 }
 
-// @beta
+// @public
 export interface FormattingUnitSystemChangedArgs {
-    // (undocumented)
     readonly system: UnitSystemKey;
 }
 
@@ -3528,7 +3524,7 @@ export interface GetPixelDataWorldPointArgs {
     y: number;
 }
 
-// @beta
+// @public
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
 // @public
@@ -4675,7 +4671,6 @@ export class IModelApp {
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @beta
     static get publicPath(): string;
-    // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @beta
@@ -5213,16 +5208,16 @@ export interface IpcAppOptions {
     iModelApp?: IModelAppOptions;
 }
 
-// @beta
+// @public
 export const isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec;
 
-// @beta
+// @public
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition;
 
-// @beta
+// @public
 export const isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec;
 
-// @beta
+// @public
 export const isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec;
 
 // @alpha (undocumented)
@@ -7329,15 +7324,11 @@ export enum OutputMessageType {
     Toast = 0
 }
 
-// @beta
+// @public
 export interface OverrideFormatEntry {
-    // (undocumented)
     imperial?: FormatProps;
-    // (undocumented)
     metric?: FormatProps;
-    // (undocumented)
     usCustomary?: FormatProps;
-    // (undocumented)
     usSurvey?: FormatProps;
 }
 
@@ -7706,62 +7697,46 @@ export class QuadId {
     row: number;
 }
 
-// @beta
+// @public
 export interface QuantityFormatOverridesChangedArgs {
     readonly overrideEntry?: OverrideFormatEntry;
     readonly typeKey: QuantityTypeKey;
     readonly unitSystem?: UnitSystemKey;
 }
 
-// @beta
+// @public
 export interface QuantityFormatsChangedArgs {
     readonly quantityType: string;
 }
 
-// @beta
+// @public
 export class QuantityFormatter implements UnitsProvider {
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
-    // (undocumented)
     protected _activeFormatSpecsByType: Map<string, FormatterSpec>;
-    // (undocumented)
     protected _activeParserSpecsByType: Map<string, ParserSpec>;
     get activeUnitSystem(): UnitSystemKey;
-    // (undocumented)
     protected _activeUnitSystem: UnitSystemKey;
     addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
-    // (undocumented)
     get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
-    // (undocumented)
     clearAllOverrideFormats(): Promise<void>;
-    // (undocumented)
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
-    // (undocumented)
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
-    // (undocumented)
     findUnitByName(unitName: string): Promise<UnitProps>;
     formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
-    // (undocumented)
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
-    // (undocumented)
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
-    // (undocumented)
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
     getFormatterSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<FormatterSpec | undefined>;
     getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined>;
     getParserSpecByQuantityType(type: QuantityTypeArg, isImperial?: boolean): Promise<ParserSpec | undefined>;
-    // (undocumented)
     getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
-    // (undocumented)
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
-    // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
-    // (undocumented)
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
-    // (undocumented)
     protected initializeQuantityTypesRegistry(): Promise<void>;
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
@@ -7770,58 +7745,40 @@ export class QuantityFormatter implements UnitsProvider {
     onInitialized(): Promise<void>;
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
     readonly onUnitsProviderChanged: BeUiEvent<void>;
-    // (undocumented)
     protected _overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<string, FormatProps>>;
     parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult;
-    // (undocumented)
     protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition>;
-    // (undocumented)
     get quantityTypesRegistry(): Map<string, QuantityTypeDefinition>;
-    // (undocumented)
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
     reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>, unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void>;
-    // (undocumented)
     resetToUseInternalUnitsProvider(): Promise<void>;
     setActiveUnitSystem(isImperialOrUnitSystem: UnitSystemKey | boolean, restartActiveTool?: boolean): Promise<void>;
-    // (undocumented)
     setOverrideFormat(type: QuantityTypeArg, overrideFormat: FormatProps): Promise<void>;
-    // (undocumented)
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
     setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider): Promise<void>;
     setUnitsProvider(unitsProvider: UnitsProvider): Promise<void>;
-    // (undocumented)
     protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
-    // (undocumented)
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
     }
 
-// @beta
+// @public
 export enum QuantityType {
-    // (undocumented)
     Angle = 2,
-    // (undocumented)
     Area = 3,
-    // (undocumented)
     Coordinate = 6,
-    // (undocumented)
     LatLong = 5,
-    // (undocumented)
     Length = 1,
-    // (undocumented)
     LengthEngineering = 9,
-    // (undocumented)
     LengthSurvey = 8,
-    // (undocumented)
     Stationing = 7,
-    // (undocumented)
     Volume = 4
 }
 
-// @beta
+// @public
 export type QuantityTypeArg = QuantityType | string;
 
-// @beta
+// @public
 export interface QuantityTypeDefinition {
     description: string;
     generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
@@ -7834,7 +7791,7 @@ export interface QuantityTypeDefinition {
     readonly type: QuantityTypeArg;
 }
 
-// @beta
+// @public
 export type QuantityTypeKey = string;
 
 // @beta
@@ -10413,7 +10370,7 @@ export interface TerrainTileContent extends TileContent {
     };
 }
 
-// @beta
+// @public
 export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "text";
@@ -10423,7 +10380,7 @@ export interface TextInputFormatPropEditorSpec extends CustomFormatPropEditorSpe
     setString: (props: FormatProps, value: string) => FormatProps;
 }
 
-// @beta
+// @public
 export interface TextSelectFormatPropEditorSpec extends CustomFormatPropEditorSpec {
     // (undocumented)
     editorType: "select";
@@ -11892,7 +11849,7 @@ export class UniqueTileUserSets {
     remove(user: TileUser): void;
     }
 
-// @beta
+// @public
 export interface UnitFormattingSettingsProvider {
     loadOverrides(imodel: IModelConnection | undefined): Promise<void>;
     readonly maintainOverridesPerIModel: boolean;
@@ -11905,7 +11862,7 @@ export interface UnitFormattingSettingsProvider {
     storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
 }
 
-// @beta
+// @public
 export type UnitNameKey = string;
 
 // @internal (undocumented)

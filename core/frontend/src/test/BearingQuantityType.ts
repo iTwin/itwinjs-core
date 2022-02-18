@@ -7,9 +7,10 @@ import {
   CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
 import {
-  CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition,
+  CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec,
   TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec,
-} from "../quantity-formatting/QuantityFormatter";
+} from "../quantity-formatting/QuantityTypesEditorSpecs";
+import { CustomQuantityTypeDefinition } from "../quantity-formatting/QuantityFormatter";
 
 interface BearingFormatProps extends CustomFormatProps {
   readonly custom: {
