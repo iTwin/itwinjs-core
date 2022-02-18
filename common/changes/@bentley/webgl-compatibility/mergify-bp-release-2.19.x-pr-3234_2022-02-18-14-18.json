@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webgl-compatibility",
+      "comment": "Apply workaround for failure to render shadows and transparency on Mali-G71 MP20 (Samsung Galaxy Note 8).",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webgl-compatibility",
+  "email": "22944042+pmconne@users.noreply.github.com"
+}
