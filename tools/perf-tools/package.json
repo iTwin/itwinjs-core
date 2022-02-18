@@ -1,6 +1,6 @@
 {
   "name": "@bentley/perf-tools",
-  "version": "2.19.31",
+  "version": "2.19.32",
   "description": "Tools for collecting and reporting performance data",
   "license": "MIT",
   "repository": {

@@ -1,6 +1,13 @@
 # Change Log - @bentley/webgl-compatibility
 
-This log was last generated on Tue, 15 Feb 2022 19:17:16 GMT and should not be manually modified.
+This log was last generated on Fri, 18 Feb 2022 18:39:22 GMT and should not be manually modified.
+
+## 2.19.32
+Fri, 18 Feb 2022 18:39:22 GMT
+
+### Updates
+
+- Apply workaround for failure to render shadows and transparency on Mali-G71 MP20 (Samsung Galaxy Note 8).
 
 ## 2.19.31
 Tue, 15 Feb 2022 19:17:16 GMT
