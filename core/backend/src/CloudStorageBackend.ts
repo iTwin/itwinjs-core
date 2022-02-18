@@ -77,7 +77,8 @@ export class AzureBlobStorage extends CloudStorageService {
 
     const token = Azure.generateBlobSASQueryParameters(policy, this._credential);
     const url = new URL(this._baseUrl);
-    url.pathname = `${url.pathname.replace(/\/*$/, "")}/${id.name}?${token.toString()}`;
+    url.pathname = `${url.pathname.replace(/\/*$/, "")}/${id.name}`;
+    url.search = token.toString();
 
     const urlObject: CloudStorageContainerUrl = {
       descriptor: this.makeDescriptor(id),
