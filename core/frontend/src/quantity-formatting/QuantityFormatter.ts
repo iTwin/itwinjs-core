@@ -6,17 +6,20 @@
  * @module QuantityFormatting
  */
 
-import { BeUiEvent } from "@itwin/core-bentley";
+import { BeUiEvent, Logger } from "@itwin/core-bentley";
 import {
   AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion,
   UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
 import { CustomFormatPropEditorSpec } from "./QuantityTypesEditorSpecs";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
+
+const loggerCategory = FrontendLoggerCategory.IModelConnection;
 
 /**
  * Defines standard format types for tools that need to display measurements to user.
@@ -556,6 +559,7 @@ export class QuantityFormatter implements UnitsProvider {
       // force all cached data to be reinitialized
       await IModelApp.quantityFormatter.onInitialized();
     } catch(_) {
+      Logger.logWarning(loggerCategory, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
       // If there is a problem initializing with the given provider, default back to the internal provider
       await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider();
       return;
