@@ -9988,7 +9988,7 @@ packages:
       multistream: 2.1.1
       mysql2: 2.3.3
       rimraf: 3.0.2
-      sequelize: 6.16.1_mysql2@2.3.3+tedious@14.3.0
+      sequelize: 6.16.2_mysql2@2.3.3+tedious@14.3.0
       tedious: 14.3.0
       to-readable-stream: 2.1.0
       tslib: 2.3.1
@@ -20139,8 +20139,8 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /sequelize/6.16.1_mysql2@2.3.3+tedious@14.3.0:
-    resolution: {integrity: sha512-YFGqrwkmEhSbpZBxay5+PRKMiZNNUJzgIixCyFkLm9+/5Rqq5jBADEjTAC8RYHzwsOGNboYh18imXrYNCjBZCQ==}
+  /sequelize/6.16.2_mysql2@2.3.3+tedious@14.3.0:
+    resolution: {integrity: sha512-0fCdO4qrkuMWizq3blDVHPC4NvrDkRnrFucoJKlaukdatrDpluBw2GXQ53rBQeizbHGefdgehhFiyFzyo0COKg==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       ibm_db: '*'
