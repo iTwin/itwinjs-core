@@ -445,13 +445,13 @@ export class BaseMapLayerSettings extends MapLayerSettings {
         name = `MapBox: ${MapLayerSettings.mapTypeName(provider.type)}`;
         switch (provider.type) {
           case BackgroundMapType.Street:
-            url = "https://api.mapbox.com/v4/mapbox.streets/";
+            url = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/";
             break;
           case BackgroundMapType.Aerial:
-            url = "https://api.mapbox.com/v4/mapbox.satellite/";
+            url = "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/";
             break;
           case BackgroundMapType.Hybrid:
-            url = "https://api.mapbox.com/v4/mapbox.streets-satellite/";
+            url = "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/";
             break;
         }
         break;
