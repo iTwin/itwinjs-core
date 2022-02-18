@@ -10,7 +10,7 @@ import {  WidgetState } from "@itwin/appui-abstract";
 
 import { FrontstageManager } from "@itwin/appui-react";
 
-import { FeatureInfoWidgetControl } from "@itwin/map-layers";
+import { FeatureInfoUiItemsProvider } from "@itwin/map-layers";
 import { BeEvent } from "@itwin/core-bentley";
 
 export class MapFeatureInfoTool extends PrimitiveTool {
@@ -27,7 +27,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (hit !== undefined) {
-      const widgetDef = FrontstageManager.findWidget(FeatureInfoWidgetControl.id);
+      const widgetDef = FrontstageManager.findWidget(FeatureInfoUiItemsProvider.widgetId);
       if (widgetDef && widgetDef.state !== WidgetState.Open)
         widgetDef.setWidgetState(WidgetState.Open);
 

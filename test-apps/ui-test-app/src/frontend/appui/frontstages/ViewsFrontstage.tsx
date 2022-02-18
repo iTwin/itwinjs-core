@@ -8,7 +8,7 @@ import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ScreenViewport, ViewState,
 } from "@itwin/core-frontend";
-import { FeatureInfoWidgetControl, MapLayersWidgetControl } from "@itwin/map-layers"; // used to test map-layers widget control
+import { MapLayersWidgetControl } from "@itwin/map-layers"; // used to test map-layers widget control
 import { NodeKey } from "@itwin/presentation-common";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
@@ -456,13 +456,13 @@ export class ViewsFrontstage extends FrontstageProvider {
                   applicationData={{ iModelConnection }}
                 />,
                 <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-                <Widget
-                  id={FeatureInfoWidgetControl.id}
-                  label={FeatureInfoWidgetControl.label}
-                  control={FeatureInfoWidgetControl}
-                  iconSpec={FeatureInfoWidgetControl.iconSpec}
-                  applicationData={{ showLoadProgressAnimation: true }}
-                />,
+                // <Widget
+                //   id={FeatureInfoWidgetControl.id}
+                //   label={FeatureInfoWidgetControl.label}
+                //   control={FeatureInfoWidgetControl}
+                //   iconSpec={FeatureInfoWidgetControl.iconSpec}
+                //   applicationData={{ showLoadProgressAnimation: true }}
+                // />,
               ]}
           />
         }

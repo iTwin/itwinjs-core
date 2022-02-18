@@ -5,9 +5,9 @@
 import { HitDetail, IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
-import { ConfigurableUiManager } from "@itwin/appui-react";
+// import { ConfigurableUiManager } from "@itwin/appui-react";
 import { BeEvent } from "@itwin/core-bentley";
-import { FeatureInfoUiItemsProvider, FeatureInfoWidgetControl } from "./ui/FeatureInfoUiItemsProvider";
+import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
 
 export type MapHitEvent = BeEvent<(hit: HitDetail) => void>;
 export interface FeatureInfoOpts
@@ -66,16 +66,15 @@ export class MapLayersUI {
     MapLayersUI._mapFeatureInfoItemsProvider = new FeatureInfoUiItemsProvider(IModelApp.localization);
     if (registerItemsProvider) {
       UiItemsManager.register(MapLayersUI._mapLayersItemsProvider);
-
-      // Register the FeatureInfo widget only if MapHit was provided.
-      if (MapLayersUI._onMapHit) {
-        UiItemsManager.register(MapLayersUI._mapFeatureInfoItemsProvider);
-      }
     }
 
     MapLayersUI._itemsProviderRegistered = registerItemsProvider;
 
-    ConfigurableUiManager.registerControl(FeatureInfoWidgetControl.id, FeatureInfoWidgetControl);
+    // Register the FeatureInfo widget only if MapHit was provided.
+    if (MapLayersUI._onMapHit) {
+      UiItemsManager.register(MapLayersUI._mapFeatureInfoItemsProvider);
+    }
+    // ConfigurableUiManager.registerControl(FeatureInfoWidgetControl.id, FeatureInfoWidgetControl);
   }
 
   /** Unregisters internationalization service namespace and UiItemManager / control */
