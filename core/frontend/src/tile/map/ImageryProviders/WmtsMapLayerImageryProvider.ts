@@ -6,7 +6,7 @@
  * @module Tiles
  */
 import { assert } from "@itwin/core-bentley";
-import { IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
+import { ImageMapLayerSettings, IModelStatus, ServerError } from "@itwin/core-common";
 import {
   ImageryMapTile,
   MapLayerImageryProvider,
@@ -26,7 +26,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
 
   public override get mutualExclusiveSubLayer(): boolean { return true; }
 
-  constructor(settings: MapLayerSettings) {
+  constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
     this._baseUrl = WmsUtilities.getBaseUrl(this._settings.url);
   }

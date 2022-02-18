@@ -7,19 +7,21 @@
  * @module Rendering
  */
 
+import { Frustum, FrustumPlanes, Npc, RenderMode } from "@itwin/core-common";
 import {
   ClipUtilities, ConvexClipPlaneSet, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range1d, Range2d, Range3d,
   Ray3d, Transform,
 } from "@itwin/core-geometry";
-import { Frustum, FrustumPlanes, Npc, RenderMode } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { SceneContext } from "../../ViewContext";
 import { Tile, TileTreeReference } from "../../tile/internal";
+import { SceneContext } from "../../ViewContext";
 import { ViewState3d } from "../../ViewState";
 import { RenderState } from "./RenderState";
 import { Target } from "./Target";
 
 const scratchRange = Range3d.createNull();
+const scratchMap4d = Map4d.createIdentity();
+const scratchMatrix4d = Matrix4d.createIdentity();
 export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
@@ -153,8 +155,8 @@ export class PlanarTextureProjection {
       return {};
     }
     const worldToNpc = PlanarTextureProjection._postProjectionMatrixNpc.multiplyMatrixMatrix(frustumMap.transform0);
-    const npcToView = Map4d.createBoxMap(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(0, 0, 0), Point3d.create(textureWidth, textureHeight, 1))!;
-    const npcToWorld = worldToNpc.createInverse();
+    const npcToView = Map4d.createBoxMap(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(0, 0, 0), Point3d.create(textureWidth, textureHeight, 1), scratchMap4d)!;
+    const npcToWorld = worldToNpc.createInverse(scratchMatrix4d);
     if (undefined === npcToWorld) {
       return {};
     }
