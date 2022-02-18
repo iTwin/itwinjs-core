@@ -8,7 +8,7 @@ import * as Azure from "@azure/storage-blob";
 import { CloudStorageProvider } from "@itwin/core-common";
 import { AzureBlobStorage } from "../CloudStorageBackend";
 
-describe.only("AzureBlobStorage.obtainContainerUrl()", () => {
+describe("AzureBlobStorage.obtainContainerUrl()", () => {
   afterEach(() => {
     sinon.restore();
   });
