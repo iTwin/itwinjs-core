@@ -15,6 +15,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
+import { GeometryQuery } from "./GeometryQuery";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
 
@@ -26,8 +27,6 @@ import { StrokeOptions } from "./StrokeOptions";
  *    to the proxy.
  * * These methods presumably require support from the application class and are left abstract:
  *    * clone
- *    * clonePartialCurve
- *    * cloneTransformed
  *    * curvePrimitiveType
  *    * isSameCurvePrimitiveType
  *    * isSameGeometryClass
@@ -66,6 +65,19 @@ public emitStrokes(dest: LineString3d, options?: StrokeOptions): void{
 /** Implement by proxyCurve */
 public extendRange(rangeToExtend: Range3d, transform?: Transform): void{
   this._proxyCurve.extendRange (rangeToExtend, transform);
+  }
+
+  /** Return a transformed clone. */
+  public override cloneTransformed(transform: Transform): GeometryQuery | undefined {
+    const myClone = this.clone();
+    if (myClone && myClone.tryTransformInPlace(transform))
+      return myClone;
+    return undefined;
+  }
+
+  /** Implement by proxyCurve. Subclasses may eventually override this default implementation. */
+  public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
+    return this._proxyCurve.clonePartialCurve(fractionA, fractionB);
   }
 
 /** Implement by proxyCurve */

@@ -237,6 +237,30 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     }
     return result;
   }
+
+  /** Return a deep clone */
+  public abstract doClone(): BSplineCurve3dBase;
+
+  /** Return a deep clone. Removes undefined variant return. */
+  public override clone(): BSplineCurve3dBase {
+    return this.doClone();
+  }
+
+  /** Return a transformed deep clone. */
+  public override cloneTransformed(transform: Transform): BSplineCurve3dBase {
+    const curve1 = this.clone();
+    curve1.tryTransformInPlace(transform);
+    return curve1;
+  }
+
+  /** Return (if possible) a curve primitive which is a portion of this curve.
+   * @param _fractionA [in] start fraction
+   * @param _fractionB [in] end fraction
+   */
+   public override clonePartialCurve(_fractionA: number, _fractionB: number): CurvePrimitive | undefined {
+    return undefined;   // START HERE
+  }
+
   /** Implement `CurvePrimitive.appendPlaneIntersections`
    * @param plane A plane (e.g. specific type Plane3dByOriginAndUnitNormal or Point4d)
    * @param result growing array of plane intersections
@@ -294,7 +318,6 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     }
     return numFound;
   }
-
 }
 /**
  * A BSplineCurve3d is a bspline curve whose poles are Point3d.
@@ -448,18 +471,13 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return curve;
   }
   /** Return a deep clone */
-  public clone(): BSplineCurve3d {
+  public override doClone(): BSplineCurve3d {
     const knotVector1 = this._bcurve.knots.clone();
     const curve1 = new BSplineCurve3d(this.numPoles, this.order, knotVector1);
     curve1._bcurve.packedData = this._bcurve.packedData.slice();
     return curve1;
   }
-  /** Return a transformed deep clone. */
-  public cloneTransformed(transform: Transform): BSplineCurve3d {
-    const curve1 = this.clone();
-    curve1.tryTransformInPlace(transform);
-    return curve1;
-  }
+
   /** Evaluate at a position given by fractional position within a span. */
   public evaluatePointInSpan(spanIndex: number, spanFraction: number): Point3d {
     this._bcurve.evaluateBuffersInSpan(spanIndex, spanFraction);

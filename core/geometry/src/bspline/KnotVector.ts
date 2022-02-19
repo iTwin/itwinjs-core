@@ -35,7 +35,7 @@ export enum BSplineWrapMode {
 /**
  * Array of non-decreasing numbers acting as a knot array for bsplines.
  *
- * * Essential identity: numKnots = numPoles + order = numPoles + degree - 1
+ * * Essential identity: numKnots = numPoles + order - 2 = numPoles + degree - 1
  * * Various bspline libraries have confusion over how many "end knots" are needed. "Many" libraries (including MicroStation)
  *     incorrectly demand "order" knots at each end for clamping.   But only "order - 1" are really needed.
  * * This class uses the "order-1" convention.
@@ -148,6 +148,43 @@ export class KnotVector {
     if (this.degree !== other.degree) return false;
     return NumberArray.isAlmostEqual(this.knots, other.knots, KnotVector.knotTolerance);
   }
+
+  /** Compute the multiplicity of the input knot, or zero if not a knot. */
+  public getKnotMultiplicity(knot: number): number {
+    let m = 0;
+    for (const k of this.knots) {
+      if (Math.abs(k - knot) < KnotVector.knotTolerance)
+        ++m;
+      else if (knot < k)
+        break;
+    }
+    return m;
+  }
+
+  /** Compute the multiplicity of the knot at the given index. */
+  public getKnotMultiplicityAtIndex(knotIndex: number): number {
+    let m = 0;
+    if (knotIndex >= 0 && knotIndex < this.knots.length) {
+      const knot = this.knots[knotIndex];
+      ++m;  // count this knot
+      for (let i = knotIndex - 1; i >= 0; --i) {
+        const k = this.knots[i];
+        if (Math.abs(k - knot) < KnotVector.knotTolerance)
+          ++m;  // found multiple to left of knot
+        else if (knot > k)
+          break;
+      }
+      for (let i = knotIndex + 1; i < this.knots.length; ++i) {
+        const k = this.knots[i];
+        if (Math.abs(k - knot) < KnotVector.knotTolerance)
+          ++m;  // found multiple to right of knot
+        else if (knot < k)
+          break;
+      }
+    }
+    return m;
+  }
+
   /** install knot values from an array, optionally ignoring first and last.
    */
   public setKnots(knots: number[] | Float64Array, skipFirstAndLast?: boolean) {
@@ -164,6 +201,13 @@ export class KnotVector {
     }
     this.setupFixedValues();
   }
+
+  /** install knot values from an array, optionally ignoring first and last. */
+  public setKnotsCapture(knots: Float64Array) {
+    this.knots = knots;
+    this.setupFixedValues();
+  }
+
   /**
    * Create knot vector with {degree-1} replicated knots at start and end, and uniform knots between.
    * @param numPoles Number of poles
@@ -248,7 +292,7 @@ export class KnotVector {
    * Evaluate basis functions f[] at knot value u.
    *
    * @param u knot value for evaluation
-   * @param f array of basis values.  ASSUMED PROPER LENGTH
+   * @param f array of order basis function values
    */
   public evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array) {
     f[0] = 1.0;
@@ -278,10 +322,12 @@ export class KnotVector {
   }
 
   /**
-   * Evaluate basis fucntions f[] at knot value u.
+   * Evaluate basis functions f[], derivatives df[], and optional second derivatives ddf[] at knot value u.
    *
    * @param u knot value for evaluation
-   * @param f array of basis values.  ASSUMED PROPER LENGTH
+   * @param f array of order basis function values
+   * @param df array of order basis derivative values
+   * @param ddf array of order basis second derivative values
    */
   public evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array) {
     f[0] = 1.0; df[0] = 0.0;
@@ -348,7 +394,7 @@ export class KnotVector {
     if (u < this.knots[firstLeftKnot + 1]) return firstLeftKnot;
     // Anything to right is in the last span ...
     const lastLeftKnot = this.knots.length - this.degree - 1;
-    if (u >= this.knots.length - this.degree) return this.knots[lastLeftKnot];
+    if (u >= this.knots[lastLeftKnot]) return this.knots[lastLeftKnot];
     // ugh ... linear search ...
     for (let i = firstLeftKnot + 1; i < lastLeftKnot; i++)
       if (u < this.knots[i + 1]) return i;  // testing against right side skips over multiple knot cases???
@@ -361,7 +407,7 @@ export class KnotVector {
   public spanIndexToLeftKnotIndex(spanIndex: number): number {
     const d = this.degree;
     if (spanIndex <= 0.0) return d - 1;
-    return Math.min(spanIndex + d - 1, this.knots.length - d);
+    return Math.min(spanIndex + d - 1, this.knots.length - d - 1);
   }
   /** Return the knot interval length of indexed bezier span. */
   public spanIndexToSpanLength(spanIndex: number): number {
@@ -374,7 +420,7 @@ export class KnotVector {
    * @param spanIndex index of span to test.
    */
   public isIndexOfRealSpan(spanIndex: number): boolean {
-    if (spanIndex >= 0 && spanIndex < this.knots.length - this.degree)
+    if (spanIndex >= 0 && spanIndex < this.numSpans)
       return !Geometry.isSmallMetricDistance(this.spanIndexToSpanLength(spanIndex));
     return false;
   }

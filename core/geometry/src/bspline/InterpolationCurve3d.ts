@@ -317,31 +317,23 @@ export class InterpolationCurve3d extends ProxyCurve {
     }
     return proxyOk;
   }
-  /**
-   * Return a transformed clone.
-   */
-  public cloneTransformed(transform: Transform): GeometryQuery | undefined {
-    const myClone = this.clone();
-    if (myClone && myClone?.tryTransformInPlace(transform))
-      return myClone;
-    return undefined;
-  }
-  /**
-   * Return a clone.
-   */
-  public clone(): GeometryQuery | undefined {
+
+  /** Return a deep clone */
+  public override clone(): InterpolationCurve3d | undefined {
     const proxyClone = this._proxyCurve.clone();
     if (proxyClone) {
       return new InterpolationCurve3d(this._options.clone(), proxyClone as CurvePrimitive);
     }
     return undefined;
   }
+
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof InterpolationCurve3d) {
       return InterpolationCurve3dOptions.areAlmostEqual(this._options, other._options);
     }
     return false;
   }
+
   /** Test if `other` is also an [[InterpolationCurve3d]] */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof InterpolationCurve3d; }
 
