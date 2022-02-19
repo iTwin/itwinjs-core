@@ -15,6 +15,9 @@ import { loggerCategory } from "../common/TestAppConfiguration";
 import { initializeElectron } from "./electron/ElectronMain";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
+import { RpcManager } from "@itwin/core-common";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
@@ -30,6 +33,9 @@ import { initializeWeb } from "./web/BackendServer";
     const iModelHost = new IModelHostConfiguration();
     const iModelClient = new  IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
     iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+
+    // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
+    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
 
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {
@@ -50,6 +56,7 @@ import { initializeWeb } from "./web/BackendServer";
       enableSchemasPreload: true,
       updatesPollInterval: 100,
     });
+
   } catch (error: any) {
     Logger.logError(loggerCategory, error);
     process.exitCode = 1;

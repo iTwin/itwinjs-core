@@ -7,11 +7,11 @@
  */
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
   ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
   isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
@@ -25,7 +25,7 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
-import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
+import { RealityMeshGraphicParams, RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { PointStringParams } from "./primitives/PointStringParams";
@@ -33,11 +33,12 @@ import { PolylineParams } from "./primitives/PolylineParams";
 import { MeshParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
-import { RenderMemory } from "./RenderMemory";
-import { RenderTarget } from "./RenderTarget";
-import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
 import { CreateRenderMaterialArgs } from "./RenderMaterial";
+import { RenderMemory } from "./RenderMemory";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderTarget } from "./RenderTarget";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
+import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -55,6 +56,9 @@ export abstract class RenderTextureDrape implements IDisposable {
 
 /** @internal */
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
+
+/** @internal */
+export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
 /** Describes a texture loaded from an HTMLImageElement
  * ###TODO Replace with TextureImage from RenderTexture.ts after we start returning transparency info from the backend.
@@ -155,8 +159,11 @@ export class TerrainTexture {
     public transparency: number,
     public readonly clipRectangle?: Range2d
   ) { }
-}
 
+  public cloneWithClip(clipRectangle: Range2d) {
+    return new TerrainTexture (this.texture, this.featureId, this.scale, this.translate, this.targetRectangle, this.layerIndex, this.transparency, clipRectangle);
+  }
+}
 /** @internal */
 export class DebugShaderFile {
   public constructor(
@@ -413,7 +420,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderTerrainGeometry | undefined { return undefined; }
   /** @internal */
-  public createRealityMeshGraphic(_terrainGeometry: RenderTerrainGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_params: RealityMeshGraphicParams): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
   /** @internal */

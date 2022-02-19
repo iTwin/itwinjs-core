@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Refactor Format class to align with the Format class of @itwin/ecschema-metadata.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

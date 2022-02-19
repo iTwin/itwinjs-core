@@ -6,13 +6,13 @@
  * @module Tiles
  */
 
-import { MapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MapLayerImageryProvider } from "../../internal";
 
 /** @internal */
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
-  constructor(settings: MapLayerSettings) { super(settings, true); }
+  constructor(settings: ImageMapLayerSettings) { super(settings, true); }
 
   // construct the Url from the desired Tile
   public async constructUrl(y: number, x: number, zoom: number): Promise<string> {

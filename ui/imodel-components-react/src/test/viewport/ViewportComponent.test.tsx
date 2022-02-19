@@ -70,6 +70,7 @@ describe("ViewportComponent", () => {
   after(async () => {
     Object.defineProperty(EntityState.prototype, "clone", vsCloneDescriptorToRestore);
     await MockRender.App.shutdown();
+    TestUtils.terminateUiIModelComponents();
   });
 
   const getViewState = (viewId: string): ViewState => {
