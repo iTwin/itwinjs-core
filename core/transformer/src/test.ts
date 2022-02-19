@@ -12,14 +12,17 @@ const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
 
+const COUNT = 1_000_000;
+
 async function rels(sourceDb: IModelDb) {
   const sql = `SELECT ECInstanceId FROM ${ElementRefersToElements.classFullName}`;
   let i = 0;
-  for await (const [relInstanceId] of sourceDb.query(sql, undefined, { usePrimaryConn: true })) {
+  for await (const [relInstanceId] of sourceDb.query(sql)) {
     sourceDb.relationships.getInstanceProps(ElementRefersToElements.classFullName, relInstanceId);
     const memUsageGb = process.memoryUsage().rss / 1024 / 1024 / 1024;
     if (i % 10000 === 0) console.log(`${i} iterations, process memory at ${formatter.format(memUsageGb)}GB`);
     ++i;
+    if (i >= COUNT) break;
   }
 }
 
