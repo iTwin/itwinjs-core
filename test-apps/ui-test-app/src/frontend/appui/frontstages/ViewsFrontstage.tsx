@@ -8,7 +8,7 @@ import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ScreenViewport, ViewState,
 } from "@itwin/core-frontend";
-import { MapLayersWidgetControl } from "@itwin/map-layers"; // used to test map-layers widget control
+// import { MapLayersWidgetControl } from "@itwin/map-layers"; // used to test map-layers widget control
 import { NodeKey } from "@itwin/presentation-common";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
@@ -405,9 +405,9 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={400}
             widgets={[
               // Used when using map-layers as a package and not using UiItemsProvider (compatible with V1 of framework)
-              <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label}
-                control={MapLayersWidgetControl} iconSpec={MapLayersWidgetControl.iconSpec}
-                applicationData={{ hideExternalMapLayers: false, mapTypeOptions: { supportTileUrl: true, supportWmsAuthentication: true }, fetchPublicMapLayerSources: true }} />,
+              // <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label}
+              //   control={MapLayersWidgetControl} iconSpec={MapLayersWidgetControl.iconSpec}
+              //   applicationData={{ hideExternalMapLayers: false, mapTypeOptions: { supportTileUrl: true, supportWmsAuthentication: true }, fetchPublicMapLayerSources: true }} />,
 
               // <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
               //   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
