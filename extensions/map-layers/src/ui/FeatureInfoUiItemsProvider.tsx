@@ -6,7 +6,7 @@
 import * as React from "react";
 import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { Localization } from "@itwin/core-common";
-import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";
 import { MapFeatureInfoOptions } from "./Interfaces";
 import { MapFeatureInfoWidget } from "./widget/FeatureInfoWidget";
@@ -25,8 +25,8 @@ export class FeatureInfoUiItemsProvider implements UiItemsProvider {
     const widgets: AbstractWidgetProps[] = [];
 
     // eslint-disable-next-line deprecation/deprecation
-    if ((!section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
-      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End)) {
+    if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
+      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
       widgets.push({
         id: FeatureInfoUiItemsProvider.widgetId,
         label: IModelApp.localization.getLocalizedString("mapLayers:FeatureInfoWidget.Label"),

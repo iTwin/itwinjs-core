@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@itwin/appui-abstract";
+import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@itwin/appui-abstract";
 import { Localization } from "@itwin/core-common";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
-import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
+import { ConfigurableCreateInfo, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";
 import { MapLayerOptions } from "./Interfaces";
 
@@ -19,7 +19,8 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
     MapLayersUiItemsProvider.localization = localization;
   }
 
-  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
+  // eslint-disable-next-line deprecation/deprecation
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
     const mapLayerOptions: MapLayerOptions = {
       hideExternalMapLayers: false,
@@ -27,7 +28,9 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
       fetchPublicMapLayerSources: false,
     };
 
-    if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
+    // eslint-disable-next-line deprecation/deprecation
+    if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.CenterRight) ||
+      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start && "1" !== UiFramework.uiVersion)) {
       widgets.push({
         id: "map-layers:mapLayersWidget",
         label: IModelApp.localization.getLocalizedString("mapLayers:Widget.Label"),
