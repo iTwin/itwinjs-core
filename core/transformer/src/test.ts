@@ -1,4 +1,3 @@
-/* eslint-disable prefer-template */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -6,44 +5,56 @@
 import { ElementRefersToElements, IModelDb, IModelHost, SnapshotDb } from "@itwin/core-backend";
 
 /* eslint-disable no-console */
+/* eslint-disable prefer-template */
 
-const formatter = new Intl.NumberFormat("en-US", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
+const COUNT = 1_000_000;
+
+let lastHeapSize = 0;
+let lastHeapSizeChange = 0;
+let itersBeforeChange = 0;
+
+const fmter = Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
 });
 
-const COUNT = 100_000;
-
-function reportMemUsage(i: number) {
-  if (i % 10000 !== 0) return;
-  const memUsageGb = process.memoryUsage().rss / 1024 / 1024 / 1024;
-  const memUsageGbFmt = formatter.format(memUsageGb) + "GB";
-  console.log(String(i) + " iterations, process memory at " + memUsageGbFmt);
+function reportMemUsage() {
+  const mu = process.memoryUsage();
+  itersBeforeChange++;
+  const heapSizeChange = mu.heapUsed - lastHeapSize;
+  if (heapSizeChange === lastHeapSizeChange) return;
+  if (itersBeforeChange % 10_000 === 0)
+    console.log("iters:" + itersBeforeChange + "; heap: " + fmter.format(mu.heapUsed / 1024 / 1024) + "MB; change: " + heapSizeChange);
+  // global.gc();
+  lastHeapSizeChange = heapSizeChange;
+  lastHeapSize = mu.heapUsed;
 }
 
 async function rels(sourceDb: IModelDb) {
-  const sql = `SELECT ECInstanceId FROM ${ElementRefersToElements.classFullName}`;
-  let i = 0;
-
-  const iter = sourceDb.query(sql);
-  let iterVal = await iter.next();
   const ids = [];
 
-  // for await (const [relInstanceId] of sourceDb.query(sql)) {
-  while (!iterVal.done && i <= COUNT) {
-    ids.push(iterVal.value[0]);
-    reportMemUsage(i);
-    ++i;
-    iterVal = await iter.next();
+  {
+    const sql = `SELECT ECInstanceId FROM ${ElementRefersToElements.classFullName} LIMIT ${COUNT}`;
+    for await (const [relInstanceId] of sourceDb.query(sql)) {
+      ids.push(relInstanceId);
+    }
   }
 
   console.log("finished id query loop, starting gets loop");
 
-  i = 0;
   for (const relInstanceId of ids) {
+    // const sql = `SELECT * FROM ${ElementRefersToElements.classFullName} WHERE ECInstanceId=?`;
+    // const stmt = new IModelHost.platform.ECSqlStatement();
+    // stmt.prepare(sourceDb.nativeDb, sql, true);
+    // stmt.step();
+    /*
+    sourceDb.withPreparedStatement(sql, (stmt) => {
+      stmt.bindId(1, relInstanceId);
+      stmt.step();
+    });
+    */
     sourceDb.relationships.getInstanceProps(ElementRefersToElements.classFullName, relInstanceId);
-    reportMemUsage(i);
-    ++i;
+    reportMemUsage();
     // it actually garbage collects with this:
     // await new Promise(setImmediate);
   }
