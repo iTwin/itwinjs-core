@@ -8,8 +8,8 @@ import { Range3d } from "@itwin/core-geometry";
 import { ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS } from "@itwin/core-orbitgt";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { DownloaderNode } from "@itwin/core-orbitgt/lib/cjs/system/runtime/DownloaderNode";
-import { Logger } from "@itwin/core-bentley";
-import { SpatialLocationAndExtents } from "../RealityDataSource";
+import { BentleyError, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
+import { RealityDataError, SpatialLocationAndExtents } from "../RealityDataSource";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
@@ -43,6 +43,7 @@ export class OPCFormatInterpreter  {
   /** Gets reality data spatial location and extents
    * @param fileReader a file reader instance obtains from call to getFileReaderFromBlobFileURL
    * @returns spatial location and volume of interest, in meters, centered around `spatial location`
+   * @throws [[RealityDataError]] if source is invalid or cannot be read
    * @internal
    */
   public static async getSpatialLocationAndExtents(fileReader: PointCloudReader): Promise<SpatialLocationAndExtents> {
@@ -55,21 +56,29 @@ export class OPCFormatInterpreter  {
     isGeolocated = false;
     const fileCrs = fileReader.getFileCRS();
     if (fileCrs) {
-      await CRSManager.ENGINE.prepareForArea(fileCrs, bounds);
-      const wgs84ECEFCrs = "4978";
-      await CRSManager.ENGINE.prepareForArea(wgs84ECEFCrs, new OrbitGtBounds());
+      try {
+        await CRSManager.ENGINE.prepareForArea(fileCrs, bounds);
+        const wgs84ECEFCrs = "4978";
+        await CRSManager.ENGINE.prepareForArea(wgs84ECEFCrs, new OrbitGtBounds());
 
-      const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84ECEFCrs);
-      const ecefRange = Range3d.createXYZXYZ(ecefBounds.getMinX(), ecefBounds.getMinY(), ecefBounds.getMinZ(), ecefBounds.getMaxX(), ecefBounds.getMaxY(), ecefBounds.getMaxZ());
-      const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
-      const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
-      cartoCenter.height = 0;
-      const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
-      location = ecefLocation;
-      // this.iModelDb.setEcefLocation(ecefLocation);
-      const ecefToWorld = ecefLocation.getTransform().inverse()!;
-      worldRange = ecefToWorld.multiplyRange(ecefRange);
-      isGeolocated = true;
+        const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84ECEFCrs);
+        const ecefRange = Range3d.createXYZXYZ(ecefBounds.getMinX(), ecefBounds.getMinY(), ecefBounds.getMinZ(), ecefBounds.getMaxX(), ecefBounds.getMaxY(), ecefBounds.getMaxZ());
+        const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
+        const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
+        cartoCenter.height = 0;
+        const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
+        location = ecefLocation;
+        // this.iModelDb.setEcefLocation(ecefLocation);
+        const ecefToWorld = ecefLocation.getTransform().inverse()!;
+        worldRange = ecefToWorld.multiplyRange(ecefRange);
+        isGeolocated = true;
+      } catch (e) {
+        Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - cannot interpret point cloud`);
+        const errorProps = BentleyError.getErrorProps(e);
+        const getMetaData: LoggingMetaData = () => {return { errorProps };};
+        const error = new RealityDataError(RealityDataStatus.InvalidData, "Invalid or unknown data", getMetaData);
+        throw error;
+      }
     } else {
       // NoGCS case
       isGeolocated = false;

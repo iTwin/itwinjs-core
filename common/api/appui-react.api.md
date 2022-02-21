@@ -2722,6 +2722,7 @@ export class FrontstageDef {
     get isReady(): boolean;
     // (undocumented)
     get isStageClosing(): boolean;
+    isWidgetDisplayed(widgetId: string): boolean;
     // @beta (undocumented)
     get leftPanel(): StagePanelDef | undefined;
     // @internal (undocumented)
@@ -4266,7 +4267,7 @@ export class OpenMessageCenterEvent extends UiEvent<{}> {
 export function packNineZoneState(state: NineZoneState): SavedNineZoneState;
 
 // @internal (undocumented)
-export class PanelSizeChangedEvent extends UiEvent_2<PanelSizeChangedEventArgs> {
+export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> {
 }
 
 // @internal (undocumented)
@@ -4278,10 +4279,10 @@ export interface PanelSizeChangedEventArgs {
 }
 
 // @beta
-export class PanelStateChangedEvent extends UiEvent_2<PanelStateChangedEventArgs> {
+export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
 
-// @public @deprecated
+// @public
 export interface PanelStateChangedEventArgs {
     // (undocumented)
     panelDef: StagePanelDef;

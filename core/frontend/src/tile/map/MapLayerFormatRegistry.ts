@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
+import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
@@ -66,11 +66,11 @@ export class MapLayerFormatRegistry {
   public get configOptions(): MapLayerOptions {
     return this._configOptions;
   }
-  public createImageryMapLayerTree(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
+  public createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
     const format = this._formats.get(layerSettings.formatId);
     return format !== undefined ? (format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference) : undefined;
   }
-  public createImageryProvider(layerSettings: MapLayerSettings): MapLayerImageryProvider | undefined {
+  public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     const format = this._formats.get(layerSettings.formatId);
     if (this._configOptions[layerSettings.formatId] !== undefined) {
       const keyValuePair = this._configOptions[layerSettings.formatId]!;

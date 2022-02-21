@@ -272,10 +272,21 @@ export class Capabilities {
       this._maxDrawBuffers = dbExt !== undefined ? gl.getParameter(dbExt.MAX_DRAW_BUFFERS_WEBGL) : 1;
     }
 
+    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+    const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
+    const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
+
     // Determine the maximum color-renderable attachment type.
-    // Note: iOS>=15 allows full-float rendering. However, it does not actually work on non-M1 devices. Because of this, for now we disallow full float rendering on iOS devices.
-    // ###TODO: Re-assess this after future iOS updates.
-    const allowFloatRender = (undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float")) && !ProcessDetector.isIOSBrowser;
+    const allowFloatRender =
+      (undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float"))
+      // iOS>=15 allows full-float rendering. However, it does not actually work on non-M1 devices.
+      // Because of this, for now we disallow full float rendering on iOS devices.
+      // ###TODO: Re-assess this after future iOS updates.
+      && !ProcessDetector.isIOSBrowser
+      // Samsung Galaxy Note 8 exhibits same issue as described above for iOS >= 15.
+      // It uses specifically Mali-G71 MP20 but reports its renderer as follows.
+      && unmaskedRenderer !== "Mali-G71";
+
     if (allowFloatRender && undefined !== this.queryExtensionObject("EXT_float_blend") && this.isTextureRenderable(gl, gl.FLOAT)) {
       this._maxRenderType = RenderType.TextureFloat;
     } else if (this.isWebGL2) {
@@ -294,10 +305,6 @@ export class Capabilities {
     this._presentFeatures = this._gatherFeatures();
     const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
     const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
-
-    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
-    const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
-    const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
 
     this._driverBugs = {};
     if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))

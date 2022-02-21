@@ -32,7 +32,7 @@ export class Scene {
   /** Graphics to be overlaid atop all other graphics. */
   public readonly overlay: RenderGraphic[] = [];
   /** @internal */
-  public readonly planarClassifiers = new Map<Id64String, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
+  public readonly planarClassifiers = new Map<string, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
   /** @internal */
   public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
   /** @internal */
