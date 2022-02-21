@@ -48,7 +48,7 @@ Specifies whether to omit the primary instance from the result if the other end 
 | without instance filter | ![Example without instance filter](./media/relatedinstancespecification-usage-in-instancefilter-1.png) |
 | with instance filter    | ![Example with instance filter](./media/relatedinstancespecification-usage-in-instancefilter-2.png)    |
 
-### Using related instances for customizing
+### Using related instances for customization
 
 ```ts
 [[include:RelatedInstanceSpecification.UsingForCustomization.Ruleset]]
