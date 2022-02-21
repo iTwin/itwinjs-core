@@ -7,10 +7,9 @@ import { ElementRefersToElements, IModelDb, IModelHost, SnapshotDb } from "@itwi
 /* eslint-disable no-console */
 /* eslint-disable prefer-template */
 
-const COUNT = 1_000_000;
+const COUNT = 3_000_000;
 
-let lastHeapSize = 0;
-let lastHeapSizeChange = 0;
+let lastRss = 0;
 let itersBeforeChange = 0;
 
 const fmter = Intl.NumberFormat("en-US", {
@@ -21,13 +20,11 @@ const fmter = Intl.NumberFormat("en-US", {
 function reportMemUsage() {
   const mu = process.memoryUsage();
   itersBeforeChange++;
-  const heapSizeChange = mu.heapUsed - lastHeapSize;
-  if (heapSizeChange === lastHeapSizeChange) return;
+  const heapSizeChange = mu.rss - lastRss;
   if (itersBeforeChange % 10_000 === 0)
-    console.log("iters:" + itersBeforeChange + "; heap: " + fmter.format(mu.heapUsed / 1024 / 1024) + "MB; change: " + heapSizeChange);
+    console.log("iters:" + itersBeforeChange + "; heap: " + fmter.format(mu.rss / 1024 / 1024) + "MB; change: " + heapSizeChange);
   // global.gc();
-  lastHeapSizeChange = heapSizeChange;
-  lastHeapSize = mu.heapUsed;
+  lastRss = mu.rss;
 }
 
 async function rels(sourceDb: IModelDb) {
@@ -37,6 +34,8 @@ async function rels(sourceDb: IModelDb) {
     const sql = `SELECT ECInstanceId FROM ${ElementRefersToElements.classFullName} LIMIT ${COUNT}`;
     for await (const [relInstanceId] of sourceDb.query(sql)) {
       ids.push(relInstanceId);
+      sourceDb.relationships.getInstanceProps(ElementRefersToElements.classFullName, relInstanceId);
+      reportMemUsage();
     }
   }
 
@@ -46,18 +45,21 @@ async function rels(sourceDb: IModelDb) {
     // const sql = `SELECT * FROM ${ElementRefersToElements.classFullName} WHERE ECInstanceId=?`;
     // const stmt = new IModelHost.platform.ECSqlStatement();
     // stmt.prepare(sourceDb.nativeDb, sql, true);
+    // stmt.getBinder(1).bindId(relInstanceId);
     // stmt.step();
-    /*
-    sourceDb.withPreparedStatement(sql, (stmt) => {
-      stmt.bindId(1, relInstanceId);
-      stmt.step();
-    });
-    */
     sourceDb.relationships.getInstanceProps(ElementRefersToElements.classFullName, relInstanceId);
     reportMemUsage();
     // it actually garbage collects with this:
     // await new Promise(setImmediate);
   }
+  /*
+    sourceDb.withPreparedStatement(sql, (stmt) => {
+      stmt.bindId(1, relInstanceId);
+      stmt.step();
+    });
+    */
+  // sourceDb.relationships.getInstanceProps(ElementRefersToElements.classFullName, relInstanceId);
+  // }
 }
 
 async function main() {
