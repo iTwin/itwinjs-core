@@ -30,9 +30,9 @@ describe("Learning Snippets", () => {
 
     it("uses all attributes", async () => {
       // __PUBLISH_EXTRACT_START__ MultiSchemaClasses.Ruleset
-      // This specification selects instances of `bis.PhysicalModel` and `bis.SpatialCategory` classes.
-      // Classes that derive from classes specified in `classNames` this list will not be included due to
-      // `arePolymorphic` attribute being set to `false`.
+      // This ruleset produces content for instances of `bis.PhysicalModel` and `bis.SpatialCategory` classes.
+      // Descendants of these classes will be considered incompatible with the specified class filter because
+      // `arePolymorphic` attribute is set to`false`.
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
