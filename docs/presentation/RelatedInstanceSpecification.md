@@ -33,8 +33,7 @@ Specifies an an alias that given to the related instance. The alias can be used 
 
 > **Default value:** `false`
 
-Specifies whether the related instance is required to exist. If `true`, primary instance won't be returned if the related instance doesn't exist.
-In SQL terms in can be compared to INNER JOIN (`isRequired: true`) vs OUTER JOIN (`isRequired: false`).
+Specifies whether to omit the primary instance from the result if the other end of [`relationshipPath`](#attribute-relationshipath) does not yield any related instances.
 
 ## Examples
 
