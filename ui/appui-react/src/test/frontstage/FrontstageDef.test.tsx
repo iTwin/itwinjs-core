@@ -189,6 +189,50 @@ describe("FrontstageDef", () => {
     });
   });
 
+  it("should be able to determine if widget is visible", async () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPopoutWidget(state, "fw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
+    state = addFloatingWidget(state, "fw2", ["t4"]);
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    state = addTab(state, "t3");
+    state = addTab(state, "t4");
+
+    const frontstageDef = new FrontstageDef();
+    frontstageDef.nineZoneState = state;
+    const fw1Visible = frontstageDef.isWidgetDisplayed("t1");
+    expect (fw1Visible).to.be.true;
+
+    const t2 = new WidgetDef({
+      id: "t2",
+      defaultState: WidgetState.Open,
+    });
+
+    const t3 = new WidgetDef({
+      id: "t3",
+      defaultState: WidgetState.Hidden,
+    });
+    const t4 = new WidgetDef({
+      id: "t4",
+      defaultState: WidgetState.Floating,
+    });
+
+    const findWidgetDefGetter = sinon.stub(frontstageDef, "findWidgetDef");
+    findWidgetDefGetter
+      .onFirstCall().returns(t2);
+    findWidgetDefGetter.returns(t3);
+
+    const rightMiddleVisible = frontstageDef.isWidgetDisplayed("t2");
+    expect (rightMiddleVisible).to.be.true;
+    const rightEndVisible = frontstageDef.isWidgetDisplayed("t3");
+    expect (rightEndVisible).to.be.false;
+    const floatingWidgetVisible = frontstageDef.isWidgetDisplayed("t4");
+    expect (floatingWidgetVisible).to.be.true;
+    expect(frontstageDef.getWidgetCurrentState(t4)).to.eql(WidgetState.Floating);
+  });
+
   it("should save size and position", async () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPopoutWidget(state, "fw1", ["t1"]);

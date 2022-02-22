@@ -14,7 +14,7 @@ import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { PointProps, StagePanelLocation, StageUsage, UiError, WidgetState } from "@itwin/appui-abstract";
 import { RectangleProps, SizeProps } from "@itwin/core-react";
 import {
-  dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
+  dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPanelLocation, isPopoutLocation, isPopoutWidgetLocation,
   NineZoneManagerProps, NineZoneState, PanelSide, panelSides, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@itwin/appui-layout-react";
 import { ContentControl } from "../content/ContentControl";
@@ -705,6 +705,9 @@ export class FrontstageDef {
       if (!location)
         return WidgetState.Hidden;
 
+      if (isFloatingLocation(location))
+        return WidgetState.Floating;
+
       const widgetContainer = this.nineZoneState.widgets[location.widgetId];
       if (widgetDef.id === widgetContainer.activeTabId)
         return WidgetState.Open;
@@ -780,6 +783,30 @@ export class FrontstageDef {
         }
       }
     }
+  }
+  /** Check widget and panel state to determine whether the widget is currently displayed
+   * @param widgetId case-sensitive Widget Id
+   * @public
+   */
+  public isWidgetDisplayed(widgetId: string) {
+    let widgetIsVisible = false;
+
+    if (this.nineZoneState) {
+      const tabLocation = findTab (this.nineZoneState, widgetId);
+      if (tabLocation) {
+        if (isFloatingLocation(tabLocation) || isPopoutLocation(tabLocation)) {
+          widgetIsVisible = true;
+        } else {
+          if (isPanelLocation(tabLocation)) {
+            const panel = this.nineZoneState.panels[tabLocation.side];
+            const widgetDef = this.findWidgetDef(widgetId);
+            if (widgetDef && widgetDef.state === WidgetState.Open && !panel.collapsed)
+              widgetIsVisible = true;
+          }
+        }
+      }
+    }
+    return widgetIsVisible;
   }
 
   /** Opens window for specified PopoutWidget container. Used to reopen popout when running in Electron.

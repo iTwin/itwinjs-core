@@ -51,6 +51,7 @@ export * from "./PlanarClipMaskState";
 export * from "./quantity-formatting/QuantityFormatter";
 export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
 export * from "./quantity-formatting/LocalUnitFormatProvider";
+export * from "./quantity-formatting/QuantityTypesEditorSpecs";
 export * from "./RenderScheduleState";
 export * from "./CheckpointConnection";
 export * from "./SelectionSet";

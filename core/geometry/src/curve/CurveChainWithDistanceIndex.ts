@@ -21,6 +21,7 @@ import { CurveChain } from "./CurveCollection";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
+import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
 
@@ -278,10 +279,10 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
    * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
    */
-  public override collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives: boolean) {
+  public override collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLineStrings: boolean = false) {
     if (smallestPossiblePrimitives) {
       for (const c of this._path.children) {
-        c.collectCurvePrimitivesGo(collectorArray, smallestPossiblePrimitives);
+        c.collectCurvePrimitivesGo(collectorArray, smallestPossiblePrimitives, explodeLineStrings);
       }
     } else {
       collectorArray.push(this);
@@ -558,5 +559,25 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       return chainDetail;
     }
     return undefined;
+  }
+
+  /**
+   * Construct an offset of each child as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offset children. Use RegionOps.constructCurveXYOffset() to return a fully joined offset.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const offsets: CurvePrimitive[] = [];
+    for (const prim of this.collectCurvePrimitives(undefined, true, true)) {
+      const offset = prim.constructOffsetXY(options);
+      if (offset !== undefined) {
+        if (offset instanceof CurvePrimitive)
+          offsets.push(offset);
+        else if (Array.isArray(offset))
+          offset.forEach((cp) => offsets.push(cp));
+      }
+    }
+    return offsets;
   }
 }
