@@ -8,7 +8,7 @@
 
 import { AccessToken, assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
-import { CodeSpec, FontProps, IModel, IModelError, QueryBinder } from "@itwin/core-common";
+import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
@@ -468,11 +468,15 @@ export class IModelExporter {
     } else {
       sql = `SELECT ECInstanceId FROM ${elementClassFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
     }
-    const bindings: Record<string, any> = { modelId };
-    if (skipRootSubject) bindings.rootSubjectId = IModel.rootSubjectId;
-    for await (const [id] of this.sourceDb.query(sql, QueryBinder.from(bindings), { usePrimaryConn: true })) {
-      await this.exportElement(id);
-    }
+    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
+      statement.bindId("modelId", modelId);
+      if (skipRootSubject) {
+        statement.bindId("rootSubjectId", IModel.rootSubjectId);
+      }
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        await this.exportElement(statement.getValue(0).getId());
+      }
+    });
   }
 
   /** Export the sub-models directly below the specified model.
@@ -629,10 +633,13 @@ export class IModelExporter {
     }
     Logger.logTrace(loggerCategory, `exportRelationships(${baseRelClassFullName})`);
     const sql = `SELECT ECInstanceId FROM ${baseRelClassFullName}`;
-    for await (const [relInstanceId] of this.sourceDb.query(sql, undefined, { usePrimaryConn: true })) {
-      const relProps: RelationshipProps = this.sourceDb.relationships.getInstanceProps(baseRelClassFullName, relInstanceId);
-      await this.exportRelationship(relProps.classFullName, relInstanceId); // must call exportRelationship using the actual classFullName, not baseRelClassFullName
-    }
+    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const relInstanceId: Id64String = statement.getValue(0).getId();
+        const relProps: RelationshipProps = this.sourceDb.relationships.getInstanceProps(baseRelClassFullName, relInstanceId);
+        await this.exportRelationship(relProps.classFullName, relInstanceId); // must call exportRelationship using the actual classFullName, not baseRelClassFullName
+      }
+    });
   }
 
   /** Export a relationship from the source iModel. */
