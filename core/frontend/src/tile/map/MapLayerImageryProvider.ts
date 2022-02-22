@@ -12,7 +12,7 @@ import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import { ScreenViewport } from "../../Viewport";
-import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
+import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 
 const tileImageSize = 256, untiledImageSize = 256;
 
@@ -83,6 +83,11 @@ export abstract class MapLayerImageryProvider {
       const range = quadId.getLatLongRange(tree.tilingScheme);
       strings.push(`QuadId: ${quadId.debugString}, Lat: ${range.low.x} - ${range.high.x} Long: ${range.low.y} - ${range.high.y}`);
     }
+  }
+
+  public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+    // default implementation; simply return an empty feature info
+    featureInfos.push({layerName: this._settings.name});
   }
 
   protected getRequestAuthorization(): RequestBasicCredentials | undefined {
