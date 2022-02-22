@@ -49,21 +49,34 @@ using output of the previous step as input for the current step.
 Example:
 
 ```JSON
-{
-  "relationship": { "schemaName": "MySchema", "className": "MyRelationship" },
-  "direction": "Forward",
-  "count": "*"
-}
+[
+  {
+    "relationship": { "schemaName": "MySchema", "className": "MyRelationship1" },
+    "direction": "Forward",
+    "targetClass": { "schemaName": "MySchema", "className": "MyTarget1" },
+    "count": "*"
+  },
+  {
+    "relationship": { "schemaName": "MySchema", "className": "MyRelationship2" },
+    "direction": "Forward",
+    "targetClass": { "schemaName": "MySchema", "className": "MyTarget2" },
+    "count": "*"
+  },
+]
 ```
 
-Results of the above specification would consist of the following:
+Results of the above specification would consist of both `MySchema.MyTarget1` and `MySchema.MyTarget2` instances:
 
 ```Text
 Outputs = [
-  Source -> MySchema.MyRelationship -> Targets
-  Source -> MySchema.MyRelationship -> MySchema.MyRelationship -> Targets
+  Source -> MySchema.MyRelationship1 -> Array<MySchema.MyTarget1>
+  Source -> MySchema.MyRelationship1 -> MySchema.MyRelationship1 -> Array<MySchema.MyTarget1>
   ...
-  Source -> MySchema.MyRelationship -> ... -> MySchema.MyRelationship -> Targets
+  Source -> MySchema.MyRelationship1 -> ... -> MySchema.MyRelationship1 -> Array<MySchema.MyTarget1>
+  Source -> MySchema.MyRelationship1 -> ... -> MySchema.MyRelationship1 -> MySchema.MyRelationship2 -> Array<MySchema.MyTarget2>
+  Source -> MySchema.MyRelationship1 -> ... -> MySchema.MyRelationship1 -> MySchema.MyRelationship2 -> MySchema.MyRelationship2 -> Array<MySchema.MyTarget2>
+  ...
+  Source -> MySchema.MyRelationship1 -> ... -> MySchema.MyRelationship1 -> MySchema.MyRelationship2 -> ... -> MySchema.MyRelationship2 -> Array<MySchema.MyTarget2>
 ]
 ```
 
