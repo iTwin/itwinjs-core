@@ -26,7 +26,7 @@ import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfig
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider,NativeApp, NativeAppLogger,
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
@@ -319,8 +319,7 @@ export class SampleAppIModelApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
-    await MapLayersUI.initialize(true, undefined,  {onMapHit: MapFeatureInfoTool.onMapHit}); // if false then add widget in FrontstageDef
+    await MapLayersUI.initialize(undefined, undefined, { onMapHit: MapFeatureInfoTool.onMapHit });
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
@@ -394,12 +393,12 @@ export class SampleAppIModelApp {
     let stageId: string;
     const defaultFrontstage = this.allowWrite ? EditFrontstage.stageId : ViewsFrontstage.stageId;
 
-    try{
-    // Reset QuantityFormatter UnitsProvider with new iModelConnection
+    try {
+      // Reset QuantityFormatter UnitsProvider with new iModelConnection
       const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
       const context = new SchemaContext();
       context.addLocater(schemaLocater);
-      await IModelApp.quantityFormatter.setUnitsProvider (new SchemaUnitProvider(context));
+      await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(context));
     } catch (_) {
       await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider(); // this resets it to internal BasicUnitsProvider
     }
@@ -756,7 +755,7 @@ async function main() {
     MapboxImagery: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "access_token", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
   };
 
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
 
   const realityDataClientOptions: RealityDataClientOptions = {
     /** API Version. v1 by default */
