@@ -5,19 +5,16 @@
 
 import * as React from "react";
 import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@itwin/appui-abstract";
-import { Localization } from "@itwin/core-common";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
 import { UiFramework } from "@itwin/appui-react";
-import { IModelApp } from "@itwin/core-frontend";
 import { MapLayerOptions } from "./Interfaces";
+import { MapLayersUI } from "../mapLayers";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {
   public readonly id = "MapLayersUiItemsProvider";
-  public static localization: Localization;
   private _mapLayerOptions?: MapLayerOptions;
 
-  public constructor(localization: Localization, mapLayerOptions?: MapLayerOptions) {
-    MapLayersUiItemsProvider.localization = localization;
+  public constructor(mapLayerOptions?: MapLayerOptions) {
     this._mapLayerOptions = mapLayerOptions ?? {
       hideExternalMapLayers: false,
       mapTypeOptions: { supportTileUrl: false, supportWmsAuthentication: true },
@@ -34,7 +31,7 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
       (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start && "1" !== UiFramework.uiVersion)) {
       widgets.push({
         id: "map-layers:mapLayersWidget",
-        label: IModelApp.localization.getLocalizedString("mapLayers:Widget.Label"),
+        label: MapLayersUI.localization.getLocalizedString("mapLayers:Widget.Label"),
         icon: "icon-map",
         getWidgetContent: () => <MapLayersWidget mapLayerOptions={this._mapLayerOptions} />, // eslint-disable-line react/display-name
       });

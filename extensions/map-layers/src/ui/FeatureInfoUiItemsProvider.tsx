@@ -6,9 +6,9 @@
 import * as React from "react";
 import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { UiFramework } from "@itwin/appui-react";
-import { IModelApp } from "@itwin/core-frontend";
 import { MapFeatureInfoWidget } from "./widget/FeatureInfoWidget";
 import { MapFeatureInfoOptions } from "./Interfaces";
+import { MapLayersUI } from "../mapLayers";
 
 export class FeatureInfoUiItemsProvider implements UiItemsProvider {
   public readonly id = "FeatureInfoUiItemsProvider";
@@ -25,7 +25,7 @@ export class FeatureInfoUiItemsProvider implements UiItemsProvider {
       (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
       widgets.push({
         id: FeatureInfoUiItemsProvider.widgetId,
-        label: IModelApp.localization.getLocalizedString("mapLayers:FeatureInfoWidget.Label"),
+        label: MapLayersUI.localization.getLocalizedString("mapLayers:FeatureInfoWidget.Label"),
         icon: "icon-map",
         getWidgetContent: () => <MapFeatureInfoWidget featureInfoOpts={{ ...this._featureInfoOpts }} />, // eslint-disable-line react/display-name
         defaultState: WidgetState.Closed,

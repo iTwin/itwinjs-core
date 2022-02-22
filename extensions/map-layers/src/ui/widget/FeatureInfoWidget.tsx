@@ -10,7 +10,7 @@ import { FillCentered, Orientation } from "@itwin/core-react";
 import { FeatureInfoDataProvider, MapFeatureInfoDataUpdate, MapFeatureInfoLoadState } from "./FeatureInfoDataProvider";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { MapFeatureInfoOptions } from "../Interfaces";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayersUI } from "../../mapLayers";
 
 interface MapFeatureInfoWidgetProps {
   featureInfoOpts?: MapFeatureInfoOptions;
@@ -22,7 +22,7 @@ export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
   const dataProvider = React.useRef<FeatureInfoDataProvider>();
   const [loadingData, setLoadingData] = React.useState<boolean>(false);
   const [hasData, setHasData] = React.useState<boolean>(false);
-  const [noRecordsMessage] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:FeatureInfoWidget.NoRecords"));
+  const [noRecordsMessage] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:FeatureInfoWidget.NoRecords"));
 
   const handleLoadStateChange = (state: MapFeatureInfoLoadState) => {
     setLoadingData(state === MapFeatureInfoLoadState.DataLoadStart);

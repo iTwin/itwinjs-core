@@ -6,16 +6,16 @@ import * as React from "react";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { ContextMenu, ContextMenuItem } from "@itwin/core-react";
 import { Slider } from "@itwin/itwinui-react";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./MapLayerManager.scss";
 import { StyleMapLayerSettings } from "../Interfaces";
+import { MapLayersUI } from "../../mapLayers";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeViewport }: { mapLayerSettings: StyleMapLayerSettings, onMenuItemSelection: (action: string, mapLayerSettings: StyleMapLayerSettings) => void, activeViewport: ScreenViewport }) {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const settingsRef = React.useRef<HTMLButtonElement>(null);
-  const [labelDetach] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:LayerMenu.Detach"));
-  const [labelZoomToLayer] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:LayerMenu.ZoomToLayer"));
+  const [labelDetach] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:LayerMenu.Detach"));
+  const [labelZoomToLayer] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:LayerMenu.ZoomToLayer"));
   const [hasRangeData, setHasRangeData] = React.useState<boolean | undefined>();
   const [transparency, setTransparency] = React.useState(mapLayerSettings.transparency);
 

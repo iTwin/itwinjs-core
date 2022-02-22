@@ -57,9 +57,7 @@ export class MapLayersUI {
 
     MapLayersUI._iTwinConfig = iTwinConfig;
 
-    MapLayersUI._uiItemsProviders.push(
-      new MapLayersUiItemsProvider(MapLayersUI.localization)
-    );
+    MapLayersUI._uiItemsProviders.push(new MapLayersUiItemsProvider());
 
     // Register the FeatureInfo widget only if MapHit was provided.
     if (fInfoOps?.onMapHit) {
