@@ -435,6 +435,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
         onOutsideClick={handleOutsideClick}
         target={buttonRef.current}
         closeOnEnter={false}
+        closeOnContextMenu={false}
       >
         <div ref={panelRef} className="map-sources-popup-panel" >
           <AttachLayerPanel isOverlay={props.isOverlay} onLayerAttached={handleLayerAttached} />
