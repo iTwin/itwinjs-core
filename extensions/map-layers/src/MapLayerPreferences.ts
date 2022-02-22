@@ -52,7 +52,7 @@ export class MapLayerPreferences {
    * @param source source to be stored on the setting service
    * @param storeOnIModel if true store the settings object on the model, if false store it on the project
    */
-  public static async storeSource(source: MapLayerSource, storeOnIModel: boolean, iTwinId: GuidString, iModelId: GuidString): Promise<boolean> {
+  public static async storeSource(source: MapLayerSource, storeOnIModel?: boolean, iTwinId?: GuidString, iModelId?: GuidString): Promise<boolean> {
     if (!MapLayersUI.iTwinConfig)
       return false;
     const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
@@ -91,7 +91,7 @@ export class MapLayerPreferences {
    * @param projectId
    * @param iModelId
    */
-  public static async replaceSource(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<void> {
+  public static async replaceSource(oldSource: MapLayerSource, newSource: MapLayerSource, projectId?: GuidString, iModelId?: GuidString): Promise<void> {
     if (!MapLayersUI.iTwinConfig)
       return;
     const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
@@ -139,7 +139,7 @@ export class MapLayerPreferences {
    * @param iTwinId
    * @param iModelId
    */
-  public static async deleteByName(source: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<void> {
+  public static async deleteByName(source: MapLayerSource, iTwinId?: GuidString, iModelId?: GuidString): Promise<void> {
     if (!MapLayersUI.iTwinConfig)
       return;
     const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
@@ -177,7 +177,7 @@ export class MapLayerPreferences {
    * @param iModelId
    * @param storeOnIModel
    */
-  private static async delete(url: string, name: string, iTwinId: GuidString, iModelId: GuidString, storeOnIModel: boolean): Promise<boolean> {
+  private static async delete(url: string, name: string, iTwinId?: GuidString, iModelId?: GuidString, storeOnIModel?: boolean): Promise<boolean> {
     if (!MapLayersUI.iTwinConfig)
       return true;
     const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
@@ -261,7 +261,7 @@ export class MapLayerPreferences {
    * @param projectId
    * @param iModelId
    */
-  public static async getByUrl(url: string, projectId: string, iModelId?: string): Promise<MapLayerPreferencesContent | undefined> {
+  public static async getByUrl(url: string, projectId?: string, iModelId?: string): Promise<MapLayerPreferencesContent | undefined> {
     if (!MapLayersUI.iTwinConfig)
       return undefined;
 
@@ -292,7 +292,7 @@ export class MapLayerPreferences {
    * @param iModelId id of the iModel
    * @throws if any of the calls to grab settings fail.
    */
-  public static async getSources(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]> {
+  public static async getSources(projectId?: GuidString, iModelId?: GuidString): Promise<MapLayerSource[]> {
     if (!MapLayersUI.iTwinConfig)
       return [];
     const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;

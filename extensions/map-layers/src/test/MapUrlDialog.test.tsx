@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Guid } from "@itwin/core-bentley";
 import { EmptyLocalization, ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { Select } from "@itwin/itwinui-react";
@@ -11,6 +12,7 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { MapLayersUI } from "../mapLayers";
 import { MapUrlDialog } from "../ui/widget/MapUrlDialog";
 import { TestUtils } from "./TestUtils";
 
@@ -116,11 +118,17 @@ describe("MapUrlDialog", () => {
   beforeEach(() => {
     displayStyleMock.reset();
     displayStyleMock.setup((ds) => ds.attachMapLayerSettings(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()));
+    imodelMock.reset();
+    imodelMock.setup((iModel) => iModel.iModelId).returns(() => "fakeGuid");
+    imodelMock.setup((iModel) => iModel.iTwinId).returns(() => "fakeGuid");
+
     viewMock.reset();
     viewMock.setup((view) => view.iModel).returns(() => imodelMock.object);
     viewportMock.reset();
+    viewportMock.setup((viewport) => viewport.iModel).returns(() => viewMock.object.iModel);
     viewportMock.setup((viewport) => viewport.view).returns(() => viewMock.object);
     viewportMock.setup((viewport) => viewport.displayStyle).returns(() => displayStyleMock.object);
+
   });
 
   const mockModalUrlDialogOk = () => {
@@ -180,4 +188,23 @@ describe("MapUrlDialog", () => {
   it("attach a layer requiring EsriToken", async () => {
     await testAddAuthLayer(MapLayerAuthType.EsriToken);
   });
+
+  it("should not display user preferences options if iTwinConfig is undefined ", () => {
+
+    const component = enzyme.mount(<MapUrlDialog activeViewport={viewportMock.object} isOverlay={false} onOkResult={mockModalUrlDialogOk} />);
+    const allRadios = component.find('input[type="radio"]');
+    expect(allRadios.length).to.equals(0);
+  });
+
+  it("should display user preferences options if iTwinConfig is defined ", () => {
+    sandbox.stub(MapLayersUI, "iTwinConfig").get(() => ({
+      get: undefined,
+      save: undefined,
+      delete: undefined,
+    }));
+    const component = enzyme.mount(<MapUrlDialog activeViewport={viewportMock.object} isOverlay={false} onOkResult={mockModalUrlDialogOk} />);
+    const allRadios= component.find('input[type="radio"]');
+    expect(allRadios.length).to.equals(2);
+  });
+
 });

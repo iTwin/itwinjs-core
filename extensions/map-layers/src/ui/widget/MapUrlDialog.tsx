@@ -6,6 +6,7 @@
 
 import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { ModalDialogManager } from "@itwin/appui-react";
+import { Guid } from "@itwin/core-bentley";
 import { ImageMapLayerProps } from "@itwin/core-common";
 import {
   IModelApp, MapLayerAuthType, MapLayerImageryProviderStatus, MapLayerSource,
@@ -119,7 +120,12 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     return types;
   });
 
-  const [isSettingsStorageAvailable] = React.useState(MapLayersUI.iTwinConfig && props?.activeViewport?.iModel?.iTwinId && props?.activeViewport?.iModel?.iModelId);
+  const [isSettingsStorageAvailable] = React.useState(MapLayersUI.iTwinConfig);
+  const [hasImodelContext] = React.useState (
+    props?.activeViewport?.iModel?.iTwinId !== undefined
+    && props.activeViewport.iModel.iTwinId !== Guid.empty
+    && props?.activeViewport?.iModel?.iModelId !== undefined
+    && props?.activeViewport.iModel.iModelId !== Guid.empty);
 
   // Even though the settings storage is available,
   // we don't always want to enable it in the UI.
@@ -230,8 +236,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
     // Update service settings if storage is available and we are not prompting user for credentials
     if (!settingsStorageDisabled && !props.layerRequiringCredentials) {
-    	const storeOnIModel = "Model" === settingsStorage;
-      if (!(await MapLayerPreferences.storeSource(source, storeOnIModel, vp.iModel.iTwinId!, vp.iModel.iModelId!))) {
+    	const storeOnIModel = (hasImodelContext ? "Model" === settingsStorage : undefined);
+      if (!(await MapLayerPreferences.storeSource(source, storeOnIModel, vp.iModel.iTwinId, vp.iModel.iModelId))) {
         const msgError = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Messages.MapLayerPreferencesStoreFailed");
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msgError));
 	  }
@@ -255,7 +261,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     onOkResult();
 
     return true;
-  }, [isOverlay, onOkResult, props?.activeViewport, props.layerRequiringCredentials, settingsStorage, settingsStorageDisabled]);
+  }, [hasImodelContext, isOverlay, onOkResult, props?.activeViewport, props.layerRequiringCredentials, settingsStorage, settingsStorageDisabled]);
 
   // Validate the layer source and attempt to attach (or update) the layer.
   // Returns true if no further input is needed from end-user (i.e. close the dialog)
@@ -328,9 +334,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       if (props.mapLayerSourceToEdit !== undefined) {
         const vp = props.activeViewport;
         void (async () => {
-          if (isSettingsStorageAvailable && vp) {
+          if (isSettingsStorageAvailable) {
             try {
-              await MapLayerPreferences.replaceSource(props.mapLayerSourceToEdit!, source, vp.iModel.iTwinId!, vp.iModel.iModelId!);
+              await MapLayerPreferences.replaceSource(props.mapLayerSourceToEdit!, source, vp?.iModel.iTwinId, vp?.iModel.iModelId);
             } catch (err: any) {
               const errorMessage = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerEditError", { layerName: props.mapLayerSourceToEdit?.name });
               IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
@@ -503,15 +509,19 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             }
 
             {/* Store settings options, not shown when editing a layer */}
-            {isSettingsStorageAvailable && <div title={settingsStorageDisabled ? noSaveSettingsWarning : ""}>
-              <Radio disabled={settingsStorageDisabled}
-                name="settingsStorage" value="iTwin"
-                label={iTwinSettingsLabel} checked={settingsStorage === "iTwin"}
-                onChange={onRadioChange} />
-              <Radio disabled={settingsStorageDisabled}
-                name="settingsStorage" value="Model"
-                label={modelSettingsLabel} checked={settingsStorage === "Model"}
-                onChange={onRadioChange} />
+            {isSettingsStorageAvailable &&
+            <div title={settingsStorageDisabled ? noSaveSettingsWarning : ""}>
+              {hasImodelContext &&
+              <div>
+                <Radio disabled={settingsStorageDisabled}
+                  name="settingsStorage" value="iTwin"
+                  label={iTwinSettingsLabel} checked={settingsStorage === "iTwin"}
+                  onChange={onRadioChange} />
+                <Radio disabled={settingsStorageDisabled}
+                  name="settingsStorage" value="Model"
+                  label={modelSettingsLabel} checked={settingsStorage === "Model"}
+                  onChange={onRadioChange} />
+              </div> }
             </div>}
           </div>
         </div>
