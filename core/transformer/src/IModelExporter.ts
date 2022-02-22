@@ -475,6 +475,7 @@ export class IModelExporter {
       }
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         await this.exportElement(statement.getValue(0).getId());
+        await new Promise(setImmediate); // workaround for: https://github.com/nodejs/node-addon-api/issues/1140
       }
     });
   }
@@ -638,6 +639,7 @@ export class IModelExporter {
         const relInstanceId: Id64String = statement.getValue(0).getId();
         const relProps: RelationshipProps = this.sourceDb.relationships.getInstanceProps(baseRelClassFullName, relInstanceId);
         await this.exportRelationship(relProps.classFullName, relInstanceId); // must call exportRelationship using the actual classFullName, not baseRelClassFullName
+        await new Promise(setImmediate); // workaround for: https://github.com/nodejs/node-addon-api/issues/1140
       }
     });
   }
