@@ -65,10 +65,10 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * @see [IModelTransformOptions.preserveElementIdsForFiltering]($transformer)
    * @deprecated Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
    */
-  public get preserveElementIdsForFiltering(): Required<IModelImportOptions>["preserveElementIdsForFiltering"] {
+  public get preserveElementIdsForFiltering(): boolean {
     return this.options.preserveElementIdsForFiltering;
   }
-  public set preserveElementIdsForFiltering(val: Required<IModelImportOptions>["preserveElementIdsForFiltering"]) {
+  public set preserveElementIdsForFiltering(val: boolean) {
     this.options.preserveElementIdsForFiltering = val;
   }
 
@@ -76,11 +76,11 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * @see [[IModelImportOptions.simplifyElementGeometry]]
    * @deprecated Use [[IModelImporter.options.simplifyElementGeometry]] instead
    */
-  public get simplifyElementGeometry(): Required<IModelImportOptions>["simplifyElementGeometry"] {
-    return this.options.preserveElementIdsForFiltering;
+  public get simplifyElementGeometry(): boolean {
+    return this.options.simplifyElementGeometry;
   }
-  public set simplifyElementGeometry(val: Required<IModelImportOptions>["simplifyElementGeometry"]) {
-    this.options.preserveElementIdsForFiltering = val;
+  public set simplifyElementGeometry(val: boolean) {
+    this.options.simplifyElementGeometry = val;
   }
 
   /** The set of elements that should not be updated by this IModelImporter.
