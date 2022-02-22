@@ -11,7 +11,7 @@ import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
 export type MapHitEvent = BeEvent<(hit: HitDetail) => void>;
 export interface FeatureInfoOpts
 {
-  // HitDetail Event whenever the map is clicked. t
+  // HitDetail Event whenever the map is clicked.
   // Typically the HitDetail object is provided by ElementLocateManager.doLocate.
   // Every time this event is raised, FeatureInfoWidget will attempt to retrieve data from MapLayerImageryProviders.
   onMapHit: MapHitEvent;
