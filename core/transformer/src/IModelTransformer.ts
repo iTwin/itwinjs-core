@@ -18,7 +18,7 @@ import {
 } from "@itwin/core-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
-  IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, QueryBinder,
+  IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
@@ -708,22 +708,23 @@ export class IModelTransformer extends IModelExportHandler {
       throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true");
     }
     const aspectDeleteIds: Id64String[] = [];
-    for await (const [elemId, identifier, jsonProperties] of this.targetDb.query(
-      `SELECT ECInstanceId,Identifier,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`,
-      QueryBinder.from({ scopeId: this.targetScopeElementId, kind: ExternalSourceAspect.Kind.Relationship }),
-      { usePrimaryConn: true },
-    )) {
-      const sourceRelInstanceId: Id64String = Id64.fromJSON(identifier);
-      if (undefined === this.sourceDb.relationships.tryGetInstanceProps(ElementRefersToElements.classFullName, sourceRelInstanceId)) {
-        const json: any = JSON.parse(jsonProperties);
-        if (undefined !== json.targetRelInstanceId) {
-          const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
-          this.importer.deleteRelationship(targetRelationship.toJSON());
+    const sql = `SELECT ECInstanceId,Identifier,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
+    await this.targetDb.withPreparedStatement(sql, async (statement: ECSqlStatement) => {
+      statement.bindId("scopeId", this.targetScopeElementId);
+      statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const sourceRelInstanceId: Id64String = Id64.fromJSON(statement.getValue(1).getString());
+        if (undefined === this.sourceDb.relationships.tryGetInstanceProps(ElementRefersToElements.classFullName, sourceRelInstanceId)) {
+          const json: any = JSON.parse(statement.getValue(2).getString());
+          if (undefined !== json.targetRelInstanceId) {
+            const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
+            this.importer.deleteRelationship(targetRelationship.toJSON());
+          }
+          aspectDeleteIds.push(statement.getValue(0).getId());
         }
-        aspectDeleteIds.push(elemId);
+        await new Promise(setImmediate); // workaround for: https://github.com/nodejs/node-addon-api/issues/1140
       }
-      await new Promise(setImmediate); // workaround for: https://github.com/nodejs/node-addon-api/issues/1140
-    }
+    });
     this.targetDb.elements.deleteAspect(aspectDeleteIds);
   }
 
