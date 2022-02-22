@@ -218,6 +218,8 @@ import { PolylineTypeFlags } from '@itwin/core-common';
 import { PrimaryTileTreeId } from '@itwin/core-common';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { PropertyDescription } from '@itwin/appui-abstract';
+import { PropertyRecord } from '@itwin/appui-abstract';
+import { PropertyValue } from '@itwin/appui-abstract';
 import { QParams2d } from '@itwin/core-common';
 import { QParams3d } from '@itwin/core-common';
 import { QPoint2d } from '@itwin/core-common';
@@ -1138,6 +1140,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
     protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // (undocumented)
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected getLayerString(prefix?: string): string;
     // (undocumented)
@@ -5552,6 +5556,19 @@ export class MapCartoRectangle extends Range2d {
     set west(x: number);
 }
 
+// @alpha (undocumented)
+export interface MapFeatureInfo {
+    // (undocumented)
+    hitPoint?: Cartographic;
+    // (undocumented)
+    layerInfo?: MapLayerFeatureInfo[];
+}
+
+// @alpha (undocumented)
+export class MapFeatureInfoRecord extends PropertyRecord {
+    constructor(value: PropertyValue, property: PropertyDescription);
+}
+
 // @internal (undocumented)
 export interface MapLayerAuthenticationInfo {
     // (undocumented)
@@ -5572,6 +5589,14 @@ export enum MapLayerAuthType {
 
 // @internal (undocumented)
 export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
+
+// @alpha (undocumented)
+export interface MapLayerFeatureInfo {
+    // (undocumented)
+    info?: MapSubLayerFeatureInfo[] | HTMLElement;
+    // (undocumented)
+    layerName: string;
+}
 
 // @internal (undocumented)
 export class MapLayerFormat {
@@ -5642,6 +5667,8 @@ export abstract class MapLayerImageryProvider {
     };
     // (undocumented)
     getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
+    // (undocumented)
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): ImageSource | undefined;
     // (undocumented)
@@ -5831,6 +5858,16 @@ export interface MapLayerTokenEndpoint {
     getLoginUrl(stateData?: string): string | undefined;
     // (undocumented)
     getUrl(): string;
+}
+
+// @alpha (undocumented)
+export interface MapSubLayerFeatureInfo {
+    // (undocumented)
+    displayFieldName?: string;
+    // (undocumented)
+    records?: MapFeatureInfoRecord[];
+    // (undocumented)
+    subLayerName: string;
 }
 
 // @internal (undocumented)
@@ -6128,6 +6165,8 @@ export class MapTileTreeReference extends TileTreeReference {
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
     getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
+    // (undocumented)
+    getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
     // (undocumented)
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // (undocumented)
@@ -11237,6 +11276,8 @@ export abstract class TileTreeReference {
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
     protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
+    // @alpha
+    getMapFeatureInfo(_hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // @internal (undocumented)
     getTerrainHeight(_terrainHeights: Range1d): void;
@@ -12960,6 +13001,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     getAuxCoordRotation(result?: Matrix3d): Matrix3d;
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
+    // @alpha (undocumented)
+    getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo>;
     // @internal (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
