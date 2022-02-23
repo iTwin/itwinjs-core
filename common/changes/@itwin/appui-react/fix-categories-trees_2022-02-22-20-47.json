@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "React to 3.0 breaking change w.r.t ECSQL Query Row Format",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
