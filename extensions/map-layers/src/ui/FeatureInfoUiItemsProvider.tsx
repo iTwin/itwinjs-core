@@ -4,17 +4,39 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
-import { UiFramework } from "@itwin/appui-react";
+import { AbstractWidgetProps, AbstractZoneLocation, CommonToolbarItem, StagePanelLocation, StagePanelSection, StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
+import { ToolbarHelper, UiFramework } from "@itwin/appui-react";
 import { MapFeatureInfoWidget } from "./widget/FeatureInfoWidget";
 import { MapFeatureInfoOptions } from "./Interfaces";
 import { MapLayersUI } from "../mapLayers";
+import { DefaultMapFeatureInfoTool, getDefaultMapFeatureInfoToolItemDef } from "./MapFeatureInfoTool";
 
 export class FeatureInfoUiItemsProvider implements UiItemsProvider {
   public readonly id = "FeatureInfoUiItemsProvider";
   public static readonly widgetId = "map-layers:mapFeatureInfoWidget";
 
   public constructor(private _featureInfoOpts?: MapFeatureInfoOptions) { }
+
+  public provideToolbarButtonItems(
+    _stageId: string,
+    stageUsage: string,
+    toolbarUsage: ToolbarUsage,
+    toolbarOrientation: ToolbarOrientation,
+  ): CommonToolbarItem[] {
+    if (
+      !this._featureInfoOpts?.disableDefaultFeatureInfoTool &&
+      stageUsage === StageUsage.General &&
+      toolbarUsage === ToolbarUsage.ContentManipulation &&
+      toolbarOrientation === ToolbarOrientation.Vertical
+    ) {
+      DefaultMapFeatureInfoTool.register(MapLayersUI.localizationNamespace);
+      return [
+        ToolbarHelper.createToolbarItemFromItemDef(60, getDefaultMapFeatureInfoToolItemDef()),
+      ];
+    }
+
+    return [];
+  }
 
   // eslint-disable-next-line deprecation/deprecation
   public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {

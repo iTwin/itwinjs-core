@@ -14,7 +14,6 @@ import {
   QuantityType, SelectionTool, SnapMode,
 } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { MapFeatureInfoTool } from "@itwin/map-layers";
 import { Presentation } from "@itwin/presentation-frontend";
 import {
   AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
@@ -179,20 +178,6 @@ class AppItemsProvider implements UiItemsProvider {
 UiItemsManager.register(new AppItemsProvider());
 
 export class AppTools {
-  public static get mapFeatureTool() {
-    return new ToolItemDef({
-      toolId: MapFeatureInfoTool.toolId,
-      iconSpec: MapFeatureInfoTool.iconSpec,
-      label: () => MapFeatureInfoTool.flyover,
-      description: () => MapFeatureInfoTool.description,
-      execute: async () => {
-        await IModelApp.tools.run(MapFeatureInfoTool.toolId);
-        AppItemsProvider.toggleStatusBarItem();
-        AppItemsProvider.toggleBackstageItem();
-      },
-    });
-  }
-
   public static get tool1() {
     return new ToolItemDef({
       toolId: Tool1.toolId,

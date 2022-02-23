@@ -12,11 +12,20 @@ import {
   PrimitiveTool,
 } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
-import { FrontstageManager } from "@itwin/appui-react";
+import { FrontstageManager, ToolItemDef } from "@itwin/appui-react";
 import { BeEvent } from "@itwin/core-bentley";
 import { FeatureInfoUiItemsProvider } from "./FeatureInfoUiItemsProvider";
 
-export class MapFeatureInfoTool extends PrimitiveTool {
+export const getDefaultMapFeatureInfoToolItemDef = (): ToolItemDef =>
+  new ToolItemDef({
+    toolId: DefaultMapFeatureInfoTool.toolId,
+    iconSpec: DefaultMapFeatureInfoTool.iconSpec,
+    label: () => DefaultMapFeatureInfoTool.flyover,
+    description: () => DefaultMapFeatureInfoTool.description,
+    execute: async () => { await IModelApp.tools.run(DefaultMapFeatureInfoTool.toolId); },
+  });
+
+export class DefaultMapFeatureInfoTool extends PrimitiveTool {
   public static readonly onMapHit = new BeEvent<(hit: HitDetail) => void>();
   public static override toolId = "MapFeatureInfoTool";
   public static override iconSpec = "icon-map";
@@ -42,7 +51,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
       if (widgetDef && widgetDef.state !== WidgetState.Open)
         widgetDef.setWidgetState(WidgetState.Open);
 
-      MapFeatureInfoTool.onMapHit.raiseEvent(hit);
+      DefaultMapFeatureInfoTool.onMapHit.raiseEvent(hit);
       return EventHandled.Yes;
     }
 
@@ -58,7 +67,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   }
 
   public async onRestartTool() {
-    const tool = new MapFeatureInfoTool();
+    const tool = new DefaultMapFeatureInfoTool();
     if (!(await tool.run())) return this.exitTool();
   }
 }

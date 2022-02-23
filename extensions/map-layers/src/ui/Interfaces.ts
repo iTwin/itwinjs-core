@@ -42,6 +42,7 @@ export interface MapFeatureInfoPropertyGridOptions {
 }
 
 export interface MapFeatureInfoOptions {
+  disableDefaultFeatureInfoTool?: boolean;
   showLoadProgressAnimation?: boolean;
   propertyGridOptions?: MapFeatureInfoPropertyGridOptions;
 }

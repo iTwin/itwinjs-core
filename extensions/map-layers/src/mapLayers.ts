@@ -25,7 +25,7 @@ export interface MapLayersConfig {
    * Typically the HitDetail object is provided by ElementLocateManager.doLocate.
    * Every time this event is raised, FeatureInfoWidget will attempt to retrieve data from MapLayerImageryProviders.
    */
-  onMapHit: MapHitEvent;
+  onMapHit?: MapHitEvent;
   mapLayerOptions?: MapLayerOptions;
   featureInfoOpts?: MapFeatureInfoOptions;
 }
@@ -56,7 +56,7 @@ export class MapLayersUI {
     // register namespace containing localized strings for this package
     MapLayersUI.localization = config?.localization ?? IModelApp.localization;
     await MapLayersUI.localization.registerNamespace(
-      this.localizationNamespace
+      MapLayersUI.localizationNamespace
     );
 
     MapLayersUI._iTwinConfig = config?.iTwinConfig;

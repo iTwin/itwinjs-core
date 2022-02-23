@@ -34,7 +34,7 @@ import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { MapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
+import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
@@ -278,7 +278,6 @@ export class SampleAppIModelApp {
     // Register tools.
     Tool1.register(this.sampleAppNamespace);
     Tool2.register(this.sampleAppNamespace);
-    MapFeatureInfoTool.register(this.sampleAppNamespace);
     ToolWithSettings.register(this.sampleAppNamespace);
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     TestExtensionUiProviderTool.register(this.sampleAppNamespace);
@@ -318,7 +317,7 @@ export class SampleAppIModelApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await MapLayersUI.initialize({ onMapHit: MapFeatureInfoTool.onMapHit });
+    await MapLayersUI.initialize({ onMapHit: DefaultMapFeatureInfoTool.onMapHit });
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
