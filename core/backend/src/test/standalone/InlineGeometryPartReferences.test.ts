@@ -292,6 +292,14 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
       { pos: 2.5 },
     ]);
 
+    // Sanity check.
+    expectGeom(readElementGeom(part2), [
+      { categoryId: "0", subCategoryId: "0" },
+      { pos: 2 },
+      { categoryId: "0", subCategoryId: "0", materialId },
+      { pos: 2.5 },
+    ]);
+
     const part3 = insertGeometryPart([
       { pos: 3 },
       { materialId: "0" },
