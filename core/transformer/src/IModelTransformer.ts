@@ -21,7 +21,7 @@ import {
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
-import { IModelImporter } from "./IModelImporter";
+import { IModelImporter, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
@@ -101,11 +101,11 @@ export interface IModelTransformOptions {
    */
   danglingPredecessorsBehavior?: "reject" | "ignore";
 
-  /** If `true`, then [[IModelImporter.optimizeGeometryPartReferences]] will be invoked by [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]]
-   * to clean up references to geometry parts having only one reference to them.
+  /** If defined, options to be supplied to [[IModelImporter.optimizeGeometry]] by [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]]
+   * as a post-processing step to optimize the geometry in the iModel.
    * @beta
    */
-  optimizeGeometryPartReferences?: boolean;
+  optimizeGeometry?: OptimizeGeometryOptions;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.

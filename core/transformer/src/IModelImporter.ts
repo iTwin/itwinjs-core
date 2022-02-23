@@ -15,6 +15,16 @@ import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationshi
 
 const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 
+/** Options provided to [[IModelImporter.optimizeGeometry]] specifying post-processing optimizations to be applied to the iModel's geometry.
+ * @beta
+ */
+export interface OptimizeGeometryOptions {
+  /** If true, identify any [GeometryPart]($backend)s that are referenced exactly once. For each such part,
+   * replace the reference in the element's geometry stream with the part's own geometry stream, then delete the part.
+   */
+  inlineUniqueGeometryParts?: boolean;
+}
+
 /** Options provided to the [[IModelImporter]] constructor.
  * @beta
  */
@@ -488,15 +498,16 @@ export class IModelImporter implements Required<IModelImportOptions> {
     }
   }
 
-  /** Examine the geometry streams of every [GeometricElement3d]($backend) in the target iModel to identify [GeometryPart]($backend)s that each have exactly
-   * one reference to them. Update the geometry stream of each referencing element to embed the part's geometry instead, then delete the part.
+  /** Examine the geometry streams of every [GeometricElement3d]($backend) in the target iModel and apply the specified optimizations.
    * @note This method is automatically called from [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]] if
-   * [[IModelTransformOptions.optimizeGeometryPartReferences]] is `true`.
+   * [[IModelTransformOptions.optimizeGeometry]] is defined.
    */
-  public optimizeGeometryPartReferences(): void {
-    const result = this.targetDb.nativeDb.inlineGeometryPartReferences();
-    if (result.numCandidateParts > 0)
-      Logger.logInfo(loggerCategory, `Inlined ${result.numRefsInlined} references to ${result.numCandidateParts} geometry parts and deleted ${result.numPartsDeleted} parts.`);
+  public optimizeGeometry(options: OptimizeGeometryOptions): void {
+    if (options.inlineUniqueGeometryParts) {
+      const result = this.targetDb.nativeDb.inlineGeometryPartReferences();
+      if (result.numCandidateParts > 0)
+        Logger.logInfo(loggerCategory, `Inlined ${result.numRefsInlined} references to ${result.numCandidateParts} geometry parts and deleted ${result.numPartsDeleted} parts.`);
+    }
   }
 }
 
