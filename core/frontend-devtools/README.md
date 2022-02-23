@@ -128,6 +128,7 @@ This package provides several keyins to control the display of background maps, 
 * `fdt toggle terrain` - Toggle terrain display for background maps.
 * `fdt attach maplayer <name>` - Attach a background map layer from name within the map layer source list.  Partial names may be used.
 * `fdt attach mapoverlay <name>` - Attach an overlay map layer from name within the map layer source list.  Partial names may be used.
+* `fdt attach model maplayer <name>` - Attach a model map layer for each unique model of the currently selected elements.
 * `fdt set map base <name>` - Set the background base map from name within the map layer source list.  Partial names may be used.
 * `fdt set map base color <red, green, blue>` - Set map base color by red, green and blue values [0..255].
 * `fdt set map base transparency <transparency>` - Set map base transparency [0..1].

@@ -709,7 +709,7 @@ export class IModelTransformer extends IModelExportHandler {
     }
     const aspectDeleteIds: Id64String[] = [];
     const sql = `SELECT ECInstanceId,Identifier,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
-    this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    await this.targetDb.withPreparedStatement(sql, async (statement: ECSqlStatement) => {
       statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -722,6 +722,7 @@ export class IModelTransformer extends IModelExportHandler {
           }
           aspectDeleteIds.push(statement.getValue(0).getId());
         }
+        await new Promise(setImmediate); // workaround for: https://github.com/nodejs/node-addon-api/issues/1140
       }
     });
     this.targetDb.elements.deleteAspect(aspectDeleteIds);

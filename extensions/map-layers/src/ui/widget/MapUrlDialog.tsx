@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore Modeless WMTS
 
-import * as React from "react";
-import { Dialog, Icon } from "@itwin/core-react";
+import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
-import { MapTypesOptions } from "../Interfaces";
+import { ImageMapLayerProps } from "@itwin/core-common";
 import {
   IModelApp, MapLayerAuthType, MapLayerImageryProviderStatus, MapLayerSource,
   MapLayerSourceStatus, MapLayerSourceValidation, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
-import { MapLayerProps } from "@itwin/core-common";
-import "./MapUrlDialog.scss";
-import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
+import { Dialog, Icon } from "@itwin/core-react";
+import * as React from "react";
 import { MapLayerPreferences } from "../../MapLayerPreferences";
 import { MapLayersUI } from "../../mapLayers";
+import { MapTypesOptions } from "../Interfaces";
+import "./MapUrlDialog.scss";
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -34,7 +34,7 @@ interface MapUrlDialogProps {
   mapTypesOptions?: MapTypesOptions;
 
   // An optional layer definition can be provide to enable the edit mode
-  layerRequiringCredentials?: MapLayerProps;
+  layerRequiringCredentials?: ImageMapLayerProps;
 
   mapLayerSourceToEdit?: MapLayerSource;
 }
@@ -129,7 +129,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       return undefined;
     }
 
-    const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndUrl(props.layerRequiringCredentials.name, props.layerRequiringCredentials.url, isOverlay);
+    const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndSource(props.layerRequiringCredentials.name, props.layerRequiringCredentials.url, isOverlay);
     if (indexInDisplayStyle === undefined || indexInDisplayStyle < 0) {
       return undefined;
     } else {

@@ -34,6 +34,7 @@ import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { SmallSystem } from "../numerics/Polynomials";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
+import { XAndY } from "../geometry3d/XYZProps";
 import { Ray3d } from "../geometry3d/Ray3d";
 
 /**
@@ -292,29 +293,45 @@ export class CurveFactory {
    * * At each end of each pipe, the pipe is cut by the plane that bisects the angle between successive pipe centerlines.
    * * The arc definitions are constructed so that lines between corresponding fractional positions on the arcs are
    *     axial lines on the pipes.
-   *   * This means that each arc definition axes (aka vector0 and vector90) are _not_ perpendicular to each other.
+   * * This means that each arc definition axes (aka vector0 and vector90) are _not_ perpendicular to each other.
+   * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis lengths, or a full Arc3d.
+   *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
+   *    * The center of Arc3d input is translated to the centerline start point to act as initial cross section.
    * @param centerline centerline of pipe
-   * @param radius radius of arcs
+   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d
    */
-  public static createMiteredPipeSections(centerline: IndexedXYZCollection, radius: number): Arc3d[] {
+  public static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[] {
     const arcs: Arc3d[] = [];
     if (centerline.length < 2)
       return [];
-    const vectorAB = Vector3d.create();
-    const vectorBC = Vector3d.create();
-    const bisector = Vector3d.create();
+
     const vector0 = Vector3d.create();
     const vector90 = Vector3d.create();
-    const currentCenter = centerline.getPoint3dAtUncheckedPointIndex(0);
+    const vectorBC = Vector3d.create();
+    const currentCenter = Point3d.create();
     centerline.vectorIndexIndex(0, 1, vectorBC)!;
-    const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
-    baseFrame.columnX(vector0);
-    baseFrame.columnY(vector90);
-    vector0.scaleInPlace(radius);
-    vector90.scaleInPlace(radius);
-    // circular section on base plane ....
-    const ellipseA = Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360());
-    arcs.push(ellipseA);
+    centerline.getPoint3dAtUncheckedPointIndex(0, currentCenter);
+
+    let initialSection: Arc3d;
+    if (sectionData instanceof Arc3d) {
+      initialSection = sectionData.clone();
+      initialSection.center.setFrom(currentCenter);
+      vector0.setFrom(sectionData.vector0);
+      vector90.setFrom(sectionData.vector90);
+    } else if (typeof sectionData === "number" || Point3d.isXAndY(sectionData)) {
+      const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
+      const length90 = (typeof sectionData === "number") ? sectionData : sectionData.y;
+      const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
+      baseFrame.columnX(vector0).scaleInPlace(length0);
+      baseFrame.columnY(vector90).scaleInPlace(length90);
+      initialSection = Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360());
+    } else {
+      return [];
+    }
+    arcs.push(initialSection);
+
+    const vectorAB = Vector3d.create();
+    const bisector = Vector3d.create();
     for (let i = 1; i < centerline.length; i++) {
       vectorAB.setFromVector3d(vectorBC);
       centerline.getPoint3dAtUncheckedPointIndex(i, currentCenter);

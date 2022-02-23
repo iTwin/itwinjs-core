@@ -56,6 +56,7 @@ export class MapLayersUI {
     await MapLayersUI.localization.registerNamespace(this.localizationNamespace);
 
     MapLayersUI._iTwinConfig = iTwinConfig;
+    MapLayersUI._onMapHit = fInfoOps?.onMapHit;
 
     MapLayersUI._uiItemsProviders.push(new MapLayersUiItemsProvider());
 

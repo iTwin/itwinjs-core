@@ -6,11 +6,12 @@
  * @module QuantityFormatting
  */
 
-import { BeUiEvent } from "@itwin/core-bentley";
+import { BeUiEvent, Logger } from "@itwin/core-bentley";
 import {
   AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion,
   UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
@@ -551,8 +552,16 @@ export class QuantityFormatter implements UnitsProvider {
   /** async method to set a units provider and reload caches */
   public async setUnitsProvider(unitsProvider: UnitsProvider) {
     this._unitsProvider = unitsProvider;
-    // force all cached data to be reinitialized
-    await IModelApp.quantityFormatter.onInitialized();
+
+    try {
+      // force all cached data to be reinitialized
+      await IModelApp.quantityFormatter.onInitialized();
+    } catch(_) {
+      Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
+      // If there is a problem initializing with the given provider, default back to the internal provider
+      await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider();
+      return;
+    }
 
     // force default tool to start so any tool that may be using cached data will not be using bad data.
     if (IModelApp.toolAdmin)

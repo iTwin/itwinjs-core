@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { GuidString, Logger } from "@itwin/core-bentley";
+import { BentleyError, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
@@ -15,6 +15,16 @@ import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIo
 import { Range3d } from "@itwin/core-geometry";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
+
+/**
+ * Reality Data Operation error
+ * @alpha
+ */
+export class RealityDataError extends BentleyError {
+  public constructor(errorNumber: RealityDataStatus, message: string, getMetaData?: LoggingMetaData) {
+    super(errorNumber, message, getMetaData);
+  }
+}
 
 /** This interface provide spatial location and volume of interest, in meters, centered around `spatial location`
  * @alpha
@@ -81,6 +91,7 @@ export interface RealityDataSource {
   /** Gets spatial location and extents of this reality data source.
    * Will return undefined if cannot be resolved or is unbounded (cover entire earth eg: Open Street Map Building from Ion Asset)
    * @returns spatial location and extents
+   * @throws [[RealityDataError]] if source is invalid or cannot be read
    * @alpha
    */
   getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>;

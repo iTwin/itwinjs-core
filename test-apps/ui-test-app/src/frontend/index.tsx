@@ -26,7 +26,7 @@ import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfig
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider,NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
@@ -35,7 +35,7 @@ import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { MapLayersUI } from "@itwin/map-layers";
-import { SchemaContext, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
@@ -396,9 +396,7 @@ export class SampleAppIModelApp {
     try {
       // Reset QuantityFormatter UnitsProvider with new iModelConnection
       const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-      const context = new SchemaContext();
-      context.addLocater(schemaLocater);
-      await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(context));
+      await IModelApp.quantityFormatter.setUnitsProvider(new SchemaUnitProvider(schemaLocater));
     } catch (_) {
       await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider(); // this resets it to internal BasicUnitsProvider
     }

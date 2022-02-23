@@ -22,7 +22,7 @@ export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, ac
   React.useEffect(() => {
     async function fetchRangeData() {
       let hasRange = false;
-      const indexInDisplayStyle = activeViewport?.displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+      const indexInDisplayStyle = activeViewport?.displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
       if (undefined !== indexInDisplayStyle) {
         hasRange = (undefined !== await activeViewport.displayStyle.getMapLayerRange(indexInDisplayStyle, mapLayerSettings.isOverlay));
       }
@@ -53,7 +53,7 @@ export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, ac
     if (activeViewport) {
       const newTransparency = value;
       const displayStyle = activeViewport.displayStyle;
-      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
       if (-1 !== indexInDisplayStyle) {
         const styleTransparency = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayerSettings.isOverlay)?.transparency;
         const styleTransparencyValue = styleTransparency ? styleTransparency : 0;

@@ -67,7 +67,7 @@ describe("CategoryTree", () => {
       return;
     }
 
-    imodelMock.setup((x) => x.query(moq.It.isAny())).returns(() => generator());
+    imodelMock.setup((x) => x.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(() => generator());
     viewportMock.setup((x) => x.view).returns(() => viewStateMock.object);
     viewStateMock.setup((x) => x.is3d()).returns(() => true);
 
@@ -412,7 +412,7 @@ describe("CategoryTree", () => {
         return;
       }
 
-      imodelMock.setup((x) => x.query(moq.It.isAny())).returns(() => generator());
+      imodelMock.setup((x) => x.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(() => generator());
       imodelMock.setup((x) => x.subcategories).returns(() => subcategoriesCacheMock.object);
     });
 

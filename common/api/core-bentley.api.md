@@ -1428,6 +1428,16 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     protected _remove(value: T): number;
 }
 
+// @alpha
+export enum RealityDataStatus {
+    // (undocumented)
+    InvalidData = 151553,
+    // (undocumented)
+    REALITYDATA_ERROR_BASE = 151552,
+    // (undocumented)
+    Success = 0
+}
+
 // @beta
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
