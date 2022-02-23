@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { CoordinateXYZ, Point3d, Range3dProps } from "@itwin/core-geometry";
+import { Point3d, PointString3d, Range3dProps } from "@itwin/core-geometry";
 import {
-  ColorDef, GeometryParams, GeometryStreamBuilder, GeometryStreamIterator, IModel,
+  Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
 } from "@itwin/core-common";
 import {
-  GenericSchema, PhysicalModel, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
+  GenericSchema, GeometricElement3d, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -57,7 +57,7 @@ class GeomWriter {
     else if (entry.subCategoryId || entry.categoryId || entry.color || entry.materialId)
       this.builder.appendGeometryParamsChange(makeGeomParams(entry));
     else if (undefined !== entry.pos)
-      this.builder.appendGeometry(CoordinateXYZ.createXYZ(entry.pos, 0, 0));
+      this.builder.appendGeometry(PointString3d.create([new Point3d(entry.pos, 0, 0), new Point3d(entry.pos + 1, 0, 0)]));
   }
 }
 
@@ -65,7 +65,6 @@ class GeomWriter {
 interface SubRange { low: number }
 
 type GeomStreamEntry =
-  "header" |
   UnionMember<PartRef, Symbology & SubRange & Primitive> |
   UnionMember<Symbology, PartRef & SubRange & Primitive> |
   UnionMember<SubRange, PartRef & Symbology & Primitive> |
@@ -74,12 +73,15 @@ type GeomStreamEntry =
 function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] {
   const result: GeomStreamEntry[] = [];
   for (const entry of iter) {
-    result.push({
-      categoryId: entry.geomParams.categoryId,
-      subCategoryId: entry.geomParams.subCategoryId,
-      color: entry.geomParams.fillColor,
-      materialId: entry.geomParams.materialId,
-    });
+    const symb: Symbology =  { categoryId: entry.geomParams.categoryId, subCategoryId: entry.geomParams.subCategoryId };
+
+    if (entry.geomParams.fillColor)
+      symb.color = entry.geomParams.fillColor;
+
+    if (entry.geomParams.materialId)
+      symb.materialId = entry.geomParams.materialId;
+
+    result.push(symb);
 
     if (entry.localRange) {
       expect(entry.localRange.low.y).to.equal(0);
@@ -91,11 +93,23 @@ function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] {
       result.push({ low: entry.localRange.low.x });
     }
 
-    expect(entry.primitive.type).to.equal("geometryQuery");
     if (entry.primitive.type === "geometryQuery") {
-      expect(entry.primitive.geometry.geometryCategory).to.equal("point");
-      if (entry.primitive.geometry.geometryCategory === "point")
-        result.push({ pos: entry.primitive.geometry.point.x });
+      expect(entry.primitive.geometry.geometryCategory).to.equal("pointCollection");
+      if (entry.primitive.geometry.geometryCategory === "pointCollection") {
+        const pts = entry.primitive.geometry.points;
+        expect(pts.length).to.equal(2);
+        expect(pts[1].x).to.equal(pts[0].x + 1);
+        result.push({ pos: pts[0].x });
+      }
+    } else {
+      expect(entry.primitive.type).to.equal("partReference");
+      if (entry.primitive.type === "partReference") {
+        const partRef: PartRef = { partId: entry.primitive.part.id };
+        if (entry.primitive.part.toLocal)
+          partRef.origin = entry.primitive.part.toLocal.origin.x;
+
+        result.push(partRef);
+      }
     }
   }
 
@@ -148,7 +162,74 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     imodel.close();
   });
 
-  it("inlines and deletes a simple unique part reference", () => {
+  function insertGeometryPart(geom: GeomWriterEntry[]): string {
+    const writer = new GeomWriter();
+    for (const entry of geom)
+      writer.append(entry);
+
+    const props: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: GeometryPart.createCode(imodel, IModel.dictionaryId, Guid.createValue()),
+      geom: writer.builder.geometryStream,
+    }
+
+    const partId = imodel.elements.insertElement(props);
+    expect(Id64.isValidId64(partId)).to.be.true;
+    return partId;
+  }
+
+  function insertElement(geom: GeomWriterEntry[]): string {
+    const writer = new GeomWriter({ categoryId });
+    for (const entry of geom)
+      writer.append(entry);
+
+    const props: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: modelId,
+      code: Code.createEmpty(),
+      category: categoryId,
+      geom: writer.builder.geometryStream,
+      placement: {
+        origin: [0, 0, 0],
+        angles: { },
+      },
+    };
+
+    const elemId = imodel.elements.insertElement(props);
+    expect(Id64.isValidId64(elemId)).to.be.true;
+    return elemId;
+  }
+
+  function readElementGeom(id: string): GeomStreamEntry[] {
+    let iter;
+    const elem = imodel.elements.getElement({ id, wantGeometry: true });
+    if (elem instanceof GeometryPart) {
+      iter = GeometryStreamIterator.fromGeometryPart(elem);
+    } else {
+      expect(elem).instanceOf(GeometricElement3d);
+      iter = GeometryStreamIterator.fromGeometricElement3d(elem as GeometricElement3d);
+    }
+
+    return readGeomStream(iter);
+  }
+
+  function expectGeom(actual: GeomStreamEntry[], expected: GeomStreamEntry[]): void {
+    expect(actual).to.deep.equal(expected);
+  }
+
+  it.only("inlines and deletes a simple unique part reference", () => {
+    const partId = insertGeometryPart([{ pos: 123 }]);
+    expectGeom(readElementGeom(partId), [
+      { categoryId: "0", subCategoryId: "0" },
+      { pos: 123 },
+    ]);
+
+    const elemId = insertElement([{ partId }]);
+    expectGeom(readElementGeom(elemId), [
+      { categoryId, subCategoryId: blueSubCategoryId },
+      { partId },
+    ]);
   });
 
   it("inlines and deletes unique parts, ignoring non-unique parts", () => {
