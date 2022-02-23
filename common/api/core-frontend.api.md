@@ -1026,8 +1026,11 @@ export enum ACSType {
     Spherical = 3
 }
 
-// @beta (undocumented)
-export type ActivationEvent = "onStartup";
+// @internal (undocumented)
+export enum ActivationEvents {
+    // (undocumented)
+    onStartup = "onStartup"
+}
 
 // @public
 export class ActivityMessageDetails {
@@ -3135,7 +3138,7 @@ export interface ExtensionLoaderProps {
 
 // @beta
 export interface ExtensionManifest {
-    readonly activationEvents: ActivationEvent[];
+    readonly activationEvents: ActivationEvents[];
     readonly author: string;
     readonly description?: string;
     readonly displayName?: string;
