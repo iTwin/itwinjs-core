@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @internal options for constructing yield managers */
 export interface YieldManagerOptions {
   iterationsBeforeYield?: number;
 }
 
+/** @internal the default options when constructing yield managers */
 const defaultYieldManagerOptions: Required<YieldManagerOptions> = {
   iterationsBeforeYield: 1000,
 };
