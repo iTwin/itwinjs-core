@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Promote QuantityFormatter from beta to public.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

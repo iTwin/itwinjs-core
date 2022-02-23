@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 export * from "./AccuDraw";
 export * from "./AccuSnap";
@@ -22,6 +22,7 @@ export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
 export * from "./EnvironmentDecorations";
+export * from "./extension/extensions";
 export * from "./FeatureOverrideProvider";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
@@ -49,6 +50,10 @@ export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
+export * from "./quantity-formatting/QuantityFormatter";
+export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
+export * from "./quantity-formatting/LocalUnitFormatProvider";
+export * from "./quantity-formatting/QuantityTypesEditorSpecs";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
@@ -70,13 +75,9 @@ export * from "./ViewPose";
 export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
-export * from "./extension/extensions";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";
-export * from "./quantity-formatting/QuantityFormatter";
-export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
-export * from "./quantity-formatting/LocalUnitFormatProvider";
 export * from "./render/CanvasDecoration";
 export * from "./render/Decorations";
 export * from "./render/FeatureSymbology";
@@ -224,4 +225,3 @@ export * from "./RealityDataSource";
  * @docs-group-description MapLayers
  * Classes supporting map layers display.
  */
-

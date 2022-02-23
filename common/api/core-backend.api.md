@@ -320,6 +320,8 @@ export interface AzureBlobStorageCredentials {
     accessKey: string;
     // (undocumented)
     account: string;
+    // (undocumented)
+    baseUrl?: string;
 }
 
 // @beta

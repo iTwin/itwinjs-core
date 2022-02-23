@@ -226,9 +226,7 @@ export class IModelApp {
   public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session. */
   public static get tileAdmin(): TileAdmin { return this._tileAdmin; }
-  /** The [[QuantityFormatter]] for this session.
-   * @alpha
-   */
+  /** The [[QuantityFormatter]] for this session. */
   public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
   /** The [[ToolAdmin]] for this session. */
   public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }
@@ -341,8 +339,10 @@ export class IModelApp {
     opts = opts ?? {};
     this._securityOptions = opts.security ?? {};
 
-    // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
-    (window as IModelAppForDebugger).iModelAppForDebugger = this;
+    if (process.env.NODE_ENV === "development") {
+      // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
+      (window as IModelAppForDebugger).iModelAppForDebugger = this;
+    }
 
     this.sessionId = opts.sessionId ?? Guid.createValue();
     this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iTwin.js
@@ -418,7 +418,9 @@ export class IModelApp {
     this.onBeforeShutdown.raiseEvent();
     this.onBeforeShutdown.clear();
 
-    (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
+    if (process.env.NODE_ENV === "development") {
+      (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
+    }
 
     this._wantEventLoop = false;
     window.removeEventListener("resize", IModelApp.requestNextAnimation);
@@ -685,7 +687,7 @@ export class IModelApp {
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: `${this.publicPath}images/about-imodeljs.svg`,
-      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
+      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("iModelJs:Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
       notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
@@ -720,6 +722,6 @@ export class IModelApp {
         key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
-    return this.localization.getLocalizedString(`${key.scope}.${key.val}`, key);
+    return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
   }
 }
