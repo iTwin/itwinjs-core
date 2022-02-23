@@ -218,7 +218,15 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     expect(actual).to.deep.equal(expected);
   }
 
+  function inlinePartRefs(): number {
+    const result = imodel.nativeDb.inlineGeometryPartReferences();
+    expect(result.numCandidateParts).to.equal(result.numPartsDeleted);
+    expect(result.numRefsInlined).to.equal(result.numCandidateParts);
+    return result.numRefsInlined;
+  }
+
   it.only("inlines and deletes a simple unique part reference", () => {
+    // Create single reference to a part and perform sanity checks on our geometry validation code.
     const partId = insertGeometryPart([{ pos: 123 }]);
     expectGeom(readElementGeom(partId), [
       { categoryId: "0", subCategoryId: "0" },
@@ -230,6 +238,9 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: blueSubCategoryId },
       { partId },
     ]);
+
+    // Inline and delete the part.
+    expect(inlinePartRefs()).to.equal(1);
   });
 
   it("inlines and deletes unique parts, ignoring non-unique parts", () => {
