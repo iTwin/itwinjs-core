@@ -7,7 +7,7 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel, MarkRequired } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel, MarkRequired, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
@@ -698,6 +698,8 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
+  private _yieldManager = new YieldManager();
+
   /** Detect Relationship deletes using ExternalSourceAspects in the target iModel and a *brute force* comparison against relationships in the source iModel.
    * @see processChanges
    * @note This method is called from [[processAll]] and is not needed by [[processChanges]], so it only needs to be called directly when processing a subset of an iModel.
@@ -722,7 +724,7 @@ export class IModelTransformer extends IModelExportHandler {
           }
           aspectDeleteIds.push(statement.getValue(0).getId());
         }
-        await new Promise(setImmediate); // workaround for: https://github.com/nodejs/node-addon-api/issues/1140
+        await this._yieldManager.allowYield();
       }
     });
     this.targetDb.elements.deleteAspect(aspectDeleteIds);
