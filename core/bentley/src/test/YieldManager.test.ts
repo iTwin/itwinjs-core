@@ -3,21 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
 import { YieldManager } from "../YieldManager";
 
-class PublicYieldManager extends YieldManager {
-  public override async actualYield() { return super.actualYield(); }
-}
-
 describe("YieldManager", () => {
-  it("should yield every X iterations", async () => {
+  it("allowYield yields once per 'iterationsBeforeYield' iterations", async () => {
+    class CountingYieldManager extends YieldManager {
+      public actualYieldCount = 0;
+      protected override async actualYield() { this.actualYieldCount++; }
+    }
+
     const expectedYieldTimes = 5;
-    const yieldManager = new PublicYieldManager();
-    const actualYieldSpy = sinon.spy(yieldManager, "actualYield");
+    const yieldManager = new CountingYieldManager();
     for (let i = 0; i < expectedYieldTimes * yieldManager.options.iterationsBeforeYield; ++i) {
       await yieldManager.allowYield();
     }
-    expect(actualYieldSpy.callCount).to.equal(expectedYieldTimes);
+    expect(yieldManager.actualYieldCount).to.equal(expectedYieldTimes);
   });
 });
