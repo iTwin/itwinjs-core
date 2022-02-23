@@ -21,24 +21,38 @@ flag can then be accessed on the frontend and used to determine how the row shou
 
 ## Attributes
 
-| Name               | Required? | Type                                                                 | Default | Meaning                                                                                  |
-| ------------------ | --------- | -------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------- |
+| Name               | Required? | Type                                                                 | Default |
+| ------------------ | --------- | -------------------------------------------------------------------- | ------- |
 | *Filtering*        |
-| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    | Specifications that define schema requirements for the rule to take effect.              |
-| `priority`         | No        | `number`                                                             | `1000`  | Defines the order in which presentation rules are evaluated.                             |
-| `onlyIfNotHandled` | No        | `boolean`                                                            | `false` | Should this rule be ignored if there is already an existing rule with a higher priority. |
-| `condition`        | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    | Defines a condition for the rule, which needs to be met in order to execute it.          |
+| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| `condition`        | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
 | *Extended Data*    |
-| `items`            | No        | `{ [key: string]: ECExpression }`                                    |         | A map of ECExpressions whose evaluation results are used as extended data values         |
+| `items`            | No        | `{ [key: string]: ECExpression }`                                    |         |
 
-## Example
+### Attribute: `requiredSchemas`
 
-```JSON
-{
-  "ruleType": "ExtendedData",
-  "requiredSchemas": [{ "name": "MySchema", "minVersion": "1.2.3" }],
-  "items": {
-    "isModel": "this.IsOfClass(\"Model\", \"BisCore\")"
-  }
-}
+> **Default value:** `[]`
+
+A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+
+```ts
+[[include:ExtendedDataRule.RequiredSchemas.Ruleset]]
+```
+
+### Attribute: `condition`
+
+> **Default value:** `""`
+
+Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
+
+```ts
+[[include:ExtendedDataRule.Condition.Ruleset]]
+```
+
+### Attribute: `items`
+
+A map of ECExpressions whose evaluation results are used as extended data values.
+
+```ts
+[[include:ExtendedDataRule.Items.Ruleset]]
 ```
