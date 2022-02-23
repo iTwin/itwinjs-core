@@ -225,7 +225,7 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     return result.numRefsInlined;
   }
 
-  it.only("inlines and deletes a simple unique part reference", () => {
+  it("inlines and deletes a simple unique part reference", () => {
     // Create single reference to a part and perform sanity checks on our geometry validation code.
     const partId = insertGeometryPart([{ pos: 123 }]);
     expectGeom(readElementGeom(partId), [
@@ -241,9 +241,29 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
 
     // Inline and delete the part.
     expect(inlinePartRefs()).to.equal(1);
+    expect(imodel.elements.tryGetElement(partId)).to.be.undefined;
   });
 
   it("inlines and deletes unique parts, ignoring non-unique parts", () => {
+    const part1 = insertGeometryPart([{ pos: 1 }]);
+    const part2 = insertGeometryPart([{ pos: 2 }]);
+    const part3 = insertGeometryPart([{ pos: 3 }]);
+    const part4 = insertGeometryPart([{ pos: 4 }]);
+
+    const elem1 = insertElement([{ partId: part1 }]);
+    const elem2 = insertElement([{ partId: part2 }, { partId: part3 }]);
+    const elem3 = insertElement([{ partId: part3 }]);
+    const elem4 = insertElement([{ partId: part4 }]);
+    const elem5 = insertElement([{ partId: part4 }]);
+
+    expect(inlinePartRefs()).to.equal(2);
+
+    const symb = { categoryId, subCategoryId: blueSubCategoryId };
+    expectGeom(readElementGeom(elem1), [symb, { pos: 1 }]);
+    expectGeom(readElementGeom(elem2), [symb, { pos: 2 }, symb, { partId: part3 }]);
+    expectGeom(readElementGeom(elem3), [symb, { partId: part3 }]);
+    expectGeom(readElementGeom(elem4), [symb, { partId: part4 }]);
+    expectGeom(readElementGeom(elem5), [symb, { partId: part4 }]);
   });
 
   it("applies part transform", () => {
