@@ -266,7 +266,14 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     expectGeom(readElementGeom(elem5), [symb, { partId: part4 }]);
   });
 
-  it("applies part transform", () => {
+  it.only("applies part transform", () => {
+    const partId = insertGeometryPart([{ pos: -8 }]);
+    const elemId = insertElement([{ partId, origin: 50 }]);
+    expect(inlinePartRefs()).to.equal(1);
+    expectGeom(readElementGeom(elemId), [
+      { categoryId, subCategoryId: blueSubCategoryId },
+      { pos: 42 },
+    ]);
   });
 
   it("inlines multiple references in a single element", () => {
