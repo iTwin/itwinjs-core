@@ -14,6 +14,7 @@ import {
   QuantityType, SelectionTool, SnapMode,
 } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
+import { MapFeatureInfoTool } from "@itwin/map-layers";
 import { Presentation } from "@itwin/presentation-frontend";
 import {
   AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
@@ -37,7 +38,6 @@ import { ToolWithSettings } from "./ToolWithSettings";
 import { Radio } from "@itwin/itwinui-react";
 import { BeDuration } from "@itwin/core-bentley";
 import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./ImmediateTools";
-import { MapFeatureInfoTool } from "./MapFeatureIntoTool";
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention

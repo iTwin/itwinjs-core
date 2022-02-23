@@ -24,9 +24,6 @@ export class MapFeatureInfoTool extends PrimitiveTool {
   public override requireWriteableTarget(): boolean {
     return false;
   }
-  public override async onPostInstall() {
-    await super.onPostInstall();
-  }
 
   public override async onDataButtonDown(
     ev: BeButtonEvent
