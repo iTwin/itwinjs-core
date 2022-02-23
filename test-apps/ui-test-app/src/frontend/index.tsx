@@ -318,7 +318,7 @@ export class SampleAppIModelApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await MapLayersUI.initialize(undefined, undefined, { onMapHit: MapFeatureInfoTool.onMapHit });
+    await MapLayersUI.initialize({ onMapHit: MapFeatureInfoTool.onMapHit });
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
 

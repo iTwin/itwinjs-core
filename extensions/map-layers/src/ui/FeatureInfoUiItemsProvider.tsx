@@ -27,7 +27,7 @@ export class FeatureInfoUiItemsProvider implements UiItemsProvider {
         id: FeatureInfoUiItemsProvider.widgetId,
         label: MapLayersUI.localization.getLocalizedString("mapLayers:FeatureInfoWidget.Label"),
         icon: "icon-map",
-        getWidgetContent: () => <MapFeatureInfoWidget featureInfoOpts={{ ...this._featureInfoOpts }} />, // eslint-disable-line react/display-name
+        getWidgetContent: () => <MapFeatureInfoWidget featureInfoOpts={this._featureInfoOpts} />, // eslint-disable-line react/display-name
         defaultState: WidgetState.Closed,
       });
     }
