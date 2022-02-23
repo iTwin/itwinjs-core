@@ -13,11 +13,12 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-interface Point { x: number, y: number, z: number };
+// The only geometry in our geometry streams will be line segments of length 1m in X, with origin at (pos, 0, 0)
+interface Primitive { pos: number }
 
 interface PartRef {
   partId: string;
-  origin?: Point;
+  origin?: number; // origin in X. y and z are zero.
 }
 
 interface Symbology {
@@ -37,9 +38,9 @@ function makeGeomParams(symb: Symbology): GeometryParams {
 type UnionMember<T, U> = T & { [k in keyof U]?: never };
 
 type GeomWriterEntry =
-  UnionMember<PartRef, Symbology & Point> |
-  UnionMember<Symbology, PartRef & Point> |
-  UnionMember<Point, PartRef & Symbology>;
+  UnionMember<PartRef, Symbology & Primitive> |
+  UnionMember<Symbology, PartRef & Primitive> |
+  UnionMember<Primitive, PartRef & Symbology>;
 
 class GeomWriter {
   public readonly builder: GeometryStreamBuilder;
@@ -52,22 +53,23 @@ class GeomWriter {
 
   public append(entry: GeomWriterEntry): void {
     if (entry.partId)
-      this.builder.appendGeometryPart3d(entry.partId, Point3d.fromJSON(entry.origin));
+      this.builder.appendGeometryPart3d(entry.partId, new Point3d(entry.origin, 0, 0));
     else if (entry.subCategoryId || entry.categoryId || entry.color || entry.materialId)
       this.builder.appendGeometryParamsChange(makeGeomParams(entry));
-    else if (undefined !== entry.x)
-      this.builder.appendGeometry(CoordinateXYZ.createXYZ(entry.x, entry.y, entry.z));
+    else if (undefined !== entry.pos)
+      this.builder.appendGeometry(CoordinateXYZ.createXYZ(entry.pos, 0, 0));
   }
 }
 
-interface SubRange { lo: Point, hi: Point };
+// SubGraphicRange where x dimension is 1 meter and x and z are empty.
+interface SubRange { low: number }
 
 type GeomStreamEntry =
   "header" |
-  UnionMember<PartRef, Symbology & SubRange & Point> |
-  UnionMember<Symbology, PartRef & SubRange & Point> |
-  UnionMember<SubRange, PartRef & Symbology & Point> |
-  UnionMember<Point, PartRef & Symbology & SubRange>;
+  UnionMember<PartRef, Symbology & SubRange & Primitive> |
+  UnionMember<Symbology, PartRef & SubRange & Primitive> |
+  UnionMember<SubRange, PartRef & Symbology & Primitive> |
+  UnionMember<Primitive, PartRef & Symbology & SubRange>;
 
 function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] {
   const result: GeomStreamEntry[] = [];
@@ -80,19 +82,20 @@ function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] {
     });
 
     if (entry.localRange) {
-      result.push({
-        lo: { x: entry.localRange.low.x, y: entry.localRange.low.y, z: entry.localRange.low.z },
-        hi: { x: entry.localRange.high.x, y: entry.localRange.high.y, z: entry.localRange.high.z },
-      });
+      expect(entry.localRange.low.y).to.equal(0);
+      expect(entry.localRange.low.z).to.equal(0);
+      expect(entry.localRange.high.y).to.equal(0);
+      expect(entry.localRange.high.z).to.equal(0);
+      expect(entry.localRange.high.x - entry.localRange.low.x).to.equal(1);
+
+      result.push({ low: entry.localRange.low.x });
     }
 
     expect(entry.primitive.type).to.equal("geometryQuery");
     if (entry.primitive.type === "geometryQuery") {
       expect(entry.primitive.geometry.geometryCategory).to.equal("point");
-      if (entry.primitive.geometry.geometryCategory === "point") {
-        const pt = entry.primitive.geometry.point;
-        result.push({ x: pt.x, y: pt.y, z: pt.z });
-      }
+      if (entry.primitive.geometry.geometryCategory === "point")
+        result.push({ pos: entry.primitive.geometry.point.x });
     }
   }
 
