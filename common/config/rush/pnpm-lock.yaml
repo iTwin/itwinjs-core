@@ -89,7 +89,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.1.5
+      '@bentley/imodeljs-native': 3.1.6
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -127,7 +127,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.8.0
-      '@bentley/imodeljs-native': 3.1.5
+      '@bentley/imodeljs-native': 3.1.6
       '@itwin/core-telemetry': link:../telemetry
       form-data: 2.5.1
       fs-extra: 8.1.0
@@ -244,8 +244,10 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
+      '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -268,8 +270,10 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
+      '@itwin/core-quantity': link:../quantity
       '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.1
       '@types/chai': 4.3.0
       '@types/chai-as-promised': 7.1.4
@@ -336,6 +340,7 @@ importers:
       '@bentley/units-schema': ^1.0.5
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
+      '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
@@ -362,6 +367,7 @@ importers:
       '@bentley/units-schema': 1.0.7
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
+      '@itwin/core-quantity': link:../quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.1
@@ -1560,7 +1566,7 @@ importers:
   ../../full-stack-tests/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.1.5
+      '@bentley/imodeljs-native': 3.1.6
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -1594,7 +1600,7 @@ importers:
       typescript: ~4.4.0
     dependencies:
       '@azure/storage-blob': 12.8.0
-      '@bentley/imodeljs-native': 3.1.5
+      '@bentley/imodeljs-native': 3.1.6
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -1641,6 +1647,9 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-markup': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
+      '@itwin/ecschema-rpcinterface-common': workspace:*
+      '@itwin/ecschema-rpcinterface-impl': workspace:*
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
@@ -1689,6 +1698,9 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-markup': link:../../core/markup
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
+      '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
@@ -3121,6 +3133,9 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
       '@itwin/core-webpack-tools': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
+      '@itwin/ecschema-rpcinterface-common': workspace:*
+      '@itwin/ecschema-rpcinterface-impl': workspace:*
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
@@ -3194,6 +3209,9 @@ importers:
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
+      '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
@@ -6878,8 +6896,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.1.5:
-    resolution: {integrity: sha512-r6bZgzSmYXTHM101vleWeL4rVjVuGFTnQwuItNgj+XkzmW4Bt2UcnvMyR+KTApn+RXr/zsaLddZUIOdUWBRkog==}
+  /@bentley/imodeljs-native/3.1.6:
+    resolution: {integrity: sha512-e4FfMt7h/YrsvMag+1hYpvdSy9ooFEsGHwpmJkjiscx16PThfK5cbqgwEV/SY79q4zJKeragPVjWbO9BJo5hTg==}
     requiresBuild: true
     dev: false
 
