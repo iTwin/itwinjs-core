@@ -1026,6 +1026,9 @@ export enum ACSType {
     Spherical = 3
 }
 
+// @beta (undocumented)
+export type ActivationEvent = "onStartup";
+
 // @public
 export class ActivityMessageDetails {
     constructor(showProgressBar: boolean, showPercentInMessage: boolean, supportsCancellation: boolean, showDialogInitially?: boolean);
@@ -1767,7 +1770,7 @@ export interface BuildExtensionManifest extends ExtensionManifest {
 // @beta (undocumented)
 export interface BuiltInExtensionLoaderProps {
     // (undocumented)
-    loader: (() => Promise<any>);
+    loader: ResolveFunc;
     // (undocumented)
     manifest: Promise<any>;
 }
@@ -3085,20 +3088,18 @@ export enum EventHandled {
 // @beta
 export class ExtensionAdmin {
     constructor();
-    addBuildExtension(manifestPromise: Promise<any>, mainFunc?: ResolveFunc_2): Promise<void>;
+    addBuildExtension(manifestPromise: Promise<ExtensionManifest>, mainFunc?: ResolveFunc): Promise<void>;
     addExtensionLoader(extensionLoader: ExtensionLoader): void;
     addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
     // @internal
     onStartup: () => Promise<void>;
-    }
+}
 
 // @beta
 export class ExtensionHost {
     protected constructor();
     // (undocumented)
     static get accuSnap(): AccuSnap;
-    // (undocumented)
-    static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
     // (undocumented)
@@ -3134,15 +3135,12 @@ export interface ExtensionLoaderProps {
 
 // @beta
 export interface ExtensionManifest {
-    readonly activationEvents?: string[];
-    // (undocumented)
+    readonly activationEvents: ActivationEvent[];
+    readonly author: string;
     readonly description?: string;
-    // (undocumented)
     readonly displayName?: string;
     readonly main?: string;
-    // (undocumented)
     readonly name: string;
-    // (undocumented)
     readonly version: string;
 }
 
@@ -9105,6 +9103,9 @@ export abstract class RenderTextureDrape implements IDisposable {
 
 // @internal (undocumented)
 export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<IModelTileTreeProps>;
+
+// @beta (undocumented)
+export type ResolveFunc = () => Promise<any>;
 
 // @internal
 export type RootIModelTile = Tile & {

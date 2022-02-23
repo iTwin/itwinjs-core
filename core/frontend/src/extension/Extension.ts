@@ -6,8 +6,14 @@
  * @module Extensions
  */
 
+/**
+ * @beta
+ */
 export type ResolveFunc = () => Promise<any>;
 
+/**
+ * @beta
+ */
 export type ActivationEvent = "onStartup";
 
 /** Defines the format of an Extension manifest
