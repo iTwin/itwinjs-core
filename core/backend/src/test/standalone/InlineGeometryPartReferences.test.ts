@@ -30,7 +30,7 @@ interface Symbology {
 
 function makeGeomParams(symb: Symbology): GeometryParams {
   const params = new GeometryParams(symb.categoryId ?? Id64.invalid, symb.subCategoryId);
-  params.fillColor = params.lineColor = symb.color;
+  params.lineColor = symb.color;
   params.materialId = symb.materialId;
   return params;
 }
@@ -75,8 +75,8 @@ function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] {
   for (const entry of iter) {
     const symb: Symbology =  { categoryId: entry.geomParams.categoryId, subCategoryId: entry.geomParams.subCategoryId };
 
-    if (entry.geomParams.fillColor)
-      symb.color = entry.geomParams.fillColor;
+    if (entry.geomParams.lineColor)
+      symb.color = entry.geomParams.lineColor;
 
     if (entry.geomParams.materialId)
       symb.materialId = entry.geomParams.materialId;
@@ -266,7 +266,7 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     expectGeom(readElementGeom(elem5), [symb, { partId: part4 }]);
   });
 
-  it.only("applies part transform", () => {
+  it("applies part transform", () => {
     const partId = insertGeometryPart([{ pos: -8 }]);
     const elemId = insertElement([{ partId, origin: 50 }]);
     expect(inlinePartRefs()).to.equal(1);
@@ -279,7 +279,64 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
   it("inlines multiple references in a single element", () => {
   });
 
-  it("resets element symbology", () => {
+  it.only("resets element symbology", () => {
+    const part1 = insertGeometryPart([
+      { pos: 1 },
+      { color: ColorDef.green },
+      { pos: 1.5},
+    ]);
+
+    const part2 = insertGeometryPart([
+      { pos: 2 },
+      { materialId },
+      { pos: 2.5 },
+    ]);
+
+    const part3 = insertGeometryPart([
+      { pos: 3 },
+      { materialId: "0" },
+      { pos: 3.5 },
+    ]);
+
+    const elemId = insertElement([
+      { pos: -1 },
+      { subCategoryId: redSubCategoryId },
+      { partId: part1 },
+      { pos: -2 },
+      { color: ColorDef.black },
+      { partId: part2 },
+      { pos: -3 },
+      { materialId, color: ColorDef.white },
+      { partId: part3 },
+      { pos: -4 },
+    ]);
+
+    expect(inlinePartRefs()).to.equal(3);
+
+    expectGeom(readElementGeom(elemId), [
+      { categoryId, subCategoryId: blueSubCategoryId },
+      { pos: -1 },
+      { categoryId, subCategoryId: redSubCategoryId },
+      { pos: 1 },
+      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.green },
+      { pos: 1.5 },
+      { categoryId, subCategoryId: redSubCategoryId },
+      { pos: -2 },
+
+      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black },
+      { pos: 2 },
+      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black, materialId },
+      { pos: 2.5 },
+      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black },
+      { pos: -3 },
+
+      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black, materialId },
+      { pos: 3 },
+      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white },
+      { pos: 3.5 },
+      {categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black, materialId },
+      { pos: -4 },
+    ]);
   });
 
   it("has no effect if inlining fails", () => {
