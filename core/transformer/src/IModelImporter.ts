@@ -491,9 +491,9 @@ export class IModelImporter implements Required<IModelImportOptions> {
   /** Examine the geometry streams of every [GeometricElement3d]($backend) in the target iModel to identify [GeometryPart]($backend)s that each have exactly
    * one reference to them. Update the geometry stream of each referencing element to embed the part's geometry instead, then delete the part.
    * @note This method is automatically called from [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]] if
-   * [[IModelTransformOptions.inlineGeometryPartReferences]] is `true`.
+   * [[IModelTransformOptions.optimizeGeometryPartReferences]] is `true`.
    */
-  public inlineGeometryPartReferences(): void {
+  public optimizeGeometryPartReferences(): void {
     const result = this.targetDb.nativeDb.inlineGeometryPartReferences();
     if (result.numCandidateParts > 0)
       Logger.logInfo(loggerCategory, `Inlined ${result.numRefsInlined} references to ${result.numCandidateParts} geometry parts and deleted ${result.numPartsDeleted} parts.`);

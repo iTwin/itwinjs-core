@@ -101,11 +101,11 @@ export interface IModelTransformOptions {
    */
   danglingPredecessorsBehavior?: "reject" | "ignore";
 
-  /** If `true`, then [[IModelImporter.inlineGeometryPartReferences]] will be invoked by [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]]
+  /** If `true`, then [[IModelImporter.optimizeGeometryPartReferences]] will be invoked by [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]]
    * to clean up references to geometry parts having only one reference to them.
    * @beta
    */
-  inlineGeometryPartReferences?: boolean;
+  optimizeGeometryPartReferences?: boolean;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -923,8 +923,8 @@ export class IModelTransformer extends IModelExportHandler {
       await this.detectRelationshipDeletes();
     }
 
-    if (this._options.inlineGeometryPartReferences)
-      this.importer.inlineGeometryPartReferences();
+    if (this._options.optimizeGeometryPartReferences)
+      this.importer.optimizeGeometryPartReferences();
 
     this.importer.computeProjectExtents();
   }
@@ -944,8 +944,8 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements();
 
-    if (this._options.inlineGeometryPartReferences)
-      this.importer.inlineGeometryPartReferences();
+    if (this._options.optimizeGeometryPartReferences)
+      this.importer.optimizeGeometryPartReferences();
 
     this.importer.computeProjectExtents();
   }
