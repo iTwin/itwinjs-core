@@ -923,8 +923,8 @@ export class IModelTransformer extends IModelExportHandler {
       await this.detectRelationshipDeletes();
     }
 
-    if (this._options.optimizeGeometryPartReferences)
-      this.importer.optimizeGeometryPartReferences();
+    if (this._options.optimizeGeometry)
+      this.importer.optimizeGeometry(this._options.optimizeGeometry);
 
     this.importer.computeProjectExtents();
   }
@@ -944,8 +944,8 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements();
 
-    if (this._options.optimizeGeometryPartReferences)
-      this.importer.optimizeGeometryPartReferences();
+    if (this._options.optimizeGeometry)
+      this.importer.optimizeGeometry(this._options.optimizeGeometry);
 
     this.importer.computeProjectExtents();
   }
