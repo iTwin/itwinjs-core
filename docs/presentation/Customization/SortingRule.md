@@ -15,30 +15,82 @@ instances are first sorted by the highest priority rule and then the lower prior
 
 ### Attributes
 
-| Name               | Required? | Type                                                                 | Default                        | Meaning                                                                                  |
-| ------------------ | --------- | -------------------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
+| Name               | Required? | Type                                                                 | Default                        |
+| ------------------ | --------- | -------------------------------------------------------------------- | ------------------------------ |
 | *Filtering*        |
-| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`                           | Specifications that define schema requirements for the rule to take effect.              |
-| `priority`         | No        | `number`                                                             | `1000`                         | Defines the order in which presentation rules are evaluated.                             |
-| `onlyIfNotHandled` | No        | `boolean`                                                            | `false`                        | Should this rule be ignored if there is already an existing rule with a higher priority. |
-| `condition`        | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)       | `""`                           | Defines a condition for the rule, which needs to be met in order to execute it.          |
-| `class`            | No        | `SingleSchemaClassSpecification`                                     | All classes in current context | Specification of ECClass whose ECInstances should be sorted.                             |
-| `isPolymorphic`    | No        | `boolean`                                                            | false                          | Should `class` defined in this rule be handled polymorphically.                          |
+| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`                           |
+| `priority`         | No        | `number`                                                             | `1000`                         |
+| `condition`        | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)       | `""`                           |
+| `class`            | No        | `SingleSchemaClassSpecification`                                     | All classes in current context |
+| `isPolymorphic`    | No        | `boolean`                                                            | `false`                        |
 | *Sorting*          |
-| `propertyName`     | Yes       | `string`                                                             |                                | Name of the property which should be used for sorting.                                   |
-| `sortAscending`    | No        | `boolean`                                                            | `true`                         | Should instances be sorted in ascending order.                                           |
+| `propertyName`     | Yes       | `string`                                                             |                                |
+| `sortAscending`    | No        | `boolean`                                                            | `true`                         |
 
-### Example
+### Attribute: `requiredSchemas`
 
-```JSON
-{
-  "ruleType": "PropertySorting",
-  "requiredSchemas": [{ "name": "MySchema", "minVersion": "1.2.3" }],
-  "priority": 999,
-  "class": { "schemaName": "MySchema", "className": "MyClass" },
-  "isPolymorphic": true,
-  "propertyName": "MyProperty"
-}
+> **Default value:** `[]`
+
+A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+
+```ts
+[[include:Sorting.RequiredSchemas.Ruleset]]
+```
+
+### Attribute: `priority`
+
+> **Default value:** `1000`
+
+Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined.
+
+```ts
+[[include:PropertySortingRule.Priority.Ruleset]]
+```
+
+### Attribute: `condition`
+
+> **Default value:** `""`
+
+Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
+
+```ts
+[[include:SortingRule.Condition.Ruleset]]
+```
+
+### Attribute: `class`
+
+Specifies ECClass whose ECInstances should be sorted.
+
+```ts
+[[include:SortingRule.Class.Ruleset]]
+```
+
+### Attribute: `isPolymorphic`
+
+> **Default value:** `false`
+
+Specifies that `class` attribute defined in this rule should be handled polymorphically.
+
+```ts
+[[include:SortingRule.IsPolymorphic.Ruleset]]
+```
+
+### Attribute: `propertyName`
+
+Specifies name of the property which should be used for sorting.
+
+```ts
+[[include:PropertySortingRule.PropertyName.Ruleset]]
+```
+
+### Attribute: `sortAscending`
+
+> **Default value:** `true`
+
+Specifies whether instances should be sorted in ascending order or descending.
+
+```ts
+[[include:PropertySortingRule.SortAscending.Ruleset]]
 ```
 
 ## Disabled Sorting Rule
@@ -52,23 +104,59 @@ other non ECInstance type of nodes.
 
 ### Attributes
 
-| Name               | Required? | Type                                                           | Default                        | Meaning                                                                                  |
-| ------------------ | --------- | -------------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
+| Name               | Required? | Type                                                                 | Default                        |
+| ------------------ | --------- | -------------------------------------------------------------------- | ------------------------------ |
 | *Filtering*        |
-| `priority`         | No        | `number`                                                       | `1000`                         | Defines the order in which presentation rules are evaluated.                             |
-| `onlyIfNotHandled` | No        | `boolean`                                                      | `false`                        | Should this rule be ignored if there is already an existing rule with a higher priority. |
-| `condition`        | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition) | `""`                           | Defines a condition for the rule, which needs to be met in order to execute it.          |
-| `class`            | No        | `SingleSchemaClassSpecification`                               | All classes in current context | Specification of ECClass whose ECInstances should be sorted.                             |
-| `isPolymorphic`    | No        | `boolean`                                                      | false                          | Should `class` defined in this rule be handled polymorphically.                          |
+| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`                           |
+| `priority`         | No        | `number`                                                             | `1000`                         |
+| `condition`        | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)       | `""`                           |
+| `class`            | No        | `SingleSchemaClassSpecification`                                     | All classes in current context |
+| `isPolymorphic`    | No        | `boolean`                                                            | false                          |
 
-### Example
+### Attribute: `requiredSchemas`
 
-```JSON
-{
-  "ruleType": "DisabledSorting",
-  "requiredSchemas": [{ "name": "MySchema", "minVersion": "1.2.3" }],
-  "priority": 999,
-  "class": { "schemaName": "MySchema", "className": "MyClass" },
-  "isPolymorphic": true
-}
+> **Default value:** `[]`
+
+A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+
+```ts
+[[include:Sorting.RequiredSchemas.Ruleset]]
+```
+
+### Attribute: `priority`
+
+> **Default value:** `1000`
+
+Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined.
+
+```ts
+[[include:DisabledSortingRule.Priority.Ruleset]]
+```
+
+### Attribute: `condition`
+
+> **Default value:** `""`
+
+Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
+
+```ts
+[[include:SortingRule.Condition.Ruleset]]
+```
+
+### Attribute: `class`
+
+Specifies ECClass whose instances should not be sorted.
+
+```ts
+[[include:SortingRule.Class.Ruleset]]
+```
+
+### Attribute: `isPolymorphic`
+
+> **Default value:** `false`
+
+Specifies that `class` attribute defined in this rule should be handled polymorphically.
+
+```ts
+[[include:SortingRule.IsPolymorphic.Ruleset]]
 ```
