@@ -347,4 +347,7 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
 
   it("inserts subgraphic ranges for subsequent geometry", () => {
   });
+
+  it("applies transform to patterns and line styles", () => {
+  });
 });
