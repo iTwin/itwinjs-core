@@ -610,17 +610,17 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
         this.entry.geomParams.resetAppearance();
         if (entry.appearance.subCategory)
           this.entry.geomParams.subCategoryId = Id64.fromJSON(entry.appearance.subCategory);
-        if (entry.appearance.color)
+        if (undefined !== entry.appearance.color)
           this.entry.geomParams.lineColor = ColorDef.fromJSON(entry.appearance.color);
-        if (entry.appearance.weight)
+        if (undefined !== entry.appearance.weight)
           this.entry.geomParams.weight = entry.appearance.weight;
-        if (entry.appearance.style)
+        if (undefined !== entry.appearance.style)
           this.entry.geomParams.styleInfo = new LineStyle.Info(Id64.fromJSON(entry.appearance.style));
-        if (entry.appearance.transparency)
+        if (undefined !== entry.appearance.transparency)
           this.entry.geomParams.elmTransparency = entry.appearance.transparency;
-        if (entry.appearance.displayPriority)
+        if (undefined !== entry.appearance.displayPriority)
           this.entry.geomParams.elmPriority = entry.appearance.displayPriority;
-        if (entry.appearance.geometryClass)
+        if (undefined !== entry.appearance.geometryClass)
           this.entry.geomParams.geometryClass = entry.appearance.geometryClass;
       } else if (entry.styleMod) {
         if (this.entry.geomParams.styleInfo === undefined)
