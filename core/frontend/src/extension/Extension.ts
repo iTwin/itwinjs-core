@@ -6,15 +6,12 @@
  * @module Extensions
  */
 
-/**
- * @beta
- */
-export type ResolveFunc = () => Promise<any>;
+import { ActivationEvents } from "./ExtensionAdmin";
 
 /**
  * @beta
  */
-export type ActivationEvent = "onStartup";
+export type ResolveFunc = () => Promise<any>;
 
 /** Defines the format of an Extension manifest
  * @beta
@@ -35,7 +32,7 @@ export interface ExtensionManifest {
    */
   readonly main?: string;
   /** List of activation events this Extension supports. */
-  readonly activationEvents: ActivationEvent[];
+  readonly activationEvents: ActivationEvents[];
 }
 
 /** @beta */

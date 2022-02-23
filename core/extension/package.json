@@ -15,7 +15,7 @@
     "clean": "rimraf .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
-    "lint": "eslint -f visualstudio \"./src/**/*.{js,ts}\" 1>&2",
+    "lint": "",
     "test": ""
   },
   "keywords": [

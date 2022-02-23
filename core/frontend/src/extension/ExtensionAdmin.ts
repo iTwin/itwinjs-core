@@ -33,7 +33,10 @@ import { ExtensionLoader } from "./ExtensionLoader";
  *        activation events.
  */
 
-enum ActivationEvents {
+/**
+ * @internal
+ */
+export enum ActivationEvents {
   onStartup = "onStartup",
 }
 
