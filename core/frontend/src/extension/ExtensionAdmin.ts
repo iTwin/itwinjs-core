@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import { ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
+import { ActivationEvent, ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
 import { ExtensionLoader } from "./ExtensionLoader";
 
 /** The Extensions loading system has the following goals:
@@ -33,13 +33,6 @@ import { ExtensionLoader } from "./ExtensionLoader";
  *        activation events.
  */
 
-/**
- * @internal
- */
-export enum ActivationEvents {
-  onStartup = "onStartup",
-}
-
 /** The Extension Admin controls the list of currently known, loaded and executing an Extension.
  * Handles the loading of Extensions and maintains a list of the currently loaded Extensions.
  *
@@ -56,7 +49,7 @@ export class ExtensionAdmin {
    * @internal
    */
   public onStartup = async () => {
-    await this.activateExtensionEvents(ActivationEvents.onStartup);
+    await this.activateExtensionEvents(ActivationEvent.onStartup);
   };
 
   public constructor() {

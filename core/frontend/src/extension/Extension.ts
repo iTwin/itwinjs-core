@@ -6,7 +6,12 @@
  * @module Extensions
  */
 
-import { ActivationEvents } from "./ExtensionAdmin";
+/**
+ * @beta
+ */
+export enum ActivationEvent {
+  onStartup = "onStartup",
+}
 
 /**
  * @beta
@@ -32,7 +37,7 @@ export interface ExtensionManifest {
    */
   readonly main?: string;
   /** List of activation events this Extension supports. */
-  readonly activationEvents: ActivationEvents[];
+  readonly activationEvents: ActivationEvent[];
 }
 
 /** @beta */
