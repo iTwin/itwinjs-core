@@ -1767,7 +1767,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
 
 // @beta (undocumented)
 export interface BuildExtensionManifest extends ExtensionManifest {
-    readonly module?: string;
+    readonly module: string;
 }
 
 // @beta (undocumented)
@@ -3091,7 +3091,7 @@ export enum EventHandled {
 // @beta
 export class ExtensionAdmin {
     constructor();
-    addBuildExtension(manifestPromise: Promise<ExtensionManifest>, mainFunc?: ResolveFunc): Promise<void>;
+    addBuildExtension(manifestPromise: Promise<BuildExtensionManifest>, mainFunc?: ResolveFunc): Promise<void>;
     addExtensionLoader(extensionLoader: ExtensionLoader): void;
     addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
     // @internal
@@ -3139,10 +3139,9 @@ export interface ExtensionLoaderProps {
 // @beta
 export interface ExtensionManifest {
     readonly activationEvents: ActivationEvent[];
-    readonly author: string;
     readonly description?: string;
     readonly displayName?: string;
-    readonly main?: string;
+    readonly main: string;
     readonly name: string;
     readonly version: string;
 }
@@ -4722,7 +4721,7 @@ export class IModelApp {
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;

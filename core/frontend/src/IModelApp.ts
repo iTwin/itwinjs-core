@@ -276,7 +276,7 @@ export class IModelApp {
    */
   public static readonly telemetry: TelemetryManager = new TelemetryManager();
 
-  /** @alpha */
+  /** @beta */
   public static readonly extensionAdmin = new ExtensionAdmin();
 
   /** Map of classFullName to EntityState class */

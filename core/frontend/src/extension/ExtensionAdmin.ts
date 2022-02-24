@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import { ActivationEvent, ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
+import { ActivationEvent, BuildExtensionManifest, ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
 import { ExtensionLoader } from "./ExtensionLoader";
 
 /** The Extensions loading system has the following goals:
@@ -74,7 +74,7 @@ export class ExtensionAdmin {
    * @param manifestLoader A function that loads the manifest file.
    * @param mainFunc The main function to be executed upon
    */
-  public async addBuildExtension(manifestPromise: Promise<ExtensionManifest>, mainFunc?: ResolveFunc): Promise<void> {
+  public async addBuildExtension(manifestPromise: Promise<BuildExtensionManifest>, mainFunc?: ResolveFunc): Promise<void> {
     const manifest = await this.getManifest(manifestPromise);
     this._installedExtensions.set(manifest.name, { manifest, mainFunc });
   }
