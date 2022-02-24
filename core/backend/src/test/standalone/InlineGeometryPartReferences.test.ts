@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { LineString3d, Loop, Point3d, Range3dProps } from "@itwin/core-geometry";
+import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
 import {
   AreaPattern,
   Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
@@ -40,7 +40,7 @@ function makeGeomParams(symb: Symbology): GeometryParams {
   return params;
 }
 
-interface AppendSubRanges { appendSubRanges: true };
+interface AppendSubRanges { appendSubRanges: true }
 
 type UnionMember<T, U> = T & { [k in keyof U]?: never };
 
@@ -192,7 +192,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       model: IModel.dictionaryId,
       code: GeometryPart.createCode(imodel, IModel.dictionaryId, Guid.createValue()),
       geom: writer.builder.geometryStream,
-    }
+    };
 
     const partId = imodel.elements.insertElement(props);
     expect(Id64.isValidId64(partId)).to.be.true;
