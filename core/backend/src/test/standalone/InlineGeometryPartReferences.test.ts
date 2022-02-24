@@ -86,7 +86,7 @@ function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] {
     if (entry.localRange) {
       expect(entry.localRange.low.y).to.equal(0);
       expect(entry.localRange.low.z).to.equal(0);
-      expect(entry.localRange.high.y).to.equal(0);
+      expect(entry.localRange.high.y).to.equal(1);
       expect(entry.localRange.high.z).to.equal(0);
       expect(entry.localRange.high.x - entry.localRange.low.x).to.equal(1);
 
@@ -263,8 +263,8 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     expect(inlinePartRefs()).to.equal(2);
 
     const symb = { categoryId, subCategoryId: blueSubCategoryId };
-    expectGeom(readElementGeom(elem1), [symb, { pos: 1 }]);
-    expectGeom(readElementGeom(elem2), [symb, { pos: 2 }, symb, { partId: part3 }]);
+    expectGeom(readElementGeom(elem1), [symb, { low: 1 }, { pos: 1 }]);
+    expectGeom(readElementGeom(elem2), [symb, { low: 2 }, { pos: 2 }, symb, { partId: part3 }]);
     expectGeom(readElementGeom(elem3), [symb, { partId: part3 }]);
     expectGeom(readElementGeom(elem4), [symb, { partId: part4 }]);
     expectGeom(readElementGeom(elem5), [symb, { partId: part4 }]);
@@ -276,6 +276,7 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     expect(inlinePartRefs()).to.equal(1);
     expectGeom(readElementGeom(elemId), [
       { categoryId, subCategoryId: blueSubCategoryId },
+      { low: 42 },
       { pos: 42 },
     ]);
   });
@@ -283,7 +284,7 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
   it("inlines multiple references in a single element", () => {
   });
 
-  it.only("resets element symbology", () => {
+  it("resets element symbology", () => {
     const part1 = insertGeometryPart([
       { pos: 1 },
       { color: ColorDef.green },
@@ -329,24 +330,33 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: blueSubCategoryId },
       { pos: -1 },
       { categoryId, subCategoryId: redSubCategoryId },
+      { low: 1},
       { pos: 1 },
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.green },
+      { low: 1.5 },
       { pos: 1.5 },
       { categoryId, subCategoryId: redSubCategoryId },
+      { low: -2 },
       { pos: -2 },
 
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black },
+      { low: 2 },
       { pos: 2 },
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black, materialId },
+      { low: 2.5 },
       { pos: 2.5 },
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black },
+      { low: -3 },
       { pos: -3 },
 
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black, materialId },
+      { low: 3 },
       { pos: 3 },
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white },
+      { low: 3.5 },
       { pos: 3.5 },
       {categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black, materialId },
+      { low: -4 },
       { pos: -4 },
     ]);
   });
@@ -363,6 +373,6 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
   it("applies transform to patterns and line styles", () => {
   });
 
-  it("does not inline if header flags do not match", () => {
+  it("preserves element header flags", () => {
   });
 });
