@@ -75,10 +75,10 @@ function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] {
   for (const entry of iter) {
     const symb: Symbology =  { categoryId: entry.geomParams.categoryId, subCategoryId: entry.geomParams.subCategoryId };
 
-    if (entry.geomParams.lineColor)
+    if (undefined !== entry.geomParams.lineColor)
       symb.color = entry.geomParams.lineColor;
 
-    if (entry.geomParams.materialId)
+    if (undefined !== entry.geomParams.materialId)
       symb.materialId = entry.geomParams.materialId;
 
     result.push(symb);
@@ -284,7 +284,7 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
   it("inlines multiple references in a single element", () => {
   });
 
-  it("resets element symbology", () => {
+  it.only("resets element symbology", () => {
     const part1 = insertGeometryPart([
       { pos: 1 },
       { color: ColorDef.green },
