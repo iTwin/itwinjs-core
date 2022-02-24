@@ -296,7 +296,7 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     expectGeom(readElementGeom(part2), [
       { categoryId: "0", subCategoryId: "0" },
       { pos: 2 },
-      { categoryId: "0", subCategoryId: "0", materialId },
+      { categoryId: "0", subCategoryId: "0", materialId }, // fails - comes back with materialId="0"...
       { pos: 2.5 },
     ]);
 
