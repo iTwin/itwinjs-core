@@ -6,5 +6,6 @@ beta;IModelImporter
 beta;IModelImportOptions
 beta;IModelTransformer 
 beta;IModelTransformOptions
+beta;OptimizeGeometryOptions
 beta;TemplateModelCloner 
 public;TransformerLoggerCategory
