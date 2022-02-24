@@ -35,12 +35,15 @@ function makeGeomParams(symb: Symbology): GeometryParams {
   return params;
 }
 
+interface AppendSubRanges { appendSubRanges: true };
+
 type UnionMember<T, U> = T & { [k in keyof U]?: never };
 
 type GeomWriterEntry =
-  UnionMember<PartRef, Symbology & Primitive> |
-  UnionMember<Symbology, PartRef & Primitive> |
-  UnionMember<Primitive, PartRef & Symbology>;
+  UnionMember<PartRef, Symbology & Primitive & AppendSubRanges> |
+  UnionMember<Symbology, PartRef & Primitive & AppendSubRanges> |
+  UnionMember<Primitive, PartRef & Symbology & AppendSubRanges> |
+  UnionMember<AppendSubRanges, Symbology & Primitive & PartRef>;
 
 class GeomWriter {
   public readonly builder: GeometryStreamBuilder;
@@ -58,6 +61,8 @@ class GeomWriter {
       this.builder.appendGeometryParamsChange(makeGeomParams(entry));
     else if (undefined !== entry.pos)
       this.builder.appendGeometry(Loop.createPolygon([new Point3d(entry.pos, 0, 0), new Point3d(entry.pos + 1, 0, 0), new Point3d(entry.pos + 1, 1, 0), new Point3d(entry.pos, 1, 0)]));
+    else if (undefined !== entry.appendSubRanges)
+      this.builder.appendGeometryRanges();
   }
 }
 
@@ -70,7 +75,7 @@ type GeomStreamEntry =
   UnionMember<SubRange, PartRef & Symbology & Primitive> |
   UnionMember<Primitive, PartRef & Symbology & SubRange>;
 
-function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] {
+function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] & { viewIndependent: boolean } {
   const result: GeomStreamEntry[] = [];
   for (const entry of iter) {
     const symb: Symbology =  { categoryId: entry.geomParams.categoryId, subCategoryId: entry.geomParams.subCategoryId };
@@ -117,7 +122,8 @@ function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] {
     }
   }
 
-  return result;
+  (result as any).viewIndependent = iter.isViewIndependent;
+  return result as GeomStreamEntry[] & { viewIndependent: boolean };
 }
 
 describe.only("DgnDb.inlineGeometryPartReferences", () => {
@@ -205,7 +211,7 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     return elemId;
   }
 
-  function readElementGeom(id: string): GeomStreamEntry[] {
+  function readElementGeom(id: string): GeomStreamEntry[] & { viewIndependent: boolean } {
     let iter;
     const elem = imodel.elements.getElement({ id, wantGeometry: true });
     if (elem instanceof GeometryPart) {
@@ -246,6 +252,14 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     // Inline and delete the part.
     expect(inlinePartRefs()).to.equal(1);
     expect(imodel.elements.tryGetElement(partId)).to.be.undefined;
+
+    const geom = readElementGeom(elemId);
+    expect(geom.viewIndependent).to.be.false;
+    expectGeom(geom, [
+      { categoryId, subCategoryId: blueSubCategoryId },
+      { low: 123 },
+      { pos: 123 },
+    ]);
   });
 
   it("inlines and deletes unique parts, ignoring non-unique parts", () => {
@@ -279,9 +293,6 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
       { low: 42 },
       { pos: 42 },
     ]);
-  });
-
-  it("inlines multiple references in a single element", () => {
   });
 
   it("applies element symbology to part and resets element symbology after embedding part", () => {
@@ -361,16 +372,76 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     ]);
   });
 
-  it("has no effect if inlining fails", () => {
-  });
-
   it("inserts subgraphic ranges for parts", () => {
+    const part1 = insertGeometryPart([{ pos: 1 }]);
+    const part2 = insertGeometryPart([{ pos: 2 }]);
+    const elem = insertElement([
+      { pos: -1 },
+      { partId: part1 },
+      { partId: part2, origin: 5 },
+    ]);
+
+    expect(inlinePartRefs()).to.equal(2);
+
+    expectGeom(readElementGeom(elem), [
+      { categoryId, subCategoryId: blueSubCategoryId },
+      { pos: -1 },
+      { low: 1 },
+      { pos: 1 },
+      { low: 7 },
+      { pos: 7 },
+    ]);
   });
 
   it("preserves existing subgraphic ranges", () => {
+    const partId = insertGeometryPart([{ pos: 0 }]);
+    const elem = insertElement([
+      { appendSubRanges: true },
+      { pos: -1 },
+      { partId },
+      { pos: 1 },
+    ]);
+
+    expectGeom(readElementGeom(elem), [
+      { categoryId, subCategoryId: blueSubCategoryId },
+      { low: -1 },
+      { pos: -1 },
+      { partId },
+      { low: 1 },
+      { pos: 1 },
+    ]);
+
+    expect(inlinePartRefs()).to.equal(1);
+
+    expectGeom(readElementGeom(elem), [
+      { categoryId, subCategoryId: blueSubCategoryId },
+      { low: -1 },
+      { pos: -1 },
+      { low: 0 },
+      { pos: 0 },
+      { low: 1 },
+      { pos: 1 },
+    ]);
   });
 
   it("inserts subgraphic ranges geometry following part", () => {
+    const partId = insertGeometryPart([{ pos: 1 }]);
+    const elem = insertElement([
+      { pos: 0 },
+      { partId },
+      { pos: 2 },
+    ]);
+
+    expect(inlinePartRefs()).to.equal(1);
+
+    expectGeom(readElementGeom(elem), [
+      { categoryId, subCategoryId: blueSubCategoryId },
+      { pos: 0 },
+      { low: 1 },
+      { pos: 1 },
+      { low: 2 },
+      { pos: 2 },
+    ]);
   });
 
   it("applies transform to patterns and line styles", () => {
