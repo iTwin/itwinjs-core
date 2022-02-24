@@ -386,8 +386,10 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     expectGeom(readElementGeom(elem), [
       { categoryId, subCategoryId: blueSubCategoryId },
       { pos: -1 },
+      { categoryId, subCategoryId: blueSubCategoryId },
       { low: 1 },
       { pos: 1 },
+      { categoryId, subCategoryId: blueSubCategoryId },
       { low: 7 },
       { pos: 7 },
     ]);
@@ -406,7 +408,9 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: blueSubCategoryId },
       { low: -1 },
       { pos: -1 },
+      { categoryId, subCategoryId: blueSubCategoryId },
       { partId },
+      { categoryId, subCategoryId: blueSubCategoryId },
       { low: 1 },
       { pos: 1 },
     ]);
@@ -417,8 +421,10 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: blueSubCategoryId },
       { low: -1 },
       { pos: -1 },
+      { categoryId, subCategoryId: blueSubCategoryId },
       { low: 0 },
       { pos: 0 },
+      { categoryId, subCategoryId: blueSubCategoryId },
       { low: 1 },
       { pos: 1 },
     ]);
@@ -437,8 +443,10 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     expectGeom(readElementGeom(elem), [
       { categoryId, subCategoryId: blueSubCategoryId },
       { pos: 0 },
+      { categoryId, subCategoryId: blueSubCategoryId },
       { low: 1 },
       { pos: 1 },
+      { categoryId, subCategoryId: blueSubCategoryId },
       { low: 2 },
       { pos: 2 },
     ]);
