@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { Point3d, PointString3d, Range3dProps } from "@itwin/core-geometry";
+import { LineString3d, Loop, Point3d, Range3dProps } from "@itwin/core-geometry";
 import {
   Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
 } from "@itwin/core-common";
@@ -13,7 +13,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-// The only geometry in our geometry streams will be line segments of length 1m in X, with origin at (pos, 0, 0)
+// The only geometry in our geometry streams will be squares of 1 meter in x and y, with origin at (pos, 0, 0).
 interface Primitive { pos: number }
 
 interface PartRef {
@@ -57,7 +57,7 @@ class GeomWriter {
     else if (entry.subCategoryId || entry.categoryId || entry.color || entry.materialId)
       this.builder.appendGeometryParamsChange(makeGeomParams(entry));
     else if (undefined !== entry.pos)
-      this.builder.appendGeometry(PointString3d.create([new Point3d(entry.pos, 0, 0), new Point3d(entry.pos + 1, 0, 0)]));
+      this.builder.appendGeometry(Loop.createPolygon([new Point3d(entry.pos, 0, 0), new Point3d(entry.pos + 1, 0, 0), new Point3d(entry.pos + 1, 1, 0), new Point3d(entry.pos, 1, 0)]));
   }
 }
 
@@ -94,11 +94,15 @@ function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] {
     }
 
     if (entry.primitive.type === "geometryQuery") {
-      expect(entry.primitive.geometry.geometryCategory).to.equal("pointCollection");
-      if (entry.primitive.geometry.geometryCategory === "pointCollection") {
-        const pts = entry.primitive.geometry.points;
-        expect(pts.length).to.equal(2);
+      expect(entry.primitive.geometry.geometryCategory).to.equal("curveCollection");
+      if (entry.primitive.geometry.geometryCategory === "curveCollection") {
+        expect(entry.primitive.geometry.children!.length).to.equal(1);
+        expect(entry.primitive.geometry.children![0]).instanceOf(LineString3d);
+
+        const pts = (entry.primitive.geometry.children![0] as LineString3d).points;
+        expect(pts.length).to.equal(5);
         expect(pts[1].x).to.equal(pts[0].x + 1);
+
         result.push({ pos: pts[0].x });
       }
     } else {
@@ -357,5 +361,8 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
   });
 
   it("applies transform to patterns and line styles", () => {
+  });
+
+  it("does not inline if header flags do not match", () => {
   });
 });
