@@ -284,7 +284,7 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
   it("inlines multiple references in a single element", () => {
   });
 
-  it.only("resets element symbology", () => {
+  it("applies element symbology to part and resets element symbology after embedding part", () => {
     const part1 = insertGeometryPart([
       { pos: 1 },
       { color: ColorDef.green },
@@ -342,20 +342,20 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black },
       { low: 2 },
       { pos: 2 },
-      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black, materialId },
+      { categoryId, subCategoryId: redSubCategoryId, materialId },
       { low: 2.5 },
       { pos: 2.5 },
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black },
       { low: -3 },
       { pos: -3 },
 
-      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black, materialId },
+      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white, materialId },
       { low: 3 },
       { pos: 3 },
-      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white },
+      { categoryId, subCategoryId: redSubCategoryId, materialId: "0" },
       { low: 3.5 },
       { pos: 3.5 },
-      {categoryId, subCategoryId: redSubCategoryId, color: ColorDef.black, materialId },
+      {categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white, materialId },
       { low: -4 },
       { pos: -4 },
     ]);
@@ -364,10 +364,13 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
   it("has no effect if inlining fails", () => {
   });
 
-  it("preserves subgraphic ranges", () => {
+  it("inserts subgraphic ranges for parts", () => {
   });
 
-  it("inserts subgraphic ranges for subsequent geometry", () => {
+  it("preserves existing subgraphic ranges", () => {
+  });
+
+  it("inserts subgraphic ranges geometry following part", () => {
   });
 
   it("applies transform to patterns and line styles", () => {
