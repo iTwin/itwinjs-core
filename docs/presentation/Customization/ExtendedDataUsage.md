@@ -50,7 +50,7 @@ Now [Node]($presentation-common) created using Presentation Rules will have `ext
 
 ## Customize Tree Node Item Style
 
-In order to change [TreeNodeItem]($components-react) style of specific ECInstance nodes we need to define style with Presentation Rules. This is achievable using [ExtendedDataRule](./ExtendedDataRule.md):
+In order to change [TreeNodeItem]($components-react) style based on ECInstance we need to define style with Presentation Rules. This is achievable using [ExtendedDataRule](./ExtendedDataRule.md):
 
 ```json
 ...
