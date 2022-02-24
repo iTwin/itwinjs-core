@@ -189,8 +189,11 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     return partId;
   }
 
-  function insertElement(geom: GeomWriterEntry[]): string {
+  function insertElement(geom: GeomWriterEntry[], viewIndependent = false): string {
     const writer = new GeomWriter({ categoryId });
+    if (viewIndependent)
+      writer.builder.isViewIndependent = true;
+
     for (const entry of geom)
       writer.append(entry);
 
@@ -456,5 +459,11 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
   });
 
   it("preserves element header flags", () => {
+    const partId = insertGeometryPart([{ pos: 1 }]);
+    const elemId = insertElement([{ partId }], true);
+    expect(readElementGeom(elemId).viewIndependent).to.be.true;
+
+    expect(inlinePartRefs()).to.equal(1);
+    expect(readElementGeom(elemId).viewIndependent).to.be.true;
   });
 });
