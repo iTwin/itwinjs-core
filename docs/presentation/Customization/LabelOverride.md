@@ -1,6 +1,6 @@
 # LabelOverride Customization Rule
 
-**Note** This rule is deprecated. Use [InstanceLabelOverride](./InstanceLabelOverride.md) rule instead.
+> **Note** This rule is deprecated. Use [InstanceLabelOverride](./InstanceLabelOverride.md) rule instead.
 
 > TypeScript type: [LabelOverride]($presentation-common).
 

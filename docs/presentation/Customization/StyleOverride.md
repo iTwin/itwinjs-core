@@ -1,6 +1,6 @@
 # StyleOverride Customization Rule
 
-**Note** This rule is deprecated. Use [ExtendedDataRule](./ExtendedDataRule.md) instead.
+> **Note** This rule is deprecated. Use [extended data](./ExtendedDataUsage.md#customize-tree-node-item-style) instead.
 
 > TypeScript type: [StyleOverride]($presentation-common).
 

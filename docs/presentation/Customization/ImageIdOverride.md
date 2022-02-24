@@ -1,6 +1,6 @@
 # ImageIdOverride Customization Rule
 
-**Note** This rule is deprecated. Use [ExtendedDataRule](./ExtendedDataRule.md) instead.
+> **Note** This rule is deprecated. Use [extended data](./ExtendedDataUsage.md#customize-tree-node-item-icon) instead.
 
 > TypeScript type: [ImageIdOverride]($presentation-common).
 

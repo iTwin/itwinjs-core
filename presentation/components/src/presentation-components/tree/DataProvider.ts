@@ -55,7 +55,7 @@ export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
   appendChildrenCountForGroupingNodes?: boolean;
 
   /**
-   * Callback with provides a way to customize tree node items while provider is loading them.
+   * Callback which provides a way to customize how data is mapped between [Node]($presentation-common) and [TreeNodeItem]($components-react).
    * @beta
    */
   customizeTreeNodeItem?: (item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) => void;

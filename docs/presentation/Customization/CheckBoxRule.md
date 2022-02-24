@@ -1,6 +1,6 @@
 # CheckBox Customization Rule
 
-**Note** This rule is deprecated. Use [ExtendedDataRule](./ExtendedDataRule.md) instead.
+> **Note** This rule is deprecated. Use [extended data](./ExtendedDataUsage.md#customize-tree-node-item-checkbox) instead.
 
 > TypeScript type: [CheckBoxRule]($presentation-common).
 
