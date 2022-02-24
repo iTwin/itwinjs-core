@@ -71,7 +71,7 @@ class GeomWriter {
   }
 }
 
-// SubGraphicRange where x dimension is 1 meter and x and z are empty.
+// SubGraphicRange where x dimension is 1 meter and y and z are empty.
 interface SubRange { low: number }
 
 type GeomStreamEntry =
