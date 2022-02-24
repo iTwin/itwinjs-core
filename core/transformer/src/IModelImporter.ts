@@ -505,8 +505,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   public optimizeGeometry(options: OptimizeGeometryOptions): void {
     if (options.inlineUniqueGeometryParts) {
       const result = this.targetDb.nativeDb.inlineGeometryPartReferences();
-      if (result.numCandidateParts > 0)
-        Logger.logInfo(loggerCategory, `Inlined ${result.numRefsInlined} references to ${result.numCandidateParts} geometry parts and deleted ${result.numPartsDeleted} parts.`);
+      Logger.logInfo(loggerCategory, `Inlined ${result.numRefsInlined} references to ${result.numCandidateParts} geometry parts and deleted ${result.numPartsDeleted} parts.`);
     }
   }
 }
