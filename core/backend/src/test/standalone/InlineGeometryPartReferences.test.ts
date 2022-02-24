@@ -6,6 +6,7 @@ import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { LineString3d, Loop, Point3d, Range3dProps } from "@itwin/core-geometry";
 import {
+  AreaPattern,
   Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
 } from "@itwin/core-common";
 import {
@@ -26,12 +27,16 @@ interface Symbology {
   subCategoryId?: string;
   color?: ColorDef;
   materialId?: string;
+  patternOrigin?: number;
 }
 
 function makeGeomParams(symb: Symbology): GeometryParams {
   const params = new GeometryParams(symb.categoryId ?? Id64.invalid, symb.subCategoryId);
   params.lineColor = symb.color;
   params.materialId = symb.materialId;
+  if (symb.patternOrigin)
+    params.pattern = AreaPattern.Params.fromJSON({ origin: [symb.patternOrigin, 0, 0] });
+
   return params;
 }
 
@@ -57,7 +62,7 @@ class GeomWriter {
   public append(entry: GeomWriterEntry): void {
     if (entry.partId)
       this.builder.appendGeometryPart3d(entry.partId, new Point3d(entry.origin, 0, 0));
-    else if (entry.subCategoryId || entry.categoryId || entry.color || entry.materialId)
+    else if (entry.subCategoryId || entry.categoryId || entry.color || entry.materialId || entry.patternOrigin)
       this.builder.appendGeometryParamsChange(makeGeomParams(entry));
     else if (undefined !== entry.pos)
       this.builder.appendGeometry(Loop.createPolygon([new Point3d(entry.pos, 0, 0), new Point3d(entry.pos + 1, 0, 0), new Point3d(entry.pos + 1, 1, 0), new Point3d(entry.pos, 1, 0)]));
@@ -85,6 +90,11 @@ function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] & { vie
 
     if (undefined !== entry.geomParams.materialId)
       symb.materialId = entry.geomParams.materialId;
+
+    if (entry.geomParams.pattern) {
+      expect(entry.geomParams.pattern.origin).not.to.be.undefined;
+      symb.patternOrigin = entry.geomParams.pattern.origin!.x;
+    }
 
     result.push(symb);
 
@@ -126,7 +136,7 @@ function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] & { vie
   return result as GeomStreamEntry[] & { viewIndependent: boolean };
 }
 
-describe.only("DgnDb.inlineGeometryPartReferences", () => {
+describe("DgnDb.inlineGeometryPartReferences", () => {
   let imodel: SnapshotDb;
   let modelId: string;
   let categoryId: string;
@@ -455,7 +465,55 @@ describe.only("DgnDb.inlineGeometryPartReferences", () => {
     ]);
   });
 
-  it("applies transform to patterns and line styles", () => {
+  it("applies transform to patterns", () => {
+    const part1 = insertGeometryPart([{ pos: 1 }]);
+    const part2 = insertGeometryPart([{ patternOrigin: 123 }, { pos: 2 }]);
+
+    expectGeom(readElementGeom(part2), [
+      { categoryId: "0", subCategoryId: "0", patternOrigin: 123 },
+      { pos: 2 },
+    ]);
+
+    const elemId = insertElement([
+      { patternOrigin: 456 },
+      { pos: -1 },
+      { partId: part1, origin: 8 },
+      { pos: -2 },
+      { partId: part2, origin: 12 },
+      { pos: -3 },
+    ]);
+
+    expectGeom(readElementGeom(elemId), [
+      { categoryId, subCategoryId: blueSubCategoryId, patternOrigin: 456 },
+      { pos: -1 },
+      { categoryId, subCategoryId: blueSubCategoryId, patternOrigin: 456 },
+      { partId: part1, origin: 8 },
+      { categoryId, subCategoryId: blueSubCategoryId, patternOrigin: 456 },
+      { pos: -2 },
+      { categoryId, subCategoryId: blueSubCategoryId, patternOrigin: 456 },
+      { partId: part2, origin: 12 },
+      { categoryId, subCategoryId: blueSubCategoryId, patternOrigin: 456 },
+      { pos: -3 },
+    ]);
+
+    expect(inlinePartRefs()).to.equal(2);
+
+    expectGeom(readElementGeom(elemId), [
+      { categoryId, subCategoryId: blueSubCategoryId, patternOrigin: 456 },
+      { pos: -1 },
+      { categoryId, subCategoryId: blueSubCategoryId, patternOrigin: 456 },
+      { low: 1 + 8 },
+      { pos: 1 + 8 },
+      { categoryId, subCategoryId: blueSubCategoryId, patternOrigin: 456 },
+      { low: -2 },
+      { pos: -2 },
+      { categoryId, subCategoryId: blueSubCategoryId, patternOrigin: 123 + 12 },
+      { low: 2 + 12 },
+      { pos: 2 + 12 },
+      { categoryId, subCategoryId: blueSubCategoryId, patternOrigin: 456 },
+      { low: -3 },
+      { pos: -3 },
+    ]);
   });
 
   it("preserves element header flags", () => {
