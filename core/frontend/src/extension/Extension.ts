@@ -42,7 +42,7 @@ export interface ExtensionManifest {
 export interface BuildExtensionManifest extends ExtensionManifest {
   /** Only valid when the Extension is loaded at build-time.
    *
-   * Defines how to load the Extension manifest and
+   * Defines the main ES module that will be imported
    */
   readonly module: string;
 }
