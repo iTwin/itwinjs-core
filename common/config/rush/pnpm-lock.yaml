@@ -522,20 +522,23 @@ importers:
 
   ../../core/extension:
     specifiers:
+      '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/eslint-plugin': workspace:*
       eslint: ^7.11.0
       rimraf: ^3.0.2
-    dependencies:
+      typescript: ~4.4.0
+    devDependencies:
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
+      '@itwin/build-tools': link:../../tools/build
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
-    devDependencies:
-      '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       eslint: 7.32.0
       rimraf: 3.0.2
+      typescript: 4.4.4
 
   ../../core/frontend:
     specifiers:

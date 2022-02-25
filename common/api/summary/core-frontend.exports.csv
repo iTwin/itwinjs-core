@@ -161,7 +161,6 @@ public;EventController
 public;EventHandled
 beta;ExtensionAdmin
 beta;ExtensionHost
-beta;ExtensionImpl
 beta;ExtensionLoader
 beta;ExtensionLoaderProps
 beta;ExtensionManifest
@@ -651,7 +650,6 @@ public;ToolAssistanceInstructions
 public;ToolAssistanceKeyboardInfo
 public;ToolAssistanceSection
 public;ToolList = ToolType[]
-beta;ToolProvider 
 public;ToolRegistry
 public;ToolSettings
 internal;ToolSettingsState

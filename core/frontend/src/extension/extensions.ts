@@ -20,7 +20,5 @@
 
 export * from "./Extension";
 export * from "./ExtensionAdmin";
-export * from "./ExtensionImpl";
 export * from "./ExtensionLoader";
 export * from "./ExtensionHost";
-import "./ExtensionRuntime";

@@ -37,6 +37,7 @@
     {
       "name": "@itwin/appui-abstract",
       "allowedCategories": [
+        "common",
         "edit",
         "extensions",
         "frontend",
