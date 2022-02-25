@@ -49,10 +49,18 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 [[include:ExtendedDataRule.Condition.Ruleset]]
 ```
 
+```ts
+[[include:ExtendedDataRule.Condition.Result]]
+```
+
 ### Attribute: `items`
 
 A map of ECExpressions whose evaluation results are used as extended data values.
 
 ```ts
 [[include:ExtendedDataRule.Items.Ruleset]]
+```
+
+```ts
+[[include:ExtendedDataRule.Items.Result]]
 ```

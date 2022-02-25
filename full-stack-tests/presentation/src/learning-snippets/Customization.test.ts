@@ -93,12 +93,13 @@ describe("Learning Snippets", () => {
         };
         // __PUBLISH_EXTRACT_END__
 
-        // verify only "B" node has extended data
+        // __PUBLISH_EXTRACT_START__ ExtendedDataRule.Condition.Result
+        // Ensure only "B" node has `extendedData` property.
         const nodes = await Presentation.presentation.getNodes({
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes).to.containSubset([{
+        expect(nodes).to.be.lengthOf(2).and.to.containSubset([{
           label: { displayValue: "A" },
           extendedData: undefined,
         }, {
@@ -107,6 +108,7 @@ describe("Learning Snippets", () => {
             iconName: "custom-icon",
           },
         }]);
+        // __PUBLISH_EXTRACT_END__
       });
 
       it("uses `items` attribute", async () => {
@@ -134,12 +136,13 @@ describe("Learning Snippets", () => {
         };
         // __PUBLISH_EXTRACT_END__
 
-        // verify all items exist in node's extended data
+        // __PUBLISH_EXTRACT_START__ ExtendedDataRule.Items.Result
+        // Ensure node has `extendedData` property containing items defined in rule.
         const nodes = await Presentation.presentation.getNodes({
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes).to.containSubset([{
+        expect(nodes).to.be.lengthOf(1).and.to.containSubset([{
           label: { displayValue: "A" },
           extendedData: {
             iconName: "custom-icon",
@@ -147,6 +150,7 @@ describe("Learning Snippets", () => {
             typeDescription: "Node is of type A",
           },
         }]);
+        // __PUBLISH_EXTRACT_END__
       });
 
     });
@@ -507,7 +511,7 @@ describe("Learning Snippets", () => {
             ruleType: RuleTypes.PropertySorting,
             priority: 1,
             class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            propertyName: "Roll",
+            propertyName: "Pitch",
           }, {
             ruleType: RuleTypes.DisabledSorting,
             priority: 2,
@@ -516,7 +520,7 @@ describe("Learning Snippets", () => {
         };
         // __PUBLISH_EXTRACT_END__
 
-        // verify that nodes are sorted by `Pitch` property
+        // verify that nodes are not sorted by `Pitch` property
         const nodes = await Presentation.presentation.getNodes({
           imodel,
           rulesetOrId: ruleset,
@@ -710,8 +714,7 @@ describe("Learning Snippets", () => {
       it("uses composite value specification", async () => {
         // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.CompositeValueSpecification.Ruleset
         // The ruleset has root node rule that returns `bis.GeometricElement3d` instances and
-        // customization rule to override instance label composed of string "ECClass" and full name of
-        // instance ECClass.
+        // customization rule to override instance label composed of string "ECClass" and instance ECClass name.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -782,6 +785,63 @@ describe("Learning Snippets", () => {
           { label: { displayValue: "-160.99" } },
           { label: { displayValue: "0.00" } },
           { label: { displayValue: "90.00" } },
+        ]);
+      });
+
+      it("uses related property value specification", async () => {
+        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.RelatedPropertyValueSpecification.Ruleset
+        // The ruleset has root node rule that returns `meta.ECEnumerationDef` instances and
+        // customization rule to override instance label using `Alias` property value of
+        // `meta.ECSchemaDef` instance that is containing `meta.ECEnumerationDef` instance.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: { schemaName: "ECDbMeta", classNames: ["ECEnumerationDef"] },
+              groupByClass: false,
+              groupByLabel: false,
+            }],
+          }, {
+            ruleType: RuleTypes.InstanceLabelOverride,
+            class: { schemaName: "ECDbMeta", className: "ECEnumerationDef" },
+            values: [{
+              specType: InstanceLabelOverrideValueSpecificationType.Property,
+              propertySource: {
+                relationship: { schemaName: "ECDbMeta", className: "SchemaOwnsEnumerations" },
+                direction: RelationshipDirection.Backward,
+              },
+              propertyName: "Alias",
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // verify that labels were set to related `meta.ECSchemaDef` instance `Alias` property value
+        const nodes = await Presentation.presentation.getNodes({
+          imodel,
+          rulesetOrId: ruleset,
+        });
+        expect(nodes).to.be.lengthOf(18).and.to.containSubset([
+          { label: { displayValue: "bis" } },
+          { label: { displayValue: "bis" } },
+          { label: { displayValue: "bsca" } },
+          { label: { displayValue: "bsca" } },
+          { label: { displayValue: "bsca" } },
+          { label: { displayValue: "CoreCA" } },
+          { label: { displayValue: "CoreCA" } },
+          { label: { displayValue: "dgnca" } },
+          { label: { displayValue: "ecdbf" } },
+          { label: { displayValue: "meta" } },
+          { label: { displayValue: "meta" } },
+          { label: { displayValue: "meta" } },
+          { label: { displayValue: "meta" } },
+          { label: { displayValue: "meta" } },
+          { label: { displayValue: "meta" } },
+          { label: { displayValue: "meta" } },
+          { label: { displayValue: "meta" } },
+          { label: { displayValue: "PCJTest" } },
         ]);
       });
 

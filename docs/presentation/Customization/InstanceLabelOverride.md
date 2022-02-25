@@ -2,9 +2,7 @@
 
 > TypeScript type: [InstanceLabelOverride]($presentation-common).
 
-Instance label override rule provides a way to set instance label to one of its property values, other attributes and/or combination of them. If more
-advanced labels are necessary, there's also a [LabelOverride rule](./LabelOverride.md) which uses [ECExpressions](../Advanced/ECExpressions.md) to create the
-label, but costs more performance-wise.
+Instance label override rule provides a way to set instance label to one of its property values, other attributes and/or combination of them.
 
 ## Attributes
 
@@ -38,6 +36,8 @@ Defines the order in which rules are handled - higher priority means the rule is
 [[include:InstanceLabelOverride.Priority.Ruleset]]
 ```
 
+![Example of using priority attribute](./media/instancelabeloverride-priority-attribute.png)
+
 ### Attribute: `onlyIfNotHandled`
 
 > **Default value:** `false`
@@ -48,6 +48,8 @@ Tells the library that the rule should only be handled if no other rule of the s
 [[include:InstanceLabelOverride.OnlyIfNotHandled.Ruleset]]
 ```
 
+![Example of using onlyIfNotHandled attribute](./media/instancelabeloverride-onlyifnothandled-attribute.png)
+
 ### Attribute: `class`
 
 Specifies the ECClass to apply this rule to.
@@ -55,6 +57,8 @@ Specifies the ECClass to apply this rule to.
 ```ts
 [[include:InstanceLabelOverride.Class.Ruleset]]
 ```
+
+![Example of using class attribute](./media/instancelabeloverride-class-attribute.png)
 
 ### Attribute: `values`
 
@@ -82,6 +86,8 @@ Specification allows creating a label value composited using multiple other spec
 [[include:InstanceLabelOverride.CompositeValueSpecification.Ruleset]]
 ```
 
+![Example of using composite value specification](./media/instancelabeloverride-composite-value.png)
+
 #### Property value specification
 
 Specification uses property value as the label content.
@@ -91,9 +97,23 @@ Specification uses property value as the label content.
 | `propertyName`   | Yes       | `string`                                                                            |            | Name of the property whose value should be used.                                                                                                        |
 | `propertySource` | No        | [`RelationshipPathSpecification`](../Common-Rules/RelationshipPathSpecification.md) | Empty path | [Specification of the relationship path](../Common-Rules/RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the property. |
 
+Two types of properties can be used to override label:
+
+- Direct instance properties.
+
 ```ts
 [[include:InstanceLabelOverride.PropertyValueSpecification.Ruleset]]
 ```
+
+![Example of using property value specification](./media/instancelabeloverride-property-value.png)
+
+- Properties of related instance.
+
+```ts
+[[include:InstanceLabelOverride.RelatedPropertyValueSpecification.Ruleset]]
+```
+
+![Example of using related property value specification](./media/instancelabeloverride-related-property-value.png)
 
 #### String value specification
 
@@ -107,6 +127,8 @@ Specification uses the specified value as the label content.
 [[include:InstanceLabelOverride.StringValueSpecification.Ruleset]]
 ```
 
+![Example of using string value specification](./media/instancelabeloverride-string-value.png)
+
 #### Class name value specification
 
 Specification uses ECClass name as the label content.
@@ -119,6 +141,11 @@ Specification uses ECClass name as the label content.
 [[include:InstanceLabelOverride.ClassNameValueSpecification.Ruleset]]
 ```
 
+| `full` values    | Result                                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| `full = true`    | ![Example of using class name value specification](./media/instancelabeloverride-classname-full-value.png) |
+| `full = false`   | ![Example of using class name value specification](./media/instancelabeloverride-classname-value.png)      |
+
 #### Class label value specification
 
 Specification uses ECClass display label as the label content. It has no additional attributes.
@@ -126,6 +153,8 @@ Specification uses ECClass display label as the label content. It has no additio
 ```ts
 [[include:InstanceLabelOverride.ClassLabelValueSpecification.Ruleset]]
 ```
+
+![Example of using class label value specification](./media/instancelabeloverride-classlabel-value.png)
 
 #### BriefcaseId value specification
 
@@ -135,6 +164,8 @@ Specification returns ECInstance's briefcase ID in base36 format. It has no addi
 [[include:InstanceLabelOverride.BriefcaseIdValueSpecification.Ruleset]]
 ```
 
+![Example of using briefcaseId value specification](./media/instancelabeloverride-briefcaseid-value.png)
+
 #### LocalId value specification
 
 Specification returns ECInstance's local ID in base36 format. It has no additional attributes.
@@ -142,6 +173,8 @@ Specification returns ECInstance's local ID in base36 format. It has no addition
 ```ts
 [[include:InstanceLabelOverride.LocalIdValueSpecification.Ruleset]]
 ```
+
+![Example of using localId value specification](./media/instancelabeloverride-localid-value.png)
 
 #### Related instance label value specification
 
@@ -154,3 +187,5 @@ Specification uses label of another related instance as the label content.
 ```ts
 [[include:InstanceLabelOverride.RelatedInstanceLabelValueSpecification.Ruleset]]
 ```
+
+![Example of using related instance label value specification](./media/instancelabeloverride-relatedinstancelabel-value.png)

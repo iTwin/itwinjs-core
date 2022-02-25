@@ -47,6 +47,8 @@ Defines the order in which rules are handled - higher priority means the rule is
 [[include:PropertySortingRule.Priority.Ruleset]]
 ```
 
+![Example of using priority attribute](./media/sortingrule-sorted-asc.png)
+
 ### Attribute: `condition`
 
 > **Default value:** `""`
@@ -57,6 +59,11 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 [[include:SortingRule.Condition.Ruleset]]
 ```
 
+| Ruleset variable values   | Result                                                                 |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `SORT_INSTANCES = true`   | ![Example of using rule condition](./media/sortingrule-sorted-asc.png) |
+| `SORT_INSTANCES = false`  | ![Example of using rule condition](./media/sortingrule-unsorted.png)   |
+
 ### Attribute: `class`
 
 Specifies ECClass whose ECInstances should be sorted.
@@ -64,6 +71,8 @@ Specifies ECClass whose ECInstances should be sorted.
 ```ts
 [[include:SortingRule.Class.Ruleset]]
 ```
+
+![Example of using class attribute](./media/sortingrule-sorted-asc.png)
 
 ### Attribute: `isPolymorphic`
 
@@ -75,6 +84,11 @@ Specifies that `class` attribute defined in this rule should be handled polymorp
 [[include:SortingRule.IsPolymorphic.Ruleset]]
 ```
 
+| `isPolymorphic` values    | Result                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| `isPolymorphic = true`    | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png) |
+| `isPolymorphic = false`   | ![Example of using isPolymorphic attribute](./media/sortingrule-unsorted.png)   |
+
 ### Attribute: `propertyName`
 
 Specifies name of the property which should be used for sorting.
@@ -82,6 +96,8 @@ Specifies name of the property which should be used for sorting.
 ```ts
 [[include:PropertySortingRule.PropertyName.Ruleset]]
 ```
+
+![Example of using propertyName attribute](./media/sortingrule-sorted-asc.png)
 
 ### Attribute: `sortAscending`
 
@@ -92,6 +108,11 @@ Specifies whether instances should be sorted in ascending order or descending.
 ```ts
 [[include:PropertySortingRule.SortAscending.Ruleset]]
 ```
+
+| `sortAscending` values    | Result                                                                           |
+| ------------------------- | -------------------------------------------------------------------------------- |
+| `sortAscending = true`    | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png)  |
+| `sortAscending = false`   | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-desc.png) |
 
 ## Disabled Sorting Rule
 
@@ -133,6 +154,8 @@ Defines the order in which rules are handled - higher priority means the rule is
 [[include:DisabledSortingRule.Priority.Ruleset]]
 ```
 
+![Example of using priority attribute](./media/sortingrule-unsorted.png)
+
 ### Attribute: `condition`
 
 > **Default value:** `""`
@@ -143,6 +166,11 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 [[include:SortingRule.Condition.Ruleset]]
 ```
 
+| Ruleset variable values   | Result                                                                 |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `SORT_INSTANCES = true`   | ![Example of using rule condition](./media/sortingrule-sorted-asc.png) |
+| `SORT_INSTANCES = false`  | ![Example of using rule condition](./media/sortingrule-unsorted.png)   |
+
 ### Attribute: `class`
 
 Specifies ECClass whose instances should not be sorted.
@@ -150,6 +178,8 @@ Specifies ECClass whose instances should not be sorted.
 ```ts
 [[include:SortingRule.Class.Ruleset]]
 ```
+
+![Example of using class attribute](./media/sortingrule-sorted-asc.png)
 
 ### Attribute: `isPolymorphic`
 
@@ -160,3 +190,8 @@ Specifies that `class` attribute defined in this rule should be handled polymorp
 ```ts
 [[include:SortingRule.IsPolymorphic.Ruleset]]
 ```
+
+| `isPolymorphic` values    | Result                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| `isPolymorphic = true`    | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png) |
+| `isPolymorphic = false`   | ![Example of using isPolymorphic attribute](./media/sortingrule-unsorted.png)   |
