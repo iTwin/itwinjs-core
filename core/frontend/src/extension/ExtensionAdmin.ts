@@ -36,7 +36,7 @@ import { ExtensionLoader } from "./ExtensionLoader";
 /** The Extension Admin controls the list of currently known, loaded and executing an Extension.
  * Handles the loading of Extensions and maintains a list of the currently loaded Extensions.
  *
- * @beta
+ * @alpha
  */
 export class ExtensionAdmin {
   /** The list of places to download an Extension.  */

@@ -7,19 +7,19 @@
  */
 
 /**
- * @beta
+ * @alpha
  */
 export enum ActivationEvent {
   onStartup = "onStartup",
 }
 
 /**
- * @beta
+ * @alpha
  */
 export type ResolveFunc = () => Promise<any>;
 
 /** Defines the format of an Extension manifest
- * @beta
+ * @alpha
 */
 export interface ExtensionManifest {
   /** The extension name */
@@ -38,7 +38,7 @@ export interface ExtensionManifest {
   readonly activationEvents: ActivationEvent[];
 }
 
-/** @beta */
+/** @alpha */
 export interface BuildExtensionManifest extends ExtensionManifest {
   /** Only valid when the Extension is loaded at build-time.
    *
@@ -48,7 +48,7 @@ export interface BuildExtensionManifest extends ExtensionManifest {
 }
 
 /** Describes an Extension that has already been downloaded and has a location files can be easily executed.
- * @beta
+ * @alpha
 */
 export interface LocalExtensionProps {
   readonly manifest: ExtensionManifest;

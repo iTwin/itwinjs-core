@@ -1026,7 +1026,7 @@ export enum ACSType {
     Spherical = 3
 }
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export enum ActivationEvent {
     // (undocumented)
     onStartup = "onStartup"
@@ -1765,12 +1765,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseTxns(numOperations: number): Promise<IModelStatus>;
 }
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export interface BuildExtensionManifest extends ExtensionManifest {
     readonly module: string;
 }
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export interface BuiltInExtensionLoaderProps {
     // (undocumented)
     loader: ResolveFunc;
@@ -3088,7 +3088,7 @@ export enum EventHandled {
     Yes = 1
 }
 
-// @beta
+// @alpha
 export class ExtensionAdmin {
     constructor();
     addBuildExtension(manifestPromise: Promise<BuildExtensionManifest>, mainFunc?: ResolveFunc): Promise<void>;
@@ -3098,7 +3098,7 @@ export class ExtensionAdmin {
     onStartup: () => Promise<void>;
 }
 
-// @beta
+// @alpha
 export class ExtensionHost {
     protected constructor();
     // (undocumented)
@@ -3115,20 +3115,20 @@ export class ExtensionHost {
     static get viewManager(): ViewManager;
 }
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export class ExtensionImpl {
     constructor(_id: string);
     // (undocumented)
     registerTool(tool: ToolType, onRegistered?: () => any): Promise<void>;
 }
 
-// @beta
+// @alpha
 export interface ExtensionLoader {
     downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
     getManifest(arg: ExtensionLoaderProps): Promise<ExtensionManifest>;
 }
 
-// @beta
+// @alpha
 export interface ExtensionLoaderProps {
     // (undocumented)
     name: string;
@@ -3136,7 +3136,7 @@ export interface ExtensionLoaderProps {
     version: string;
 }
 
-// @beta
+// @alpha
 export interface ExtensionManifest {
     readonly activationEvents: ActivationEvent[];
     readonly description?: string;
@@ -4721,7 +4721,7 @@ export class IModelApp {
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
-    // @beta (undocumented)
+    // @alpha (undocumented)
     static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
@@ -5365,7 +5365,7 @@ export class LengthDescription extends FormattedQuantityDescription {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
-// @beta
+// @alpha
 export interface LocalExtensionProps {
     // (undocumented)
     readonly mainFunc?: ResolveFunc;
@@ -9106,7 +9106,7 @@ export abstract class RenderTextureDrape implements IDisposable {
 // @internal (undocumented)
 export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<IModelTileTreeProps>;
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export type ResolveFunc = () => Promise<any>;
 
 // @internal
@@ -11747,7 +11747,7 @@ export interface ToolAssistanceSection {
 // @public (undocumented)
 export type ToolList = ToolType[];
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export class ToolProvider implements UiItemsProvider {
     constructor(tool: ToolType);
     // (undocumented)
