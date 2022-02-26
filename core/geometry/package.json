@@ -7,7 +7,9 @@
   "typings": "lib/cjs/core-geometry",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
-  "sideEffects": false,
+  "sideEffects": [
+    "./lib/esm/core-geometry.js"
+  ],
   "scripts": {
     "build": "npm run -s build:cjs",
     "build:ci": "npm run -s build && npm run -s build:esm",
