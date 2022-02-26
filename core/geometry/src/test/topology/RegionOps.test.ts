@@ -648,18 +648,15 @@ class HasEllipticalArcProcessor extends RecursiveCurveProcessor {
 class HasStrokablePrimitiveProcessor extends RecursiveCurveProcessor {
   private _hasStrokablePrimitive: boolean;
   private _preserveEllipticalArcs: boolean;
-  private _checkChildrenOnly: boolean;
-  public constructor(preserveEllipticalArcs: boolean = false, checkChildrenOnly: boolean = false) {
+  public constructor(preserveEllipticalArcs: boolean = false) {
     super();
     this._hasStrokablePrimitive = false;
     this._preserveEllipticalArcs = preserveEllipticalArcs;
-    this._checkChildrenOnly = checkChildrenOnly;
   }
-  public override announceCurvePrimitive(data: CurvePrimitive, indexInParent = -1): void {
+  public override announceCurvePrimitive(data: CurvePrimitive, _indexInParent = -1): void {
     if (data instanceof LineSegment3d || data instanceof LineString3d || (data instanceof Arc3d && (data.isCircular || this._preserveEllipticalArcs)))
       return; // not strokable
-    if (!this._checkChildrenOnly || indexInParent >= 1)
-      this._hasStrokablePrimitive = true;
+    this._hasStrokablePrimitive = true;
   }
   public claimResult(): boolean { return this._hasStrokablePrimitive; }
 }
@@ -668,11 +665,10 @@ class HasStrokablePrimitiveProcessor extends RecursiveCurveProcessor {
 function testOffsetSingle(ck: Checker, allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, options: OffsetOptions): void {
   const offsetCurve = RegionOps.constructCurveXYOffset(baseCurve, options);
   if (ck.testDefined(offsetCurve, "Offset computed")) {
-    // spot-check some curve-curve distances, starting with smaller curve
+    // spot-check some curve-curve distances
     if (!options.preserveEllipticalArcs) {
-      let tolFactor = 100 * (options.strokeOptions.hasAngleTol ? options.strokeOptions.angleTol!.degrees : 1);
+      const tolFactor = 1000 * (options.strokeOptions.hasAngleTol ? options.strokeOptions.angleTol!.degrees : 1);
       for (const cp of baseCurve.children) {
-        if (cp instanceof Arc3d && !cp.isCircular) tolFactor *= 10; // ellipse approximations are sloppier
         for (let u = 0.0738; u < 1.0; u += 0.0467) {
           const basePt = cp.fractionToPoint(u);
           const offsetDetail = offsetCurve!.closestPoint(basePt);
@@ -683,7 +679,7 @@ function testOffsetSingle(ck: Checker, allGeometry: GeometryQuery[], delta: Poin
               projectsToVertex = Geometry.isAlmostEqualNumber(scaledParam, Math.trunc(scaledParam));
             }
             if (!projectsToVertex) {  // avoid measuring projections to linestring vertices as they usually exceed offset distance
-              if (!ck.testCoordinateWithToleranceFactor(offsetDetail.point.distance(basePt), Math.abs(options.leftOffsetDistance), tolFactor, "Offset distance spot check")) {
+              if (!ck.testCoordinateWithToleranceFactor(offsetDetail.point.distance(basePt), Math.abs(options.leftOffsetDistance), tolFactor)) {
                 GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, basePt, 0.05, delta.x, delta.y);
                 GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, offsetDetail.point, 0.05, delta.x, delta.y);
               }
@@ -710,12 +706,6 @@ function testOffsetBothSides(ck: Checker, allGeometry: GeometryQuery[], delta: P
 }
 
 function testOffset(ck: Checker, allGeometry: GeometryQuery[], delta: Point2d, baseCurve: Path | Loop, options: OffsetOptions): void {
-  if (true) { // TODO: temporarily disable some inputs until clonePartialCurve is implemented for B-spline curves
-    const processor = new HasStrokablePrimitiveProcessor(options.preserveEllipticalArcs, true);
-    baseCurve.announceToCurveProcessor(processor);
-    if (processor.claimResult())
-      return;
-  }
   testOffsetBothSides(ck, allGeometry, delta, baseCurve, options);
   // toggle ellipse preservation
   if (true) {
@@ -925,7 +915,7 @@ describe("CloneSplitCurves", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("OffsetCurves", () => {
+  it.only("OffsetCurves", () => {
     const allGeometry: GeometryQuery[] = [];
     const ck = new Checker();
     const delta = Point2d.createZero();

@@ -214,54 +214,54 @@ export class BSpline1dNd {
    * @param totalMultiplicity the total multiplicity of the knot on return
    */
   public addKnot(knot: number, totalMultiplicity: number): boolean {
-    // knots[iLeftKnot] <= knot < knots[iLeftKnot+1], knots.leftKnotIndex <= iLeftKnot < knots.rightKnotIndex
+    if (knot < this.knots.leftKnot || knot > this.knots.rightKnot)
+      return false;   // invalid input
     let iLeftKnot = this.knots.knotToLeftKnotIndex(knot);
 
     // snap input if too close to an existing knot
     if (Math.abs(knot - this.knots.knots[iLeftKnot]) < KnotVector.knotTolerance) {
-      knot = this.knots.knots[iLeftKnot]; // snap knot to left
+      knot = this.knots.knots[iLeftKnot]; // snap to left knot of bracket
     } else if (Math.abs(knot - this.knots.knots[iLeftKnot + 1]) < KnotVector.knotTolerance) {
       iLeftKnot += this.knots.getKnotMultiplicityAtIndex(iLeftKnot + 1);
-      if (iLeftKnot >= this.knots.rightKnotIndex)
+      if (iLeftKnot > this.knots.rightKnotIndex)
         return true;  // nothing to do
-      knot = this.knots.knots[iLeftKnot]; // snap knot to right
+      knot = this.knots.knots[iLeftKnot]; // snap to left knot of next bracket
     }
     const numKnotsToAdd = Math.min(totalMultiplicity, this.degree) - this.knots.getKnotMultiplicity(knot);
     if (numKnotsToAdd <= 0)
       return true;  // nothing to do
 
-    const poleBuffer = new Float64Array(this.degree * this.poleLength);
-
+    // working arrays and pole buffer
     let currKnotCount = this.knots.knots.length;
     const newKnots = new Float64Array(currKnotCount + numKnotsToAdd);
     for (let i = 0; i < currKnotCount; ++i)
       newKnots[i] = this.knots.knots[i];
-
     let currPoleCount = this.numPoles;
-    const newPoles = new Float64Array(this.packedData.length + (numKnotsToAdd * this.poleLength));
+    const newPackedData = new Float64Array(this.packedData.length + (numKnotsToAdd * this.poleLength));
     for (let i = 0; i < this.packedData.length; ++i)
-      newPoles[i] = this.packedData[i];
+      newPackedData[i] = this.packedData[i];
+    const dataBuf = new Float64Array(this.degree * this.poleLength);  // holds degree poles
 
-    // repeated knot insertion
+    // each iteration adds one knot and one pole to the working arrays (cf. Farin 4e)
     for (let iter = 0; iter < numKnotsToAdd; ++iter) {
-      let iWritePole = 0;
+      // fill the buffer with new poles obtained from control polygon corner cutting
+      let iBuf = 0;
       const iStart = iLeftKnot - this.degree + 2;
       for (let i = iStart; i < iStart + this.degree; ++i) {
         const fraction = (knot - newKnots[i - 1]) / (newKnots[i + this.degree - 1] - newKnots[i - 1]);
         for (let j = i * this.poleLength; j < (i + 1) * this.poleLength; ++j) {
-          poleBuffer[iWritePole++] = Geometry.interpolate(newPoles[j - this.poleLength], fraction, newPoles[j]);
+          dataBuf[iBuf++] = Geometry.interpolate(newPackedData[j - this.poleLength], fraction, newPackedData[j]);
         }
       }
-      // rewrite poles
-      for (let i = (iStart + this.degree - 1) * this.poleLength; i < currPoleCount; ++i)
-        newPoles[i + this.poleLength] = newPoles[i];  // shift tail to right by one pole
-      iWritePole = iStart * this.poleLength;
-      for (const pole of poleBuffer)
-        newPoles[iWritePole++] = pole;  // overwrite with degree new poles
 
-      // add the knot to newKnots in position
-      for (let i = iLeftKnot + 1; i < currKnotCount; ++i)
-        newKnots[i + 1] = newKnots[i];
+      // overwrite degree-1 poles with degree new poles, shifting tail to the right by one
+      newPackedData.copyWithin((iStart + this.degree) * this.poleLength, (iStart + this.degree - 1) * this.poleLength, currPoleCount * this.poleLength);
+      let iData = iStart * this.poleLength;
+      for (const d of dataBuf)
+        newPackedData[iData++] = d;  // overwrite degree new poles
+
+      // add the knot to newKnots in position, shifting tail to the right by one
+      newKnots.copyWithin(iLeftKnot + 2, iLeftKnot + 1, currKnotCount);
       newKnots[iLeftKnot + 1] = knot;
 
       ++iLeftKnot;
@@ -269,7 +269,7 @@ export class BSpline1dNd {
       ++currPoleCount;
     }
     this.knots.setKnotsCapture(newKnots);
-    this.packedData = newPoles;
+    this.packedData = newPackedData;
     return true;
   }
 }
