@@ -33,11 +33,6 @@ function readPackage(pkg) {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
   }
 
-  // https://github.com/iTwin/projects-client
-  if (pkg.name == "@itwin/projects-client") {
-    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
-  }
-
   // https://github.com/iTwin/reality-data-client
   if (pkg.name == "@itwin/reality-data-client") {
     pkg.dependencies["@itwin/core-common"] = "workspace:*";

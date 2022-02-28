@@ -7566,7 +7566,6 @@ packages:
   /@itwin/projects-client/0.6.0:
     resolution: {integrity: sha512-uA8lqjNLIpmpdldoOa/EwQfaV+F2yflxoi1aEZSb+R+dlCyvlsE/hLM7oTzYwmYmFzdezKNbFjwN2PvWLBWaBg==}
     dependencies:
-      '@itwin/core-bentley': link:../../core/bentley
       axios: 0.25.0
     transitivePeerDependencies:
       - debug
