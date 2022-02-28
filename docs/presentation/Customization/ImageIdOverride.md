@@ -8,14 +8,14 @@ ImageId override rules allow setting an image ID to specific types of ECInstance
 
 ## Attributes
 
-| Name                | Required? | Type                                                                 | Default |
-| ------------------- | --------- | -------------------------------------------------------------------- | ------- |
-| *Filtering*         |
-| `requiredSchemas`   | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
-| `priority`          | No        | `number`                                                             | `1000`  |
-| `onlyIfNotHandled`  | No        | `boolean`                                                            | `false` |
-| `condition`         | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
-| `imageIdExpression` | Yes       | [ECExpression](./ECExpressions.md#override-value)                    |         |
+| Name                                                | Required? | Type                                                                 | Default |
+| --------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
+| *Filtering*                                         |
+| [`requiredSchemas`](#attribute-requiredschemas)     | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`priority`](#attribute-priority)                   | No        | `number`                                                             | `1000`  |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)   | No        | `boolean`                                                            | `false` |
+| [`condition`](#attribute-condition)                 | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+| [`imageIdExpression`](#attribute-imageidexpression) | Yes       | [ECExpression](./ECExpressions.md#override-value)                    |         |
 
 ### Attribute: `requiredSchemas`
 

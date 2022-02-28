@@ -8,18 +8,18 @@ CheckBox rules provide a way to create a checkbox for specific types of ECInstan
 
 ## Attributes
 
-| Name                       | Required? | Type                                                                 | Default     |
-| -------------------------- | --------- | -------------------------------------------------------------------- | ----------- |
-| *Filtering*                |
-| `requiredSchemas`          | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`        |
-| `priority`                 | No        | `number`                                                             | `1000`      |
-| `onlyIfNotHandled`         | No        | `boolean`                                                            | `false`     |
-| `condition`                | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`        |
-| *CheckBox Attributes*      |
-| `propertyName`             | No        | `string`                                                             | `undefined` |
-| `useInversedPropertyValue` | No        | `boolean`                                                            | `false`     |
-| `defaultValue`             | No        | `boolean`                                                            | `false`     |
-| `isEnabled`                | No        | `boolean`                                                            | `true`      |
+| Name                                                              | Required? | Type                                                                 | Default     |
+| ----------------------------------------------------------------- | --------- | -------------------------------------------------------------------- | ----------- |
+| *Filtering*                                                       |
+| [`requiredSchemas`](#attribute-requiredschemas)                   | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`        |
+| [`priority`](#attribute-priority)                                 | No        | `number`                                                             | `1000`      |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)                 | No        | `boolean`                                                            | `false`     |
+| [`condition`](#attribute-condition)                               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`        |
+| *CheckBox Attributes*                                             |
+| [`propertyName`](#attribute-propertyname)                         | No        | `string`                                                             | `undefined` |
+| [`useInversedPropertyValue`](#attribute-useinversedpropertyvalue) | No        | `boolean`                                                            | `false`     |
+| [`defaultValue`](#attribute-defaultvalue)                         | No        | `boolean`                                                            | `false`     |
+| [`isEnabled`](#attribute-isenabled)                               | No        | `boolean`                                                            | `true`      |
 
 ### Attribute: `requiredSchemas`
 

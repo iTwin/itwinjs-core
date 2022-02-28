@@ -6,15 +6,15 @@ Instance label override rule provides a way to set instance label to one of its 
 
 ## Attributes
 
-| Name               | Required? | Type                                                                 | Default |
-| ------------------ | --------- | -------------------------------------------------------------------- | ------- |
-| *Filtering*        |
-| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
-| `priority`         | No        | `number`                                                             | `1000`  |
-| `onlyIfNotHandled` | No        | `boolean`                                                            | `false` |
-| `class`            | Yes       | `SingleSchemaClassSpecification`                                     |         |
-| *Overrides*        |
-| `values`           | Yes       | `InstanceLabelOverrideValueSpecification[]`                          |         |
+| Name                                              | Required? | Type                                                                 | Default |
+| ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
+| *Filtering*                                       |
+| [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`priority`](#attribute-priority)                 | No        | `number`                                                             | `1000`  |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                            | `false` |
+| [`class`](#attribute-class)                       | Yes       | `SingleSchemaClassSpecification`                                     |         |
+| *Overrides*                                       |
+| [`values`](#attribute-values)                     | Yes       | `InstanceLabelOverrideValueSpecification[]`                          |         |
 
 ### Attribute: `requiredSchemas`
 

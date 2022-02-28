@@ -8,17 +8,17 @@ Style override rules allow customizing display style of specific types of ECInst
 
 ## Attributes
 
-| Name               | Required? | Type                                                                 | Default     |
-| ------------------ | --------- | -------------------------------------------------------------------- | ----------- |
-| *Filtering*        |
-| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`        |
-| `priority`         | No        | `number`                                                             | `1000`      |
-| `onlyIfNotHandled` | No        | `boolean`                                                            | `false`     |
-| `condition`        | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`        |
-| *Overrides*        |
-| `foreColor`        | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`        |
-| `backColor`        | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`        |
-| `fontStyle`        | No        | [ECExpression](./ECExpressions.md#override-value)                    | `"Regular"` |
+| Name                                              | Required? | Type                                                                 | Default     |
+| ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ----------- |
+| *Filtering*                                       |
+| [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`        |
+| [`priority`](#attribute-priority)                 | No        | `number`                                                             | `1000`      |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                            | `false`     |
+| [`condition`](#attribute-condition)               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`        |
+| *Overrides*                                       |
+| [`foreColor`](#attribute-forecolor)               | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`        |
+| [`backColor`](#attribute-backcolor)               | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`        |
+| [`fontStyle`](#attribute-fontstyle)               | No        | [ECExpression](./ECExpressions.md#override-value)                    | `"Regular"` |
 
 ### Attribute: `requiredSchemas`
 

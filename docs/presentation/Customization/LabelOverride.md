@@ -10,16 +10,16 @@ exchange of some performance penalty. When possible, it's advised to use
 
 ## Attributes
 
-| Name               | Required? | Type                                                                 | Default |
-| ------------------ | --------- | -------------------------------------------------------------------- | ------- |
-| *Filtering*        |
-| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
-| `priority`         | No        | `number`                                                             | `1000`  |
-| `onlyIfNotHandled` | No        | `boolean`                                                            | `false` |
-| `condition`        | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
-| *Overrides*        |
-| `label`            | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`    |
-| `description`      | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+| Name                                              | Required? | Type                                                                 | Default |
+| ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
+| *Filtering*                                       |
+| [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`priority`](#attribute-priority)                 | No        | `number`                                                             | `1000`  |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                            | `false` |
+| [`condition`](#attribute-condition)               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+| *Overrides*                                       |
+| [`label`](#attribute-label)                       | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`    |
+| [`description`](#attribute-description)           | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
 
 ### Attribute: `requiredSchemas`
 

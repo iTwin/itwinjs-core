@@ -21,13 +21,13 @@ flag can then be accessed on the frontend and used to determine how the row shou
 
 ## Attributes
 
-| Name               | Required? | Type                                                                 | Default |
-| ------------------ | --------- | -------------------------------------------------------------------- | ------- |
-| *Filtering*        |
-| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
-| `condition`        | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
-| *Extended Data*    |
-| `items`            | No        | `{ [key: string]: ECExpression }`                                    |         |
+| Name                                            | Required? | Type                                                                 | Default |
+| ----------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
+| *Filtering*                                     |
+| [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`condition`](#attribute-condition)             | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+| *Extended Data*                                 |
+| [`items`](#attribute-items)                     | No        | `{ [key: string]: ECExpression }`                                    |         |
 
 ### Attribute: `requiredSchemas`
 
