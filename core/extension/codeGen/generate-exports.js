@@ -14,8 +14,12 @@ const codeGenClosingComment = `// END GENERATED CODE`;
 // select all of generated block, including comments
 const codeGenBlock = RegExp(`${codeGenOpeningComment}(\\s|\\S)*${codeGenClosingComment}`);
 
-const args = process.argv.slice(2);
-
+let args = process.argv.slice(2);
+if (!args.length || !args[0]){
+  throw new Error("Please provide an argument in the form of '[\"package name\",\"package path\"] [\"package2 name\",\"package2 path\"]'")
+}
+args = args[0].replace(/'/g, "");
+args = args.split(" ");
 
 // Convert extension linter's output file to a set of lists separated by export type
 function interpretCsv(csvString) {
@@ -149,11 +153,8 @@ function addGeneratedExports(packages) {
   addToFile(jsFilePath, jsCode);
 }
 
-
 const packages = [];
 args.forEach((paramPair) => {
-  // Replace all single quotes with double quotes, so JSON can parse
-  paramPair = paramPair.replace(/'/g, "\"");
   paramPair = JSON.parse(paramPair);
 
   if (paramPair.length < 2) {

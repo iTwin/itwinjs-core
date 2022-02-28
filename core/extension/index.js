@@ -7,165 +7,147 @@
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
 const ext = globalThis[globalSymbol].getExtensionApi("import.meta.url");
 
-// re-export tool
-export const {
-  InteractiveTool,
-  PrimitiveTool,
-  ViewTool,
-  Tool,
-
-  ToolAssistance,
-  BeButtonEvent,
-  ViewRect,
-  Pixel,
-  LocateResponse,
-  EditManipulator,
-  AccuDrawHintBuilder,
-  EmphasizeElements,
-  FeatureSymbology,
-  GraphicBranch,
-  NotifyMessageDetails,
-
-  ExtensionHost,
-} = ext.exports;
-
-// re-export frontend items
-export const {
-  BingElevationProvider,
-  BingLocationProvider,
-  InputCollector,
-  FrustumAnimator,
-  GlobeAnimator,
-  MarginPercent,
-  Marker,
-  Cluster
-} = ext.exports;
-
-// re-export functions
-export const {
-  getCompressedJpegFromCanvas,
-  getImageSourceFormatForMimeType,
-  getImageSourceMimeType,
-  imageBufferToBase64EncodedPng,
-  imageBufferToCanvas,
-  imageBufferToPngDataUrl,
-  imageElementFromImageSource,
-  imageElementFromUrl,
-  queryTerrainElevationOffset,
-  readElementGraphics,
-  canvasToImageBuffer,
-  canvasToResizedCanvasWithBars,
-  extractImageSourceDimensions
-} = ext.exports;
-
-// re-export enums
-export const {
-  // core-frontend:
-  ACSDisplayOptions,
-  ACSType,
-  ActivityMessageEndReason,
-  BeButton,
-  BeModifierKeys,
-  ClipEventType,
-  ContextRotationId,
-  CoordinateLockOverrides,
-  CoordSource,
-  CoordSystem,
-  DepthPointSource,
-  EventHandled,
-  FlashMode,
-  FrontendLoggerCategory,
-  GraphicType,
-  HitDetailType,
-  HitGeomType,
-  HitParentGeomType,
-  HitPriority,
-  HitSource,
-  InputSource,
-  KeyinParseError,
-  LocateAction,
-  LocateFilterStatus,
-  ManipulatorToolEvent,
-  MessageBoxIconType,
-  MessageBoxType,
-  MessageBoxValue,
-  OutputMessageAlert,
-  OutputMessagePriority,
-  OutputMessageType,
-  ParseAndRunResult,
-  SelectionMethod,
-  SelectionMode,
-  SelectionProcessing,
-  SelectionSetEventType,
-  SnapHeat,
-  SnapMode,
-  SnapStatus,
-  StandardViewId,
-  StartOrResume,
-  TextureTransparency,
-  TileBoundingBoxes,
-  TileGraphicType,
-  TileLoadPriority,
-  TileLoadStatus,
-  TileTreeLoadStatus,
-  TileVisibility,
-  ToolAssistanceImage,
-  ToolAssistanceInputMethod,
-  UniformType,
-  VaryingType,
-  ViewStatus,
-  ViewUndoEvent,
-  // core-common:
-  BackgroundFill,
-  BackgroundMapType,
-  BatchType,
-  BisCodeSpec,
-  BriefcaseIdValue,
-  ChangedValueState,
-  ChangeOpCode,
-  ChangesetType,
-  ColorByName,
-  CommonLoggerCategory,
-  ECSqlSystemProperty,
-  ECSqlValueType,
-  ElementGeometryOpcode,
-  FeatureOverrideType,
-  FillDisplay,
-  FillFlags,
-  FontType,
-  GeoCoordStatus,
-  GeometryClass,
-  GeometryStreamFlags,
-  GeometrySummaryVerbosity,
-  GlobeMode,
-  GridOrientationType,
-  HSVConstants,
-  ImageBufferFormat,
-  ImageSourceFormat,
-  LinePixels,
-  MassPropertiesOperation,
-  MonochromeMode,
-  Npc,
-  PlanarClipMaskMode,
-  PlanarClipMaskPriority,
-  QueryRowFormat,
-  Rank,
-  RenderMode,
-  SectionType,
-  SpatialClassifierInsideDisplay,
-  SpatialClassifierOutsideDisplay,
-  SyncMode,
-  TerrainHeightOriginMode,
-  TextureMapUnits,
-  ThematicDisplayMode,
-  ThematicGradientColorScheme,
-  ThematicGradientMode,
-  TxnAction,
-  TypeOfChange,
-} = ext.exports;
-
-// re-export commmon
-export const { ColorDef } = ext.exports;
-
 // export extension stuff
 export const { registerTool } = ext.api;
+
+// BEGIN GENERATED CODE
+export const {
+// @itwin/core-frontend:
+	ContextRotationId,
+	ACSType,
+	ACSDisplayOptions,
+	CoordSystem,
+	LocateAction,
+	LocateFilterStatus,
+	SnapStatus,
+	FlashMode,
+	FrontendLoggerCategory,
+	SnapMode,
+	SnapHeat,
+	HitSource,
+	HitGeomType,
+	HitParentGeomType,
+	HitPriority,
+	HitDetailType,
+	OutputMessageType,
+	OutputMessagePriority,
+	OutputMessageAlert,
+	ActivityMessageEndReason,
+	MessageBoxType,
+	MessageBoxIconType,
+	MessageBoxValue,
+	SelectionSetEventType,
+	StandardViewId,
+	ViewStatus,
+	GraphicType,
+	UniformType,
+	VaryingType,
+	TileLoadStatus,
+	TileVisibility,
+	TileLoadPriority,
+	TileBoundingBoxes,
+	TileTreeLoadStatus,
+	TileGraphicType,
+	ClipEventType,
+	SelectionMethod,
+	SelectionMode,
+	SelectionProcessing,
+	BeButton,
+	CoordinateLockOverrides,
+	InputSource,
+	CoordSource,
+	BeModifierKeys,
+	EventHandled,
+	ParseAndRunResult,
+	KeyinParseError,
+	StartOrResume,
+	ManipulatorToolEvent,
+	ToolAssistanceImage,
+	ToolAssistanceInputMethod,
+	AccuDrawHintBuilder, // REAL
+	BingLocationProvider, // REAL
+	LocateResponse, // REAL
+	EmphasizeElements, // REAL
+	FrustumAnimator, // REAL
+	GlobeAnimator, // REAL
+	canvasToResizedCanvasWithBars, // REAL
+	imageBufferToCanvas, // REAL
+	canvasToImageBuffer, // REAL
+	getImageSourceMimeType, // REAL
+	getImageSourceFormatForMimeType, // REAL
+	imageElementFromImageSource, // REAL
+	imageElementFromUrl, // REAL
+	extractImageSourceDimensions, // REAL
+	imageBufferToPngDataUrl, // REAL
+	imageBufferToBase64EncodedPng, // REAL
+	getCompressedJpegFromCanvas, // REAL
+	MarginPercent, // REAL
+	Marker, // REAL
+	Cluster, // REAL
+	NotifyMessageDetails, // REAL
+	queryTerrainElevationOffset, // REAL
+	ViewRect, // REAL
+	FeatureSymbology, // REAL
+	GraphicBranch, // REAL
+	Pixel, // REAL
+	readElementGraphics, // REAL
+	BingElevationProvider, // REAL
+	EditManipulator, // REAL
+	PrimitiveTool, // REAL
+	BeButtonEvent, // REAL
+	Tool, // REAL
+	InteractiveTool, // REAL
+	InputCollector, // REAL
+	ToolAssistance, // REAL
+	ViewTool, // REAL
+// @itwin/core-common:
+	BackgroundMapType,
+	GlobeMode,
+	BriefcaseIdValue,
+	SyncMode,
+	TypeOfChange,
+	ChangesetType,
+	BisCodeSpec,
+	ColorByName,
+	CommonLoggerCategory,
+	QueryRowFormat,
+	MonochromeMode,
+	ECSqlValueType,
+	ChangeOpCode,
+	ChangedValueState,
+	ECSqlSystemProperty,
+	SectionType,
+	Rank,
+	FeatureOverrideType,
+	BatchType,
+	FontType,
+	Npc,
+	GeoCoordStatus,
+	FillDisplay,
+	BackgroundFill,
+	GeometryClass,
+	GeometrySummaryVerbosity,
+	FillFlags,
+	HSVConstants,
+	ImageBufferFormat,
+	ImageSourceFormat,
+	LinePixels,
+	MassPropertiesOperation,
+	TextureMapUnits,
+	PlanarClipMaskMode,
+	PlanarClipMaskPriority,
+	SkyBoxImageType,
+	SpatialClassifierInsideDisplay,
+	SpatialClassifierOutsideDisplay,
+	TerrainHeightOriginMode,
+	ThematicGradientMode,
+	ThematicGradientColorScheme,
+	ThematicDisplayMode,
+	TxnAction,
+	GridOrientationType,
+	RenderMode,
+	ElementGeometryOpcode,
+	GeometryStreamFlags,
+	ColorDef, // REAL
+} = ext.exports;
+// END GENERATED CODE
