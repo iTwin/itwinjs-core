@@ -31,8 +31,8 @@ describe("Learning Snippets", () => {
 
       it("uses `requiredSchemas` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ExtendedDataRule.RequiredSchemas.Ruleset
-        // The ruleset content rule  that returns content of given input instances. Also there is an extended data rule
-        // to add additional for `bis.ExternalSourceAspect` instances content. `bis.ExternalSourceAspect` ECClass was
+        // The ruleset has rule that returns content of given input instances. Also there is an extended data rule
+        // to add additional data for `bis.ExternalSourceAspect` instances content. `bis.ExternalSourceAspect` ECClass was
         // introduced in BisCore version 1.0.2, so the rule needs a `requiredSchemas` attribute to only use the rule
         // if the version meets the requirement.
         const ruleset: Ruleset = {
