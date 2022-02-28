@@ -611,13 +611,15 @@ export function initializePanel(nineZone: NineZoneState, frontstageDef: Frontsta
   const panelDef = frontstageDef.getStagePanelDef(location);
   nineZone = produce(nineZone, (draft) => {
     const panel = draft.panels[panelSide];
-    panel.size = panelDef?.size;
     panel.minSize = panelDef?.minSize ?? panel.minSize;
     panel.pinned = panelDef?.pinned ?? panel.pinned;
     panel.resizable = panelDef?.resizable ?? panel.resizable;
     if (panelDef?.maxSizeSpec) {
       panel.maxSize = getPanelMaxSize(panelDef.maxSizeSpec, panelSide, nineZone.size);
     }
+
+    const size = panelDef?.size;
+    panel.size = size === undefined ? size : Math.min(Math.max(size, panel.minSize), panel.maxSize);
   });
   return nineZone;
 }
