@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add extension API generation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
