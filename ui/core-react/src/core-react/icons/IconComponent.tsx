@@ -12,6 +12,7 @@ import classnames from "classnames";
 import { ConditionalStringValue, IconSpecUtilities } from "@itwin/appui-abstract";
 import { SvgSprite } from "./SvgSprite";
 import { CommonProps } from "../utils/Props";
+import { sanitize as sanitizer } from "dompurify";
 
 /** Prototype for an IconSpec which can be a string, ReactNode or ConditionalStringValue.
  * @public
@@ -47,7 +48,26 @@ export function Icon(props: IconProps) {
           <SvgSprite src={svgSource} />
         </i>
       );
+    if (React.isValidElement(iconString)) {
+      return (
+        <i className={classnames("icon", "core-svg-icon", props.className)} style={props.style}>
+          {props.iconSpec}
+        </i>
+      );
+    }
+    const webComponentString = IconSpecUtilities.getWebComponentSource(iconString);
+    if (webComponentString){
 
+      const sanitizedIconString = sanitizer(iconString);
+      // we can safely disable jam3/no-sanitizer-with-danger as we are sanitizing above
+      // eslint-disable-next-line @typescript-eslint/naming-convention, jam3/no-sanitizer-with-danger
+      const webComponentNode = <div dangerouslySetInnerHTML={{__html:sanitizedIconString}}></div>;
+      return (
+        <i className={classnames("icon", "core-svg-icon", props.className)} >
+          {webComponentNode}
+        </i>
+      );
+    }
     return (<i className={classnames("icon", iconString, props.className)} style={props.style} />);
   }
 

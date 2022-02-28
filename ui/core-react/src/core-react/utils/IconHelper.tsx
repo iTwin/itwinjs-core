@@ -17,6 +17,9 @@ export class IconHelper {
   public static get reactIconKey(): string {
     return "#-react-iconspec-node-#";
   }
+  public static get iconWebComponentKey(): string {
+    return "#-webcomponent-icon-node-#";
+  }
 
   /** Returns an <Icon> ReactNode from the many ways an icon can be specified.
    * @param icon abstract icon specification.
@@ -45,6 +48,10 @@ export class IconHelper {
       if (internalData)
         return <Icon iconSpec={internalData.get(IconHelper.reactIconKey) as React.ReactNode} />;
       return null;
+    } else if (iconString === IconHelper.iconWebComponentKey) {
+      if (internalData)
+        return <Icon iconSpec={internalData.get(IconHelper.iconWebComponentKey)} />;
+      return null;
     }
 
     return <Icon iconSpec={iconString} />;
@@ -56,10 +63,21 @@ export class IconHelper {
    * @param internalData a map supplied by the caller to store away react element if React.ReactNode
    */
   public static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue {
-    const icon = (React.isValidElement(iconSpec)) ? IconHelper.reactIconKey : iconSpec;
 
-    if (internalData && typeof icon === "string" && icon === IconHelper.reactIconKey) {
-      internalData.set(IconHelper.reactIconKey, iconSpec);
+    let icon = iconSpec;
+    if (React.isValidElement(iconSpec)) {
+      icon = IconHelper.reactIconKey;
+    } else if (typeof icon === "string" && icon.startsWith("IC:")) {
+      icon = IconHelper.iconWebComponentKey;
+    }
+
+    if (internalData && typeof icon === "string") {
+      if (icon === IconHelper.reactIconKey) {
+        internalData.set(IconHelper.reactIconKey, iconSpec);
+      } else if (icon === IconHelper.iconWebComponentKey && typeof iconSpec === "string") {
+        const srcString = iconSpec.replace("IC:", "");
+        internalData.set(IconHelper.iconWebComponentKey, `<svg-loader src=${srcString} id=${srcString}></svg-loader>`);
+      }
     }
 
     if (typeof icon === "string" || icon instanceof ConditionalStringValue)

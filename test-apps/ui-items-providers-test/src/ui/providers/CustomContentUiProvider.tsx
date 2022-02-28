@@ -8,9 +8,9 @@ import {
   BackstageItemUtilities, CommonToolbarItem, IconSpecUtilities, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider,
 } from "@itwin/appui-abstract";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
+import { IconHelper } from "@itwin/core-react";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { CustomFrontstage } from "../frontstages/CustomContent";
-import visibilityIcon from "../icons/visibility-semi-transparent.svg?sprite";
 
 /**
  * Test UiItemsProvider that provide buttons, widgets, and backstage item to NetworkTracing stage.
@@ -38,15 +38,19 @@ export class CustomContentUiProvider implements UiItemsProvider {
       toolbarUsage === ToolbarUsage.ContentManipulation &&
       toolbarOrientation === ToolbarOrientation.Horizontal
     ) {
+      const internalData = new Map<string, any>();
+      const iconData = IconHelper.getIconData(IconSpecUtilities.createWebComponentIconSpec("http://localhost:3000/images/imodeljs-icon.svg"), internalData );
+      const overrides = { internalData };
 
       const getSvgTestButton = ToolbarItemUtilities.createActionButton(
         "custom-visibility-tool",
         -1,
-        IconSpecUtilities.createSvgIconSpec(visibilityIcon),
+        iconData,
         "Custom Visibility Tool",
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "custom-visibility-tool activated", undefined, OutputMessageType.Toast));
         },
+        overrides,
       );
 
       return [getSvgTestButton];

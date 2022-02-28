@@ -12,10 +12,14 @@
 export class IconSpecUtilities {
   /** Prefix for an SVG IconSpec */
   public static readonly SVG_PREFIX = "svg:";
+  public static readonly WEB_COMPONENT_PREFIX = "IC:";
 
   /** Create an IconSpec for an SVG */
   public static createSvgIconSpec(svgSrc: string): string {
     return `${IconSpecUtilities.SVG_PREFIX}${svgSrc}`;
+  }
+  public static createWebComponentIconSpec(srcString: string): string {
+    return `${IconSpecUtilities.WEB_COMPONENT_PREFIX}${srcString}`;
   }
 
   /** Get the SVG Source from an IconSpec */
@@ -25,5 +29,14 @@ export class IconSpecUtilities {
     }
 
     return undefined;
+  }
+
+  public static getWebComponentSource(iconSpec: string): string | undefined {
+    if (iconSpec.startsWith(IconSpecUtilities.WEB_COMPONENT_PREFIX) && iconSpec.length > 3) {
+      return iconSpec.slice(3);
+    }
+
+    return undefined;
+
   }
 }
