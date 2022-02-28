@@ -14,7 +14,7 @@ function readPackage(pkg) {
   // dependency of any published packages.
 
   // https://github.com/iTwin/imodels-clients
-  if (pkg.name == "@itwin/imodels-access-backend") {
+  else if (pkg.name == "@itwin/imodels-access-backend") {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
     pkg.dependencies["@itwin/core-backend"] = "workspace:*";
     pkg.dependencies["@itwin/core-common"] = "workspace:*";
@@ -25,7 +25,7 @@ function readPackage(pkg) {
   }
 
   // https://github.com/iTwin/auth-clients
-  if (pkg.name == "@itwin/browser-authorization") {
+  else if (pkg.name == "@itwin/browser-authorization") {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
   } else if (pkg.name == "@itwin/electron-authorization") {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
@@ -34,7 +34,7 @@ function readPackage(pkg) {
   }
 
   // https://github.com/iTwin/reality-data-client
-  if (pkg.name == "@itwin/reality-data-client") {
+  else if (pkg.name == "@itwin/reality-data-client") {
     pkg.dependencies["@itwin/core-common"] = "workspace:*";
     pkg.dependencies["@itwin/core-geometry"] = "workspace:*";
   }
