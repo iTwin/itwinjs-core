@@ -674,7 +674,7 @@ describe("Learning Snippets", () => {
 
       it("uses `class` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.Class.Ruleset
-        // The ruleset has root node rule that returns `bis.SpatialViewDefinition` and `bis.GeometricModel3d` instances.
+        // The ruleset has root node rule that returns `bis.Model` instances.
         // Also there is customization rule to override label only for `bis.GeometricModel3d` instances.
         const ruleset: Ruleset = {
           id: "example",
@@ -682,7 +682,7 @@ describe("Learning Snippets", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [{
               specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["GeometricModel3d", "SpatialViewDefinition"], arePolymorphic: true },
+              classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
               groupByClass: false,
               groupByLabel: false,
             }],
@@ -691,7 +691,7 @@ describe("Learning Snippets", () => {
             class: { schemaName: "BisCore", className: "GeometricModel3d" },
             values: [{
               specType: InstanceLabelOverrideValueSpecificationType.String,
-              value: "Model Node",
+              value: "Geometric Model Node",
             }],
           }],
         };
@@ -702,12 +702,15 @@ describe("Learning Snippets", () => {
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes).to.be.lengthOf(5).and.to.containSubset([
-          { label: { displayValue: "Model Node" } },
-          { label: { displayValue: "Default - View 1" } },
-          { label: { displayValue: "Default - View 2" } },
-          { label: { displayValue: "Default - View 3" } },
-          { label: { displayValue: "Default - View 4" } },
+        expect(nodes).to.be.lengthOf(8).and.to.containSubset([
+          { label: { displayValue: "BisCore.DictionaryModel" } },
+          { label: { displayValue: "BisCore.RealityDataSources" } },
+          { label: { displayValue: "Converted Drawings" } },
+          { label: { displayValue: "Converted Groups" } },
+          { label: { displayValue: "Converted Sheets" } },
+          { label: { displayValue: "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default" } },
+          { label: { displayValue: "Geometric Model Node" } },
+          { label: { displayValue: "Ñót spêçìfíêd" } },
         ]);
       });
 
