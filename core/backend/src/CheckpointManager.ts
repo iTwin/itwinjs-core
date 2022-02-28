@@ -124,7 +124,8 @@ export class V2CheckpointManager {
 
     // We can assume that a Daemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
     try {
-      await CloudSqlite.Daemon.command("attach", args);
+      // TODO: Attach container
+      // await CloudSqlite.Daemon.command("attach", args);
     } catch (e: any) {
       const error = `Daemon attach failed: ${e.message}`;
       if (checkpoint.expectV2)

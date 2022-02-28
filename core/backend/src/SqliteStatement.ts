@@ -244,6 +244,11 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public getValue(columnIx: number): SqliteValue { return new SqliteValue(this._stmt!, columnIx); }
 
+  /** Get a size in bytes of a blob or text column
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
+  public getColumnBytes(colIndex: number): number { return this._stmt!.getColumnBytes(colIndex); }
+
   /** Get a value as a blob
    * @param colIndex Index of SQL column in query result (0-based)
    */

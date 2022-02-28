@@ -143,7 +143,7 @@ describe("TileCache, open v2", async () => {
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
-    sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => { });
+    // sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => { });
     // Mock blockcacheVFS daemon
     sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
 

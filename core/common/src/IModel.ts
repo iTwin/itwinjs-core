@@ -145,12 +145,11 @@ export interface CloudContainerUri {
   readonly uriParams: string;
 }
 
+
 /** Options to open a [SnapshotDb]($backend).
  * @public
  */
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line deprecation/deprecation
-  /** @internal */
-  readonly cloudContainer?: CloudContainerUri;
   /**
    * The "base" name that can be used for creating temporary files related to this Db.
    * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.

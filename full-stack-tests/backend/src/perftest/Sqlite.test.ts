@@ -62,7 +62,7 @@ async function readRow(stmt: SqliteStatement, id: number, nParam: number = 1): P
   return stmt.step() === DbResult.BE_SQLITE_ROW && stmt.getValue(0).getInteger() === id;
 }
 
-async function simulateRowRead(stmt: SqliteStatement, probabiltyOfConsectiveReads: number, percentageOfRowToRead: number, startId: number, endId: number) {
+async function simulateRowRead(stmt: SqliteStatement, probabilityOfConsecutiveReads: number, percentageOfRowToRead: number, startId: number, endId: number) {
   const nRows = endId - startId;
   const rowsToBeRead = Math.round((percentageOfRowToRead / 100) * nRows);
   let rowReadSoFar = 0;
@@ -71,7 +71,7 @@ async function simulateRowRead(stmt: SqliteStatement, probabiltyOfConsectiveRead
   do {
     if (await readRow(stmt, nextRowToRead))
       rowReadSoFar++;
-    if (probabiltyOfConsectiveReads < Math.random()) {
+    if (probabilityOfConsecutiveReads < Math.random()) {
       nextRowToRead++;
       while (nextRowToRead >= endId)
         nextRowToRead = startId;
@@ -98,7 +98,7 @@ function changePageSize(iModelPath: string, pageSizeInKb: number) {
     });
   });
 
-  IModelHost.platform.DgnDb.vacuum(iModelPath, pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024);
+  IModelHost.platform.DgnDb.vacuum(iModelPath, undefined, pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024);
   sp.stop();
   process.stdout.write(`Change vacuum with page size to ${pageSizeInKb}K took ${sp.elapsedSeconds} sec\n`);
 

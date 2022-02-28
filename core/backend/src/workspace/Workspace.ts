@@ -233,12 +233,13 @@ export class ITwinWorkspace implements Workspace {
   private _cloudCache?: IModelJsNative.CloudCache;
   public get cloudCache(): IModelJsNative.CloudCache {
     if (undefined === this._cloudCache) {
-      const cacheProps: CloudSqlite.CacheProps = {
-        rootDir: join(this.containerDir, "cloud"),
-        cacheSize: "10G",
-        ... this._cloudCacheProps,
+      const cacheProps = {
+        ...this._cloudCacheProps,
+        rootDir: this._cloudCacheProps?.rootDir ?? join(this.containerDir, "cloud"),
+        cacheSize: this._cloudCacheProps?.cacheSize ?? "10G",
         name: "workspace",
       };
+
       IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
       this._cloudCache = new IModelHost.platform.CloudCache(cacheProps);
     }
@@ -413,14 +414,13 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     ITwinWorkspaceDb.validateDbName(dbName);
     this.dbName = dbName;
     this.container = container;
-    this.localFileName = join(container.dirName, `${dbName}.${workspaceDbFileExt}`);
+    const cloudContainer = container.cloudContainer;
+    this.localFileName = cloudContainer ? `/${cloudContainer.alias}/${this.dbName}` : join(container.dirName, `${dbName}.${workspaceDbFileExt}`);
     container.addWorkspaceDb(this);
   }
 
   public open(): void {
-    const cloudContainer = this.container.cloudContainer;
-    const dbName = cloudContainer ? `/${cloudContainer.alias}/${this.dbName}` : this.localFileName;
-    this.sqliteDb.nativeDb.openDb(dbName, OpenMode.Readonly, cloudContainer);
+    this.sqliteDb.nativeDb.openDb(this.localFileName, OpenMode.Readonly, this.container.cloudContainer);
   }
 
   public close(): void {
@@ -505,7 +505,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   }
 
   public override open() {
-    this.sqliteDb.openDb(this.localFileName, OpenMode.ReadWrite);
+    this.sqliteDb.nativeDb.openDb(this.localFileName, OpenMode.ReadWrite, this.container.cloudContainer);
   }
 
   public override close() {
@@ -525,23 +525,31 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
       stmt.bindString(1, rscName);
       bind?.(stmt);
       const rc = stmt.step();
-      if (DbResult.BE_SQLITE_DONE !== rc)
-        throw new IModelError(rc, "workspace write error");
+      if (DbResult.BE_SQLITE_DONE !== rc) {
+        if (DbResult.BE_SQLITE_CONSTRAINT_PRIMARYKEY === rc)
+          throw new IModelError(rc, `resource "${rscName}" already exists`);
+
+        throw new IModelError(rc, `workspace [${sql}]`);
+      }
     });
     this.sqliteDb.saveChanges();
   }
 
   /** Create a new, empty, EditableWorkspaceDb for importing Workspace resources. */
-  public create() {
-    IModelJsFs.recursiveMkDirSync(dirname(this.localFileName));
-    this.sqliteDb.createDb(this.localFileName);
-    this.sqliteDb.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
-    this.sqliteDb.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
-    this.sqliteDb.saveChanges();
+  public static createDb(localFileName: LocalFileName) {
+    const db = new SQLiteDb();
+    IModelJsFs.recursiveMkDirSync(dirname(localFileName));
+    db.createDb(localFileName);
+    db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
+    db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
+    db.saveChanges();
+    db.closeDb();
   }
 
-  public static async cloneVersion(oldVersion: WorkspaceDbVersion, newVersion: WorkspaceDbVersion, cloudProps: CloudSqlite.ContainerAccessProps) {
-    return CloudSqlite.copyDb(oldVersion, newVersion, cloudProps);
+  public async cloneVersion(oldVersion: WorkspaceDbVersion, newVersion: WorkspaceDbVersion) {
+    if (!this.container.cloudContainer)
+      throw new Error("no cloud container");
+    this.container.cloudContainer.copyDatabase(oldVersion, newVersion);
   }
 
   public async upload(args: CloudSqlite.TransferDbProps) {

@@ -778,12 +778,14 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "download",
-        "Usa-NSRS2011",
-        "--localFileName=d:\\temp\\a.b"
+        "importDb",
+        "-i",
+        "Australia",
+        "c:\\Users\\keith.bentley\\AppData\\Local\\iTwin\\Workspace\\test2\\Australia.itwin-workspace"
       ],
       "outFiles": [
-        "${workspaceFolder}/utils/workspace-editor/lib/**/*.js"
+        "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",
+        "${workspaceFolder}/core/*/lib/**/*.js",
       ]
     },
     {
