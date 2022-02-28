@@ -37,11 +37,11 @@ The [ToolAdmin]($frontend) class supervises the collection of low-level input fr
 Routing of the interpreted, high-level events is as follows:
 
 - If there is an active tool, the events are directed to it. The active tool can either handle a particular event or ignore it.
-- If the active tool does not handle a particular event, it *may* be directed to the [Idle Tool](#idle-tool).
+- If the active tool does not handle a particular event, it *may* be directed to the [idle tool](#idle-tool).
 
 As mentioned above a View tool or Input Collector can temporarily interrupt a Primitive tool. The ToolAdmin handles that sequence transparently such that the Primitive tool does not have to be aware of the interruption.
 
-A Primitive tool ends when another Primitive tool is run. The ToolAdmin establishes [Select Tool](#selection-tool) as the *default* Primitive tool. When a default tool is provided, it becomes the active tool when the iTwin.js application starts or a Primitive tool wishes to exit. Having a default tool is optional, an application can instead choose to have the [Idle Tool](#idle-tool) handle input that would normally only be directed to the active tool, like data points and resets.
+A Primitive tool ends when another Primitive tool is run. The ToolAdmin establishes [Select Tool](#selection-tool) as the *default* Primitive tool. When a default tool is provided, it becomes the active tool when the iTwin.js application starts or a Primitive tool wishes to exit. Having a default tool is optional, an application can instead choose to have the [idle tool](#idle-tool) handle input that would normally only be directed to the active tool, like data points and resets.
 
 ## Idle Tool
 
@@ -62,6 +62,8 @@ For touch devices, the Idle tool associates the following touch events with view
 - Two-finger drag to pan the view
 - Double tap to fit the view
 - Pinch to zoom the view in and out
+
+An application can override the standard idle tool by supplying its own customized tool to [ToolAdmin.idleTool]($frontend).
 
 ## Selection Tool
 
