@@ -22,6 +22,7 @@ export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
 export * from "./EnvironmentDecorations";
+export * from "./extension/extensions";
 export * from "./FeatureOverrideProvider";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
@@ -49,6 +50,10 @@ export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
+export * from "./quantity-formatting/QuantityFormatter";
+export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
+export * from "./quantity-formatting/LocalUnitFormatProvider";
+export * from "./quantity-formatting/QuantityTypesEditorSpecs";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
@@ -90,6 +95,7 @@ export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
+export * from "./render/RenderMaterial";
 export * from "./render/RenderMemory";
 export * from "./render/RenderPlan";
 export * from "./render/RenderPlanarClassifier";
@@ -175,7 +181,7 @@ export * from "./RealityDataSource";
  */
 /**
  * @docs-group-description Extensions
- * Classes for creating and managing runtime
+ * Classes for creating and managing Extensions.
  */
 /**
  * @docs-group-description Properties
@@ -219,4 +225,7 @@ export * from "./RealityDataSource";
  * APIs for working with user preferences in an iModelApp.
  * See [the learning articles]($docs/learning/frontend/preferences.md).
  */
-
+/**
+ * @docs-group-description MapLayers
+ * Classes supporting map layers display.
+ */

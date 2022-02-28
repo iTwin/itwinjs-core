@@ -25,7 +25,7 @@ import {
   createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZProgram, createVolClassCopyZUsingPointsProgram,
   createVolClassSetBlendProgram,
 } from "./glsl/CopyStencil";
-import { createEdgeBuilder } from "./glsl/Edge";
+import { createEdgeBuilder, EdgeBuilderType } from "./glsl/Edge";
 import { createEVSMProgram } from "./glsl/EVSMFromDepth";
 import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSymbology, FeatureSymbologyOptions, mixFeatureColor } from "./glsl/FeatureSymbology";
 import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
@@ -62,6 +62,18 @@ export interface Technique extends WebGLDisposable {
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
   compileShaders(): boolean;
 }
+
+/* Placeholder technique used for techniques not supported by particular client.
+ * e.g., IndexedEdgeTechnique only supported on WebGL 2.
+ */
+const unsupportedTechnique: Technique = {
+  getShader: () => { throw new Error("Unsupported technique"); },
+  getShaderByIndex: () => { throw new Error("Unsupported technique"); },
+  getShaderCount: () => 0,
+  compileShaders: () => true,
+  isDisposed: true,
+  dispose: () => undefined,
+};
 
 /** A rendering technique implemented using a single shader program, typically for some specialized purpose.
  * @internal
@@ -283,77 +295,9 @@ class SurfaceTechnique extends VariedTechnique {
     super(SurfaceTechnique._kClassified + 19);
 
     this._earlyZFlags = [
-      TechniqueFlags.fromDescription("Opaque"),
-      TechniqueFlags.fromDescription("Opaque-Animated"),
-      TechniqueFlags.fromDescription("Opaque-Animated-Shadowable"),
-      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
       TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
-      TechniqueFlags.fromDescription("Opaque-Instanced"),
-      TechniqueFlags.fromDescription("Opaque-Instanced-Animated"),
-      TechniqueFlags.fromDescription("Opaque-Instanced-Animated-Shadowable"),
       TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides"),
-      TechniqueFlags.fromDescription("Opaque-Instanced-Shadowable"),
-      TechniqueFlags.fromDescription("Opaque-Shadowable"),
-      TechniqueFlags.fromDescription("Translucent"),
-      TechniqueFlags.fromDescription("Translucent-Animated"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Overrides"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Pick"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Overrides"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Pick"),
-      TechniqueFlags.fromDescription("Translucent-Instanced"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Overrides"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Pick"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Overrides"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Pick"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Overrides"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Pick"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Overrides"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Pick"),
-      TechniqueFlags.fromDescription("Translucent-Overrides"),
-      TechniqueFlags.fromDescription("Translucent-Pick"),
-      TechniqueFlags.fromDescription("Translucent-Shadowable"),
-      TechniqueFlags.fromDescription("Translucent-Shadowable-Overrides"),
-      TechniqueFlags.fromDescription("Translucent-Shadowable-Pick"),
-
-      TechniqueFlags.fromDescription("Opaque-Wiremesh"),
-      TechniqueFlags.fromDescription("Opaque-Animated-Wiremesh"),
-      TechniqueFlags.fromDescription("Opaque-Animated-Shadowable-Wiremesh"),
-      TechniqueFlags.fromDescription("Opaque-Hilite-Classified-Wiremesh"),
-      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides-Wiremesh"),
-      TechniqueFlags.fromDescription("Opaque-Instanced-Wiremesh"),
-      TechniqueFlags.fromDescription("Opaque-Instanced-Animated-Wiremesh"),
-      TechniqueFlags.fromDescription("Opaque-Instanced-Animated-Shadowable-Wiremesh"),
-      TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides-Wiremesh"),
-      TechniqueFlags.fromDescription("Opaque-Instanced-Shadowable-Wiremesh"),
-      TechniqueFlags.fromDescription("Opaque-Shadowable-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Overrides-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Pick-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Overrides-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Pick-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Overrides-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Pick-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Overrides-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Pick-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Overrides-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Pick-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Overrides-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Pick-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Overrides-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Pick-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Shadowable-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Shadowable-Overrides-Wiremesh"),
-      TechniqueFlags.fromDescription("Translucent-Shadowable-Pick-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
     ];
 
     const flags = scratchTechniqueFlags;
@@ -526,11 +470,11 @@ class EdgeTechnique extends VariedTechnique {
   private static readonly _kAnimated = 2;
   private static readonly _kInstanced = 4;
   private static readonly _kFeature = 8;
-  private readonly _isSilhouette: boolean;
+  private readonly _type: EdgeBuilderType;
 
-  public constructor(gl: WebGLContext, isSilhouette: boolean = false) {
+  public constructor(gl: WebGLContext, type: EdgeBuilderType) {
     super(numFeatureVariants(EdgeTechnique._kFeature));
-    this._isSilhouette = isSilhouette;
+    this._type = type;
 
     const flags = scratchTechniqueFlags;
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
@@ -538,11 +482,11 @@ class EdgeTechnique extends VariedTechnique {
         for (const featureMode of featureModes) {
           flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No);
           flags.isAnimated = iAnimate;
-          const builder = createEdgeBuilder(isSilhouette, flags.isInstanced, flags.isAnimated);
+          const builder = createEdgeBuilder(type, flags.isInstanced, flags.isAnimated);
           addUnlitMonochrome(builder.frag);
 
           // The translucent shaders do not need the element IDs.
-          const builderTrans = createEdgeBuilder(isSilhouette, flags.isInstanced, flags.isAnimated);
+          const builderTrans = createEdgeBuilder(type, flags.isInstanced, flags.isAnimated);
           addUnlitMonochrome(builderTrans.frag);
           if (FeatureMode.Overrides === featureMode) {
             addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
@@ -564,7 +508,7 @@ class EdgeTechnique extends VariedTechnique {
     this.finishConstruction();
   }
 
-  protected get _debugDescription() { return this._isSilhouette ? "Silhouette" : "Edge"; }
+  protected get _debugDescription() { return this._type; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index = flags.isTranslucent ? EdgeTechnique._kTranslucent : EdgeTechnique._kOpaque;
@@ -973,17 +917,24 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.CombineTextures] = new SingularTechnique(createCombineTexturesProgram(gl));
     this._list[TechniqueId.Combine3Textures] = new SingularTechnique(createCombine3TexturesProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
-    this._list[TechniqueId.Edge] = new EdgeTechnique(gl, false);
-    this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);
+    this._list[TechniqueId.Edge] = new EdgeTechnique(gl, "SegmentEdge");
+    this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, "Silhouette");
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
     this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
+
+    if (System.instance.supportsIndexedEdges)
+      this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");
+    else
+      this._list[TechniqueId.IndexedEdge] = unsupportedTechnique;
+
     if (System.instance.capabilities.supportsFragDepth)
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     else
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZUsingPointsProgram(gl));
+
     this._list[TechniqueId.VolClassSetBlend] = new SingularTechnique(createVolClassSetBlendProgram(gl));
     this._list[TechniqueId.VolClassBlend] = new SingularTechnique(createVolClassBlendProgram(gl));
     this._list[TechniqueId.VolClassColorUsingStencil] = new SingularTechnique(createVolClassColorUsingStencilProgram(gl));

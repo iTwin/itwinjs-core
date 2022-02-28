@@ -5,30 +5,26 @@
 /* eslint-disable deprecation/deprecation */
 // cSpell:ignore droppable Sublayer Basemap
 
-import * as React from "react";
-import { BaseMapLayerSettings, ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@itwin/core-common";
-import { DisplayStyleState } from "@itwin/core-frontend";
-import { ColorPickerDialog, ColorSwatch } from "@itwin/imodel-components-react";
-import { OptionType, ThemedSelect, WebFontIcon } from "@itwin/core-react";
-import { ActionMeta, ValueType } from "react-select/src/types";
 import { ModalDialogManager } from "@itwin/appui-react";
-import { TransparencyPopupButton } from "./TransparencyPopupButton";
-import { useSourceMapContext } from "./MapLayerManager";
-import "./BasemapPanel.scss";
+import { BaseMapLayerSettings, ColorByName, ColorDef, ImageMapLayerSettings, MapLayerProps } from "@itwin/core-common";
+import { DisplayStyleState } from "@itwin/core-frontend";
+import { WebFontIcon } from "@itwin/core-react";
+import { ColorPickerDialog, ColorSwatch } from "@itwin/imodel-components-react";
+import { Select, SelectOption } from "@itwin/itwinui-react";
+import * as React from "react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import "./BasemapPanel.scss";
+import { useSourceMapContext } from "./MapLayerManager";
+import { TransparencyPopupButton } from "./TransparencyPopupButton";
 
 function getBaseMapFromStyle(displayStyle: DisplayStyleState | undefined) {
   if (!displayStyle)
     return undefined;
 
-  if (displayStyle.settings.mapImagery.backgroundBase instanceof MapLayerSettings || displayStyle.settings.mapImagery.backgroundBase instanceof ColorDef)
+  if (displayStyle.settings.mapImagery.backgroundBase instanceof ImageMapLayerSettings || displayStyle.settings.mapImagery.backgroundBase instanceof ColorDef)
     return displayStyle.settings.mapImagery.backgroundBase.toJSON();
 
   return undefined;
-}
-
-interface BaseOption extends OptionType {
-  color?: string;
 }
 
 /** @internal */
@@ -51,8 +47,8 @@ export function BasemapPanel() {
     }
   }, [activeViewport]);
 
-  const baseMapOptions = React.useMemo<BaseOption[]>(() => {
-    const baseOptions: BaseOption[] = [];
+  const baseMapOptions = React.useMemo<SelectOption<string>[]>(() => {
+    const baseOptions: SelectOption<string>[] = [];
 
     baseOptions.push({ value: useColorLabel, label: useColorLabel });
 
@@ -108,9 +104,9 @@ export function BasemapPanel() {
       onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
   }, [presetColors, handleBackgroundColorDialogOk]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleBaseMapSelection = React.useCallback((value: ValueType<BaseOption>, action: ActionMeta<BaseOption>) => {
-    if (bases && activeViewport && action.action === "select-option" && value) {
-      const baseMap = bases.find((map) => map.name === (value as BaseOption).label);
+  const handleBaseMapSelection = React.useCallback((value: string) => {
+    if (bases && activeViewport && value) {
+      const baseMap = bases.find((map) => map.name === value);
       if (baseMap) {
         const baseProps: MapLayerProps = baseMap.toJSON();
         if (activeViewport.displayStyle.backgroundMapBase instanceof BaseMapLayerSettings) {
@@ -131,7 +127,7 @@ export function BasemapPanel() {
   }, [bases, activeViewport, bgColor]);
 
   const [baseMapVisible, setBaseMapVisible] = React.useState(() => {
-    if (activeViewport && activeViewport.displayStyle.backgroundMapBase instanceof MapLayerSettings) {
+    if (activeViewport && activeViewport.displayStyle.backgroundMapBase instanceof ImageMapLayerSettings) {
       return activeViewport.displayStyle.backgroundMapBase.visible;
     }
     return false;
@@ -160,7 +156,7 @@ export function BasemapPanel() {
           <WebFontIcon iconName={baseMapVisible ? "icon-visibility" : "icon-visibility-hide-2"} />
         </button>
         <span className="map-manager-base-label">{baseLayerLabel}</span>
-        <ThemedSelect options={baseMapOptions} closeMenuOnSelect placeholder={selectBaseMapLabel} value={selectedBaseMapValue} onChange={handleBaseMapSelection} />
+        <Select options={baseMapOptions} placeholder={selectBaseMapLabel} value={selectedBaseMapValue.value} onChange={handleBaseMapSelection} size="small" />
         {
           baseIsColor &&
           <ColorSwatch className="map-manager-base-item-color" colorDef={ColorDef.fromJSON(bgColor)} round={false} onColorPick={handleBgColorClick} />

@@ -30,7 +30,6 @@ import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
- * @extensionApi
  */
 export class RenderContext {
   /** ViewFlags extracted from the context's [[Viewport]]. */
@@ -104,7 +103,6 @@ export class RenderContext {
 /** Provides context for an [[InteractiveTool]] to display decorations representing its current state.
  * @see [[InteractiveTool.onDynamicFrame]]
  * @public
- * @extensionApi
  */
 export class DynamicsContext extends RenderContext {
   private _dynamics?: GraphicList;
@@ -132,7 +130,6 @@ export class DynamicsContext extends RenderContext {
 
 /** Provides context for a [[ViewportDecorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
  * @public
- * @extensionApi
  */
 export class DecorateContext extends RenderContext {
   private readonly _decorations: Decorations;
@@ -325,7 +322,6 @@ export class DecorateContext extends RenderContext {
  * [[TileTree]]s visible within the viewport. Creating the scene may result in the enqueueing of requests for [[Tile]] content which
  * should be displayed in the viewport but are not yet loaded.
  * @public
- * @extensionApi
  */
 export class SceneContext extends RenderContext {
   private _missingChildTiles = false;

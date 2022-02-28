@@ -8,8 +8,8 @@ import { MapLayerImageryProvider } from "@itwin/core-frontend";
 export interface StyleMapLayerSettings {
   /** Name */
   name: string;
-  /** URL */
-  url: string;
+  /** source (i.URL for ImageMapLayerSettings or modelId for ModelMapLayerSettings) */
+  source: string;
   /** Controls visibility of layer */
   visible: boolean;
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
@@ -35,4 +35,13 @@ export interface MapLayerOptions {
   hideExternalMapLayers?: boolean;
   fetchPublicMapLayerSources?: boolean;
   mapTypeOptions?: MapTypesOptions;
+}
+
+export interface MapFeatureInfoPropertyGridOptions {
+  isPropertySelectionEnabled?: boolean;
+}
+
+export interface MapFeatureInfoOptions {
+  showLoadProgressAnimation?: boolean;
+  propertyGridOptions?: MapFeatureInfoPropertyGridOptions;
 }

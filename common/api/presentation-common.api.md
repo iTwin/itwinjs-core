@@ -274,13 +274,13 @@ export enum ContentFlags {
     ShowLabels = 4
 }
 
-// @alpha
+// @beta
 export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
     displayType?: string;
     keys: TKeySet;
 }
 
-// @alpha
+// @beta
 export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions<ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>>;
 
 // @public
@@ -1884,7 +1884,7 @@ export class PresentationRpcInterface extends RpcInterface {
     computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
     // (undocumented)
     getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined>;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{
         total: number;
         items: KeySetJSON;
@@ -1929,12 +1929,16 @@ export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManage
 };
 
 // @public
-export type PresentationRpcResponse<TResult = undefined> = Promise<{
-    statusCode: PresentationStatus;
+export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationRpcResponseData<TResult>>;
+
+// @public
+export interface PresentationRpcResponseData<TResult = undefined> {
+    // @alpha (undocumented)
+    diagnostics?: DiagnosticsScopeLogs[];
     errorMessage?: string;
     result?: TResult;
-    diagnostics?: DiagnosticsScopeLogs[];
-}>;
+    statusCode: PresentationStatus;
+}
 
 // @public
 export enum PresentationStatus {
@@ -2113,15 +2117,17 @@ export interface PropertyEditorSpecification {
 export interface PropertyGroup extends GroupingSpecificationBase {
     createGroupForSingleItem?: boolean;
     createGroupForUnspecifiedValues?: boolean;
+    // @deprecated
     groupingValue?: PropertyGroupingValue;
     imageId?: string;
     propertyName: string;
     ranges?: PropertyRangeGroupSpecification[];
+    // @deprecated
     sortingValue?: PropertyGroupingValue;
     specType: GroupingSpecificationTypes.Property;
 }
 
-// @public
+// @public @deprecated
 export enum PropertyGroupingValue {
     DisplayLabel = "DisplayLabel",
     PropertyValue = "PropertyValue"
@@ -2453,6 +2459,8 @@ export class RpcRequestsHandler implements IDisposable {
     getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>>): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]>;
+    // (undocumented)
+    readonly maxRequestRepeatCount: number;
     request<TResult, TOptions extends RequestOptions<IModelRpcProps>, TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
     }
 

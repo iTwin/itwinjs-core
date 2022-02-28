@@ -23,6 +23,7 @@ import {
 import TestUtils, { mount, storageMock, stubRaf, UiStateStorageStub } from "../TestUtils";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { expect, should } from "chai";
+import { Provider } from "react-redux";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name, deprecation/deprecation */
 
@@ -481,18 +482,19 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should render", () => {
         const frontstageDef = new FrontstageDef();
-        const wrapper = shallow(<ActiveFrontstageDefProvider frontstageDef={frontstageDef} />);
+        const wrapper = shallow(<Provider store={TestUtils.store}><ActiveFrontstageDefProvider frontstageDef={frontstageDef} /></Provider>);
         wrapper.should.matchSnapshot();
       });
 
       it("should fall back to cached NineZoneState", () => {
+
         const frontstageDef = new FrontstageDef();
         frontstageDef.nineZoneState = createNineZoneState();
 
         const newFrontstageDef = new FrontstageDef();
         newFrontstageDef.nineZoneState = undefined;
 
-        const wrapper = mount<{ frontstageDef: FrontstageDef }>(<ActiveFrontstageDefProvider frontstageDef={frontstageDef} />);
+        const wrapper = mount(<Provider store={TestUtils.store}><ActiveFrontstageDefProvider frontstageDef={frontstageDef} /></Provider>);
         wrapper.setProps({ frontstageDef: newFrontstageDef });
 
         const nineZone = wrapper.find(NineZone);
@@ -1836,7 +1838,7 @@ describe("Frontstage local storage wrapper", () => {
 
       afterEach(() => {
         UiItemsManager.unregister("TestUi2Provider");
-        FrontstageManager.clearFrontstageDefs();
+        FrontstageManager.clearFrontstageProviders();
         FrontstageManager.setActiveFrontstageDef(undefined);
         FrontstageManager.nineZoneSize = undefined;
       });
@@ -1853,7 +1855,7 @@ describe("Frontstage local storage wrapper", () => {
         FrontstageManager.addFrontstageProvider(frontstageProvider);
         const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-        const { findByText } = render(<WidgetPanelsFrontstage />);
+        const { findByText } = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
         await findByText("Left Start 1");
         await findByText("TestUi2Provider RM1");
         await findByText("TestUi2Provider W1");
@@ -1867,7 +1869,7 @@ describe("Frontstage local storage wrapper", () => {
         FrontstageManager.addFrontstageProvider(frontstageProvider);
         const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-        const wrapper = render(<WidgetPanelsFrontstage />);
+        const wrapper = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
         await wrapper.findByText("Left Start 1");
         await wrapper.findByText("TestUi2Provider RM1");
         await wrapper.findByText("TestUi2Provider W1");
@@ -1882,7 +1884,7 @@ describe("Frontstage local storage wrapper", () => {
         const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         const spy = sinon.stub(frontstageDef!, "setIsApplicationClosing");
-        const wrapper = render(<WidgetPanelsFrontstage />);
+        const wrapper = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
         spy.calledOnce.should.true;
         window.dispatchEvent(new Event("beforeunload"));
         spy.calledTwice.should.true;
@@ -1908,7 +1910,7 @@ describe("Frontstage local storage wrapper", () => {
         FrontstageManager.addFrontstageProvider(frontstageProvider);
         const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-        const { findByText } = render(<WidgetPanelsFrontstage />, {
+        const { findByText } = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>, {
           wrapper: (props) => <UiStateStorageHandler {...props} />,
         });
         await findByText("Left Start 1");
@@ -1923,7 +1925,7 @@ describe("Frontstage local storage wrapper", () => {
         FrontstageManager.addFrontstageProvider(frontstageProvider);
         const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-        const { findByText } = render(<WidgetPanelsFrontstage />);
+        const { findByText } = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
         await findByText("Left Start 1");
 
         act(() => {
@@ -1939,7 +1941,7 @@ describe("Frontstage local storage wrapper", () => {
         const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
 
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-        render(<WidgetPanelsFrontstage />);
+        render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
 
         act(() => {
           UiItemsManager.register(new TestUi2Provider());
@@ -1971,7 +1973,7 @@ describe("Frontstage local storage wrapper", () => {
         const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
 
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-        render(<WidgetPanelsFrontstage />);
+        render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
 
         await TestUtils.flushAsyncOperations();
         const state = frontstageDef!.nineZoneState!;

@@ -7,15 +7,7 @@ import {
   DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
   WipRpcInterface,
 } from "@itwin/core-common";
-
-export interface CloudEnvProps {
-  iModelBank?: {
-    url: string;
-  };
-  iModelHub?: {
-    region: string;
-  };
-}
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "TestRpcInterface";
@@ -28,9 +20,6 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
   public async executeTest(_iModelRpcProps: IModelRpcProps, _testName: string, _params: any): Promise<any> {
-    return this.forward(arguments);
-  }
-  public async getCloudEnv(): Promise<CloudEnvProps> {
     return this.forward(arguments);
   }
   public async purgeCheckpoints(_iModelId: string): Promise<void> {
@@ -67,4 +56,5 @@ export const rpcInterfaces = [
   WipRpcInterface,
   DevToolsRpcInterface,
   EventsTestRpcInterface,
+  ECSchemaRpcInterface,
 ];

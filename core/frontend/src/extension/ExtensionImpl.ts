@@ -10,7 +10,7 @@ import { ToolType } from "../tools/Tool";
 import { IModelApp } from "../IModelApp";
 import { CommonToolbarItem, StageUsage, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 
-/** @beta */
+/** @alpha */
 export class ToolProvider implements UiItemsProvider {
   public readonly id;
   private _toolId = "";
@@ -26,11 +26,11 @@ export class ToolProvider implements UiItemsProvider {
 
   public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
     const toolbarItem = ToolbarItemUtilities.createActionButton(this._toolId, 0, this._toolIcon, this._toolLabel, async () => { await IModelApp.tools.run(this._toolId); });
-    return stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal ? [toolbarItem] : [];
+    return stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical ? [toolbarItem] : [];
   }
 }
 
-/** @beta */
+/** @alpha */
 export class ExtensionImpl {
   constructor(private _id: string) { }
 

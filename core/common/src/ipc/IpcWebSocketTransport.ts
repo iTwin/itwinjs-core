@@ -22,18 +22,23 @@ export abstract class IpcWebSocketTransport {
     return (typeof (Blob) !== "undefined" && data instanceof Blob) ? data.arrayBuffer() : data;
   }
 
-  protected async notifyIncoming(data: any): Promise<IpcWebSocketMessage> {
+  protected async notifyIncoming(data: any, connection: any): Promise<IpcWebSocketMessage> {
     if (this._partial) {
       this._received.push(data);
       --this._outstanding;
 
       if (this._outstanding === 0) {
-        await Promise.all(this._received.map(async (v, i, a) => a[i] = await this.unwrap(v)));
-        parts = this._received;
-        const message: IpcWebSocketMessage = JSON.parse(this._partial, reviver);
+        const partial = this._partial;
+        const received = this._received;
         this._partial = undefined;
+        this._received = [];
+        await Promise.all(received.map(async (v, i, a) => a[i] = await this.unwrap(v)));
+
+        parts = received;
+        const message: IpcWebSocketMessage = JSON.parse(partial, reviver);
         parts.length = 0;
-        return InSentOrder.deliver(message);
+
+        return InSentOrder.deliver(message, connection);
       } else {
         return IpcWebSocketMessage.internal();
       }
@@ -46,7 +51,7 @@ export abstract class IpcWebSocketTransport {
         return IpcWebSocketMessage.internal();
       } else {
         const message: IpcWebSocketMessage = JSON.parse(serialized, reviver);
-        return InSentOrder.deliver(message);
+        return InSentOrder.deliver(message, connection);
       }
     }
   }
@@ -57,6 +62,10 @@ export abstract class IpcWebSocketTransport {
     const value = [JSON.stringify([objects, parts.length]), ...parts];
     parts.length = 0;
     return value;
+  }
+
+  protected notifyClose(connection: any) {
+    InSentOrder.close(connection);
   }
 }
 
@@ -108,33 +117,43 @@ function makePromise<T>() {
 /* Reconstructing the sequence in which messages were sent is necessary since
    the binary data for a message has to be awaited in IpcWebSocketTransport.unwrap. */
 class InSentOrder {
-  private static _queue: InSentOrder[] = [];
-  private static _last = -1;
-  private static get _next() { return this._last + 1; }
+  private static _connections: Map<any, { queue: InSentOrder[], last: number }> = new Map();
 
-  public static async deliver(message: IpcWebSocketMessage): Promise<IpcWebSocketMessage> {
+  public static async deliver(message: IpcWebSocketMessage, connection: any): Promise<IpcWebSocketMessage> {
+    let context = this._connections.get(connection);
+    if (!context) {
+      context = { queue: [], last: -1 };
+      this._connections.set(connection, context);
+    }
+
     const entry = new InSentOrder(message);
-    this._queue.push(entry);
-    this._queue.sort((a, b) => a.sequence - b.sequence);
+    context.queue.push(entry);
+    context.queue.sort((a, b) => a.sequence - b.sequence);
 
-    while (this._queue.length !== 0) {
-      const next = this._queue[0];
-      const duplicate = next.sequence <= this._last;
-      const match = next.sequence === this._next;
+    while (context.queue.length !== 0) {
+      const next = context.queue[0];
+      const duplicate = next.sequence <= context.last;
+      const match = next.sequence === (context.last + 1);
 
       if (duplicate) {
         next.duplicate = true;
       } else if (match) {
-        ++this._last;
+        ++context.last;
       }
 
       if (duplicate || match) {
-        this._queue.shift();
+        context.queue.shift();
         next.release();
+      } else {
+        break;
       }
     }
 
     return entry.message;
+  }
+
+  public static close(connection: any) {
+    this._connections.delete(connection);
   }
 
   public release = () => { };

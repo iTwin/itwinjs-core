@@ -4,10 +4,37 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelStatus } from "@itwin/core-bentley";
-import { ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb } from "./IModelDb";
+import type { ISchemaLocater as ISchemaLocaterType, Schema as SchemaType } from "@itwin/ecschema-metadata";
+
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-var-requires  */
+
+let Schema: any;
+let SchemaContext: any;
+let SchemaKey: any;
+let SchemaMatchType: any;
+let ECVersion: any;
+
+/** The ecschema-metadata package is now an optional dependency. If the package
+ * has not been installed, the exception is caught below. All the types will be
+ * undefined, and an exception is throw in the IModelSchemaLoader constructor.
+ */
+function loadMetadata(): boolean {
+  try {
+    const metadata = require("@itwin/ecschema-metadata");
+    Schema = metadata.Schema;
+    SchemaContext = metadata.SchemaContext;
+    SchemaKey = metadata.SchemaKey;
+    SchemaMatchType = metadata.SchemaMatchType;
+    ECVersion = metadata.ECVersion;
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * A utility class for retrieving EC Schema objects from an iModel. Loaded schemas are held in memory within
@@ -17,10 +44,14 @@ import { IModelDb } from "./IModelDb";
  * @alpha
  */
 export class IModelSchemaLoader {
-  private _context: SchemaContext;
+  private _context: typeof SchemaContext;
 
   /** @internal */
   public constructor(private _iModel: IModelDb) {
+    // If the ecschema-metadata package was not installed inform the caller.
+    if (!loadMetadata())
+      throw new IModelError(IModelStatus.NotFound, "IModelSchemaLoader requires that @bentley/ecschema-metadata be installed.");
+
     this._context = new SchemaContext();
     const locater = new IModelSchemaLocater(this._iModel);
     this._context.addLocater(locater);
@@ -30,7 +61,7 @@ export class IModelSchemaLoader {
    * @param schemaName a string with the name of the schema to load.
    * @throws [IModelError]($common) if the schema is not found or cannot be loaded.
    */
-  public getSchema<T extends Schema>(schemaName: string): T {
+  public getSchema<T extends SchemaType>(schemaName: string): T {
     const schema = this.tryGetSchema(schemaName);
     if (!schema)
       throw new IModelError(IModelStatus.NotFound, `reading schema=${schemaName}`);
@@ -42,7 +73,7 @@ export class IModelSchemaLoader {
    * @param schemaName a string with the name of the schema to load.
    * @throws [IModelError]($common) if the schema exists, but cannot be loaded.
    */
-  public tryGetSchema<T extends Schema>(schemaName: string): T | undefined {
+  public tryGetSchema<T extends SchemaType>(schemaName: string): T | undefined {
     // SchemaKey version is not used when locating schema in an iModel, so the version is arbitrary.
     const key = new SchemaKey(schemaName, new ECVersion(1, 0, 0));
     const schema = this._context.getSchemaSync(key, SchemaMatchType.Latest);
@@ -54,7 +85,7 @@ export class IModelSchemaLoader {
  * A private ISchemaLocater implementation for locating and retrieving EC Schema objects from an iModel
  * @alpha
  */
-class IModelSchemaLocater implements ISchemaLocater {
+class IModelSchemaLocater implements ISchemaLocaterType {
   /** @internal */
   public constructor(private _iModel: IModelDb) { }
 
@@ -64,7 +95,7 @@ class IModelSchemaLocater implements ISchemaLocater {
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [IModelError]($common) if the schema exists, but cannot be loaded.
    */
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<T | undefined> {
+  public async getSchema<T extends SchemaType>(schemaKey: typeof SchemaKey, matchType: typeof SchemaMatchType, context?: typeof SchemaContext | undefined): Promise<T | undefined> {
     return this.getSchemaSync(schemaKey, matchType, context) as T;
   }
 
@@ -74,7 +105,7 @@ class IModelSchemaLocater implements ISchemaLocater {
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [IModelError]($common) if the schema exists, but cannot be loaded.
    */
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined {
+  public getSchemaSync<T extends SchemaType>(schemaKey: typeof SchemaKey, _matchType: typeof SchemaMatchType, context?: typeof SchemaContext | undefined): T | undefined {
     const schemaProps = this.getSchemaString(schemaKey.name);
     if (!schemaProps)
       return undefined;

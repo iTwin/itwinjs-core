@@ -18,6 +18,7 @@ export interface DtaConfiguration {
   enableDiagnostics?: boolean; // If true, all RenderDiagnostics will be enabled (assertions, debug output, GL state checks).
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
   disableInstancing?: boolean; // default false
+  disableIndexedEdges?: boolean; // default false
   enableImprovedElision?: boolean; // default true
   ignoreAreaPatterns?: boolean; // default false
   enableExternalTextures?: boolean; // default true
@@ -88,6 +89,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
+
+  if (undefined !== process.env.IMJS_DISABLE_INDEXED_EDGES)
+    configuration.disableIndexedEdges = true;
 
   if (undefined !== process.env.IMJS_NO_IMPROVED_ELISION)
     configuration.enableImprovedElision = false;

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-react",
-  "version": "3.0.0-dev.146",
+  "version": "3.1.0-dev.37",
   "description": "iTwin.js UI core components",
   "main": "lib/cjs/core-react.js",
   "module": "lib/esm/core-react.js",
@@ -40,8 +40,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.146",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.146",
+    "@itwin/appui-abstract": "workspace:^3.1.0-dev.37",
+    "@itwin/core-bentley": "workspace:^3.1.0-dev.37",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -68,7 +68,7 @@
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
-    "@types/react": "17.0.31",
+    "@types/react": "^17.0.37",
     "@types/react-autosuggest": "10.1.2",
     "@types/react-dom": "^17.0.0",
     "@types/react-select": "3.0.26",
@@ -107,8 +107,8 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@itwin/itwinui-css": "^0.37.0",
-    "@itwin/itwinui-react": "^1.23.0",
+    "@itwin/itwinui-css": "0.44.1",
+    "@itwin/itwinui-react": "1.29.3",
     "classnames": "^2.3.1",
     "dompurify": "^2.0.12",
     "lodash": "^4.17.10",

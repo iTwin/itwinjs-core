@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "`TreeNode`: Fix checkbox propagating click events to the parent element, resulting in unexpected TreeNodeProps.onClick invocations.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

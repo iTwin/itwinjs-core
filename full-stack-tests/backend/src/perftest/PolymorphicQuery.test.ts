@@ -143,7 +143,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           let elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestPolySchema:testElement");
           let geomElement = seedIModel.elements.createElement(elementProps);
           setPropVal(geomElement, "propBase", "Base Value");
-          let id = seedIModel.elements.insertElement(geomElement);
+          let id = seedIModel.elements.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert failed");
           // create elements of Child up to required level
           for (let j = 0; j < hCount; ++j) {
@@ -152,7 +152,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
             geomElement = seedIModel.elements.createElement(elementProps);
             setPropVal(geomElement, "propBase", "Base Value");
             setPropVal(geomElement, "propChild", "Child Value");
-            id = seedIModel.elements.insertElement(geomElement);
+            id = seedIModel.elements.insertElement(geomElement.toJSON());
             assert.isTrue(Id64.isValidId64(id), "insert failed");
           }
         }
@@ -180,7 +180,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         let elementProps = createElemProps(seedIModel2, newModelId, spatialCategoryId, "TestPolySchema:testElement");
         let geomElement = seedIModel2.elements.createElement(elementProps);
         setPropVal(geomElement, "propBase", "Base Value");
-        let id = seedIModel2.elements.insertElement(geomElement);
+        let id = seedIModel2.elements.insertElement(geomElement.toJSON());
         assert.isTrue(Id64.isValidId64(id), "insert failed");
         // create elements of Child up to required level
         for (let j = 0; j < multiHierarchyCount; ++j) {
@@ -189,7 +189,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           geomElement = seedIModel2.elements.createElement(elementProps);
           setPropVal(geomElement, "propBase", "Base Value");
           setPropVals(geomElement, j + 1, "propChild");
-          id = seedIModel2.elements.insertElement(geomElement);
+          id = seedIModel2.elements.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert failed");
         }
       }

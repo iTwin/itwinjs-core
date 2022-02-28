@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { UiFramework } from "@itwin/appui-react";
-import { BeEvent, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { BeEvent, Id64Array, Id64String, IModelStatus, UnexpectedErrors } from "@itwin/core-bentley";
 import { IModelError, QueryRowFormat } from "@itwin/core-common";
 import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
-import { ErrorHandling } from "./ErrorHandling";
 
 export const iModelInfoAvailableEvent = new BeEvent();
 
@@ -88,7 +87,7 @@ export class ActiveSettingsManager {
     const promises = [this._computeCategoriesOnViewChanged(view), this._computeModelsOnViewChanged(view)];
     Promise.all(promises)
       .then(() => iModelInfoAvailableEvent.raiseEvent())
-      .catch((err: Error) => ErrorHandling.onUnexpectedError(err));
+      .catch((err: Error) => UnexpectedErrors.handle(err));
   }
 
   private static async _computeCategoriesOnViewChanged(view: ViewState) {

@@ -14,7 +14,6 @@ import {
   BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
 } from "@itwin/core-common";
 import { RenderSystem } from "../render/RenderSystem";
-import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 import {
   ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
@@ -328,7 +327,7 @@ class GraphicsTile extends Tile {
     this.tolerance = 10 ** toleranceLog10;
   }
 
-  public override computeLoadPriority(_viewports: Iterable<Viewport>): number {
+  public override computeLoadPriority(): number {
     // We want the element's graphics to be updated as soon as possible
     return 0;
   }
@@ -373,7 +372,7 @@ class GraphicsTile extends Tile {
       isCanceled = () => !this.isLoading;
 
     assert(data instanceof Uint8Array);
-    const stream = new ByteStream(data.buffer);
+    const stream = ByteStream.fromUint8Array(data);
 
     const position = stream.curPos;
     const format = stream.nextUint32;

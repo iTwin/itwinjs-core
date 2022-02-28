@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
+import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import {
-  ArcGisTokenClientType, ArcGisTokenManager, MapCartoRectangle, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
+  ArcGisTokenClientType, ArcGisTokenManager, MapCartoRectangle, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
 } from "../internal";
 
 /** @packageDocumentation
@@ -44,10 +44,13 @@ export class ArcGisUtilities {
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
   public static async getEndpoint(url: string): Promise<any | undefined> {
-    const capabilities = await getJson(`${url}?f=pjson`);
-
-    return capabilities;
+    const capabilities = await request(`${url}?f=pjson`, {
+      method: "GET",
+      responseType: "json",
+    });
+    return capabilities.body;
   }
+
   public static async getNationalMapSources(): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
     const services = await getJson("https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList");
@@ -119,14 +122,22 @@ export class ArcGisUtilities {
   }
 
   public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+
+    let authMethod: MapLayerAuthType = MapLayerAuthType.None;
+
     const json = await this.getServiceJson(url, credentials, ignoreCache);
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
     } else if (json.error !== undefined) {
+
+      // If we got a 'Token Required' error, lets check what authentification methods this ESRI service offers
+      // and return information needed to initiate the authentification process... the end-user
+      // will have to provide his credentials before we can fully validate this source.
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
-        return { status: MapLayerSourceStatus.RequireAuth };
+        authMethod = MapLayerAuthType.EsriToken;
+        return { status: MapLayerSourceStatus.RequireAuth, authInfo: { authMethod, tokenEndpoint: undefined } };
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
-        return { status: MapLayerSourceStatus.InvalidCredentials };
+        return { status: MapLayerSourceStatus.InvalidCredentials, authInfo: { authMethod: MapLayerAuthType.EsriToken } };
     }
 
     let subLayers;
@@ -141,8 +152,8 @@ export class ArcGisUtilities {
       }
     }
     return { status: MapLayerSourceStatus.Valid, subLayers };
-
   }
+
   private static _serviceCache = new Map<string, any>();
   public static async getServiceJson(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<any> {
     if (!ignoreCache) {

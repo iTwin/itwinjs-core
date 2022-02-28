@@ -51,7 +51,7 @@ describe("ExcludedElements", () => {
 
       const getStyle = (compressExcludedElementIds?: boolean) => {
         const loadProps = { id: styleId, displayStyle: { compressExcludedElementIds } };
-        return imodel.elements.getElementJson<DisplayStyle3d>(loadProps);
+        return imodel.elements.getElement<DisplayStyle3d>(loadProps);
       };
 
       // Unless compressed Ids explicitly requested, the Ids are always decompressed regardless of how they are stored.

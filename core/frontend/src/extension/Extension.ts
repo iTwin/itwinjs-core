@@ -6,38 +6,49 @@
  * @module Extensions
  */
 
-type ResolveFunc = (() => Promise<any>);
+/**
+ * @alpha
+ */
+export enum ActivationEvent {
+  onStartup = "onStartup",
+}
+
+/**
+ * @alpha
+ */
+export type ResolveFunc = () => Promise<any>;
 
 /** Defines the format of an Extension manifest
- * @beta
+ * @alpha
 */
 export interface ExtensionManifest {
+  /** The extension name */
   readonly name: string;
+  /** The extension display name */
   readonly displayName?: string;
+  /** The extension version */
   readonly version: string;
+  /** The extension description */
   readonly description?: string;
   /** The main module file to load. This should be a path to the javascript file
    * e.g "./lib/main.js"
    */
-  readonly main?: string;
-  /** The version of iTwin.js Core. */
-  readonly engines?: { itwinjs: string };
+  readonly main: string;
   /** List of activation events this Extension supports. */
-  readonly activationEvents?: string[];
-  readonly enableProposedApi?: boolean;
+  readonly activationEvents: ActivationEvent[];
 }
 
-/** @beta */
+/** @alpha */
 export interface BuildExtensionManifest extends ExtensionManifest {
   /** Only valid when the Extension is loaded at build-time.
    *
-   * Defines how to load the Extension manifest and
+   * Defines the main ES module that will be imported
    */
-  readonly module?: string;
+  readonly module: string;
 }
 
 /** Describes an Extension that has already been downloaded and has a location files can be easily executed.
- * @beta
+ * @alpha
 */
 export interface LocalExtensionProps {
   readonly manifest: ExtensionManifest;

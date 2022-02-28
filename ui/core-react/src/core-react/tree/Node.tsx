@@ -85,6 +85,8 @@ export interface TreeNodeProps extends CommonProps {
  * @public
  */
 export class TreeNode extends React.Component<TreeNodeProps> {
+  private checkboxWrapperRef = React.createRef<HTMLDivElement>();
+
   constructor(props: TreeNodeProps) {
     super(props);
   }
@@ -99,8 +101,6 @@ export class TreeNode extends React.Component<TreeNodeProps> {
     let offset = this.props.level * LEVEL_OFFSET;
     if (!this.props.isLoading && this.props.isLeaf)
       offset += EXPANSION_TOGGLE_WIDTH; // Add expansion toggle/loader width if they're not rendered
-
-    const loader = this.props.isLoading ? (<div className="loader"><ProgressRadial size="x-small" indeterminate /></div>) : undefined;
 
     let checkbox: React.ReactNode;
     if (this.props.checkboxProps) {
@@ -117,9 +117,13 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         checkbox = this.props.renderOverrides.renderCheckbox(props);
       } else {
         checkbox = (
-          <Checkbox {...props}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => this._onCheckboxChange(e.target.checked)} data-testid={this.createSubComponentTestId("checkbox")}
-          />
+          <div ref={this.checkboxWrapperRef}>
+            <Checkbox
+              {...props}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => this._onCheckboxChange(e.target.checked)}
+              data-testid={this.createSubComponentTestId("checkbox")}
+            />
+          </div>
         );
       }
     }
@@ -154,7 +158,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
           style={{ marginLeft: offset }}
           data-testid={this.createSubComponentTestId("contents")}
         >
-          {loader}
+          {this.props.isLoading && <ProgressRadial size="x-small" indeterminate />}
           {toggle}
           {checkbox}
           {icon}
@@ -188,7 +192,23 @@ export class TreeNode extends React.Component<TreeNodeProps> {
 
   private _onClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    if (this.props.onClick)
-      this.props.onClick(e);
+
+    // ITwinUI-react has a bug that prevents us from stopping checkbox click event propagation to the parent element
+    if (!this.checkboxWrapperRef.current
+      || (e.target instanceof Element && !isDescendant(this.checkboxWrapperRef.current, e.target))) {
+      this.props.onClick?.(e);
+    }
   };
+}
+
+function isDescendant(ancestor: Element, descendant: Element): boolean {
+  while (descendant.parentElement !== null) {
+    if (descendant === ancestor) {
+      return true;
+    }
+
+    descendant = descendant.parentElement;
+  }
+
+  return false;
 }

@@ -12,8 +12,8 @@ import {
   BackgroundFill, BackgroundMapType, BatchType, BisCodeSpec, BriefcaseIdValue, ChangedValueState, ChangeOpCode, ChangesetType, ColorByName, ColorDef, CommonLoggerCategory,
   ECSqlSystemProperty, ECSqlValueType, ElementGeometryOpcode, FeatureOverrideType, FillDisplay, FillFlags, FontType, GeoCoordStatus, GeometryClass, GeometryStreamFlags,
   GeometrySummaryVerbosity, GlobeMode, GridOrientationType, HSVConstants, ImageBufferFormat, ImageSourceFormat, LinePixels, MassPropertiesOperation, MonochromeMode,
-  Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank, RenderMode, SectionType, SkyBoxImageType, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode,
-  TerrainHeightOriginMode, TextureMapUnits, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, TxnAction, TypeOfChange,
+  Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank, RenderMode, SectionType, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode,
+  TerrainHeightOriginMode, TextureMapUnits, TextureTransparency, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, TxnAction, TypeOfChange,
 } from "@itwin/core-common";
 import { ExtensionImpl } from "./ExtensionImpl";
 import { ExtensionHost } from "./ExtensionHost";
@@ -33,7 +33,6 @@ import { ViewStatus } from "../ViewStatus";
 import { DepthPointSource, ViewUndoEvent } from "../Viewport";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
-import { TextureTransparency } from "../render/RenderTexture";
 import { UniformType, VaryingType } from "../render/ScreenSpaceEffectBuilder";
 import { BingElevationProvider, readElementGraphics, TileBoundingBoxes, TileGraphicType, TileLoadPriority, TileLoadStatus, TileTreeLoadStatus, TileVisibility } from "../tile/internal";
 import { ClipEventType } from "../tools/ClipViewTool";
@@ -91,7 +90,7 @@ const getExtensionApi = (id: string) => {
       CommonLoggerCategory, ECSqlSystemProperty, ECSqlValueType, ElementGeometryOpcode, FeatureOverrideType, FillDisplay, FillFlags, FontType,
       GeoCoordStatus, GeometryClass, GeometryStreamFlags, GeometrySummaryVerbosity, GlobeMode, GridOrientationType, HSVConstants, ImageBufferFormat,
       ImageSourceFormat, LinePixels, MassPropertiesOperation, MonochromeMode, Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank,
-      RenderMode, SectionType, SkyBoxImageType,
+      RenderMode, SectionType,
       SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode, TerrainHeightOriginMode, TextureMapUnits,
       ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, TxnAction, TypeOfChange,
     },

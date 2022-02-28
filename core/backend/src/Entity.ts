@@ -6,15 +6,21 @@
  * @module Schema
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
-/** Base class for all Entities in an iModel. Every subclass of Entity handles one BIS class.
+/** Represents an entity in an [[IModelDb]] such as an [[Element]], [[Model]], or [[Relationship]].
+ * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
+ * An Entity is typically instantiated from an [EntityProps]($common) and can be converted back to this representation via [[Entity.toJSON]].
  * @public
  */
-export class Entity implements EntityProps {
+export class Entity {
+  /** An immutable property used to discriminate between [[Entity]] and [EntityProps]($common), used to inform the TypeScript compiler that these two types
+   * are never substitutable for one another. To obtain an EntityProps from an Entity, use [[Entity.toJSON]].
+   */
+  public readonly isInstanceOfEntity: true = true;
   /** The Schema that defines this class. */
   public static schema: typeof Schema;
 
@@ -53,7 +59,9 @@ export class Entity implements EntityProps {
     this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]), false);
   }
 
-  /** @internal */
+  /** Obtain the JSON representation of this Entity. Subclasses of [[Entity]] typically override this method to return their corresponding sub-type of [EntityProps]($common) -
+   * for example, [[GeometricElement.toJSON]] returns a [GeometricElementProps]($common).
+   */
   public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;
@@ -78,6 +86,20 @@ export class Entity implements EntityProps {
 
   /** @internal */
   public static get protectedOperations(): string[] { return []; }
+
+  /** return whether this Entity class is a subclass of another Entity class
+   * @note the subclass-ness is checked according to JavaScript inheritance, to check the underlying raw EC class's
+   * inheritance, you can use [ECClass.is]($ecschema-metadata)
+   * @note this should have a type of `is<T extends typeof Entity>(otherClass: T): this is T` but can't because of
+   * typescript's restriction on the `this` type in static methods
+   */
+  public static is(otherClass: typeof Entity): boolean { return isSubclassOf(this, otherClass); }
+
+  /** whether this JavaScript class was generated for this ECClass because there was no registered custom implementation
+   * ClassRegistry overrides this when generating a class
+   * @internal
+   */
+  public static get isGeneratedClass() { return false; }
 }
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.

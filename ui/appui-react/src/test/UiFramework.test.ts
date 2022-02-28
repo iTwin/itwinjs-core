@@ -232,6 +232,14 @@ describe("UiFramework localStorage Wrapper", () => {
       UiFramework.setDefaultViewState(viewState.object);
       expect(UiFramework.getDefaultViewState()).not.to.be.undefined;
 
+      const displayOverlay = false;
+      UiFramework.setViewOverlayDisplay(displayOverlay);
+      expect(UiFramework.viewOverlayDisplay).to.eql(displayOverlay);
+      // test workflow that doesn't change the item
+      const currentDisplay = UiFramework.viewOverlayDisplay;
+      UiFramework.setViewOverlayDisplay(displayOverlay);
+      expect(UiFramework.viewOverlayDisplay).to.eql(currentDisplay);
+
       TestUtils.terminateUiFramework();
 
       // try again when store is not defined

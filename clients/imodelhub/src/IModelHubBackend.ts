@@ -7,7 +7,8 @@
  */
 
 import { join } from "path";
-import { ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { UserCancelledError } from "./itwin-client/FileHandler";
+import { ProgressCallback, ProgressInfo } from "./itwin-client/Request";
 import {
   AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg, CheckpointArg,
   CheckpointProps, CreateNewIModelProps, IModelDb, IModelHost, IModelIdArg, IModelJsFs, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, SnapshotDb, TokenArg,
@@ -15,7 +16,7 @@ import {
 } from "@itwin/core-backend";
 import { BentleyError, BriefcaseStatus, GuidString, Id64String, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
+  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import { IModelBankClient } from "./imodelbank/IModelBankClient";
 import { IModelClient } from "./IModelClient";
@@ -301,7 +302,7 @@ export class IModelHubBackend implements BackendHubAccess {
     return val;
   }
 
-  public async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
+  public async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
     checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
@@ -311,13 +312,13 @@ export class IModelHubBackend implements BackendHubAccess {
       throw new IModelError(BriefcaseStatus.VersionNotFound, "no checkpoints not found");
 
     const cancelRequest: any = {};
-    const progressCallback: ProgressCallback = (progress) => {
+    const progressCallback: ProgressCallback = (progress: ProgressInfo) => {
       if (arg.onProgress && arg.onProgress(progress.loaded, progress.total!) !== 0)
         cancelRequest.cancel?.();
     };
 
     await this.iModelClient.checkpoints.download(accessToken, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
-    return checkpoints[0].mergedChangeSetId!;
+    return { index: checkpoints[0].mergedChangeSetIndex!, id: checkpoints[0].mergedChangeSetId! };
   }
 
   public async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
@@ -332,15 +333,15 @@ export class IModelHubBackend implements BackendHubAccess {
       throw new Error("Invalid V2 checkpoint in iModelHub");
 
     return {
-      container: containerAccessKeyContainer,
-      auth: containerAccessKeySAS,
-      user: containerAccessKeyAccount,
-      dbAlias: containerAccessKeyDbName,
+      containerId: containerAccessKeyContainer,
+      sasToken: containerAccessKeySAS,
+      accountName: containerAccessKeyAccount,
+      dbName: containerAccessKeyDbName,
       storageType: "azure?sas=1",
     };
   }
 
-  public async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
+  public async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
     checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
@@ -361,13 +362,12 @@ export class IModelHubBackend implements BackendHubAccess {
     if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
       throw new IModelError(IModelStatus.NotFound, "invalid V2 checkpoint");
 
-    const transfer = new IModelHost.platform.CloudDbTransfer({
-      direction: "download",
-      container: containerAccessKeyContainer,
-      auth: containerAccessKeySAS,
+    const transfer = new IModelHost.platform.CloudDbTransfer("download", {
+      containerId: containerAccessKeyContainer,
+      sasToken: containerAccessKeySAS,
       storageType: "azure?sas=1",
-      user: containerAccessKeyAccount,
-      dbAlias: containerAccessKeyDbName,
+      accountName: containerAccessKeyAccount,
+      dbName: containerAccessKeyDbName,
       writeable: false,
       localFile: arg.localFile,
     });
@@ -392,7 +392,7 @@ export class IModelHubBackend implements BackendHubAccess {
       if (timer)
         clearInterval(timer);
     }
-    return checkpoints[0].changeSetId!;
+    return { index: checkpoints[0].mergedChangeSetIndex!, id: checkpoints[0].mergedChangeSetId! };
   }
 
   public async releaseAllLocks(arg: BriefcaseDbArg) {

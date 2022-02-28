@@ -8,7 +8,7 @@
  */
 import { BilinearPatch, Point2d, Point3d, Range1d, Range2d, Range3d } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, RenderTexture, TextureMapping } from "@itwin/core-common";
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { request, RequestOptions, Response } from "../../request/Request";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { Mesh, MeshArgs } from "../../render/primitives/mesh/MeshPrimitives";

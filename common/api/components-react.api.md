@@ -3599,11 +3599,14 @@ export const ToolbarButtonItem: React.MemoExoticComponent<React.FC<ToolbarButton
 export interface ToolbarButtonItemProps extends CommonProps {
     addGroupSeparator?: boolean;
     badge?: React.ReactNode;
+    groupPriority?: number;
     icon?: React.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
+    itemPriority?: number;
     onClick?: () => void;
     onKeyDown?: (e: React.KeyboardEvent) => void;
+    providerId?: string;
     title: string;
 }
 
@@ -3679,6 +3682,9 @@ export class ToolbarPanelAlignmentHelpers {
     static getCssClassName(panelAlignment: ToolbarPanelAlignment): string;
     static readonly START_CLASS_NAME = "components-panel-alignment-start";
 }
+
+// @public
+export const ToolbarPopupAutoHideContext: React.Context<boolean>;
 
 // @public
 export const ToolbarPopupContext: React.Context<ToolbarPopupContextProps>;
@@ -4207,6 +4213,9 @@ export function useRenderedStringValue(record: PropertyRecord, stringValueCalcul
     stringValue?: string;
     element: React.ReactNode;
 };
+
+// @public
+export function useToolbarPopupAutoHideContext(): boolean;
 
 // @public
 export function useToolbarPopupContext(): ToolbarPopupContextProps;

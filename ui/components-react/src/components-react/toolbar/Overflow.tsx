@@ -10,7 +10,7 @@ import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, Popup, useRefState } from "@itwin/core-react";
-import { useToolItemEntryContext } from "./ToolbarWithOverflow";
+import { useToolbarPopupAutoHideContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { useResizeObserverSingleDimension } from "./ItemWrapper";
 import { Direction } from "./utilities/Direction";
 import { RelativePosition } from "@itwin/appui-abstract";
@@ -40,6 +40,11 @@ export function ToolbarOverflowButton(props: ToolbarOverflowButtonProps) {
   const { onResize, useHeight } = useToolItemEntryContext();
   const [targetRef, target] = useRefState<HTMLDivElement>();
   const ref = useResizeObserverSingleDimension<HTMLButtonElement>(onResize, useHeight);
+  const isHidden = useToolbarPopupAutoHideContext();
+  const popupClassName = classnames(
+    "components-toolbar-overflow_popup",
+    isHidden && "nz-hidden");
+
   const className = classnames(
     "components-toolbar-item-container",
     "components-toolbar-overflow-button",
@@ -66,7 +71,7 @@ export function ToolbarOverflowButton(props: ToolbarOverflowButtonProps) {
         </div>
       </button>
       <Popup
-        className="components-toolbar-overflow_popup"
+        className={popupClassName}
         offset={0}
         showShadow={false}
         isOpen={props.open}

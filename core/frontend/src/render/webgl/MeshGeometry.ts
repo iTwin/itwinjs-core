@@ -11,7 +11,7 @@ import { LUTGeometry } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
 import { ShaderProgramParams } from "./DrawCommand";
 import { FloatRgba } from "./FloatRGBA";
-import { RenderPass } from "./RenderFlags";
+import { Pass } from "./RenderFlags";
 import { Target } from "./Target";
 import { MeshData } from "./MeshData";
 
@@ -55,17 +55,16 @@ export abstract class MeshGeometry extends LUTGeometry {
   protected computeEdgeColor(target: Target): ColorInfo {
     return target.computeEdgeColor(this.colorInfo);
   }
-  protected computeEdgePass(target: Target): RenderPass {
+  protected computeEdgePass(target: Target): Pass {
     if (target.isDrawingShadowMap)
-      return RenderPass.None;
+      return "none";
 
     const vf = target.currentViewFlags;
-    if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges) {
-      return RenderPass.None;
-    }
+    if (RenderMode.SmoothShade === vf.renderMode && !vf.visibleEdges)
+      return "none";
 
     // Only want translucent edges in wireframe mode.
     const isTranslucent = RenderMode.Wireframe === vf.renderMode && vf.transparency && this.colorInfo.hasTranslucency;
-    return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
+    return isTranslucent ? "translucent" : "opaque-linear";
   }
 }

@@ -24,7 +24,7 @@ import { LengthDescription } from "../properties/LengthDescription";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
-import { Animator, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
+import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext } from "../ViewContext";
 import {
   eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation,
@@ -99,7 +99,7 @@ export abstract class ViewTool extends InteractiveTool {
   public override async run(..._args: any[]): Promise<boolean> {
     const toolAdmin = IModelApp.toolAdmin;
     if (undefined !== this.viewport && this.viewport === toolAdmin.markupView) {
-      IModelApp.notifications.outputPromptByKey("Viewing.NotDuringMarkup");
+      IModelApp.notifications.outputPromptByKey("iModelJs:Viewing.NotDuringMarkup");
       return false;
     }
 
@@ -787,7 +787,7 @@ export abstract class ViewManip extends ViewTool {
     return range;
   }
 
-  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
+  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions & MarginOptions) {
     const range = this.computeFitRange(viewport);
     const aspect = viewport.viewRect.aspect;
     viewport.view.lookAtVolume(range, aspect, options);
@@ -796,7 +796,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   /** @internal */
-  public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
+  public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions & MarginOptions) {
     const range = this.computeFitRange(viewport);
 
     if (viewport.view.isSpatialView() && animateFrustumChange && (viewport.viewingGlobe || !viewport.view.getIsViewingProject())) {
@@ -817,7 +817,7 @@ export abstract class ViewManip extends ViewTool {
     viewport.viewCmdTargetCenter = undefined;
   }
 
-  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions): Promise<boolean> {
+  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions & MarginOptions): Promise<boolean> {
     if (!viewport.isAlwaysDrawnExclusive || undefined === viewport.alwaysDrawn || 0 === viewport.alwaysDrawn.size)
       return false;
     await viewport.zoomToElements(viewport.alwaysDrawn, options);
@@ -2005,7 +2005,7 @@ class ViewLookAndMove extends ViewNavigate {
       document.removeEventListener("pointerlockchange", this._pointerLockChangeListener, false);
       this._pointerLockChangeListener = undefined;
     }
-    if (null !== document.pointerLockElement)
+    if (null !== document.pointerLockElement && undefined !== document.exitPointerLock)
       document.exitPointerLock();
   }
 
@@ -2130,7 +2130,7 @@ class ViewLookAndMove extends ViewNavigate {
         if (pixel.distanceFraction < 0)
           continue; // No geometry at location...
 
-        const hitPointWorld = vp.getPixelDataWorldPoint({pixels, x: testPoint.x, y: testPoint.y, preserveModelDisplayTransforms: true});
+        const hitPointWorld = vp.getPixelDataWorldPoint({ pixels, x: testPoint.x, y: testPoint.y, preserveModelDisplayTransforms: true });
         if (undefined === hitPointWorld)
           continue;
 

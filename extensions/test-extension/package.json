@@ -49,6 +49,6 @@
     "extends": "plugin:@bentley/imodeljs-recommended"
   },
   "activationEvents": [
-    "onStartupApp"
+    "onStartup"
   ]
 }

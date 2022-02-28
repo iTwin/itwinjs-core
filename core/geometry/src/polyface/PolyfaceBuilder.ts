@@ -7,6 +7,7 @@
  * @module Polyface
  */
 
+import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
 import { AnyCurve, AnyRegion } from "../curve/CurveChain";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
@@ -50,6 +51,7 @@ import { Triangulator } from "../topology/Triangulation";
 import { BoxTopology } from "./BoxTopology";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
+import { XAndY } from "../geometry3d/XYZProps";
 
 /* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/prefer-for-of */
 /**
@@ -1699,8 +1701,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       });
   }
 
-  private addMiteredPipesFromPoints(centerline: IndexedXYZCollection, radius: number, numFacetAround: number = 12) {
-    const sections = CurveFactory.createMiteredPipeSections(centerline, radius);
+  private addMiteredPipesFromPoints(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d, numFacetAround: number = 12) {
+    const sections = CurveFactory.createMiteredPipeSections(centerline, sectionData);
     const pointA0 = Point3d.create();
     const pointA1 = Point3d.create();
     const pointB0 = Point3d.create();
@@ -1721,19 +1723,29 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       }
     }
   }
-  public addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, radius: number, numFacetAround: number = 12) {
+
+  /**
+   * * Create (and add to the builder) quad facets for a mitered pipe that follows a centerline curve.
+   * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis lengths, or a full Arc3d.
+   *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
+   *    * The center of Arc3d input is translated to the centerline start point to act as initial cross section.
+   * @param centerline centerline of pipe
+   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d
+   * @param numFacetAround how many equal parameter-space chords around each section
+   */
+  public addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d, numFacetAround: number = 12) {
     if (Array.isArray(centerline)) {
-      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), radius, numFacetAround);
+      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), sectionData, numFacetAround);
     } else if (centerline instanceof GrowableXYZArray) {
-      this.addMiteredPipesFromPoints(centerline, radius, numFacetAround);
+      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround);
     } else if (centerline instanceof IndexedXYZCollection) {
-      this.addMiteredPipesFromPoints(centerline, radius, numFacetAround);
+      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround);
     } else if (centerline instanceof LineString3d) {
-      this.addMiteredPipesFromPoints(centerline.packedPoints, radius, numFacetAround);
+      this.addMiteredPipesFromPoints(centerline.packedPoints, sectionData, numFacetAround);
     } else if (centerline instanceof GeometryQuery) {
       const linestring = LineString3d.create();
       centerline.emitStrokes(linestring);
-      this.addMiteredPipesFromPoints(linestring.packedPoints, radius, numFacetAround);
+      this.addMiteredPipesFromPoints(linestring.packedPoints, sectionData, numFacetAround);
     }
   }
 }

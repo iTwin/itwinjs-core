@@ -23,6 +23,7 @@ let webserverProcess: ChildProcess;
 
 export class ChromeTestRunner {
   public static readonly supportsCoverage = true;
+  public static readonly supportsCleanup = true;
   public static async initialize(config: CertaConfig): Promise<void> {
     // Go ahead and launch puppeteer now - the VS Code debugger gets confused if it can't at least see the chrome instance right away.
     const options = {
@@ -64,7 +65,7 @@ export class ChromeTestRunner {
     if (config.cover)
       writeCoverageData(coverage);
 
-    process.exit(failures);
+    process.exitCode = failures;
   }
 }
 

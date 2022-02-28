@@ -26,9 +26,7 @@ alpha;EvaluatedEdgeProps
 alpha;EvaluatedFaceProps
 alpha;EvaluatedVertexProps
 alpha;FaceParameterRangeProps
-alpha;FlatBufferGeometricElementData
 alpha;FlatBufferGeometryFilter
-alpha;FlatBufferGeometryPartData
 alpha;HollowFacesProps
 alpha;ImprintProps
 alpha;LocateSubEntityProps

@@ -41,7 +41,7 @@ interface VisibilityTreeComponentProps {
   };
 }
 
-function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
+export function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
   const { imodel, activeView } = props;
   const modelsTreeProps = props.config?.modelsTree;
   const categoriesTreeProps = props.config?.categoriesTree;

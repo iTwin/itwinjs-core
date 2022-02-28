@@ -99,7 +99,8 @@ export class TriangleList {
 
     this._flags.push(flags);
   }
-  public addFromTypedArray(indices: Uint16Array | Uint32Array, flags: number = 0) {
+
+  public addFromTypedArray(indices: Uint8Array | Uint16Array | Uint32Array, flags: number = 0) {
     for (let i = 0; i < indices.length;) {
       this.indices.push(indices[i++]);
       this.indices.push(indices[i++]);

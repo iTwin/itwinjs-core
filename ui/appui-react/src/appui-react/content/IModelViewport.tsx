@@ -22,6 +22,8 @@ import { DefaultViewOverlay } from "./DefaultViewOverlay";
 import { ViewportContentControl } from "./ViewportContentControl";
 import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
 import { UiError } from "@itwin/appui-abstract";
+import { useSelector } from "react-redux";
+import { FrameworkState } from "../redux/FrameworkState";
 
 // create a HOC viewport component that supports unified selection
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -48,10 +50,28 @@ export interface IModelViewportControlOptions {
   alwaysUseSuppliedViewState?: boolean;
   /** Optional property to supply custom view overlay. Uses when caller want to supply custom overlay component. */
   supplyViewOverlay?: (_viewport: ScreenViewport) => React.ReactNode;
-  /** Optional property to defer reactNode initialization until first reactNode property in needed. Useful when subclassing the `IModelViewportControl`. */
+  /** Optional property to defer reactNode initialization until first reactNode property is needed. Useful when subclassing the `IModelViewportControl`. */
   deferNodeInitialization?: boolean;
 }
 
+interface ViewOverlayHostProps {
+  viewport: ScreenViewport;
+  featureOptions?: { [key: string]: any };
+  userSuppliedOverlay?: (_viewport: ScreenViewport) => React.ReactNode;
+}
+/** View Overlay component -- exported for testing
+ * @internal
+ */
+// istanbul ignore next
+export function ViewOverlayHost({ viewport, featureOptions, userSuppliedOverlay }: ViewOverlayHostProps) {
+  const displayViewOverlay = useSelector((state: FrameworkState) => {
+    const frameworkState = (state as any)[UiFramework.frameworkStateKey];
+    return frameworkState ? frameworkState.configurableUiState.viewOverlayDisplay : true;
+  });
+  if (!displayViewOverlay)
+    return null;
+  return userSuppliedOverlay ? <React.Fragment>{userSuppliedOverlay(viewport)}</React.Fragment> : <DefaultViewOverlay viewport={viewport} featureOptions={featureOptions} />;
+}
 /** iModel Viewport Control
  * @public
  */
@@ -171,11 +191,8 @@ export class IModelViewportControl extends ViewportContentControl {
   }
 
   /** Get the default ViewOverlay unless parameter is set to not use it. May be override in an application specific sub-class  */
-  protected _getViewOverlay = (viewport: ScreenViewport): React.ReactNode => {
-    if (this._userSuppliedViewOverlay)
-      return this._userSuppliedViewOverlay(viewport);
-
-    return <DefaultViewOverlay viewport={viewport} featureOptions={this._featureOptions} />;
+  protected _getViewOverlay = (vp: ScreenViewport): React.ReactNode => {
+    return <ViewOverlayHost viewport={vp} featureOptions={this._featureOptions} userSuppliedOverlay={this._userSuppliedViewOverlay} data-testid="ViewOverlay" />;
   };
 
   /** Get the NavigationAidControl associated with this ContentControl */

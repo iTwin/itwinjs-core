@@ -8,45 +8,35 @@ The rules have two types of attributes: for defining *placement* and for definin
 
 ## Attributes
 
-| Name                                                        | Required? | Type                                              | Default |
-| ----------------------------------------------------------- | --------- | ------------------------------------------------- | ------- |
+| Name                                                        | Required? | Type                                                                 | Default |
+| ----------------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
 | *Placement attributes*                                      |
-| [`condition`](#attribute-condition)                         | No        | [ECExpression](./ECExpressions.md#rule-condition) | `""`    |
-| [`requiredSchemas`](#attribute-requiredschemas)             | No        | `RequiredSchemaSpecification[]`                   | `[]`    |
-| [`priority`](#attribute-priority)                           | No        | `number`                                          | `1000`  |
-| [`onlyIfNotHandled`](#attribute-onlyifnothandled)           | No        | `boolean`                                         | `false` |
-| [`stopFurtherProcessing`](#attribute-stopfurtherprocessing) | No        | `boolean`                                         | `false` |
+| [`condition`](#attribute-condition)                         | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+| [`requiredSchemas`](#attribute-requiredschemas)             | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`priority`](#attribute-priority)                           | No        | `number`                                                             | `1000`  |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)           | No        | `boolean`                                                            | `false` |
+| [`stopFurtherProcessing`](#attribute-stopfurtherprocessing) | No        | `boolean`                                                            | `false` |
 | *Branch content attributes*                                 |
-| [`autoExpand`](#attribute-autoexpand)                       | No        | `boolean`                                         | `false` |
-| [`specifications`](#attribute-specifications)               | No        | `ChildNodeSpecification[]`                        | `[]`    |
-| [`customizationRules`](#attribute-customizationrules)       | No        | `CustomizationRule[]`                             | `[]`    |
-| [`subConditions`](#attribute-subconditions)                 | No        | `SubCondition[]`                                  | `[]`    |
+| [`autoExpand`](#attribute-autoexpand)                       | No        | `boolean`                                                            | `false` |
+| [`specifications`](#attribute-specifications)               | No        | `ChildNodeSpecification[]`                                           | `[]`    |
+| [`customizationRules`](#attribute-customizationrules)       | No        | `CustomizationRule[]`                                                | `[]`    |
+| [`subConditions`](#attribute-subconditions)                 | No        | `SubCondition[]`                                                     | `[]`    |
 
 ### Attribute: `condition`
 
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
 
-The most commonly used symbols are:
+For root node rule the most commonly used symbols are [ruleset variables](../Advanced/RulesetVariables.md#using-variables-in-rule-condition) — values that can be set and changed at runtime to affect rule outcomes.
 
-- `ParentNode` — refers to the parent node. This is often used to create child nodes under specific parents.
+```ts
+[[include:Hierarchies.Condition.RulesetVariables.Ruleset]]
+```
 
-  ```ts
-  [[include:Hierarchies.Condition.ParentNodeSymbol]]
-  ```
-
-  ![Example of using ParentNode symbol in rule condition](./media/hierarchy-with-parentnode-symbol-in-condition.png)
-
-- [Ruleset variables](../Advanced/RulesetVariables.md#using-variables-in-rule-condition) — values that can be set and changed at runtime to affect rule outcomes.
-
-  ```ts
-  [[include:Hierarchies.Condition.RulesetVariables.Ruleset]]
-  ```
-
-  | Ruleset variable values                                  | Result                                                                                                                           |
-  | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-  | `DISPLAY_A_NODES = false`<br />`DISPLAY_B_NODES = false` | ![Example of using ruleset variables in rule condition](./media/hierarchy-with-ruleset-variables-in-condition-none-set.png)      |
-  | `DISPLAY_A_NODES = false`<br />`DISPLAY_B_NODES = true`  | ![Example of using ruleset variables in rule condition](./media/hierarchy-with-ruleset-variables-in-condition-partially-set.png) |
-  | `DISPLAY_A_NODES = true`<br />`DISPLAY_B_NODES = true`   | ![Example of using ruleset variables in rule condition](./media/hierarchy-with-ruleset-variables-in-condition-all-set.png)       |
+| Ruleset variable values                                  | Result                                                                                                                           |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `DISPLAY_A_NODES = false`<br />`DISPLAY_B_NODES = false` | ![Example of using ruleset variables in rule condition](./media/hierarchy-with-ruleset-variables-in-condition-none-set.png)      |
+| `DISPLAY_A_NODES = false`<br />`DISPLAY_B_NODES = true`  | ![Example of using ruleset variables in rule condition](./media/hierarchy-with-ruleset-variables-in-condition-partially-set.png) |
+| `DISPLAY_A_NODES = true`<br />`DISPLAY_B_NODES = true`   | ![Example of using ruleset variables in rule condition](./media/hierarchy-with-ruleset-variables-in-condition-all-set.png)       |
 
 ### Attribute: `requiredSchemas`
 
