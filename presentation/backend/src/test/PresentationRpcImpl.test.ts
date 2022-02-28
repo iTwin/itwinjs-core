@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb } from "@itwin/core-backend";
-import { Id64String, using } from "@itwin/core-bentley";
+import { Guid, Id64String, using } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
   Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions,
@@ -139,14 +139,14 @@ describe("PresentationRpcImpl", () => {
         clientManagerFactory: () => presentationManagerMock.object,
       });
       testData = {
-        imodelToken: moq.Mock.ofType<IModelRpcProps>().object,
+        imodelToken: createIModelRpcProps(),
         imodelMock: moq.Mock.ofType<IModelDb>(),
         rulesetOrId: faker.random.word(),
         pageOptions: { start: 123, size: 45 } as PageOptions,
         displayType: "sample display type",
       };
       defaultRpcParams = { clientId: faker.random.uuid() };
-      stub_IModelDb_findByKey = sinon.stub(IModelDb, "findByKey").returns(testData.imodelMock.object);
+      stub_IModelDb_findByKey = sinon.stub(IModelDb, "findByKey").withArgs(testData.imodelToken.key).returns(testData.imodelMock.object);
       impl = new PresentationRpcImpl({ requestTimeout: 10 });
     });
 
@@ -215,6 +215,48 @@ describe("PresentationRpcImpl", () => {
 
         const actualResult = await actualResultPromise;
         expect(actualResult.result).to.eq(999);
+      });
+
+      it("should handle different iModel requests", async () => {
+        impl.dispose();
+        impl = new PresentationRpcImpl({ requestTimeout: 0 });
+        const rpcOptions: HierarchyRpcRequestOptions = {
+          ...defaultRpcParams,
+          rulesetOrId: testData.rulesetOrId,
+        };
+
+        const managerOptions1: HierarchyRequestOptions<IModelDb, NodeKey> = {
+          imodel: testData.imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          parentKey: undefined,
+        };
+        const result1 = new ResolvablePromise<number>();
+        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions1))
+          .returns(async () => result1)
+          .verifiable();
+
+        const iModelRpcProps2 = createIModelRpcProps();
+        const iModelMock2 = moq.Mock.ofType<IModelDb>();
+        stub_IModelDb_findByKey.withArgs(iModelRpcProps2.key).returns(iModelMock2.object);
+        const managerOptions2: HierarchyRequestOptions<IModelDb, NodeKey> = {
+          imodel: iModelMock2.object,
+          rulesetOrId: testData.rulesetOrId,
+          parentKey: undefined,
+        };
+        const result2 = new ResolvablePromise<number>();
+        presentationManagerMock.setup(async (x) => x.getNodesCount(managerOptions2))
+          .returns(async () => result2)
+          .verifiable();
+
+        const actualResultPromise1 = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResultPromise2 = impl.getNodesCount(iModelRpcProps2, rpcOptions);
+        presentationManagerMock.verifyAll();
+
+        await result1.resolve(111);
+        await result2.resolve(222);
+
+        expect((await actualResultPromise1).result).to.eq(111);
+        expect((await actualResultPromise2).result).to.eq(222);
       });
 
       it("should forward ruleset variables to manager", async () => {
@@ -1473,3 +1515,9 @@ describe("PresentationRpcImpl", () => {
   });
 
 });
+
+function createIModelRpcProps(): IModelRpcProps {
+  return {
+    key: Guid.createValue(),
+  };
+}

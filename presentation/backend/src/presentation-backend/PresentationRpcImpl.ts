@@ -107,7 +107,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   }
 
   private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string, diagnostics?: DiagnosticsOptions, rulesetVariables?: RulesetVariableJSON[] }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
-    const requestKey = JSON.stringify(requestOptions);
+    const requestKey = JSON.stringify({ iModelKey: token.key, requestId, requestOptions });
 
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${requestKey}`);
 
