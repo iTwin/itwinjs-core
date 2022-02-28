@@ -17,7 +17,7 @@ interface MapFeatureInfoWidgetProps {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
+export function MapFeatureInfoWidget({ featureInfoOpts }: MapFeatureInfoWidgetProps) {
 
   const dataProvider = React.useRef<FeatureInfoDataProvider>();
   const [loadingData, setLoadingData] = React.useState<boolean>(false);
@@ -32,11 +32,13 @@ export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
   };
 
   React.useEffect(() => {
-    dataProvider.current = new FeatureInfoDataProvider();
+    if (featureInfoOpts?.onMapHit) {
+      dataProvider.current = new FeatureInfoDataProvider(featureInfoOpts.onMapHit);
+    }
     return () => {
       dataProvider?.current?.onUnload();
     };
-  }, []);
+  }, [featureInfoOpts?.onMapHit]);
 
   React.useEffect(() => {
 
@@ -48,7 +50,7 @@ export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
   }, []);
 
   React.useEffect(() => {
-    if (props.featureInfoOpts?.showLoadProgressAnimation) {
+    if (featureInfoOpts?.showLoadProgressAnimation) {
       dataProvider.current?.onDataLoadStateChanged.addListener(handleLoadStateChange);
       return () => {
         dataProvider.current?.onDataLoadStateChanged.removeListener(handleLoadStateChange);
@@ -56,7 +58,7 @@ export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
     }
     return;
 
-  }, [ props.featureInfoOpts?.showLoadProgressAnimation]);
+  }, [featureInfoOpts?.showLoadProgressAnimation]);
 
   if (loadingData) {
     return (<FillCentered><ProgressRadial indeterminate={true}></ProgressRadial></FillCentered>);
@@ -65,7 +67,7 @@ export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
   } else{
     if (dataProvider.current)
       return (<PropertyGrid dataProvider={dataProvider.current} orientation={Orientation.Vertical}
-        isPropertySelectionEnabled={props.featureInfoOpts?.propertyGridOptions?.isPropertySelectionEnabled} />);
+        isPropertySelectionEnabled={featureInfoOpts?.propertyGridOptions?.isPropertySelectionEnabled} />);
     else
       return (<></>);
   }

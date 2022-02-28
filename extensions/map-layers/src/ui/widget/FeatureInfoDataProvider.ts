@@ -2,15 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module PropertyGrid
- */
 
 import {  PropertyRecord } from "@itwin/appui-abstract";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@itwin/components-react";
 import { BeEvent } from "@itwin/core-bentley";
 import { HitDetail } from "@itwin/core-frontend";
-import { MapLayersUI } from "../../mapLayers";
+import { MapHitEvent } from "../Interfaces";
 // import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from ""
 
 /**
@@ -27,6 +24,7 @@ export interface MapFeatureInfoDataUpdate {
 export declare type MapFeatureInfoDataUpdatedListener = (data: MapFeatureInfoDataUpdate) => void;
 
 export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyData {
+  private _removeListener: () => void;
   public label: PropertyRecord = PropertyRecord.fromString("");
   public description?: string;
   public categories: PropertyCategory[] = [];
@@ -34,17 +32,16 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
   public onDataChanged = new PropertyDataChangeEvent();
   public onDataLoadStateChanged = new BeEvent<MapFeatureInfoLoadListener>();
   public onDataUpdated = new BeEvent<MapFeatureInfoDataUpdatedListener>();
-  constructor() {
+  constructor(onMapHit: MapHitEvent) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    MapLayersUI.onMapHit?.addListener(this.handleMapHit, this);
+    this._removeListener = onMapHit.addListener(this._handleMapHit, this);
   }
 
   public onUnload() {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    MapLayersUI.onMapHit?.removeListener(this.handleMapHit);
+    this._removeListener();
   }
 
-  private async handleMapHit(mapHit: HitDetail)  {
+  private async _handleMapHit(mapHit: HitDetail)  {
     this.records = {};
     this.categories = [];
     let recordCount = 0;
