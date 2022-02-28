@@ -5680,14 +5680,6 @@ export enum MapLayerAuthType {
     None = 1
 }
 
-// @alpha (undocumented)
-export interface MapLayerFeatureInfo {
-    // (undocumented)
-    info?: MapSubLayerFeatureInfo[] | HTMLElement;
-    // (undocumented)
-    layerName: string;
-}
-
 // @internal (undocumented)
 export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
@@ -6266,8 +6258,6 @@ export class MapTileTreeReference extends TileTreeReference {
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
     getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
-    // (undocumented)
-    getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
     // (undocumented)
     getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
     // (undocumented)
