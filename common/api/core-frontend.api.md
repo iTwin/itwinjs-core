@@ -4762,8 +4762,6 @@ export class IModelApp {
     // @internal
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
-    // @internal
-    static readonly onBeforeStartup: BeEvent<() => void>;
     // @beta
     static get publicPath(): string;
     static get quantityFormatter(): QuantityFormatter;
@@ -5440,7 +5438,7 @@ export class LocateOptions {
     setFrom(other: LocateOptions): void;
 }
 
-// @public (undocumented)
+// @public
 export class LocateResponse {
     // @internal (undocumented)
     clone(): LocateResponse;
@@ -11571,8 +11569,8 @@ export class ToolAdmin {
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     gridLock: boolean;
-    get idleTool(): InteractiveTool;
-    set idleTool(idleTool: InteractiveTool);
+    get idleTool(): IdleTool;
+    set idleTool(idleTool: IdleTool);
     // (undocumented)
     get isLocateCircleOn(): boolean;
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
