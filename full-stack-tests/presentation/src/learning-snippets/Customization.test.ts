@@ -113,7 +113,7 @@ describe("Learning Snippets", () => {
 
       it("uses `items` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ExtendedDataRule.Items.Ruleset
-        // The ruleset has root node rule that returns custom "A" node. Also there are extended data rule
+        // The ruleset has root node rule that returns custom "A" node. Also there is an extended data rule
         // to add additional data to node.
         const ruleset: Ruleset = {
           id: "example",
