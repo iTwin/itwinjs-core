@@ -44,41 +44,8 @@ attribute allows specializing it to `bis.PhysicalElement` or some other `bis.Ele
 This attribute specifies the number of times the relationship should be traversed.
 
 The special `"*"` value makes the step recursive, which means the relationship is traversed as long as new instances are found by
-using output of the previous step as input for the current step.
-
-Example:
-
-```JSON
-[
-  {
-    "relationship": { "schemaName": "MySchema", "className": "MyRelationship1" },
-    "direction": "Forward",
-    "targetClass": { "schemaName": "MySchema", "className": "MyTarget1" },
-    "count": "*"
-  },
-  {
-    "relationship": { "schemaName": "MySchema", "className": "MyRelationship2" },
-    "direction": "Forward",
-    "targetClass": { "schemaName": "MySchema", "className": "MyTarget2" },
-    "count": "*"
-  },
-]
-```
-
-Results of the above specification would consist of both `MySchema.MyTarget1` and `MySchema.MyTarget2` instances:
-
-```Text
-Outputs = [
-  Source -> MySchema.MyRelationship1 -> Array<MySchema.MyTarget1>
-  Source -> MySchema.MyRelationship1 -> MySchema.MyRelationship1 -> Array<MySchema.MyTarget1>
-  ...
-  Source -> MySchema.MyRelationship1 -> ... -> MySchema.MyRelationship1 -> Array<MySchema.MyTarget1>
-  Source -> MySchema.MyRelationship1 -> ... -> MySchema.MyRelationship1 -> MySchema.MyRelationship2 -> Array<MySchema.MyTarget2>
-  Source -> MySchema.MyRelationship1 -> ... -> MySchema.MyRelationship1 -> MySchema.MyRelationship2 -> MySchema.MyRelationship2 -> Array<MySchema.MyTarget2>
-  ...
-  Source -> MySchema.MyRelationship1 -> ... -> MySchema.MyRelationship1 -> MySchema.MyRelationship2 -> ... -> MySchema.MyRelationship2 -> Array<MySchema.MyTarget2>
-]
-```
+using output of the previous step as input for the current step. Outputs of each step traversal are accumulated, combined with outputs
+of the previous step (if any) and passed as input to the next step or used as path output if there are no more steps.
 
 ## Examples
 
