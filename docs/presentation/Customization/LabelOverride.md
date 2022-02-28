@@ -5,8 +5,7 @@
 > TypeScript type: [LabelOverride]($presentation-common).
 
 Label override rules provide advanced ways to override instance labels and descriptions in
-exchange of some performance penalty. When possible, it's advised to use
-[InstanceLabelOverride](./InstanceLabelOverride.md) rules instead.
+exchange of some performance penalty.
 
 ## Attributes
 
