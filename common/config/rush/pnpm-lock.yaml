@@ -89,7 +89,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.1.5
+      '@bentley/imodeljs-native': 3.1.6
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -127,7 +127,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.8.0
-      '@bentley/imodeljs-native': 3.1.5
+      '@bentley/imodeljs-native': 3.1.6
       '@itwin/core-telemetry': link:../telemetry
       form-data: 2.5.1
       fs-extra: 8.1.0
@@ -519,6 +519,23 @@ importers:
       sinon: 9.2.4
       supertest: 3.4.2
       typescript: 4.4.4
+
+  ../../core/extension:
+    specifiers:
+      '@itwin/build-tools': workspace:*
+      '@itwin/core-common': workspace:*
+      '@itwin/core-frontend': workspace:*
+      '@itwin/eslint-plugin': workspace:*
+      eslint: ^7.11.0
+      rimraf: ^3.0.2
+    dependencies:
+      '@itwin/core-common': link:../common
+      '@itwin/core-frontend': link:../frontend
+    devDependencies:
+      '@itwin/build-tools': link:../../tools/build
+      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      eslint: 7.32.0
+      rimraf: 3.0.2
 
   ../../core/frontend:
     specifiers:
@@ -1523,10 +1540,33 @@ importers:
       typemoq: 2.1.0
       typescript: 4.4.4
 
+  ../../extensions/test-extension:
+    specifiers:
+      '@itwin/build-tools': workspace:*
+      '@itwin/core-extension': workspace:*
+      '@itwin/eslint-plugin': workspace:*
+      buffer: ^6.0.3
+      esbuild: ^0.13.8
+      eslint: ^7.11.0
+      rimraf: ^3.0.2
+      typescript: ~4.4.0
+      url: ^0.11.0
+    dependencies:
+      '@itwin/core-extension': link:../../core/extension
+      buffer: 6.0.3
+      url: 0.11.0
+    devDependencies:
+      '@itwin/build-tools': link:../../tools/build
+      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      esbuild: 0.13.15
+      eslint: 7.32.0
+      rimraf: 3.0.2
+      typescript: 4.4.4
+
   ../../full-stack-tests/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.1.5
+      '@bentley/imodeljs-native': 3.1.6
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -1560,7 +1600,7 @@ importers:
       typescript: ~4.4.0
     dependencies:
       '@azure/storage-blob': 12.8.0
-      '@bentley/imodeljs-native': 3.1.5
+      '@bentley/imodeljs-native': 3.1.6
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3110,7 +3150,7 @@ importers:
       '@itwin/imodels-client-authoring': ^1.0.1
       '@itwin/imodels-client-management': ^1.0.1
       '@itwin/itwinui-css': 0.48.2
-      '@itwin/itwinui-icons-react': ^1.1.1
+      '@itwin/itwinui-icons-react': ^1.8.0
       '@itwin/itwinui-react': ^1.32.0
       '@itwin/map-layers': workspace:*
       '@itwin/presentation-backend': workspace:*
@@ -6876,8 +6916,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.1.5:
-    resolution: {integrity: sha512-r6bZgzSmYXTHM101vleWeL4rVjVuGFTnQwuItNgj+XkzmW4Bt2UcnvMyR+KTApn+RXr/zsaLddZUIOdUWBRkog==}
+  /@bentley/imodeljs-native/3.1.6:
+    resolution: {integrity: sha512-e4FfMt7h/YrsvMag+1hYpvdSy9ooFEsGHwpmJkjiscx16PThfK5cbqgwEV/SY79q4zJKeragPVjWbO9BJo5hTg==}
     requiresBuild: true
     dev: false
 
@@ -7311,9 +7351,8 @@ packages:
 
   /@itwin/browser-authorization/0.5.1:
     resolution: {integrity: sha512-TI7nd4I5Lc9MrJnf40kk+u4bTCym1xH9IBJNkvVt+7unjUSbRuUaPS6wC6WTu2DoYbIocEIEBWTqNOR67lAHGA==}
-    peerDependencies:
-      '@itwin/core-bentley': ^3.0.0
     dependencies:
+      '@itwin/core-bentley': link:../../core/bentley
       oidc-client: 1.11.5
     dev: false
 
@@ -7364,17 +7403,6 @@ packages:
       - supports-color
       - utf-8-validate
     dev: true
-
-  /@itwin/core-bentley/3.0.0:
-    resolution: {integrity: sha512-tfFM6lKVtjUMrQM/amHrEgJRtIhpqI5bGMtX8MwM9bBeH3hLGY8eTA8A7ReflWmUky+gHhpvN3TGsC7VLqqrIw==}
-    dev: false
-
-  /@itwin/core-geometry/3.0.0:
-    resolution: {integrity: sha512-00KlHwya2ZhYF4XmrbRJ6RyxaROJJ3j9rTiGKdT8oYvuf+dm5fRA1a+V8HPPKonSiTwpmQYOr0Ro3X6v+CjpDQ==}
-    dependencies:
-      '@itwin/core-bentley': 3.0.0
-      flatbuffers: 1.12.0
-    dev: false
 
   /@itwin/electron-authorization/0.8.3:
     resolution: {integrity: sha512-gKsQewSx4e/a74WJvROzq+dmUb05zE2evMLLywKP+CQULwq2uX0IeI0MRGI/FeVS9T9xBSv90sSzxmrugBtPrQ==}
@@ -7545,10 +7573,9 @@ packages:
 
   /@itwin/reality-data-client/0.7.0:
     resolution: {integrity: sha512-fUbS3953g3zXNagcgwmJ7n2DHvL15KlBQZ5NlpWpGdotRgtOKAxeJqybPJBnoM10dErmJVC+Cbv3JVc2Nar/Mw==}
-    peerDependencies:
-      '@itwin/core-common': ^3.0.0
     dependencies:
-      '@itwin/core-geometry': 3.0.0
+      '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
       axios: 0.25.0
     transitivePeerDependencies:
       - debug
@@ -12663,6 +12690,166 @@ packages:
     dependencies:
       d: 1.0.1
       ext: 1.6.0
+    dev: true
+
+  /esbuild-android-arm64/0.13.15:
+    resolution: {integrity: sha512-m602nft/XXeO8YQPUDVoHfjyRVPdPgjyyXOxZ44MK/agewFFkPa8tUo6lAzSWh5Ui5PB4KR9UIFTSBKh/RrCmg==}
+    cpu: [arm64]
+    os: [android]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-darwin-64/0.13.15:
+    resolution: {integrity: sha512-ihOQRGs2yyp7t5bArCwnvn2Atr6X4axqPpEdCFPVp7iUj4cVSdisgvEKdNR7yH3JDjW6aQDw40iQFoTqejqxvQ==}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-darwin-arm64/0.13.15:
+    resolution: {integrity: sha512-i1FZssTVxUqNlJ6cBTj5YQj4imWy3m49RZRnHhLpefFIh0To05ow9DTrXROTE1urGTQCloFUXTX8QfGJy1P8dQ==}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-freebsd-64/0.13.15:
+    resolution: {integrity: sha512-G3dLBXUI6lC6Z09/x+WtXBXbOYQZ0E8TDBqvn7aMaOCzryJs8LyVXKY4CPnHFXZAbSwkCbqiPuSQ1+HhrNk7EA==}
+    cpu: [x64]
+    os: [freebsd]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-freebsd-arm64/0.13.15:
+    resolution: {integrity: sha512-KJx0fzEDf1uhNOZQStV4ujg30WlnwqUASaGSFPhznLM/bbheu9HhqZ6mJJZM32lkyfGJikw0jg7v3S0oAvtvQQ==}
+    cpu: [arm64]
+    os: [freebsd]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-linux-32/0.13.15:
+    resolution: {integrity: sha512-ZvTBPk0YWCLMCXiFmD5EUtB30zIPvC5Itxz0mdTu/xZBbbHJftQgLWY49wEPSn2T/TxahYCRDWun5smRa0Tu+g==}
+    cpu: [ia32]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-linux-64/0.13.15:
+    resolution: {integrity: sha512-eCKzkNSLywNeQTRBxJRQ0jxRCl2YWdMB3+PkWFo2BBQYC5mISLIVIjThNtn6HUNqua1pnvgP5xX0nHbZbPj5oA==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-linux-arm/0.13.15:
+    resolution: {integrity: sha512-wUHttDi/ol0tD8ZgUMDH8Ef7IbDX+/UsWJOXaAyTdkT7Yy9ZBqPg8bgB/Dn3CZ9SBpNieozrPRHm0BGww7W/jA==}
+    cpu: [arm]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-linux-arm64/0.13.15:
+    resolution: {integrity: sha512-bYpuUlN6qYU9slzr/ltyLTR9YTBS7qUDymO8SV7kjeNext61OdmqFAzuVZom+OLW1HPHseBfJ/JfdSlx8oTUoA==}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-linux-mips64le/0.13.15:
+    resolution: {integrity: sha512-KlVjIG828uFPyJkO/8gKwy9RbXhCEUeFsCGOJBepUlpa7G8/SeZgncUEz/tOOUJTcWMTmFMtdd3GElGyAtbSWg==}
+    cpu: [mips64el]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-linux-ppc64le/0.13.15:
+    resolution: {integrity: sha512-h6gYF+OsaqEuBjeesTBtUPw0bmiDu7eAeuc2OEH9S6mV9/jPhPdhOWzdeshb0BskRZxPhxPOjqZ+/OqLcxQwEQ==}
+    cpu: [ppc64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-netbsd-64/0.13.15:
+    resolution: {integrity: sha512-3+yE9emwoevLMyvu+iR3rsa+Xwhie7ZEHMGDQ6dkqP/ndFzRHkobHUKTe+NCApSqG5ce2z4rFu+NX/UHnxlh3w==}
+    cpu: [x64]
+    os: [netbsd]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-openbsd-64/0.13.15:
+    resolution: {integrity: sha512-wTfvtwYJYAFL1fSs8yHIdf5GEE4NkbtbXtjLWjM3Cw8mmQKqsg8kTiqJ9NJQe5NX/5Qlo7Xd9r1yKMMkHllp5g==}
+    cpu: [x64]
+    os: [openbsd]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-sunos-64/0.13.15:
+    resolution: {integrity: sha512-lbivT9Bx3t1iWWrSnGyBP9ODriEvWDRiweAs69vI+miJoeKwHWOComSRukttbuzjZ8r1q0mQJ8Z7yUsDJ3hKdw==}
+    cpu: [x64]
+    os: [sunos]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-windows-32/0.13.15:
+    resolution: {integrity: sha512-fDMEf2g3SsJ599MBr50cY5ve5lP1wyVwTe6aLJsM01KtxyKkB4UT+fc5MXQFn3RLrAIAZOG+tHC+yXObpSn7Nw==}
+    cpu: [ia32]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-windows-64/0.13.15:
+    resolution: {integrity: sha512-9aMsPRGDWCd3bGjUIKG/ZOJPKsiztlxl/Q3C1XDswO6eNX/Jtwu4M+jb6YDH9hRSUflQWX0XKAfWzgy5Wk54JQ==}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild-windows-arm64/0.13.15:
+    resolution: {integrity: sha512-zzvyCVVpbwQQATaf3IG8mu1IwGEiDxKkYUdA4FpoCHi1KtPa13jeScYDjlW0Qh+ebWzpKfR2ZwvqAQkSWNcKjA==}
+    cpu: [arm64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /esbuild/0.13.15:
+    resolution: {integrity: sha512-raCxt02HBKv8RJxE8vkTSCXGIyKHdEdGfUmiYb8wnabnaEmHzyW7DCHb5tEN0xU8ryqg5xw54mcwnYkC4x3AIw==}
+    hasBin: true
+    requiresBuild: true
+    optionalDependencies:
+      esbuild-android-arm64: 0.13.15
+      esbuild-darwin-64: 0.13.15
+      esbuild-darwin-arm64: 0.13.15
+      esbuild-freebsd-64: 0.13.15
+      esbuild-freebsd-arm64: 0.13.15
+      esbuild-linux-32: 0.13.15
+      esbuild-linux-64: 0.13.15
+      esbuild-linux-arm: 0.13.15
+      esbuild-linux-arm64: 0.13.15
+      esbuild-linux-mips64le: 0.13.15
+      esbuild-linux-ppc64le: 0.13.15
+      esbuild-netbsd-64: 0.13.15
+      esbuild-openbsd-64: 0.13.15
+      esbuild-sunos-64: 0.13.15
+      esbuild-windows-32: 0.13.15
+      esbuild-windows-64: 0.13.15
+      esbuild-windows-arm64: 0.13.15
     dev: true
 
   /escalade/3.1.1:

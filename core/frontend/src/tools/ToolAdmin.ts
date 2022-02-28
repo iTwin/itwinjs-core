@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, BeEvent, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AbandonedError, assert, BeEvent, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
@@ -23,7 +23,6 @@ import { OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { ViewStatus } from "../ViewStatus";
-import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
   BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordinateLockOverrides, CoordSource, EventHandled,
@@ -310,7 +309,7 @@ export class ToolAdmin {
   private _suspendedByInputCollector?: SuspendedToolState;
   private _viewTool?: ViewTool;
   private _primitiveTool?: PrimitiveTool;
-  private _idleTool?: IdleTool;
+  private _idleTool?: InteractiveTool;
   private _inputCollector?: InputCollector;
   private _saveCursor?: string;
   private _saveLocateCircle = false;
@@ -449,7 +448,7 @@ export class ToolAdmin {
     if (typeof document === "undefined")
       return;    // if document isn't defined, we're probably running in a test environment. At any rate, we can't have interactive tools.
 
-    this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
+    this._idleTool = IModelApp.tools.create("Idle") as InteractiveTool;
 
     ["keydown", "keyup"].forEach((type) => {
       document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
@@ -788,8 +787,13 @@ export class ToolAdmin {
   }
 
   /** The idleTool handles events that are not otherwise processed. */
-  public get idleTool(): IdleTool { return this._idleTool!; }
-  public set idleTool(idleTool: IdleTool) { this._idleTool = idleTool; }
+  public get idleTool(): InteractiveTool {
+    assert(undefined !== this._idleTool);
+    return this._idleTool;
+  }
+  public set idleTool(idleTool: InteractiveTool) {
+    this._idleTool = idleTool;
+  }
 
   /** Return true to filter (ignore) events to the given viewport */
   protected filterViewport(vp: ScreenViewport) {

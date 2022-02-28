@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Defaulting to the internal BasicUnitsProvider if QuantityFormatter units provider initialization fails. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

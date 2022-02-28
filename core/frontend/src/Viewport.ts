@@ -48,7 +48,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -930,7 +930,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     const promises = new Array<Promise<string | HTMLElement | undefined>>();
     if (this.displayStyle) {
       this.displayStyle.forEachTileTreeRef(async (tree) => {
-        promises.push(tree.getToolTip(hit));
+        promises.push(tree.getToolTip(hit).catch(() => undefined));
       });
     }
     this.forEachMapTreeRef(async (tree) => promises.push(tree.getToolTip(hit)));
@@ -941,6 +941,34 @@ export abstract class Viewport implements IDisposable, TileUser {
         return result;
 
     return "";
+  }
+
+  /** @alpha */
+  public async getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo> {
+    const promises = new Array<Promise<MapLayerFeatureInfo[]  | undefined>>();
+
+    // Execute 'getMapFeatureInfo' on every tree, and make sure to handle exception for each call,
+    // so that we get still get results even though a tree has failed.
+    this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit).catch(() => undefined)));
+    const featureInfo: MapFeatureInfo = {};
+
+    const worldPoint = hit.hitPoint.clone();
+    const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
+    if (undefined !== backgroundMapGeometry) {
+      featureInfo.hitPoint = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+    }
+
+    const results = await Promise.all(promises);
+    for (const result of results)
+      if (result !== undefined) {
+
+        if (featureInfo.layerInfo === undefined) {
+          featureInfo.layerInfo = [];
+        }
+
+        featureInfo.layerInfo.push(...result);
+      }
+    return featureInfo;
   }
 
   /** If this event has one or more listeners, collection of timing statistics related to rendering frames is enabled. Frame statistics will be received by the listeners whenever a frame is finished rendering.
