@@ -21,7 +21,6 @@ This specification creates content for all instances of specific ECClasses.
 | [`calculatedProperties`](#attribute-calculatedproperties)                       | No        | `CalculatedPropertiesSpecification[]`                                                                                        | `[]`    |
 | [`propertyCategories`](#attribute-propertycategories)                           | No        | `PropertyCategorySpecification[]`                                                                                            | `[]`    |
 | [`propertyOverrides`](#attribute-propertyoverrides)                             | No        | `PropertySpecification[]`                                                                                                    | `[]`    |
-| [`showImages`](#attribute-showimages)                                           | No        | `boolean`                                                                                                                    | `false` |
 | *Misc.*                                                                         |
 | [`relatedInstances`](#attribute-relatedinstances)                               | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)                                          | `[]`    |
 
@@ -150,13 +149,6 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
   | before | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
   | after  | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
 
-
-### Attribute: `showImages`
-
-> **Default value:** `false`
-
-Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
-
 ### Attribute: `relatedInstances`
 
 Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used when creating the content. There are several use cases when this is useful:
@@ -190,3 +182,13 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
 Tells whether selecting instances from ECClasses specified in [`classes`](#attribute-classes) and [`excludedClasses`](#attribute-excludedclasses) attributes should be polymorphic or not.
 
 The attribute was replaced by [MultiSchemaClasses.arePolymorphic](../Common-Rules/MultiSchemaClassesSpecification.md#attribute-arepolymorphic) attribute specified individually for each class definition under [`classes`](#attribute-classes) and [`excludedClasses`](#attribute-excludedclasses) attributes. At the moment, to keep backwards compatibility, this attribute acts as a fallback value in case the flag is not specified individually for a class definition.
+
+## Deprecated attributes
+
+### Attribute: `showImages`
+
+> **Default value:** `false`
+
+Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
+
+[ExtendedDataRule](../customization/ExtendedDataRule.md) should be used instead to provide image data to content items created by this specification. See [extended data usage paged](../customization/ExtendedDataUsage.md) for more details.

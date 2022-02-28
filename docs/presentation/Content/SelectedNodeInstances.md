@@ -20,7 +20,6 @@ Returns content for selected (input) instances.
 | [`calculatedProperties`](#attribute-calculatedproperties)           | No        | `CalculatedPropertiesSpecification[]`                                               | `[]`    |
 | [`propertyCategories`](#attribute-propertycategories)               | No        | `PropertyCategorySpecification[]`                                                   | `[]`    |
 | [`propertyOverrides`](#attribute-propertyoverrides)                 | No        | `PropertySpecification[]`                                                           | `[]`    |
-| [`showImages`](#attribute-showimages)                               | No        | `boolean`                                                                           | `false` |
 | *Misc.*                                                             |
 | [`relatedInstances`](#attribute-relatedinstances)                   | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md) | `[]`    |
 
@@ -38,7 +37,6 @@ Specifies ECSchema name which the input instances have to match for the specific
   | ------------------------------- | --------------------------------------------------------------------------------------------------------------- |
   | `BisCore.SpatialViewDefinition` | ![Example when selecting "SpatialViewDefinition"](./media/selectednodeinstances-with-spatialviewdefinition.png) |
   | `Generic.GroupModel`            | ![Example when selecting "GroupModel"](./media/content-empty-table.png)                                         |
-
 
 ### Attribute: `acceptableClassNames`
 
@@ -144,12 +142,6 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
   | before | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
   | after  | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
 
-### Attribute: `showImages`
-
-> **Default value:** `false`
-
-Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
-
 ### Attribute: `relatedInstances`
 
 Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used when creating the content. There are several use cases when this is useful:
@@ -173,3 +165,13 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
   | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/sharedattributes-with-relatedinstances-3.png)                                           |
   | `ModelSelector` instances                                         | ![A list of model selectors](./media/sharedattributes-with-relatedinstances-2.png)                                                    |
   | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/sharedattributes-with-relatedinstances-1.png) |
+
+## Deprecated attributes
+
+### Attribute: `showImages`
+
+> **Default value:** `false`
+
+Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
+
+[ExtendedDataRule](../customization/ExtendedDataRule.md) should be used instead to provide image data to content items created by this specification. See [extended data usage paged](../customization/ExtendedDataUsage.md) for more details.

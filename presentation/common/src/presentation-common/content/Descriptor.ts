@@ -100,7 +100,10 @@ export enum ContentFlags {
   /** Each content record only has [[InstanceKey]] and no data */
   KeysOnly = 1 << 0,
 
-  /** Each content record additionally has an image id */
+  /**
+   * Each content record additionally has an image id
+   * @deprecated use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   */
   ShowImages = 1 << 1,
 
   /** Each content record additionally has a display label */
