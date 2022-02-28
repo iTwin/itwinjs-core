@@ -11571,8 +11571,8 @@ export class ToolAdmin {
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     gridLock: boolean;
-    get idleTool(): IdleTool;
-    set idleTool(idleTool: IdleTool);
+    get idleTool(): InteractiveTool;
+    set idleTool(idleTool: InteractiveTool);
     // (undocumented)
     get isLocateCircleOn(): boolean;
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
