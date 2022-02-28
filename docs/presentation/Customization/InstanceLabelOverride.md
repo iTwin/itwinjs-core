@@ -101,19 +101,19 @@ Two types of properties can be used to override label:
 
 - Direct instance properties.
 
-```ts
-[[include:InstanceLabelOverride.PropertyValueSpecification.Ruleset]]
-```
+  ```ts
+  [[include:InstanceLabelOverride.PropertyValueSpecification.Ruleset]]
+  ```
 
-![Example of using property value specification](./media/instancelabeloverride-property-value.png)
+  ![Example of using property value specification](./media/instancelabeloverride-property-value.png)
 
 - Properties of related instance.
 
-```ts
-[[include:InstanceLabelOverride.RelatedPropertyValueSpecification.Ruleset]]
-```
+  ```ts
+  [[include:InstanceLabelOverride.RelatedPropertyValueSpecification.Ruleset]]
+  ```
 
-![Example of using related property value specification](./media/instancelabeloverride-related-property-value.png)
+  ![Example of using related property value specification](./media/instancelabeloverride-related-property-value.png)
 
 #### String value specification
 
