@@ -54,6 +54,7 @@ import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { ColorDefProps } from '@itwin/core-common';
 import { ColorIndex } from '@itwin/core-common';
+import { CommonToolbarItem } from '@itwin/appui-abstract';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { Constructor } from '@itwin/core-bentley';
 import { ContentIdProvider } from '@itwin/core-common';
@@ -218,6 +219,8 @@ import { PolylineTypeFlags } from '@itwin/core-common';
 import { PrimaryTileTreeId } from '@itwin/core-common';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { PropertyDescription } from '@itwin/appui-abstract';
+import { PropertyRecord } from '@itwin/appui-abstract';
+import { PropertyValue } from '@itwin/appui-abstract';
 import { QParams2d } from '@itwin/core-common';
 import { QParams3d } from '@itwin/core-common';
 import { QPoint2d } from '@itwin/core-common';
@@ -290,12 +293,15 @@ import { TileHeader } from '@itwin/core-common';
 import { TileProps } from '@itwin/core-common';
 import { TileReadStatus } from '@itwin/core-common';
 import { TileVersionInfo } from '@itwin/core-common';
+import { ToolbarOrientation } from '@itwin/appui-abstract';
+import { ToolbarUsage } from '@itwin/appui-abstract';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
+import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -1020,6 +1026,12 @@ export enum ACSType {
     Spherical = 3
 }
 
+// @alpha (undocumented)
+export enum ActivationEvent {
+    // (undocumented)
+    onStartup = "onStartup"
+}
+
 // @public
 export class ActivityMessageDetails {
     constructor(showProgressBar: boolean, showPercentInMessage: boolean, supportsCancellation: boolean, showDialogInitially?: boolean);
@@ -1138,6 +1150,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
     protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // (undocumented)
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected getLayerString(prefix?: string): string;
     // (undocumented)
@@ -1749,6 +1763,19 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseAll(): Promise<IModelStatus>;
     reverseSingleTxn(): Promise<IModelStatus>;
     reverseTxns(numOperations: number): Promise<IModelStatus>;
+}
+
+// @alpha (undocumented)
+export interface BuildExtensionManifest extends ExtensionManifest {
+    readonly module: string;
+}
+
+// @alpha (undocumented)
+export interface BuiltInExtensionLoaderProps {
+    // (undocumented)
+    loader: ResolveFunc;
+    // (undocumented)
+    manifest: Promise<any>;
 }
 
 // @internal (undocumented)
@@ -3059,6 +3086,64 @@ export enum EventHandled {
     No = 0,
     // (undocumented)
     Yes = 1
+}
+
+// @alpha
+export class ExtensionAdmin {
+    constructor();
+    addBuildExtension(manifestPromise: Promise<BuildExtensionManifest>, mainFunc?: ResolveFunc): Promise<void>;
+    addExtensionLoader(extensionLoader: ExtensionLoader): void;
+    addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
+    // @internal
+    onStartup: () => Promise<void>;
+}
+
+// @alpha
+export class ExtensionHost {
+    protected constructor();
+    // (undocumented)
+    static get accuSnap(): AccuSnap;
+    // (undocumented)
+    static get locateManager(): ElementLocateManager;
+    // (undocumented)
+    static get notifications(): NotificationManager;
+    // (undocumented)
+    static get renderSystem(): RenderSystem;
+    // (undocumented)
+    static get toolAdmin(): ToolAdmin;
+    // (undocumented)
+    static get viewManager(): ViewManager;
+}
+
+// @alpha (undocumented)
+export class ExtensionImpl {
+    constructor(_id: string);
+    // (undocumented)
+    registerTool(tool: ToolType, onRegistered?: () => any): Promise<void>;
+}
+
+// @alpha
+export interface ExtensionLoader {
+    downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
+    getManifest(arg: ExtensionLoaderProps): Promise<ExtensionManifest>;
+}
+
+// @alpha
+export interface ExtensionLoaderProps {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    version: string;
+}
+
+// @alpha
+export interface ExtensionManifest {
+    readonly activationEvents: ActivationEvent[];
+    readonly description?: string;
+    readonly displayName?: string;
+    readonly main: string;
+    readonly name: string;
+    readonly version: string;
 }
 
 // @public
@@ -4636,6 +4721,8 @@ export class IModelApp {
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    // @alpha (undocumented)
+    static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
     static getAccessToken(): Promise<AccessToken>;
@@ -4646,7 +4733,7 @@ export class IModelApp {
     // @internal (undocumented)
     static get initialized(): boolean;
     static get localization(): Localization;
-    // @internal (undocumented)
+    // (undocumented)
     static get locateManager(): ElementLocateManager;
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
@@ -4672,6 +4759,8 @@ export class IModelApp {
     // @internal
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
+    // @internal
+    static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @beta
     static get publicPath(): string;
@@ -5276,6 +5365,14 @@ export class LengthDescription extends FormattedQuantityDescription {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
+// @alpha
+export interface LocalExtensionProps {
+    // (undocumented)
+    readonly mainFunc?: ResolveFunc;
+    // (undocumented)
+    readonly manifest: ExtensionManifest;
+}
+
 // @internal
 export class LocalhostIpcApp {
     // (undocumented)
@@ -5552,6 +5649,19 @@ export class MapCartoRectangle extends Range2d {
     set west(x: number);
 }
 
+// @alpha (undocumented)
+export interface MapFeatureInfo {
+    // (undocumented)
+    hitPoint?: Cartographic;
+    // (undocumented)
+    layerInfo?: MapLayerFeatureInfo[];
+}
+
+// @alpha (undocumented)
+export class MapFeatureInfoRecord extends PropertyRecord {
+    constructor(value: PropertyValue, property: PropertyDescription);
+}
+
 // @internal (undocumented)
 export interface MapLayerAuthenticationInfo {
     // (undocumented)
@@ -5572,6 +5682,14 @@ export enum MapLayerAuthType {
 
 // @internal (undocumented)
 export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
+
+// @alpha (undocumented)
+export interface MapLayerFeatureInfo {
+    // (undocumented)
+    info?: MapSubLayerFeatureInfo[] | HTMLElement;
+    // (undocumented)
+    layerName: string;
+}
 
 // @internal (undocumented)
 export class MapLayerFormat {
@@ -5642,6 +5760,8 @@ export abstract class MapLayerImageryProvider {
     };
     // (undocumented)
     getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
+    // (undocumented)
+    getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): ImageSource | undefined;
     // (undocumented)
@@ -5831,6 +5951,16 @@ export interface MapLayerTokenEndpoint {
     getLoginUrl(stateData?: string): string | undefined;
     // (undocumented)
     getUrl(): string;
+}
+
+// @alpha (undocumented)
+export interface MapSubLayerFeatureInfo {
+    // (undocumented)
+    displayFieldName?: string;
+    // (undocumented)
+    records?: MapFeatureInfoRecord[];
+    // (undocumented)
+    subLayerName: string;
 }
 
 // @internal (undocumented)
@@ -6128,6 +6258,8 @@ export class MapTileTreeReference extends TileTreeReference {
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
     getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
+    // (undocumented)
+    getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
     // (undocumented)
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // (undocumented)
@@ -8974,6 +9106,9 @@ export abstract class RenderTextureDrape implements IDisposable {
 // @internal (undocumented)
 export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<IModelTileTreeProps>;
 
+// @alpha (undocumented)
+export type ResolveFunc = () => Promise<any>;
+
 // @internal
 export type RootIModelTile = Tile & {
     tileScreenSize: number;
@@ -11237,6 +11372,8 @@ export abstract class TileTreeReference {
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
     protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined;
     getLocation(): Transform | undefined;
+    // @alpha
+    getMapFeatureInfo(_hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>;
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     // @internal (undocumented)
     getTerrainHeight(_terrainHeights: Range1d): void;
@@ -11609,6 +11746,15 @@ export interface ToolAssistanceSection {
 
 // @public (undocumented)
 export type ToolList = ToolType[];
+
+// @alpha (undocumented)
+export class ToolProvider implements UiItemsProvider {
+    constructor(tool: ToolType);
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
+    }
 
 // @public
 export class ToolRegistry {
@@ -12960,6 +13106,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     getAuxCoordRotation(result?: Matrix3d): Matrix3d;
     getContrastToBackgroundColor(): ColorDef;
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
+    // @alpha (undocumented)
+    getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo>;
     // @internal (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;

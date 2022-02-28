@@ -104,6 +104,7 @@ public;ProcessDetector
 public;PromiseReturnType
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
+alpha;RealityDataStatus
 beta;RepositoryStatus
 beta;RpcInterfaceStatus
 public;shallowClone
@@ -115,3 +116,5 @@ public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
 internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
+internal;YieldManager
+internal;YieldManagerOptions
