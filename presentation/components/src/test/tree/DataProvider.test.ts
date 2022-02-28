@@ -9,6 +9,7 @@ import * as moq from "typemoq";
 import { PageOptions } from "@itwin/components-react";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
+import { CheckBoxState } from "@itwin/core-react";
 import { Node, RegisteredRuleset } from "@itwin/presentation-common";
 import {
   createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, PromiseContainer, ResolvablePromise,
@@ -17,7 +18,6 @@ import { Presentation, PresentationManager, RulesetManager, RulesetVariablesMana
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
-import { CheckBoxState } from "@itwin/core-react";
 
 describe("TreeDataProvider", () => {
 
