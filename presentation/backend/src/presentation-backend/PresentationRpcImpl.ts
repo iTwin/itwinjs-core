@@ -58,8 +58,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       // attempt to clean up every second
       cleanupInterval: 1000,
 
-      cleanupHandler: (id) => {
-        Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
+      cleanupHandler: (id, _, reason) => {
+        if (reason !== "request")
+          Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
       },
     });
   }
