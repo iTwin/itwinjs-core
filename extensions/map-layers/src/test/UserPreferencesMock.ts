@@ -9,12 +9,10 @@ import { ITwinIdArg, PreferenceArg, PreferenceKeyArg, TokenArg } from "@itwin/co
 
 let iModelPrefs: Map<string, any> | undefined;
 let iTwinPrefs: Map<string, any> | undefined;
-let blankPrefs: Map<string, any> | undefined;    // Preferences for applications with blank connections
 export function setup() {
   if (undefined === iModelPrefs || undefined === iTwinPrefs) {
     iModelPrefs = new Map<string, any>();
     iTwinPrefs = new Map<string, any>();
-    blankPrefs = new Map<string, any>();
   }
 
   const getStub = async (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => {
@@ -52,7 +50,6 @@ export function setup() {
       iModelPrefs.delete(arg.key);
     if (arg.iTwinId)
       iTwinPrefs.delete(arg.key);
-
   };
 
   const saveStub = async (arg: PreferenceArg & ITwinIdArg & TokenArg) => {
