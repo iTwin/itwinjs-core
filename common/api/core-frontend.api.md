@@ -5335,8 +5335,8 @@ export interface ITwinIdArg {
     readonly iTwinId?: GuidString;
 }
 
-// @public
-export const ITWINJS_CORE_VERSION: any;
+// @public (undocumented)
+export const ITWINJS_CORE_VERSION: string;
 
 // @public
 export enum KeyinParseError {

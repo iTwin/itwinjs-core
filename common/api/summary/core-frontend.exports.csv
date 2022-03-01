@@ -321,7 +321,7 @@ public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => it
 public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
 beta;ITwinIdArg
-public;ITWINJS_CORE_VERSION: any
+public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
