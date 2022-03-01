@@ -13,7 +13,7 @@ import { MapFeatureInfoOptions } from "../Interfaces";
 import { MapLayersUI } from "../../mapLayers";
 
 interface MapFeatureInfoWidgetProps {
-  featureInfoOpts?: MapFeatureInfoOptions;
+  featureInfoOpts: MapFeatureInfoOptions;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

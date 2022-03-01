@@ -15,7 +15,7 @@ export class FeatureInfoUiItemsProvider implements UiItemsProvider {
   public readonly id = "FeatureInfoUiItemsProvider";
   public static readonly widgetId = "map-layers:mapFeatureInfoWidget";
 
-  public constructor(private _featureInfoOpts?: MapFeatureInfoOptions) { }
+  public constructor(private _featureInfoOpts: MapFeatureInfoOptions) { }
 
   public provideToolbarButtonItems(
     _stageId: string,

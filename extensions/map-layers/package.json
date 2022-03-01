@@ -19,7 +19,8 @@
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./src/public/locales/en-PSEUDO",
-    "test": "mocha \"./lib/cjs/test/**/*.test.js\""
+    "test": "mocha \"./lib/cjs/test/**/*.test.js\"",
+    "rebuild": "npm run -s clean && npm run -s build"
   },
   "repository": {
     "type": "git",

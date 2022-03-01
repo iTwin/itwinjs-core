@@ -50,7 +50,7 @@ export interface MapFeatureInfoOptions {
    * Typically the HitDetail object is provided by ElementLocateManager.doLocate.
    * Every time this event is raised, FeatureInfoWidget will attempt to retrieve data from MapLayerImageryProviders.
    */
-  onMapHit?: MapHitEvent;
+  onMapHit: MapHitEvent;
   disableDefaultFeatureInfoTool?: boolean;
   showLoadProgressAnimation?: boolean;
   propertyGridOptions?: MapFeatureInfoPropertyGridOptions;
