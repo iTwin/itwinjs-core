@@ -180,7 +180,7 @@ export namespace MeshArgs {
       isPlanar: mesh.isPlanar,
       is2d: mesh.is2d,
       hasBakedLighting: true === mesh.hasBakedLighting,
-      hasFixedNormals: false, // ###TODO set elsewhere???
+      hasFixedNormals: false,
       isVolumeClassifier: true === mesh.isVolumeClassifier,
       edges,
       auxChannels: mesh.auxChannels,
