@@ -841,6 +841,14 @@ export const setWidgetState = produce((
     const widget = nineZone.widgets[location.widgetId];
     widget.minimized = false;
     widget.activeTabId = id;
+    // ensure panel containing widget is not collapsed
+    if ("side" in location) {
+      const panel = nineZone.panels[location.side];
+      panel.collapsed && (panel.collapsed = false);
+      if (0 === panel.size) {
+        panel.size = panel.minSize ?? 200;
+      }
+    }
   } else if (state === WidgetState.Closed) {
     const id = widgetDef.id;
     let location = findTab(nineZone, id);
