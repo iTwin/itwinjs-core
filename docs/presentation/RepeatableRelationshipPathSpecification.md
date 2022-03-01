@@ -79,7 +79,7 @@ When a physical model is provided as input, categories' content of all its eleme
 
 ![Categories' content of model elements and their children](./media/repeatablerelationshippathspecification-combinedsteps.png)
 
-### Combining multiple recursive steps
+### Combining multiple unbounded recursive steps
 
 ```ts
 [[include:RepeatableRelationshipPathSpecification.MultipleRecursiveSpecificationsCombination.Ruleset]]
