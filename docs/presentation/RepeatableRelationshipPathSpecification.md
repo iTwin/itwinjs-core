@@ -51,7 +51,7 @@ of the previous step (if any) and passed as input to the next step or used as pa
 
 When the [`count` attribute](#attribute-count) is omitted or set to `1`, the specification works similarly to [RelationshipPathSpecification](./RelationshipPathSpecification.md). See its [examples section](./RelationshipPathSpecification.md#examples) for those simpler cases.
 
-### Jumping through the same relationship multiple times
+### Jumping through the same relationship recursively fixed number of times
 
 ```ts
 [[include:RepeatableRelationshipPathSpecification.SingleStepWithCount.Ruleset]]
