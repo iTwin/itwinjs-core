@@ -45,7 +45,7 @@ export class Item {
   public label: LabelDefinition;
   /**
    * ID of the image associated with this item
-   * @deprecated use extendedData instead
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
    */
   public imageId: string;
   /** For cases when item consists only of same class instances, information about the ECClass */
