@@ -103,12 +103,14 @@ class PolylineTesselator {
   }
 
   public static fromPolyline(args: PolylineArgs): PolylineTesselator {
+    assert(args.points instanceof QPoint3dList); // ###TODO remove
     return new PolylineTesselator(args.polylines, args.points, wantJointTriangles(args.width, args.flags.is2d));
   }
 
   public static fromMesh(args: MeshArgs): PolylineTesselator | undefined {
-    if (undefined !== args.edges.polylines.lines && undefined !== args.points)
-      return new PolylineTesselator(args.edges.polylines.lines, args.points, wantJointTriangles(args.edges.width, args.is2d));
+    assert(args.points instanceof QPoint3dList); // ###TODO remove me
+    if (undefined !== args.edges?.polylines.lines && undefined !== args.points)
+      return new PolylineTesselator(args.edges.polylines.lines, args.points, wantJointTriangles(args.edges.width, true === args.is2d));
 
     return undefined;
   }

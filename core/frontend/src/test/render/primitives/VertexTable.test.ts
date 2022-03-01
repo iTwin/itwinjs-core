@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point2d } from "@itwin/core-geometry";
-import { ColorIndex, FeatureIndexType, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
+import { ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
@@ -59,9 +59,13 @@ describe("VertexLUT", () => {
     positions.push(QPoint3d.fromScalars(0xbaad, 0, 0xffff));
 
     // Test simple unlit vertices (no normals or uv params; uniform colors + features)
-    const args = new MeshArgs();
-    args.points = positions;
-    args.vertIndices = [0, 1, 2];
+    const args: MeshArgs = {
+      points: positions,
+      vertIndices: [0, 1, 2],
+      colors: new ColorIndex(),
+      features: new FeatureIndex(),
+      fillFlags: FillFlags.None,
+    };
 
     const expected = [
       [
@@ -84,11 +88,11 @@ describe("VertexLUT", () => {
     expectMeshParams(args, args.colors, expected);
 
     // Add uv params
-    args.texture = new FakeTexture();
-    args.textureUv = [];
-    args.textureUv.push(new Point2d(-1, 1));  // 0, 0xffff
-    args.textureUv.push(new Point2d(1, 0));   // 0xffff, 0x8000
-    args.textureUv.push(new Point2d(0, -1));  // 0x8000, 0
+    args.textureMapping = {
+      texture: new FakeTexture(),
+      // quantized: (0, 0xffff),      (0xffff, 0x8000),   (0x8000, 0)
+      uvParams: [new Point2d(-1, 1), new Point2d(1, 0), new Point2d(0, -1)],
+    };
 
     expected[0].push(0x00); expected[0].push(0x00); expected[0].push(0xff); expected[0].push(0xff);
     expected[1].push(0xff); expected[1].push(0xff); expected[1].push(0x00); expected[1].push(0x80);
@@ -110,7 +114,7 @@ describe("VertexLUT", () => {
     expectMeshParams(args, args.colors, expected);
 
     // Remove uv params
-    args.texture = undefined;
+    args.textureMapping = undefined;
     for (const arr of expected) {
       arr.splice(12);
     }

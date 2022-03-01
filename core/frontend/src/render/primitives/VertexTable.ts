@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
-import { ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d } from "@itwin/core-common";
+import { ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
@@ -257,9 +257,9 @@ export class MeshParams {
       type: builder.type,
       indices: surfaceIndices,
       fillFlags: args.fillFlags,
-      hasBakedLighting: args.hasBakedLighting,
-      hasFixedNormals: args.hasFixedNormals,
-      textureMapping: undefined !== args.texture ? { texture: args.texture, alwaysDisplayed: false } : undefined,
+      hasBakedLighting: true === args.hasBakedLighting,
+      hasFixedNormals: true === args.hasFixedNormals,
+      textureMapping: undefined !== args.textureMapping ? { texture: args.textureMapping.texture, alwaysDisplayed: false } : undefined,
       material: createSurfaceMaterial(args.material),
     };
 
@@ -361,7 +361,10 @@ class SimpleBuilder<T extends SimpleVertexData> extends VertexTableBuilder {
 
   public get numVertices() { return this.args.points!.length; }
   public get numRgbaPerVertex() { return 3; }
-  public get qparams() { return this.args.points!.params; }
+  public get qparams() {
+    assert(this.args.points instanceof QPoint3dList); // ###TODO remove me
+    return this.args.points!.params;
+  }
 
   public appendVertex(vertIndex: number): void {
     this.appendPosition(vertIndex);
@@ -371,6 +374,7 @@ class SimpleBuilder<T extends SimpleVertexData> extends VertexTableBuilder {
 
   protected appendPosition(vertIndex: number) {
     const points = this.args.points!;
+    assert(points instanceof QPoint3dList); // ###TODO remove me
     this.append16(points.list[vertIndex].x);
     this.append16(points.list[vertIndex].y);
     this.append16(points.list[vertIndex].z);
@@ -407,13 +411,13 @@ class MeshBuilder extends SimpleBuilder<MeshArgs> {
       return new MeshBuilder(args, SurfaceType.VolumeClassifier);
 
     const isLit = undefined !== args.normals && 0 < args.normals.length;
-    const isTextured = undefined !== args.texture;
+    const isTextured = undefined !== args.textureMapping;
 
     let uvParams: QParams2d | undefined;
 
-    if (isTextured) {
+    if (args.textureMapping) {
       const uvRange = Range2d.createNull();
-      const fpts = args.textureUv;
+      const fpts = args.textureMapping.uvParams;
       const pt2d = new Point2d();
       if (undefined !== fpts && fpts.length > 0)
         for (let i = 0; i < args.points!.length; i++)
@@ -440,7 +444,7 @@ class TexturedMeshBuilder extends MeshBuilder {
   public constructor(args: MeshArgs, qparams: QParams2d, type: SurfaceType = SurfaceType.Textured) {
     super(args, type);
     this._qparams = qparams;
-    assert(undefined !== args.textureUv);
+    assert(undefined !== args.textureMapping);
   }
 
   public override get numRgbaPerVertex() { return 4; }
@@ -456,7 +460,7 @@ class TexturedMeshBuilder extends MeshBuilder {
   protected appendNormal(_vertIndex: number): void { this.advance(2); } // no normal for unlit meshes
 
   protected appendUVParams(vertIndex: number) {
-    this._qpoint.init(this.args.textureUv![vertIndex], this._qparams);
+    this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
     this.append16(this._qpoint.x);
     this.append16(this._qpoint.y);
   }
