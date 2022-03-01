@@ -333,9 +333,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       if (props.mapLayerSourceToEdit !== undefined) {
         const vp = props.activeViewport;
         void (async () => {
-          if (isSettingsStorageAvailable) {
+          if (isSettingsStorageAvailable && vp?.iModel?.iTwinId) {
             try {
-              await MapLayerPreferences.replaceSource(props.mapLayerSourceToEdit!, source, vp?.iModel.iTwinId, vp?.iModel.iModelId);
+              await MapLayerPreferences.replaceSource(props.mapLayerSourceToEdit!, source, vp.iModel.iTwinId, vp?.iModel.iModelId);
             } catch (err: any) {
               const errorMessage = IModelApp.localization.getLocalizedString("mapLayers:Messages.MapLayerEditError", { layerName: props.mapLayerSourceToEdit?.name });
               IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
