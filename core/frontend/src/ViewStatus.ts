@@ -8,7 +8,7 @@
 
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ViewStatus {
   Success = 0,

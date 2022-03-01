@@ -15,7 +15,7 @@ import { RenderMemory } from "./RenderMemory";
  *  - [[Decorations]] created on the front-end to be rendered along with the scene.
  * The latter are produced using a [[GraphicBuilder]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Consumer */ {
   public abstract dispose(): void;
@@ -29,7 +29,7 @@ export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Con
  * will never be automatically disposed of. Instead, you assume responsibility for disposing of the owned graphic by calling [[disposeGraphic]] when the owned graphic is no longer in use. Failure
  * to do so will result in leaks of graphics memory or other webgl resources.
  * @public
- * @extensionApi
+ * @extensions
  */
 export abstract class RenderGraphicOwner extends RenderGraphic {
   /** The owned graphic. */
@@ -44,6 +44,6 @@ export abstract class RenderGraphicOwner extends RenderGraphic {
 
 /** An array of [[RenderGraphic]]s.
  * @public
- * @extensionApi
+ * @extensions
  */
 export type GraphicList = RenderGraphic[];

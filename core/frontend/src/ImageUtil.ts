@@ -45,7 +45,7 @@ function rgbaFromRgba(rgba: Rgba, src: Uint8Array, idx: number): number {
  * @param barStyle CSS style string to apply to any side bars; defaults to "#C0C0C0", which is silver.
  * @returns an [HTMLCanvasElement](https://developer.mozilla.org/docs/Web/API/HTMLCanvasElement) object containing the resized image and any requested side bars.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize = new Point2d(0, 0), barStyle = "#C0C0C0"): HTMLCanvasElement {
   const canvasOut = document.createElement("canvas");
@@ -74,7 +74,7 @@ export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targe
  * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImageBuffer]]).
  * @returns an [HTMLCanvasElement](https://developer.mozilla.org/docs/Web/API/HTMLCanvasElement) object containing the contents of the source image buffer, or undefined if the conversion fails.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean = true): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
@@ -113,7 +113,7 @@ export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean 
  * @param format the desired format of the created ImageBuffer; defaults to [[ImageBufferFormat.Rgba]].
  * @returns an [[ImageBuffer]] object containing the contents of the source canvas, or undefined if the conversion fails.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export function canvasToImageBuffer(canvas: HTMLCanvasElement, format = ImageBufferFormat.Rgba): ImageBuffer | undefined {
   const context = canvas.getContext("2d");
@@ -161,7 +161,7 @@ export function canvasToImageBuffer(canvas: HTMLCanvasElement, format = ImageBuf
 
 /** Get a string describing the mime type associated with an ImageSource format.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export function getImageSourceMimeType(format: ImageSourceFormat): string {
 
@@ -178,7 +178,7 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string {
 
 /** Get the ImageSourceFormat corresponding to the mime type string, or undefined if the string does not identify a supported ImageSourceFormat.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
   switch (mimeType) {
@@ -193,7 +193,7 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
  * @param source The ImageSource containing the binary jpeg or png data.
  * @returns a Promise which resolves to an HTMLImageElement containing the uncompressed bitmap image in RGBA format.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export async function imageElementFromImageSource(source: ImageSource): Promise<HTMLImageElement> {
   const blob = new Blob([source.data], { type: getImageSourceMimeType(source.format) });
@@ -205,7 +205,7 @@ export async function imageElementFromImageSource(source: ImageSource): Promise<
  * @returns A Promise resolving to an HTMLImageElement when the image data has been loaded from the URL.
  * @see tryImageElementFromUrl.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export async function imageElementFromUrl(url: string): Promise<HTMLImageElement> {
   // We must set crossorigin property so that images loaded from same origin can be used with texImage2d.
@@ -239,7 +239,7 @@ export async function tryImageElementFromUrl(url: string): Promise<HTMLImageElem
  * @param source The ImageSource containing the binary jpeg or png data.
  * @returns a Promise resolving to a Point2d of which x corresponds to the integer width of the uncompressed bitmap and y to the height.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export async function extractImageSourceDimensions(source: ImageSource): Promise<Point2d> {
   const image = await imageElementFromImageSource(source);
@@ -252,7 +252,7 @@ export async function extractImageSourceDimensions(source: ImageSource): Promise
  * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImageBuffer]]).
  * @returns a data url as a string suitable for setting as the `src` property of an HTMLImageElement, or undefined if the url could not be created.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha = true): string | undefined {
   // The default format (and the only format required to be supported) for toDataUrl() is "image/png".
@@ -266,7 +266,7 @@ export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha = tru
  * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImageBuffer]]).
  * @returns a base64-encoded string representing the image as a PNG, or undefined if the conversion failed.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha = true): string | undefined {
   const urlPrefix = "data:image/png;base64,";
@@ -318,7 +318,7 @@ export function getCenteredViewRect(viewRect: ViewRect, aspectRatio = 1.4): View
  * @param minCompressionQuality The minimum acceptable image quality as a number between 0 (lowest quality) and 1 (highest quality).
  * @returns A [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the image, or `undefined` if the compression and size constraints could not be met.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes = 60000, minCompressionQuality = 0.1): string | undefined {
   const decrements = 0.1; // Decrements of quality

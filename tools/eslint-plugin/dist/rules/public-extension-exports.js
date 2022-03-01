@@ -69,7 +69,7 @@ module.exports = {
     const parserServices = getParserServices(context);
 
     const releaseTags = (context.options.length > 0 && context.options[0].releaseTags) || ["public"];
-    const extensionApiTag = "extensionApi"; // SWB temporary extension tag name
+    const extensionsTag = "extensions"; // SWB temporary extension tag name
 
     const outputApiFile = (context.options.length > 0 && context.options[0].outputApiFile) || false;
     const apiFilePath = "./lib/GeneratedExtensionApi.csv";
@@ -139,7 +139,7 @@ module.exports = {
 
       for (const jsDoc of declaration.jsDoc)
         if (jsDoc.tags) {
-          let jsDocExtensionTag = jsDoc.tags.find(tag => tag.tagName.escapedText === extensionApiTag);
+          let jsDocExtensionTag = jsDoc.tags.find(tag => tag.tagName.escapedText === extensionsTag);
           // Has extension API tag
           if (jsDocExtensionTag) {
             addToApiList(declaration, jsDocExtensionTag);

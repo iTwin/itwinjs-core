@@ -21,7 +21,7 @@ import {
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum TileGraphicType {
   /** Rendered behind all other geometry without depth. */
@@ -41,7 +41,7 @@ export enum TileGraphicType {
  * differing levels of transparency.
  * @see [[TiledGraphicsProvider]] to supply custom [[TileTreeReference]]s to be drawn within a [[Viewport]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** The owner of the currently-referenced [[TileTree]]. Do not store a direct reference to it, because it may change or become disposed at any time. */

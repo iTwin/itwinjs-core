@@ -13,7 +13,7 @@ import { Gradient } from "./Gradient";
 /** JSON representation of an [[AnalysisStyleDisplacement]].
  * @see [[AnalysisStyleProps.displacement]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface AnalysisStyleDisplacementProps {
   /** @see [[AnalysisStyleDisplacement.channelName]]. */
@@ -65,7 +65,7 @@ export class AnalysisStyleDisplacement {
 /** JSON representation of an [[AnalysisStyleThematic]].
  * @see [[AnalysisStyleProps.scalar]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface AnalysisStyleThematicProps {
   /** @see [[AnalysisStyleThematic.channelName]]. */
@@ -136,7 +136,7 @@ export class AnalysisStyleThematic {
 
 /** JSON representation of an [[AnalysisStyle]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface AnalysisStyleProps {
   /** @see [[AnalysisStyle.displacement]]. */

@@ -14,7 +14,7 @@ import { FeatureAppearanceProps } from "./FeatureSymbology";
  * @see [EmphasizeElements]($frontend)
  * @see [[AppearanceOverrideProps]]
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum FeatureOverrideType {
   /** Override color only. */
@@ -28,7 +28,7 @@ export enum FeatureOverrideType {
 /** JSON representation of an appearance override in an [[EmphasizeElementsProps]].
  * @see [EmphasizeElements]($frontend).
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface AppearanceOverrideProps {
   /** Whether to override color, transparency, or both. */
@@ -41,7 +41,7 @@ export interface AppearanceOverrideProps {
 
 /** JSON representation of an [EmphasizeElements]($frontend).
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface EmphasizeElementsProps {
   /** @see [EmphasizeElements.getNeverDrawnElements]($frontend) */

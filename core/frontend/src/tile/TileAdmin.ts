@@ -79,7 +79,7 @@ export interface SelectedAndReadyTiles {
  * @see [[TileAdmin.gpuMemoryLimit]] to adjust the limit after startup.
  * @see [[TileAdmin.totalTileContentBytes]] for the current amount of GPU memory being used for tile contents.
  * @public
- * @extensionApi
+ * @extensions
  */
 export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
 
@@ -87,7 +87,7 @@ export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | num
  * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure the limit at startup.
  * @see [[GpuMemoryLimit]] for a description of how the available limits and how they are imposed.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GpuMemoryLimits {
   /** Limits applied to clients running on mobile devices. Defaults to "default" if undefined. */
@@ -101,7 +101,7 @@ export interface GpuMemoryLimits {
  * @see [[IModelApp.tileAdmin]] to access the instance of the TileAdmin.
  * @see [[TileAdmin.Props]] to configure the TileAdmin at startup.
  * @public
- * @extensionApi
+ * @extensions
  */
 export class TileAdmin {
   private _versionInfo?: TileVersionInfo;

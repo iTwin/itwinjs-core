@@ -17,7 +17,7 @@ import { ViewRect } from "./ViewRect";
 
 /** The possible actions for which a locate filter can be called.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum LocateAction {
   Identify = 0,
@@ -27,7 +27,7 @@ export enum LocateAction {
 /** Values to return from a locate filter.
  * Return `Reject` to indicate the element is unacceptable.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum LocateFilterStatus {
   Accept = 0,
@@ -36,7 +36,7 @@ export enum LocateFilterStatus {
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum SnapStatus {
   Success = 0,
@@ -51,7 +51,7 @@ export enum SnapStatus {
 
 /** Options that customize the way element location (i.e. *picking*) works.
  * @public
- * @extensionApi
+ * @extensions
  */
 export class LocateOptions {
   /** If true, also test graphics from view decorations. */
@@ -100,7 +100,7 @@ export class LocateOptions {
 
 /**
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export class LocateResponse {
   public snapStatus = SnapStatus.Success;
@@ -126,7 +126,7 @@ export class LocateResponse {
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface HitListHolder {
   setHitList(list: HitList<HitDetail> | undefined): void;
@@ -134,7 +134,7 @@ export interface HitListHolder {
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export class ElementPicker {
   public viewport?: Viewport;
@@ -281,7 +281,7 @@ export class ElementPicker {
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export class ElementLocateManager {
   public hitList?: HitList<HitDetail>;

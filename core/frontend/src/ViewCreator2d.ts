@@ -27,7 +27,7 @@ import { ViewState, ViewState2d } from "./ViewState";
 
 /** Options for creating a [[ViewState2d]] via [[ViewCreator2d]].
  *  @public
- * @extensionApi
+ * @extensions
 */
 export interface ViewCreator2dOptions {
   /** Aspect ratio of [[Viewport]]. Required to fit contents of the model in the initial state of the view. */
@@ -48,7 +48,7 @@ export interface ViewCreator2dOptions {
  *   const view = await viewCreator.createViewForModel(models[0].id!);
  * ```
  * @public
- * @extensionApi
+ * @extensions
  */
 export class ViewCreator2d {
 

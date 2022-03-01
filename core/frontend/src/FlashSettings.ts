@@ -10,7 +10,7 @@ import { BeDuration, Mutable } from "@itwin/core-bentley";
 
 /** As part of [[FlashSettings]], describes how geometry is flashed.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum FlashMode {
   /** The color of the geometry is mixed with the hilite color. */
@@ -24,7 +24,7 @@ export enum FlashMode {
 /** Options used to construct or clone a [[FlashSettings]]. All properties are mutable and optional; those left undefined receive their default
  * values.
  * @public
- * @extensionApi
+ * @extensions
  */
 export type FlashSettingsOptions = Mutable<Partial<FlashSettings>>;
 
@@ -38,7 +38,7 @@ export type FlashSettingsOptions = Mutable<Partial<FlashSettings>>;
  * @see [[Viewport.flashSettings]] to customize the flash behavior for a viewport.
  * @see [[Viewport.hilite]] to customize the hilite color used by [[FlashMode.Hilite]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export class FlashSettings {
   /** The duration in seconds over which the flash effect increases from zero to [[maxIntensity]], in [0..10].

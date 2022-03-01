@@ -19,7 +19,7 @@ import { SubCategoryAppearance } from "./SubCategoryAppearance";
 
 /** Properties of a NavigationProperty.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface RelatedElementProps {
   /** The Id of the element to which this element is related. */
@@ -30,7 +30,7 @@ export interface RelatedElementProps {
 
 /** Properties of an [Element]($docs/bis/intro/element-fundamentals)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ElementProps extends EntityProps {
   /** The Id of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
@@ -99,7 +99,7 @@ export class TypeDefinition extends RelatedElement {
 
 /** Properties of a [GeometricElement]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GeometricElementProps extends ElementProps {
   /** The id of the category for this geometric element. */
@@ -116,7 +116,7 @@ export interface GeometricElementProps extends ElementProps {
 
 /** Properties of a [[Placement3d]]
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface Placement3dProps {
   origin: XYZProps;
@@ -126,7 +126,7 @@ export interface Placement3dProps {
 
 /** Properties of a [[Placement2d]]
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface Placement2dProps {
   origin: XYProps;
@@ -136,7 +136,7 @@ export interface Placement2dProps {
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export type PlacementProps = Placement2dProps | Placement3dProps;
 
@@ -156,7 +156,7 @@ export function isPlacement3dProps(props: PlacementProps): props is Placement3dP
 
 /** Properties that define a [GeometricElement3d]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GeometricElement3dProps extends GeometricElementProps {
   placement?: Placement3dProps;
@@ -165,7 +165,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 
 /** Properties that define a [PhysicalElement]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface PhysicalElementProps extends GeometricElement3dProps {
   physicalMaterial?: RelatedElementProps;
@@ -173,7 +173,7 @@ export interface PhysicalElementProps extends GeometricElement3dProps {
 
 /** An enumeration of the different types of [SectionDrawing]($backend)s.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum SectionType {
   Section = 3,
@@ -184,7 +184,7 @@ export enum SectionType {
 
 /** Properties that define a [SectionDrawing]($backend).
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface SectionDrawingProps extends ElementProps {
   /** The type of section used to generate the drawing. Default: Section. */
@@ -208,7 +208,7 @@ export interface SectionDrawingProps extends ElementProps {
 
 /** Properties that define a [SectionDrawingLocation]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface SectionDrawingLocationProps extends GeometricElement3dProps {
   /** The [ViewDefinition]($backend) to which this location refers. */
@@ -217,7 +217,7 @@ export interface SectionDrawingLocationProps extends GeometricElement3dProps {
 
 /** Properties that define a [GeometricElement2d]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GeometricElement2dProps extends GeometricElementProps {
   placement?: Placement2dProps;
@@ -226,7 +226,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
 
 /** Properties of a [GeometryPart]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GeometryPartProps extends ElementProps {
   geom?: GeometryStreamProps;
@@ -239,7 +239,7 @@ export interface GeometryPartProps extends ElementProps {
 
 /** Properties for a [ViewAttachment]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ViewAttachmentProps extends GeometricElement2dProps {
   view: RelatedElementProps;
@@ -262,7 +262,7 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
 
 /** Properties of a [Subject]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface SubjectProps extends ElementProps {
   description?: string;
@@ -287,7 +287,7 @@ export interface SheetTemplateProps extends ElementProps {
 
 /** Properties of a [Sheet]($backend).
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface SheetProps extends ElementProps {
   width?: number;
@@ -299,7 +299,7 @@ export interface SheetProps extends ElementProps {
 
 /** Properties of a [DefinitionElement]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface DefinitionElementProps extends ElementProps {
   isPrivate?: boolean;
@@ -307,7 +307,7 @@ export interface DefinitionElementProps extends ElementProps {
 
 /** Properties of a [TypeDefinitionElement]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface TypeDefinitionElementProps extends DefinitionElementProps {
   recipe?: RelatedElementProps;
@@ -315,7 +315,7 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
 
 /** Properties of a [PhysicalType]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface PhysicalTypeProps extends TypeDefinitionElementProps {
   /** The [PhysicalMaterial]($backend) that makes up this physical type. */
@@ -324,7 +324,7 @@ export interface PhysicalTypeProps extends TypeDefinitionElementProps {
 
 /** Properties of a [InformationPartitionElement]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface InformationPartitionElementProps extends ElementProps {
   description?: string;
@@ -333,7 +333,7 @@ export interface InformationPartitionElementProps extends ElementProps {
 /** Options controlling which properties are included or excluded when querying [[DisplayStyleProps]].
  * @see [[ViewStateLoadProps]] and [[ElementLoadOptions]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface DisplayStyleLoadProps {
   /** If true, the lists of element Ids in the display style's schedule script will be empty.
@@ -349,7 +349,7 @@ export interface DisplayStyleLoadProps {
 /** Options controlling which properties are included or excluded when querying [[RenderTimelineProps]].
  * @see [[ElementLoadOptions.renderTimeline]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface RenderTimelineLoadProps {
   /** If true, the lists of element Ids in the schedule script will be empty.
@@ -361,7 +361,7 @@ export interface RenderTimelineLoadProps {
 /** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
  * [IModelDb.Elements.getElementProps]($backend) and [IModelConnection.Elements.loadProps]($frontend).
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ElementLoadOptions {
   /** If true, include the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
@@ -381,7 +381,7 @@ export interface ElementLoadOptions {
 
 /** Parameters to specify what element to load for functions like [IModelDb.Elements.getElementProps]($backend).
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ElementLoadProps extends ElementLoadOptions {
   id?: Id64String;
@@ -391,7 +391,7 @@ export interface ElementLoadProps extends ElementLoadOptions {
 
 /** Properties of an [ElementAspect]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ElementAspectProps extends EntityProps {
   element: RelatedElementProps;
@@ -399,7 +399,7 @@ export interface ElementAspectProps extends EntityProps {
 
 /** Properties of an [ExternalSourceAspect]($backend) that stores synchronization information for an element originating from an external source.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ExternalSourceAspectProps extends ElementAspectProps {
   /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source. */
@@ -455,7 +455,7 @@ export interface ExternalSourceAttachmentProps extends ElementProps {
 
 /** Properties of an [ChannelRootAspect]($backend) that identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ChannelRootAspectProps extends ElementAspectProps {
   /** The owner of the channel */
@@ -464,7 +464,7 @@ export interface ChannelRootAspectProps extends ElementAspectProps {
 
 /** Properties of a [LineStyle]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface LineStyleProps extends DefinitionElementProps {
   description?: string;
@@ -481,7 +481,7 @@ export interface LightLocationProps extends GeometricElement3dProps {
 
 /** The *rank* for a Category
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum Rank {
   /** This category is predefined by the system */
@@ -496,7 +496,7 @@ export enum Rank {
 
 /** Parameters of a [Category]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface CategoryProps extends DefinitionElementProps {
   rank?: Rank;
@@ -505,7 +505,7 @@ export interface CategoryProps extends DefinitionElementProps {
 
 /** Parameters of a [SubCategory]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface SubCategoryProps extends DefinitionElementProps {
   appearance?: SubCategoryAppearance.Props;
@@ -514,7 +514,7 @@ export interface SubCategoryProps extends DefinitionElementProps {
 
 /** Parameters of a [UrlLink]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface UrlLinkProps extends ElementProps {
   description?: string;
@@ -523,7 +523,7 @@ export interface UrlLinkProps extends ElementProps {
 
 /** Parameters of a [RepositoryLink]($backend)
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface RepositoryLinkProps extends UrlLinkProps {
   repositoryGuid?: GuidString;
@@ -539,7 +539,7 @@ export interface SynchronizationConfigLinkProps extends UrlLinkProps {
 
 /** Wire format describing a [RenderTimeline]($backend).
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface RenderTimelineProps extends ElementProps {
   /** An optional human-readable description of the timeline. */

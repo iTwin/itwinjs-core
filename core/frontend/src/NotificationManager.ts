@@ -15,7 +15,7 @@ import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
 /** Describes the type and behavior of a [[NotifyMessageDetails]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum OutputMessageType {
   /** Temporary message box displays at the top or bottom of the screen then disappears automatically. */
@@ -32,7 +32,7 @@ export enum OutputMessageType {
 
 /** Classifies a [[NotifyMessageDetails]] by its level of importance.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum OutputMessagePriority {
   None = 0,
@@ -46,7 +46,7 @@ export enum OutputMessagePriority {
 
 /** Describes the alert behavior of a [[NotifyMessageDetails]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum OutputMessageAlert {
   None = 0,
@@ -56,7 +56,7 @@ export enum OutputMessageAlert {
 
 /** Reason for ending the activity message via endActivityMessage
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ActivityMessageEndReason {
   Completed = 0,
@@ -65,7 +65,7 @@ export enum ActivityMessageEndReason {
 
 /** Describes the set of buttons displayed in a message box opened using [[NotificationManager.openMessageBox]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum MessageBoxType {
   OkCancel,
@@ -78,7 +78,7 @@ export enum MessageBoxType {
 
 /** Describes the icon displayed in a messagebox opened using [[NotificationManager.openMessageBox]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum MessageBoxIconType {
   NoSymbol = 0,   // Means Don't draw Symbol
@@ -91,7 +91,7 @@ export enum MessageBoxIconType {
 
 /** Describes the possible return values produced when the user clicks a button in a messagebox opened using [[NotificationManager.openMessageBox]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum MessageBoxValue {
   Apply = 1,
@@ -110,7 +110,7 @@ export enum MessageBoxValue {
 
 /** Describes the behavior of a tooltip created using [[NotificationManager.openToolTip]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ToolTipOptions {
   duration?: BeDuration;
@@ -119,7 +119,7 @@ export interface ToolTipOptions {
 
 /** Describes a message to be displayed to the user.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export class NotifyMessageDetails {
   public displayTime = BeDuration.fromSeconds(5);
@@ -161,7 +161,7 @@ export class NotifyMessageDetails {
 
 /** Specifies the details of an activity message to be displayed to the user.
  * @public
- * @extensionApi
+ * @extensions
  */
 export class ActivityMessageDetails {
   public wasCancelled = false;
@@ -185,7 +185,7 @@ export class ActivityMessageDetails {
  * Implementations of the NotificationManager may present the information in different ways. For example, in
  * non-interactive sessions, these messages may be saved to a log file or simply discarded.
  * @public
- * @extensionApi
+ * @extensions
  */
 export class NotificationManager implements MessagePresenter {
   public readonly toolTipLocation = new Point2d();

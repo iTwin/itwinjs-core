@@ -28,7 +28,7 @@ function copyIdSetToUint32Set(dst: Id64.Uint32Set, src: Iterable<string>): void 
 
 /** JSON representation of a [[FeatureAppearance]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface FeatureAppearanceProps {
   /** @see [[FeatureAppearance.rgb]]. */
@@ -281,7 +281,7 @@ export class FeatureAppearance {
  * @see [[FeatureOverrides]] for the commonly-used implementation.
  * @see [[FeatureAppearanceProvider]] to supplement the appearance supplied by this interface.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface FeatureAppearanceSource {
   /** Supplies the desired appearance overrides for the specified [[Feature]], or `undefined` if the feature should not be drawn.
@@ -749,7 +749,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
  * A typical implementation will invoke [[FeatureAppearanceSource.getAppeaprance]] and customize the returned appearance.
  * @see [[FeatureAppearanceProvider.chain]] to chain two providers together.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface FeatureAppearanceProvider {
   /** Supply the desired appearance overrides for the specified [[Feature]], or `undefined` if the feature should not be drawn.

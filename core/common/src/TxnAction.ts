@@ -8,7 +8,7 @@
 
 /** Describes the types of actions associated with [Txns]($docs/learning/InteractiveEditing.md).
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum TxnAction {
   /** Not currently processing anything. */

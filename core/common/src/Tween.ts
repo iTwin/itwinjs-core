@@ -115,22 +115,22 @@ export class Tweens {
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export type TweenCallback = (obj: any) => void;
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export type UpdateCallback = (obj: any, t: number) => void;
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export type EasingFunction = (k: number) => number;
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export type InterpolationFunction = (v: any, k: number) => number;
 

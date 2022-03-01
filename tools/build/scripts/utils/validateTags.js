@@ -27,7 +27,7 @@ const validTags = [
   "public",
 
   // Following flags are added for internal Extension tooling (public-extension-api)
-  "extensionApi",
+  "extensions",
 ];
 
 function validateTags(path) {

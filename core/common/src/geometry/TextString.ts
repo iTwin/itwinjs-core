@@ -12,7 +12,7 @@ import { FontId } from "../Fonts";
 /** Properties for a TextString class.
  * @see [[GeometryStreamEntryProps]]
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface TextStringProps {
   /** text string */

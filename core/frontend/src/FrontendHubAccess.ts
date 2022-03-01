@@ -11,7 +11,7 @@ import { ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface IModelIdArg {
   iModelId: GuidString;

@@ -10,7 +10,7 @@ import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
 
 /** Describes an [Entity]($backend) and its [ECClass]($docs/bis/intro/glossary/#ecclass) by Id.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface EntityIdAndClassId {
   /** The entity's Id. */
@@ -23,7 +23,7 @@ export interface EntityIdAndClassId {
  * @see [TxnManager.onElementsChanged]($backend) and [TxnManager.onModelsChanged]($backend).
  * @see [BriefcaseTxns.onElementsChanged]($frontend) and [BriefcaseTxns.onModelsChanged]($frontend).
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ChangedEntities {
   /** The ids of entities that were inserted during the Txn. */
@@ -48,6 +48,6 @@ export interface ChangedEntities {
  *  }
  * ```
  * @public
- * @extensionApi
+ * @extensions
  */
 export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;

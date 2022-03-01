@@ -14,7 +14,7 @@ import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
  * @see [[ViewDefinitionProps.jsonProperties]].
  * @see [[ViewDetails3dProps]] for additional properties specific to 3d views.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ViewDetailsProps {
   /** Id of the aux coord system. Default: invalid. */
@@ -35,7 +35,7 @@ export interface ViewDetailsProps {
 
 /** Describes the orientation of the grid displayed within a [Viewport]($frontend).
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum GridOrientationType {
   /** Oriented with the view. */
@@ -53,7 +53,7 @@ export enum GridOrientationType {
 /** Properties of a [[ViewDefinition3dProps]] stored as JSON.
  * @see [[ViewDefinition3dProps.jsonProperties]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ViewDetails3dProps extends ViewDetailsProps {
   /** Whether viewing tools are prohibited from operating in 3 dimensions on this view. Default: false. */

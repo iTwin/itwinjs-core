@@ -17,7 +17,7 @@ import { ScreenViewport } from "./Viewport";
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum SnapMode {
   Nearest = 1,
@@ -31,7 +31,7 @@ export enum SnapMode {
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum SnapHeat {
   None = 0,
@@ -41,7 +41,7 @@ export enum SnapHeat {
 
 /** The procedure that generated this Hit.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum HitSource {
   None = 0,
@@ -58,7 +58,7 @@ export enum HitSource {
 /** What was being tested to generate this hit. This is not the element or
  * GeometricPrimitive that generated the Hit, it is an indication of whether it is an edge or interior hit.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum HitGeomType {
   None = 0,
@@ -71,7 +71,7 @@ export enum HitGeomType {
 
 /** Classification of GeometricPrimitive that generated the Hit.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum HitParentGeomType {
   None = 0,
@@ -84,7 +84,7 @@ export enum HitParentGeomType {
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum HitPriority {
   WireEdge = 0,
@@ -98,7 +98,7 @@ export enum HitPriority {
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum HitDetailType {
   Hit = 1,
@@ -109,7 +109,7 @@ export enum HitDetailType {
 /** A HitDetail stores the result when locating geometry displayed in a view.
  * It holds an approximate location on an element (or decoration) from a *pick*.
  * @public
- * @extensionApi
+ * @extensions
  */
 export class HitDetail {
   private readonly _iModel?: IModelConnection;
@@ -197,7 +197,7 @@ export class HitDetail {
 /** A SnapDetail is generated from the result of a snap request. In addition to the HitDetail about the reason the element was *picked*,
  * it holds the *exact* point on the element from the snapping logic, plus additional information that varies with the type of element and snap mode.
  * @public
- * @extensionApi
+ * @extensions
  */
 export class SnapDetail extends HitDetail {
   /** A sprite to show the user the type of snap performed */
@@ -352,7 +352,7 @@ export class SnapDetail extends HitDetail {
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export class IntersectDetail extends SnapDetail {
   public constructor(from: SnapDetail, heat: SnapHeat = SnapHeat.None, snapPoint: XYZProps, public readonly otherPrimitive: CurvePrimitive, public readonly otherId: string) {
@@ -388,7 +388,7 @@ export class IntersectDetail extends SnapDetail {
 /** The result of a "locate" is a sorted list of objects that satisfied the search criteria (a HitList). Earlier hits in the list
  * are somehow *better* than those later on.
  * @public
- * @extensionApi
+ * @extensions
  */
 export class HitList<T extends HitDetail> {
   public hits: T[] = [];

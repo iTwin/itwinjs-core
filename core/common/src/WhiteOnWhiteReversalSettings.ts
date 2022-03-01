@@ -8,7 +8,7 @@
 
 /** JSON representation of a [[WhiteOnWhiteReversalSettings]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface WhiteOnWhiteReversalProps {
   /** Default: false.

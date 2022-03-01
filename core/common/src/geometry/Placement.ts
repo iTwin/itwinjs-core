@@ -16,37 +16,37 @@ import { IModelError } from "../IModelError";
 
 /** A Range3d that is aligned with the axes of spatial coordinates.
  * @public
- * @extensionApi
+ * @extensions
  */
 export type AxisAlignedBox3d = Range3d;
 
 /** The properties of a Range3d.
  * @public
- * @extensionApi
+ * @extensions
  */
 export type AxisAlignedBox3dProps = Range3dProps;
 
 /** A bounding box aligned to the orientation of a 3d Element
  * @public
- * @extensionApi
+ * @extensions
  */
 export type ElementAlignedBox3d = Range3d;
 
 /** A bounding box aligned to the orientation of a 2d Element
  * @public
- * @extensionApi
+ * @extensions
  */
 export type ElementAlignedBox2d = Range2d;
 
 /** A bounding box aligned to a local coordinate system
  * @public
- * @extensionApi
+ * @extensions
  */
 export type LocalAlignedBox3d = Range3d;
 
 /** Either a Placement2d or Placement3d
  * @public
- * @extensionApi
+ * @extensions
  */
 export type Placement = Placement2d | Placement3d;
 

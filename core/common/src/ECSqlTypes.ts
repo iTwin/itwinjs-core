@@ -11,7 +11,7 @@ import { assert, Id64String } from "@itwin/core-bentley";
 /** Describes the different data types an ECSQL value can be of.
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ECSqlValueType {
   // do not change the values of the enum as it must match its counterpart in the addon
@@ -37,7 +37,7 @@ export enum ECSqlValueType {
  * It is returned from ECSQL SELECT statements for navigation properties.
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface NavigationValue {
   /** ECInstanceId of the related instance */
@@ -49,7 +49,7 @@ export interface NavigationValue {
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface NavigationBindingValue {
   /** ECInstanceId of the related instance */
@@ -70,7 +70,7 @@ export interface NavigationBindingValue {
  * See also
  * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ChangeOpCode {
   Insert = 1,
@@ -85,7 +85,7 @@ export enum ChangeOpCode {
  * See also
  * - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ChangedValueState {
   AfterInsert = 1,
@@ -97,7 +97,7 @@ export enum ChangedValueState {
 /** Defines the ECSQL system properties.
  * See also [ECSQL]($docs/learning/ECSQL).
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ECSqlSystemProperty {
   ECInstanceId,

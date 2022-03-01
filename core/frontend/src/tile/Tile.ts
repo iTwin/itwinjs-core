@@ -58,7 +58,7 @@ const scratchFrustum = new Frustum();
  * Several public [[Tile]] methods carry a warning that they should **not** be overridden by subclasses; typically a protected method exists that can be overridden instead.
  * For example, [[loadChildren]] should not be overridden, but it calls [[_loadChildren]], which must be overridden because it is abstract.
  * @public
- * @extensionApi
+ * @extensions
  */
 export abstract class Tile {
   private _state: TileState = TileState.NotReady;
@@ -552,7 +552,7 @@ export abstract class Tile {
 /** Describes the current status of a [[Tile]]'s content. Tile content is loaded via an asynchronous [[TileRequest]].
  * @see [[Tile.loadStatus]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum TileLoadStatus {
   /** No attempt to load the tile's content has been made, or the tile has since been unloaded. It currently has no graphics. */
@@ -572,7 +572,7 @@ export enum TileLoadStatus {
 /**
  * Describes the visibility of a tile based on its size and a view frustum.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum TileVisibility {
   /** The tile is entirely outside of the viewing frustum. */
@@ -587,7 +587,7 @@ export enum TileVisibility {
  * Loosely describes the "importance" of a [[Tile]]. Requests for tiles of greater "importance" are prioritized for loading.
  * @note A lower priority value indicates higher importance.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum TileLoadPriority {
   /** Contents of geometric models that are being interactively edited. */
@@ -613,7 +613,7 @@ export enum TileLoadPriority {
  *  - Red: A tile which refines to a single higher-resolution child occupying the same volume.
  * @see [[Viewport.debugBoundingBoxes]]
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum TileBoundingBoxes {
   /** Display no bounding boxes */

@@ -10,7 +10,7 @@ import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
 /** Enumerates the types of map imagery that can be supplied by a [[BackgroundMapProvider]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum BackgroundMapType {
   Street = 1,
@@ -21,7 +21,7 @@ export enum BackgroundMapType {
 /** Enumerates a set of supported [[BackgroundMapProvider]]s that can provide map imagery.
  * @note To access imagery from such a provider, an API key must be supplied via [IModelAppOptions.mapLayerOptions]($frontend).
  * @public
- * @extensionApi
+ * @extensions
  */
 export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 

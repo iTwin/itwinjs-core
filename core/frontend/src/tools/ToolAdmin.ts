@@ -33,13 +33,13 @@ import { ViewTool } from "./ViewTool";
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum StartOrResume { Start = 1, Resume = 2 }
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
@@ -301,7 +301,7 @@ interface ToolEvent {
 
 /** Controls the operation of [[Tool]]s, administering the current [[ViewTool]], [[PrimitiveTool]], and [[IdleTool]] and forwarding events to the appropriate tool.
  * @public
- * @extensionApi
+ * @extensions
  */
 export class ToolAdmin {
   public markupView?: ScreenViewport;

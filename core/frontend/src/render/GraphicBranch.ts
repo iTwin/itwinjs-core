@@ -41,7 +41,7 @@ export enum AnimationNodeId {
  * Branches can be nested to build an arbitrarily-complex scene graph.
  * @see [[RenderSystem.createBranch]]
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ {
   /** The child nodes of this branch */
@@ -120,7 +120,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
 
 /** Options passed to [[RenderSystem.createGraphicBranch]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicBranchOptions {
   /** Clip applied to the graphics in the branch. */

@@ -12,7 +12,7 @@ import { CoreTools } from "./Tool";
 
 /** Tool Assistance known images
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ToolAssistanceImage {
   /** When Keyboard is specified, ToolAssistanceInstruction.keyboardInfo should be set. */
@@ -53,7 +53,7 @@ export enum ToolAssistanceImage {
 
 /** Input Method for Tool Assistance instruction
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ToolAssistanceInputMethod {
   /** Instruction applies to both touch & mouse input methods */
@@ -66,7 +66,7 @@ export enum ToolAssistanceInputMethod {
 
 /** Tool Assistance image keyboard keys
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ToolAssistanceKeyboardInfo {
   /** Text for keys to display */
@@ -77,7 +77,7 @@ export interface ToolAssistanceKeyboardInfo {
 
 /** Interface used to describe a Tool Assistance instruction.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ToolAssistanceInstruction {
   /** Name of icon WebFont entry, or if specifying an SVG symbol, use "svg:" prefix to imported symbol Id.
@@ -96,7 +96,7 @@ export interface ToolAssistanceInstruction {
 
 /** Interface used to describe a Tool Assistance section with a label and a set of instructions.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ToolAssistanceSection {
   /** Instructions in the section. */
@@ -107,7 +107,7 @@ export interface ToolAssistanceSection {
 
 /** Interface used to describe Tool Assistance for a tool's state.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ToolAssistanceInstructions {
   /** The main instruction. */
@@ -118,7 +118,7 @@ export interface ToolAssistanceInstructions {
 
 /** Tool Assistance helper methods.
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export class ToolAssistance {
 

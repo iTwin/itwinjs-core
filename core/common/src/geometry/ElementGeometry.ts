@@ -25,7 +25,7 @@ import { isPlacement2dProps, PlacementProps } from "../ElementProps";
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ElementGeometryOpcode {
   /** Local range of the next geometric primitive in the geometry stream. */
@@ -73,7 +73,7 @@ export enum ElementGeometryOpcode {
 /** Describes an entry in a geometry stream as an op-code plus the binary flatbuffer representation of the associated data.
  * @see [[FlatBufferGeometryStream]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ElementGeometryDataEntry {
   /** The type of this entry. */

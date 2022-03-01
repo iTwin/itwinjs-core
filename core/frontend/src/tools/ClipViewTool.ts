@@ -31,7 +31,7 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 
 /** An object that can react to a view's clip being changed by tools or modify handles.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ViewClipEventHandler {
   /** Add newly created clip geometry to selection set and show modify controls. */
@@ -1901,7 +1901,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
 /** Event types for ViewClipDecorationProvider.onActiveClipChanged \
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ClipEventType { New, NewPlane, Modify, Clear }
 

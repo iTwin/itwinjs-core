@@ -13,7 +13,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 /** JSON representation of a [[GroundPlane]].
  * @see [[EnvironmentProps.ground]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GroundPlaneProps {
   /** Whether the ground plane should be displayed. Defaults to false. */

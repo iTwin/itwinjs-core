@@ -10,7 +10,7 @@ import { ElementProps, RelatedElementProps } from "../ElementProps";
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface FunctionalElementProps extends ElementProps {
   typeDefinition?: RelatedElementProps;

@@ -18,7 +18,7 @@ import { IModelConnection } from "./IModelConnection";
  * use [[ViewState.changeCategoryDisplay]] to ensure the view updates appropriately on screen.
  * @see [[Category]]
  * @public
- * @extensionApi
+ * @extensions
  */
 export class CategorySelectorState extends ElementState {
   /** @internal */

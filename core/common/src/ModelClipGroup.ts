@@ -11,7 +11,7 @@ import { ClipVector, ClipVectorProps } from "@itwin/core-geometry";
 
 /** JSON representation of a [[ModelClipGroup]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ModelClipGroupProps {
   /** The Ids of the models in the group. */

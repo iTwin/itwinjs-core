@@ -10,7 +10,7 @@ import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@
 
 /** Base interface for a 2d [[GraphicPrimitive]] that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicPrimitive2d {
   /** Z value in local coordinates to use for each point. */
@@ -20,7 +20,7 @@ export interface GraphicPrimitive2d {
 /** A [[GraphicPrimitive]] representing a line string that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addLineString]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicLineString {
   type: "linestring";
@@ -30,7 +30,7 @@ export interface GraphicLineString {
 /** A [[GraphicPrimitive]] representing a 2d line string that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addLineString2d]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicLineString2d extends GraphicPrimitive2d {
   type: "linestring2d";
@@ -40,7 +40,7 @@ export interface GraphicLineString2d extends GraphicPrimitive2d {
 /** A [[GraphicPrimitive]] representing a point string that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addPointString]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicPointString {
   type: "pointstring";
@@ -50,7 +50,7 @@ export interface GraphicPointString {
 /** A [[GraphicPrimitive]] representing a 2d point string that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addPointString2d]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicPointString2d extends GraphicPrimitive2d {
   type: "pointstring2d";
@@ -60,7 +60,7 @@ export interface GraphicPointString2d extends GraphicPrimitive2d {
 /** A [[GraphicPrimitive]] representing a closed 3d planar region that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addShape]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicShape {
   type: "shape";
@@ -70,7 +70,7 @@ export interface GraphicShape {
 /** A [[GraphicPrimitive]] representing a closed 2d region that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addShape2d]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicShape2d extends GraphicPrimitive2d {
   type: "shape2d";
@@ -80,7 +80,7 @@ export interface GraphicShape2d extends GraphicPrimitive2d {
 /** A [[GraphicPrimitive]] representing a 3d open arc or closed ellipse that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addArc]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicArc {
   type: "arc";
@@ -92,7 +92,7 @@ export interface GraphicArc {
 /** A [[GraphicPrimitive]] representing a 2d open arc or closed ellipse that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addArc2d]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicArc2d {
   type: "arc2d";
@@ -105,7 +105,7 @@ export interface GraphicArc2d {
 /** A [[GraphicPrimitive]] representing a 3d open path that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addPath]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicPath {
   type: "path";
@@ -115,7 +115,7 @@ export interface GraphicPath {
 /** A [[GraphicPrimitive]] representing a 3d planar region that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addLoop]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicLoop {
   type: "loop";
@@ -125,7 +125,7 @@ export interface GraphicLoop {
 /** A [[GraphicPrimitive]] representing a mesh that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addPolyface]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicPolyface {
   type: "polyface";
@@ -136,7 +136,7 @@ export interface GraphicPolyface {
 /** A [[GraphicPrimitive]] representing a [SolidPrimitive]($core-geometry) to be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addSolidPrimitive]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface GraphicSolidPrimitive {
   type: "solidPrimitive";
@@ -163,6 +163,6 @@ export interface GraphicSolidPrimitive {
  *  }
  * ```
  * @public
- * @extensionApi
+ * @extensions
  */
 export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface | GraphicSolidPrimitive;

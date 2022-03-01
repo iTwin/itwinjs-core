@@ -13,7 +13,7 @@ import { Point2d, Point3d } from "@itwin/core-geometry";
  * [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
  *
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum QueryRowFormat {
   /** Each row is an object in which each non-null column value can be accessed by its name as defined in the ECSql.
@@ -32,7 +32,7 @@ export enum QueryRowFormat {
 /**
  * Specify limit or range of rows to return
  * @public
- * @extensionApi
+ * @extensions
  * */
 export interface QueryLimit {
   /** Number of rows to return */
@@ -61,7 +61,7 @@ export interface DbRuntimeStats {
 /**
  * Quota hint for the query.
  * @public
- * @extensionApi
+ * @extensions
  * */
 export interface QueryQuota {
   /** Max time allowed in seconds. This is hint and may not be honoured but help in prioritize request */
@@ -72,7 +72,7 @@ export interface QueryQuota {
 /**
  * Config for all request made to concurrent query engine.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface BaseReaderOptions {
   /** Determine priority of this query default to 0, used as hint and can be overriden by backend. */
@@ -89,7 +89,7 @@ export interface BaseReaderOptions {
 /**
  * ECSql query config
  * @public
- * @extensionApi
+ * @extensions
  * */
 export interface QueryOptions extends BaseReaderOptions {
   /**

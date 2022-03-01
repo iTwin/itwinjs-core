@@ -18,7 +18,7 @@ import { ScreenViewport } from "./Viewport";
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export class TentativePoint {
   public isActive = false;

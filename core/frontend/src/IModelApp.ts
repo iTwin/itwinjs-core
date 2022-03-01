@@ -56,7 +56,7 @@ require("./IModeljs-css");
 
 /** Options that can be supplied with [[IModelAppOptions]] to customize frontend security.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface FrontendSecurityOptions {
   /** Configures protection from Cross Site Request Forgery attacks. */

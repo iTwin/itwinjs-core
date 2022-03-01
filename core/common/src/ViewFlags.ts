@@ -13,7 +13,7 @@ import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@itwin/core-bentley
 /** Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
  * The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum RenderMode {
   /** Renders only the edges of surfaces, with exceptions for planar regions based on their [[FillFlags]].
@@ -50,7 +50,7 @@ export enum RenderMode {
  * those of the corresponding [[ViewFlags]] properties, making usage of this type in code error-prone.
  * Prefer to use [[ViewFlagsProperties]] unless you need to work directly with the persistence format.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ViewFlagProps {
   /** If true, don't display geometry of class [[GeometryClass.Construction]]. */
@@ -528,13 +528,13 @@ export class ViewFlags {
 /** A type containing all of the properties of [[ViewFlags]] with none of the methods and with the `readonly` modifiers removed.
  * @see [[ViewFlags.create]], [[ViewFlags.copy]], and [[ViewFlags.override]] for methods accepting an object of this type.
  * @public
- * @extensionApi
+ * @extensions
  */
 export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
 /** A type that describes how to override selected properties of a [[ViewFlags]].
  * @see [[ViewFlags.override]] to apply the overrides to a ViewFlags object.
  * @public
- * @extensionApi
+ * @extensions
  */
 export type ViewFlagOverrides = Partial<ViewFlagsProperties>;

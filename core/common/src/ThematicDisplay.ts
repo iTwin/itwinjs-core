@@ -14,7 +14,7 @@ import { Gradient } from "./Gradient";
 /** A thematic gradient mode used to generate and apply a thematic effect to a scene.
  * @see [[ThematicGradientSettings.mode]]
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ThematicGradientMode {
   /** Apply a smooth color gradient to the scene. */
@@ -31,7 +31,7 @@ export enum ThematicGradientMode {
  * @see [[ThematicGradientSettings.colorScheme]]
  * @see [[ThematicDisplay.range]]
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ThematicGradientColorScheme {
   /** A color gradient scheme that represents a blue-to-red gradation. */
@@ -52,7 +52,7 @@ export enum ThematicGradientColorScheme {
 
 /** JSON representation of a [[ThematicGradientSettings]].
  * @public
- * @extensionApi
+ * @extensions
  **/
 export interface ThematicGradientSettingsProps {
   /** The thematic image mode used to generate and apply the thematic gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
@@ -240,7 +240,7 @@ export class ThematicGradientSettings {
 
 /** JSON representation of a [[ThematicDisplaySensor]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ThematicDisplaySensorProps {
   /** The world position of the sensor in X, Y, and Z. Defaults to {0,0,0}. */
@@ -290,7 +290,7 @@ export class ThematicDisplaySensor {
 
 /** JSON representation of a [[ThematicDisplaySensorSettings]] for [[ThematicDisplayMode.InverseDistanceWeightedSensors]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ThematicDisplaySensorSettingsProps {
   /** This is the list of sensors. Defaults to an empty array. */
@@ -364,7 +364,7 @@ export class ThematicDisplaySensorSettings {
 
 /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum ThematicDisplayMode {
   /** The color gradient will be mapped to surface geometry and point clouds based on world height in meters. */
@@ -385,7 +385,7 @@ export enum ThematicDisplayMode {
 
 /** JSON representation of the thematic display setup of a [[DisplayStyle3d]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ThematicDisplayProps {
   /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry. Defaults to [[ThematicDisplayMode.Height]]. */

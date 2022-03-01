@@ -11,7 +11,7 @@ import { XYZProps } from "@itwin/core-geometry";
 
 /** Specify whether to accumulate volumes, areas, or lengths for the supplied elements.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum MassPropertiesOperation {
   /** Return lengths for open paths and planar regions. */
@@ -24,7 +24,7 @@ export enum MassPropertiesOperation {
 
 /** Information required to request mass properties for elements from the front end to the back end.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface MassPropertiesRequestProps {
   operation: MassPropertiesOperation;
@@ -33,7 +33,7 @@ export interface MassPropertiesRequestProps {
 
 /** Information returned from the back end to the front end holding the result of the mass properties calculation.
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface MassPropertiesResponseProps {
   status: BentleyStatus;

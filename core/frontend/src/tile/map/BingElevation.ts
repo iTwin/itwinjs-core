@@ -23,7 +23,7 @@ import { RenderSystem } from "../../render/RenderSystem";
 
 /** Provides an interface to the [Bing Maps elevation services](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/).
  * @public
- * @extensionApi REAL
+ * @extensions REAL
  */
 export class BingElevationProvider {
   private static _scratchRange = Range3d.createNull();

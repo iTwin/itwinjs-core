@@ -20,7 +20,7 @@ import { createOrbitGtTileTreeReference, createRealityTileTreeReference, Reality
  * @see [[DisplayStyleState.contextRealityModelStates]].
  * @see [[DisplayStyleState.attachRealityModel]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export class ContextRealityModelState extends ContextRealityModel {
   private readonly _treeRef: RealityModelTileTree.Reference;

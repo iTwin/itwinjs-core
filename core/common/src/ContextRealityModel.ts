@@ -134,7 +134,7 @@ export interface RealityDataSourceProps {
 
 /** JSON representation of a [[ContextRealityModel]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ContextRealityModelProps {
   /** @see [[ContextRealityModel.rdSourceKey]].
@@ -296,7 +296,7 @@ export class ContextRealityModel {
  * @see [[ContextRealityModels]].
  * @see [[DisplayStyleSettingsProps.contextRealityModels]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface ContextRealityModelsContainer {
   /** The list of reality models. */

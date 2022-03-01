@@ -10,7 +10,7 @@ import { ColorDef } from "./ColorDef";
 
 /**
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum HSVConstants {
   VISIBILITY_GOAL = 40,

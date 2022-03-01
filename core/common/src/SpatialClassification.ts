@@ -12,7 +12,7 @@ import { ModelMapLayerSettings } from "./MapLayerSettings";
 /** Describes how a [[SpatialClassifier]] affects the display of classified geometry - that is, geometry intersecting
  * the classifier.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum SpatialClassifierInsideDisplay {
   /** The geometry is not displayed. */
@@ -30,7 +30,7 @@ export enum SpatialClassifierInsideDisplay {
 /** Describes how a [[SpatialClassifier]] affects the display of unclassified geometry - that is, geometry not intersecting
  * the classifier.
  * @public
- * @extensionApi
+ * @extensions
  */
 export enum SpatialClassifierOutsideDisplay {
   /** The geometry is not displayed. */
@@ -43,7 +43,7 @@ export enum SpatialClassifierOutsideDisplay {
 
 /** JSON representation of a [[SpatialClassifierFlags]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface SpatialClassifierFlagsProps {
   /** @see [[SpatialClassifierFlags.inside]]. */
@@ -114,7 +114,7 @@ export class SpatialClassifierFlags {
 
 /** JSON representation of a [[SpatialClassifier]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface SpatialClassifierProps {
   /** @see [[SpatialClassifier.modelId]]. */
@@ -221,7 +221,7 @@ export class SpatialClassifier {
 /** An object that can store the JSON representation of a list of [[SpatialClassifier]]s.
  * @see [[SpatialClassifiers]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export interface SpatialClassifiersContainer {
   /** The list of classifiers. */

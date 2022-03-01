@@ -244,7 +244,7 @@ export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams
  * @see [Display system overview]($docs/learning/display/index.md)
  * @see [[IModelApp.renderSystem]].
  * @public
- * @extensionApi
+ * @extensions
  */
 export abstract class RenderSystem implements IDisposable {
   /** Options used to initialize the RenderSystem. These are primarily used for feature-gating.
