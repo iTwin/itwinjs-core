@@ -288,7 +288,7 @@ export class MapLayerPreferences {
   }
 
   /** Get all MapLayerSources from the user's preferences, iTwin setting and iModel settings.
-   * @param iTwinId id of the iTwiin
+   * @param iTwinId id of the iTwin
    * @param iModelId id of the iModel
    * @throws if any of the calls to grab settings fail.
    */
