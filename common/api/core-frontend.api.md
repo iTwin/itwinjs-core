@@ -5336,6 +5336,9 @@ export interface ITwinIdArg {
 }
 
 // @public
+export const ITWINJS_CORE_VERSION: any;
+
+// @public
 export enum KeyinParseError {
     MismatchedQuotes = 4,
     ToolNotFound = 1
