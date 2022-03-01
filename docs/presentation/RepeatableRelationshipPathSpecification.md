@@ -2,8 +2,7 @@
 
 > TypeScript type: [RepeatableRelationshipPathSpecification]($presentation-common).
 
-Repeatable relationship path specification is used to define a relationship path to an ECClass, optionally traversing through the same relationship
-multiple times or recursively.
+This specification declares a step in a relationship path between a source and target ECInstances. A step can optionally be repeated a number of times to traverse the same relationship recursively. Multiple specifications of this type can be chained together to express complex indirect relationships.
 
 The specification is always used in a context where source class already exists, so it only requires the relationship and direction. The
 target class can be inferred from the two required attributes or specified with the [`targetClass` attribute](#attribute-targetclass). In case of a
