@@ -1545,6 +1545,7 @@ export abstract class GltfReader {
         posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
     }
 
+    assert(mesh.points instanceof QPoint3dList);
     mesh.points.params.setFromRange(posRange);
     const pt = Point3d.createZero();
     for (let i = 0; i < pos.length; i += 3) {

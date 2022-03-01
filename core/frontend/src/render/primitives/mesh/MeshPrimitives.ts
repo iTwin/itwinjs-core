@@ -94,6 +94,7 @@ export class PolylineArgs {
     return true;
   }
   public finishInit(mesh: Mesh) {
+    assert(mesh.points instanceof QPoint3dList); // ###TODO remove.
     this.pointParams = mesh.points.params;
     this.points = mesh.points;
     mesh.colorMap.toColorIndex(this.colors, mesh.colors);
@@ -165,6 +166,7 @@ export class MeshArgs {
     assert(0 < mesh.points.length);
 
     this.vertIndices = mesh.triangles.indices;
+    assert(mesh.points instanceof QPoint3dList); // ###TODO remove
     this.points = mesh.points;
 
     if (!mesh.displayParams.ignoreLighting && 0 < mesh.normals.length)
