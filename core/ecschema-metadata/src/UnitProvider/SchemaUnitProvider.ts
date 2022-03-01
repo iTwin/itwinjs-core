@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
 import { UnitConversion, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
-import { SchemaContext } from "../Context";
+import { ISchemaLocater, SchemaContext } from "../Context";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { Unit } from "../Metadata/Unit";
@@ -17,13 +17,23 @@ import { UnitConverter } from "../UnitConversion/UnitConverter";
  */
 export class SchemaUnitProvider implements UnitsProvider {
   private _unitConverter: UnitConverter;
+  private _context: SchemaContext;
+
   /**
    *
-   * @param _context SchemaContext that contains the Units from which querying takes place.
+   * @param contextOrLocater The SchemaContext or a different ISchemaLocater implementation used to retrieve the schema. The SchemaContext
+   * class implements the ISchemaLocater interface. If the provided locater is not a SchemaContext instance a new SchemaContext will be
+   * created and the locater will be added.
    * @param _unitExtraData Additional data like alternate display label not found in Units Schema to match with Units; Defaults to empty array.
    */
-  constructor(private readonly _context: SchemaContext, private _unitExtraData: UnitExtraData[] = []) {
-    this._unitConverter = new UnitConverter(_context);
+  constructor(contextOrLocater: ISchemaLocater, private _unitExtraData: UnitExtraData[] = []){
+    if (contextOrLocater instanceof SchemaContext) {
+      this._context = contextOrLocater;
+    } else {
+      this._context = new SchemaContext();
+      this._context.addLocater(contextOrLocater);
+    }
+    this._unitConverter = new UnitConverter(this._context);
   }
 
   /**

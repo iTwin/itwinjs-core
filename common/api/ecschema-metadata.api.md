@@ -1927,7 +1927,7 @@ export interface SchemaReferenceProps {
 
 // @alpha
 export class SchemaUnitProvider implements UnitsProvider {
-    constructor(_context: SchemaContext, _unitExtraData?: UnitExtraData[]);
+    constructor(contextOrLocater: ISchemaLocater, _unitExtraData?: UnitExtraData[]);
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps_2>;
     findUnitByName(unitName: string): Promise<UnitProps_2>;
     getAlternateDisplayLabels(unitName: string): Array<string>;
