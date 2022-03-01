@@ -20,6 +20,20 @@ import { DisplayParams } from "../DisplayParams";
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 
+/** A Point3d[] with an [[add]] method used to enable compatibility with the [[MeshPointList]] union type.
+ * @internal
+ */
+export interface Point3dList extends Array<Point3d> {
+  /** Identical to `push`, except it returns `void` instead of `number`; compatible with [QPoint3dList.add]($common). */
+  add(point: Point3d): void;
+}
+
+/** The list of points associated with a [[Mesh]].
+ * @see [[Mesh.Props.quantizePositions]] to specify whether points should be quantized or not.
+ * @internal
+ */
+export type MeshPointList = Point3dList | QPoint3dList;
+
 /* Information needed to draw a set of indexed polylines using a shared vertex buffer.
  * @internal
  */
@@ -204,7 +218,7 @@ export class MeshGraphicArgs {
 /** @internal */
 export class Mesh {
   private readonly _data: TriangleList | MeshPolylineList;
-  public readonly points: QPoint3dList;
+  public readonly points: MeshPointList;
   public readonly normals: OctEncodedNormal[] = [];
   public readonly uvParams: Point2d[] = [];
   public readonly colorMap: ColorMap = new ColorMap(); // used to be called ColorTable
@@ -229,7 +243,13 @@ export class Mesh {
     this.isPlanar = isPlanar;
     this.hasBakedLighting = (true === props.hasBakedLighting);
     this.isVolumeClassifier = (true === props.isVolumeClassifier);
-    this.points = new QPoint3dList(QParams3d.fromRange(range));
+    if (props.quantizePositions) {
+      this.points = new QPoint3dList(QParams3d.fromRange(range));
+    } else {
+      const points = [] as unknown as Point3dList;
+      points.add = (pt: Point3d) => points.push(pt);
+      this.points = points;
+    }
   }
 
   public static create(props: Mesh.Props): Mesh { return new Mesh(props); }
@@ -411,6 +431,7 @@ export namespace Mesh { // eslint-disable-line no-redeclare
     features?: Mesh.Features;
     type: Mesh.PrimitiveType;
     range: Range3d;
+    quantizePositions: boolean;
     is2d: boolean;
     isPlanar: boolean;
     hasBakedLighting?: boolean;
