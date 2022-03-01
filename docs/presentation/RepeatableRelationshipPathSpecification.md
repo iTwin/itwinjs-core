@@ -40,11 +40,9 @@ attribute allows specializing it to `bis.PhysicalElement` or some other `bis.Ele
 
 > **Default value:** `1`
 
-This attribute specifies the number of times the relationship should be traversed.
+When a number is specified, the relationship is traversed recursively the specified number of times.
 
-The special `"*"` value makes the step recursive, which means the relationship is traversed as long as new instances are found by
-using output of the previous step as input for the current step. Outputs of each step traversal are accumulated, combined with outputs
-of the previous step (if any) and passed as input to the next step or used as path output if there are no more steps.
+When it is set to a special value `"*"`, the same relationship is traversed recursively unbounded number of times, starting from zero (the relationship is not followed). On each traversal iteration, Presentation rules engine accumulates all indirectly related ECInstances as defined by the remaining relationship path.
 
 ## Examples
 
