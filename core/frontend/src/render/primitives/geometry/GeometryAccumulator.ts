@@ -14,7 +14,7 @@ import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
-import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
+import { MeshList } from "../mesh/MeshPrimitives";
 import { GeometryOptions } from "../Primitives";
 import { GeometryList } from "./GeometryList";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
@@ -175,8 +175,6 @@ export class GeometryAccumulator {
     if (0 === meshes.length)
       return undefined;
 
-    const args = new MeshGraphicArgs();
-
     // All of the meshes are quantized to the same range.
     // If that range is small relative to the distance from the origin, quantization errors can produce display artifacts.
     // Remove the translation from the quantization parameters and apply it in the transform instead.
@@ -199,7 +197,7 @@ export class GeometryAccumulator {
         assert(qorigin === undefined);
       }
 
-      const graphic = mesh.getGraphics(args, this.system, this._viewIndependentOrigin);
+      const graphic = mesh.getGraphics(this.system, this._viewIndependentOrigin);
       if (undefined !== graphic)
         branch.add(graphic);
     }

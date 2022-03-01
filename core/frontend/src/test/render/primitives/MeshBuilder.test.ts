@@ -11,7 +11,7 @@ import { MockRender } from "../../../render/MockRender";
 import { ScreenViewport } from "../../../Viewport";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
-import { Mesh, MeshGraphicArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
 import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
@@ -403,9 +403,9 @@ describe("Mesh Builder Tests", () => {
 
   describe("aux data", () => {
     function expectAuxChannelTable(mesh: Mesh, expectedUint16Data: number[]): void {
-      const args = new MeshGraphicArgs();
-      mesh.getGraphics(args, IModelApp.renderSystem);
-      const meshParams = MeshParams.create(args.meshArgs);
+      const args = mesh.toMeshArgs()!;
+      expect(args).not.to.be.undefined;
+      const meshParams = MeshParams.create(args);
       const aux = meshParams.auxChannels!;
       expect(aux).not.to.be.undefined;
       expect(Array.from(new Uint16Array(aux.data.buffer))).to.deep.equal(expectedUint16Data);

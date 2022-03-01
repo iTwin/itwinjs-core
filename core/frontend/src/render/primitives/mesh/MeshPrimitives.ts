@@ -210,12 +210,6 @@ export class MeshArgs {
 }
 
 /** @internal */
-export class MeshGraphicArgs {
-  public polylineArgs = new PolylineArgs();
-  public meshArgs: MeshArgs = new MeshArgs();
-}
-
-/** @internal */
 export class Mesh {
   private readonly _data: TriangleList | MeshPolylineList;
   public readonly points: MeshPointList;
@@ -304,15 +298,23 @@ export class Mesh {
       this.features.toFeatureIndex(index);
   }
 
-  public getGraphics(args: MeshGraphicArgs, system: RenderSystem, instancesOrViewIndependentOrigin?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
-    if (undefined !== this.triangles && this.triangles.length !== 0) {
-      if (args.meshArgs.init(this))
-        return system.createTriMesh(args.meshArgs, instancesOrViewIndependentOrigin);
-    } else if (undefined !== this.polylines && this.polylines.length !== 0 && args.polylineArgs.init(this)) {
-      return system.createIndexedPolylines(args.polylineArgs, instancesOrViewIndependentOrigin);
-    }
+  public toMeshArgs(): MeshArgs | undefined {
+    const args = this.triangles?.length ? new MeshArgs() : undefined;
+    return args?.init(this) ? args : undefined;
+  }
 
-    return undefined;
+  public toPolylineArgs(): PolylineArgs | undefined {
+    const args = this.polylines?.length ? new PolylineArgs() : undefined;
+    return args?.init(this) ? args : undefined;
+  }
+
+  public getGraphics(system: RenderSystem, instancesOrViewIndependentOrigin?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+    const meshArgs = this.toMeshArgs();
+    if (meshArgs)
+      return system.createTriMesh(meshArgs, instancesOrViewIndependentOrigin);
+
+    const plArgs = this.toPolylineArgs();
+    return plArgs ? system.createIndexedPolylines(plArgs, instancesOrViewIndependentOrigin) : undefined;
   }
 
   public addPolyline(poly: MeshPolyline): void {

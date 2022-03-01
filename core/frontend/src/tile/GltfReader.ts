@@ -25,7 +25,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { PickableGraphicOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
-import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
@@ -1035,9 +1035,9 @@ export abstract class GltfReader {
     return { polyfaces };
   }
 
-  private graphicFromMeshData(gltfMesh: GltfMeshData, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined {
+  private graphicFromMeshData(gltfMesh: GltfMeshData, instances?: InstancedGraphicParams): RenderGraphic | undefined {
     if (!gltfMesh.points || !gltfMesh.pointRange)
-      return gltfMesh.primitive.getGraphics(meshGraphicArgs, this._system, instances);
+      return gltfMesh.primitive.getGraphics(this._system, instances);
 
     const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
@@ -1063,7 +1063,7 @@ export abstract class GltfReader {
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
 
-    return mesh.getGraphics(meshGraphicArgs, this._system, instances);
+    return mesh.getGraphics(this._system, instances);
   }
 
   private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, transformStack: TransformStack, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
@@ -1089,17 +1089,16 @@ export abstract class GltfReader {
     for (const meshKey of getNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
-        const meshGraphicArgs = new MeshGraphicArgs();
         const meshes = this.readMeshPrimitives(node, featureTable, thisTransform, thisBias);
 
         let renderGraphic: RenderGraphic | undefined;
         if (0 !== meshes.length) {
           if (1 === meshes.length) {
-            renderGraphic = this.graphicFromMeshData(meshes[0], meshGraphicArgs, instances);
+            renderGraphic = this.graphicFromMeshData(meshes[0], instances);
           } else {
             const thisList: RenderGraphic[] = [];
             for (const mesh of meshes) {
-              renderGraphic = this.graphicFromMeshData(mesh, meshGraphicArgs, instances);
+              renderGraphic = this.graphicFromMeshData(mesh, instances);
               if (undefined !== renderGraphic)
                 thisList.push(renderGraphic);
             }
