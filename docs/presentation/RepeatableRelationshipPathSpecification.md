@@ -59,7 +59,7 @@ When the [`count` attribute](#attribute-count) is omitted or set to `1`, the spe
 
 ![Content of the grand-parent element](./media/repeatablerelationshippathspecification-singlestep-with-count.png)
 
-### Jumping through the relationship recursively
+### Jumping through the relationship recursively unbounded number of times
 
 ```ts
 [[include:RepeatableRelationshipPathSpecification.RecursiveSingleStep.Ruleset]]
