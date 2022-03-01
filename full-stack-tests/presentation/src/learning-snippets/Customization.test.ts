@@ -160,7 +160,7 @@ describe("Learning Snippets", () => {
       it("uses `requiredSchemas` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Sorting.RequiredSchemas.Ruleset
         // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
-        // consisting of `Roll` and `Pitch` property values. Also there are customization rule to sort
+        // consisting of `Roll` and `Pitch` property values. Also there is a customization rule to sort
         // instances by `Pitch` property. Sorting rule requires `BisCore` schema to be higher than 1.0.2.
         // If this requirement is not met sorting rule does not take effect.
         const ruleset: Ruleset = {

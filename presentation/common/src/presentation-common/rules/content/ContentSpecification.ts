@@ -41,7 +41,7 @@ export interface ContentSpecificationBase extends ContentModifiersList {
 
   /**
    * Should each content record be assigned an image id
-   * @deprecated use [[ExtendedDataRule]] instead. @deprecated use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
    */
   showImages?: boolean;
 

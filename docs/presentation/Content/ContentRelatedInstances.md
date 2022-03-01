@@ -153,4 +153,4 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
 
 Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
 
-[ExtendedDataRule](../customization/ExtendedDataRule.md) should be used instead to provide image data to content items created by this specification. See [extended data usage paged](../customization/ExtendedDataUsage.md) for more details.
+[ExtendedDataRule](../customization/ExtendedDataRule.md) should be used instead to provide image data to content items created by this specification. See [extended data usage page](../customization/ExtendedDataUsage.md) for more details.
