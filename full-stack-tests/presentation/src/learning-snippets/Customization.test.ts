@@ -159,24 +159,35 @@ describe("Learning Snippets", () => {
 
       it("uses `requiredSchemas` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Sorting.RequiredSchemas.Ruleset
-        // The ruleset has root node rule that returns `bis.ExternalSourceAspect instances. Also there is a property sorting
-        // rule to `bis.ExternalSourceAspect` instances by `Identifier` property. `bis.ExternalSourceAspect` ECClass was
-        // introduced in BisCore version 1.0.2, so the rule needs a `requiredSchemas` attribute to only use the rule
-        // if the version meets the requirement.
+        // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
+        // consisting of `Roll` and `Pitch` property values. Also there are customization rule to sort
+        // instances by `Pitch` property. Sorting rule requires `BisCore` schema to be higher than 1.0.2.
+        // If this requirement is not met sorting rule does not take effect.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
             ruleType: RuleTypes.RootNodes,
-            requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
             specifications: [{
               specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["ExternalSourceAspect"] },
+              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+              groupByClass: false,
+              groupByLabel: false,
+            }],
+          }, {
+            ruleType: RuleTypes.InstanceLabelOverride,
+            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+            values: [{
+              specType: InstanceLabelOverrideValueSpecificationType.Composite,
+              separator: " x ",
+              parts: [
+                { spec: { specType: InstanceLabelOverrideValueSpecificationType.Property, propertyName: "Roll" } },
+                { spec: { specType: InstanceLabelOverrideValueSpecificationType.Property, propertyName: "Pitch" } },
+              ],
             }],
           }, {
             ruleType: RuleTypes.PropertySorting,
             requiredSchemas: [{ name: "BisCore", minVersion: "1.0.2" }],
-            class: { schemaName: "BisCore", className: "ExternalSourceAspect" },
-            propertyName: "Identifier",
+            propertyName: "Pitch",
           }],
         };
         // __PUBLISH_EXTRACT_END__
@@ -185,7 +196,11 @@ describe("Learning Snippets", () => {
           imodel,
           rulesetOrId: ruleset,
         });
-        expect(nodes).to.be.empty;
+        expect(nodes).to.be.lengthOf(4);
+        expect(nodes[0]).to.containSubset({ label: { displayValue: "-107.42 x -160.99" } });
+        expect(nodes[1]).to.containSubset({ label: { displayValue: "-45.00 x -35.26" } });
+        expect(nodes[2]).to.containSubset({ label: { displayValue: "-90.00 x 0.00" } });
+        expect(nodes[3]).to.containSubset({ label: { displayValue: "0.00 x 90.00" } });
       });
 
       it("uses `condition` attribute", async () => {

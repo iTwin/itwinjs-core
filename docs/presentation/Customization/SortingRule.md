@@ -37,6 +37,11 @@ A list of ECSchema requirements that need to be met for the rule to be used. See
 [[include:Sorting.RequiredSchemas.Ruleset]]
 ```
 
+| `minVersion` value   | Result                                                                 |
+| -------------------- | ---------------------------------------------------------------------- |
+| `minVersion = 1.0.2` | ![Example of using required schemas condition](./media/sortingrule-sorted-asc.png) |
+| `minVersion = 2.0.2` | ![Example of using required schemas condition](./media/sortingrule-unsorted.png)   |
+
 ### Attribute: `priority`
 
 > **Default value:** `1000`
