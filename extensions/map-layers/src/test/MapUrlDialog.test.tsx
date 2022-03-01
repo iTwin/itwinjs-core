@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Guid } from "@itwin/core-bentley";
 import { EmptyLocalization, ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { Select } from "@itwin/itwinui-react";
