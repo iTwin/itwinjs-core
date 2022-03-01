@@ -188,7 +188,10 @@ export function MapLayerManager(props: MapLayerManagerProps) {
 
       const iModel = IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.iModel : undefined;
       try {
-        const preferenceSources = await MapLayerPreferences.getSources(iModel?.iTwinId, iModel?.iModelId);
+        const preferenceSources = ( iModel?.iTwinId === undefined
+          ? []
+          : await MapLayerPreferences.getSources(iModel?.iTwinId, iModel?.iModelId)
+        );
         for (const source of preferenceSources)
           await MapLayerSources.addSourceToMapLayerSources(source);
       } catch (err) {

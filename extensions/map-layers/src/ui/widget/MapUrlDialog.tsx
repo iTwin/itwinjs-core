@@ -120,7 +120,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     return types;
   });
 
-  const [isSettingsStorageAvailable] = React.useState(MapLayersUI.iTwinConfig);
+  const [isSettingsStorageAvailable] = React.useState(MapLayersUI.iTwinConfig && props?.activeViewport?.iModel?.iTwinId);
   const [hasImodelContext] = React.useState (
     props?.activeViewport?.iModel?.iTwinId !== undefined
     && props.activeViewport.iModel.iTwinId !== Guid.empty
@@ -237,7 +237,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     // Update service settings if storage is available and we are not prompting user for credentials
     if (!settingsStorageDisabled && !props.layerRequiringCredentials) {
     	const storeOnIModel = (hasImodelContext ? "Model" === settingsStorage : undefined);
-      if (!(await MapLayerPreferences.storeSource(source, storeOnIModel, vp.iModel.iTwinId, vp.iModel.iModelId))) {
+      if (vp.iModel.iTwinId && !(await MapLayerPreferences.storeSource(source, vp.iModel.iTwinId, vp.iModel.iModelId, storeOnIModel))) {
         const msgError = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Messages.MapLayerPreferencesStoreFailed");
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msgError));
 	  }
