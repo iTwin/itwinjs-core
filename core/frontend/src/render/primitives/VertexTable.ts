@@ -219,7 +219,7 @@ export class VertexTable implements VertexTableProps {
   public static createForPolylines(args: PolylineArgs): VertexTable | undefined {
     const polylines = args.polylines;
     if (0 < polylines.length)
-      return this.buildFrom(new SimpleBuilder(args), args.colors, args.features);
+      return this.buildFrom(createPolylineBuilder(args), args.colors, args.features);
     else
       return undefined;
   }
@@ -248,7 +248,7 @@ export class MeshParams {
 
   /** Construct from a MeshArgs. */
   public static create(args: MeshArgs): MeshParams {
-    const builder = MeshBuilder.create(args);
+    const builder = createMeshBuilder(args);
     const vertices = VertexTable.buildFrom(builder, args.colors, args.features);
 
     const surfaceIndices = VertexIndices.fromArray(args.vertIndices!);
@@ -340,154 +340,164 @@ export abstract class VertexTableBuilder {
   }
 }
 
-type SimpleVertexData = PolylineArgs | MeshArgs;
+namespace Quantized {
+  type SimpleVertexData = PolylineArgs | MeshArgs;
 
-/**
- * Supplies vertex data from a PolylineArgs or MeshArgs. Each vertex consists of 12 bytes:
- *  pos.x           00
- *  pos.y           02
- *  pos.z           04
- *  colorIndex      06
- *  featureIndex    08
- */
-class SimpleBuilder<T extends SimpleVertexData> extends VertexTableBuilder {
-  public args: T;
+  /**
+   * Supplies vertex data from a PolylineArgs or MeshArgs. Each vertex consists of 12 bytes:
+   *  pos.x           00
+   *  pos.y           02
+   *  pos.z           04
+   *  colorIndex      06
+   *  featureIndex    08
+   */
+  export class SimpleBuilder<T extends SimpleVertexData> extends VertexTableBuilder {
+    public args: T;
+    protected _qpoints: QPoint3dList;
 
-  public constructor(args: T) {
-    super();
-    this.args = args;
-    assert(undefined !== this.args.points);
-  }
+    public constructor(args: T) {
+      super();
+      assert(args.points instanceof QPoint3dList);
+      this._qpoints = args.points;
+      this.args = args;
+      assert(undefined !== this.args.points);
+    }
 
-  public get numVertices() { return this.args.points!.length; }
-  public get numRgbaPerVertex() { return 3; }
-  public get qparams() {
-    assert(this.args.points instanceof QPoint3dList); // ###TODO remove me
-    return this.args.points!.params;
-  }
+    public get numVertices() { return this.args.points!.length; }
+    public get numRgbaPerVertex() { return 3; }
+    public get qparams() {
+      return this._qpoints.params;
+    }
 
-  public appendVertex(vertIndex: number): void {
-    this.appendPosition(vertIndex);
-    this.appendColorIndex(vertIndex);
-    this.appendFeatureIndex(vertIndex);
-  }
+    public appendVertex(vertIndex: number): void {
+      this.appendPosition(vertIndex);
+      this.appendColorIndex(vertIndex);
+      this.appendFeatureIndex(vertIndex);
+    }
 
-  protected appendPosition(vertIndex: number) {
-    const points = this.args.points!;
-    assert(points instanceof QPoint3dList); // ###TODO remove me
-    this.append16(points.list[vertIndex].x);
-    this.append16(points.list[vertIndex].y);
-    this.append16(points.list[vertIndex].z);
-  }
+    protected appendPosition(vertIndex: number) {
+      this.append16(this._qpoints.list[vertIndex].x);
+      this.append16(this._qpoints.list[vertIndex].y);
+      this.append16(this._qpoints.list[vertIndex].z);
+    }
 
-  protected appendColorIndex(vertIndex: number) {
-    if (undefined !== this.args.colors.nonUniform) {
-      this.append16(this.args.colors.nonUniform.indices[vertIndex]);
-    } else {
-      this.advance(2);
+    protected appendColorIndex(vertIndex: number) {
+      if (undefined !== this.args.colors.nonUniform) {
+        this.append16(this.args.colors.nonUniform.indices[vertIndex]);
+      } else {
+        this.advance(2);
+      }
+    }
+
+    protected appendFeatureIndex(vertIndex: number) {
+      if (undefined !== this.args.features.featureIDs) {
+        this.append32(this.args.features.featureIDs[vertIndex]);
+      } else {
+        this.advance(4);
+      }
     }
   }
 
-  protected appendFeatureIndex(vertIndex: number) {
-    if (undefined !== this.args.features.featureIDs) {
-      this.append32(this.args.features.featureIDs[vertIndex]);
-    } else {
-      this.advance(4);
+  /** Supplies vertex data from a MeshArgs. */
+  export class MeshBuilder extends SimpleBuilder<MeshArgs> {
+    public readonly type: SurfaceType;
+
+    protected constructor(args: MeshArgs, type: SurfaceType) {
+      super(args);
+      this.type = type;
+    }
+
+    public static create(args: MeshArgs): MeshBuilder {
+      if (args.isVolumeClassifier)
+        return new MeshBuilder(args, SurfaceType.VolumeClassifier);
+
+      const isLit = undefined !== args.normals && 0 < args.normals.length;
+      const isTextured = undefined !== args.textureMapping;
+
+      let uvParams: QParams2d | undefined;
+
+      if (args.textureMapping) {
+        const uvRange = Range2d.createNull();
+        const fpts = args.textureMapping.uvParams;
+        const pt2d = new Point2d();
+        if (undefined !== fpts && fpts.length > 0)
+          for (let i = 0; i < args.points!.length; i++)
+            uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
+
+        uvParams = QParams2d.fromRange(uvRange);
+      }
+
+      if (isLit)
+        return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
+      else
+        return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
+    }
+  }
+
+  /** Supplies vertex data from a MeshArgs where each vertex consists of 16 bytes.
+   * In addition to the SimpleBuilder data, the final 4 bytes hold the quantized UV params
+   * The color index is left uninitialized as it is unused.
+   */
+  class TexturedMeshBuilder extends MeshBuilder {
+    private _qparams: QParams2d;
+    private _qpoint = new QPoint2d();
+
+    public constructor(args: MeshArgs, qparams: QParams2d, type: SurfaceType = SurfaceType.Textured) {
+      super(args, type);
+      this._qparams = qparams;
+      assert(undefined !== args.textureMapping);
+    }
+
+    public override get numRgbaPerVertex() { return 4; }
+    public override get uvParams() { return this._qparams; }
+
+    public override appendVertex(vertIndex: number) {
+      this.appendPosition(vertIndex);
+      this.appendNormal(vertIndex);
+      this.appendFeatureIndex(vertIndex);
+      this.appendUVParams(vertIndex);
+    }
+
+    protected appendNormal(_vertIndex: number): void { this.advance(2); } // no normal for unlit meshes
+
+    protected appendUVParams(vertIndex: number) {
+      this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
+      this.append16(this._qpoint.x);
+      this.append16(this._qpoint.y);
+    }
+  }
+
+  /** As with TexturedMeshBuilder, but the color index is replaced with the oct-encoded normal value. */
+  class TexturedLitMeshBuilder extends TexturedMeshBuilder {
+    public constructor(args: MeshArgs, qparams: QParams2d) {
+      super(args, qparams, SurfaceType.TexturedLit);
+      assert(undefined !== args.normals);
+    }
+
+    protected override appendNormal(vertIndex: number) { this.append16(this.args.normals![vertIndex].value); }
+  }
+
+  /** 16 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
+  class LitMeshBuilder extends MeshBuilder {
+    public constructor(args: MeshArgs) {
+      super(args, SurfaceType.Lit);
+      assert(undefined !== args.normals);
+    }
+
+    public override get numRgbaPerVertex() { return 4; }
+
+    public override appendVertex(vertIndex: number) {
+      super.appendVertex(vertIndex);
+      this.append16(this.args.normals![vertIndex].value);
+      this.advance(2); // 2 unused bytes
     }
   }
 }
 
-/** Supplies vertex data from a MeshArgs. */
-class MeshBuilder extends SimpleBuilder<MeshArgs> {
-  public readonly type: SurfaceType;
-
-  protected constructor(args: MeshArgs, type: SurfaceType) {
-    super(args);
-    this.type = type;
-  }
-
-  public static create(args: MeshArgs): MeshBuilder {
-    if (args.isVolumeClassifier)
-      return new MeshBuilder(args, SurfaceType.VolumeClassifier);
-
-    const isLit = undefined !== args.normals && 0 < args.normals.length;
-    const isTextured = undefined !== args.textureMapping;
-
-    let uvParams: QParams2d | undefined;
-
-    if (args.textureMapping) {
-      const uvRange = Range2d.createNull();
-      const fpts = args.textureMapping.uvParams;
-      const pt2d = new Point2d();
-      if (undefined !== fpts && fpts.length > 0)
-        for (let i = 0; i < args.points!.length; i++)
-          uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
-
-      uvParams = QParams2d.fromRange(uvRange);
-    }
-
-    if (isLit)
-      return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
-    else
-      return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
-  }
+function createMeshBuilder(args: MeshArgs): VertexTableBuilder & { type: SurfaceType } {
+  return Quantized.MeshBuilder.create(args); // ###TODO handle unquantized
 }
 
-/** Supplies vertex data from a MeshArgs where each vertex consists of 16 bytes.
- * In addition to the SimpleBuilder data, the final 4 bytes hold the quantized UV params
- * The color index is left uninitialized as it is unused.
- */
-class TexturedMeshBuilder extends MeshBuilder {
-  private _qparams: QParams2d;
-  private _qpoint = new QPoint2d();
-
-  public constructor(args: MeshArgs, qparams: QParams2d, type: SurfaceType = SurfaceType.Textured) {
-    super(args, type);
-    this._qparams = qparams;
-    assert(undefined !== args.textureMapping);
-  }
-
-  public override get numRgbaPerVertex() { return 4; }
-  public override get uvParams() { return this._qparams; }
-
-  public override appendVertex(vertIndex: number) {
-    this.appendPosition(vertIndex);
-    this.appendNormal(vertIndex);
-    this.appendFeatureIndex(vertIndex);
-    this.appendUVParams(vertIndex);
-  }
-
-  protected appendNormal(_vertIndex: number): void { this.advance(2); } // no normal for unlit meshes
-
-  protected appendUVParams(vertIndex: number) {
-    this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
-    this.append16(this._qpoint.x);
-    this.append16(this._qpoint.y);
-  }
-}
-
-/** As with TexturedMeshBuilder, but the color index is replaced with the oct-encoded normal value. */
-class TexturedLitMeshBuilder extends TexturedMeshBuilder {
-  public constructor(args: MeshArgs, qparams: QParams2d) {
-    super(args, qparams, SurfaceType.TexturedLit);
-    assert(undefined !== args.normals);
-  }
-
-  protected override appendNormal(vertIndex: number) { this.append16(this.args.normals![vertIndex].value); }
-}
-
-/** 16 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
-class LitMeshBuilder extends MeshBuilder {
-  public constructor(args: MeshArgs) {
-    super(args, SurfaceType.Lit);
-    assert(undefined !== args.normals);
-  }
-
-  public override get numRgbaPerVertex() { return 4; }
-
-  public override appendVertex(vertIndex: number) {
-    super.appendVertex(vertIndex);
-    this.append16(this.args.normals![vertIndex].value);
-    this.advance(2); // 2 unused bytes
-  }
+function createPolylineBuilder(args: PolylineArgs): VertexTableBuilder {
+  return new Quantized.SimpleBuilder(args); // ###TODO handle unquantized
 }
