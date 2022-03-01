@@ -88,10 +88,10 @@ export class MapLayerPreferences {
    *
    * @param oldSource
    * @param newSource
-   * @param projectId
+   * @param iTwinId
    * @param iModelId
    */
-  public static async replaceSource(oldSource: MapLayerSource, newSource: MapLayerSource, projectId?: GuidString, iModelId?: GuidString): Promise<void> {
+  public static async replaceSource(oldSource: MapLayerSource, newSource: MapLayerSource, iTwinId: GuidString, iModelId?: GuidString): Promise<void> {
     if (!MapLayersUI.iTwinConfig)
       return;
     const accessToken = undefined !== IModelApp.authorizationClient ? (await IModelApp.authorizationClient.getAccessToken()) : undefined;
@@ -102,7 +102,7 @@ export class MapLayerPreferences {
         accessToken,
         namespace: MapLayerPreferences._preferenceNamespace,
         key: oldSource.name,
-        iTwinId: projectId,
+        iTwinId,
         iModelId,
       });
     } catch (_err) {
@@ -110,7 +110,7 @@ export class MapLayerPreferences {
         accessToken,
         namespace: MapLayerPreferences._preferenceNamespace,
         key: oldSource.name,
-        iTwinId: projectId,
+        iTwinId,
       });
       storeOnIModel = true;
     }
@@ -125,7 +125,7 @@ export class MapLayerPreferences {
     await MapLayersUI.iTwinConfig.save({
       accessToken,
       key: `${MapLayerPreferences._preferenceNamespace}.${newSource.name}`,
-      iTwinId: projectId,
+      iTwinId,
       iModelId: storeOnIModel ? iModelId : undefined,
       content: mapLayerSetting,
     });
@@ -258,7 +258,7 @@ export class MapLayerPreferences {
 
   /** Attempts to get a map layer based off a specific url.
    * @param url
-   * @param projectId
+   * @param iTwinId
    * @param iModelId
    */
   public static async getByUrl(url: string, iTwinId: string, iModelId?: string): Promise<MapLayerPreferencesContent | undefined> {
@@ -288,7 +288,7 @@ export class MapLayerPreferences {
   }
 
   /** Get all MapLayerSources from the user's preferences, iTwin setting and iModel settings.
-   * @param projectId id of the project
+   * @param iTwinId id of the iTwiin
    * @param iModelId id of the iModel
    * @throws if any of the calls to grab settings fail.
    */
