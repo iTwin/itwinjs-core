@@ -7,25 +7,36 @@
  */
 
 import { assert, compareWithTolerance, IndexMap } from "@itwin/core-bentley";
-import { Point2d } from "@itwin/core-geometry";
-import { OctEncodedNormal, QPoint3d } from "@itwin/core-common";
+import { Point2d, Point3d } from "@itwin/core-geometry";
+import { OctEncodedNormal } from "@itwin/core-common";
 
 /** @internal */
 export interface VertexKeyProps {
-  position: QPoint3d;
+  position: Point3d;
   fillColor: number;
   normal?: OctEncodedNormal;
   uvParam?: Point2d;
 }
 
+function comparePositions(p0: Point3d, p1: Point3d): number {
+  let diff = compareWithTolerance(p0.x, p1.x);
+  if (0 === diff) {
+    diff = compareWithTolerance(p0.y, p1.y);
+    if (0 === diff)
+      diff = compareWithTolerance(p0.z, p1.z);
+  }
+
+  return diff;
+}
+
 /** @internal */
 export class VertexKey {
-  public readonly position: QPoint3d;
+  public readonly position: Point3d;
   public readonly normal?: OctEncodedNormal;
   public readonly uvParam?: Point2d;
   public readonly fillColor: number;
 
-  public constructor(position: QPoint3d, fillColor: number, normal?: OctEncodedNormal, uvParam?: Point2d) {
+  public constructor(position: Point3d, fillColor: number, normal?: OctEncodedNormal, uvParam?: Point2d) {
     this.position = position.clone();
     this.fillColor = fillColor;
     this.normal = normal;
@@ -44,7 +55,7 @@ export class VertexKey {
         return false;
     }
 
-    if (!this.position.equals(rhs.position))
+    if (!this.position.isAlmostEqual(rhs.position))
       return false;
 
     if (undefined !== this.uvParam) {
@@ -61,7 +72,7 @@ export class VertexKey {
 
     let diff = this.fillColor - rhs.fillColor;
     if (0 === diff) {
-      diff = this.position.compare(rhs.position);
+      diff = comparePositions(this.position, rhs.position);
       if (0 === diff) {
         if (undefined !== this.normal) {
           assert(undefined !== rhs.normal);

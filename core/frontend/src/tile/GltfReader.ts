@@ -1048,6 +1048,7 @@ export abstract class GltfReader {
 
     const mesh = gltfMesh.primitive;
     const pointCount = gltfMesh.points.length / 3;
+    assert(mesh.points instanceof QPoint3dList);
     mesh.points.fromTypedArray(gltfMesh.pointRange, gltfMesh.points);
     if (mesh.triangles && gltfMesh.indices)
       mesh.triangles.addFromTypedArray(gltfMesh.indices);
@@ -1427,6 +1428,7 @@ export abstract class GltfReader {
       isPlanar: false,
       hasBakedLighting,
       isVolumeClassifier,
+      quantizePositions: false,
     });
 
     const mesh = new GltfMeshData(meshPrimitive);

@@ -119,7 +119,6 @@ export class MeshBuilder {
   public createTriangleVertices(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions): VertexKeyPropsWithIndex[] | undefined {
     const { point, requireNormals } = visitor;
     const { fillColor, haveParam } = options;
-    const qPointParams = this.mesh.points.params;
 
     // If we do not have UVParams stored on the IndexedPolyface, compute them now
     let params: Point2d[] | undefined;
@@ -135,7 +134,7 @@ export class MeshBuilder {
     const vertices = [];
     for (let i = 0; i < 3; ++i) {
       const vertexIndex = 0 === i ? 0 : triangleIndex + i;
-      const position = QPoint3d.create(point.getPoint3dAtUncheckedPointIndex(vertexIndex), qPointParams);
+      const position = point.getPoint3dAtUncheckedPointIndex(vertexIndex);
       const normal = requireNormals ? OctEncodedNormal.fromVector(visitor.getNormal(vertexIndex)!) : undefined;
       const uvParam: Point2d | undefined = params ? params[vertexIndex] : undefined;
       vertices[i] = { position, fillColor, normal, uvParam, sourceIndex: vertexIndex };
@@ -144,7 +143,7 @@ export class MeshBuilder {
     // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
     // This led to unused vertex data, and caused mismatch in # of vertices when recreating the MeshBuilder from the data in the tile cache.
     // Detect beforehand instead.
-    if (vertices[0].position.equals(vertices[1].position) || vertices[0].position.equals(vertices[2].position) || vertices[1].position.equals(vertices[2].position))
+    if (vertices[0].position.isAlmostEqual(vertices[1].position) || vertices[0].position.isAlmostEqual(vertices[2].position) || vertices[1].position.isAlmostEqual(vertices[2].position))
       return undefined;
 
     return vertices;
@@ -190,12 +189,10 @@ export class MeshBuilder {
   }
 
   /** removed Feature for now */
-  public addPolyline(pts: QPoint3dList | Point3d[], fillColor: number): void {
+  public addPolyline(points: Point3d[], fillColor: number): void {
     const { mesh } = this;
 
     const poly = new MeshPolyline();
-    const points = pts instanceof QPoint3dList ? pts : QPoint3dList.createFrom(pts, mesh.points.params);
-
     for (const position of points)
       poly.addIndex(this.addVertex({ position, fillColor }));
 
@@ -203,10 +200,9 @@ export class MeshBuilder {
   }
 
   /** removed Feature for now */
-  public addPointString(pts: Point3d[], fillColor: number): void {
+  public addPointString(points: Point3d[], fillColor: number): void {
     const { mesh } = this;
     const poly = new MeshPolyline();
-    const points = QPoint3dList.createFrom(pts, mesh.points.params);
 
     for (const position of points)
       poly.addIndex(this.addVertex({ position, fillColor }));

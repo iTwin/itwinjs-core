@@ -341,7 +341,7 @@ export class Mesh {
   public addVertex(props: VertexKeyProps): number {
     const { position, normal, uvParam, fillColor } = props;
 
-    this.points.push(position);
+    this.points.add(position);
 
     if (undefined !== normal)
       this.normals.push(normal);

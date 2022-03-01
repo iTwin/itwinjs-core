@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
-import { AnalysisStyleDisplacement } from "@itwin/core-common";
+import { AnalysisStyleDisplacement, QPoint3dList } from "@itwin/core-common";
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
@@ -181,17 +181,23 @@ export class GeometryAccumulator {
     // If that range is small relative to the distance from the origin, quantization errors can produce display artifacts.
     // Remove the translation from the quantization parameters and apply it in the transform instead.
     const branch = new GraphicBranch(true);
-    const qorigin = new Point3d();
+    let qorigin: Point3d | undefined;
 
     for (const mesh of meshes) {
       const verts = mesh.points;
-      if (branch.isEmpty) {
-        qorigin.setFrom(verts.params.origin);
-      } else {
-        assert(verts.params.origin.isAlmostEqual(qorigin));
-      }
+      if (verts instanceof QPoint3dList) {
+        if (branch.isEmpty) {
+          assert(qorigin === undefined);
+          qorigin = verts.params.origin.clone();
+        } else {
+          assert(qorigin !== undefined);
+          assert(verts.params.origin.isAlmostEqual(qorigin));
+        }
 
-      verts.params.origin.setZero();
+        verts.params.origin.setZero();
+      } else {
+        assert(qorigin === undefined);
+      }
 
       const graphic = mesh.getGraphics(args, this.system, this._viewIndependentOrigin);
       if (undefined !== graphic)
@@ -199,8 +205,12 @@ export class GeometryAccumulator {
     }
 
     if (!branch.isEmpty) {
-      const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
-      graphics.push(this.system.createBranch(branch, transform));
+      if (qorigin) {
+        const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
+        graphics.push(this.system.createBranch(branch, transform));
+      } else {
+        graphics.push(this.system.createGraphicList(branch.entries));
+      }
     }
 
     return meshes;
