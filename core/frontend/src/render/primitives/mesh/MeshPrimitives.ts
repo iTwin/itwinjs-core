@@ -43,7 +43,7 @@ export interface PolylineArgs {
   width: number;
   linePixels: LinePixels;
   flags: PolylineFlags;
-  points: MeshPointList;
+  points: QPoint3dList | Point3d[];
   polylines: PolylineData[];
 }
 
@@ -117,7 +117,7 @@ export class MeshArgsEdges {
 export interface MeshArgs {
   edges?: MeshArgsEdges;
   vertIndices: number[];
-  points: MeshPointList;
+  points: QPoint3dList | Point3d[];
   normals?: OctEncodedNormal[];
   colors: ColorIndex;
   features: FeatureIndex;
