@@ -227,7 +227,7 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
   const techId = isSilhouette ? TechniqueId.SilhouetteEdge : (isIndexed ? TechniqueId.IndexedEdge : TechniqueId.Edge);
   const attrMap = AttributeMap.findAttributeMap(techId, isInstanced);
 
-  const builder = new ProgramBuilder(attrMap, isInstanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 3, instanced: isInstanced });
   const vert = builder.vert;
 
   vert.addGlobal("g_otherPos", VariableType.Vec4);

@@ -213,9 +213,10 @@ const computePositionPostlude = `
   return u_proj * pos;
 `;
 
-function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isThematic: IsThematic, isHiliter: boolean): ProgramBuilder {
-  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, IsInstanced.Yes === instanced);
-  const builder = new ProgramBuilder(attrMap, instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isThematic: IsThematic, isHiliter: boolean): ProgramBuilder {
+  const instanced = IsInstanced.Yes === isInstanced;
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, instanced);
+  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 4, instanced });
   const vert = builder.vert;
 
   if (animated)
