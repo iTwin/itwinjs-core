@@ -191,13 +191,11 @@ export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
   isRootCategory: boolean;
 
   /**
-   * @deprecated Use getChildren and filter categories yourself. Do not use this method to mutate the grid model, as
-   * this may lead to unexpected outcomes.
+   * @deprecated Use [[getChildren]] and filter categories yourself. Do not use this method to mutate the grid model, as this may lead to unexpected outcomes.
    */
   getChildCategories(): IMutableGridCategoryItem[];
   /**
-   * @deprecated Use getDescendantsAndSelf and filter categories yourself. Do not use this method to mutate the grid
-   * model, as this may lead to unexpected outcomes.
+   * @deprecated Use [[getDescendantsAndSelf]] and filter categories yourself. Do not use this method to mutate the grid model, as this may lead to unexpected outcomes.
    */
   getDescendantCategoriesAndSelf(): IMutableGridCategoryItem[];
 }
