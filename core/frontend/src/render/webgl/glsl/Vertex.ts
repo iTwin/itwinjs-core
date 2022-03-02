@@ -187,6 +187,20 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   addLookupTable(vert, "vert", "u_vertParams.z");
   vert.addInitializer(initializeVertLUTCoords);
+
+  assert(undefined !== vert.maxRgbaPerVertex);
+  const maxRgbaPerVertex = vert.maxRgbaPerVertex.toString();
+  vert.addGlobal(`g_vertLutData[${maxRgbaPerVertex}]`, VariableType.Vec4);
+
+  // Read the vertex data from the vertex table up front. If using WebGL 2, only read the number of RGBA values we actually need for this vertex table.
+  const loopStart = `for (int i = 0; i < ${System.instance.capabilities.isWebGL2 ? "int(u_vertParams.z)" : maxRgbaPerVertex}; i++)`;
+  vert.addInitializer(`
+    vec2 tc = g_vertexBaseCoords;
+    ${loopStart} {
+      g_vertLutData[i] = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+      tc.x += g_vert_stepX;
+    }
+  `);
 }
 
 /** @internal */

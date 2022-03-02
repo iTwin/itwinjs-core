@@ -729,6 +729,10 @@ export class VertexShaderBuilder extends ShaderBuilder {
     addPosition(this, this.usesVertexTable);
   }
 
+  public get maxRgbaPerVertex(): number | undefined {
+    return this._flags.maxRgbaPerVertex;
+  }
+
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
   public set(id: VertexShaderComponent, component: string) { this.addComponent(id, component); }
   public unset(id: VertexShaderComponent) { this.removeComponent(id); }
