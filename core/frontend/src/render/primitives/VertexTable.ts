@@ -678,5 +678,5 @@ function createPolylineBuilder(args: PolylineArgs): VertexTableBuilder {
   if (args.points instanceof QPoint3dList)
     return new Quantized.SimpleBuilder(args as Quantized<PolylineArgs>); // wtf compiler?
   else
-      return new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>); // seriously wtf?
+    return new Unquantized.SimpleBuilder(args as Unquantized<PolylineArgs>); // seriously wtf?
 }
