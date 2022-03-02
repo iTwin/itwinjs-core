@@ -510,6 +510,10 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 }
 
+export interface IModelImporterState {
+  targetDbId: string;
+}
+
 /** Returns true if a change within an Entity is detected.
  * @param entity The current persistent Entity.
  * @param entityProps The new EntityProps to compare against

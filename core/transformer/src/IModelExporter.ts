@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { AccessToken, assert, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
+import { AccessToken, assert, CompressedId64Set, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
 import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
@@ -694,6 +694,30 @@ export class IModelExporter {
       return this.handler.onProgress();
     }
   }
+}
+
+/**
+ * The JSON format of a serialized IModelExporter instance
+ * Used for starting an exporter in the middle of an export operation,
+ * such as resuming a crashed transformation
+ *
+ * @note Must be kept synchronized with IModelExporter
+ */
+export interface IModelExporterState {
+  /* eslint-disable @typescript-eslint/naming-convention */
+  wantGeometry: boolean;
+  wantTemplateModels: boolean;
+  wantSystemSchemas: boolean;
+  visitElements: boolean;
+  visitRelationships: boolean;
+  excludedCodeSpecNames: string[];
+  excludedElementIds: CompressedId64Set;
+  excludedElementCategoryIds: CompressedId64Set;
+  excludedElementClassesIds: CompressedId64Set;
+  excludedElementAspectClassesIds: CompressedId64Set;
+  excludedElementAspectClassFullNames: string[];
+  excludedRelationshipClassesIds: CompressedId64Set;
+  /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 class ChangedInstanceOps {

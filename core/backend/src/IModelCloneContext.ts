@@ -12,6 +12,7 @@ import { SubCategory } from "./Category";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
+import { Angle, XYAndZ } from "@itwin/core-geometry";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -154,4 +155,18 @@ export class IModelCloneContext {
     jsClass["onCloned"](this, sourceElement.toJSON(), targetElementProps);
     return targetElementProps;
   }
+}
+
+// TODO: move to native
+export interface IModelCloneContextState {
+  areCompatibleDbs: boolean;
+  xyzOffset: XYAndZ;
+  yawAdj: Angle;
+  filteredSubCategoryIds: Id64String[];
+  remapTables: {
+    codeSpecId: Record<string, string>;
+    elementId: Record<string, string>;
+    classId: Record<string, string>;
+    fontId: Record<number, number>;
+  };
 }
