@@ -97,7 +97,7 @@ export class VertexMap extends IndexMap<VertexKey> {
   private readonly _tolerance: XYAndZ;
 
   public constructor(tolerance: XYAndZ) {
-    super((lhs, rhs) => this.comparePositions(lhs, rhs));
+    super((lhs, rhs) => lhs.compare(rhs, tolerance));
     this._tolerance = tolerance;
   }
 
