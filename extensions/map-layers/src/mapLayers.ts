@@ -2,97 +2,75 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { HitDetail, IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
+import { Localization } from "@itwin/core-common";
+import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
-import { UiItemsManager } from "@itwin/appui-abstract";
-import { BeEvent } from "@itwin/core-bentley";
+import { UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
+import { MapFeatureInfoOptions, MapLayerOptions } from "./ui/Interfaces";
 
-export type MapHitEvent = BeEvent<(hit: HitDetail) => void>;
-export interface FeatureInfoOpts
-{
-  // HitDetail Event whenever the map is clicked.
-  // Typically the HitDetail object is provided by ElementLocateManager.doLocate.
-  // Every time this event is raised, FeatureInfoWidget will attempt to retrieve data from MapLayerImageryProviders.
-  onMapHit: MapHitEvent;
+export interface MapLayersConfig {
+  localization?: Localization;
+  /** If an iTwinConfig is provided, it will be used to load the MapLayerSources that are stored. */
+  iTwinConfig?: UserPreferencesAccess;
+  mapLayerOptions?: MapLayerOptions;
+  featureInfoOpts?: MapFeatureInfoOptions;
 }
 
 /** MapLayersUI is use when the package is used as a dependency to another app.
  * '''ts
- *  await MapLayersUI.initialize(registerItemsProvider);
+ *  await MapLayersUI.initialize({...MapLayersInitProps});
  * '''
  * @beta
  */
 export class MapLayersUI {
   private static _defaultNs = "mapLayers";
-  private static _mapLayersItemsProvider: MapLayersUiItemsProvider;
-  private static _mapFeatureInfoItemsProvider: FeatureInfoUiItemsProvider;
-  private static _uiItemsProvider: MapLayersUiItemsProvider;
-  private static _itemsProviderRegistered?: boolean;
+  public static localization: Localization;
+  private static _uiItemsProviders: UiItemsProvider[] = [];
 
   private static _iTwinConfig?: UserPreferencesAccess;
-  private static _onMapHit?: MapHitEvent;
 
-  public static get iTwinConfig(): UserPreferencesAccess | undefined { return this._iTwinConfig; }
-  public static get onMapHit(): MapHitEvent | undefined { return this._onMapHit; }
-
-  /** Used to initialize the Map Layers.
-   *
-   * If `registerItemsProvider` is true, the UiItemsProvider will automatically insert the UI items into the host applications UI.
-   * If it is false, explicitly add widget definition to a specific FrontStage definition using the following syntax.
-   *
-   *   ```tsx
-   *   <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
-   *   iconSpec={MapLayersWidgetControl.iconSpec} />,
-   *   ```
-   *
-   * If an iTwinConfig is provided, it will be used to load the MapLayerSources that are stored.
-   */
-  public static async initialize(
-    registerItemsProvider = true,
-    iTwinConfig?: UserPreferencesAccess,
-    fInfoOps?: FeatureInfoOpts
-  ): Promise<void> {
-
-    MapLayersUI._iTwinConfig = iTwinConfig;
-    MapLayersUI._onMapHit = fInfoOps?.onMapHit;
-
-    // register namespace containing localized strings for this package
-    await IModelApp.localization.registerNamespace(this.localizationNamespace);
-
-    // _uiItemsProvider always created to provide access to localization.
-    MapLayersUI._mapLayersItemsProvider = new MapLayersUiItemsProvider(IModelApp.localization);
-    MapLayersUI._mapFeatureInfoItemsProvider = new FeatureInfoUiItemsProvider(IModelApp.localization);
-    if (registerItemsProvider) {
-      UiItemsManager.register(MapLayersUI._mapLayersItemsProvider);
-
-      // Register the FeatureInfo widget only if MapHit was provided.
-      if (MapLayersUI._onMapHit) {
-        UiItemsManager.register(MapLayersUI._mapFeatureInfoItemsProvider);
-      }
-    }
-
-    MapLayersUI._itemsProviderRegistered = registerItemsProvider;
+  public static get iTwinConfig(): UserPreferencesAccess | undefined {
+    return this._iTwinConfig;
   }
 
-  /** Unregisters internationalization service namespace and UiItemManager / control */
-  public static terminate() {
-    IModelApp.localization.unregisterNamespace(this.localizationNamespace);
+  /** Used to initialize the Map Layers */
+  public static async initialize(config?: MapLayersConfig): Promise<void> {
+    // register namespace containing localized strings for this package
+    MapLayersUI.localization = config?.localization ?? IModelApp.localization;
+    await MapLayersUI.localization.registerNamespace(
+      MapLayersUI.localizationNamespace
+    );
 
-    if (MapLayersUI._itemsProviderRegistered !== undefined) {
-      if (MapLayersUI._itemsProviderRegistered) {
-        UiItemsManager.unregister(MapLayersUI._mapLayersItemsProvider.id);
+    MapLayersUI._iTwinConfig = config?.iTwinConfig;
 
-        if (MapLayersUI._onMapHit) {
-          UiItemsManager.unregister(MapLayersUI._mapFeatureInfoItemsProvider.id);
-        }
-      }
-      MapLayersUI._itemsProviderRegistered = undefined;
+    MapLayersUI._uiItemsProviders.push(
+      new MapLayersUiItemsProvider({ ...config?.mapLayerOptions })
+    );
+
+    // Register the FeatureInfo widget only if MapHit was provided.
+    if (config?.featureInfoOpts?.onMapHit) {
+      MapLayersUI._uiItemsProviders.push(
+        new FeatureInfoUiItemsProvider({ ...config?.featureInfoOpts })
+      );
     }
+
+    MapLayersUI._uiItemsProviders.forEach((uiProvider) => {
+      UiItemsManager.register(uiProvider);
+    });
+  }
+
+  /** Unregisters internationalization service namespace and UiItemManager  */
+  public static terminate() {
+    IModelApp.localization.unregisterNamespace(MapLayersUI.localizationNamespace);
+
+    MapLayersUI._uiItemsProviders.forEach((uiProvider) => {
+      UiItemsManager.unregister(uiProvider.id);
+    });
   }
 
   /** The internationalization service namespace. */
   public static get localizationNamespace(): string {
-    return this._defaultNs;
+    return MapLayersUI._defaultNs;
   }
 }

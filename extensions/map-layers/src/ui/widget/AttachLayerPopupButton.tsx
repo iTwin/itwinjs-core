@@ -9,10 +9,10 @@ import * as UiCore from "@itwin/core-react";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { useSourceMapContext } from "./MapLayerManager";
 import { MapUrlDialog } from "./MapUrlDialog";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { ConfirmMessageDialog } from "./ConfirmMessageDialog";
 import { Button, Input } from "@itwin/itwinui-react";
 import { MapLayerPreferences } from "../../MapLayerPreferences";
+import { MapLayersUI } from "../../mapLayers";
 
 // cSpell:ignore droppable Sublayer
 
@@ -25,13 +25,19 @@ interface AttachLayerPanelProps {
 function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps) {
   const [layerNameToAdd, setLayerNameToAdd] = React.useState<string | undefined>();
   const [sourceFilterString, setSourceFilterString] = React.useState<string | undefined>();
-  const [placeholderLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.SearchPlaceholder"));
-  const [addCustomLayerLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.Custom"));
-  const [addCustomLayerToolTip] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.AttachCustomLayer"));
-  const [loadingMapSources] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.LoadingMapSources"));
-  const [removeLayerDefButtonTitle] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefButtonTitle"));
-  const [editLayerDefButtonTitle] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.EditLayerDefButtonTitle"));
-  const [removeLayerDefDialogTitle] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefDialogTitle"));
+
+  const { placeholderLabel, addCustomLayerLabel, addCustomLayerToolTip, loadingMapSources, removeLayerDefButtonTitle, editLayerDefButtonTitle, removeLayerDefDialogTitle } = React.useMemo(() => {
+    return {
+      placeholderLabel: MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.SearchPlaceholder"),
+      addCustomLayerLabel: MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.Custom"),
+      addCustomLayerToolTip: MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.AttachCustomLayer"),
+      loadingMapSources: MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.LoadingMapSources"),
+      removeLayerDefButtonTitle: MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefButtonTitle"),
+      editLayerDefButtonTitle: MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.EditLayerDefButtonTitle"),
+      removeLayerDefDialogTitle: MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefDialogTitle"),
+    };
+  }, []);
+
   const [loading, setLoading] = React.useState(false);
   const [layerNameUnderCursor, setLayerNameUnderCursor] = React.useState<string | undefined>();
 
@@ -200,10 +206,10 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     if (!!iTwinId && !!iModelId) {
       try {
         await MapLayerPreferences.deleteByName(source, iTwinId, iModelId);
-        const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefSuccess", { layerName });
+        const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefSuccess", { layerName });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
       } catch (err: any) {
-        const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefError", { layerName });
+        const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefError", { layerName });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       }
     }
@@ -219,7 +225,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 
     const layerName = source.name;
 
-    const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefDialogMessage", { layerName });
+    const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefDialogMessage", { layerName });
     ModalDialogManager.openDialog(
       <ConfirmMessageDialog
         className="map-sources-delete-confirmation"
@@ -326,9 +332,14 @@ export interface AttachLayerPopupButtonProps {
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
-  const [showAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AttachLayerPopup.Attach"));
-  const [hideAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AttachLayerPopup.Close"));
-  const [addCustomLayerButtonLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.AddCustomLayerButtonLabel"));
+  const { showAttachLayerLabel, hideAttachLayerLabel, addCustomLayerButtonLabel } = React.useMemo(() => {
+    return {
+      showAttachLayerLabel: MapLayersUI.localization.getLocalizedString("mapLayers:AttachLayerPopup.Attach"),
+      hideAttachLayerLabel: MapLayersUI.localization.getLocalizedString("mapLayers:AttachLayerPopup.Close"),
+      addCustomLayerButtonLabel: MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.AddCustomLayerButtonLabel"),
+    };
+  }, []);
+
   const [popupOpen, setPopupOpen] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const panelRef = React.useRef<HTMLDivElement>(null);

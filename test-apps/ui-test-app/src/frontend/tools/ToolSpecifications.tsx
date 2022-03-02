@@ -37,7 +37,6 @@ import { ToolWithSettings } from "./ToolWithSettings";
 import { Radio } from "@itwin/itwinui-react";
 import { BeDuration } from "@itwin/core-bentley";
 import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./ImmediateTools";
-import { MapFeatureInfoTool } from "./MapFeatureIntoTool";
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -179,20 +178,6 @@ class AppItemsProvider implements UiItemsProvider {
 UiItemsManager.register(new AppItemsProvider());
 
 export class AppTools {
-  public static get mapFeatureTool() {
-    return new ToolItemDef({
-      toolId: MapFeatureInfoTool.toolId,
-      iconSpec: MapFeatureInfoTool.iconSpec,
-      label: () => MapFeatureInfoTool.flyover,
-      description: () => MapFeatureInfoTool.description,
-      execute: async () => {
-        await IModelApp.tools.run(MapFeatureInfoTool.toolId);
-        AppItemsProvider.toggleStatusBarItem();
-        AppItemsProvider.toggleBackstageItem();
-      },
-    });
-  }
-
   public static get tool1() {
     return new ToolItemDef({
       toolId: Tool1.toolId,
