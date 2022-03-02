@@ -711,7 +711,7 @@ export class FrontstageDef {
       let collapsedPanel = false;
       if ("side" in location) {
         const panel = this.nineZoneState.panels[location.side];
-        collapsedPanel = panel.collapsed || 0 === panel.size;
+        collapsedPanel = panel.collapsed || undefined === panel.size || 0 === panel.size;
       }
       const widgetContainer = this.nineZoneState.widgets[location.widgetId];
       if (widgetDef.id === widgetContainer.activeTabId && !collapsedPanel)
