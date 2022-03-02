@@ -14,7 +14,7 @@ import { Pass, TextureUnit } from "../RenderFlags";
 import { IsInstanced } from "../TechniqueFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
-import { decodeUint16, decodeUint24 } from "./Decode";
+import { decodeFloat32, decodeUint16, decodeUint24 } from "./Decode";
 import { addInstanceOverrides } from "./Instancing";
 import { addLookupTable } from "./LookupTable";
 
@@ -34,10 +34,14 @@ vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquan
 // Need to read 2 rgba values to obtain 6 16-bit integers for position
 const unquantizeVertexPositionFromLUT = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
-  vec4 enc1 = g_vertLutData[0];
-  vec4 enc2 = g_vertLutData[1];
-  vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-  return unquantizePosition(qpos, origin, scale);
+  if (g_usesQuantizedPosition) {
+    vec4 enc1 = g_vertLutData[0];
+    vec4 enc2 = g_vertLutData[1];
+    vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
+    return unquantizePosition(qpos, origin, scale);
+  }
+
+  return vec4(decodeFloat32(g_vertLutData[0]), decodeFloat32(g_vertLutData[1]), decodeFloat32(g_vertLutData[2]), 1.0);
 }
 `;
 
@@ -160,6 +164,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   vert.addFunction(decodeUint24);
   vert.addFunction(decodeUint16);
+  vert.addFunction(decodeFloat32);
   vert.addFunction(unquantizeVertexPositionFromLUT);
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
@@ -187,10 +192,12 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   assert(undefined !== vert.maxRgbaPerVertex);
   const maxRgbaPerVertex = vert.maxRgbaPerVertex.toString();
   vert.addGlobal(`g_vertLutData[${maxRgbaPerVertex}]`, VariableType.Vec4);
+  vert.addGlobal("g_usesQuantizedPosition", VariableType.Boolean);
 
   // Read the vertex data from the vertex table up front. If using WebGL 2, only read the number of RGBA values we actually need for this vertex table.
   const loopStart = `for (int i = 0; i < ${System.instance.capabilities.isWebGL2 ? "int(u_vertParams.z)" : maxRgbaPerVertex}; i++)`;
   vert.addInitializer(`
+    g_usesQuantizedPosition = u_qScale.x >= 0.0;
     vec2 tc = g_vertexBaseCoords;
     ${loopStart} {
       g_vertLutData[i] = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
