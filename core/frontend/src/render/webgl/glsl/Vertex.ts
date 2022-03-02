@@ -34,10 +34,8 @@ vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquan
 // Need to read 2 rgba values to obtain 6 16-bit integers for position
 const unquantizeVertexPositionFromLUT = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
-  vec2 tc = g_vertexBaseCoords;
-  vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  tc.x += g_vert_stepX;
-  vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec4 enc1 = g_vertLutData[0];
+  vec4 enc2 = g_vertLutData[1];
   vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
   g_vertexData2 = enc2.zw;
   return unquantizePosition(qpos, origin, scale);
