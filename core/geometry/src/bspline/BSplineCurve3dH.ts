@@ -218,7 +218,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     return undefined;
   }
   /** Return a deep clone of this curve. */
-  public override doClone(): BSplineCurve3dH {
+  public override clone(): BSplineCurve3dH {
     const knotVector1 = this._bcurve.knots.clone();
     const curve1 = new BSplineCurve3dH(this.numPoles, this.order, knotVector1);
     curve1._bcurve.packedData = this._bcurve.packedData.slice();

@@ -246,13 +246,8 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     return numStrokes;
   }
 
-  /** Return a deep clone */
-  public abstract doClone(): BezierCurveBase;
-
-  /** Return a deep clone. This override removes the undefined variant return. */
-  public override clone(): BezierCurveBase {
-    return this.doClone();
-  }
+  /** Return a deep clone. */
+  public abstract override clone(): BezierCurveBase;
 
   /** Return a transformed deep clone. */
   public override cloneTransformed(transform: Transform): BezierCurveBase {

@@ -156,12 +156,8 @@ private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive)
   }
 
   /** Return a deep clone */
-  public override clone(): AkimaCurve3d | undefined {
-    const proxyClone = this._proxyCurve.clone();
-    if (proxyClone) {
-      return new AkimaCurve3d(this._options.clone(), proxyClone as CurvePrimitive);
-    }
-    return undefined;
+  public override clone(): AkimaCurve3d {
+    return new AkimaCurve3d(this._options.clone(), this._proxyCurve.clone());
   }
 
   /** Test if `other` is also an [[AkimaCurve3d]] */

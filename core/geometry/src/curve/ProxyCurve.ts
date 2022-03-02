@@ -15,7 +15,6 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
-import type { GeometryQuery } from "./GeometryQuery";
 import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import type { LineString3d } from "./LineString3d";
 import type { StrokeOptions } from "./StrokeOptions";
@@ -62,10 +61,13 @@ export abstract class ProxyCurve extends CurvePrimitive{
     this._proxyCurve.emitStrokableParts(dest, options);
   }
 
+  /** Return a deep clone. This override removes the undefined variant return. */
+  public abstract override clone(): ProxyCurve;
+
   /** Return a transformed clone. */
-  public override cloneTransformed(transform: Transform): GeometryQuery | undefined {
+  public override cloneTransformed(transform: Transform): ProxyCurve | undefined {
     const myClone = this.clone();
-    if (myClone && myClone.tryTransformInPlace(transform))
+    if (myClone.tryTransformInPlace(transform))
       return myClone;
     return undefined;
   }

@@ -240,13 +240,8 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     return result;
   }
 
-  /** Return a deep clone */
-  public abstract doClone(): BSplineCurve3dBase;
-
-  /** Return a deep clone. This override removes the undefined variant return. */
-  public override clone(): BSplineCurve3dBase {
-    return this.doClone();
-  }
+    /** Return a deep clone. */
+  public abstract override clone(): BSplineCurve3dBase;
 
   /** Return a transformed deep clone. */
   public override cloneTransformed(transform: Transform): BSplineCurve3dBase {
@@ -273,13 +268,15 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
       const tmp = knotA; knotA = knotB; knotB = tmp;
     }
 
-    // the first pole has index equal to the leftmost index of a knot with degree multiplicity
+    // choose first/last knot and pole such that knotA/knotB has degree multiplicity in the new knot sequence
     const iStartKnot = clone._bcurve.knots.knotToLeftKnotIndex(knotA) - clone.degree + 1;
     const iStartPole = iStartKnot * clone._bcurve.poleLength;
-    const iLastKnot = clone._bcurve.knots.knotToLeftKnotIndex(knotB);   // TODO: START HERE
-    const iLastKnotLeftMultiple = iLastKnot - clone._bcurve.knots.getKnotMultiplicityAtIndex(iLastKnot) + 1;
-    const iEndPole = (iLastKnotLeftMultiple + 1) * clone._bcurve.poleLength;
-    const iEndKnot = iLastKnotLeftMultiple + clone.degree;
+    const iLastKnot = clone._bcurve.knots.knotToLeftKnotIndex(knotB);
+    let iLastKnotLeftMultiple = iLastKnot - clone._bcurve.knots.getKnotMultiplicityAtIndex(iLastKnot) + 1;
+    if (clone._bcurve.knots.knots[iLastKnot] < knotB)
+      iLastKnotLeftMultiple = iLastKnot + 1;
+    const iEndPole = (iLastKnotLeftMultiple + 1) * clone._bcurve.poleLength;  // one past last pole
+    const iEndKnot = iLastKnotLeftMultiple + clone.degree;  // one past last knot
 
     // trim the arrays (leave knots unnormalized!)
     clone._bcurve.knots.setKnotsCapture(clone._bcurve.knots.knots.slice(iStartKnot, iEndKnot));
@@ -512,7 +509,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return curve;
   }
   /** Return a deep clone */
-  public override doClone(): BSplineCurve3d {
+  public override clone(): BSplineCurve3d {
     const knotVector1 = this._bcurve.knots.clone();
     const curve1 = new BSplineCurve3d(this.numPoles, this.order, knotVector1);
     curve1._bcurve.packedData = this._bcurve.packedData.slice();

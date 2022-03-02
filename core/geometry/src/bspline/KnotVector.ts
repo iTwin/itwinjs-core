@@ -43,7 +43,7 @@ export enum BSplineWrapMode {
  * * A span is a single interval of the knots.
  * * The left knot of span {k} is knot {k+degree-1}
  * * This class provides queries to convert among spanFraction, fraction of knot range, and knot
- * * core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs.  Caller's need to
+ * * core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs.  Callers need to
  * know their primary values (global knot, spanFraction).
  * @public
  */
@@ -185,6 +185,24 @@ export class KnotVector {
     return m;
   }
 
+  /** Transform knots to span [0,1].
+   * @returns false if and only if this.knotLength01 is trivial
+   */
+  public normalize(): boolean {
+    if (this.knotLength01 < KnotVector.knotTolerance)
+      return false;
+    const divisor = 1.0 / this.knotLength01;
+    const leftKnot = this.leftKnot;
+    for (let i = 0; i < this.knots.length; ++i)
+      this.knots[i] = (this.knots[i] - leftKnot) * divisor;
+    // explicitly set rightKnot and its multiples to 1.0 to avoid round-off
+    for (let i = this.rightKnotIndex - 1; i > this.leftKnotIndex && (this.knots[i] === this.knots[this.rightKnotIndex]); --i) this.knots[i] = 1.0;
+    for (let i = this.rightKnotIndex + 1; i < this.knots.length && (this.knots[i] === this.knots[this.rightKnotIndex]); ++i) this.knots[i] = 1.0;
+    this.knots[this.rightKnotIndex] = 1.0;
+    this.setupFixedValues();
+    return true;
+  }
+
   /** install knot values from an array, optionally ignoring first and last.
    */
   public setKnots(knots: number[] | Float64Array, skipFirstAndLast?: boolean) {
@@ -247,7 +265,7 @@ export class KnotVector {
    * Create knot vector with given knot values and degree.
    * @param knotArray knot values
    * @param degree degree of polynomial
-   * @param skipFirstAndLast true to skip class overclamped end knots.
+   * @param skipFirstAndLast true to skip copying the first and last knot values.
    */
   public static create(knotArray: number[] | Float64Array, degree: number, skipFirstAndLast?: boolean): KnotVector {
     const numAllocate = skipFirstAndLast ? knotArray.length - 2 : knotArray.length;
@@ -257,13 +275,13 @@ export class KnotVector {
   }
 
   /**
-   * Return the average of degree consecutive knots beginning at spanIndex.
+   * Return the average of degree consecutive knots beginning at knotIndex.
    */
-  public grevilleKnot(spanIndex: number): number {
-    if (spanIndex < 0) return this.leftKnot;
-    if (spanIndex > this.rightKnotIndex) return this.rightKnot;
+  public grevilleKnot(knotIndex: number): number {
+    if (knotIndex < 0) return this.leftKnot;
+    if (knotIndex > this.rightKnotIndex) return this.rightKnot;
     let sum = 0.0;
-    for (let i = spanIndex; i < spanIndex + this.degree; i++)
+    for (let i = knotIndex; i < knotIndex + this.degree; i++)
       sum += this.knots[i];
     return sum / this.degree;
   }
@@ -387,18 +405,21 @@ export class KnotVector {
         ddf[depth + 1] = ddgCarry;
     }
   }
-  /** Return the (highest) index of the knot less than or equal to u */
+  /** Find the knot span bracketing knots[i] <= u < knots[i+1] and return i.
+   * * If u has no such bracket, return the smaller index of the closest nontrivial bracket.
+   * @param u value to bracket
+   */
   public knotToLeftKnotIndex(u: number): number {
-    // Anything to left is in the first span . .
-    const firstLeftKnot = this.degree - 1;
-    if (u < this.knots[firstLeftKnot + 1]) return firstLeftKnot;
-    // Anything to right is in the last span ...
-    const lastLeftKnot = this.knots.length - this.degree - 1;
-    if (u >= this.knots[lastLeftKnot]) return this.knots[lastLeftKnot];
-    // ugh ... linear search ...
-    for (let i = firstLeftKnot + 1; i < lastLeftKnot; i++)
-      if (u < this.knots[i + 1]) return i;  // testing against right side skips over multiple knot cases???
-    return lastLeftKnot;
+    for (let i = this.leftKnotIndex; i < this.rightKnotIndex; ++i) {
+      if (u < this.knots[i + 1])
+        return i;
+    }
+    // for u >= rightKnot, return left index of last nontrivial span
+    for (let i = this.rightKnotIndex; i > this.leftKnotIndex; --i) {
+      if (this.knots[i] - this.knots[i - 1] >= KnotVector.knotTolerance)
+        return i - 1;
+    }
+    return this.rightKnotIndex - 1; // shouldn't get here
   }
   /**
    * Given a span index, return the index of the knot at its left.

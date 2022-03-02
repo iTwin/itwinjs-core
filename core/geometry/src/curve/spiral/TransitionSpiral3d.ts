@@ -100,13 +100,8 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     return 1.0 / curvature;
   }
 
-  /** Return a deep clone */
-  public abstract doClone(): TransitionSpiral3d;
-
-  /** Return a deep clone. This override removes the undefined variant return. */
-  public override clone(): TransitionSpiral3d {
-    return this.doClone();
-  }
+  /** Return a deep clone. */
+  public abstract override clone(): TransitionSpiral3d;
 
   /** Recompute strokes */
   public abstract refreshComputedProperties(): void;

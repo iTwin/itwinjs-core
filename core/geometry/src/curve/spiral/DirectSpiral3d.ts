@@ -442,7 +442,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     return undefined;
   }
   /** Deep clone of this spiral */
-  public override doClone(): DirectSpiral3d {
+  public override clone(): DirectSpiral3d {
     return new DirectSpiral3d(
       this.localToWorld.clone(),
       this._spiralType,

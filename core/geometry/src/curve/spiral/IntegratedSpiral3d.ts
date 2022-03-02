@@ -247,7 +247,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     return this;
   }
   /** Deep clone of this spiral */
-  public override doClone(): IntegratedSpiral3d {
+  public override clone(): IntegratedSpiral3d {
     return new IntegratedSpiral3d(this._spiralType, this._evaluator,
       this.radius01.clone(), this.bearing01.clone(),
       this.activeFractionInterval.clone(), this.localToWorld.clone(), this._arcLength01,
