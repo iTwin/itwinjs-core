@@ -9,10 +9,10 @@ import { join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceDb, WorkspaceDbName,
+  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceDb, WorkspaceContainerProps, WorkspaceDbName,
   WorkspaceResourceName,
 } from "@itwin/core-backend";
-import { DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
+import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // cspell:ignore nodir
@@ -21,6 +21,10 @@ import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 interface EditorOpts extends CloudSqlite.ContainerAccessProps {
   /** Allows overriding the location of WorkspaceDbs. If not present, defaults to `${homedir}/iTwin/Workspace` */
   directory?: LocalDirName;
+  /** number of simultaneous http requests */
+  nRequests?: number;
+  /** enable logging */
+  logging?: boolean;
 }
 
 /** options for performing an operation on a WorkspaceDb */
@@ -81,7 +85,7 @@ const askQuestion = async (query: string) => {
 /** Create a new empty WorkspaceDb  */
 async function createWorkspaceDb(args: WorkspaceDbOpt) {
   const wsFile = new EditableWorkspaceDb(args.dbName, IModelHost.appWorkspace.getContainer(args));
-  wsFile.create();
+  wsFile.createDb();
   console.log(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
   wsFile.close();
 }
@@ -97,19 +101,22 @@ function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceDbOpt>(
   }
 }
 
-function getCloudProps(args: EditorOpts): CloudSqlite.ContainerAccessProps | undefined {
-  return args.accountName ? {
-    user: args.user,
-    sasToken: args.sasToken,
-    accountName: args.accountName,
-    containerId: args.containerId,
-    storageType: args.storageType,
-    writeable: true,
-  } : undefined;
+function getCloudProps(args: EditorOpts): WorkspaceContainerProps {
+  return {
+    ...args,
+    cloudProps: args.accountName ? {
+      user: args.user,
+      sasToken: args.sasToken,
+      accountName: args.accountName,
+      containerId: args.containerId,
+      storageType: args.storageType,
+      writeable: true,
+    } : undefined,
+  };
 }
 
 async function loadContainer(args: EditorOpts) {
-  const container = IModelHost.appWorkspace.getContainer({ ...args, cloudProps: getCloudProps(args) });
+  const container = IModelHost.appWorkspace.getContainer(getCloudProps(args));
   if (container.cloudContainer) {
     await container.attach();
     await container.cloudContainer.pollManifest();
@@ -286,7 +293,7 @@ async function deleteWorkspaceDb(args: WorkspaceDbOpt) {
 
 /** initialize (empty if it exists) a WorkspaceContainer. */
 async function initializeContainer(args: EditorOpts) {
-  const container = IModelHost.appWorkspace.getContainer({ ...args, cloudProps: getCloudProps(args) });
+  const container = IModelHost.appWorkspace.getContainer(getCloudProps(args));
   if (undefined === container.cloudContainer)
     throw new Error("No cloud container supplied");
   const yesNo = await askQuestion(`Are you sure you want to initialize container "${args.containerId}"? [y/n]: `);
@@ -301,7 +308,7 @@ async function purgeWorkspace(args: EditorOpts) {
   const container = await loadCloudContainer(args);
   const nGarbage = container.garbageBlocks;
   if (nGarbage === 0) {
-    console.log(`container ${args.containerId} has no garbage blocks`);
+    console.log(`container "${args.containerId}" has no garbage blocks`);
     return;
   }
 
@@ -309,7 +316,8 @@ async function purgeWorkspace(args: EditorOpts) {
     await container.cleanDeletedBlocks();
   });
 
-  console.log(`purged ${nGarbage} blocks from container ${args.containerId}`);
+  await container.pollManifest(); // re-read manifest to get current garbage count
+  console.log(`purged ${nGarbage - container.garbageBlocks} blocks from container "${args.containerId}"`);
 }
 
 /** Make a copy of a WorkspaceDb with a new name. */
@@ -384,22 +392,40 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
 /** Start `IModelHost`, then run a WorkspaceEditor command. Errors are logged to console. */
 function runCommand<T extends EditorOpts>(cmd: (args: T) => Promise<void>) {
   return async (args: T) => {
+    let timer: NodeJS.Timeout | undefined;
     try {
       const config = new IModelHostConfiguration();
-      if (args.directory)
-        config.workspace = { containerDir: args.directory };
+      config.workspace = {
+        containerDir: args.directory,
+        cloudCache: {
+          nRequests: args.nRequests,
+        },
+      };
       await IModelHost.startup(config);
+      if (true === args.logging) {
+        Logger.initializeToConsole();
+        Logger.setLevel("CloudSqlite", LogLevel.Info);
+        IModelHost.appWorkspace.cloudCache?.setLogMask(0xff);
+        timer = setInterval(() => IModelHost.platform.flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
+      }
+
       await cmd(args);
     } catch (e: any) {
-      console.error(e.message);
+      if (typeof e.errorNumber === "number")
+        e = new BentleyError(e.errorNumber, e.message);
+
+      console.error(BentleyError.getErrorMessage(e));
+    } finally {
+      if (timer) {
+        IModelHost.platform.flushLog();
+        clearInterval(timer);
+      }
     }
   };
 }
 
 /** Parse and execute WorkspaceEditor commands */
 async function main() {
-  Logger.initializeToConsole();
-  Logger.setLevel("CloudSqlite", LogLevel.Info);
 
   const type = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], required: true };
   const update = { alias: "u", describe: "update (i.e. replace) rather than add the files", boolean: true, default: false };
@@ -418,6 +444,7 @@ async function main() {
     accountName: { alias: "a", describe: "cloud storage account name for container", string: true, default: "" },
     sasToken: { describe: "shared access signature token", string: true, default: "" },
     storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
+    logging: { describe: "enable log messages", boolean: true, default: "false" },
   });
   Yargs.command({
     command: "add <dbName> <files>",

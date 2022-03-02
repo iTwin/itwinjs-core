@@ -145,7 +145,6 @@ export interface CloudContainerUri {
   readonly uriParams: string;
 }
 
-
 /** Options to open a [SnapshotDb]($backend).
  * @public
  */

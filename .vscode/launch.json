@@ -778,10 +778,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "importDb",
-        "-i",
-        "Australia",
-        "c:\\Users\\keith.bentley\\AppData\\Local\\iTwin\\Workspace\\test2\\Australia.itwin-workspace"
+        "purgeWorkspace",
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",

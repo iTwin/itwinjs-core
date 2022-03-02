@@ -2172,7 +2172,6 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(standaloneDb1.pathName, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key), "Should be in the list of open StandaloneDbs");
-    assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
     assert.equal(standaloneDb1.elements.getRootSubject().code.value, standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
@@ -2218,10 +2217,6 @@ describe("iModel", () => {
     assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotDb1.key));
     assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotDb2.key));
     assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotDb3.key));
-    assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
-    assert.isFalse(snapshotDb2.nativeDb.isEncrypted());
-    assert.isFalse(snapshotDb3.nativeDb.isEncrypted());
-    assert.isFalse(imodel1.nativeDb.isEncrypted());
     const iModelGuid1: GuidString = snapshotDb1.iModelId;
     const iModelGuid2: GuidString = snapshotDb2.iModelId;
     const iModelGuid3: GuidString = snapshotDb3.iModelId;
@@ -2292,7 +2287,6 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshotDb());
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
-    assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
     assert.isFalse(hasClassView(snapshotDb1, "bis.Element"));
 
     // create snapshot from scratch and give it a password
@@ -2306,7 +2300,6 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb2.isSnapshotDb());
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
-    assert.isTrue(snapshotDb2.nativeDb.isEncrypted());
     assert.exists(snapshotDb2.elements.getElement(subjectId2));
     assert.isTrue(hasClassView(snapshotDb2, "bis.Element"));
 
@@ -2318,7 +2311,6 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb3.isSnapshotDb());
     assert.isTrue(snapshotDb3.isSnapshot);
     assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
-    assert.isTrue(snapshotDb3.nativeDb.isEncrypted());
 
     // it is invalid to create a snapshot from a password-protected iModel
     assert.throws(() => SnapshotDb.createFrom(snapshotDb2, snapshotFile4), IModelError);

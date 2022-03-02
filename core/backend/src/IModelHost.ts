@@ -274,7 +274,7 @@ export class IModelHost {
 
   /** @internal */
   public static flushLog() {
-    return this.platform.DgnDb.flushLog();
+    return this.platform.flushLog();
   }
   /** @internal */
   public static loadNative(): void {

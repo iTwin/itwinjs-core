@@ -147,7 +147,7 @@ export interface WorkspaceDb {
   getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
 }
 
-export type WorkspaceCloudCacheProps = Optional<CloudSqlite.CacheProps, "name">;
+export type WorkspaceCloudCacheProps = Optional<CloudSqlite.CacheProps, "name" | "rootDir">;
 
 /**
  * Options for constructing a [[Workspace]].
@@ -236,7 +236,7 @@ export class ITwinWorkspace implements Workspace {
       const cacheProps = {
         ...this._cloudCacheProps,
         rootDir: this._cloudCacheProps?.rootDir ?? join(this.containerDir, "cloud"),
-        cacheSize: this._cloudCacheProps?.cacheSize ?? "10G",
+        cacheSize: this._cloudCacheProps?.cacheSize ?? "20G",
         name: "workspace",
       };
 
@@ -420,7 +420,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   }
 
   public open(): void {
-    this.sqliteDb.nativeDb.openDb(this.localFileName, OpenMode.Readonly, this.container.cloudContainer);
+    this.sqliteDb.openDb(this.localFileName, OpenMode.Readonly, this.container.cloudContainer);
   }
 
   public close(): void {
@@ -491,7 +491,6 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
  * @beta
  */
 export class EditableWorkspaceDb extends ITwinWorkspaceDb {
-  private _isCloudOpen = false;
   private static validateResourceName(name: WorkspaceResourceName) {
     ITwinWorkspaceDb.noLeadingOrTrailingSpaces(name, "resource name");
     if (name.length > 1024)
@@ -505,15 +504,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   }
 
   public override open() {
-    this.sqliteDb.nativeDb.openDb(this.localFileName, OpenMode.ReadWrite, this.container.cloudContainer);
-  }
-
-  public override close() {
-    if (this._isCloudOpen) {
-      //  this.db.nativeDb.flushCloudUpload(); TODO: add back when available
-      this._isCloudOpen = false;
-    }
-    super.close();
+    this.sqliteDb.openDb(this.localFileName, OpenMode.ReadWrite, this.container.cloudContainer);
   }
 
   private getFileModifiedTime(localFileName: LocalFileName): number {
@@ -536,14 +527,15 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   }
 
   /** Create a new, empty, EditableWorkspaceDb for importing Workspace resources. */
-  public static createDb(localFileName: LocalFileName) {
-    const db = new SQLiteDb();
-    IModelJsFs.recursiveMkDirSync(dirname(localFileName));
-    db.createDb(localFileName);
+  public createDb() {
+    const db = this.sqliteDb;
+    const cloudContainer = this.container.cloudContainer;
+    if (cloudContainer === undefined)
+      IModelJsFs.recursiveMkDirSync(dirname(this.localFileName));
+    db.createDb(this.localFileName, cloudContainer);
     db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
     db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
     db.saveChanges();
-    db.closeDb();
   }
 
   public async cloneVersion(oldVersion: WorkspaceDbVersion, newVersion: WorkspaceDbVersion) {

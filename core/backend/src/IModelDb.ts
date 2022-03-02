@@ -2353,14 +2353,8 @@ export class SnapshotDb extends IModelDb {
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
   public static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb {
-    if (iModelDb.nativeDb.isEncrypted())
-      throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel");
-
     IModelJsFs.copySync(iModelDb.pathName, snapshotFile);
     IModelHost.platform.DgnDb.vacuum(snapshotFile);
-
-    if (options?.password)
-      IModelHost.platform.DgnDb.encryptDb(snapshotFile, options);
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, options);

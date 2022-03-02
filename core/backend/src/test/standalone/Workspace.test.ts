@@ -26,7 +26,7 @@ describe("WorkspaceFile", () => {
     IModelJsFs.purgeDirSync(container.filesDir);
     if (IModelJsFs.existsSync(wsFile.localFileName))
       IModelJsFs.unlinkSync(wsFile.localFileName);
-    wsFile.create();
+    wsFile.createDb();
     return wsFile;
   }
 
