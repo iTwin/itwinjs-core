@@ -4,44 +4,56 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@itwin/appui-abstract";
-import { Localization } from "@itwin/core-common";
-import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
-import { IModelApp } from "@itwin/core-frontend";
-import { MapFeatureInfoOptions } from "./Interfaces";
+import { AbstractWidgetProps, AbstractZoneLocation, CommonToolbarItem, StagePanelLocation, StagePanelSection, StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
+import { ToolbarHelper, UiFramework } from "@itwin/appui-react";
 import { MapFeatureInfoWidget } from "./widget/FeatureInfoWidget";
+import { MapFeatureInfoOptions } from "./Interfaces";
+import { MapLayersUI } from "../mapLayers";
+import { DefaultMapFeatureInfoTool, getDefaultMapFeatureInfoToolItemDef } from "./MapFeatureInfoTool";
 
-export class  FeatureInfoUiItemsProvider implements UiItemsProvider {
+export class FeatureInfoUiItemsProvider implements UiItemsProvider {
   public readonly id = "FeatureInfoUiItemsProvider";
-  public static localization: Localization;
+  public static readonly widgetId = "map-layers:mapFeatureInfoWidget";
 
-  public constructor(localization: Localization) {
-    FeatureInfoUiItemsProvider.localization = localization;
+  public constructor(private _featureInfoOpts: MapFeatureInfoOptions) { }
+
+  public provideToolbarButtonItems(
+    _stageId: string,
+    stageUsage: string,
+    toolbarUsage: ToolbarUsage,
+    toolbarOrientation: ToolbarOrientation,
+  ): CommonToolbarItem[] {
+    if (
+      !this._featureInfoOpts?.disableDefaultFeatureInfoTool &&
+      stageUsage === StageUsage.General &&
+      toolbarUsage === ToolbarUsage.ContentManipulation &&
+      toolbarOrientation === ToolbarOrientation.Vertical
+    ) {
+      DefaultMapFeatureInfoTool.register(MapLayersUI.localizationNamespace);
+      return [
+        ToolbarHelper.createToolbarItemFromItemDef(60, getDefaultMapFeatureInfoToolItemDef()),
+      ];
+    }
+
+    return [];
   }
 
-  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
+  // eslint-disable-next-line deprecation/deprecation
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
 
-    if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End) {
+    // eslint-disable-next-line deprecation/deprecation
+    if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
+      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
       widgets.push({
-        id: "map-layers:mapFeatureInfoWidget",
-        label: IModelApp.localization.getLocalizedString("mapLayers:FeatureInfoWidget.Label"),
+        id: FeatureInfoUiItemsProvider.widgetId,
+        label: MapLayersUI.localization.getLocalizedString("mapLayers:FeatureInfoWidget.Label"),
         icon: "icon-map",
-        getWidgetContent: () => <MapFeatureInfoWidget featureInfoOpts={{showLoadProgressAnimation: true}}/>, // eslint-disable-line react/display-name
+        getWidgetContent: () => <MapFeatureInfoWidget featureInfoOpts={this._featureInfoOpts} />, // eslint-disable-line react/display-name
+        defaultState: WidgetState.Closed,
       });
     }
 
     return widgets;
-  }
-}
-
-export class FeatureInfoWidgetControl extends WidgetControl {
-  public static id = "FeatureInfoWidget";
-  public static iconSpec = "icon-map";
-  public static label = "FeatureInfoWidgetControl";
-  constructor(info: ConfigurableCreateInfo, featureInfoOpts: MapFeatureInfoOptions) {
-    super(info, featureInfoOpts);
-
-    super.reactNode = <MapFeatureInfoWidget featureInfoOpts={featureInfoOpts}/>;
   }
 }
