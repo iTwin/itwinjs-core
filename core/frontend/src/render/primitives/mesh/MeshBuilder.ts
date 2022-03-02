@@ -20,7 +20,7 @@ type VertexKeyPropsWithIndex = VertexKeyProps & { sourceIndex: number };
 
 /** @internal */
 export class MeshBuilder {
-  private _vertexMap?: VertexMap;
+  public readonly vertexMap: VertexMap;
   private _triangleSet?: TriangleSet;
   private _currentPolyface?: MeshBuilderPolyface;
   public readonly mesh: Mesh;
@@ -29,12 +29,6 @@ export class MeshBuilder {
   public readonly tileRange: Range3d;
   public get currentPolyface(): MeshBuilderPolyface | undefined { return this._currentPolyface; }
   public set displayParams(params: DisplayParams) { this.mesh.displayParams = params; }
-
-  /** create reference for vertexMap on demand */
-  public get vertexMap(): VertexMap {
-    if (undefined === this._vertexMap) this._vertexMap = new VertexMap();
-    return this._vertexMap;
-  }
 
   /** create reference for triangleSet on demand */
   public get triangleSet(): TriangleSet {
@@ -47,6 +41,17 @@ export class MeshBuilder {
     this.tolerance = tolerance;
     this.areaTolerance = areaTolerance;
     this.tileRange = tileRange;
+
+    let vertexTolerance;
+    if (mesh.points instanceof QPoint3dList) {
+      const p0 = mesh.points.params.unquantize(0, 0, 0);
+      const p1 = mesh.points.params.unquantize(1, 1, 1);
+      vertexTolerance = p1.minus(p0, p0);
+    } else {
+      vertexTolerance = { x: tolerance, y: tolerance, z: tolerance };
+    }
+
+    this.vertexMap = new VertexMap(vertexTolerance);
   }
 
   /** create a new MeshBuilder */
@@ -143,7 +148,9 @@ export class MeshBuilder {
     // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
     // This led to unused vertex data, and caused mismatch in # of vertices when recreating the MeshBuilder from the data in the tile cache.
     // Detect beforehand instead.
-    if (vertices[0].position.isAlmostEqual(vertices[1].position) || vertices[0].position.isAlmostEqual(vertices[2].position) || vertices[1].position.isAlmostEqual(vertices[2].position))
+    if (this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[1])
+      || this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[2])
+      || this.vertexMap.arePositionsAlmostEqual(vertices[1], vertices[2]))
       return undefined;
 
     return vertices;
