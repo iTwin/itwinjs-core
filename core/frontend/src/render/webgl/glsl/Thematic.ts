@@ -202,10 +202,7 @@ export function getComputeThematicIndex(instanced: boolean, skipSlopeAndHillShad
     v_thematicIndex = findFractionalPositionOnLine(a, b, c);
   }`;
   const hillShadeMode = ` else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
-    vec2 tc = g_vertexBaseCoords;
-    tc.x += 3.0 * g_vert_stepX;
-    vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertLutData[1].zw;
+    vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? g_vertLutData[3].xy : g_vertLutData[1].zw;
     vec3 norm = u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? octDecodeNormal(normal) : vec3(0.0);
     v_thematicIndex = norm.z;
   }`;

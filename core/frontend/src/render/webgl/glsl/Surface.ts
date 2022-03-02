@@ -354,10 +354,7 @@ vec3 octDecodeNormal(vec2 e) {
 `;
 
 const computeNormal = `
-  vec2 tc = g_vertexBaseCoords;
-  tc.x += 3.0 * g_vert_stepX;
-  vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertLutData[1].zw;
+  vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? g_vertLutData[3].xy : g_vertLutData[1].zw;
   return u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(MAT_NORM * octDecodeNormal(normal)) : vec3(0.0);
 `;
 
@@ -371,9 +368,7 @@ const applyBackgroundColor = `
 `;
 
 const computeTexCoord = `
-  vec2 tc = g_vertexBaseCoords;
-  tc.x += 3.0 * g_vert_stepX;
-  vec4 rgba = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec4 rgba = g_vertLutData[3];
   vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
   return chooseVec2WithBitFlag(vec2(0.0), unquantize2d(qcoords, u_qTexCoordParams), surfaceFlags, kSurfaceBit_HasTexture);
 `;
@@ -448,10 +443,7 @@ function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: Is
   if (debugNormals) {
     builder.frag.set(FragmentShaderComponent.ApplyDebugColor, "return vec4(vec3(v_normal / 2.0 + 0.5), baseColor.a);");
     builder.addFunctionComputedVarying("v_normal", VariableType.Vec3, "computeDebugNormal", `
-      vec2 tc = g_vertexBaseCoords;
-      tc.x += 3.0 * g_vert_stepX;
-      vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-      vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertLutData[1].zw;
+      vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? g_vertLutData[3].xy : g_vertLutData[1].zw;
       return u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(octDecodeNormal(normal)) : vec3(0.0);
     `);
   }

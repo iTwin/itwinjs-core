@@ -284,10 +284,8 @@ export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
     return;
 
   const computeFeatureAndMaterialIndex = `
-  vec2 tc = g_vertexBaseCoords;
-  tc.x += g_vert_stepX * 2.0;
-  g_featureAndMaterialIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-`;
+    g_featureAndMaterialIndex = g_vertLutData[2];
+  `;
 
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
   if (!vert.usesInstancedGeometry) {
