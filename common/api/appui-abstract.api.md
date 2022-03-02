@@ -2099,6 +2099,8 @@ export enum UiItemsApplicationAction {
 
 // @public
 export class UiItemsManager {
+    // @internal
+    static clearAllProviders(): void;
     static getBackstageItems(): BackstageItem[];
     static getStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
     static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
