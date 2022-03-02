@@ -19,16 +19,16 @@ This article assumes that you already know that:
 
 - An iModel is a multi-user database
 - An app works with a [briefcase](../Glossary.md#Briefcase) using the [BriefcaseDb]($backend) class.
-- A briefcase has a unique [BriefcaseId]($common) that is issued and tracked by [iModelHub]($docs/learning/IModelHub/index.md).
-- Changes are captured and distributed in the form of [Changesets]($docs/learning/IModelHub/briefcases.md).
-- Changesets are ordered in a sequence that is called the [timeline]($docs/learning/IModelHub/index.md#the-timeline-of-changes-to-an-imodel) of the iModel. A changeset's position on the timeline is indicated by its [ChangesetIndex]($common).
+- A briefcase has a unique [BriefcaseId]($common) that is issued and tracked by [iModelHub](../IModelHub/index.md).
+- Changes are captured and distributed in the form of [Changesets](../IModelHub/briefcases.md).
+- Changesets are ordered in a sequence that is called the [timeline](../IModelHub/index.md#the-timeline-of-changes-to-an-imodel) of the iModel. A changeset's position on the timeline is indicated by its [ChangesetIndex]($common).
 - Changesets are stored in iModelHub
 
 ## Concurrency Glossary
 
 | Term                                | Definition                                                                                                                                                                                                                                                          |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Base**                            | Changeset B is _based_ on Changeset A if B comes after A in the timeline.                                                                                                                                                                                           |
+| **Base**                            | Changeset B is *based* on Changeset A if B comes after A in the timeline.                                                                                                                                                                                           |
 | **Change-merging**                  | Same as merge.                                                                                                                                                                                                                                                      |
 | **Concurrency Control**             | How to coordinate simultaneous transactions while preserving data integrity.                                                                                                                                                                                        |
 | **Concurrency Control Policy**      | The rules that apps must follow when changing models and elements. May be [optimistic](#optimistic-concurrency-control) or [pessimistic](#pessimistic-concurrency-control).                                                                                         |

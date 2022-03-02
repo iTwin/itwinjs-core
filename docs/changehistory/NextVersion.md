@@ -61,11 +61,11 @@ display-test-app provides [an example tool](https://github.com/iTwin/itwinjs-cor
 
 ## Font Workspaces
 
-It is now possible to store and load fonts from a Font Workspace. See [Fonts]($docs/learning/backend/Fonts.md) for more details.
+It is now possible to store and load fonts from a Font Workspace. See [Fonts](../learning/backend/Fonts.md) for more details.
 
 ## Promote QuantityFormatter from beta to public
 
-The [QuantityFormatter]($core-frontend), accessed via `IModelApp.quantityFormatter`, is now public and provides a set of APIs to format and parse standard quantity types. For more documentation and samples see [Quantity Formatting]($docs/learning/frontend/QuantityFormatting.md).
+The [QuantityFormatter]($core-frontend), accessed via `IModelApp.quantityFormatter`, is now public and provides a set of APIs to format and parse standard quantity types. For more documentation and samples see [Quantity Formatting](../learning/frontend/QuantityFormatting.md).
 
 ## New SchemaUnitProvider
 
