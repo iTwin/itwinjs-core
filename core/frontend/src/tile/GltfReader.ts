@@ -1427,7 +1427,7 @@ export abstract class GltfReader {
       isPlanar: false,
       hasBakedLighting,
       isVolumeClassifier,
-      quantizePositions: false,
+      quantizePositions: true,
     });
 
     const mesh = new GltfMeshData(meshPrimitive);

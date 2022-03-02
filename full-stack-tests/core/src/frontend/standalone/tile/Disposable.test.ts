@@ -195,8 +195,14 @@ describe("Disposal of WebGL Resources", () => {
     // Create two MeshGraphics from arguments
     const colors = new ColorIndex();
     colors.initUniform(ColorByName.tan);
+
+    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10 ,0)];
+    const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
+    for (const point of points)
+      qpoints.add(point);
+
     const args: MeshArgs = {
-      points: [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10 ,0)],
+      points: qpoints,
       vertIndices: [0, 1, 2],
       colors,
       features: new FeatureIndex(),
