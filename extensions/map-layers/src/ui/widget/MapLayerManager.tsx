@@ -187,14 +187,15 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       const sourceLayers = await MapLayerSources.create(undefined, (fetchPublicMapLayerSources && !hideExternalMapLayersSection));
 
       const iModel = IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.iModel : undefined;
-      if (iModel && iModel.iTwinId && iModel.iModelId) {
-        try {
-          const preferenceSources = await MapLayerPreferences.getSources(iModel.iTwinId, iModel.iModelId);
-          for (const source of preferenceSources)
-            await MapLayerSources.addSourceToMapLayerSources(source);
-        } catch (err) {
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
-        }
+      try {
+        const preferenceSources = ( iModel?.iTwinId === undefined
+          ? []
+          : await MapLayerPreferences.getSources(iModel?.iTwinId, iModel?.iModelId)
+        );
+        for (const source of preferenceSources)
+          await MapLayerSources.addSourceToMapLayerSources(source);
+      } catch (err) {
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
       }
 
       if (!isMounted.current) {
