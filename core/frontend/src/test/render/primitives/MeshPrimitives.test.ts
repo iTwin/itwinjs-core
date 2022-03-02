@@ -32,7 +32,7 @@ describe("MeshPrimitive Tests", () => {
     expect(m.features).to.be.undefined;
     expect(m.is2d).to.equal(is2d);
     expect(m.isPlanar).to.equal(isPlanar);
-    expect(m.points).to.not.be.empty;
+    expect(m.points.length).to.equal(0);
     expect(m.edges).to.be.undefined;
     expect(m.triangles).to.not.be.undefined;
     expect(m.polylines).to.be.undefined;
