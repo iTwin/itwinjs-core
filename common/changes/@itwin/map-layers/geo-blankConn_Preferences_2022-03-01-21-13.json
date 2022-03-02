@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "User Preferences is now supported for Blank Connection configurations.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}
