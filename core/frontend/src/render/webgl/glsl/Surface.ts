@@ -357,7 +357,7 @@ const computeNormal = `
   vec2 tc = g_vertexBaseCoords;
   tc.x += 3.0 * g_vert_stepX;
   vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertexData2;
+  vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertLutData[1].zw;
   return u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(MAT_NORM * octDecodeNormal(normal)) : vec3(0.0);
 `;
 
@@ -451,7 +451,7 @@ function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: Is
       vec2 tc = g_vertexBaseCoords;
       tc.x += 3.0 * g_vert_stepX;
       vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-      vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertexData2;
+      vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertLutData[1].zw;
       return u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(octDecodeNormal(normal)) : vec3(0.0);
     `);
   }

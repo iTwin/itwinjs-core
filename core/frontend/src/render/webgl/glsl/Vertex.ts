@@ -37,7 +37,6 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
   vec4 enc1 = g_vertLutData[0];
   vec4 enc2 = g_vertLutData[1];
   vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-  g_vertexData2 = enc2.zw;
   return unquantizePosition(qpos, origin, scale);
 }
 `;
@@ -158,7 +157,6 @@ const scratchLutParams = new Float32Array(4);
 function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexLUTIndex", VariableType.Float);
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
-  vert.addGlobal("g_vertexData2", VariableType.Vec2);
 
   vert.addFunction(decodeUint24);
   vert.addFunction(decodeUint16);

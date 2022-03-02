@@ -205,7 +205,7 @@ export function getComputeThematicIndex(instanced: boolean, skipSlopeAndHillShad
     vec2 tc = g_vertexBaseCoords;
     tc.x += 3.0 * g_vert_stepX;
     vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertexData2;
+    vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertLutData[1].zw;
     vec3 norm = u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? octDecodeNormal(normal) : vec3(0.0);
     v_thematicIndex = norm.z;
   }`;
