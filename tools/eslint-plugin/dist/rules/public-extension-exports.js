@@ -38,7 +38,7 @@ module.exports = {
   meta: {
     type: "problem",
     docs: {
-      description: "Prevent the exporting of extension APIs that not meet certain release tags.",
+      description: "Prevent the exporting of extension APIs that do not meet certain release tags.",
       category: "TypeScript",
     },
     messages: {
