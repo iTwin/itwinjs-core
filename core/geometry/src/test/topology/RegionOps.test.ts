@@ -966,6 +966,8 @@ describe("CloneSplitCurves", () => {
     rotatedCurve.tryTransformInPlace(scaleUp);
     testOffsetWrapper(ck, allGeometry, delta, Path.create(mirrorCurve, LineSegment3d.create(mirrorCurve.endPoint(), curve.startPoint()), curve), options);
     testOffsetWrapper(ck, allGeometry, delta, Path.create(rotatedCurve, LineSegment3d.create(rotatedCurve.endPoint(), curve.startPoint()), curve), options);
+    // save unclamped, clamped, control polygon, start point, end point
+    GeometryCoreTestIO.saveGeometry([curve, curve.clonePartialCurve(0,1), LineString3d.create(curve.copyXYZFloat64Array(true)), Arc3d.createXY(curve.startPoint(), 0.5), Arc3d.createXY(curve.endPoint(), 0.5)], "BSplineCurve", "Unclamped");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "OffsetCurves");
     expect(ck.getNumErrors()).equals(0);

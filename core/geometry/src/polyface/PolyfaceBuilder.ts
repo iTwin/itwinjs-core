@@ -1108,9 +1108,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
   private addBetweenRotatedStrokeSets(stroke0: AnyCurve, transformA: Transform, vA: number, transformB: Transform, vB: number) {
     if (stroke0 instanceof LineString3d) {
-      const strokeA = stroke0.cloneTransformed(transformA) as LineString3d;
+      const strokeA = stroke0.cloneTransformed(transformA);
       this.createIndicesInLineString(strokeA, vA);
-      const strokeB = stroke0.cloneTransformed(transformB) as LineString3d;
+      const strokeB = stroke0.cloneTransformed(transformB);
       this.createIndicesInLineString(strokeB, vB);
       this.addBetweenLineStringsWithStoredIndices(strokeA, strokeB);
     } else if (stroke0 instanceof ParityRegion) {
