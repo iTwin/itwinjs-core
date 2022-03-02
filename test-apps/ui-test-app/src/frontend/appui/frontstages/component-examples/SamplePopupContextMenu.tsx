@@ -139,7 +139,7 @@ export function ButtonWithDropdownMenu({ label, placement}: { label?: string, pl
 
   return (
     <div>
-      <DropdownMenu placement={placement??"bottom-start"} menuItems={createMenuItemNodes}>
+      <DropdownMenu appendTo="parent" placement={placement??"bottom-start"} menuItems={createMenuItemNodes}>
         {label
           ?
           <Button size="small" onClick={(e) => {
