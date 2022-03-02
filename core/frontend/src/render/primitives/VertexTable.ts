@@ -351,7 +351,8 @@ namespace Quantized {
    *  pos.y           02
    *  pos.z           04
    *  colorIndex      06
-   *  featureIndex    08
+   *  featureIndex    08 (24 bits)
+   *  materialIndex   0B (for meshes that use a material atlas; otherwise unused). NOTE: Currently front-end code does not produce material atlases.
    */
   export class SimpleBuilder<T extends Quantized<VertexData>> extends VertexTableBuilder {
     public args: T;
@@ -503,6 +504,7 @@ namespace Quantized {
  *  pos.y:        04
  *  pos.z:        08
  *  featureIndex: 0C
+ *  materialIndex:0F (NOTE: frontend code currently doesn't produce material atlases, so this is always zero).
  * Followed (by default) by:
  *  colorIndex:   10
  *  unused:       12
