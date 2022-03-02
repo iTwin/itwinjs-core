@@ -2941,7 +2941,7 @@ export interface ShowHideItem<T extends ShowHideID> {
     label: string;
 }
 
-// @public
+// @public @deprecated
 export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
     // @internal
     constructor(props: ShowHideMenuProps<T>);
@@ -2953,7 +2953,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
     readonly state: ShowHideMenuState<T>;
     }
 
-// @public
+// @public @deprecated
 export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMenuProps {
     initialHidden?: T[];
     items: Array<ShowHideItem<T>>;

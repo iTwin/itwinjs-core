@@ -326,7 +326,9 @@ public;ShowHideDialogProps
 public;ShowHideID = string | number | symbol
 public;ShowHideItem
 public;ShowHideMenu
+deprecated;ShowHideMenu
 public;ShowHideMenuProps
+deprecated;ShowHideMenuProps
 public;SimplePropertyDataProvider 
 public;SimpleTableDataProvider 
 public;SimpleTreeDataProvider 
