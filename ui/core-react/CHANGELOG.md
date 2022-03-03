@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-react
 
-This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+This log was last generated on Thu, 24 Feb 2022 15:26:55 GMT and should not be manually modified.
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+### Updates
+
+- `TreeNode`: Fix checkbox propagating click events to the parent element, resulting in unexpected TreeNodeProps.onClick invocations.
 
 ## 3.0.0
 Mon, 24 Jan 2022 14:00:52 GMT
