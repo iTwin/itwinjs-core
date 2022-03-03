@@ -20,23 +20,25 @@ BIS will expand to include all disciplines that participate in designing, constr
 
 BIS is not a monolithic schema, but is modularized into a family of “domain” Schemas. Those Schemas are organized into a clear hierarchy, as shown in the following figure.
 
-![A Family of Schemas](./media/a-family-of-schemas.png)
+&nbsp;
+![A Family of Schemas](../media/a-family-of-schemas.png)
+&nbsp;
 
-Schemas in any layer may refer to (be dependent upon) schemas in any lower layer. The layers of the schema hierarchy are intended to avoid circular dependencies while still allowing different domains to interoperate.
+Schemas in any layer may refer to (be dependent upon) schemas in the same layer of in any lower layer. The layers of the schema hierarchy are intended to avoid circular dependencies while still allowing different domains to interoperate.
 
 At the base of this hierarchy is the BisCore domain. BisCore defines the “fabric of the universe” and some key organizational strategies. All classes in other layers descend from classes in the BisCore allowing BIS-based software to understand – at least at some basic level – all BIS schemas, even BIS schemas it has never seen before.
 
-Above the Core is the Common layer. This layer is where concepts that span multiple disciplines are defined. Examples of these concepts are “grid lines”, “building”, “bridge”, “linear referencing”, “schedule”, etc.. There will likely be many Common Domains.
+Above the Core is the Common layer. This layer is where concepts that span multiple disciplines are defined. Examples of these concepts are “grid lines”, “network topology”, “distribution systems”, “linear referencing”, “spatial composition”, etc.
 
 The next 3 layers are divided horizontally by discipline (the “A”, “B” and “C”) and vertically by purpose (“Interop”, “Physical” and “Func/Analytical”):
 
 - The Interop layer is for defining mix-ins or other concepts that other disciplines will need to implement or reference; an example might be an IElectricalLoad mix-in that allows other disciplines to define that instances of their classes have electrical power requirements.
 
-- The Physical layer is for defining real-world physical entities and closely associated information.
+- The Physical layer is for defining real-world physical entities and closely associated information. This layer also comprises spatial composition schemas applicable to a discipline.
 
 - The Func/Analytical layer is for defining functional data (such as the process data behind P&ID drawings) and analytical data (such as the structural behavior data that is used to analyze a structure).
 
-The top layer is for the App schemas. These schemas are intended to be very small, and contain no data that any other application would need or want to access. Most data that is currently considered application data will be found in the discipline or common layers.
+The top layer is for the App schemas. These schemas contain no data that any other application would need or want to access. Product and iModel Connector schemas are examples of this layer.
 
 ## BIS Compatibility Grades for Schemas
 
@@ -46,8 +48,8 @@ The conversion of products to use BIS Domain Schemas can occur incrementally, bu
 - *Grade B*: Either:
   - Legacy “consensus” schemas (such as ISM), intelligently converted to BIS, or
   - New BIS schemas, with one-way conversion to BIS in mind, but not intended for editing (native format).
-- *Grade C*: Legacy schema, intelligently converted to follow basic BIS rules and patterns.
-- *Grade D*: Legacy schema, auto-converted
+- *Grade C*: Legacy schema with software-discoverable semantics, intelligently converted to follow relevant BIS rules and patterns.
+- *Grade D*: Legacy schema with minimim or no software-discoverable semantics, typically auto-converted, following basic BIS rules and patterns.
 
 ## Physical Backbone
 

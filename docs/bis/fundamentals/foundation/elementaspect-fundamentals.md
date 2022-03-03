@@ -43,9 +43,9 @@ Every ElementMultiAspect also has a *private* Id if an individual ElementMultiAs
 
 ## ElementAspects and Relationships
 
-ElementOwnsUniqueAspect and ElementOwnsMultiAspects relationships are used to define the ownership of ElementAspects by Elements, but what about other ElementAspect relationships? The only other relationships that ElementAspects may have are “outward” relationships that effectively map to a single foreign key in the ElementAspect. These “outward” relationships cannot be traversed *to* the ElementAspect.
+ElementOwnsUniqueAspect and ElementOwnsMultiAspects relationships are used to define the ownership of ElementAspects by Elements, but what about other ElementAspect relationships? The only other relationships that ElementAspects may have are “outward” relationships that effectively map to a single foreign key in the ElementAspect. This kind of relationships are implemented as navigation-properties in ECSchemas. ElementAspects cannot be the target of any other relationships.
 
-For example, A Fireproofing ElementAspect might have a Thickness property and a relationship to a FireproofingMaterial. As the relationship is “outward”, it would not be possible to find all the Fireproofing aspects that are related to a FireproofingMaterial without searching.
+For example, A Fireproofing ElementAspect might have a Thickness property and a relationship to a FireproofingMaterial via a navigation-property.
 
 General behaviors and uses of BIS relationships are discussed in [Relationship Fundamentals](./relationship-fundamentals.md).
 
@@ -53,6 +53,7 @@ General behaviors and uses of BIS relationships are discussed in [Relationship F
 
 Because ElementAspects are ECClasses, they have a fixed schema.
 This gives them the same first class *reporting* functionality as with Elements.
+
 ElementAspects are often used when the same set of properties needs to be stored for Elements that live in different parts of the class hierarchy.
 However, if the data is more ad-hoc, then Element `JsonProperties` are probably more appropriate.
 

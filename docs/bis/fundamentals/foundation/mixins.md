@@ -2,10 +2,6 @@
 
 Mixins play a key role in supporting cross-discipline coordination in BIS.
 
-<!-- TODO: Internal details? Remove?
-In the future, EC will be enhanced to have a formal interface feature, and BIS will take advantage of that capability. For the short term (BIM02) EC Mixin classes, custom attributes and schema validators will provide similar functionality.
--->
-
 A Mixin is an abstract EC class that follows a strict set of requirements that are intended to provide the desired functionality while minimizing confusion and implementation costs. The requirements may be relaxed in the future if use cases supporting relaxation are found. The requirements for a Mixin class are as follows:
 
 1. Mixins are abstract EC Entity classes.
@@ -21,19 +17,12 @@ The Mixin custom attribute is defined as follows:
 </ECCustomAttributeClass>
 ```
 
-A class incorporates a Mixin by declaring the Mixin class as a base class. An Mixin is never the first base class listed (that position is reserved for the “real” base class). A class may implement multiple Mixins, but may only have one “real” base class. Classes that incorporate Mixins must also follow strict rules:
+A class incorporates a Mixin by declaring the Mixin class as a base class. A Mixin is never the first base class listed (that position is reserved for the “real” base class). A class may implement multiple Mixins, but may only have one “real” base class. Classes that incorporate Mixins must also follow strict rules:
 
 1. The incorporating class must descend from the AppliesToEntityClass defined in the IsMixin custom attribute.
-2. The implementing class must not have an EC property (including inherited properties) that has the same name as a Mixin property.
+2. The implementing class must not have an inherited property that has the same name as a Mixin property.
 
-Mixins can be used as relationship endpoints.
-
-<!-- TODO: Internal implementation details? Remove?
-The rules for Mixins and the classes that incorporate Mixins will be enforced by two mechanisms:
-
-1. The EC Schema Editor will validate BIS schemas as they are edited.
-2. An automated (likely Firebug) build will continually check all BIS schemas for conformance.
--->
+In general, the usage of Mixins is recommended as relationship endpoints. There may be performance degradation of ECSQL queries retrieving data from properties via Mixins. Therefore, decisions about introducing properties in Mixins should be done with careful analysis of the use-cases requiring them.
 
 By convention, interface-like Mixin classes have class names with an “I” prefix. Interface-like Mixins satisfy one or more of the following criteria:
 

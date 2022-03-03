@@ -34,7 +34,7 @@ With the exception of data conversion programs, the UserLabel is always left for
 
 The `JsonProperties` member holds instance-specific *ad hoc* data on an Element in JSON format. It is a dictionary of key-value pairs, where the key is a *namespace* (see below) and the value is a JSON object. In this manner the `JsonProperties` member can hold any form and complexity of externally-defined (i.e. outside of BIS) data on any element.
 
-To avoid conflicts in naming values, the top-level names for members of `JsonProperties` are reserved for *namespaces*. There is no registry for namespaces, so they should be chosen to be long and unique enough to avoid the possibility of collision (at least 8 characters.) By convention,
+To avoid conflicts in naming values, the top-level names for members of `JsonProperties` are reserved for *namespaces*. There is no registry for namespaces, so they should be chosen to be long and unique enough to avoid the possibility of collision (at least 8 characters).
 
 > Note: all JSON property names, and therefore namespaces, are *case sensitive*.
 
@@ -91,19 +91,25 @@ There is one exception to the “Every Model models an Element” rule: There is
 
 When stored in an iModel, Elements also have a unique 64-bit *local* identifier, called an ElementId. ElementId is generated when new Elements are created by storing the BriefcaseId in the high 24 bits, with the next-available sequence number in the lower 40 bits. This allows new Elements to be created in any Briefcase without fear of ElementId collision.
 
+<!-- TODO
+What is a briefcase?
+-->
+
 ## Elements and Child Elements
 
 An Element may have child Elements. Both the parent and the children must live in the same Model. The parent-child relationship implies ownership and cascading deletes. This is discussed more in the [Assemblies](#assemblies) section below.
 
 ## Core Element Classes
 
-These are subclasses of Element defined in the BIS core from which all other Element classes must descend:
+These are subclasses of Element defined in the `BisCore` schema from which all other Element classes must descend:
 
 - `GeometricElement`
 - `InformationContentElement`
 - `RoleElement`
 
-![Core Element Classes](./media/core-element-types.png)
+&nbsp;
+![Core Element Classes](../media/core-element-types.png)
+&nbsp;
 
 ### GeometricElement
 
@@ -111,7 +117,9 @@ These are subclasses of Element defined in the BIS core from which all other Ele
 This includes physical entities (such as electrical panels, beams and pumps) as well as drawing graphics (lines, arcs, circles, and annotations like text, plots, etc) in geometric context.
 Merely having a geometric property is not necessarily enough to merit an entity being represented by a `GeometricElement`; for example, a steel section shape is an `DefinitionElement`, not a `GeometricElement`.
 
-![Geometric Element](./media/geometric-element.png)
+&nbsp;
+![Geometric Element](../media/geometric-element.png)
+&nbsp;
 
 The `GeometricElement` hierarchy defined in the `BisCore` schema is broken down as shown in the figure above.
 
@@ -143,21 +151,31 @@ Examples include:
 - A specification
 - An information record
 
-![Information Element](./media/information-element.png)
+&nbsp;
+![Information Element](../media/information-element.png)
+&nbsp;
 
 ### RoleElement
 
 Roles play a vital role (pun intended) in the ability of BIS to break down application-specific domain silos into pieces that allow common information to be shared and leveraged.
 
-![Role Element](./media/role-element.png)
+&nbsp;
+![Role Element](../media/role-element.png)
+&nbsp;
 
 Use person/lawyer/father/son example
 
-![Person Lawyer Father Son Example](./media/person-lawyer-father-son.png)
+&nbsp;
+![Person Lawyer Father Son Example](../media/person-lawyer-father-son.png)
+&nbsp;
 
-![Person Lawyer Father Son Example 2](./media/person-lawyer-father-son-2.png)
+&nbsp;
+![Person Lawyer Father Son Example 2](../media/person-lawyer-father-son-2.png)
+&nbsp;
 
-![Pollution Risk Example](./media/pollution-risk-example.png)
+&nbsp;
+![Pollution Risk Example](../media/pollution-risk-example.png)
+&nbsp;
 
 Roles are linked to each other through the PhysicalElement.
 
@@ -165,13 +183,9 @@ Each role may include some redundant information, but should generally share the
 
 In our virtual world, roles can get “out of sync” with the PhysicalElements, and can even exist without the corresponding PhysicalElement existing. These out of sync cases often represent incomplete work (the P&ID has changed, but the 3d model has not yet been updated to reflect the changes), but sometimes reflect a long-term condition (the vehicle role is modeled in the asset management system, but there is no need to create the physical model of the truck).
 
-### Example of Element Type Usage
-
-![Element Type Usage Example](./media/element-type-usage.png)
-
 ## Assemblies
 
-An Element can optionally have a *parent* Element. Parent Elements must be in the same Model as their children. A hierarchy of Elements can be created through these parent-child relationships (note: all the Elements in a hierarchy will reside in the same Model.) An Element that is a parent, can be considered to *assemble* its children, and collectively they are termed an *Assembly*. Assemblies can nest. Circular networks of parent-child relationship are not allowed.
+An Element can optionally have a *parent* Element. Parent Elements must be in the same Model as their children. A hierarchy of Elements can be created through these parent-child relationships (note: all the Elements in a hierarchy will reside in the same Model). An Element that is a parent can be considered to *assemble* its children and, collectively, they are termed an *Assembly*. Assemblies can nest. Circular networks of parent-child relationship are not allowed.
 
 Assemblies imply ownership and cascading deletes. When a parent Element is deleted, all of its children are deleted as well.
 
@@ -186,9 +200,9 @@ As an Element can only have a single parent, it is important that domains and ap
 Elements classes will generally fall into four categories:
 
 1. The Element can have any or no parents (example: Bolt).
-2. The Element cannot have a parent
+2. The Element cannot have a parent.
 3. The Element can only have a parent of a particular class.
-4. The Element always has a parent, but there is little restraint on the class of the parent (example: Hole)
+4. The Element always has a parent, but there is little restraint on the class of the parent (example: Hole).
 
 When designing assemblies, care must be taken to avoid double-counting.
 
@@ -196,7 +210,7 @@ See also the IParentElement and ISubModeledElement section below.
 
 ## IParentElement and ISubModeledElement
 
-This section tries not to repeat the material in [Model Fundamentals](./model-fundamentals.md) and [Information Hierarchy](./information-hierarchy.md).
+This section tries not to repeat the material in [Model Fundamentals](./model-fundamentals.md) and [Information Hierarchy](../data-organization/information-hierarchy.md).
 If you have questions about how Elements breakdown into Models, you may want to skim those articles.
 
 There are two mixins that declare and define key behaviors of an Element:
@@ -204,14 +218,9 @@ There are two mixins that declare and define key behaviors of an Element:
 - `IParentElement` – this Element can be a parent Element
 - `ISubModeledElement` – this Element can have an associated breakdown Model
 
-The Element class does not include either of these interfaces, so by default no Element can have children or can be broken down into a Model. Many Elements have no need for child Elements or breakdown Models and will therefore use neither of these interfaces. A Bolt class is a example of a class that requires neither.
+The Element class does not include either of these interfaces, so by default no Element can have children or can be broken down into a Model. Many Elements have no need for child Elements or breakdown Models and will therefore use neither of these mixins. A Bolt class is a example of a class that requires neither.
 
-These mixins are expected to be mutually-exclusive. No class that implements `IParentElement` will also implement `ISubModeledElement`. The reason these two interfaces are considered mutually-exclusive is that the two concepts (having children and having a model) are both means of breaking down something into more detail; using two different breakdown methods simultaneously could result in confusion and double-counting.
-
-<!--
-TODO: Confirm if below is needed!
-It should be noted that these mixins can be added to a class in a minor schema update that will not break generation compatibility, so there is no need to implement them until they are needed.
--->
+These mixins are expected to be mutually-exclusive. No class that implements `IParentElement` will also implement `ISubModeledElement`. The reason these two mixins are considered mutually-exclusive is that the two concepts (having children and having a model) are both means of breaking down something into more detail; using two different breakdown methods simultaneously could result in confusion and double-counting.
 
 ## Parent-Child Relationships
 
