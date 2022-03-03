@@ -296,7 +296,7 @@ export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
     return;
 
   const computeFeatureAndMaterialIndex = `
-    g_featureAndMaterialIndex = g_vertLutData[2];
+    g_featureAndMaterialIndex = g_usesQuantizedPosition ? g_vertLutData[2] : g_vertLutData[3];
   `;
 
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);

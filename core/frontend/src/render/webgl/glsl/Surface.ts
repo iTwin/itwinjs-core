@@ -216,7 +216,7 @@ const computePositionPostlude = `
 function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isThematic: IsThematic, isHiliter: boolean): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, instanced);
-  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 4, instanced });
+  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 6, instanced });
   const vert = builder.vert;
 
   if (animated)
@@ -354,8 +354,16 @@ vec3 octDecodeNormal(vec2 e) {
 `;
 
 const computeNormal = `
-  vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? g_vertLutData[3].xy : g_vertLutData[1].zw;
-  return u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(MAT_NORM * octDecodeNormal(normal)) : vec3(0.0);
+  if (!u_surfaceFlags[kSurfaceBitIndex_HasNormals])
+    return vec3(0.0);
+
+  vec2 normal;
+  if (u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal])
+    normal = g_usesQuantizedPosition ? g_vertLutData[3].xy : g_vertLutData[4].zw;
+  else
+    normal = g_usesQuantizedPosition ? g_vertLutData[1].zw : g_vertLutData[5].xy;
+
+  return normalize(MAT_NORM * octDecodeNormal(normal));
 `;
 
 const computeAnimatedNormal = `
@@ -368,7 +376,7 @@ const applyBackgroundColor = `
 `;
 
 const computeTexCoord = `
-  vec4 rgba = g_vertLutData[3];
+  vec4 rgba = g_usesQuantizedPosition ? g_vertLutData[3] : g_vertLutData[4];
   vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
   return chooseVec2WithBitFlag(vec2(0.0), unquantize2d(qcoords, u_qTexCoordParams), surfaceFlags, kSurfaceBit_HasTexture);
 `;

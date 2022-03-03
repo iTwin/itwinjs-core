@@ -38,7 +38,7 @@ const computeRoundCorners = "  v_roundCorners = gl_PointSize > 4.0 ? 1.0 : 0.0;"
 function createBase(instanced: IsInstanced): ProgramBuilder {
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.PointString, IsInstanced.Yes === instanced);
 
-  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 3, instanced: IsInstanced.Yes === instanced });
+  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 5, instanced: IsInstanced.Yes === instanced });
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);

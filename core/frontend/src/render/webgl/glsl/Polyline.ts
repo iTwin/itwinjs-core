@@ -335,7 +335,7 @@ const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 export function createPolylineBuilder(isInstanced: IsInstanced): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
-  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 3, instanced });
+  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 5, instanced });
 
   addShaderFlags(builder);
 
@@ -354,7 +354,7 @@ export function createPolylineBuilder(isInstanced: IsInstanced): ProgramBuilder 
 export function createPolylineHiliter(isInstanced: IsInstanced): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
-  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 3, instanced });
+  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 5, instanced });
 
   addCommon(builder);
   addFrustum(builder);
