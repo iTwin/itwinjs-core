@@ -18,6 +18,7 @@
 - [Model Fundamentals](./fundamentals/foundation/model-fundamentals.md)
 - [Relationship Fundamentals](./fundamentals/foundation/relationship-fundamentals.md)
 - [Schemas (“Domains”)](./fundamentals/foundation/schemas-domains.md)
+- [Data Classification](./fundamentals/foundation/data-classification.md)
 - [Categories](./fundamentals/foundation/categories.md)
 
 #### Data Organization
@@ -28,23 +29,25 @@
 - [Organizing Models and Elements](./fundamentals/dataorg/organizing-models-and-elements.md)
 - [Modeling Systems](./fundamentals/dataorg/modeling-systems.md)
 - [Overlapping Systems](./fundamentals/dataorg/overlapping-systems.md)
+- [Organizing Global Definition Elements](./fundamentals/dataorg/organizing-definition-elements.md)
 
 #### Physical Modeling Perspective
 - [3D Guidance](./fundamentals/physicalpers/3d-guidance.md)
 - [PhysicalModel Hierarchy](./fundamentals/physicalpers/physical-hierarchy-organization.md)
 - [Physical Models and Elements](./fundamentals/physicalpers/physical-models-and-elements.md)
 - [Type Definitions](./fundamentals/physicalpers/type-definitions.md)
+- [Physical Materials](./fundamentals/physicalpers/physical-materials.md)
 
 #### Other Modeling Perspectives
-- [Functional Models and Elements](./fundamentals/otherpers/functional-models-and-elements.md)
-- [Analysis Models and Elements](./fundamentals/otherpers/analysis-models-and-elements.md)
-- [Information Models and Elements](./fundamentals/otherpers/information-models-and-elements.md)
+- [Functional Models and Elements](./fundamentals/other-perspectives/functional-models-and-elements.md)
+- [Analysis Models and Elements](./fundamentals/other-perspectives/analysis-models-and-elements.md)
+- [Information Models and Elements](./fundamentals/other-perspectives/information-models-and-elements.md)
 
 #### Schema Evolution
-- [Schema Customization](./fundamentals/schmevol/schema-customization.md)
-- [Data Evolution Across Time](./fundamentals/schmevol/appendix-a-data-evolution-across-time.md)
-- [Schema Versioning](./fundamentals/schmevol/schema-versioning-and-generations.md)
-- [Schema Production Status](./fundamentals/schmevol/schema-production-status.md)
+- [Schema Customization](./fundamentals/schema-evolution/schema-customization.md)
+- [Data Evolution Across Time](./fundamentals/schema-evolution/appendix-a-data-evolution-across-time.md)
+- [Schema Versioning](./fundamentals/schema-evolution/schema-versioning-and-generations.md)
+- [Schema Production Status](./fundamentals/schema-evolution/schema-production-status.md)
 
 #### BIS Naming Guidelines
 
