@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2d } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
-import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { MeshArgs, Point3dList } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
@@ -51,7 +51,7 @@ describe("VertexLUT", () => {
   before(async () => MockRender.App.startup());
   after(async () => MockRender.App.shutdown());
 
-  it("should produce correct VertexLUT.Params from MeshArgs", () => {
+  it("should produce correct VertexLUT.Params from quantized MeshArgs", () => {
     // Make a mesh consisting of a single triangle.
     const positions = new QPoint3dList(QParams3d.fromZeroToOne());
     positions.push(QPoint3d.fromScalars(0, 1, 2));
@@ -139,5 +139,97 @@ describe("VertexLUT", () => {
     ];
 
     expectMeshParams(args, args.colors, expected, expectedColors);
+  });
+
+  it("should produce correct VertexLUT.Params from unquantized MeshArgs", () => {
+    // Make a mesh consisting of a single triangle
+    const positions = [
+      new Point3d(0, 1, 2),
+      new Point3d(-1, 0, 1),
+      new Point3d(12.34, 99999.9, -98.76),
+    ] as Point3dList;
+
+    positions.range = Range3d.createArray(positions);
+    const args: MeshArgs = {
+      points: positions,
+      vertIndices: [0, 1, 2],
+      colors: new ColorIndex(),
+      features: new FeatureIndex(),
+      fillFlags: FillFlags.None,
+    };
+
+    const makeExpected = () => [
+      [
+        0x00, 0x00, 0x00, 0x00, // pos.x
+        0x00, 0x00, 0x80, 0x3f, // pos.y
+        0x00, 0x00, 0x00, 0x40, // pos.z
+        0x00, 0x00, 0x00, 0x00, // feature index
+        0x00, 0x00, 0x00, 0x00, // color index; unused
+      ],
+      [
+        0x00, 0x00, 0x80, 0xbf,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x80, 0x3f,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+      ],
+      [
+        0xa4, 0x70, 0x45, 0x41,
+        0xf3, 0x4f, 0xc3, 0x47,
+        0x1f, 0x85, 0xc5, 0xc2,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+      ],
+    ];
+
+    expectMeshParams(args, args.colors, makeExpected());
+
+    // Add uv params
+    args.textureMapping = {
+      texture: new FakeTexture(),
+      // quantized: (0, 0xffff),      (0xffff, 0x8000),   (0x8000, 0)
+      uvParams: [new Point2d(-1, 1), new Point2d(1, 0), new Point2d(0, -1)],
+    };
+
+    const wUvs = makeExpected();
+    wUvs[0][16] = 0x00; wUvs[0][17] = 0x00; wUvs[0][18] = 0xff; wUvs[0][19] = 0xff;
+    wUvs[1][16] = 0xff; wUvs[1][17] = 0xff; wUvs[1][18] = 0x00; wUvs[1][19] = 0x80;
+    wUvs[2][16] = 0x00; wUvs[2][17] = 0x80; wUvs[2][18] = 0x00; wUvs[2][19] = 0x00;
+
+    expectMeshParams(args, args.colors, wUvs, undefined, QParams2d.fromNormalizedRange());
+
+    // Add feature IDs
+    args.features.type = FeatureIndexType.NonUniform;
+    args.features.featureIDs = new Uint32Array(3);
+    args.features.featureIDs[0] = 0xbaadf00d;
+    args.features.featureIDs[1] = 0xc001bead;
+    args.features.featureIDs[2] = 0;
+
+    const wIds = makeExpected();
+    wIds[0][12] = 0x0d; wIds[0][13] = 0xf0; wIds[0][14] = 0xad; wIds[0][15] = 0xba;
+    wIds[1][12] = 0xad; wIds[1][13] = 0xbe; wIds[1][14] = 0x01; wIds[1][15] = 0xc0;
+
+    expectMeshParams(args, args.colors, wIds);
+
+    // Add non-uniform color
+    const colors = new Uint32Array(3);
+    colors[0] = 0xffeeddcc;
+    colors[1] = 0x00010203;
+    colors[2] = 0x7f00ff00;
+    const colorIndices = [0, 0x0001, 0xffee];
+    args.colors.initNonUniform(colors, colorIndices, true);
+
+    const wClr = makeExpected();
+    wClr[1][16] = 0x01; wClr[1][17] = 0x00;
+    wClr[2][16] = 0xee; wClr[2][17] = 0xff;
+
+    // NB: The color values in VertexLUT.Params have premultiplied alpha, and alpha set to (255 - transparency)
+    const expectedColors = [
+      0x00, 0x00, 0x00, 0x00,
+      0x03, 0x02, 0x01, 0xff,
+      0x00, 0x80, 0x00, 0x80,
+    ];
+
+    expectMeshParams(args, args.colors, wClr, expectedColors);
   });
 });
