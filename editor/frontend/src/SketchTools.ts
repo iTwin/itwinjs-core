@@ -612,7 +612,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     if (undefined === continuePath)
       return;
 
-    const current = this.current.clone() as CurvePrimitive;
+    const current = this.current.clone();
     if (undefined === current)
       return;
 

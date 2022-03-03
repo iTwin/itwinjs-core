@@ -414,6 +414,12 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return false;
   }
 
+  /** Return a deep clone. */
+  public abstract override clone(): CurvePrimitive;
+
+  /** Return a transformed deep clone. */
+  public abstract override cloneTransformed(transform: Transform): CurvePrimitive | undefined;
+
   /** Return (if possible) a curve primitive which is a portion of this curve.
    * @param _fractionA [in] start fraction
    * @param _fractionB [in] end fraction

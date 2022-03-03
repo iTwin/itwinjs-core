@@ -146,7 +146,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
 
   }
   /** Recompute strokes */
-  public refreshComputedProperties() {
+  public override refreshComputedProperties() {
     this._curvature01 = Segment1d.create(
       TransitionSpiral3d.radiusToCurvature(this.radius01.x0),
       TransitionSpiral3d.radiusToCurvature(this.radius01.x1));
@@ -247,21 +247,11 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     return this;
   }
   /** Deep clone of this spiral */
-  public clone(): IntegratedSpiral3d {
+  public override clone(): IntegratedSpiral3d {
     return new IntegratedSpiral3d(this._spiralType, this._evaluator,
       this.radius01.clone(), this.bearing01.clone(),
       this.activeFractionInterval.clone(), this.localToWorld.clone(), this._arcLength01,
       this._designProperties?.clone());
-  }
-
-  /** Return (if possible) a spiral which is a portion of this curve. */
-  public override clonePartialCurve(fractionA: number, fractionB: number): IntegratedSpiral3d | undefined {
-    const spiralB = this.clone();
-    const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
-    const globalFractionB = this._activeFractionInterval.fractionToPoint(fractionB);
-    spiralB._activeFractionInterval.set(globalFractionA, globalFractionB);
-    spiralB.refreshComputedProperties();
-    return spiralB;
   }
 
   /** apply `transform` to this spiral's local to world transform. */
@@ -278,12 +268,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     this.refreshComputedProperties();
     return true;
   }
-  /** Clone with a transform applied  */
-  public cloneTransformed(transform: Transform): TransitionSpiral3d {
-    const result = this.clone();
-    result.tryTransformInPlace(transform); // ok, we're confident it will always work.
-    return result;
-  }
+
   /** Return the spiral start point. */
   public override startPoint(): Point3d { return this.activeStrokes.startPoint(); }
   /** return the spiral end point. */

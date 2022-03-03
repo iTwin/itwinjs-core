@@ -124,7 +124,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    *  Return a clone of the arc, with transform applied
    * @param transform
    */
-  public cloneTransformed(transform: Transform): CurvePrimitive {  // we know tryTransformInPlace succeeds.
+  public cloneTransformed(transform: Transform): Arc3d {  // we know tryTransformInPlace succeeds.
     const c = this.clone();
     c.tryTransformInPlace(transform);
     return c;

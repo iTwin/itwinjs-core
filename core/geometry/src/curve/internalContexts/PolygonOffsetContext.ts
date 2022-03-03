@@ -242,7 +242,7 @@ class Joint {
         const fB = joint.nextJointFraction0(1.0);
         let curve1;
         if (fA === 0.0 && fB === 1.0)
-          curve1 = joint.curve1.clone() as CurvePrimitive;
+          curve1 = joint.curve1.clone();
         else if (fA < fB)
           curve1 = joint.curve1.clonePartialCurve(fA, fB);
         if (curve1) {
@@ -300,7 +300,7 @@ class Joint {
         const fB = joint.nextJointFraction0(1.0);
         let curve1;
         if (fA === 0.0 && fB === 1.0)
-          curve1 = joint.curve1.clone() as CurvePrimitive;
+          curve1 = joint.curve1.clone();
         else if (fA < fB)
           curve1 = joint.curve1.clonePartialCurve(fA, fB);
         this.collectPrimitive(destination, curve1);
