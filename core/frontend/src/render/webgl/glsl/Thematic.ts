@@ -202,9 +202,7 @@ export function getComputeThematicIndex(instanced: boolean, skipSlopeAndHillShad
     v_thematicIndex = findFractionalPositionOnLine(a, b, c);
   }`;
   const hillShadeMode = ` else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
-    vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? g_vertLutData[3].xy : g_vertLutData[1].zw;
-    vec3 norm = u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? octDecodeNormal(normal) : vec3(0.0);
-    v_thematicIndex = norm.z;
+    v_thematicIndex = computeSurfaceNormal().z;
   }`;
   const hillShadeMode2 = ` else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
     v_thematicIndex = g_hillshadeIndex;

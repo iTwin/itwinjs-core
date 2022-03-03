@@ -65,7 +65,7 @@ export class AuxChannelLUT implements WebGLDisposable {
   }
 }
 
-/** Represents the finished lookup table ready for submittal to GPU.
+/** Represents the finished lookup table ready for submission to GPU.
  * @internal
  */
 export class VertexLUT implements WebGLDisposable {
@@ -73,9 +73,9 @@ export class VertexLUT implements WebGLDisposable {
   public readonly numVertices: number;
   public readonly numRgbaPerVertex: number;
   public readonly colorInfo: ColorInfo;
-  public readonly usesQuantizedPositions: boolean;
-  public readonly qOrigin: Float32Array;  // Origin of quantized positions
-  public readonly qScale: Float32Array;   // Scale of quantized positions
+  public readonly usesQuantizedPositions: boolean; // If true, positions are 16-bit integers quantized to qOrigin and qScale; otherwise they are unquantized 32-bit floats.
+  public readonly qOrigin: Float32Array;  // Origin of quantized range
+  public readonly qScale: Float32Array;   // Scale of quantized range
   public readonly uvQParams?: Float32Array; // If vertices contain texture UV params, quantization parameters as [origin.x, origin.y, scale.x, scale.y ]
   public readonly auxChannels?: AuxChannelLUT;
 

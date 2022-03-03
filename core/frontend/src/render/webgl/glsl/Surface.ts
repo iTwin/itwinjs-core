@@ -435,17 +435,15 @@ function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: Is
 
   builder.vert.addFunction(octDecodeNormal);
   addChooseWithBitFlagFunctions(builder.vert);
-  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : computeNormal);
+  builder.vert.addFunction("vec3 computeSurfaceNormal()", computeNormal);
+  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : "return computeSurfaceNormal();");
 
   // Set to true to colorize surfaces based on normals (in world space).
   // You must also set checkMaxVarying to false in ProgramBuilder.buildProgram to avoid assertions, if using a non-optimized build.
   const debugNormals = false;
   if (debugNormals) {
     builder.frag.set(FragmentShaderComponent.ApplyDebugColor, "return vec4(vec3(v_normal / 2.0 + 0.5), baseColor.a);");
-    builder.addFunctionComputedVarying("v_normal", VariableType.Vec3, "computeDebugNormal", `
-      vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? g_vertLutData[3].xy : g_vertLutData[1].zw;
-      return u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(octDecodeNormal(normal)) : vec3(0.0);
-    `);
+    builder.addInlineComputedVarying("v_normal", VariableType.Vec3, "v_normal = computeSurfaceNormal();");
   }
 }
 
