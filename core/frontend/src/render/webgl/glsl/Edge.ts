@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { IsAnimated, IsInstanced, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { TextureUnit } from "../RenderFlags";

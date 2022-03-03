@@ -7,7 +7,7 @@ import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { ColorIndex, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, PolylineData, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
-import { MeshArgs, MeshArgsEdges, } from "../../../render/primitives/mesh/MeshPrimitives";
+import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
 import { VertexIndices } from "../../../render/primitives/VertexTable";
 import { EdgeParams, EdgeTable } from "../../../render/primitives/EdgeParams";
 
@@ -217,20 +217,20 @@ describe("IndexedEdgeParams", () => {
 
       function makeEdgeTable(nSegs: number, nSils: number): EdgeTable {
         const meshargs = createMeshArgs();
-        const edges = meshargs.edges!;
-        expect(edges).not.to.be.undefined;
-        edges.polylines.clear();
-        edges.silhouettes.clear();
+        const edgs = meshargs.edges!;
+        expect(edgs).not.to.be.undefined;
+        edgs.polylines.clear();
+        edgs.silhouettes.clear();
 
-        edges.edges.edges = [];
+        edgs.edges.edges = [];
         for (let i = 0; i < nSegs; i++)
-          edges.edges.edges.push(new MeshEdge(0, 1));
+          edgs.edges.edges.push(new MeshEdge(0, 1));
 
-        edges.silhouettes.edges = [];
-        edges.silhouettes.normals = [];
+        edgs.silhouettes.edges = [];
+        edgs.silhouettes.normals = [];
         for (let i = 0; i < nSils; i++) {
-          edges.silhouettes.edges.push(new MeshEdge(2 + i, 3));
-          edges.silhouettes.normals.push(makeNormalPair(4, 5));
+          edgs.silhouettes.edges.push(new MeshEdge(2 + i, 3));
+          edgs.silhouettes.normals.push(makeNormalPair(4, 5));
         }
 
         const edgeParams = EdgeParams.fromMeshArgs(meshargs, 15)!;

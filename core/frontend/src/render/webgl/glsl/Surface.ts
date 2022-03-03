@@ -11,7 +11,7 @@ import { AttributeMap } from "../AttributeMap";
 import { Material } from "../Material";
 import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
 import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent,
+  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
 import { FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";

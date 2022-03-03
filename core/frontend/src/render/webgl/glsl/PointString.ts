@@ -7,7 +7,7 @@
  */
 
 import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { IsInstanced } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addColor } from "./Color";

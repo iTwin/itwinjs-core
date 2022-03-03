@@ -158,7 +158,7 @@ export class VertexTable implements VertexTableProps {
   /** If true, positions are not quantized but instead stored as 32-bit floats.
    * [[qparams]] will still be defined; it can be used to derive the range of positions in the table.
    */
-  readonly usesUnquantizedPositions?: boolean;
+  public readonly usesUnquantizedPositions?: boolean;
   /** Quantization parameters for the vertex positions encoded into the array, the positions are quantized;
    * and for deriving the range of positions in the table, whether quantized or not.
    */
@@ -265,7 +265,7 @@ export class MeshParams {
     const builder = createMeshBuilder(args);
     const vertices = VertexTable.buildFrom(builder, args.colors, args.features);
 
-    const surfaceIndices = VertexIndices.fromArray(args.vertIndices!);
+    const surfaceIndices = VertexIndices.fromArray(args.vertIndices);
 
     const surface: SurfaceParams = {
       type: builder.type,
@@ -359,7 +359,7 @@ type VertexData = PolylineArgs | MeshArgs;
 type Quantized<T extends VertexData> = Omit<T, "points"> & { points: QPoint3dList };
 type Unquantized<T extends VertexData> = Omit<T, "points"> & { points: Omit<Point3dList, "add"> };
 
-namespace Quantized {
+namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
   /**
    * Supplies vertex data from a PolylineArgs or MeshArgs. Each vertex consists of 12 bytes:
    *  pos.x           00
@@ -380,7 +380,7 @@ namespace Quantized {
       assert(undefined !== this.args.points);
     }
 
-    public get numVertices() { return this.args.points!.length; }
+    public get numVertices() { return this.args.points.length; }
     public get numRgbaPerVertex() { return 3; }
     public get usesUnquantizedPositions() { return false; }
     public get qparams() {
@@ -439,7 +439,7 @@ namespace Quantized {
         const fpts = args.textureMapping.uvParams;
         const pt2d = new Point2d();
         if (undefined !== fpts && fpts.length > 0)
-          for (let i = 0; i < args.points!.length; i++)
+          for (let i = 0; i < args.points.length; i++)
             uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
 
         uvParams = QParams2d.fromRange(uvRange);
@@ -526,7 +526,7 @@ namespace Quantized {
  *  unused:       12
  * Subclasses may add 4 more bytes and/or overwrite the final 4 bytes above.
  */
-namespace Unquantized {
+namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
   const u32Array = new Uint32Array(1);
   const f32Array = new Float32Array(u32Array.buffer);
 
@@ -610,7 +610,7 @@ namespace Unquantized {
         const fpts = args.textureMapping.uvParams;
         const pt2d = new Point2d();
         if (undefined !== fpts && fpts.length > 0)
-          for (let i = 0; i < args.points!.length; i++)
+          for (let i = 0; i < args.points.length; i++)
             uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
 
         uvParams = QParams2d.fromRange(uvRange);

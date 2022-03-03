@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
-import { ColorDef, MeshPolyline, OctEncodedNormal, QPoint3d } from "@itwin/core-common";
+import { ColorDef, MeshPolyline, OctEncodedNormal } from "@itwin/core-common";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Triangle } from "../../../render/primitives/Primitives";
 import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";

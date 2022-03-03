@@ -62,7 +62,7 @@ export namespace PolylineArgs {
     for (const polyline of mesh.polylines) {
       const polylineData = new PolylineData();
       if (polylineData.init(polyline))
-          polylines.push(polylineData);
+        polylines.push(polylineData);
     }
 
     if (polylines.length === 0)
