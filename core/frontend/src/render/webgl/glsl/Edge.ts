@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { IsAnimated, IsInstanced, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { TextureUnit } from "../RenderFlags";
@@ -27,11 +27,20 @@ export type EdgeBuilderType = "SegmentEdge" | "Silhouette" | "IndexedEdge";
 
 const computeOtherPos = `
   vec2 tc = computeLUTCoords(g_otherIndex, u_vertParams.xy, g_vert_center, u_vertParams.z);
-  vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  tc.x += g_vert_stepX;
-  vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-  g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
+  if (g_usesQuantizedPosition) {
+    vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+    tc.x += g_vert_stepX;
+    vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+    vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
+    g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
+  } else {
+    for (int i = 0; i < 3; i++) {
+      g_otherPos[i] = decodeFloat32(floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5));
+      tc.x += g_vert_stepX;
+    }
+
+    g_otherPos.w = 1.0;
+  }
 `;
 
 const decodeEndPointAndQuadIndices = `
@@ -227,7 +236,7 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
   const techId = isSilhouette ? TechniqueId.SilhouetteEdge : (isIndexed ? TechniqueId.IndexedEdge : TechniqueId.Edge);
   const attrMap = AttributeMap.findAttributeMap(techId, isInstanced);
 
-  const builder = new ProgramBuilder(attrMap, isInstanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 5, instanced: isInstanced });
   const vert = builder.vert;
 
   vert.addGlobal("g_otherPos", VariableType.Vec4);
