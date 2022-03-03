@@ -59,7 +59,7 @@ const globalSymbol = Symbol.for("itwin.core.frontend.globals");
 if ((globalThis as any)[globalSymbol])
   throw new Error("Multiple @itwin/core-frontend imports detected!");
 
-const getextensions = (id: string) => {
+const getExtensionApi = (id: string) => {
   return {
     exports: {
       // Tools
@@ -99,5 +99,5 @@ const getextensions = (id: string) => {
 };
 
 (globalThis as any)[globalSymbol] = {
-  getextensions,
+  getExtensionApi,
 };
