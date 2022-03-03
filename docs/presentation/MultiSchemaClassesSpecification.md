@@ -29,5 +29,7 @@ Defines whether the derived ECClasses should be included in the result.
 ## Example
 
 ```ts
-[[include:ContentInstancesOfSpecificClasses.MultiSchemaClasses.Ruleset]]
+[[include:MultiSchemaClasses.Ruleset]]
 ```
+
+![Content of physical models and spatial categories](./media/multischemaclasses.png)

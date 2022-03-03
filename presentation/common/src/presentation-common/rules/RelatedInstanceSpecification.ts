@@ -61,7 +61,7 @@ import { RelationshipPathSpecification } from "./RelationshipPathSpecification";
  * - The `LabelOverride` rule to use `modeledElement` alias to access properties of the joined related instance.
  * - The `GroupingRule` to be applied because it's grouping `BisCore:Element` which is now part of the generated nodes.
  *
- * @see [More details]($docs/presentation/Common-Rules/RelatedInstanceSpecification.md)
+ * @see [More details]($docs/presentation/RelatedInstanceSpecification.md)
  * @public
  */
 export interface RelatedInstanceSpecification {
