@@ -132,7 +132,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     const { facetAreaTolerance, tolerance, is2d, range } = this;
     const key = this.getKey(displayParams, type, hasNormals, isPlanar);
 
-    const quantizePositions = true; // ###TODO false or configurable
+    const quantizePositions = false; // ###TODO make configurable
     return this.getBuilderFromKey(key, {
       displayParams,
       type,
