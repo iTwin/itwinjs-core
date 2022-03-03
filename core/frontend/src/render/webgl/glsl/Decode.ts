@@ -87,18 +87,19 @@ export function addUnpackAndNormalize2Bytes(builder: ShaderBuilder): void {
 }
 
 /** Given an IEEE 32-bit float stuffed into a RGBA unsigned byte texture, extract the float.
- * From https://stackoverflow.com/questions/63827836/is-it-possible-to-do-a-rgba-to-float-and-back-round-trip-and-read-the-pixels-in
+ * The input vec4 components are in the integer range [0..255].
+ * From https://github.com/CesiumGS/cesium/blob/main/Source/Shaders/Builtin/Functions/unpackFloat.glsl
  * @internal
  */
 export const decodeFloat32 = `
-float decodeFloat32(vec4 v) {
-  vec4 bits = v * 255.0;
-  float sign = mix(-1.0, 1.0, step(bits[3], 128.0));
-  float expo = floor(mod(bits[3] + 0.1, 128.0)) * 2.0 +
-               floor((bits[2] + 0.1) / 128.0) - 127.0;
-  float sig = bits[0] +
-              bits[1] * 256.0 +
-              floor(mod(bits[2] + 0.1, 128.0)) * 256.0 * 256.0;
-  return sign * (1.0 + sig / 8388607.0) * pow(2.0, expo);
+float decodeFloat32(vec4 packedFloat) {
+  float sign = 1.0 - step(128.0, packedFloat[3]) * 2.0;
+  float exponent = 2.0 * mod(packedFloat[3], 128.0) + step(128.0, packedFloat[2]) - 127.0;    
+  if (exponent == -127.0)
+    return 0.0;
+
+  float mantissa = mod(packedFloat[2], 128.0) * 65536.0 + packedFloat[1] * 256.0 + packedFloat[0] + float(0x800000);
+  float result = sign * exp2(exponent - 23.0) * mantissa;
+  return result;
 }
 `;
