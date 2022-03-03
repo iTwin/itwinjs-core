@@ -10,7 +10,7 @@ import { IModelConnection } from "../../../IModelConnection";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { StandardViewId } from "../../../StandardView";
 import { SpatialViewState } from "../../../SpatialViewState";
-import { Branch } from "../../../render/webgl/Graphic";
+import { GraphicsArray } from "../../../render/webgl/Graphic";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeGeometry } from "./Fake";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
@@ -265,7 +265,7 @@ describe("GeometryAccumulator tests", () => {
     accum.saveToGraphicList(graphics, new GeometryOptions(GenerateEdges.No), 0.22);
     expect(graphics.length).to.equal(1);
     const graphic = graphics[0];
-    expect(graphic instanceof Branch).to.be.true;
-    expect((graphic as Branch).branch.entries.length).to.equal(2);
+    expect(graphic instanceof GraphicsArray).to.be.true;
+    expect((graphic as GraphicsArray).graphics.length).to.equal(2);
   });
 });
