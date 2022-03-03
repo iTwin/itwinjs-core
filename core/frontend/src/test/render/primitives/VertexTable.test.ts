@@ -191,12 +191,12 @@ describe("VertexLUT", () => {
       uvParams: [new Point2d(-1, 1), new Point2d(1, 0), new Point2d(0, -1)],
     };
 
-    const wUvs = makeExpected();
-    wUvs[0][16] = 0x00; wUvs[0][17] = 0x00; wUvs[0][18] = 0xff; wUvs[0][19] = 0xff;
-    wUvs[1][16] = 0xff; wUvs[1][17] = 0xff; wUvs[1][18] = 0x00; wUvs[1][19] = 0x80;
-    wUvs[2][16] = 0x00; wUvs[2][17] = 0x80; wUvs[2][18] = 0x00; wUvs[2][19] = 0x00;
+    const exp = makeExpected();
+    exp[0][16] = 0x00; exp[0][17] = 0x00; exp[0][18] = 0xff; exp[0][19] = 0xff;
+    exp[1][16] = 0xff; exp[1][17] = 0xff; exp[1][18] = 0x00; exp[1][19] = 0x80;
+    exp[2][16] = 0x00; exp[2][17] = 0x80; exp[2][18] = 0x00; exp[2][19] = 0x00;
 
-    expectMeshParams(args, args.colors, wUvs, undefined, QParams2d.fromNormalizedRange());
+    expectMeshParams(args, args.colors, exp, undefined, QParams2d.fromNormalizedRange());
 
     // Add feature IDs
     args.features.type = FeatureIndexType.NonUniform;
@@ -205,13 +205,13 @@ describe("VertexLUT", () => {
     args.features.featureIDs[1] = 0xc001bead;
     args.features.featureIDs[2] = 0;
 
-    const wIds = makeExpected();
-    wIds[0][12] = 0x0d; wIds[0][13] = 0xf0; wIds[0][14] = 0xad; wIds[0][15] = 0xba;
-    wIds[1][12] = 0xad; wIds[1][13] = 0xbe; wIds[1][14] = 0x01; wIds[1][15] = 0xc0;
+    exp[0][12] = 0x0d; exp[0][13] = 0xf0; exp[0][14] = 0xad; exp[0][15] = 0xba;
+    exp[1][12] = 0xad; exp[1][13] = 0xbe; exp[1][14] = 0x01; exp[1][15] = 0xc0;
 
-    expectMeshParams(args, args.colors, wIds);
+    expectMeshParams(args, args.colors, exp);
 
-    // Add non-uniform color
+    // Remove texture and add non-uniform color
+    args.textureMapping = undefined;
     const colors = new Uint32Array(3);
     colors[0] = 0xffeeddcc;
     colors[1] = 0x00010203;
@@ -219,9 +219,9 @@ describe("VertexLUT", () => {
     const colorIndices = [0, 0x0001, 0xffee];
     args.colors.initNonUniform(colors, colorIndices, true);
 
-    const wClr = makeExpected();
-    wClr[1][16] = 0x01; wClr[1][17] = 0x00;
-    wClr[2][16] = 0xee; wClr[2][17] = 0xff;
+    exp[0][18] = exp[0][19] = 0;
+    exp[1][16] = 0x01; exp[1][17] = 0x00; exp[1][18] = exp[1][19] = 0;
+    exp[2][16] = 0xee; exp[2][17] = 0xff; exp[2][18] = exp[2][19] = 0;
 
     // NB: The color values in VertexLUT.Params have premultiplied alpha, and alpha set to (255 - transparency)
     const expectedColors = [
@@ -230,6 +230,6 @@ describe("VertexLUT", () => {
       0x00, 0x80, 0x00, 0x80,
     ];
 
-    expectMeshParams(args, args.colors, wClr, expectedColors);
+    expectMeshParams(args, args.colors, exp, expectedColors);
   });
 });
