@@ -11,7 +11,7 @@ import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import { ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
-import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
+import { MeshArgs, Point3dList, PolylineArgs } from "./mesh/MeshPrimitives";
 import { createSurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
 
@@ -116,7 +116,13 @@ export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtr
 export interface VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
   readonly data: Uint8Array;
-  /** Quantization parameters for the vertex positions encoded into the array. */
+  /** If true, positions are not quantized but instead stored as 32-bit floats.
+   * [[qparams]] will still be defined; it can be used to derive the range of positions in the table.
+   */
+  readonly usesUnquantizedPositions?: boolean;
+  /** Quantization parameters for the vertex positions encoded into the array, the positions are quantized;
+   * and for deriving the range of positions in the table, whether quantized or not.
+   */
   readonly qparams: QParams3d;
   /** The number of 4-byte 'RGBA' values in each row of the array. Must be divisible by numRgbaPerVertex. */
   readonly width: number;
@@ -149,7 +155,13 @@ export interface VertexTableProps {
 export class VertexTable implements VertexTableProps {
   /** The rectangular array of vertex data, of size width*height*numRgbaPerVertex bytes. */
   public readonly data: Uint8Array;
-  /** Quantization parameters for the vertex positions encoded into the array. */
+  /** If true, positions are not quantized but instead stored as 32-bit floats.
+   * [[qparams]] will still be defined; it can be used to derive the range of positions in the table.
+   */
+  readonly usesUnquantizedPositions?: boolean;
+  /** Quantization parameters for the vertex positions encoded into the array, the positions are quantized;
+   * and for deriving the range of positions in the table, whether quantized or not.
+   */
   public readonly qparams: QParams3d;
   /** The number of 4-byte 'RGBA' values in each row of the array. Must be divisible by numRgbaPerVertex. */
   public readonly width: number;
@@ -174,6 +186,7 @@ export class VertexTable implements VertexTableProps {
   public constructor(props: VertexTableProps) {
     this.data = props.data;
     this.qparams = props.qparams;
+    this.usesUnquantizedPositions = !!props.usesUnquantizedPositions;
     this.width = props.width;
     this.height = props.height;
     this.hasTranslucency = true === props.hasTranslucency;
@@ -200,10 +213,11 @@ export class VertexTable implements VertexTableProps {
     builder.appendColorTable(colorIndex);
 
     builder.data = undefined;
-    assert(undefined !== builder.qparams); // ###TODO remove me
+
     return new VertexTable({
       data,
       qparams: builder.qparams,
+      usesUnquantizedPositions: builder.usesUnquantizedPositions,
       width: dimensions.width,
       height: dimensions.height,
       hasTranslucency: colorIndex.hasAlpha,
@@ -276,7 +290,8 @@ export abstract class VertexTableBuilder {
 
   public abstract get numVertices(): number;
   public abstract get numRgbaPerVertex(): number;
-  public abstract get qparams(): QParams3d | undefined;
+  public abstract get qparams(): QParams3d;
+  public abstract get usesUnquantizedPositions(): boolean;
   public get uvParams(): QParams2d | undefined { return undefined; }
   public abstract appendVertex(vertIndex: number): void;
 
@@ -342,7 +357,7 @@ export abstract class VertexTableBuilder {
 
 type VertexData = PolylineArgs | MeshArgs;
 type Quantized<T extends VertexData> = Omit<T, "points"> & { points: QPoint3dList };
-type Unquantized<T extends VertexData> = Omit<T, "points"> & { points: Point3d[] };
+type Unquantized<T extends VertexData> = Omit<T, "points"> & { points: Omit<Point3dList, "add"> };
 
 namespace Quantized {
   /**
@@ -367,6 +382,7 @@ namespace Quantized {
 
     public get numVertices() { return this.args.points!.length; }
     public get numRgbaPerVertex() { return 3; }
+    public get usesUnquantizedPositions() { return false; }
     public get qparams() {
       return this._qpoints.params;
     }
@@ -519,17 +535,20 @@ namespace Unquantized {
   export class SimpleBuilder<T extends Unquantized<VertexData>> extends VertexTableBuilder {
     public args: T;
     protected _points: Point3d[];
+    private _qparams3d: QParams3d;
 
     public constructor(args: T) {
       super();
       assert(!(args.points instanceof QPoint3dList));
+      this._qparams3d = QParams3d.fromRange(args.points.range);
       this.args = args;
       this._points = args.points;
     }
 
     public get numVertices() { return this._points.length; }
     public get numRgbaPerVertex() { return 5; }
-    public get qparams() { return undefined; }
+    public get usesUnquantizedPositions() { return true; }
+    public get qparams() { return this._qparams3d; }
 
     public appendVertex(vertIndex: number): void {
       this.appendPosition(vertIndex);

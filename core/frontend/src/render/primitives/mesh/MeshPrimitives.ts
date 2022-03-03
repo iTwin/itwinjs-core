@@ -26,6 +26,8 @@ import { VertexKeyProps } from "../VertexKey";
 export interface Point3dList extends Array<Point3d> {
   /** Identical to `push`, except it returns `void` instead of `number`; compatible with [QPoint3dList.add]($common). */
   add(point: Point3d): void;
+  /** The range containing all of the points to be contained in the list, computed in advance. */
+  range: Range3d;
 }
 
 /** The list of points associated with a [[Mesh]].
@@ -43,7 +45,7 @@ export interface PolylineArgs {
   width: number;
   linePixels: LinePixels;
   flags: PolylineFlags;
-  points: QPoint3dList | Point3d[];
+  points: QPoint3dList | Omit<Point3dList, "add">;
   polylines: PolylineData[];
 }
 
@@ -117,7 +119,7 @@ export class MeshArgsEdges {
 export interface MeshArgs {
   edges?: MeshArgsEdges;
   vertIndices: number[];
-  points: QPoint3dList | Point3d[];
+  points: QPoint3dList | Omit<Point3dList, "add">;
   normals?: OctEncodedNormal[];
   colors: ColorIndex;
   features: FeatureIndex;
@@ -220,7 +222,11 @@ export class Mesh {
       this.points = new QPoint3dList(QParams3d.fromRange(range));
     } else {
       const points = [] as unknown as Point3dList;
-      points.add = (pt: Point3d) => points.push(pt);
+      points.range = range;
+      points.add = (pt: Point3d) => {
+        assert(range.containsPoint(pt));
+        points.push(pt);
+      };
       this.points = points;
     }
   }
