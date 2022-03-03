@@ -73,6 +73,7 @@ export class VertexLUT implements WebGLDisposable {
   public readonly numVertices: number;
   public readonly numRgbaPerVertex: number;
   public readonly colorInfo: ColorInfo;
+  public readonly usesQuantizedPositions: boolean;
   public readonly qOrigin: Float32Array;  // Origin of quantized positions
   public readonly qScale: Float32Array;   // Scale of quantized positions
   public readonly uvQParams?: Float32Array; // If vertices contain texture UV params, quantization parameters as [origin.x, origin.y, scale.x, scale.y ]
@@ -95,16 +96,17 @@ export class VertexLUT implements WebGLDisposable {
       return undefined;
 
     const auxLUT = undefined !== aux ? AuxChannelLUT.create(aux) : undefined;
-    return new VertexLUT(texture, vt, ColorInfo.createFromVertexTable(vt), vt.qparams, vt.uvParams, auxLUT);
+    return new VertexLUT(texture, vt, ColorInfo.createFromVertexTable(vt), vt.qparams, !vt.usesUnquantizedPositions, vt.uvParams, auxLUT);
   }
 
-  private constructor(texture: TextureHandle, table: VertexTable, colorInfo: ColorInfo, qparams: QParams3d, uvParams?: QParams2d, auxChannels?: AuxChannelLUT) {
+  private constructor(texture: TextureHandle, table: VertexTable, colorInfo: ColorInfo, qparams: QParams3d, positionsAreQuantized: boolean, uvParams?: QParams2d, auxChannels?: AuxChannelLUT) {
     this.texture = texture;
     this.numVertices = table.numVertices;
     this.numRgbaPerVertex = table.numRgbaPerVertex;
     this.colorInfo = colorInfo;
     this.qOrigin = qorigin3dToArray(qparams.origin);
     this.qScale = qscale3dToArray(qparams.scale);
+    this.usesQuantizedPositions = positionsAreQuantized;
     this.auxChannels = auxChannels;
 
     if (undefined !== uvParams)

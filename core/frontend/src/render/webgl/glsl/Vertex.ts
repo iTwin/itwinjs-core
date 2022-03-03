@@ -206,18 +206,23 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   `);
 }
 
+// Shader tests u_qScale.x < 0 to determine that positions are not quantized.
+const unquantizedScale = new Float32Array([-1, -1, -1]);
+
 /** @internal */
 export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
   vert.addFunction(unquantizePosition);
 
   vert.addUniform("u_qScale", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_qScale", (uniform, params) => {
-      uniform.setUniform3fv(params.geometry.qScale);
+      uniform.setUniform3fv(params.geometry.usesQuantizedPositions ? params.geometry.qScale : unquantizedScale);
     });
   });
   vert.addUniform("u_qOrigin", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_qOrigin", (uniform, params) => {
-      uniform.setUniform3fv(params.geometry.qOrigin);
+      // If positions aren't quantized, the shader doesn't use the origin - don't bother updating it.
+      if (params.geometry.usesQuantizedPositions)
+        uniform.setUniform3fv(params.geometry.qOrigin);
     });
   });
 
