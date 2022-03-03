@@ -21,6 +21,9 @@ import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 
 /** A Point3d[] with an [[add]] method used to enable compatibility with the [[MeshPointList]] union type.
+ * It is provided a range to contain all of the points. Each point added to the list is transformed to be relative to
+ * the center of that range.
+ * In the finished graphic, a transform is applied to transform back from the range's center.
  * @internal
  */
 export interface Point3dList extends Array<Point3d> {
@@ -223,9 +226,10 @@ export class Mesh {
     } else {
       const points = [] as unknown as Point3dList;
       points.range = range;
+      const center = range.center;
       points.add = (pt: Point3d) => {
         // assert(range.containsPoint(pt)); rounding error triggers this sometimes...
-        points.push(pt);
+        points.push(pt.minus(center));
       };
       this.points = points;
     }

@@ -175,26 +175,29 @@ export class GeometryAccumulator {
     if (0 === meshes.length)
       return undefined;
 
-    // All of the meshes are quantized to the same range.
-    // If that range is small relative to the distance from the origin, quantization errors can produce display artifacts.
-    // Remove the translation from the quantization parameters and apply it in the transform instead.
+    // If the meshes contain quantized positions, they are all quantized to the same range. If that range is small relative to the distance
+    // from the origin, quantization errors can produce display artifacts. Remove the translation from the quantization parameters and apply
+    // it in the transform instead.
+    //
+    // If the positions are not quantized, they have already been transformed to be relative to the center of the meshes' range.
+    // Apply the inverse translation to put them back into model space.
     const branch = new GraphicBranch(true);
-    let qorigin: Point3d | undefined;
+    let transformOrigin: Point3d | undefined;
 
     for (const mesh of meshes) {
       const verts = mesh.points;
-      if (verts instanceof QPoint3dList) {
-        if (branch.isEmpty) {
-          assert(qorigin === undefined);
-          qorigin = verts.params.origin.clone();
+      if (branch.isEmpty) {
+        assert(transformOrigin === undefined);
+        if (verts instanceof QPoint3dList) {
+          transformOrigin = verts.params.origin.clone();
+          verts.params.origin.setZero();
         } else {
-          assert(qorigin !== undefined);
-          assert(verts.params.origin.isAlmostEqual(qorigin));
+          transformOrigin = verts.range.center;
         }
-
-        verts.params.origin.setZero();
       } else {
-        assert(qorigin === undefined);
+        assert(undefined !== transformOrigin);
+        assert((verts instanceof QPoint3dList && transformOrigin.isAlmostEqual(verts.params.origin))
+          || (!(verts instanceof QPoint3dList) && transformOrigin.isAlmostEqual(verts.range.center)));
       }
 
       const graphic = mesh.getGraphics(this.system, this._viewIndependentOrigin);
@@ -203,12 +206,9 @@ export class GeometryAccumulator {
     }
 
     if (!branch.isEmpty) {
-      if (qorigin) {
-        const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
-        graphics.push(this.system.createBranch(branch, transform));
-      } else {
-        graphics.push(this.system.createGraphicList(branch.entries));
-      }
+      assert(undefined !== transformOrigin);
+      const transform = Transform.createTranslation(transformOrigin);
+      graphics.push(this.system.createBranch(branch, transform));
     }
 
     return meshes;
