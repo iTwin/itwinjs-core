@@ -40,7 +40,9 @@ export interface GridCategoryItem extends FlatGridItemBase {
   readonly name: string;
   readonly derivedCategory: PropertyCategory;
 
+  /** @deprecated Use [[getChildren]] and filter categories yourself. */
   getChildCategories(): GridCategoryItem[];
+  /** @deprecated Use [[getDescendantsAndSelf]] and filter categories yourself. */
   getDescendantCategoriesAndSelf(): GridCategoryItem[];
 }
 
