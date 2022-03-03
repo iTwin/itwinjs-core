@@ -107,7 +107,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   public abstract refreshComputedProperties(): void;
 
   /** Return (if possible) a spiral which is a portion of this curve. */
-  public override clonePartialCurve(fractionA: number, fractionB: number): TransitionSpiral3d | undefined {
+  public override clonePartialCurve(fractionA: number, fractionB: number): TransitionSpiral3d {
     const spiralB = this.clone();
     const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
     const globalFractionB = this._activeFractionInterval.fractionToPoint(fractionB);

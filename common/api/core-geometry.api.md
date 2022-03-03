@@ -5619,7 +5619,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     static averageCurvature(radiusLimits: Segment1d): number;
     static averageCurvatureR0R1(r0: number, r1: number): number;
     abstract clone(): TransitionSpiral3d;
-    clonePartialCurve(fractionA: number, fractionB: number): TransitionSpiral3d | undefined;
+    clonePartialCurve(fractionA: number, fractionB: number): TransitionSpiral3d;
     cloneTransformed(transform: Transform): TransitionSpiral3d;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static curvatureToRadius(curvature: number): number;
