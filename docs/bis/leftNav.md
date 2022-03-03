@@ -22,17 +22,17 @@
 - [Categories](./fundamentals/foundation/categories.md)
 
 #### Data Organization
-- [Information Hierarchy](./fundamentals/dataorg/information-hierarchy.md)
-- [Modeling Perspectives](./fundamentals/dataorg/modeling-perspectives.md)
-- [Top of the World](./fundamentals/dataorg/top-of-the-world.md)
-- [Single Responsible Party Principle](./fundamentals/dataorg/srpp.md)
-- [Organizing Models and Elements](./fundamentals/dataorg/organizing-models-and-elements.md)
-- [Modeling Systems](./fundamentals/dataorg/modeling-systems.md)
-- [Overlapping Systems](./fundamentals/dataorg/overlapping-systems.md)
-- [Organizing Global Definition Elements](./fundamentals/dataorg/organizing-definition-elements.md)
+- [Information Hierarchy](./fundamentals/data-organization/information-hierarchy.md)
+- [Modeling Perspectives](./fundamentals/data-organization/modeling-perspectives.md)
+- [Top of the World](./fundamentals/data-organization/top-of-the-world.md)
+- [Single Responsible Party Principle](./fundamentals/data-organization/srpp.md)
+- [Organizing Models and Elements](./fundamentals/data-organization/organizing-models-and-elements.md)
+- [Modeling Systems](./fundamentals/data-organization/modeling-systems.md)
+- [Overlapping Systems](./fundamentals/data-organization/overlapping-systems.md)
+- [Organizing Global Definition Elements](./fundamentals/data-organization/organizing-definition-elements.md)
 
 #### Physical Modeling Perspective
-- [3D Guidance](./fundamentals/physicalpers/3d-guidance.md)
+- [3D Guidance](./fundamentals/physical-pers/3d-guidance.md)
 - [PhysicalModel Hierarchy](./fundamentals/physicalpers/physical-hierarchy-organization.md)
 - [Physical Models and Elements](./fundamentals/physicalpers/physical-models-and-elements.md)
 - [Type Definitions](./fundamentals/physicalpers/type-definitions.md)
