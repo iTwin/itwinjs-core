@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as Azure from "@azure/storage-blob";
-import { CloudStorageProvider } from "@itwin/core-common";
+import { CloudStorageProvider } from "@bentley/imodeljs-common";
 import { AzureBlobStorage } from "../CloudStorageBackend";
 
 describe("AzureBlobStorage.obtainContainerUrl()", () => {
@@ -15,6 +15,7 @@ describe("AzureBlobStorage.obtainContainerUrl()", () => {
   it("connects to Azure blob storage by default", () => {
     sinon.stub(Azure, "generateBlobSASQueryParameters").returns({ toString: () => "fake&sas=%key" } as Azure.SASQueryParameters);
     const storage = new AzureBlobStorage({
+      service: "azure",
       accessKey: "testAccessKey",
       account: "testAccountName",
     });
@@ -28,6 +29,7 @@ describe("AzureBlobStorage.obtainContainerUrl()", () => {
   it("connects to custom Azure provider", () => {
     sinon.stub(Azure, "generateBlobSASQueryParameters").returns({ toString: () => "fake&sas=%key" } as Azure.SASQueryParameters);
     const storage = new AzureBlobStorage({
+      service: "azure",
       accessKey: "testAccessKey",
       account: "testAccountName",
       baseUrl: "https://custom.provider/",
