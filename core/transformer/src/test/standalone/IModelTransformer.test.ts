@@ -1875,4 +1875,51 @@ describe("IModelTransformer", () => {
     sourceDb.close();
     targetDb.close();
   });
+
+  it.only("resume transformation", async () => {
+    // NOTE: need to investigate what happens when crashing between inserting an element and labeling it for remapping
+    // the transformer should see the remapped code and consider it to be the same element and just update it...
+    class CrashingTransformer extends IModelTransformer {
+      private _elementTransformsUntilCrash = 3;
+      public override onTransformElement(_sourceElement: Element): ElementProps {
+        this._elementTransformsUntilCrash--;
+        if (this._elementTransformsUntilCrash === 0) throw Error("crash");
+        return _sourceElement.toJSON();
+      }
+    }
+
+    const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const sourceDb = SnapshotDb.openFile(sourceFileName);
+
+    async function transformWithCrashAndRecover(): Promise<IModelDb> {
+      const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ResumeTrasformationCrash.bim");
+      const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
+      const transformer = new CrashingTransformer(sourceDb, targetDb);
+      try {
+        await transformer.processSchemas();
+        await transformer.processAll();
+        assert.fail("unreachable: should have crashed and not reached here");
+      } catch (transformerErr) {
+        const state = transformer.serializeState();
+        const nonCrashingTransformer = IModelTransformer.resumeTransformation(sourceDb, targetDb, state);
+        await nonCrashingTransformer.processSchemas();
+        await nonCrashingTransformer.processAll();
+      }
+      return targetDb;
+    }
+
+    async function transformNoCrash(): Promise<IModelDb> {
+      const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ResumeTrasformationNoCrash.bim");
+      const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
+      const transformer = new CrashingTransformer(sourceDb, targetDb);
+      await transformer.processSchemas();
+      await transformer.processAll();
+      return targetDb;
+    }
+
+    const resumedTarget = await transformWithCrashAndRecover();
+    const regularTarget = await transformNoCrash();
+
+    await assertIdentityTransformation(regularTarget, resumedTarget, { context: { findTargetElementId: (id) => id }});
+  });
 });
