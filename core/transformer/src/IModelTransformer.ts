@@ -13,8 +13,8 @@ import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
-  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement,
-  KnownLocations, Model, RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelCloneContextState, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
+  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
@@ -1095,7 +1095,7 @@ export class IModelTransformer extends IModelExportHandler {
   public static resumeTransformation(sourceDb: IModelDb, targetDb: IModelDb, state: TransformationState): IModelTransformer {
     const transformer = new IModelTransformer(sourceDb, targetDb, state.options);
     // transformer.
-    transformer.context.resetState(state.importContextState);
+    transformer.context.loadState(state.importContextState);
     return transformer;
   }
 
@@ -1103,12 +1103,12 @@ export class IModelTransformer extends IModelExportHandler {
    * Get the state of the active transformation in a serializable format
    * This state can be used by [[resumeTransformation]] to resume a transformation from this point.
    */
-  public serializeState(): TransformationState {
+  public serializeState(nativeStatePath: string): TransformationState {
     return {
       options: this._options,
       exporterState: this.exporter.serializeState(),
       importerState: this.importer.serializeState(),
-      importContextState: this.importContextState.serializeState(),
+      importContextState: this.context.serializeState(nativeStatePath),
     };
   }
 

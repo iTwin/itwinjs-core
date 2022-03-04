@@ -694,6 +694,37 @@ export class IModelExporter {
       return this.handler.onProgress();
     }
   }
+
+  public loadState(state: IModelExporterState): void {
+    this.wantGeometry = state.wantGeometry;
+    this.wantTemplateModels = state.wantTemplateModels;
+    this.wantSystemSchemas = state.wantSystemSchemas;
+    this.visitElements = state.visitElements;
+    this.visitRelationships = state.visitRelationships;
+    this._excludedCodeSpecNames = new Set(state.excludedCodeSpecNames);
+    this._excludedElementIds = CompressedId64Set.decompressSet(state.excludedElementIds),
+    this._excludedElementCategoryIds = CompressedId64Set.decompressSet(state.excludedElementCategoryIds),
+    this._excludedElementClasses = new Set(state.excludedElementClassNames.map((c) => this.sourceDb.getJsClass(c)));
+    this._excludedElementAspectClassFullNames = new Set(state.excludedElementAspectClassFullNames);
+    this._excludedElementAspectClasses = new Set(state.excludedElementAspectClassFullNames.map((c) => this.sourceDb.getJsClass(c)));
+    this._excludedRelationshipClasses = new Set(state.excludedRelationshipClassNames.map((c) => this.sourceDb.getJsClass(c)));
+  }
+
+  public serializeState(): IModelExporterState {
+    return {
+      wantGeometry: this.wantGeometry,
+      wantTemplateModels: this.wantTemplateModels,
+      wantSystemSchemas: this.wantSystemSchemas,
+      visitElements: this.visitElements,
+      visitRelationships: this.visitRelationships,
+      excludedCodeSpecNames: [...this._excludedCodeSpecNames],
+      excludedElementIds: CompressedId64Set.compressSet(this._excludedElementIds),
+      excludedElementCategoryIds: CompressedId64Set.compressSet(this._excludedElementCategoryIds),
+      excludedElementClassNames: Array.from(this._excludedElementClasses, (cls) => cls.classFullName),
+      excludedElementAspectClassFullNames: [...this._excludedElementAspectClassFullNames],
+      excludedRelationshipClassNames: Array.from(this._excludedRelationshipClasses, (cls) => cls.classFullName),
+    };
+  }
 }
 
 /**
@@ -713,10 +744,9 @@ export interface IModelExporterState {
   excludedCodeSpecNames: string[];
   excludedElementIds: CompressedId64Set;
   excludedElementCategoryIds: CompressedId64Set;
-  excludedElementClassesIds: CompressedId64Set;
-  excludedElementAspectClassesIds: CompressedId64Set;
+  excludedElementClassNames: string[];
   excludedElementAspectClassFullNames: string[];
-  excludedRelationshipClassesIds: CompressedId64Set;
+  excludedRelationshipClassNames: string[];
   /* eslint-enable @typescript-eslint/naming-convention */
 }
 

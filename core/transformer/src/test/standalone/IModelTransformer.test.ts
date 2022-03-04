@@ -1900,7 +1900,10 @@ describe("IModelTransformer", () => {
         await transformer.processAll();
         assert.fail("unreachable: should have crashed and not reached here");
       } catch (transformerErr) {
-        const state = transformer.serializeState();
+        const dumpPath = "/tmp/transformer-state.db";
+        const fs = await import("fs");
+        if (fs.existsSync(dumpPath)) fs.rmSync(dumpPath);
+        const state = transformer.serializeState(dumpPath);
         const nonCrashingTransformer = IModelTransformer.resumeTransformation(sourceDb, targetDb, state);
         await nonCrashingTransformer.processSchemas();
         await nonCrashingTransformer.processAll();
