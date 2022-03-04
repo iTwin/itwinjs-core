@@ -3,10 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// Export all types here.
-export * from "./common_types";
-export * from "./frontend_types";
-
+// manually curated section
 export function registerTool(t: typeof import("@itwin/core-frontend").Tool): Promise<void>
 
 // BEGIN GENERATED CODE
