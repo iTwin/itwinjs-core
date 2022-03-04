@@ -138,6 +138,12 @@ export interface UiItemProviderRegisteredEventArgs {
 export class UiItemsManager {
   private static _registeredUiItemsProviders: Map<string, UiItemsProvider> = new Map<string, UiItemsProvider>();
 
+  /** For use in unit testing
+   * @internal */
+  public static clearAllProviders() {
+    UiItemsManager._registeredUiItemsProviders.clear();
+  }
+
   /** Event raised any time a UiProvider is registered or unregistered. */
   public static readonly onUiProviderRegisteredEvent = new BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>();
 

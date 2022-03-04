@@ -92,10 +92,10 @@ Specification allows creating a label value composited using multiple other spec
 
 Specification uses property value as the label content.
 
-| Name             | Required? | Type                                                                                | Default    | Meaning                                                                                                                                                 |
-| ---------------- | --------- | ----------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `propertyName`   | Yes       | `string`                                                                            |            | Name of the property whose value should be used.                                                                                                        |
-| `propertySource` | No        | [`RelationshipPathSpecification`](../Common-Rules/RelationshipPathSpecification.md) | Empty path | [Specification of the relationship path](../Common-Rules/RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the property. |
+| Name             | Required? | Type                                                                   | Default    | Meaning                                                                                                                                    |
+| ---------------- | --------- | ---------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `propertyName`   | Yes       | `string`                                                               |            | Name of the property whose value should be used.                                                                                           |
+| `propertySource` | No        | [`RelationshipPathSpecification`](../RelationshipPathSpecification.md) | Empty path | [Specification of the relationship path](../RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the property. |
 
 Two types of properties can be used to override label:
 
@@ -180,9 +180,9 @@ Specification returns ECInstance's local ID in base36 format. It has no addition
 
 Specification uses label of another related instance as the label content.
 
-| Name                    | Required? | Type                                                                                | Default | Meaning                                                                                                                                                         |
-| ----------------------- | --------- | ----------------------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pathToRelatedInstance` | Yes       | [`RelationshipPathSpecification`](../Common-Rules/RelationshipPathSpecification.md) |         | [Specification of the relationship path](../Common-Rules/RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the related instance. |
+| Name                    | Required? | Type                                                                   | Default | Meaning                                                                                                                                            |
+| ----------------------- | --------- | ---------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pathToRelatedInstance` | Yes       | [`RelationshipPathSpecification`](../RelationshipPathSpecification.md) |         | [Specification of the relationship path](../RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the related instance. |
 
 ```ts
 [[include:InstanceLabelOverride.RelatedInstanceLabelValueSpecification.Ruleset]]

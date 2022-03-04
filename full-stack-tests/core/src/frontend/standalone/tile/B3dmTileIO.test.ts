@@ -307,9 +307,9 @@ describe("B3dmReader", () => {
     };
 
     let texturedMeshCreated = false;
-    IModelApp.renderSystem.createTriMesh = (args: any) => {
+    IModelApp.renderSystem.createTriMesh = (args: any /* MeshArgs */) => {
       expect(texturedMeshCreated).to.be.false;
-      texturedMeshCreated = undefined !== args.texture;
+      texturedMeshCreated = undefined !== args.textureMapping;
       return new MockRender.Graphic();
     };
 

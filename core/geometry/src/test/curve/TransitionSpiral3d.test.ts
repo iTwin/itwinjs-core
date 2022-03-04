@@ -945,7 +945,7 @@ describe("TransitionSpiral3d", () => {
         ck.testTightNumber(partial.curveLength(), 0.6 * spiral.curveLength());
         ck.testTrue((partial as IntegratedSpiral3d).bearing01.isAlmostEqual(spiral.bearing01));
         ck.testTrue((partial as IntegratedSpiral3d).radius01.isAlmostEqual(spiral.radius01));
-      } else {
+      } else if (spiral instanceof DirectSpiral3d) {
         ck.testExactNumber((partial as DirectSpiral3d).nominalL1, spiral.nominalL1);
         ck.testExactNumber((partial as DirectSpiral3d).nominalR1, spiral.nominalR1);
       }

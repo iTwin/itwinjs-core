@@ -6,19 +6,19 @@ This specification allows including related instance properties into the content
 
 ## Attributes
 
-| Name                                                                              | Required? | Type                                                                                | Default             |
-| --------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------- | ------------------- |
-| [`propertiesSource`](#attribute-propertiessource)                                 | Yes       | [`RelationshipPathSpecification`](../Common-Rules/RelationshipPathSpecification.md) |                     |
-| [`handleTargetClassPolymorphically`](#attribute-handletargetclasspolymorphically) | No        | `boolean`                                                                           | `false`             |
-| [`relationshipMeaning`](#attribute-relationshipmeaning)                           | No        | `"SameInstance" \| "RelatedInstance"`                                               | `"RelatedInstance"` |
-| [`properties`](#attribute-properties)                                             | No        | `Array<string \| PropertySpecification> \| "_none_" \| "*"`                         | `"*"`               |
-| [`autoExpand`](#attribute-autoexpand)                                             | No        | `boolean`                                                                           | `false`             |
-| [`skipIfDuplicate`](#attribute-skipifduplicate)                                   | No        | `boolean`                                                                           | `false`             |
-| [`nestedRelatedProperties`](#attribute-nestedrelatedproperties)                   | No        | [`RelatedPropertiesSpecification[]`](#related-properties-specification)             | `[]`                |
+| Name                                                                              | Required? | Type                                                                    | Default             |
+| --------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- | ------------------- |
+| [`propertiesSource`](#attribute-propertiessource)                                 | Yes       | [`RelationshipPathSpecification`](../RelationshipPathSpecification.md)  |                     |
+| [`handleTargetClassPolymorphically`](#attribute-handletargetclasspolymorphically) | No        | `boolean`                                                               | `false`             |
+| [`relationshipMeaning`](#attribute-relationshipmeaning)                           | No        | `"SameInstance" \| "RelatedInstance"`                                   | `"RelatedInstance"` |
+| [`properties`](#attribute-properties)                                             | No        | `Array<string \| PropertySpecification> \| "_none_" \| "*"`             | `"*"`               |
+| [`autoExpand`](#attribute-autoexpand)                                             | No        | `boolean`                                                               | `false`             |
+| [`skipIfDuplicate`](#attribute-skipifduplicate)                                   | No        | `boolean`                                                               | `false`             |
+| [`nestedRelatedProperties`](#attribute-nestedrelatedproperties)                   | No        | [`RelatedPropertiesSpecification[]`](#related-properties-specification) | `[]`                |
 
 ### Attribute: `propertiesSource`
 
-Specifies a chain of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) that forms a path from the content instance to the related instance(s) whose properties should additionally be loaded.
+Specifies a chain of [relationship path specifications](../RelationshipPathSpecification.md) that forms a path from the content instance to the related instance(s) whose properties should additionally be loaded.
 
 The path may point to more than one related instance, so the result always stores related properties in a form of a struct-array, where each struct represents a single related instance. However, often there's only one related instance and in that case a UI component displaying the result may choose to "destructure" the struct-array. An example of such component is the Property Grid:
 

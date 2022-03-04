@@ -166,7 +166,8 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
   public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation,
     section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
-    if (stageId === NetworkTracingFrontstage.stageId && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
+    if ((stageId === NetworkTracingFrontstage.stageId || stageId === "ui-test-app:no-widget-frontstage") &&
+      location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       /** This widget when only be displayed when there is an element selected. */
       const widget: AbstractWidgetProps = {
         id: "ui-item-provider-test:elementDataListWidget",

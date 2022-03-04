@@ -74,7 +74,7 @@ export class StrokeOptions {
   public clone(): StrokeOptions {
     const options = new StrokeOptions();
     options.chordTol = this.chordTol;
-    options.angleTol = this.angleTol;
+    options.angleTol = this.angleTol?.clone();
     options.maxEdgeLength = this.maxEdgeLength;
     options.needConvexFacets = this.needConvexFacets;
     options.minStrokesPerPrimitive = this.minStrokesPerPrimitive;

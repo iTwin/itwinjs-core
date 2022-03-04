@@ -1,6 +1,6 @@
 # iModel creation
 
-To start working with iModelHub, an iModel for an [iTwin]($docs/learning/Glossary.md#itwin) has to be created. End users should usually create the iModel for an iTwin through iModelHub website. It's also possible to use the [BackendHubAccess.createNewIModel]($backend) method on [IModelHost.hubAccess]($backend) to create a new iModel in iModelHub.
+To start working with iModelHub, an iModel for an [iTwin](../../Glossary.md#itwin) has to be created. End users should usually create the iModel for an iTwin through iModelHub website. It's also possible to use the [BackendHubAccess.createNewIModel]($backend) method on [IModelHost.hubAccess]($backend) to create a new iModel in iModelHub.
 
 ## iModel initialization
 
