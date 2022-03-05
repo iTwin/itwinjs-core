@@ -13,8 +13,9 @@ import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 describe.only("CloudSqlite", () => {
+  type TestContainer = IModelJsNative.CloudContainer & { isPublic: boolean };
   let caches: IModelJsNative.CloudCache[];
-  let testContainers: IModelJsNative.CloudContainer[];
+  let testContainers: TestContainer[];
   let credentials: azureBlob.StorageSharedKeyCredential;
   let testBimGuid: GuidString;
 
@@ -29,8 +30,11 @@ describe.only("CloudSqlite", () => {
     mkdirsSync(name);
     emptyDirSync(name);
   };
-  const makeContainer = (containerId: string, user: string) => {
-    return new IModelHost.platform.CloudContainer({ ...storage, containerId, user, writeable: true, sasToken: "" });
+
+  const makeContainer = (containerId: string, user: string, isPublic: boolean): TestContainer => {
+    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, user, writeable: true, sasToken: "" }) as TestContainer;
+    cont.isPublic = isPublic;
+    return cont;
   };
   const makeCache = (name: string) => {
     const rootDir = join(IModelHost.cacheDir, name);
@@ -48,11 +52,11 @@ describe.only("CloudSqlite", () => {
   };
 
   before(async () => {
-    testContainers = [makeContainer("test1", "user1"), makeContainer("test2", "user1"), makeContainer("test3", "user1")];
+    testContainers = [makeContainer("test1", "user1", false), makeContainer("test2", "user1", false), makeContainer("test3", "user1", true)];
     caches = [makeCache("cache1"), makeCache("cache2")];
     credentials = new azureBlob.StorageSharedKeyCredential(storage.accountName, emulatorKey);
     const pipeline = azureBlob.newPipeline(credentials);
-    const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${credentials.accountName}`, pipeline);
+    const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${storage.accountName}`, pipeline);
 
     for await (const container of testContainers) {
       setSasToken(container, "racwdl");
@@ -60,7 +64,7 @@ describe.only("CloudSqlite", () => {
         await blobService.deleteContainer(container.containerId);
       } catch (e) {
       }
-      await blobService.createContainer(container.containerId);
+      await blobService.createContainer(container.containerId, container.isPublic ? { access: "blob" } : undefined);
       container.initializeContainer();
     }
     const testBimFileName = join(KnownTestLocations.assetsDir, "test.bim");
@@ -88,6 +92,7 @@ describe.only("CloudSqlite", () => {
     await uploadFile(testContainers[0], caches[0], "testBim", testBimFileName);
     await uploadFile(testContainers[1], caches[0], "c1-db1", tempDbFile);
     await uploadFile(testContainers[2], caches[0], "c2-db1", tempDbFile);
+    await uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
   });
 
   it("cloud containers", async () => {
@@ -98,7 +103,7 @@ describe.only("CloudSqlite", () => {
     expect(contain1.isAttached);
 
     // first container has 2 databases
-    const dbs = contain1.queryDatabases();
+    let dbs = contain1.queryDatabases();
     expect(dbs.length).equals(2);
     expect(dbs[0]).equals("c0-db1");
 
@@ -119,7 +124,7 @@ describe.only("CloudSqlite", () => {
     assert(dbProps !== undefined);
     expect(dbProps.localBlocks).greaterThan(0);
 
-    const imodel = SnapshotDb.openFile("testBim", { container: contain1 });
+    let imodel = SnapshotDb.openFile("testBim", { container: contain1 });
     expect(imodel.getBriefcaseId()).equals(0);
     expect(imodel.iModelId).equals(testBimGuid);
     imodel.close();
@@ -179,7 +184,7 @@ describe.only("CloudSqlite", () => {
     expect(() => contain1.attach(caches[0])).throws("container already attached");
 
     // can't attach two containers with same name
-    const cont2 = makeContainer(contain1.containerId, "user2");
+    const cont2 = makeContainer(contain1.containerId, "user2", false);
 
     setSasToken(cont2, "racwdl");
 
@@ -235,10 +240,27 @@ describe.only("CloudSqlite", () => {
     expect(contain1.hasWriteLock).false;
     expect(contain1.hasLocalChanges).false;
 
+    // try anonymous access
+    const anonContainer = testContainers[2];
+    anonContainer.sasToken = "";
+    anonContainer.attach(caches[0]);
+    dbs = anonContainer.queryDatabases();
+    expect(dbs.length).equals(2);
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    expect(() => anonContainer.acquireWriteLock()).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
+
+    // read a database from anonymous container readonly
+    imodel = SnapshotDb.openFile("testBim", { container: anonContainer });
+    expect(imodel.getBriefcaseId()).equals(0);
+    expect(imodel.iModelId).equals(testBimGuid);
+    imodel.close();
+
     // destroying a cache detaches all attached containers
     expect(contain1.isAttached);
+    expect(anonContainer.isAttached);
     caches[0].destroy();
     expect(contain1.isAttached).false;
+    expect(anonContainer.isAttached).false;
 
   });
 });
