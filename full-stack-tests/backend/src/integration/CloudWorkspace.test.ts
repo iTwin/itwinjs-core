@@ -26,29 +26,23 @@ describe("Cloud workspace containers", () => {
     const settings = workspace.settings;
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 
-    const daemonDir = join(workspace.containerDir, "cloud");
-    IModelJsFs.purgeDirSync(daemonDir);
-
-    const testContainerName = "test-container";
     const testDbName = "testDb";
-    const container = workspace.getContainer({ containerName: testContainerName, cloudProps: { ...containerProps, ...accountProps } });
+    const container = workspace.getContainer({ containerName: containerProps.containerId, cloudProps: { user: "test user", ...containerProps, ...accountProps } });
     const ws1 = new EditableWorkspaceDb(testDbName, container);
-    const dbName = ws1.localFileName;
-    if (IModelJsFs.existsSync(dbName))
-      IModelJsFs.unlinkSync(dbName);
 
     const account1 = settings.getObject<CloudSqlite.AccountProps>("cloudSqlite/accountProps")!;
     expect(account1).deep.equals(accountProps);
     const contain1 = settings.getObject<CloudSqlite.ContainerProps>("cloudSqlite/containerProps")!;
     expect(contain1).deep.equals(containerProps);
 
-    const cloudAccess = { ...account1, ...contain1, daemonDir };
-    ws1.create();
+    EditableWorkspaceDb.createEmpty(ws1.dbFileName);
+
+    ws1.open();
     ws1.addString("string 1", "value of string 1");
     ws1.close();
-    await ws1.upload(cloudAccess);
+    // await ws1.upload(cloudAccess);
 
-    IModelJsFs.unlinkSync(dbName);
+    //    IModelJsFs.unlinkSync(dbName);
     let ws2 = await container.getWorkspaceDb({ dbName: testDbName });
     let val = ws2.getString("string 1");
     expect(val).equals("value of string 1");
@@ -61,8 +55,8 @@ describe("Cloud workspace containers", () => {
     ws3.updateString("string 1", newVal);
     ws3.close();
 
-    await CloudSqlite.deleteDb({ ...ws3, ...cloudAccess });
-    await ws3.upload(cloudAccess);
+    //  await CloudSqlite.deleteDb({ ...ws3, ...cloudAccess });
+    // await ws3.upload(cloudAccess);
 
     ws2 = await container.getWorkspaceDb({ dbName: testDbName });
     val = ws2.getString("string 1");

@@ -57,8 +57,8 @@ export class TestUtils {
    * - cacheDir === path.join(__dirname, ".cache")
    */
   public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
-    const cfg = config ? config : new IModelHostConfiguration();
-    cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
+    const cfg = config ?? new IModelHostConfiguration();
+    cfg.cacheDir = cfg.cacheDir ?? path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
     return IModelHost.startup(cfg);
   }
 

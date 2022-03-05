@@ -85,9 +85,8 @@ const askQuestion = async (query: string) => {
 /** Create a new empty WorkspaceDb  */
 async function createWorkspaceDb(args: WorkspaceDbOpt) {
   const wsFile = new EditableWorkspaceDb(args.dbName, IModelHost.appWorkspace.getContainer(args));
-  wsFile.createDb();
+  EditableWorkspaceDb.createEmpty(wsFile.dbFileName);
   console.log(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
-  wsFile.close();
 }
 
 /** open, call a function to process, then close a WorkspaceDb */
@@ -118,7 +117,7 @@ function getCloudProps(args: EditorOpts): WorkspaceContainerProps {
 async function loadContainer(args: EditorOpts) {
   const container = IModelHost.appWorkspace.getContainer(getCloudProps(args));
   if (container.cloudContainer) {
-    await container.attach();
+    container.attach();
     await container.cloudContainer.pollManifest();
   }
   return container;
@@ -241,7 +240,7 @@ async function removeResource(args: RemoveResourceOpts) {
 /** Vacuum a WorkspaceDb. */
 async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
   const container = await loadContainer(args);
-  const localFile = new ITwinWorkspaceDb(args.dbName, container).localFileName;
+  const localFile = new ITwinWorkspaceDb(args.dbName, container).dbFileName;
   IModelHost.platform.DgnDb.vacuum(localFile, container.cloudContainer);
   console.log(`${localFile} vacuumed`);
 }
@@ -285,7 +284,7 @@ async function exportWorkspaceDb(args: TransferOptions) {
 async function deleteWorkspaceDb(args: WorkspaceDbOpt) {
   const container = await loadCloudContainer(args);
   await CloudSqlite.withWriteLock(container, async () => {
-    container.deleteDatabase(args.dbName);
+    return container.deleteDatabase(args.dbName);
   });
 
   console.log(`deleted WorkspaceDb [${args.dbName}], container=${args.containerId}`);
@@ -324,7 +323,7 @@ async function purgeWorkspace(args: EditorOpts) {
 async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
   const container = await loadCloudContainer(args);
   await CloudSqlite.withWriteLock(container, async () => {
-    container.copyDatabase(args.dbName, args.newDbName);
+    return container.copyDatabase(args.dbName, args.newDbName);
   });
 
   console.log(`copied WorkspaceDb [${args.dbName}] to [${args.newDbName}], container=${args.containerId}`);
@@ -432,6 +431,7 @@ async function main() {
   Yargs.usage("Edits or lists contents of a WorkspaceDb");
   Yargs.wrap(Math.min(150, Yargs.terminalWidth()));
   Yargs.strict();
+  Yargs.env("WORKSPACE_EDITOR");
   Yargs.config();
   Yargs.default("config", "workspaceEditor.json");
   Yargs.help();

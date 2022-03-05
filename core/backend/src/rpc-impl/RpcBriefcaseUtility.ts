@@ -29,7 +29,7 @@ export interface DownloadAndOpenArgs {
   forceDownload?: boolean;
 }
 /**
- * Utility to open the iModel for Read/Write RPC interfaces
+ * Utility to open the iModel for RPC interfaces
  * @internal
  */
 export class RpcBriefcaseUtility {
@@ -91,7 +91,7 @@ export class RpcBriefcaseUtility {
     };
 
     const props = await BriefcaseManager.downloadBriefcase(request);
-    return BriefcaseDb.open({ rpcActivity: activity, fileName: props.fileName });
+    return BriefcaseDb.open(props);
   }
 
   private static _briefcasePromise: Promise<BriefcaseDb> | undefined;

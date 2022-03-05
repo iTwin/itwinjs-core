@@ -19,8 +19,8 @@ import {
   EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps,
   GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
   IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps,
-  ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, RpcActivity,
-  SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData,
+  ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder,
+  SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
@@ -802,7 +802,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public static openDgnDb(file: { path: LocalFileName, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions): IModelJsNative.DgnDb {
+  public static openDgnDb(file: { path: LocalFileName, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions & CloudContainerArgs): IModelJsNative.DgnDb {
     file.key = file.key ?? Guid.createValue();
     if (this.tryFindByKey(file.key))
       throw new IModelError(IModelStatus.AlreadyOpen, `key [${file.key}] for file [${file.path}] is already in use`);
@@ -813,10 +813,10 @@ export abstract class IModelDb extends IModel {
 
     try {
       const nativeDb = new IModelHost.platform.DgnDb();
-      nativeDb.openIModel(file.path, openMode, upgradeOptions, props);
+      nativeDb.openIModel(file.path, openMode, upgradeOptions, props, props?.container);
       return nativeDb;
     } catch (err: any) {
-      throw new IModelError(err.errorNumber, `Could not open iModel [${err.message}], ${file.path}`);
+      throw new IModelError(err.errorNumber, `${err.message}, ${file.path}`);
     }
   }
 
@@ -2083,11 +2083,15 @@ export interface TokenArg {
   readonly accessToken?: AccessToken;
 }
 
+export interface CloudContainerArgs { container?: IModelJsNative.CloudContainer }
+
+export type SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs;
+
 /**
  * Arguments to open a BriefcaseDb
  * @public
  */
-export type OpenBriefcaseArgs = OpenBriefcaseProps & { rpcActivity?: RpcActivity };
+export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs;
 
 /**
  * A local copy of an iModel from iModelHub that can pull and potentially push changesets.
@@ -2205,7 +2209,7 @@ export class BriefcaseDb extends IModelDb {
 
     const file = { path: args.fileName, key: args.key };
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const nativeDb = this.openDgnDb(file, openMode);
+    const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
     BriefcaseManager.logUsage(briefcaseDb);
@@ -2378,7 +2382,7 @@ export class SnapshotDb extends IModelDb {
   /** open this SnapshotDb read/write, strictly to apply incoming changesets. Used for creating new checkpoints.
    * @internal
    */
-  public static openForApplyChangesets(path: LocalFileName, props?: SnapshotOpenOptions): SnapshotDb {
+  public static openForApplyChangesets(path: LocalFileName, props?: SnapshotDbOpenArgs): SnapshotDb {
     const file = { path, key: props?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props);
     assert(undefined !== file.key);
@@ -2391,7 +2395,7 @@ export class SnapshotDb extends IModelDb {
    * @see [[close]]
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
-  public static openFile(path: LocalFileName, opts?: SnapshotOpenOptions): SnapshotDb {
+  public static openFile(path: LocalFileName, opts?: SnapshotDbOpenArgs): SnapshotDb {
     const file = { path, key: opts?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
     assert(undefined !== file.key);
@@ -2522,9 +2526,9 @@ export class StandaloneDb extends BriefcaseDb {
    * @throws [[IModelError]] if the file is not a standalone iModel.
    * @see [BriefcaseConnection.openStandalone]($frontend) to open a StandaloneDb from the frontend
    */
-  public static openFile(filePath: LocalFileName, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
+  public static openFile(filePath: LocalFileName, openMode: OpenMode = OpenMode.ReadWrite, options?: SnapshotDbOpenArgs): StandaloneDb {
     const file = { path: filePath, key: options?.key };
-    const nativeDb = this.openDgnDb(file, openMode);
+    const nativeDb = this.openDgnDb(file, openMode, undefined, options);
 
     try {
       const iTwinId = nativeDb.getITwinId();

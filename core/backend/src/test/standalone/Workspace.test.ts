@@ -24,9 +24,10 @@ describe("WorkspaceFile", () => {
     const wsFile = new EditableWorkspaceDb(dbName, container);
 
     IModelJsFs.purgeDirSync(container.filesDir);
-    if (IModelJsFs.existsSync(wsFile.localFileName))
-      IModelJsFs.unlinkSync(wsFile.localFileName);
-    wsFile.createDb();
+    if (IModelJsFs.existsSync(wsFile.dbFileName))
+      IModelJsFs.unlinkSync(wsFile.dbFileName);
+    EditableWorkspaceDb.createEmpty(wsFile.dbFileName);
+    wsFile.open();
     return wsFile;
   }
 

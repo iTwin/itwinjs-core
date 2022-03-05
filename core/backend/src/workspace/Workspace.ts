@@ -120,8 +120,8 @@ export interface WorkspaceDb {
   readonly dbName: WorkspaceDbName;
   /** event raised when this WorkspaceDb is closed. */
   readonly onClosed: BeEvent<() => void>;
-  /** The name of the local file for holding this WorkspaceDb. */
-  readonly localFileName: LocalDirName;
+  /** either a local file name or the name of a file in a cloud container */
+  readonly dbFileName: string;
   /** Get a string resource from this WorkspaceDb, if present. */
   getString(rscName: WorkspaceResourceName): string | undefined;
 
@@ -218,9 +218,9 @@ export interface WorkspaceContainer {
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
   close(): void;
   /** attach this container to its cloud service */
-  attach(): Promise<void>;
+  attach(): void;
   /** detach this container from its cloud service */
-  detach(): Promise<void>;
+  detach(): void;
 }
 
 /** @internal */
@@ -331,14 +331,14 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.filesDir = join(this.dirName, "Files");
   }
 
-  public async attach(): Promise<void> {
+  public attach() {
     if (false === this.cloudContainer?.isAttached)
-      await this.cloudContainer.attach(this.workspace.cloudCache);
+      this.cloudContainer.attach(this.workspace.cloudCache);
   }
 
-  public async detach(): Promise<void> {
+  public detach() {
     if (true === this.cloudContainer?.isAttached)
-      await this.cloudContainer.detach();
+      this.cloudContainer.detach();
   }
 
   public addWorkspaceDb(toAdd: ITwinWorkspaceDb) {
@@ -348,7 +348,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   }
 
   public async getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerName">): Promise<WorkspaceDb> {
-    await this.attach();
+    this.attach();
     const db = this._wsDbs.get(props.dbName) ?? new ITwinWorkspaceDb(props.dbName, this);
     if (!db.isOpen)
       db.open();
@@ -384,7 +384,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   public readonly dbName: WorkspaceDbName;
   public readonly container: WorkspaceContainer;
   public readonly onClosed = new BeEvent<() => void>();
-  public localFileName: LocalFileName;
+  public dbFileName: string; // either a local file name or the name of a file in a cloud container
 
   protected static noLeadingOrTrailingSpaces(name: string, msg: string) {
     if (name.trim() !== name)
@@ -415,12 +415,12 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     this.dbName = dbName;
     this.container = container;
     const cloudContainer = container.cloudContainer;
-    this.localFileName = cloudContainer ? `/${cloudContainer.alias}/${this.dbName}` : join(container.dirName, `${dbName}.${workspaceDbFileExt}`);
+    this.dbFileName = cloudContainer ? this.dbName : join(container.dirName, `${dbName}.${workspaceDbFileExt}`);
     container.addWorkspaceDb(this);
   }
 
   public open(): void {
-    this.sqliteDb.openDb(this.localFileName, OpenMode.Readonly, this.container.cloudContainer);
+    this.sqliteDb.openDb(this.dbFileName, OpenMode.Readonly, this.container.cloudContainer);
   }
 
   public close(): void {
@@ -504,7 +504,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   }
 
   public override open() {
-    this.sqliteDb.openDb(this.localFileName, OpenMode.ReadWrite, this.container.cloudContainer);
+    this.sqliteDb.openDb(this.dbFileName, OpenMode.ReadWrite, this.container.cloudContainer);
   }
 
   private getFileModifiedTime(localFileName: LocalFileName): number {
@@ -527,21 +527,20 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   }
 
   /** Create a new, empty, EditableWorkspaceDb for importing Workspace resources. */
-  public createDb() {
-    const db = this.sqliteDb;
-    const cloudContainer = this.container.cloudContainer;
-    if (cloudContainer === undefined)
-      IModelJsFs.recursiveMkDirSync(dirname(this.localFileName));
-    db.createDb(this.localFileName, cloudContainer);
+  public static createEmpty(fileName: LocalFileName) {
+    const db = new SQLiteDb();
+    IModelJsFs.recursiveMkDirSync(dirname(fileName));
+    db.createDb(fileName);
     db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
     db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
     db.saveChanges();
+    db.closeDb();
   }
 
   public async cloneVersion(oldVersion: WorkspaceDbVersion, newVersion: WorkspaceDbVersion) {
     if (!this.container.cloudContainer)
       throw new Error("no cloud container");
-    this.container.cloudContainer.copyDatabase(oldVersion, newVersion);
+    return this.container.cloudContainer.copyDatabase(oldVersion, newVersion);
   }
 
   public async upload(args: CloudSqlite.TransferDbProps) {
