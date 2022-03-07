@@ -1140,15 +1140,15 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
     if (index < 0)
       index = 0;
-    if (index >= n) {
-      index = n - 1;
+    if (index > n - 2) {
+      index = n - 2;
       fraction += 1;
     }
     this._points.interpolate(index, fraction, index + 1, LineString3d._indexPoint);
     dest.push(LineString3d._indexPoint);
   }
   /** Return (if possible) a LineString which is a portion of this curve.
-   * * This implementation does NOT extrapolate the linestring -- fractions are capped at 0 and 1.
+   * * Fractions outside [0,1] extend the relevant end segment.
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
@@ -1159,23 +1159,41 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         linestringA.reverseInPlace();
       return linestringA;
     }
+
     const n = this._points.length;
-    const numEdge = n - 1;
-    if (n < 2 || fractionA >= 1.0 || fractionB <= 0.0)
+    if (n < 2)
       return undefined;
-    if (fractionA < 0)
-      fractionA = 0;
-    if (fractionB > 1)
-      fractionB = 1;
-    const gA = fractionA * numEdge;
-    const gB = fractionB * numEdge;
-    const indexA = Math.floor(gA);
-    const indexB = Math.floor(gB);
-    const localFractionA = gA - indexA;
-    const localFractionB = gB - indexB;
+    if (n > 2 && this.isPhysicallyClosed) {
+      // don't extend a closed linestring
+      if (fractionA < 0)
+        fractionA = 0;
+      if (fractionB > 1)
+        fractionB = 1;
+    }
+    if (Geometry.isSmallRelative(fractionB - fractionA))
+      return undefined;
+
+    const numEdge = n - 1;
+    let indexA = 0;   // left index of first extended/partial segment of clone
+    let index0 = 0;   // index of first original vertex in clone
+    let localFractionA = fractionA;
+    if (fractionA >= 0) {
+      const gA = fractionA * numEdge;
+      indexA = Math.floor(gA);
+      localFractionA = gA - indexA;
+      index0 = indexA + 1;
+    }
+    let indexB = n - 2; // left index of last extended/partial segment of clone and last original vertex in clone
+    let localFractionB = fractionB;
+    if (fractionB <= 1) {
+      const gB = fractionB * numEdge;
+      indexB = Math.floor(gB);
+      localFractionB = gB - indexB;
+    }
+
     const result = LineString3d.create();
     this.addResolvedPoint(indexA, localFractionA, result._points);
-    for (let index = indexA + 1; index <= indexB; index++) {
+    for (let index = index0; index <= indexB; index++) {
       this._points.getPoint3dAtUncheckedPointIndex(index, LineString3d._workPointA);
       result._points.push(LineString3d._workPointA);
     }

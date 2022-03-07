@@ -51,8 +51,22 @@ function exerciseLineString3d(ck: Checker, lsA: LineString3d) {
   const partB = lsA.clonePartialCurve(1.0, splitFraction);  // reversed to exercise more code.  But length is absolute so it will add.
   if (expectValidResults
     && ck.testPointer(partA, "forward partial") && partA
-    && ck.testPointer(partA, "forward partial") && partB) {
+    && ck.testPointer(partB, "backward partial") && partB) {
     ck.testCoordinate(lsA.curveLength(), partA.curveLength() + partB.curveLength(), "Partial curves sum to length", lsA, partA, partB);
+  }
+  for (const extendFraction of [0.05, 0.721, 1.4, 3.96]) {
+    const ce0 = lsA.clonePartialCurve(-extendFraction, 0);
+    const ce01 = lsA.clonePartialCurve(-extendFraction, 1);
+    const c1e = lsA.clonePartialCurve(1, 1 + extendFraction);
+    const c01e = lsA.clonePartialCurve(0, 1 + extendFraction);
+    const ce01e = lsA.clonePartialCurve(-extendFraction, 1 + extendFraction);
+    if (expectValidResults) {
+      if (ck.testPointer(ce0)) ck.testCoordinate(ce0.curveLength(), extendFraction * lsA.points[0].distance(lsA.points[1]), "pre-extension length is fraction of first segment");
+      if (ck.testPointer(ce01)) ck.testCoordinate(ce01.curveLength(), lsA.curveLength() + extendFraction * lsA.points[0].distance(lsA.points[1]), "pre-extended linestring has expected length");
+      if (ck.testPointer(c1e)) ck.testCoordinate(c1e.curveLength(), extendFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "post-extended length is fraction of last segment");
+      if (ck.testPointer(c01e)) ck.testCoordinate(c01e.curveLength(), lsA.curveLength() + extendFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "post-extended linestring has expected length");
+      if (ck.testPointer(ce01e)) ck.testCoordinate(ce01e.curveLength(), extendFraction * lsA.points[0].distance(lsA.points[1]) + lsA.curveLength() + extendFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "bi-extended linestring has expected length");
+    }
   }
 }
 describe("LineString3d", () => {
