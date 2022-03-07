@@ -246,6 +246,16 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     return numStrokes;
   }
 
+  /** Return a deep clone. */
+  public abstract override clone(): BezierCurveBase;
+
+  /** Return a transformed deep clone. */
+  public override cloneTransformed(transform: Transform): BezierCurveBase {
+    const curve1 = this.clone();
+    curve1.tryTransformInPlace(transform);
+    return curve1;
+  }
+
   /**
    * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
    * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
@@ -257,5 +267,15 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
     this.emitStrokableParts(handler, options.strokeOptions);
     return handler.claimResult();
+  }
+
+  /** Return a curve primitive which is a portion of this curve.
+   * @param fractionA [in] start fraction
+   * @param fractionB [in] end fraction
+   */
+   public override clonePartialCurve(fractionA: number, fractionB: number): BezierCurveBase {
+    const partialCurve = this.clone();
+    partialCurve._polygon.subdivideToIntervalInPlace(fractionA, fractionB);
+    return partialCurve;
   }
 }

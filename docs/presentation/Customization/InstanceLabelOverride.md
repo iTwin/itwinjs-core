@@ -33,10 +33,10 @@ label, but costs more performance-wise.
 
 `InstanceLabelOverridePropertyValueSpecification` uses property value as the label content.
 
-| Name             | Required? | Type                                                                                | Default    | Meaning                                                                                                                                                 |
-| ---------------- | --------- | ----------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `propertyName`   | Yes       | `string`                                                                            |            | Name of the property whose value should be used.                                                                                                        |
-| `propertySource` | No        | [`RelationshipPathSpecification`](../Common-Rules/RelationshipPathSpecification.md) | Empty path | [Specification of the relationship path](../Common-Rules/RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the property. |
+| Name             | Required? | Type                                                                   | Default    | Meaning                                                                                                                                    |
+| ---------------- | --------- | ---------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `propertyName`   | Yes       | `string`                                                               |            | Name of the property whose value should be used.                                                                                           |
+| `propertySource` | No        | [`RelationshipPathSpecification`](../RelationshipPathSpecification.md) | Empty path | [Specification of the relationship path](../RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the property. |
 
 ### String
 
@@ -70,9 +70,9 @@ label, but costs more performance-wise.
 
 `InstanceLabelOverrideRelatedInstanceLabelSpecification` uses label of another related instance as the label content.
 
-| Name                    | Required? | Type                                                                                | Default | Meaning                                                                                                                                                         |
-| ----------------------- | --------- | ----------------------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pathToRelatedInstance` | Yes       | [`RelationshipPathSpecification`](../Common-Rules/RelationshipPathSpecification.md) |         | [Specification of the relationship path](../Common-Rules/RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the related instance. |
+| Name                    | Required? | Type                                                                   | Default | Meaning                                                                                                                                            |
+| ----------------------- | --------- | ---------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pathToRelatedInstance` | Yes       | [`RelationshipPathSpecification`](../RelationshipPathSpecification.md) |         | [Specification of the relationship path](../RelationshipPathSpecification.md) from `InstanceLabelOverride.class` to class of the related instance. |
 
 ## Example
 

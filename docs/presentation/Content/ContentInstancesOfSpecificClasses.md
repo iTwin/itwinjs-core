@@ -6,28 +6,28 @@ This specification creates content for all instances of specific ECClasses.
 
 ## Attributes
 
-| Name                                                                            | Required? | Type                                                                                                                         | Default |
-| ------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
+| Name                                                                            | Required? | Type                                                                                                            | Default |
+| ------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------- | ------- |
 | *Filtering*                                                                     |
-| [`classes`](#attribute-classes)                                                 | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../Common-Rules/MultiSchemaClassesSpecification.md) | `[]`    |
-| [`excludedClasses`](#attribute-excludedclasses)                                 | No        | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../Common-Rules/MultiSchemaClassesSpecification.md) | `[]`    |
-| [`handlePropertiesPolymorphically`](#attribute-handlepropertiespolymorphically) | No        | `boolean`                                                                                                                    | `false` |
-| [`instanceFilter`](#attribute-instancefilter)                                   | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                                           | `""`    |
-| [`onlyIfNotHandled`](#attribute-onlyifnothandled)                               | No        | `boolean`                                                                                                                    | `false` |
+| [`classes`](#attribute-classes)                                                 | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) | `[]`    |
+| [`excludedClasses`](#attribute-excludedclasses)                                 | No        | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) | `[]`    |
+| [`handlePropertiesPolymorphically`](#attribute-handlepropertiespolymorphically) | No        | `boolean`                                                                                                       | `false` |
+| [`instanceFilter`](#attribute-instancefilter)                                   | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                              | `""`    |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)                               | No        | `boolean`                                                                                                       | `false` |
 | *Ordering*                                                                      |
-| [`priority`](#attribute-priority)                                               | No        | `number`                                                                                                                     | `1000`  |
+| [`priority`](#attribute-priority)                                               | No        | `number`                                                                                                        | `1000`  |
 | *Content Modifiers*                                                             |
-| [`relatedProperties`](#attribute-relatedproperties)                             | No        | `RelatedPropertiesSpecification[]`                                                                                           | `[]`    |
-| [`calculatedProperties`](#attribute-calculatedproperties)                       | No        | `CalculatedPropertiesSpecification[]`                                                                                        | `[]`    |
-| [`propertyCategories`](#attribute-propertycategories)                           | No        | `PropertyCategorySpecification[]`                                                                                            | `[]`    |
-| [`propertyOverrides`](#attribute-propertyoverrides)                             | No        | `PropertySpecification[]`                                                                                                    | `[]`    |
-| [`showImages`](#attribute-showimages)                                           | No        | `boolean`                                                                                                                    | `false` |
+| [`relatedProperties`](#attribute-relatedproperties)                             | No        | `RelatedPropertiesSpecification[]`                                                                              | `[]`    |
+| [`calculatedProperties`](#attribute-calculatedproperties)                       | No        | `CalculatedPropertiesSpecification[]`                                                                           | `[]`    |
+| [`propertyCategories`](#attribute-propertycategories)                           | No        | `PropertyCategorySpecification[]`                                                                               | `[]`    |
+| [`propertyOverrides`](#attribute-propertyoverrides)                             | No        | `PropertySpecification[]`                                                                                       | `[]`    |
+| [`showImages`](#attribute-showimages)                                           | No        | `boolean`                                                                                                       | `false` |
 | *Misc.*                                                                         |
-| [`relatedInstances`](#attribute-relatedinstances)                               | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)                                          | `[]`    |
+| [`relatedInstances`](#attribute-relatedinstances)                               | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md)                                          | `[]`    |
 
 ### Attribute: `classes`
 
-Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that specify which ECClasses need to be selected to form the result.
+Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) that specify which ECClasses need to be selected to form the result.
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.Classes.Ruleset]]
@@ -37,7 +37,7 @@ Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecif
 
 ### Attribute: `excludedClasses`
 
-Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that prevents specified ECClasses and subclasses from being selected by [`classes` attribute](#attribute-classes).
+Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) that prevents specified ECClasses and subclasses from being selected by [`classes` attribute](#attribute-classes).
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset]]
@@ -150,7 +150,6 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
   | before | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
   | after  | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
 
-
 ### Attribute: `showImages`
 
 > **Default value:** `false`
@@ -159,17 +158,17 @@ Should image IDs be calculated for the returned instances. When `true`, [ImageId
 
 ### Attribute: `relatedInstances`
 
-Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used when creating the content. There are several use cases when this is useful:
+Specifications of [related instances](../RelatedInstanceSpecification.md) that can be used when creating the content. There are several use cases when this is useful:
 
-- When there's a need to only load instances that have a related instance. Providing a [related instance](../Common-Rules/RelatedInstanceSpecification.md)
-  specification with [isRequired](../Common-Rules/RelatedInstanceSpecification.md) set to `true` filters-out the instances that don't have the related instance.
+- When there's a need to only load instances that have a related instance. Providing a [related instance](../RelatedInstanceSpecification.md)
+  specification with [isRequired](../RelatedInstanceSpecification.md#attribute-isrequired) set to `true` filters-out the instances that don't have the related instance.
 
-- When there's a need to filter instances by a related instance value. The [alias](../Common-Rules/RelatedInstanceSpecification.md) attribute may then be used
+- When there's a need to filter instances by a related instance value. The [alias](../RelatedInstanceSpecification.md) attribute may then be used
   in the [`instanceFilter` attribute](#attribute-instancefilter) to reference related instance property values.
 
 - When there's a need to customize content based on related instance property values. Related instance classes are included when looking for [customization rules](../Customization/index.md),
   which allows referencing related instances and their properties in [customization rule ECExpressions](../Customization/ECExpressions.md#override-value) by their
-  [alias](../Common-Rules/RelatedInstanceSpecification.md).
+  [alias](../RelatedInstanceSpecification.md#attribute-alias).
 
 ```ts
 [[include:SharedAttributes.RelatedInstances.Ruleset]]
@@ -189,4 +188,5 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
 
 Tells whether selecting instances from ECClasses specified in [`classes`](#attribute-classes) and [`excludedClasses`](#attribute-excludedclasses) attributes should be polymorphic or not.
 
-The attribute was replaced by [MultiSchemaClasses.arePolymorphic](../Common-Rules/MultiSchemaClassesSpecification.md#attribute-arepolymorphic) attribute specified individually for each class definition under [`classes`](#attribute-classes) and [`excludedClasses`](#attribute-excludedclasses) attributes. At the moment, to keep backwards compatibility, this attribute acts as a fallback value in case the flag is not specified individually for a class definition.
+The attribute was replaced by [MultiSchemaClasses.arePolymorphic](../MultiSchemaClassesSpecification.md#attribute-arepolymorphic) attribute specified individually for each class definition under [`classes`](#attribute-classes)
+and [`excludedClasses`](#attribute-excludedclasses) attributes. At the moment, to keep backwards compatibility, this attribute acts as a fallback value in case the flag is not specified individually for a class definition.

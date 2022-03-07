@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "CurvePrimitive.clone narrowing",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

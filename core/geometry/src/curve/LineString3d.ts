@@ -135,7 +135,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       this._points = new GrowableXYZArray();
   }
   /** Clone this linestring and apply the transform to the clone points. */
-  public cloneTransformed(transform: Transform): CurvePrimitive {  // we know tryTransformInPlace succeeds.
+  public cloneTransformed(transform: Transform): LineString3d {  // we know tryTransformInPlace succeeds.
     const c = this.clone();
     c.tryTransformInPlace(transform);
     return c;

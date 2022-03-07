@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2d } from "@itwin/core-geometry";
-import { ColorIndex, FeatureIndexType, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
+import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
+import { ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
-import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { MeshArgs, Point3dList } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
@@ -51,7 +51,7 @@ describe("VertexLUT", () => {
   before(async () => MockRender.App.startup());
   after(async () => MockRender.App.shutdown());
 
-  it("should produce correct VertexLUT.Params from MeshArgs", () => {
+  it("should produce correct VertexLUT.Params from quantized MeshArgs", () => {
     // Make a mesh consisting of a single triangle.
     const positions = new QPoint3dList(QParams3d.fromZeroToOne());
     positions.push(QPoint3d.fromScalars(0, 1, 2));
@@ -59,9 +59,13 @@ describe("VertexLUT", () => {
     positions.push(QPoint3d.fromScalars(0xbaad, 0, 0xffff));
 
     // Test simple unlit vertices (no normals or uv params; uniform colors + features)
-    const args = new MeshArgs();
-    args.points = positions;
-    args.vertIndices = [0, 1, 2];
+    const args: MeshArgs = {
+      points: positions,
+      vertIndices: [0, 1, 2],
+      colors: new ColorIndex(),
+      features: new FeatureIndex(),
+      fillFlags: FillFlags.None,
+    };
 
     const expected = [
       [
@@ -84,11 +88,11 @@ describe("VertexLUT", () => {
     expectMeshParams(args, args.colors, expected);
 
     // Add uv params
-    args.texture = new FakeTexture();
-    args.textureUv = [];
-    args.textureUv.push(new Point2d(-1, 1));  // 0, 0xffff
-    args.textureUv.push(new Point2d(1, 0));   // 0xffff, 0x8000
-    args.textureUv.push(new Point2d(0, -1));  // 0x8000, 0
+    args.textureMapping = {
+      texture: new FakeTexture(),
+      // quantized: (0, 0xffff),      (0xffff, 0x8000),   (0x8000, 0)
+      uvParams: [new Point2d(-1, 1), new Point2d(1, 0), new Point2d(0, -1)],
+    };
 
     expected[0].push(0x00); expected[0].push(0x00); expected[0].push(0xff); expected[0].push(0xff);
     expected[1].push(0xff); expected[1].push(0xff); expected[1].push(0x00); expected[1].push(0x80);
@@ -110,7 +114,7 @@ describe("VertexLUT", () => {
     expectMeshParams(args, args.colors, expected);
 
     // Remove uv params
-    args.texture = undefined;
+    args.textureMapping = undefined;
     for (const arr of expected) {
       arr.splice(12);
     }
@@ -135,5 +139,97 @@ describe("VertexLUT", () => {
     ];
 
     expectMeshParams(args, args.colors, expected, expectedColors);
+  });
+
+  it("should produce correct VertexLUT.Params from unquantized MeshArgs", () => {
+    // Make a mesh consisting of a single triangle
+    const positions = [
+      new Point3d(0, 1, 2),
+      new Point3d(-1, 0, 1),
+      new Point3d(12.34, 99999.9, -98.76),
+    ] as Point3dList;
+
+    positions.range = Range3d.createArray(positions);
+    const args: MeshArgs = {
+      points: positions,
+      vertIndices: [0, 1, 2],
+      colors: new ColorIndex(),
+      features: new FeatureIndex(),
+      fillFlags: FillFlags.None,
+    };
+
+    const makeExpected = () => [
+      [
+        0x00, 0x00, 0x00, 0x00, // pos.x
+        0x00, 0x00, 0x80, 0x3f, // pos.y
+        0x00, 0x00, 0x00, 0x40, // pos.z
+        0x00, 0x00, 0x00, 0x00, // feature index
+        0x00, 0x00, 0x00, 0x00, // color index; unused
+      ],
+      [
+        0x00, 0x00, 0x80, 0xbf,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x80, 0x3f,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+      ],
+      [
+        0xa4, 0x70, 0x45, 0x41,
+        0xf3, 0x4f, 0xc3, 0x47,
+        0x1f, 0x85, 0xc5, 0xc2,
+        0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00,
+      ],
+    ];
+
+    expectMeshParams(args, args.colors, makeExpected());
+
+    // Add uv params
+    args.textureMapping = {
+      texture: new FakeTexture(),
+      // quantized: (0, 0xffff),      (0xffff, 0x8000),   (0x8000, 0)
+      uvParams: [new Point2d(-1, 1), new Point2d(1, 0), new Point2d(0, -1)],
+    };
+
+    const exp = makeExpected();
+    exp[0][16] = 0x00; exp[0][17] = 0x00; exp[0][18] = 0xff; exp[0][19] = 0xff;
+    exp[1][16] = 0xff; exp[1][17] = 0xff; exp[1][18] = 0x00; exp[1][19] = 0x80;
+    exp[2][16] = 0x00; exp[2][17] = 0x80; exp[2][18] = 0x00; exp[2][19] = 0x00;
+
+    expectMeshParams(args, args.colors, exp, undefined, QParams2d.fromNormalizedRange());
+
+    // Add feature IDs
+    args.features.type = FeatureIndexType.NonUniform;
+    args.features.featureIDs = new Uint32Array(3);
+    args.features.featureIDs[0] = 0xbaadf00d;
+    args.features.featureIDs[1] = 0xc001bead;
+    args.features.featureIDs[2] = 0;
+
+    exp[0][12] = 0x0d; exp[0][13] = 0xf0; exp[0][14] = 0xad; exp[0][15] = 0xba;
+    exp[1][12] = 0xad; exp[1][13] = 0xbe; exp[1][14] = 0x01; exp[1][15] = 0xc0;
+
+    expectMeshParams(args, args.colors, exp);
+
+    // Remove texture and add non-uniform color
+    args.textureMapping = undefined;
+    const colors = new Uint32Array(3);
+    colors[0] = 0xffeeddcc;
+    colors[1] = 0x00010203;
+    colors[2] = 0x7f00ff00;
+    const colorIndices = [0, 0x0001, 0xffee];
+    args.colors.initNonUniform(colors, colorIndices, true);
+
+    exp[0][18] = exp[0][19] = 0;
+    exp[1][16] = 0x01; exp[1][17] = 0x00; exp[1][18] = exp[1][19] = 0;
+    exp[2][16] = 0xee; exp[2][17] = 0xff; exp[2][18] = exp[2][19] = 0;
+
+    // NB: The color values in VertexLUT.Params have premultiplied alpha, and alpha set to (255 - transparency)
+    const expectedColors = [
+      0x00, 0x00, 0x00, 0x00,
+      0x03, 0x02, 0x01, 0xff,
+      0x00, 0x80, 0x00, 0x80,
+    ];
+
+    expectMeshParams(args, args.colors, exp, expectedColors);
   });
 });

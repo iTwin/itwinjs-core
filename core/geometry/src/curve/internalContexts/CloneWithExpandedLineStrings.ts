@@ -23,7 +23,7 @@ export class CloneWithExpandedLineStrings extends CloneCurvesContext {
     super(undefined);
   }
   // We know we have no transform !!!
-  protected override doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] | undefined {
+  protected override doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] {
     if (primitive instanceof LineString3d && primitive.numPoints() > 1) {
       const packedPoints = primitive.packedPoints;
       const n = packedPoints.length;
@@ -33,11 +33,11 @@ export class CloneWithExpandedLineStrings extends CloneCurvesContext {
       }
       return segments;
     }
-    return primitive.clone() as CurvePrimitive;
+    return primitive.clone();
   }
-  public static override clone(target: CurveCollection): CurveCollection | undefined {
+  public static override clone(target: CurveCollection): CurveCollection {
     const context = new CloneWithExpandedLineStrings();
     target.announceToCurveProcessor(context);
-    return context._result;
+    return context._result as CurveCollection;
   }
 }

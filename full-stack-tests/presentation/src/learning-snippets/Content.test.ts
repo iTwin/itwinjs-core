@@ -1076,39 +1076,6 @@ describe("Learning Snippets", () => {
         await terminate();
       });
 
-      it("uses `MultiSchemaClassesSpecification`", async () => {
-        const ruleset: Ruleset = {
-          id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.MultiSchemaClasses.Ruleset
-              // This specification selects instances of `bis.PhysicalModel` and `bis.SpatialViewDefinition` classes. Classes that derive from this list will not be included.
-              classes: {
-                schemaName: "BisCore",
-                classNames: ["PhysicalModel", "SpatialViewDefinition"],
-                arePolymorphic: false,
-              },
-              // __PUBLISH_EXTRACT_END__
-            }],
-          }],
-        };
-
-        // Ensure that `bis.PhysicalModel` and `bis.SpatialViewDefinition` instances are selected.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
-
-        expect(content!.contentSet.length).to.eq(5);
-        content!.contentSet.forEach((record) => {
-          expect(record.primaryKeys[0].className).to.be.oneOf(["BisCore:PhysicalModel", "BisCore:SpatialViewDefinition"]);
-        });
-      });
-
       it("uses `classes` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.Classes.Ruleset
         // The specification returns content of all `bis.PhysicalModel` classes.
