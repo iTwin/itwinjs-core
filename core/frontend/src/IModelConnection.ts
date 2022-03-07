@@ -1052,6 +1052,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @deprecated
      */
     public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
+      // eslint-disable-next-line deprecation/deprecation
       const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), _viewId.toString());
       const intValues = new Uint32Array(val.buffer, 0, 4);
 
