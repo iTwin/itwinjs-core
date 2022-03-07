@@ -1,7 +1,6 @@
 ---
 publish: false
 ---
-<<<<<<< HEAD
 # NextVersion
 
 ## Simplified material creation
@@ -91,6 +90,3 @@ It is now possible to retrieve `Units` from schemas stored in IModels. The new [
 ### WidgetState changes
 
 The property [WidgetDef.state]($appui-react) will now return `WidgetState.Closed` if the widget is in a panel that is collapsed, or the panel size is 0 or undefined. When `WidgetState.Open` is passed to the method [WidgetDef.setWidgetState]($appui-react) the containing panel will also open if it is in a collapsed state.
-=======
-# NextVersion
->>>>>>> 1b80b21358 (Use relative links instead of $docs syntax (#3291))
