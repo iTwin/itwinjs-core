@@ -64,7 +64,6 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
       // We close any open dialogs that we might have opened
       // This was added because the modal dialog remained remained displayed after the session expired.
       ModalDialogManager.closeDialog();
-      resumeOutsideClick();
     };
   }, []);
 
