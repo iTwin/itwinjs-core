@@ -3,14 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { connect } from "react-redux";
 import { IModelApp } from "@itwin/core-frontend";
 import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@itwin/appui-abstract";
-import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework, UserInfo } from "@itwin/appui-react";
-import { UserProfileBackstageItem } from "./UserProfile";
+import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework } from "@itwin/appui-react";
 import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";
-import { RootState, SampleAppIModelApp, SampleAppUiActionId } from "../..";
+import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
 import stageIconSvg from "./imodeljs.svg?sprite";
 import { EditFrontstage } from "../frontstages/editing/EditFrontstage";
@@ -22,22 +20,9 @@ import { Frontstage2 } from "../frontstages/Frontstage2";
 import { Frontstage3 } from "../frontstages/Frontstage3";
 import { Frontstage4 } from "../frontstages/Frontstage4";
 import { FrontstageUi2 } from "../frontstages/FrontstageUi2";
+import { FrontstageWithNoWidgets } from "../frontstages/FrontStageWithNoWidgets";
 
-function mapStateToProps(state: RootState) {
-  const frameworkState = state.frameworkState;
-
-  if (!frameworkState)
-    return undefined;
-
-  return { userInfo: frameworkState.sessionState.userInfo! };
-}
-
-interface AppBackstageComposerProps {
-  /** UserInfo from sign-in */
-  userInfo: UserInfo | undefined;
-}
-
-export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposerProps) {
+export function AppBackstageComposer() {
   const hiddenCondition3 = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
   const enableCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
   const notUi2Condition = new ConditionalBooleanValue(() => UiFramework.uiVersion === "1", ["configurableui:set-framework-version"]);
@@ -61,6 +46,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
       BackstageItemUtilities.createStageLauncher(Frontstage3.stageId, 200, 30, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstage3"), undefined, "icon-placeholder", { isHidden: hiddenCondition3 }),
       BackstageItemUtilities.createStageLauncher(Frontstage4.stageId, 200, 40, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstage4"), undefined, "icon-placeholder", { isDisabled: enableCondition }),
       BackstageItemUtilities.createStageLauncher(FrontstageUi2.stageId, 200, 50, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstageUi20"), undefined, "icon-placeholder", { isHidden: notUi2Condition }),
+      BackstageItemUtilities.createStageLauncher(FrontstageWithNoWidgets.stageId, 200, 60, IModelApp.localization.getLocalizedString("SampleApp:backstage.testFrontstageNoWidgets"), undefined, "icon-placeholder"),
       BackstageItemUtilities.createStageLauncher(IModelOpenFrontstage.stageId, 300, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
       BackstageItemUtilities.createStageLauncher(IModelIndexFrontstage.stageId, 300, 20, IModelApp.localization.getLocalizedString("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
       BackstageItemUtilities.createActionItem(LocalFileOpenFrontstage.stageId, 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.localization.getLocalizedString("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
@@ -70,10 +56,6 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
   });
 
   return (
-    <BackstageComposer items={backstageItems}
-      header={userInfo && <UserProfileBackstageItem userInfo={userInfo} />}
-    />
+    <BackstageComposer items={backstageItems} />
   );
 }
-
-export const AppBackstageComposer = connect(mapStateToProps)(AppBackstageComposerComponent); // eslint-disable-line @typescript-eslint/naming-convention

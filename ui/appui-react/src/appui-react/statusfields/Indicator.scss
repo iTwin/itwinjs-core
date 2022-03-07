@@ -42,6 +42,30 @@
   align-items: center;
   visibility: visible;
   color: $buic-foreground-body;
+  gap: 8px;
+
+  &.uifw-footer-action {
+    cursor: pointer;
+
+    &:hover {
+      color: $buic-foreground-primary;
+    }
+  }
+
+  &.uifw-footer-label-reversed {
+    flex-direction: row-reverse;
+  }
+
+  >.nz-label {
+    font-size: $text-font-size;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    @include for-tablet-landscape-down {
+      display: none;
+    }
+  }
 
   &.uifw-indicator-fade-in {
     animation: uifw-indicator-FadeIn 1s linear;
@@ -84,16 +108,6 @@
     font-size: $text-font-size-small;
     padding-left: $nz-footer-indicator-horizontal-padding-small;
     padding-right: $nz-footer-indicator-horizontal-padding-small;
-  }
-
-  >.nz-label {
-    margin-right: $space-between-text-and-icon;
-    display: none;
-    font-size: $text-font-size;
-
-    &.nz-is-visible {
-      display: block;
-    }
   }
 
   >.nz-balloon-container {
@@ -147,26 +161,23 @@
 }
 
 .uifw-indicator-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: $icon-size;
   width: $icon-size;
-  height: $icon-size;
-  cursor: pointer;
 
   /* Medium devices */
   @include for-tablet-landscape-down {
     font-size: $icon-size-medium;
     width: $icon-size-medium;
-    height: $icon-size-medium;
   }
 
   /* Small devices */
   @include for-phone-only {
     font-size: $icon-size-small;
     width: $icon-size-small;
-    height: $icon-size-small;
+
   }
 
-  &:hover {
-    color: $buic-foreground-primary;
-  }
 }

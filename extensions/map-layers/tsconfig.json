@@ -1,9 +1,10 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
     "outDir": "./lib",
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
+    "target": "ES2019",
     "jsx": "react",
     "types": [
       "sinon-chai",

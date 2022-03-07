@@ -11,7 +11,6 @@ import { CommonProps, IconSpec, UiEvent } from "@itwin/core-react";
 import { Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiFramework } from "../UiFramework";
-import { UserInfo } from "../UserInfo";
 import { BackstageManager } from "./BackstageManager";
 
 // cSpell:ignore safearea
@@ -31,10 +30,8 @@ export class BackstageEvent extends UiEvent<BackstageEventArgs> { } // eslint-di
 
 /** Properties for the [[Backstage]] React component.
  * @public
- * @deprecated use [BackstageComposer]($appui-react) instead.
  */
 export interface BackstageProps extends CommonProps {
-  userInfo?: UserInfo;
   isVisible?: boolean;
   showOverlay?: boolean;
   onClose?: () => void;
@@ -50,7 +47,6 @@ interface BackstageState {
 
 /** Backstage React component.
  * @public
- * @deprecated use [BackstageComposer]($appui-react) instead.
  */
 export class Backstage extends React.Component<BackstageProps, BackstageState> { // eslint-disable-line deprecation/deprecation
 

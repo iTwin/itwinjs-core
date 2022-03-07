@@ -6,7 +6,7 @@
  * @module IModelApp
  */
 
-const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const copyrightNotice = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
@@ -20,6 +20,7 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";
 import * as categorySelectorState from "./CategorySelectorState";
+import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
@@ -72,7 +73,7 @@ export interface FrontendSecurityOptions {
  * @public
  */
 export interface IModelAppOptions {
-  /** If present, supplies the [[IModelClient]] for this session. */
+  /** If present, supplies the [[FrontendHubAccess]] for this session. */
   hubAccess?: FrontendHubAccess;
   /** If present, supplies the Id of this application. Applications must set this to the Bentley Global Product Registry Id (GPRID) for usage logging. */
   applicationId?: string;
@@ -114,7 +115,7 @@ export interface IModelAppOptions {
   tentativePoint?: TentativePoint;
   /** @internal */
   quantityFormatter?: QuantityFormatter;
-  /** @internal */
+  /** If present, supplies an implementation of the render system, or options for initializing the default render system. */
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
@@ -201,6 +202,11 @@ export class IModelApp {
   /** Event raised just before the frontend IModelApp is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
+  /** Event raised after IModelApp is finished starting up.
+   * @internal
+   */
+  public static readonly onAfterStartup = new BeEvent<() => void>();
+
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: AuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
@@ -220,9 +226,7 @@ export class IModelApp {
   public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session. */
   public static get tileAdmin(): TileAdmin { return this._tileAdmin; }
-  /** The [[QuantityFormatter]] for this session.
-   * @alpha
-   */
+  /** The [[QuantityFormatter]] for this session. */
   public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
   /** The [[ToolAdmin]] for this session. */
   public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }
@@ -232,7 +236,6 @@ export class IModelApp {
   public static get accuDraw(): AccuDraw { return this._accuDraw; }
   /** The [[AccuSnap]] for this session. */
   public static get accuSnap(): AccuSnap { return this._accuSnap; }
-  /** @internal */
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
@@ -272,6 +275,9 @@ export class IModelApp {
    * @internal
    */
   public static readonly telemetry: TelemetryManager = new TelemetryManager();
+
+  /** @alpha */
+  public static readonly extensionAdmin = new ExtensionAdmin();
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -333,8 +339,10 @@ export class IModelApp {
     opts = opts ?? {};
     this._securityOptions = opts.security ?? {};
 
-    // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
-    (window as IModelAppForDebugger).iModelAppForDebugger = this;
+    if (process.env.NODE_ENV === "development") {
+      // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
+      (window as IModelAppForDebugger).iModelAppForDebugger = this;
+    }
 
     this.sessionId = opts.sessionId ?? Guid.createValue();
     this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iTwin.js
@@ -397,7 +405,8 @@ export class IModelApp {
       this.uiAdmin,
     ].forEach((sys) => sys.onInitialized());
 
-    return this.quantityFormatter.onInitialized();
+    await this.quantityFormatter.onInitialized();
+    this.onAfterStartup.raiseEvent();
   }
 
   /** Must be called before the application exits to release any held resources. */
@@ -409,7 +418,9 @@ export class IModelApp {
     this.onBeforeShutdown.raiseEvent();
     this.onBeforeShutdown.clear();
 
-    (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
+    if (process.env.NODE_ENV === "development") {
+      (window as IModelAppForDebugger).iModelAppForDebugger = undefined;
+    }
 
     this._wantEventLoop = false;
     window.removeEventListener("resize", IModelApp.requestNextAnimation);
@@ -420,6 +431,7 @@ export class IModelApp {
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;
+    this.onAfterStartup.clear();
   }
 
   /** Controls how frequently the application polls for changes that may require a new animation frame to be requested.
@@ -675,7 +687,7 @@ export class IModelApp {
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: `${this.publicPath}images/about-imodeljs.svg`,
-      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
+      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("iModelJs:Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
       notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
@@ -710,6 +722,6 @@ export class IModelApp {
         key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
-    return this.localization.getLocalizedString(`${key.scope}.${key.val}`, key);
+    return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
   }
 }

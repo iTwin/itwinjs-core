@@ -24,14 +24,19 @@ class MarkerHandler extends SectionMarkerHandler {
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
-    iModelApp.tileAdmin = {
-      minimumSpatialTolerance: 0,
-      cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
-    };
+    if (iModelApp.tileAdmin === undefined) {
+      iModelApp.tileAdmin = {
+        minimumSpatialTolerance: 0,
+        cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
+      };
+    } else {
+      iModelApp.tileAdmin.minimumSpatialTolerance = 0;
+      iModelApp.tileAdmin.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+    }
 
     /* eslint-disable @typescript-eslint/naming-convention */
     iModelApp.mapLayerOptions = {
-      MapBoxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
+      MapboxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
       BingMaps: process.env.IMJS_BING_MAPS_KEY ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY } : undefined,
     };
     /* eslint-enable @typescript-eslint/naming-convention */

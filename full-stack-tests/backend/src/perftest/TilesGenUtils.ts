@@ -6,7 +6,7 @@
 import { ByteStream, GuidString, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
-  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
+  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, EdgeType, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
 } from "@itwin/core-common";
 import { IModelDb, SpatialModel } from "@itwin/core-backend";
 import { ConcurrencyQueue } from "./ConcurrencyQueue";
@@ -70,6 +70,7 @@ export class BackendTileGenerator {
     alwaysSubdivideIncompleteTiles: false,
     optimizeBRepProcessing: true,
     useLargerTiles: true,
+    enableIndexedEdges: true,
   };
   private readonly _stats: Stats = {
     modelCount: 0,
@@ -98,7 +99,7 @@ export class BackendTileGenerator {
     for (const modelId of this._iModel.queryEntityIds(queryParams)) {
       try {
         const model = this._iModel.models.getModel<SpatialModel>(modelId);
-        const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, this._options);
+        const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: EdgeType.None }, this._options);
         models.push({ treeId, modelId, guid: model.geometryGuid, is2d: false, treeType: BatchType.Primary, tileScreenSize });
       } catch (err) {
         Logger.logError(loggerCategory, `Failed to load model "${modelId}": ${err}`);
@@ -186,7 +187,7 @@ export class BackendTileGenerator {
     if (content.length <= kEmptyTileSize)
       this._stats.emptyTileCount++;
 
-    const metadata = reader.read(new ByteStream(content.buffer), tile);
+    const metadata = reader.read(ByteStream.fromUint8Array(content), tile);
     if (this._getTileStats || this._getTileMetadata) {
       const stats: TileStats = { treeId: treeInfo.treeId, contentId: tile.contentId };
       if (this._getTileStats) {

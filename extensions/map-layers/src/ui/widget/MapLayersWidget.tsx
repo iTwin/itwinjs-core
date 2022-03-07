@@ -6,9 +6,9 @@
 import * as React from "react";
 import { useActiveViewport } from "@itwin/appui-react";
 import { FillCentered } from "@itwin/core-react";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapLayerOptions } from "../Interfaces";
 import { MapLayerManager } from "./MapLayerManager";
+import { MapLayersUI } from "../../mapLayers";
 
 /**
  * Widget to Manage Map Layers
@@ -19,7 +19,7 @@ interface MapLayersWidgetProps {
 }
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayersWidget(props: MapLayersWidgetProps) {
-  const [notGeoLocatedMsg] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Messages.NotSupported"));
+  const [notGeoLocatedMsg] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Messages.NotSupported"));
   const activeViewport = useActiveViewport();
   const ref = React.useRef<HTMLDivElement>(null);
 

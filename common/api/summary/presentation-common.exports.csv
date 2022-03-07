@@ -33,8 +33,8 @@ public;Content
 public;ContentDescriptorRequestOptions
 public;ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentFlags
-alpha;ContentInstanceKeysRequestOptions
-alpha;ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
+beta;ContentInstanceKeysRequestOptions
+beta;ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentJSON
 public;ContentModifier 
@@ -256,6 +256,8 @@ alpha;PresentationIpcEvents
 internal;PresentationIpcInterface
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
+public;PresentationRpcResponse
+public;PresentationRpcResponseData
 public;PresentationStatus
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 
@@ -281,6 +283,7 @@ public;PropertyEditorSliderParameters
 public;PropertyEditorSpecification
 public;PropertyGroup 
 public;PropertyGroupingValue
+deprecated;PropertyGroupingValue
 public;PropertyInfo
 public;PropertyInfo
 public;PropertyInfoJSON

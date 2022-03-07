@@ -52,7 +52,6 @@ public;AppNotificationManager
 public;AppUiSettings 
 beta;areNoFeatureOverridesActive(): boolean
 public;Backstage 
-deprecated;Backstage 
 beta;BackstageActionItem 
 deprecated;BackstageActionItem 
 public;BackstageAppButton(props: BackstageAppButtonProps): JSX.Element
@@ -78,7 +77,6 @@ beta;BackstageItemUtilities
 deprecated;BackstageItemUtilities
 public;BackstageManager
 public;BackstageProps 
-deprecated;BackstageProps 
 beta;BackstageStageLauncher 
 deprecated;BackstageStageLauncher 
 public;BackstageToggledArgs
@@ -88,7 +86,9 @@ public;BasicNavigationWidgetProps
 public;BasicToolWidget(props: BasicToolWidgetProps): JSX.Element
 public;BasicToolWidgetProps
 public;BooleanListenerProps
+deprecated;BooleanListenerProps
 public;BooleanSyncUiListener 
+deprecated;BooleanSyncUiListener 
 alpha;BumpToolSetting 
 alpha;Calculator 
 internal;CalculatorEngine
@@ -146,6 +146,11 @@ public;ContentCallback = (content: ContentProps) => void
 public;ContentControl 
 public;ContentControlActivatedEvent 
 public;ContentControlActivatedEventArgs
+public;ContentDialog(props: ContentDialogProps): JSX.Element
+public;ContentDialogChangedEvent 
+public;ContentDialogManager
+public;ContentDialogProps 
+public;ContentDialogRenderer 
 public;ContentGroup
 public;ContentGroupProps
 public;class ContentGroupProvider
@@ -159,6 +164,7 @@ public;ContentProps
 public;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
 public;ContentToolWidgetComposerProps
 public;ContentViewManager
+internal;ContentWrapper(props: ContentWrapperProps): JSX.Element
 public;CoreTools
 public;createAction
 public;createAction
@@ -219,6 +225,10 @@ beta;ExpandableSectionProps
 internal;expandWidget: (base:
 public;ExtensibleToolbarProps
 beta;featureOverridesActiveStateFunc(state: Readonly
+beta;FloatingContentControl 
+beta;FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element
+beta;FloatingViewportContentControl 
+beta;FloatingViewportContentProps
 alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
@@ -302,7 +312,7 @@ beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
 public;IModelViewportControl 
 public;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
-beta;Indicator 
+beta;Indicator(props: IndicatorProps): JSX.Element
 public;InitialAppUiSettings
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
 internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState
@@ -421,7 +431,6 @@ internal;PanelSizeChangedEvent
 internal;PanelSizeChangedEventArgs
 beta;PanelStateChangedEvent 
 public;PanelStateChangedEventArgs
-deprecated;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
 public;PointerMessage 
 public;PointerMessageChangedEvent 
@@ -504,6 +513,8 @@ public;SnapModeField: import("react-redux").ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
+public;SplitPane(props: SplitPaneProps): JSX.Element
+public;SplitPaneProps
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
 public;StageContentLayout
@@ -566,8 +577,10 @@ public;StickyMessageProps
 public;SupportsViewSelectorChange
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs
-public;SyncUiEvent 
-public;SyncUiEventArgs
+public;SyncUiEvent = UiSyncEvent
+deprecated;SyncUiEvent = UiSyncEvent
+public;SyncUiEventArgs = UiSyncEventArgs
+deprecated;SyncUiEventArgs = UiSyncEventArgs
 public;SyncUiEventDispatcher
 public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
@@ -661,6 +674,7 @@ public;UiVisibilityChangedEvent
 public;UiVisibilityEventArgs
 alpha;UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element
 beta;UnitSystemSelectorProps
+internal;useActiveContentControlId(): string | undefined
 internal;useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined
 public;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
@@ -683,7 +697,6 @@ internal;useItemsManager(frontstageDef: FrontstageDef): void
 internal;useLabels(): NineZoneLabels
 internal;useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch
 internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined
-public;UserInfo
 public;UserSettingsProvider
 public;UserSettingsStorage 
 deprecated;UserSettingsStorage 
@@ -706,6 +719,7 @@ alpha;useWidgetDirection(): "horizontal" | "vertical"
 alpha;ValidationTextbox 
 beta;ViewAttributesStatusField 
 public;ViewLayout
+internal;ViewOverlayHost({ viewport, featureOptions, userSuppliedOverlay }: ViewOverlayHostProps): JSX.Element | null
 public;ViewOverlayProps
 public;ViewportContentControl 
 beta;ViewSelector 

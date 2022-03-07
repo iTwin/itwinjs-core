@@ -27,7 +27,7 @@ import { BagOfCurves, ConsolidateAdjacentCurvePrimitivesOptions, CurveChain, Cur
 import { CurveCurve } from "./CurveCurve";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
-import { CurveChainWireOffsetContext, JointOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { CurveChainWireOffsetContext, JointOptions, OffsetOptions, PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
 import { Path } from "./Path";
@@ -330,24 +330,22 @@ export class RegionOps {
     const context = new PolygonWireOffsetContext();
     return context.constructPolygonWireXYOffset(points, wrap, offsetDistance);
   }
-  /**
-   * Construct curves that are offset from a Path or Loop
+    /**
+   * Construct curves that are offset from a Path or Loop as viewed in xy-plane (ignoring z).
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will not detect self intersection among widely separated edges.
-   * * Offset distance is defined as positive to the left.
-   * * If offsetDistanceOrOptions is given as a number, default options are applied.
+   * * If offsetDistance is given as a number, default OffsetOptions are applied.
    * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
    *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
-   *   * if the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight lines that are
+   *   * If the turn is less than or equal to `options.maxChamferTurnDegrees`, extend curves along tangent to single intersection point.
+   *   * If the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight lines that are:
    *      * outside the arc
    *      * have uniform turn angle less than `options.maxChamferDegrees`
    *      * each line segment (except first and last) touches the arc at its midpoint.
-   *   * Otherwise the prior and successor curves are extended to simple intersection.
-   * @param curves input curves
-   * @param offsetDistanceOrOptions offset controls.
+   * @param curves base curves.
+   * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
-  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined {
-    const options = JointOptions.create(offsetDistanceOrOptions);
-    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, options);
+  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined {
+    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, offsetDistanceOrOptions);
   }
   /**
    * Test if point (x,y) is IN, OUT or ON a polygon.

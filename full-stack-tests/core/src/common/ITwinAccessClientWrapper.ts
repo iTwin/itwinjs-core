@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
-import { ITwinManagerClient } from "@bentley/imodelhub-client";
+import { ITwinManagerClient } from "@bentley/imodelbank-client";
 import { AccessToken } from "@itwin/core-bentley";
 
 /** An implementation of TestITwin backed by an iTwin project */

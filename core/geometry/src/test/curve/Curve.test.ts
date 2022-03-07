@@ -102,7 +102,7 @@ class StrokeCountSearch extends NullGeometryHandler {
 class ExerciseCurve {
   public static exerciseStrokeData(ck: Checker, curve: CurvePrimitive) {
 
-    const curveA = curve.clone() as CurvePrimitive;
+    const curveA = curve.clone();
     const count0 = curveA.computeStrokeCountForOptions();
     curveA.computeAndAttachRecursiveStrokeCounts();
     // console.log("strokes by count", count0);
@@ -156,7 +156,7 @@ class ExerciseCurve {
   }
 
   public static exerciseReverseInPlace(ck: Checker, curve: CurvePrimitive) {
-    const curveA = curve.clone() as CurvePrimitive;
+    const curveA = curve.clone();
     curveA.reverseInPlace();
     for (const f of [0, 0.2, 0.6, 0.92, 1]) {
       let point = curve.fractionToPoint(f);
@@ -521,7 +521,7 @@ class ExerciseCurve {
         }
     }
 
-/*  {   // TODO: comment out until fix homogeneous exerciseClosestPoint bugs (16)
+  {
       const poles4d = [
         Point4d.create(0, 0, 0, 1),
         Point4d.create(5, 0, 0, 0.8),
@@ -542,7 +542,6 @@ class ExerciseCurve {
         }
       }
     }
-*/
     {
       const radius = 2;
       const points = Sample.createArcStrokes(4, Point3d.create(radius, 0, 0), radius, Angle.createDegrees(0), Angle.createDegrees(225), false);
@@ -605,11 +604,10 @@ class ExerciseCurve {
     {
       if (Checker.noisy.testTransitionSpiral) {
         for (const spiral of [
+          IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 10), Segment1d.create(0, 1), Transform.createIdentity()),
           DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
-          // TODO: comment out until fix clothoid exerciseClosestPoint bug (1)
-          // IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 10), Segment1d.create(0, 1), Transform.createIdentity())
           ]) {
           if (ck.testPointer(spiral)) {
             ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);
@@ -721,11 +719,8 @@ describe("Curves", () => {
     // const indexedPathC = CurveChainWithDistanceIndex.createCapture(pathC);
     // const indexedPathD = CurveChainWithDistanceIndex.createCapture(pathD);
     const returnUndefined = (_a: CurvePrimitive, _b: CurvePrimitive): CurvePrimitive | undefined => undefined;
-    const returnCloneA = (a: CurvePrimitive, _b: CurvePrimitive): CurvePrimitive | undefined => {
-      const c = a.clone();
-      if (c)
-        return c as CurvePrimitive;
-      return undefined;
+    const returnCloneA = (a: CurvePrimitive, _b: CurvePrimitive): CurvePrimitive => {
+      return a.clone();
     };
     ck.testUndefined(RuledSweep.mutatePartners(pathA, emptyBag, returnCloneA), "mutatePartners rejects mismatched collection types");
     ck.testUndefined(RuledSweep.mutatePartners(pathA, pathD, returnCloneA), "mutatePartners rejects mismatched collection lengths");

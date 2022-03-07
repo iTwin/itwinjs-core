@@ -64,7 +64,7 @@ export interface OnElementInModelIdArg extends OnModelIdArg {
  * See [Creating models]($docs/learning/backend/CreateModels.md)
  * @public
  */
-export class Model extends Entity implements ModelProps {
+export class Model extends Entity {
   /** @internal */
   public static override get className(): string { return "Model"; }
   /** @internal */
@@ -210,9 +210,9 @@ export class Model extends Entity implements ModelProps {
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
   /** Insert this Model in the iModel */
-  public insert() { return this.iModel.models.insertModel(this); }
+  public insert() { return this.id = this.iModel.models.insertModel(this.toJSON()); }
   /** Update this Model in the iModel. */
-  public update() { this.iModel.models.updateModel(this); }
+  public update() { this.iModel.models.updateModel(this.toJSON()); }
   /** Delete this Model from the iModel. */
   public delete() { this.iModel.models.deleteModel(this.id); }
 }
@@ -220,7 +220,7 @@ export class Model extends Entity implements ModelProps {
 /** A container for persisting geometric elements.
  * @public
  */
-export class GeometricModel extends Model implements GeometricModelProps {
+export class GeometricModel extends Model {
   public geometryGuid?: GuidString; // Initialized by the Entity constructor
 
   /** @internal */
@@ -238,7 +238,7 @@ export class GeometricModel extends Model implements GeometricModelProps {
 /** A container for persisting 3d geometric elements.
  * @public
  */
-export abstract class GeometricModel3d extends GeometricModel implements GeometricModel3dProps {
+export abstract class GeometricModel3d extends GeometricModel {
   /** If true, then the elements in this GeometricModel3d are expected to be in an XY plane.
    * @note The associated ECProperty was added to the BisCore schema in version 1.0.8
    */
@@ -270,7 +270,7 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
 /** A container for persisting 2d geometric elements.
  * @public
  */
-export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
+export abstract class GeometricModel2d extends GeometricModel {
   /** The actual coordinates of (0,0) in modeling coordinates. An offset applied to all modeling coordinates. */
   public globalOrigin?: Point2d; // Initialized by the Entity constructor
   /** @internal */

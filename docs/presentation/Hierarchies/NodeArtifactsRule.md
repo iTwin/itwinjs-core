@@ -2,6 +2,9 @@
 
 > TypeScript type: [NodeArtifactsRule]($presentation-common).
 
+> **Performance note:** The rule is costly performance-wise and should only be used in very limited amount of specific cases where
+> hidden child nodes need to be used to determine parent node's visibility.
+
 Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be
 accessed when evaluating parent node's `hideExpression` to decide whether it should be hidden or not.
 
@@ -19,30 +22,74 @@ Use `NodeArtifacts` on the *ModelB* nodes and a `hideExpression` on *Subject* no
 
 ## Attributes
 
-| Name               | Required? | Type                                                                 | Default | Meaning                                                                                  |
-| ------------------ | --------- | -------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------- |
-| *Filtering*        |
-| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    | Specifications that define schema requirements for the rule to take effect.              |
-| `priority`         | No        | `number`                                                             | `1000`  | Defines the order in which presentation rules are evaluated.                             |
-| `onlyIfNotHandled` | No        | `boolean`                                                            | `false` | Should this rule be ignored if there is already an existing rule with a higher priority. |
-| `condition`        | No        | [ECExpression](../Customization/ECExpressions.md#rule-condition)     | `""`    | Defines a condition for the rule, which needs to be met in order to execute it.          |
-| *Artifacts*        |
-| `items`            | No        | `{ [key: string]: ECExpression }`                                    |         | A map of ECExpressions whose evaluation results are used as artifact values              |
+| Name                                               | Required? | Type                                                                 | Default |
+| -------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
+| *Filtering*                                        |
+| [`condition`](#attributer-condition)               | No        | [ECExpression](../Customization/ECExpressions.md#rule-condition)     | `""`    |
+| [`requiredSchemas`](#attributer-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`priority`](#attributer-priority)                 | No        | `number`                                                             | `1000`  |
+| [`onlyIfNotHandled`](#attributer-onlyifnothandled) | No        | `boolean`                                                            | `false` |
+| *Artifacts*                                        |
+| [`items`](#attribute-items)                        | Yes       | `{ [key: string]: ECExpression }`                                    |         |
 
-## Example
+### Attribute: `condition`
 
-```JSON
-{
-  "ruleType": "NodeArtifacts",
-  "priority": 999,
-  "requiredSchemas": [{ "name": "MySchema", "minVersion": "1.2.3" }],
-  "condition": "ThisNode.IsOfClass(\"MyClass\", \"MySchema\")",
-  "items": {
-    "isSpecialItem": "this.IsSpecial"
-  }
-}
+> **Default value:** `""`
+
+Specifies an ECExpression that allows applying node artifacts based on evaluation result, e.g. by some property of the parent node.
+
+```ts
+[[include:Hierarchies.NodeArtifacts.Condition.Ruleset]]
 ```
 
-## Additional Notes
+```ts
+[[include:Hierarchies.NodeArtifacts.Condition.Result]]
+```
 
-**Warning:** The rule is costly performance-wise and should only be used in very limited amount of specific cases where hidden child nodes need to be used to used to determine parent node's visibility.
+### Attribute: `requiredSchemas`
+
+> **Default value:** `[]`
+
+A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+
+```ts
+[[include:Hierarchies.RequiredSchemas.Ruleset]]
+```
+
+### Attribute: `priority`
+
+> **Default value:** `1000`
+
+Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
+
+```ts
+[[include:Hierarchies.Priority.Ruleset]]
+```
+
+![Example of using "priority" attribute](./media/hierarchy-with-priority-attribute.png)
+
+### Attribute: `onlyIfNotHandled`
+
+> **Default value:** `false`
+
+Tells the library that the rule should only be handled if no other node artifacts rule was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+
+```ts
+[[include:Hierarchies.OnlyIfNotHandled.Ruleset]]
+```
+
+![Example of using "onlyIfNotHandled" attribute](./media/hierarchy-with-onlyifnothandled-attribute.png)
+
+### Attribute: `items`
+
+> **Default value:** `{}`
+
+A map of [ECExpressions](./ECExpressions.md#specification) whose evaluation results are used as artifact values.
+
+```ts
+[[include:Hierarchies.NodeArtifacts.Items.Ruleset]]
+```
+
+```ts
+[[include:Hierarchies.NodeArtifacts.Items.Result]]
+```

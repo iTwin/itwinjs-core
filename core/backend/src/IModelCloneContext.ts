@@ -116,6 +116,7 @@ export class IModelCloneContext {
    * @internal
    */
   public importFont(sourceFontNumber: number): void {
+    this.targetDb.clearFontMap(); // so it will be reloaded with new font info
     this._nativeContext.importFont(sourceFontNumber);
   }
 
@@ -144,8 +145,9 @@ export class IModelCloneContext {
         targetElementProps.code.scope = IModel.rootSubjectId;
       }
     }
-    const jsClass: any = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName); // declared as "any" so we can call the protected onCloned method
-    jsClass.onCloned(this, sourceElement, targetElementProps);
+    const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName);
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    jsClass["onCloned"](this, sourceElement.toJSON(), targetElementProps);
     return targetElementProps;
   }
 }
