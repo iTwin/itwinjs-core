@@ -209,7 +209,7 @@ export abstract class IModelDb extends IModel {
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
   /** @internal */
-  protected _workspace: Workspace;
+  private _workspace?: Workspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
@@ -225,7 +225,11 @@ export abstract class IModelDb extends IModel {
    * Get the [[Workspace]] for this iModel.
    * @beta
    */
-  public get workspace(): Workspace { return this._workspace; }
+  public get workspace(): Workspace {
+    if (undefined === this._workspace)
+      this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
+    return this._workspace;
+  }
 
   /** Acquire the exclusive schema lock on this iModel.
    * > Note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
@@ -295,7 +299,6 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
-    this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
     this.loadSettingDictionaries();
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
@@ -317,7 +320,7 @@ export abstract class IModelDb extends IModel {
 
     this.beforeClose();
     IModelDb._openDbs.delete(this._fileKey);
-    this._workspace.close();
+    this._workspace?.close();
     this.locks.close();
     this._locks = undefined;
     this.nativeDb.closeIModel();

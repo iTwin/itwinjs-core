@@ -31,8 +31,8 @@ describe.only("CloudSqlite", () => {
     emptyDirSync(name);
   };
 
-  const makeContainer = (containerId: string, user: string, isPublic: boolean): TestContainer => {
-    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, user, writeable: true, sasToken: "" }) as TestContainer;
+  const makeContainer = (containerId: string, isPublic: boolean): TestContainer => {
+    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, user: "CloudSqlite test", writeable: true, sasToken: "" }) as TestContainer;
     cont.isPublic = isPublic;
     return cont;
   };
@@ -52,7 +52,7 @@ describe.only("CloudSqlite", () => {
   };
 
   before(async () => {
-    testContainers = [makeContainer("test1", "user1", false), makeContainer("test2", "user1", false), makeContainer("test3", "user1", true)];
+    testContainers = [makeContainer("test1", false), makeContainer("test2", false), makeContainer("test3", true)];
     caches = [makeCache("cache1"), makeCache("cache2")];
     credentials = new azureBlob.StorageSharedKeyCredential(storage.accountName, emulatorKey);
     const pipeline = azureBlob.newPipeline(credentials);
@@ -184,7 +184,7 @@ describe.only("CloudSqlite", () => {
     expect(() => contain1.attach(caches[0])).throws("container already attached");
 
     // can't attach two containers with same name
-    const cont2 = makeContainer(contain1.containerId, "user2", false);
+    const cont2 = makeContainer(contain1.containerId, false);
 
     setSasToken(cont2, "racwdl");
 
@@ -218,7 +218,7 @@ describe.only("CloudSqlite", () => {
     expect(dbProps.pinned).equals(0);
     expect(dbProps.localBlocks).equals(dbProps.totalBlocks);
 
-    // when one user has the lock the other should fail to obtain it
+    // when one cache has the lock the other should fail to obtain it
     await CloudSqlite.withWriteLock(contain1, async () => {
       // eslint-disable-next-line @typescript-eslint/promise-function-async
       expect(() => cont2.acquireWriteLock()).throws("cannot obtain write lock").property("errorNumber", DbResult.BE_SQLITE_BUSY);
@@ -255,13 +255,26 @@ describe.only("CloudSqlite", () => {
     expect(imodel.iModelId).equals(testBimGuid);
     imodel.close();
 
+    // save so we can re-open
+    const wasCache1 = { name: caches[0].name, rootDir: caches[0].rootDir, guid: caches[0].guid };
+    const wasCache2 = { name: caches[1].name, rootDir: caches[1].rootDir, guid: caches[1].guid };
+
     // destroying a cache detaches all attached containers
     expect(contain1.isAttached);
     expect(anonContainer.isAttached);
     caches[0].destroy();
     expect(contain1.isAttached).false;
     expect(anonContainer.isAttached).false;
+    caches[1].destroy();
 
+    // closing and then reopening (usually in another session) a cache should preserve its guid (via localstore.itwindb)
+    const newCache1 = new IModelHost.platform.CloudCache(wasCache1);
+    const newCache2 = new IModelHost.platform.CloudCache(wasCache2);
+    expect(newCache1.guid).equals(wasCache1.guid);
+    expect(newCache2.guid).equals(wasCache2.guid);
+    expect(newCache1.guid).not.equals(newCache2.guid);
+    newCache1.destroy();
+    newCache2.destroy();
   });
 });
 
