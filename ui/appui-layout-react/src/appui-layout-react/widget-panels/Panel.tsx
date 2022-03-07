@@ -17,9 +17,41 @@ import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
 import { PanelTarget } from "./PanelTarget";
-import { RectangleProps, SizeProps } from "@itwin/core-react";
+import { RectangleProps, SizeProps, WebFontIcon } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { WidgetComponent } from "../widget/Widget";
+
+function useLayoutEventListener(
+  eventName: string,
+  handler: (event: Event) => void,
+  element: HTMLElement | Document | undefined
+) {
+  // Based on published hook https://usehooks.com/useEventListener/.
+  const savedHandler = React.useRef<(event: Event) => void>();
+
+  // Update reference if handler changes. This allows our effect below to
+  // always use latest handler without us needing to pass it in effect deps array
+  // and potentially cause effect to re-run every render.
+  React.useLayoutEffect(() => {
+    savedHandler.current = handler;
+  }, [handler]);
+
+  React.useLayoutEffect(() => {
+    if (!element) {
+      return;
+    }
+
+    const eventListener = (event: Event) => {
+      // istanbul ignore else
+      if (savedHandler.current)
+        savedHandler.current(event);
+    };
+    element.addEventListener(eventName, eventListener);
+    return () => {
+      element.removeEventListener(eventName, eventListener);
+    };
+  }, [eventName, element]);
+}
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -41,6 +73,76 @@ export type VerticalPanelSide = LeftPanelSide | RightPanelSide;
 
 /** @internal future */
 export type PanelSide = VerticalPanelSide | HorizontalPanelSide;
+
+function PanelSplitter({isHorizontal}: {isHorizontal: boolean}) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const splitterProcessingActiveRef = React.useRef<boolean>(false);
+
+  const getPercentage = React.useCallback((min: number, max: number, current: number) => {
+    const range = max-min;
+    const adjusted = Math.max(min, Math.min(max, current));
+    if (adjusted === min)
+      return 0;
+    if (adjusted === max)
+      return 100;
+    const percent = ((adjusted-min) * 100)/(range);
+    return percent;
+  }, []);
+
+  const updatePanelSize = React.useCallback(
+    (event: PointerEvent) => {
+      if (containerRef.current) {
+        const parentPanel = containerRef.current.closest(".nz-widgetPanels-panel");
+        const sectionToResize = containerRef.current.previousElementSibling as HTMLElement;
+        if (parentPanel && sectionToResize) {
+          const rect = parentPanel.getBoundingClientRect();
+          const percent = getPercentage(
+            isHorizontal ?  rect.left : rect.top,
+            isHorizontal ?  rect.right : rect.bottom,
+            isHorizontal ?  event.clientX : event.clientY,
+          );
+          if (isHorizontal)
+            sectionToResize.style.width = `${percent}%`;
+          else
+            sectionToResize.style.height = `${percent}%`;
+        }
+      }
+    }, [getPercentage, isHorizontal]);
+
+  const handlePointerMove = React.useCallback((event: Event): void => {
+    if (splitterProcessingActiveRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      updatePanelSize(event as PointerEvent);
+    }
+  },[updatePanelSize]);
+
+  const handlePointerUp = React.useCallback((event: Event) => {
+    updatePanelSize(event as PointerEvent);
+    event.preventDefault();
+    event.stopPropagation();
+    containerRef.current?.ownerDocument.removeEventListener("pointermove", handlePointerMove);
+    containerRef.current?.ownerDocument.removeEventListener("pointerup", handlePointerUp);
+  }, [handlePointerMove, updatePanelSize]);
+
+  const handlePointerDownOnSplitter = React.useCallback(
+    (event: React.PointerEvent) => {
+      if (containerRef.current) {
+        containerRef.current?.ownerDocument.addEventListener("pointermove", handlePointerMove);
+        containerRef.current?.ownerDocument.addEventListener("pointerup", handlePointerUp);
+        splitterProcessingActiveRef.current = true;
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }, [handlePointerMove, handlePointerUp]);
+
+  const className = isHorizontal ? "nz-horizontal-panel-splitter" : "nz-vertical-panel-splitter";
+  return (
+    <div ref={containerRef} className={className} onPointerDown={handlePointerDownOnSplitter} />
+  );
+}
+
+// <WebFontIcon iconName={isHorizontal ? "icon-more-vertical-2" : "icon-more-2"}/>
 
 /** Properties of [[WidgetPanelProvider]] component.
  * @internal
@@ -270,25 +372,33 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
         >
           {panel.widgets.map((widgetId, index, array) => {
             const last = index === array.length - 1;
+
+            const panelClassName = classnames(`nz-panel-section-${index}`,
+              horizontal ? "nz-widgetPanels-horizontal" : "nz-widgetPanels-vertical"
+            );
+
             return (
               <React.Fragment key={widgetId}>
-                {index === 0 && showTargets && <WidgetTarget
-                  position="first"
-                  widgetIndex={0}
-                />}
-                <PanelWidget
-                  onBeforeTransition={handleBeforeTransition}
-                  onPrepareTransition={handlePrepareTransition}
-                  onTransitionEnd={handleTransitionEnd}
-                  size={sizes[widgetId]}
-                  transition={animatePanelWidgets.transition}
-                  widgetId={widgetId}
-                  ref={getRef(widgetId)}
-                />
-                {showTargets && <WidgetTarget
-                  position={last ? "last" : undefined}
-                  widgetIndex={index + 1}
-                />}
+                <div className={panelClassName}>
+                  {index === 0 && showTargets && <WidgetTarget
+                    position="first"
+                    widgetIndex={0}
+                  />}
+                  <PanelWidget
+                    onBeforeTransition={handleBeforeTransition}
+                    onPrepareTransition={handlePrepareTransition}
+                    onTransitionEnd={handleTransitionEnd}
+                    size={sizes[widgetId]}
+                    transition={animatePanelWidgets.transition}
+                    widgetId={widgetId}
+                    ref={getRef(widgetId)}
+                  />
+                  {showTargets && <WidgetTarget
+                    position={last ? "last" : undefined}
+                    widgetIndex={index + 1}
+                  />}
+                </div>
+                {(!last) && <PanelSplitter isHorizontal={horizontal}/>}
               </React.Fragment>
             );
           })}

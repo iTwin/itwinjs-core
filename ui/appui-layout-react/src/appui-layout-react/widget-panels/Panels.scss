@@ -11,4 +11,43 @@
   grid-template-rows: minmax(0, auto) 1fr minmax(0, auto);
   overflow: hidden;
   position: relative;
+
+  .nz-horizontal-panel-splitter {
+    background-color: $buic-background-widget-panel;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 4px;
+    cursor: col-resize;
+  }
+  .nz-vertical-panel-splitter {
+    background-color: $buic-background-widget-panel;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 4px;
+    cursor: row-resize;
+  }
+
+  .nz-widgetPanels-vertical {
+    display: flex;
+    min-height: 100px;
+
+    &:not(:first-child) {
+      flex: 1;
+    }
+  }
+
+  .nz-widgetPanels-horizontal {
+    display: flex;
+    min-width: 100px;
+
+    &:not(:first-child) {
+      flex: 1;
+    }
+
+  }
 }
+
