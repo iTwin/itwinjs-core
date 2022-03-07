@@ -320,6 +320,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     if (source === undefined || props.mapLayerSourceToEdit) {
 
       ModalDialogManager.closeDialog();
+      onOkResult();
 
       if (source === undefined) {
         // Close the dialog and inform end user something went wrong.
@@ -361,13 +362,15 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         // AttachLayerPanel's 'onOkResult' handler.  We close it here just in case.
         if (closeDialog) {
           ModalDialogManager.closeDialog();
+          onOkResult();
         }
       } catch (_error) {
+        onOkResult();
         ModalDialogManager.closeDialog();
       }
     })();
 
-  }, [createSource, props.mapLayerSourceToEdit, props.activeViewport, mapUrl, isSettingsStorageAvailable, attemptAttachSource]);
+  }, [createSource, props.mapLayerSourceToEdit, props.activeViewport, onOkResult, mapUrl, isSettingsStorageAvailable, attemptAttachSource]);
 
   // The first time the dialog is loaded and we already know the layer requires auth. (i.e ImageryProvider already made an attempt)
   // makes a request to discover the authentification types and adjust UI accordingly (i.e. username/password fields, Oauth popup)
