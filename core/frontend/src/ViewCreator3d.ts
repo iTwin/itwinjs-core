@@ -63,6 +63,10 @@ export class ViewCreator3d {
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
+    // Imodelreadrpcinterface.getClient().getDefaultViewStateData
+    await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getDefaultViewStateData(this._imodel.getRpcProps(), options, modelIds);
+    // await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
+    // Basically all of the below should take plac eon the backend, theres no reason to go back and forth frontend backend to do this.
     const models = modelIds ?? await this._getAllModels();
     const props = await this._createViewStateProps(models, options);
     const viewState = SpatialViewState.createFromProps(props, this._imodel);

@@ -23,6 +23,7 @@ import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
+import { ViewCreator3dBackend } from "../ViewCreator3dBackend";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -33,6 +34,18 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getConnectionProps(tokenProps: IModelRpcOpenProps): Promise<IModelConnectionProps> {
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.expectCurrentActivity, tokenProps, SyncMode.FixedVersion);
+  }
+
+  public async getDefaultViewStateData(tokenProps: IModelRpcProps, options?: ViewCreator3dOptions, modelIds?: Id64String[]) {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    const viewCreator = new ViewCreator3dBackend(iModelDb, options);
+    const models = modelIds ?? await this._getAllModels();
+    const props = await this._createViewStateProps(models, options);
+    const viewState = SpatialViewState.createFromProps(props, this._imodel);
+    try {
+      await viewState.load();
+    } catch {
+    }
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
