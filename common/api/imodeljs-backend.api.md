@@ -796,6 +796,8 @@ export interface CloudStorageServiceCredentials {
     // (undocumented)
     account: string;
     // (undocumented)
+    baseUrl?: string;
+    // (undocumented)
     service: "azure" | "alicloud" | "external";
 }
 
