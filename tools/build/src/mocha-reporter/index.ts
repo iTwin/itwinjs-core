@@ -85,6 +85,11 @@ class BentleyMochaReporter extends Spec {
       }, 5000).unref();
     }
 
+    // See core/backend/ios/readme.md
+    if (process.platform as any == "ios") {
+      (process as any)._linkedBinding("iModelJsMobile").notifyListening(this.stats.failures);
+    }
+
     if (!this.stats.pending)
       return;
 
