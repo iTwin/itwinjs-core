@@ -16,14 +16,14 @@ import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtoco
 import { RpcRequest } from "../core/RpcRequest";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const os = (typeof (process) !== "undefined") ? require("os") : undefined;
 function getHostname(): string {
-  if (os !== undefined) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const os = require("os");
     return os.hostname();
-  } else {
-    if (typeof (window) !== "undefined") {
-      return window.location.host;
+  } catch (_) {
+    if (globalThis.window) {
+      return globalThis.window.location.host;
     } else {
       return "imodeljs-mobile";
     }
