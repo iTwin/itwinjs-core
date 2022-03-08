@@ -5,19 +5,16 @@
 import { PassThrough, Readable } from "stream";
 import * as zlib from "zlib";
 import * as Azure from "@azure/storage-blob";
-import { Logger, PerfLogger } from "@bentley/bentleyjs-core";
 import {
-  BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, CloudStorageTileCache, IModelError, IModelRpcProps,
-  TileContentIdentifier,
+  BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, IModelError,
 } from "@bentley/imodeljs-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { IModelHost } from "./IModelHost";
 
 /** @beta */
 export interface CloudStorageServiceCredentials {
   service: "azure" | "alicloud" | "external";
   account: string;
   accessKey: string;
+  baseUrl?: string;
 }
 
 /** @beta */
@@ -45,6 +42,7 @@ export abstract class CloudStorageService {
 export class AzureBlobStorage extends CloudStorageService {
   private _service: Azure.ServiceURL;
   private _credential: Azure.SharedKeyCredential;
+  private _baseUrl: string;
 
   public constructor(credentials: CloudStorageServiceCredentials) {
     super();
@@ -53,10 +51,11 @@ export class AzureBlobStorage extends CloudStorageService {
       throw new IModelError(BentleyStatus.ERROR, "Invalid credentials for Azure blob storage.");
     }
 
+    this._baseUrl = credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`;
     this._credential = new Azure.SharedKeyCredential(credentials.account, credentials.accessKey);
     const options: Azure.INewPipelineOptions = {};
     const pipeline = Azure.StorageURL.newPipeline(this._credential, options);
-    this._service = new Azure.ServiceURL(`https://${credentials.account}.blob.core.windows.net`, pipeline);
+    this._service = new Azure.ServiceURL(this._baseUrl, pipeline);
   }
 
   public readonly id = CloudStorageProvider.Azure;
@@ -73,15 +72,18 @@ export class AzureBlobStorage extends CloudStorageService {
     }
 
     const token = Azure.generateBlobSASQueryParameters(policy, this._credential);
+    const url = new URL(this._baseUrl);
+    url.pathname = `${url.pathname.replace(/\/*$/, "")}/${id.name}`;
+    url.search = token.toString();
 
-    const url: CloudStorageContainerUrl = {
+    const urlObject: CloudStorageContainerUrl = {
       descriptor: this.makeDescriptor(id),
       valid: 0,
       expires: expiry.getTime(),
-      url: `https://${this._credential.accountName}.blob.core.windows.net/${id.name}?${token.toString()}`,
+      url: url.toString(),
     };
 
-    return url;
+    return urlObject;
   }
 
   public async ensureContainer(name: string): Promise<void> {
@@ -156,45 +158,3 @@ export class AzureBlobStorage extends CloudStorageService {
   }
 }
 
-/** @internal */
-export class CloudStorageTileUploader {
-  private _activeUploads: Map<string, Promise<void>> = new Map();
-
-  public get activeUploads(): Iterable<Promise<void>> {
-    return this._activeUploads.values();
-  }
-
-  private async uploadToCache(id: TileContentIdentifier, content: Uint8Array, containerKey: string, resourceKey: string, metadata?: object,) {
-    await new Promise((resolve) => setTimeout(resolve));
-
-    try {
-      const options: CloudStorageUploadOptions = {};
-      if (IModelHost.compressCachedTiles) {
-        options.contentEncoding = "gzip";
-      }
-
-      const perfInfo = { ...id.tokenProps, treeId: id.treeId, contentId: id.contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
-      const perfLogger = new PerfLogger("Uploading tile to external tile cache", () => perfInfo);
-      await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, options, metadata);
-      perfLogger.dispose();
-    } catch (err) {
-      Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));
-    }
-
-    this._activeUploads.delete(containerKey + resourceKey);
-  }
-
-  public cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object) {
-    const id: TileContentIdentifier = { tokenProps, treeId, contentId, guid };
-
-    const cache = CloudStorageTileCache.getCache();
-    const containerKey = cache.formContainerName(id);
-    const resourceKey = cache.formResourceName(id);
-    const key = containerKey + resourceKey;
-
-    if (this._activeUploads.has(key))
-      return;
-
-    this._activeUploads.set(key, this.uploadToCache(id, content, containerKey, resourceKey, metadata));
-  }
-}

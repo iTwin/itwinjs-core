@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend"
+}
