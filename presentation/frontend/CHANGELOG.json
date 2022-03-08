@@ -2,6 +2,78 @@
   "name": "@itwin/presentation-frontend",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@itwin/presentation-frontend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix code for breaking change to .query() method"
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "fix ecsql row format"
+          },
+          {
+            "comment": "getAccessToken always returns a token"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "rename to @itwin/presentation-frontend"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Allow supplying `SelectionManager` and `FavoritePropertiesManager` props when initializing `Presentation`."
+          },
+          {
+            "comment": "Change default `IFavoritePropertiesStorage` implementation to no-op and provide ability to choose another one when initializing `Presentation`."
+          },
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Added API to get properties of all elements."
+          },
+          {
+            "comment": "Fix hilite set provider somtimes caching results with wrong GUID, causing invalid hilite set being returned afterwards."
+          },
+          {
+            "comment": "Added `PresentationManager.getContentSources` API to retrieve information about where content for specific types of elements comes from."
+          },
+          {
+            "comment": "Fix `RulesetVariablesManager.onVariableChanged` event not being fired when a mutable value is set."
+          },
+          {
+            "comment": "Remove ability to get multiple element properties in frontend."
+          },
+          {
+            "comment": "Add `getContentInstanceKeys` RPC to efficiently get content instance keys."
+          },
+          {
+            "comment": "Remove `PresentationManager.loadHierarchy` API."
+          },
+          {
+            "comment": "Changed uses of `PresentationUnitSystem` to `UnitSystemKey`."
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Switching to consume new Projects-Client"
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/presentation-frontend_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

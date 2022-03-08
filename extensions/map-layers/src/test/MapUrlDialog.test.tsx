@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EmptyLocalization, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MockRender,
-  NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { EmptyLocalization, ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
+import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { Select } from "@itwin/itwinui-react";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";
@@ -23,12 +22,11 @@ describe("MapUrlDialog", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
   const sampleWmsSubLayers: MapSubLayerProps[] = [{ name: "subLayer1" }, { name: "subLayer2" }];
-  const sampleWmsLayerSettings = MapLayerSettings.fromJSON({
+  const sampleWmsLayerSettings = ImageMapLayerSettings.fromJSON({
     formatId: "WMS",
     name: "Test Map",
     visible: true,
     transparentBackground: true,
-    isBase: false,
     subLayers: sampleWmsSubLayers,
     accessKey: undefined,
     transparency: 0,

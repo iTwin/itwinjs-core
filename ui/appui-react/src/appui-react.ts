@@ -43,6 +43,7 @@ export * from "./appui-react/content/ContentGroup";
 export * from "./appui-react/content/ContentLayout";
 export * from "./appui-react/content/ContentLayoutManager";
 export * from "./appui-react/content/ContentViewManager";
+export * from "./appui-react/content/FloatingViewportContent";
 export * from "./appui-react/content/ViewStateHelper";
 export * from "./appui-react/content/StageContentLayout";
 export * from "./appui-react/content/ViewportContentControl";
@@ -58,6 +59,8 @@ export * from "./appui-react/cursor/cursormenu/CursorMenu";
 
 export * from "./appui-react/dialog/DialogManagerBase";
 export * from "./appui-react/dialog/ModalDialogManager";
+export * from "./appui-react/dialog/ContentDialogManager";
+export * from "./appui-react/dialog/ContentDialog";
 export * from "./appui-react/dialog/ModelessDialog";
 export * from "./appui-react/dialog/ModelessDialogManager";
 export * from "./appui-react/dialog/StandardMessageBox";
@@ -84,6 +87,7 @@ export * from "./appui-react/hooks/useAnalysisAnimationDataProvider";
 export * from "./appui-react/hooks/useFrameworkVersion";
 export * from "./appui-react/hooks/useScheduleAnimationDataProvider";
 export * from "./appui-react/hooks/useSolarDataProvider";
+export * from "./appui-react/hooks/useUiVisibility";
 
 export * from "./appui-react/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./appui-react/imodel-components/category-tree/CategoriesTree";

@@ -2029,9 +2029,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         return;
       }
 
-      if (undefined !== ret.error) {
+      if (ret.error) {
         reject(new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`));
-      } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
+      } else if (ret.result && typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
         const res = ret.result;
         const iModelId = this._iModel.iModelId;
 

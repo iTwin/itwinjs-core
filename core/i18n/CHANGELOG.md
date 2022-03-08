@@ -1,6 +1,17 @@
 # Change Log - @itwin/core-i18n
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- change dependency of deprecated i18next-xhr to i18next-http
+- use new @itwin package names
+- rename to @itwin/core-i18n
+- Replace usage of I18N with generic Localization interface.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT

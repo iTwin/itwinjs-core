@@ -39,7 +39,7 @@ TrueType fonts may supply separate *faces* to display `Regular`, `Italics`, `Bol
 
 ## Font Workspaces
 
-Fonts may be stored in a [WorkspaceDb]($backend) using the Workspace Editor. To use a Font Workspace to load fonts, use the [IModelJsNative.addFontWorkspace]($backend) function.
+Fonts may be stored in a [WorkspaceDb]($backend) using the Workspace Editor.
 
 ## Embedded Fonts
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fully implement the point cloud 3d tile specification.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

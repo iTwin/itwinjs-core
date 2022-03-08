@@ -93,12 +93,12 @@ class SectionAttachmentInfo {
       this._spatialView = spatialView;
   }
 
-  public createAttachment(): SectionAttachment | undefined {
+  public createAttachment(toSheet: Transform | undefined): SectionAttachment | undefined {
     if (!this.wantDisplayed || !(this._spatialView instanceof ViewState3d))
       return undefined;
 
     const spatialToDrawing = this._drawingToSpatialTransform.inverse();
-    return spatialToDrawing ? new SectionAttachment(this._spatialView, spatialToDrawing, this._drawingToSpatialTransform) : undefined;
+    return spatialToDrawing ? new SectionAttachment(this._spatialView, spatialToDrawing, this._drawingToSpatialTransform, toSheet) : undefined;
   }
 
   public get sectionDrawingInfo(): SectionDrawingInfo {
@@ -153,7 +153,7 @@ class SectionAttachment {
     return this._drawingExtents.z;
   }
 
-  public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform) {
+  public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform, toSheet: Transform | undefined) {
     // Save the input for clone(). Attach a copy to the viewport.
     this._toDrawing = toDrawing;
     this._fromDrawing = fromDrawing;
@@ -165,7 +165,8 @@ class SectionAttachment {
     let clip = this.view.getViewClip();
     if (clip) {
       clip = clip.clone();
-      clip.transformInPlace(this._toDrawing);
+      const clipTransform = toSheet ? toSheet.multiplyTransformTransform(this._toDrawing) : this._toDrawing;
+      clip.transformInPlace(clipTransform);
       clipVolume = IModelApp.renderSystem.createClipVolume(clip);
     }
 
@@ -322,7 +323,7 @@ export class DrawingViewState extends ViewState2d {
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
     assert(undefined === this._attachment);
-    this._attachment = this._attachmentInfo.createAttachment();
+    this._attachment = this._attachmentInfo.createAttachment(args.drawingToSheetTransform);
   }
 
   /** @internal */

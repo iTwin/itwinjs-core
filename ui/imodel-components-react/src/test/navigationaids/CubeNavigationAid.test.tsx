@@ -20,6 +20,10 @@ describe("CubeNavigationAid", () => {
     await TestUtils.initializeUiIModelComponents();
   });
 
+  after(() => {
+    TestUtils.terminateUiIModelComponents();
+  });
+
   let rotation = Matrix3d.createIdentity();
 
   const connection = moq.Mock.ofType<IModelConnection>();

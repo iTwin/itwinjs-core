@@ -11,7 +11,7 @@ import * as React from "react";
 import { ToolbarOrientation, ToolbarUsage } from "@itwin/appui-abstract";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolWidgetComposer } from "./ToolWidgetComposer";
-import { useUiVisibility } from "./BasicToolWidget";
+import { useUiVisibility } from "../hooks/useUiVisibility";
 
 /**
  * Props for [[ContentToolWidgetComposer]].
