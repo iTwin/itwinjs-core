@@ -19,8 +19,8 @@ describe("CloudSqlite", () => {
   let credentials: azureBlob.StorageSharedKeyCredential;
   let testBimGuid: GuidString;
   const user = "CloudSqlite test";
-
   const httpAddr = "127.0.0.1:10000";
+
   const storage: CloudSqlite.AccountProps = {
     accountName: "devstoreaccount1",
     storageType: `azure?emulator=${httpAddr}&sas=1`,

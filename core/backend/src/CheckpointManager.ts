@@ -139,13 +139,14 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV2.raiseEvent(job);
-    const v2props = await IModelHost.hubAccess.queryV2Checkpoint(job.request.checkpoint);
+    const request = job.request;
+    const v2props = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
     const container = new IModelHost.platform.CloudContainer(v2props);
-    await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: job.request.localFile, onProgress: job.request.onProgress, nRequests: 10 });
-    return job.request.checkpoint.changeset.id;
+    await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
+    return request.checkpoint.changeset.id;
   }
 
   /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.

@@ -143,17 +143,18 @@ describe("BriefcaseManager", () => {
     assert(iModelNoVer.iModelId === noVersionsTestIModelId, "Correct iModel not found");
   });
 
-  it.only("should be able to show progress when downloading a briefcase (#integration)", async () => {
+  it("should be able to show progress when downloading a briefcase (#integration)", async () => {
     const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
-
     let numProgressCalls = 0;
 
     readline.clearLine(process.stdout, 0);
     readline.moveCursor(process.stdout, -20, 0);
     let done = 0;
     let complete = 0;
+    let last = -1;
     const downloadProgress = (loaded: number, total: number) => {
-      if (total > 0) {
+      if (total > 0 && loaded !== last) {
+        last = loaded;
         const message = `${HubUtility.testIModelNames.stadium} Download Progress ... ${(loaded * 100 / total).toFixed(2)}%`;
         process.stdout.write(message);
         readline.moveCursor(process.stdout, -1 * message.length, 0);
@@ -204,7 +205,7 @@ describe("BriefcaseManager", () => {
 
     const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     setTimeout(async () => aborted = 1, 1000);
-    await expect(downloadPromise).to.be.rejectedWith(IModelError).to.eventually.have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
+    await expect(downloadPromise).to.eventually.be.rejectedWith("cancelled").have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
   });
 
 });
