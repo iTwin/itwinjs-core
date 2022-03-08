@@ -33,7 +33,7 @@ The second method creates an *empty* Snapshot iModel given a filename. This is u
 
 #### Create Snapshots with *iTwin Snapshot*
 
-[iTwin Snapshot]($docs/learning/tutorials/create-test-imodel-offline.md), is a free tool for creating snapshots. iTwin Snapshot was designed for developers to quickly generate snapshots for use in iTwin.js development.
+[iTwin Snapshot](../tutorials/create-test-imodel-offline.md), is a free tool for creating snapshots. iTwin Snapshot was designed for developers to quickly generate snapshots for use in iTwin.js development.
 
 ### Important properties of Snapshot iModels
 
