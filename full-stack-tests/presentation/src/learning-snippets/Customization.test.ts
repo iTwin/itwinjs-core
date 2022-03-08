@@ -298,9 +298,9 @@ describe("Learning Snippets", () => {
 
       it("uses `isPolymorphic` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SortingRule.IsPolymorphic.Ruleset
-        // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
-        // consisting of `Roll` and `Pitch` property values. Also there are customization rule to sort
-        // `bis.ViewDefinition3d` instances polymorphically by `Pitch` property.
+        // This ruleset lists `bis.SpatialViewDefinition` instances with their `Roll` and `Pitch` properties as instance
+        // labels. Sorting rule targets `bis.ViewDefinition3d`, the base class of `bis.SpatialViewDefinition`, so to
+        // sort instances of the derived classes, `isPolymorphic` attribute needs to be `true`.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
