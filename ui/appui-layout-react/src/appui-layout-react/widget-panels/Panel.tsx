@@ -17,7 +17,7 @@ import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
 import { PanelTarget } from "./PanelTarget";
-import { RectangleProps, SizeProps, WebFontIcon } from "@itwin/core-react";
+import { RectangleProps, SizeProps} from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { WidgetComponent } from "../widget/Widget";
 
@@ -342,7 +342,8 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
             const last = index === array.length - 1;
 
             const panelClassName = classnames(`nz-panel-section-${index}`,
-              horizontal ? "nz-widgetPanels-horizontal" : "nz-widgetPanels-vertical"
+              horizontal ? "nz-widgetPanels-horizontal" : "nz-widgetPanels-vertical",
+              (last && 0 === index) && "nz-panel-section-full-size"
             );
 
             return (
@@ -366,7 +367,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
                     widgetIndex={index + 1}
                   />}
                 </div>
-                {(!last) && <PanelSplitter isHorizontal={horizontal}/>}
+                {(!last && 0 === index) && <PanelSplitter isHorizontal={horizontal}/>}
               </React.Fragment>
             );
           })}

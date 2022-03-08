@@ -35,6 +35,11 @@
     display: flex;
     min-height: 100px;
 
+    /* if only one panel section set flex:1 */
+    &:first-child.nz-panel-section-full-size {
+      flex: 1;
+    }
+
     &:not(:first-child) {
       flex: 1;
     }
@@ -43,6 +48,11 @@
   .nz-widgetPanels-horizontal {
     display: flex;
     min-width: 100px;
+
+    /* if only one panel section set flex:1 */
+    &:first-child.nz-panel-section-full-size {
+      flex: 1;
+    }
 
     &:not(:first-child) {
       flex: 1;
