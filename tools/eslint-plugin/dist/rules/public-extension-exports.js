@@ -70,6 +70,7 @@ module.exports = {
 
     const releaseTags = (context.options.length > 0 && context.options[0].releaseTags) || ["public"];
     const extensionsTag = "extensions"; // SWB temporary extension tag name
+    const previewTag = "preview";
 
     const outputApiFile = (context.options.length > 0 && context.options[0].outputApiFile) || false;
     const apiFilePath = "./lib/GeneratedExtensionApi.csv";
@@ -82,22 +83,24 @@ module.exports = {
       }
     }
 
-    function addToApiList(declaration) {
+    function addToApiList(declaration, isPreview) {
       if (!outputApiFile) {
         return;
       }
 
       // Separate interfaces, items marked as real, enums, and others (treated as types)
-      let trailer = ",real\n";
+      let kind = "real";
       if (declaration.kind === ts.SyntaxKind.EnumDeclaration) {
-        trailer = ",enum\n";
+        kind = "enum";
       }
       else if (declaration.kind === ts.SyntaxKind.InterfaceDeclaration) {
-        trailer = ",interface\n";
+        kind = "interface";
       }
       else if (declaration.kind === ts.SyntaxKind.TypeAliasDeclaration) {
-        trailer = ",type\n";
+        kind = "type";
       }
+
+      const trailer = `,${kind},${isPreview ? 'preview' : 'public'}\n`;
 
       if (declaration.kind === ts.SyntaxKind.VariableStatement) {
         fs.writeFileSync(apiFilePath, declaration.declarationList.declarations[0].symbol.escapedName + trailer, { flag: "a" });
@@ -140,9 +143,10 @@ module.exports = {
       for (const jsDoc of declaration.jsDoc)
         if (jsDoc.tags) {
           let jsDocExtensionTag = jsDoc.tags.find(tag => tag.tagName.escapedText === extensionsTag);
+          let jsDocPreviewTag = jsDoc.tags.find(tag => tag.tagName.escapedText === previewTag);
           // Has extension API tag
           if (jsDocExtensionTag) {
-            addToApiList(declaration);
+            addToApiList(declaration, jsDocPreviewTag);
             // Does not have any of the required release tags
             if (!jsDoc.tags.some(tag => releaseTags.includes(tag.tagName.escapedText))) {
               let name;

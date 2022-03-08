@@ -6,7 +6,9 @@
 const fs = require("fs");
 
 const declarationFilePath = "index.d.ts";
+const declarationFilePathPreview = "preview.d.ts";
 const jsFilePath = "index.js";
+const jsFilePathPreview = "preview.js";
 const generatedCsvPath = "/lib/GeneratedExtensionApi.csv";
 
 const codeGenOpeningComment = `// BEGIN GENERATED CODE`;
@@ -23,22 +25,30 @@ args = args.split(" ");
 
 // Convert extension linter's output file to a set of lists separated by export type
 function interpretCsv(csvString) {
-  let apiByType = {
-    // property names to match the type names from extension eslint rule output
-    enum: [],
-    interface: [],
-    type: [],
-    real: []
+  const apiByType = {
+    public: {
+      // property names to match the type names from extension eslint rule output
+      enum: [],
+      interface: [],
+      type: [],
+      real: []
+    },
+    preview: {
+      enum: [],
+      interface: [],
+      type: [],
+      real: []
+    }
   };
 
-  // Data in exportName,exportType order
+  // csv order must be exportName,exportType,releaseTag
   try {
     csvString.split("\n").forEach(line => {
       if (line.length === 0) {
         return;
       }
       line = line.split(",");
-      apiByType[line[1]].push(line[0]);
+      apiByType[line[2]][line[1]].push(line[0]);
     });
   } catch (error) {
     console.log("Provided csv with Extension API was malformed.", error);
@@ -139,9 +149,12 @@ function addToFile(filePath, generatedCode) {
 // Use the extension linter's output file to add export statements to .d.ts and .js files
 function addGeneratedExports(packages) {
   let exportList = {};
+  let exportListPreview = {};
 
   packages.forEach((package) => {
-    exportList[package.name] = collectExports(package.path);
+     const { public, preview } = collectExports(package.path);
+     exportList[package.name] = public;
+     exportListPreview[package.name] = preview;
   });
 
   // Generate declaration code
@@ -151,6 +164,14 @@ function addGeneratedExports(packages) {
   // Generate js code
   const jsCode = generateJsCode(exportList);
   addToFile(jsFilePath, jsCode);
+
+  // Generate declaration code for preview.d.ts
+  const declarationCodePreview = generateDeclarationCode(exportListPreview);
+  addToFile(declarationFilePathPreview, declarationCodePreview);
+
+  // Generate js code for preview.js
+  const jsCodePreview = generateJsCode(exportListPreview);
+  addToFile(jsFilePathPreview, jsCodePreview);
 }
 
 const packages = [];
