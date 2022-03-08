@@ -323,7 +323,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
-  public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
+  public override clonePartialCurve(fractionA: number, fractionB: number): LineSegment3d {
     return LineSegment3d.create(this.fractionToPoint(fractionA), this.fractionToPoint(fractionB));
   }
 
