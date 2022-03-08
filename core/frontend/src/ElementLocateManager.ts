@@ -100,7 +100,7 @@ export class LocateOptions {
 
 /**
  * @public
- * @extensions REAL
+ * @extensions
  */
 export class LocateResponse {
   public snapStatus = SnapStatus.Success;

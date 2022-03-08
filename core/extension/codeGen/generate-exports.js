@@ -62,7 +62,7 @@ function generateDeclarationCode(exportList) {
       realExports += `\t${enumExport},\n`;
     });
     exportList[packageName].real.forEach((realExport) => {
-      realExports += `\t${realExport}, // REAL \n`;
+      realExports += `\t${realExport},\n`;
     });
 
     exportList[packageName].interface.forEach((interfaceExport) => {
@@ -91,7 +91,7 @@ function generateJsCode(exportList) {
       exportCode += `\t${enumExport},\n`;
     });
     exportList[packageName].real.forEach((realExport) => {
-      exportCode += `\t${realExport}, // REAL \n`;
+      exportCode += `\t${realExport},\n`;
     });
   };
 

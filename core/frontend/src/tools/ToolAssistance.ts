@@ -118,7 +118,7 @@ export interface ToolAssistanceInstructions {
 
 /** Tool Assistance helper methods.
  * @public
- * @extensions REAL
+ * @extensions
  */
 export class ToolAssistance {
 

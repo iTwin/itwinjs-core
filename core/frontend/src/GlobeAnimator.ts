@@ -18,7 +18,7 @@ import { Animator } from "./ViewAnimation";
  * The duration of the animation varies based on the distance traversed.
  * @see [[Viewport.animateFlyoverToGlobalLocation]].
  * @public
- * @extensions REAL
+ * @extensions
  */
 export class GlobeAnimator implements Animator {
   protected _flightTweens = new Tweens();

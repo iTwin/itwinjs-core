@@ -82,21 +82,21 @@ module.exports = {
       }
     }
 
-    function addToApiList(declaration, jsDocExtensionTag) {
+    function addToApiList(declaration) {
       if (!outputApiFile) {
         return;
       }
 
       // Separate interfaces, items marked as real, enums, and others (treated as types)
-      let trailer = ",type\n";
+      let trailer = ",real\n";
       if (declaration.kind === ts.SyntaxKind.EnumDeclaration) {
         trailer = ",enum\n";
       }
       else if (declaration.kind === ts.SyntaxKind.InterfaceDeclaration) {
         trailer = ",interface\n";
       }
-      else if (jsDocExtensionTag.comment && jsDocExtensionTag.comment.toLowerCase().includes("real")) {
-        trailer = ",real\n";
+      else if (declaration.kind === ts.SyntaxKind.TypeAliasDeclaration) {
+        trailer = ",type\n";
       }
 
       if (declaration.kind === ts.SyntaxKind.VariableStatement) {
@@ -142,7 +142,7 @@ module.exports = {
           let jsDocExtensionTag = jsDoc.tags.find(tag => tag.tagName.escapedText === extensionsTag);
           // Has extension API tag
           if (jsDocExtensionTag) {
-            addToApiList(declaration, jsDocExtensionTag);
+            addToApiList(declaration);
             // Does not have any of the required release tags
             if (!jsDoc.tags.some(tag => releaseTags.includes(tag.tagName.escapedText))) {
               let name;

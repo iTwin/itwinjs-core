@@ -36,12 +36,11 @@ export const {
 	MessageBoxType,
 	MessageBoxIconType,
 	MessageBoxValue,
-	SelectionSetEventType,
-	StandardViewId,
-	ViewStatus,
 	GraphicType,
 	UniformType,
 	VaryingType,
+	SelectionSetEventType,
+	StandardViewId,
 	TileLoadStatus,
 	TileVisibility,
 	TileLoadPriority,
@@ -64,42 +63,125 @@ export const {
 	ManipulatorToolEvent,
 	ToolAssistanceImage,
 	ToolAssistanceInputMethod,
-	AccuDrawHintBuilder, // REAL
-	BingLocationProvider, // REAL
-	LocateResponse, // REAL
-	EmphasizeElements, // REAL
-	FrustumAnimator, // REAL
-	GlobeAnimator, // REAL
-	canvasToResizedCanvasWithBars, // REAL
-	imageBufferToCanvas, // REAL
-	canvasToImageBuffer, // REAL
-	getImageSourceMimeType, // REAL
-	getImageSourceFormatForMimeType, // REAL
-	imageElementFromImageSource, // REAL
-	imageElementFromUrl, // REAL
-	extractImageSourceDimensions, // REAL
-	imageBufferToPngDataUrl, // REAL
-	imageBufferToBase64EncodedPng, // REAL
-	getCompressedJpegFromCanvas, // REAL
-	MarginPercent, // REAL
-	Marker, // REAL
-	Cluster, // REAL
-	NotifyMessageDetails, // REAL
-	queryTerrainElevationOffset, // REAL
-	ViewRect, // REAL
-	FeatureSymbology, // REAL
-	GraphicBranch, // REAL
-	Pixel, // REAL
-	readElementGraphics, // REAL
-	BingElevationProvider, // REAL
-	EditManipulator, // REAL
-	PrimitiveTool, // REAL
-	BeButtonEvent, // REAL
-	Tool, // REAL
-	InteractiveTool, // REAL
-	InputCollector, // REAL
-	ToolAssistance, // REAL
-	ViewTool, // REAL
+	ViewStatus,
+	AccuDrawHintBuilder,
+	AccuSnap,
+	AuxCoordSystemState,
+	AuxCoordSystem2dState,
+	AuxCoordSystem3dState,
+	AuxCoordSystemSpatialState,
+	BingLocationProvider,
+	CategorySelectorState,
+	ChangeFlags,
+	ContextRealityModelState,
+	DisplayStyleState,
+	DisplayStyle2dState,
+	DisplayStyle3dState,
+	DrawingViewState,
+	LocateOptions,
+	LocateResponse,
+	ElementPicker,
+	ElementLocateManager,
+	EmphasizeElements,
+	EntityState,
+	ElementState,
+	FlashSettings,
+	FrustumAnimator,
+	GlobeAnimator,
+	HitDetail,
+	SnapDetail,
+	IntersectDetail,
+	HitList,
+	canvasToResizedCanvasWithBars,
+	imageBufferToCanvas,
+	canvasToImageBuffer,
+	getImageSourceMimeType,
+	getImageSourceFormatForMimeType,
+	imageElementFromImageSource,
+	imageElementFromUrl,
+	extractImageSourceDimensions,
+	imageBufferToPngDataUrl,
+	imageBufferToBase64EncodedPng,
+	getCompressedJpegFromCanvas,
+	IModelConnection,
+	NotificationHandler,
+	MarginPercent,
+	Marker,
+	Cluster,
+	MarkerSet,
+	ModelSelectorState,
+	ModelState,
+	GeometricModelState,
+	GeometricModel2dState,
+	GeometricModel3dState,
+	SheetModelState,
+	SpatialModelState,
+	PhysicalModelState,
+	SpatialLocationModelState,
+	DrawingModelState,
+	SectionDrawingModelState,
+	NotifyMessageDetails,
+	ActivityMessageDetails,
+	NotificationManager,
+	PerModelCategoryVisibility,
+	Decorations,
+	FeatureSymbology,
+	GraphicBranch,
+	GraphicBuilder,
+	Pixel,
+	RenderClipVolume,
+	RenderGraphic,
+	RenderGraphicOwner,
+	RenderSystem,
+	Scene,
+	HiliteSet,
+	SelectionSet,
+	SheetViewState,
+	SpatialViewState,
+	OrthographicViewState,
+	Sprite,
+	IconSprites,
+	SpriteLocation,
+	TentativePoint,
+	DisclosedTileTreeSet,
+	readElementGraphics,
+	BingElevationProvider,
+	Tile,
+	TileAdmin,
+	TileDrawArgs,
+	TileRequest,
+	TileRequestChannelStatistics,
+	TileRequestChannel,
+	TileRequestChannels,
+	TileTree,
+	TileTreeReference,
+	TileUsageMarker,
+	Tiles,
+	EditManipulator,
+	EventController,
+	PrimitiveTool,
+	BeButtonState,
+	BeButtonEvent,
+	BeTouchEvent,
+	BeWheelEvent,
+	Tool,
+	InteractiveTool,
+	InputCollector,
+	ToolAdmin,
+	ToolAssistance,
+	ToolSettings,
+	ViewTool,
+	ViewManip,
+	ViewCreator2d,
+	ViewCreator3d,
+	queryTerrainElevationOffset,
+	ViewingSpace,
+	ViewManager,
+	ViewPose,
+	ViewRect,
+	ViewState,
+	ViewState3d,
+	ViewState2d,
 // @itwin/core-common:
 	BackgroundMapType,
 	GlobeMode,
@@ -123,6 +205,8 @@ export const {
 	FontType,
 	Npc,
 	GeoCoordStatus,
+	ElementGeometryOpcode,
+	GeometryStreamFlags,
 	FillDisplay,
 	BackgroundFill,
 	GeometryClass,
@@ -146,8 +230,6 @@ export const {
 	TxnAction,
 	GridOrientationType,
 	RenderMode,
-	ElementGeometryOpcode,
-	GeometryStreamFlags,
-	ColorDef, // REAL
+	ColorDef,
 } = ext.exports;
 // END GENERATED CODE

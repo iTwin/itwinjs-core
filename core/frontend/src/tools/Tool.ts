@@ -143,7 +143,7 @@ export interface BeButtonEventProps {
 
 /** Object sent to Tools that holds information about button/touch/wheel events.
  * @public
- * @extensions REAL
+ * @extensions
  */
 export class BeButtonEvent implements BeButtonEventProps {
   private readonly _point: Point3d = new Point3d();
@@ -339,7 +339,7 @@ export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
  * @see [[InteractiveTool]] for a base Tool class to handle user input events from a Viewport.
  * @see [Tools]($docs/learning/frontend/tools.md)
  * @public
- * @extensions REAL
+ * @extensions
  */
 export class Tool {
   /** If true, this Tool will not appear in the list from [[ToolRegistry.getToolList]]. This should be overridden in subclasses to hide them. */
@@ -475,7 +475,7 @@ export enum EventHandled { No = 0, Yes = 1 }
 /** A Tool that may be installed, via [[ToolAdmin]], to handle user input. The ToolAdmin manages the currently installed ViewingTool, PrimitiveTool,
  * InputCollector, and IdleTool. Each must derive from this class and there may only be one of each type installed at a time.
  * @public
- * @extensions REAL
+ * @extensions
  */
 export abstract class InteractiveTool extends Tool {
 
@@ -825,7 +825,7 @@ export abstract class InteractiveTool extends Tool {
  * (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
  * An InputCollector will suspend the active PrimitiveTool and can be suspended by a ViewTool.
  * @public
- * @extensions REAL
+ * @extensions
  */
 export abstract class InputCollector extends InteractiveTool {
   public override async run(..._args: any[]): Promise<boolean> {
