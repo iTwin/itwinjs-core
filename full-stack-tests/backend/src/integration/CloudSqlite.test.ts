@@ -12,12 +12,13 @@ import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
-describe.only("CloudSqlite", () => {
+describe("CloudSqlite", () => {
   type TestContainer = IModelJsNative.CloudContainer & { isPublic: boolean };
   let caches: IModelJsNative.CloudCache[];
   let testContainers: TestContainer[];
   let credentials: azureBlob.StorageSharedKeyCredential;
   let testBimGuid: GuidString;
+  const user = "CloudSqlite test";
 
   const httpAddr = "127.0.0.1:10000";
   const storage: CloudSqlite.AccountProps = {
@@ -32,7 +33,7 @@ describe.only("CloudSqlite", () => {
   };
 
   const makeContainer = (containerId: string, isPublic: boolean): TestContainer => {
-    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, user: "CloudSqlite test", writeable: true, sasToken: "" }) as TestContainer;
+    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, writeable: true, sasToken: "" }) as TestContainer;
     cont.isPublic = isPublic;
     return cont;
   };
@@ -77,7 +78,7 @@ describe.only("CloudSqlite", () => {
       container.attach(cache);
       expect(container.isAttached);
 
-      await CloudSqlite.withWriteLock(container, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
+      await CloudSqlite.withWriteLock(user, container, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
       expect(container.isAttached);
       container.detach();
       expect(container.isAttached).false;
@@ -129,7 +130,7 @@ describe.only("CloudSqlite", () => {
     expect(imodel.iModelId).equals(testBimGuid);
     imodel.close();
 
-    await CloudSqlite.withWriteLock(contain1, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       await expect(contain1.copyDatabase("badName", "bad2")).eventually.rejectedWith("no such database");
       await contain1.copyDatabase("testBim", "testBim2");
     });
@@ -137,7 +138,7 @@ describe.only("CloudSqlite", () => {
     expect(contain1.queryDatabases().length).equals(3);
 
     await expect(BriefcaseDb.open({ fileName: "testBim2", container: contain1 })).rejectedWith("write lock not held");
-    await CloudSqlite.withWriteLock(contain1, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       expect(contain1.hasWriteLock);
       const briefcase = await BriefcaseDb.open({ fileName: "testBim2", container: contain1 });
       expect(briefcase.getBriefcaseId()).equals(0);
@@ -145,7 +146,7 @@ describe.only("CloudSqlite", () => {
       briefcase.close();
     });
 
-    await CloudSqlite.withWriteLock(contain1, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       IModelHost.platform.DgnDb.vacuum("testBim2", contain1);
       expect(contain1.hasLocalChanges);
       dbProps = contain1.queryDatabase("testBim2");
@@ -157,7 +158,7 @@ describe.only("CloudSqlite", () => {
 
     expect(contain1.queryDatabase("testBim2")?.dirtyBlocks).equals(0);
 
-    await CloudSqlite.withWriteLock(contain1, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       await expect(contain1.deleteDatabase("badName")).eventually.rejectedWith("no such database");
       await contain1.deleteDatabase("testBim2");
       expect(contain1.hasLocalChanges);
@@ -169,7 +170,7 @@ describe.only("CloudSqlite", () => {
     contain1.detach();
     setSasToken(contain1, "rwl"); // don't ask for delete permission
     contain1.attach(caches[1]);
-    await CloudSqlite.withWriteLock(contain1, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       await expect(contain1.cleanDeletedBlocks()).eventually.rejectedWith("not authorized").property("errorNumber", 403);
     });
 
@@ -177,7 +178,7 @@ describe.only("CloudSqlite", () => {
     setSasToken(contain1, "rwdl"); // now ask for delete permission
     contain1.attach(caches[1]);
 
-    await CloudSqlite.withWriteLock(contain1, async () => contain1.cleanDeletedBlocks());
+    await CloudSqlite.withWriteLock(user, contain1, async () => contain1.cleanDeletedBlocks());
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
     // can't attach a container to another cache
@@ -219,9 +220,9 @@ describe.only("CloudSqlite", () => {
     expect(dbProps.localBlocks).equals(dbProps.totalBlocks);
 
     // when one cache has the lock the other should fail to obtain it
-    await CloudSqlite.withWriteLock(contain1, async () => {
+    await CloudSqlite.withWriteLock(user, contain1, async () => {
       // eslint-disable-next-line @typescript-eslint/promise-function-async
-      expect(() => cont2.acquireWriteLock()).throws("cannot obtain write lock").property("errorNumber", DbResult.BE_SQLITE_BUSY);
+      expect(() => cont2.acquireWriteLock(user)).throws("cannot obtain write lock").property("errorNumber", DbResult.BE_SQLITE_BUSY);
     });
 
     cont2.detach();
@@ -236,7 +237,7 @@ describe.only("CloudSqlite", () => {
     contain1.attach(caches[0]); // attach works with readonly token
     expect(contain1.isAttached);
     // eslint-disable-next-line @typescript-eslint/promise-function-async
-    expect(() => contain1.acquireWriteLock()).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
+    expect(() => contain1.acquireWriteLock(user)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
     expect(contain1.hasWriteLock).false;
     expect(contain1.hasLocalChanges).false;
 
@@ -247,7 +248,7 @@ describe.only("CloudSqlite", () => {
     dbs = anonContainer.queryDatabases();
     expect(dbs.length).equals(2);
     // eslint-disable-next-line @typescript-eslint/promise-function-async
-    expect(() => anonContainer.acquireWriteLock()).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
+    expect(() => anonContainer.acquireWriteLock(user)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
 
     // read a database from anonymous container readonly
     imodel = SnapshotDb.openFile("testBim", { container: anonContainer });

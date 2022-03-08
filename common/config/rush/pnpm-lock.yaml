@@ -1533,7 +1533,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
-      azurite: ^3.14.0
+      azurite: ^3.16.0
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -1561,7 +1561,7 @@ importers:
       '@itwin/oidc-signin-tool': 3.0.0
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@itwin/projects-client': 0.3.0
-      azurite: 3.15.0
+      azurite: 3.16.0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx2: 3.0.2
@@ -7287,8 +7287,8 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.1.0-dev.6:
-    resolution: {integrity: sha512-qwnpKkUeelVhFXX5YRY86llgAdEyEQge58sczY8W8DeVNXzjxx6poR6w2FJII/AdWYwzgHorV+xdcs0sGBR0tA==}
+  /@itwin/certa/3.2.0-dev.5:
+    resolution: {integrity: sha512-cCQrbow7AXgSqYoGmx9rluNQymF18ZIHtdkbTogAqe732NT/sWPwGRT196Y+d6hBQ10KG8ZYZnt2b50kwwVcHg==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7310,8 +7310,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.1.0-dev.6_electron@14.2.4:
-    resolution: {integrity: sha512-qwnpKkUeelVhFXX5YRY86llgAdEyEQge58sczY8W8DeVNXzjxx6poR6w2FJII/AdWYwzgHorV+xdcs0sGBR0tA==}
+  /@itwin/certa/3.2.0-dev.5_electron@14.2.4:
+    resolution: {integrity: sha512-cCQrbow7AXgSqYoGmx9rluNQymF18ZIHtdkbTogAqe732NT/sWPwGRT196Y+d6hBQ10KG8ZYZnt2b50kwwVcHg==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7339,8 +7339,8 @@ packages:
     resolution: {integrity: sha512-W+R80ZFC+d+0bXp7wGht7oDuCou2l/gHHP+uvy0lZUY3WnPq71LCAKpCzrUVcGusM41bCumoavWnW/xGAt/0hg==}
     dev: false
 
-  /@itwin/core-bentley/3.1.0-dev.6:
-    resolution: {integrity: sha512-8dXcfgqB/qz8HOkGUtJ7Qn3AHADQwIDH7n4aI9Vn225ymo9xisgI3FUSdSmf5xzq2x5IxTonJNElX2WZJdJ2qQ==}
+  /@itwin/core-bentley/3.2.0-dev.5:
+    resolution: {integrity: sha512-BEb6V6eCTWfNU/Sr7pJFdkrTbVefC7QgP5EGknmc7KDM5a81IhTyUAAqmiypN98DG8joOyHSHJl0kVZAHDp12g==}
 
   /@itwin/core-geometry/3.0.0-dev.185:
     resolution: {integrity: sha512-UQvZdMaSraChiEudZxYJkC/cCWskHqmLLN9IB2iG83MYwYGJ9zrehjolh+ZAch261IRmBJ8E85P8HfRIvndIeA==}
@@ -7486,8 +7486,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.1.0-dev.6
-      '@itwin/core-bentley': 3.1.0-dev.6
+      '@itwin/certa': 3.2.0-dev.5
+      '@itwin/core-bentley': 3.2.0-dev.5
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7501,8 +7501,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0_electron@14.2.4:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.1.0-dev.6_electron@14.2.4
-      '@itwin/core-bentley': 3.1.0-dev.6
+      '@itwin/certa': 3.2.0-dev.5_electron@14.2.4
+      '@itwin/core-bentley': 3.2.0-dev.5
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7519,7 +7519,6 @@ packages:
     dependencies:
       '@bentley/itwin-client': 3.0.0-dev.138
     transitivePeerDependencies:
-      - '@itwin/core-bentley'
       - supports-color
 
   /@itwin/reality-data-client/0.5.0:
@@ -9849,7 +9848,7 @@ packages:
   /axios/0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
     dependencies:
-      follow-redirects: 1.14.7
+      follow-redirects: 1.14.9
     transitivePeerDependencies:
       - debug
     dev: false
@@ -9862,19 +9861,28 @@ packages:
       - debug
     dev: false
 
+  /axios/0.26.0:
+    resolution: {integrity: sha512-lKoGLMYtHvFrPVt3r+RBMp9nh34N0M8zEfCWqdWZx6phynIEhQqAdydpyBAAG211zlhX9Rgu08cOamy6XjE5Og==}
+    dependencies:
+      follow-redirects: 1.14.9
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
   /axobject-query/2.2.0:
     resolution: {integrity: sha512-Td525n+iPOOyUQIeBfcASuG6uJsDOITl7Mds5gFyerkWiX7qhUTdYUBlSgNMyVqtSJqwpt1kXGLdUt6SykLMRA==}
 
-  /azurite/3.15.0:
-    resolution: {integrity: sha512-NkzcJnUXV/k8xqlDWEsN+1BamH3ksy7oQjr+ItUjehk1TqxwHzl5VnDhefVtZY1ccuPRdbZPkqL4uzQTwcluKA==}
+  /azurite/3.16.0:
+    resolution: {integrity: sha512-E/l9W6bEk8oMoOhhqUVjcVU1HnoL+03XMWlKM0ogDBwLgHAVF0S5JEQP8Mhez8kHC/SYSyWaNEjVVFtMztE0cA==}
     engines: {node: '>=10.0.0', vscode: ^1.39.0}
     hasBin: true
     dependencies:
       '@azure/ms-rest-js': 1.11.2
       args: 5.0.1
-      axios: 0.24.0
+      axios: 0.26.0
       etag: 1.8.1
       express: 4.17.2
+      fs-extra: 8.1.0
       jsonwebtoken: 8.5.1
       lokijs: 1.5.12
       morgan: 1.10.0
@@ -13461,16 +13469,6 @@ packages:
     resolution: {integrity: sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==}
     dev: false
 
-  /follow-redirects/1.14.7:
-    resolution: {integrity: sha512-+hbxoLbFMbRKDwohX8GkTataGqO6Jb7jGwpAlwgy2bIz25XtRm7KEzJM76R1WiNT5SwZkX4Y75SwBolkpmE7iQ==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-    dev: false
-
   /follow-redirects/1.14.7_debug@4.3.3:
     resolution: {integrity: sha512-+hbxoLbFMbRKDwohX8GkTataGqO6Jb7jGwpAlwgy2bIz25XtRm7KEzJM76R1WiNT5SwZkX4Y75SwBolkpmE7iQ==}
     engines: {node: '>=4.0'}
@@ -13481,6 +13479,16 @@ packages:
         optional: true
     dependencies:
       debug: 4.3.3_supports-color@6.1.0
+
+  /follow-redirects/1.14.9:
+    resolution: {integrity: sha512-MQDfihBQYMcyy5dhRDJUHcw7lb2Pv/TuE6xP1vyraLukNDHKbDxDNaOE3NbCAdKQApno+GPRyo1YAp89yCjK4w==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+    dev: false
 
   /for-in/1.0.2:
     resolution: {integrity: sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=}
@@ -18761,6 +18769,7 @@ packages:
   /puppeteer/5.3.1:
     resolution: {integrity: sha512-YTM1RaBeYrj6n7IlRXRYLqJHF+GM7tasbvrNFx6w1S16G76NrPq7oYFKLDO+BQsXNtS8kW2GxWCXjIMPvfDyaQ==}
     engines: {node: '>=10.18.1'}
+    deprecated: Version no longer supported. Upgrade to @latest
     requiresBuild: true
     dependencies:
       debug: 4.3.3
@@ -20774,7 +20783,7 @@ packages:
   /superagent/5.3.1:
     resolution: {integrity: sha512-wjJ/MoTid2/RuGCOFtlacyGNxN9QLMgcpYLDQlWFIhhdJ93kNscFonGvrpAHSCVjRVj++DGCglocF7Aej1KHvQ==}
     engines: {node: '>= 7.0.0'}
-    deprecated: Please upgrade to v7.0.2+ of superagent.  We have fixed numerous issues with streams, form-data, attach(), filesystem errors not bubbling up (ENOENT on attach()), and all tests are now passing.  See the releases tab for more information at <https://github.com/visionmedia/superagent/releases>. Thanks to @shadowgate15, @spence-s, and @niftylettuce. Superagent is sponsored by Forward Email at <https://forwardemail.net>.
+    deprecated: Please upgrade to v7.0.2+ of superagent.  We have fixed numerous issues with streams, form-data, attach(), filesystem errors not bubbling up (ENOENT on attach()), and all tests are now passing.  See the releases tab for more information at <https://github.com/visionmedia/superagent/releases>.
     dependencies:
       component-emitter: 1.3.0
       cookiejar: 2.1.3

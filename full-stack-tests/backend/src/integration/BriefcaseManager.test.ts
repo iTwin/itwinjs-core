@@ -143,7 +143,7 @@ describe("BriefcaseManager", () => {
     assert(iModelNoVer.iModelId === noVersionsTestIModelId, "Correct iModel not found");
   });
 
-  it("should be able to show progress when downloading a briefcase (#integration)", async () => {
+  it.only("should be able to show progress when downloading a briefcase (#integration)", async () => {
     const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
 
     let numProgressCalls = 0;

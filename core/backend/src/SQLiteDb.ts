@@ -39,12 +39,13 @@ export class SQLiteDb implements IDisposable {
   /** Create a SQLiteDb
    * @param pathName The path to the SQLiteDb file to create.
    */
-  public createDb(pathName: string, container?: IModelJsNative.CloudContainer): void {
-    this.nativeDb.createDb(pathName, container);
+  public createDb(pathName: string): void {
+    this.nativeDb.createDb(pathName);
   }
 
   /** Open a SQLiteDb.
    * @param pathName The path to the SQLiteDb file to open
+   * @param container optional CloudContainer holding database
    */
   public openDb(pathName: string, openMode: OpenMode, container?: IModelJsNative.CloudContainer): void {
     this.nativeDb.openDb(pathName, openMode, container);

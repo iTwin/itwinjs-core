@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
+import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
 import { expect } from "chai";
 import { join } from "path";
 
@@ -27,7 +27,7 @@ describe("Cloud workspace containers", () => {
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 
     const testDbName = "testDb";
-    const container = workspace.getContainer({ containerName: containerProps.containerId, cloudProps: { user: "test user", ...containerProps, ...accountProps } });
+    const container = workspace.getContainer({ containerName: containerProps.containerId, cloudProps: { ...containerProps, ...accountProps } });
     const ws1 = new EditableWorkspaceDb(testDbName, container);
 
     const account1 = settings.getObject<CloudSqlite.AccountProps>("cloudSqlite/accountProps")!;

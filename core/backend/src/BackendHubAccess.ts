@@ -197,11 +197,6 @@ export interface BackendHubAccess {
    * @internal
    */
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
-  /**
-   * download a v2 checkpoint
-   * @internal
-   */
-  downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
 
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired

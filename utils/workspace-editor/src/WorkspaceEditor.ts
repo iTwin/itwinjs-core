@@ -25,6 +25,8 @@ interface EditorOpts extends CloudSqlite.ContainerAccessProps {
   nRequests?: number;
   /** enable logging */
   logging?: boolean;
+  /** user name */
+  user: string;
 }
 
 /** options for performing an operation on a WorkspaceDb */
@@ -104,7 +106,6 @@ function getCloudProps(args: EditorOpts): WorkspaceContainerProps {
   return {
     ...args,
     cloudProps: args.accountName ? {
-      user: args.user,
       sasToken: args.sasToken,
       accountName: args.accountName,
       containerId: args.containerId,
@@ -270,7 +271,7 @@ async function performTransfer(container: IModelJsNative.CloudContainer, directi
 /** import a WorkspaceDb to a WorkspaceContainer. */
 async function importWorkspaceDb(args: UploadOptions) {
   const container = await loadCloudContainer(args);
-  await CloudSqlite.withWriteLock(container, async () => {
+  await CloudSqlite.withWriteLock(args.user, container, async () => {
     await performTransfer(container, "upload", args);
   });
 }
@@ -283,7 +284,7 @@ async function exportWorkspaceDb(args: TransferOptions) {
 /** Delete a WorkspaceDb from a WorkspaceContainer. */
 async function deleteWorkspaceDb(args: WorkspaceDbOpt) {
   const container = await loadCloudContainer(args);
-  await CloudSqlite.withWriteLock(container, async () => {
+  await CloudSqlite.withWriteLock(args.user, container, async () => {
     return container.deleteDatabase(args.dbName);
   });
 
@@ -311,7 +312,7 @@ async function purgeWorkspace(args: EditorOpts) {
     return;
   }
 
-  await CloudSqlite.withWriteLock(container, async () => {
+  await CloudSqlite.withWriteLock(args.user, container, async () => {
     await container.cleanDeletedBlocks();
   });
 
@@ -322,7 +323,7 @@ async function purgeWorkspace(args: EditorOpts) {
 /** Make a copy of a WorkspaceDb with a new name. */
 async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
   const container = await loadCloudContainer(args);
-  await CloudSqlite.withWriteLock(container, async () => {
+  await CloudSqlite.withWriteLock(args.user, container, async () => {
     return container.copyDatabase(args.dbName, args.newDbName);
   });
 
@@ -347,7 +348,7 @@ async function acquireLock(args: WorkspaceDbOpt) {
   const container = await loadCloudContainer(args);
   if (container.hasWriteLock)
     throw new Error(`write lock is already held for ${args.containerId}`);
-  await container.acquireWriteLock();
+  await container.acquireWriteLock(args.user);
   console.log(`acquired lock for container: ${args.containerId}`);
 }
 
