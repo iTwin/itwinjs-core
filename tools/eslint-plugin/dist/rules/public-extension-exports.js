@@ -54,7 +54,7 @@ module.exports = {
             uniqueItems: true,
             items: {
               type: "string",
-              enum: ["public", "beta", "alpha", "internal"]
+              enum: ["public", "beta", "alpha", "internal", "preview"]
             }
           },
           outputApiFile: {
