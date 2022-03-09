@@ -1088,15 +1088,19 @@ export class IModelTransformer extends IModelExportHandler {
    * To "resume" an iModel Transformation you need:
    * - the sourceDb at the same changeset
    * - the same targetDb in the state in which it was before
-   * @param sourceDb the source iModel that was used to create the TransformationState
-   * @param targetDb the target iModel that was used during the TransformationState
-   * @param state
+   * @param state the serialized state of the transformer, use [[serializeState]] to get this from an existing transformer instance
+   * @param constructorArgs remaining arguments that you would normally pass to the Transformer subclass you are using, usually (sourceDb, targetDb)
    */
-  public static resumeTransformation(sourceDb: IModelDb, targetDb: IModelDb, state: TransformationState): IModelTransformer {
-    const transformer = new IModelTransformer(sourceDb, targetDb, state.options);
-    // transformer.
+  public static resumeTransformation<SubClass extends new(...a: any[]) => IModelTransformer = typeof IModelTransformer>(
+    this: SubClass,
+    state: TransformationState,
+    ...constructorArgs: ConstructorParameters<SubClass>
+  ): InstanceType<SubClass> {
+    const transformer = new this(...constructorArgs);
+    // force assign to readonly options since we do not know how the transformer subclass takes options to pass to the superclass
+    (transformer as any)["_options"] = state.options; // eslint-disable-line @typescript-eslint/dot-notation
     transformer.context.loadState(state.importContextState);
-    return transformer;
+    return transformer as any;
   }
 
   /**

@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as Semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
@@ -1879,7 +1879,9 @@ describe("IModelTransformer", () => {
   it.only("resume transformation", async () => {
     // NOTE: need to investigate what happens when crashing between inserting an element and labeling it for remapping
     // the transformer should see the remapped code and consider it to be the same element and just update it...
-    class CrashingTransformer extends IModelTransformer {}
+    class CrashingTransformer extends IModelTransformer {
+      public crashingEnabled = true;
+    }
 
     for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(
       IModelTransformer.prototype)
@@ -1889,10 +1891,10 @@ describe("IModelTransformer", () => {
         Object.defineProperty(CrashingTransformer.prototype, key,
           {
             ...descriptor,
-            value(...args: any[]) {
+            value(this: CrashingTransformer, ...args: any[]) {
               const METHOD_CRASH_PROBABILITY = 1/200;
               // this does not at all test mid-method crashes... that might be doable by racing timeouts on async functions...
-              if (Math.random() <= METHOD_CRASH_PROBABILITY) throw Error("crash");
+              if (this.crashingEnabled && Math.random() <= METHOD_CRASH_PROBABILITY) throw Error("crash");
               return superValue.call(this, ...args);
             },
           });
@@ -1908,18 +1910,27 @@ describe("IModelTransformer", () => {
         const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
         let transformer = new CrashingTransformer(sourceDb, targetDb);
         const MAX_ITERS = 100;
+        const timer = new StopWatch();
+        timer.start();
+        let crashCount = 0;
         for (let i = 0; i < MAX_ITERS; ++i) {
           try {
             await transformer.processSchemas();
             await transformer.processAll();
-            console.log(`crashed ${i} times`); // eslint-disable-line no-console
             break;
           } catch (transformerErr) {
+            crashCount++;
             const dumpPath = "/tmp/transformer-state.db";
             const fs = await import("fs");
             if (fs.existsSync(dumpPath)) fs.unlinkSync(dumpPath);
             const state = transformer.serializeState(dumpPath);
-            transformer = IModelTransformer.resumeTransformation(sourceDb, targetDb, state);
+            transformer.crashingEnabled = false;
+            transformer = CrashingTransformer.resumeTransformation(state, sourceDb, targetDb);
+            transformer.crashingEnabled = true;
+            console.log(`completed after ${crashCount} crashes`); // eslint-disable-line no-console
+          } finally {
+            timer.reset();
+            console.log(`crashed ${i} times`); // eslint-disable-line no-console
           }
         }
         return targetDb;
