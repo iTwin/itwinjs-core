@@ -73,6 +73,24 @@ const buggyIntelMatchers = [
   /ANGLE \(Intel, Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
 ];
 
+// Regexes to match as many Intel integrated GPUs as possible.
+// https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
+const integratedIntelGpuMatchers = [
+  /(U)?HD Graphics/,
+  /Iris (Pro|Plus|Xe)/,
+];
+
+function isIntegratedGraphics(args: {unmaskedVendor?: string, unmaskedRenderer?: string}): boolean {
+  if (args.unmaskedVendor && args.unmaskedVendor.includes("Intel")) {
+    if (args.unmaskedRenderer && integratedIntelGpuMatchers.some((x) => x.test(args.unmaskedRenderer!)))
+      return true;
+  }
+
+  // ###TODO: Detect AMD integrated graphics
+
+  return false;
+}
+
 /** Describes the rendering capabilities of the host system.
  * @internal
  */
@@ -316,6 +334,7 @@ export class Capabilities {
       missingOptionalFeatures,
       unmaskedRenderer,
       unmaskedVendor,
+      usingIntegratedGraphics: isIntegratedGraphics({unmaskedVendor, unmaskedRenderer}),
       driverBugs: { ...this._driverBugs },
       userAgent: navigator.userAgent,
       createdContext: gl,

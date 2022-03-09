@@ -109,6 +109,11 @@ export interface WebGLRenderCompatibilityInfo {
   unmaskedRenderer?: string;
   /** The vendor string reported by this client's graphics driver. */
   unmaskedVendor?: string;
+  /** If true, there is a likelihood that integrated graphics are being used.
+   * @note This property has the possibility of providing false positives and negatives. A user should use this property mainly as a hint and manually verify what graphics chip is being used.
+   * @beta
+   */
+  usingIntegratedGraphics?: boolean;
   /** If WebGL context creation failed, an error message supplied by the browser. */
   contextErrorMessage?: string;
   /** The WebGL context created by the browser and used to generate the compatibility report. */
