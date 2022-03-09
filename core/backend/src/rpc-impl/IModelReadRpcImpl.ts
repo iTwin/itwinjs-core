@@ -8,12 +8,12 @@
 
 import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
-  Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
-  EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SerializedViewStateProps, SnapRequestProps, SnapResponseProps, SyncMode,
-  TextureData, TextureLoadProps, ViewCreator3dHelperOptions, ViewStateLoadProps, ViewStateProps,
+  Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, DefaultViewState3dCreatorOptions, DefaultViewState3dProps, ElementLoadOptions, ElementLoadProps,
+  ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel,
+  IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps,
+  IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps,
+  SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
@@ -23,7 +23,7 @@ import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { ViewCreator3dHelper } from "../ViewCreator3dHelper";
+import { DefaultViewState3dCreator } from "../DefaultViewState3dCreator";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -36,9 +36,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.expectCurrentActivity, tokenProps, SyncMode.FixedVersion);
   }
 
-  public async getDefaultViewState3dData(tokenProps: IModelRpcProps, options: ViewCreator3dHelperOptions): Promise<SerializedViewStateProps> {
+  public async getDefaultViewState3dData(tokenProps: IModelRpcProps, options: DefaultViewState3dCreatorOptions): Promise<DefaultViewState3dProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const viewCreator = new ViewCreator3dHelper(iModelDb);
+    const viewCreator = new DefaultViewState3dCreator(iModelDb);
     return viewCreator.getDefaultViewState3dData(options);
   }
 

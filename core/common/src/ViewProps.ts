@@ -26,12 +26,12 @@ export interface SectionDrawingViewProps {
   /** Transform from drawing coordinates to spatial coordinates. If undefined, use identity transform. */
   drawingToSpatialTransform?: TransformProps;
 }
-export interface SerializedViewStateProps {
+export interface DefaultViewState3dProps {
   modelIds: CompressedId64Set;
   modelExtents: Range3dProps;
   categoryIds: CompressedId64Set;
 }
-export interface ViewCreator3dHelperOptions {
+export interface DefaultViewState3dCreatorOptions {
   modelIds?: CompressedId64Set;
 }
 /** Returned from [IModelDb.Views.getViewStateData]($backend).
