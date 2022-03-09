@@ -436,21 +436,21 @@ describe("MeshBuilderMap Tests", () => {
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
     const map = new MeshBuilderMap(tolerance, range, is2d, new GeometryOptions(GenerateEdges.No));
     const key = map.getKey(displayParams, type, hasNormals, isPlanar);
-    const builder = map.getBuilderFromKey(key, { displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const builder = map.getBuilderFromKey(key, { quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     const builder2 = map.get(key);
 
     // expect same key to return same builder reference
     expect(builder).to.equal(builder2);
 
-    const builder3 = map.getBuilderFromKey(key, { displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const builder3 = map.getBuilderFromKey(key, { quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     // expect same key pass into getBuilderFromKey to not create new instance of builder, but instead return previously stored instance
     expect(builder).to.equal(builder3);
 
     const key2 = map.getKey(displayParams, type, hasNormals, isPlanar);
 
-    const builder4 = map.getBuilderFromKey(key2, { displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const builder4 = map.getBuilderFromKey(key2, { quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     // expect an equivalent key (different key instance) to return same builder reference
     expect(builder).to.equal(builder4);

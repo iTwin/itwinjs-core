@@ -8,13 +8,13 @@
 
 import { assert } from "@itwin/core-bentley";
 import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
-import { AnalysisStyleDisplacement } from "@itwin/core-common";
+import { AnalysisStyleDisplacement, QPoint3dList } from "@itwin/core-common";
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
-import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
+import { MeshList } from "../mesh/MeshPrimitives";
 import { GeometryOptions } from "../Primitives";
 import { GeometryList } from "./GeometryList";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
@@ -175,31 +175,39 @@ export class GeometryAccumulator {
     if (0 === meshes.length)
       return undefined;
 
-    const args = new MeshGraphicArgs();
-
-    // All of the meshes are quantized to the same range.
-    // If that range is small relative to the distance from the origin, quantization errors can produce display artifacts.
-    // Remove the translation from the quantization parameters and apply it in the transform instead.
+    // If the meshes contain quantized positions, they are all quantized to the same range. If that range is small relative to the distance
+    // from the origin, quantization errors can produce display artifacts. Remove the translation from the quantization parameters and apply
+    // it in the transform instead.
+    //
+    // If the positions are not quantized, they have already been transformed to be relative to the center of the meshes' range.
+    // Apply the inverse translation to put them back into model space.
     const branch = new GraphicBranch(true);
-    const qorigin = new Point3d();
+    let transformOrigin: Point3d | undefined;
 
     for (const mesh of meshes) {
       const verts = mesh.points;
       if (branch.isEmpty) {
-        qorigin.setFrom(verts.params.origin);
+        assert(transformOrigin === undefined);
+        if (verts instanceof QPoint3dList) {
+          transformOrigin = verts.params.origin.clone();
+          verts.params.origin.setZero();
+        } else {
+          transformOrigin = verts.range.center;
+        }
       } else {
-        assert(verts.params.origin.isAlmostEqual(qorigin));
+        assert(undefined !== transformOrigin);
+        assert((verts instanceof QPoint3dList && transformOrigin.isAlmostEqual(verts.params.origin))
+          || (!(verts instanceof QPoint3dList) && transformOrigin.isAlmostEqual(verts.range.center)));
       }
 
-      verts.params.origin.setZero();
-
-      const graphic = mesh.getGraphics(args, this.system, this._viewIndependentOrigin);
+      const graphic = mesh.getGraphics(this.system, this._viewIndependentOrigin);
       if (undefined !== graphic)
         branch.add(graphic);
     }
 
     if (!branch.isEmpty) {
-      const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
+      assert(undefined !== transformOrigin);
+      const transform = Transform.createTranslation(transformOrigin);
       graphics.push(this.system.createBranch(branch, transform));
     }
 

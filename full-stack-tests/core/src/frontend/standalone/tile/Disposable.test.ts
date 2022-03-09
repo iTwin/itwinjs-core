@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@itwin/core-bentley";
-import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
+import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
@@ -193,13 +193,22 @@ describe("Disposal of WebGL Resources", () => {
     const system = IModelApp.renderSystem;
 
     // Create two MeshGraphics from arguments
-    const args = new MeshArgs();
-    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0)];
-    args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
+    const colors = new ColorIndex();
+    colors.initUniform(ColorByName.tan);
+
+    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10 ,0)];
+    const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
     for (const point of points)
-      args.points.add(point);
-    args.vertIndices = [0, 1, 2];
-    args.colors.initUniform(ColorByName.tan);
+      qpoints.add(point);
+
+    const args: MeshArgs = {
+      points: qpoints,
+      vertIndices: [0, 1, 2],
+      colors,
+      features: new FeatureIndex(),
+      fillFlags: FillFlags.None,
+    };
+
     const meshGraphic0 = system.createTriMesh(args)!;
     const meshGraphic1 = system.createTriMesh(args)!;
     assert.isDefined(meshGraphic0);

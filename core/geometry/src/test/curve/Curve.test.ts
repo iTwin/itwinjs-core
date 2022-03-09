@@ -102,7 +102,7 @@ class StrokeCountSearch extends NullGeometryHandler {
 class ExerciseCurve {
   public static exerciseStrokeData(ck: Checker, curve: CurvePrimitive) {
 
-    const curveA = curve.clone() as CurvePrimitive;
+    const curveA = curve.clone();
     const count0 = curveA.computeStrokeCountForOptions();
     curveA.computeAndAttachRecursiveStrokeCounts();
     // console.log("strokes by count", count0);
@@ -156,7 +156,7 @@ class ExerciseCurve {
   }
 
   public static exerciseReverseInPlace(ck: Checker, curve: CurvePrimitive) {
-    const curveA = curve.clone() as CurvePrimitive;
+    const curveA = curve.clone();
     curveA.reverseInPlace();
     for (const f of [0, 0.2, 0.6, 0.92, 1]) {
       let point = curve.fractionToPoint(f);
@@ -719,11 +719,8 @@ describe("Curves", () => {
     // const indexedPathC = CurveChainWithDistanceIndex.createCapture(pathC);
     // const indexedPathD = CurveChainWithDistanceIndex.createCapture(pathD);
     const returnUndefined = (_a: CurvePrimitive, _b: CurvePrimitive): CurvePrimitive | undefined => undefined;
-    const returnCloneA = (a: CurvePrimitive, _b: CurvePrimitive): CurvePrimitive | undefined => {
-      const c = a.clone();
-      if (c)
-        return c as CurvePrimitive;
-      return undefined;
+    const returnCloneA = (a: CurvePrimitive, _b: CurvePrimitive): CurvePrimitive => {
+      return a.clone();
     };
     ck.testUndefined(RuledSweep.mutatePartners(pathA, emptyBag, returnCloneA), "mutatePartners rejects mismatched collection types");
     ck.testUndefined(RuledSweep.mutatePartners(pathA, pathD, returnCloneA), "mutatePartners rejects mismatched collection lengths");

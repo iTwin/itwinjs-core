@@ -140,6 +140,19 @@ export class ArcGisUtilities {
         return { status: MapLayerSourceStatus.InvalidCredentials, authInfo: { authMethod: MapLayerAuthType.EsriToken } };
     }
 
+    // Check this service support map queries
+    let hasMapCapability = false;
+    try {
+      if (json.capabilities
+        && typeof json.capabilities === "string"
+        && json.capabilities.toLowerCase().includes("map")) {
+        hasMapCapability = true;
+      }
+    } catch { }
+    if (!hasMapCapability) {
+      return { status: MapLayerSourceStatus.InvalidFormat};
+    }
+
     let subLayers;
     if (json.layers) {
 

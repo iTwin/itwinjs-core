@@ -127,7 +127,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
 
   }
   /** Recompute strokes */
-  public refreshComputedProperties() {
+  public override refreshComputedProperties() {
     const sweepRadians = this.nominalL1 / (2.0 * this.nominalR1);
     const radiansStep = 0.02;
     const numInterval = StrokeOptions.applyAngleTol(undefined, 4, sweepRadians, radiansStep);
@@ -442,7 +442,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     return undefined;
   }
   /** Deep clone of this spiral */
-  public clone(): DirectSpiral3d {
+  public override clone(): DirectSpiral3d {
     return new DirectSpiral3d(
       this.localToWorld.clone(),
       this._spiralType,
@@ -451,16 +451,6 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       this._nominalR1,
       this._activeFractionInterval?.clone(),
       this._evaluator.clone());
-  }
-
-  /** Return (if possible) a spiral which is a portion of this curve. */
-  public override clonePartialCurve(fractionA: number, fractionB: number): DirectSpiral3d | undefined {
-    const spiralB = this.clone();
-    const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
-    const globalFractionB  = this._activeFractionInterval.fractionToPoint(fractionB);
-    spiralB._activeFractionInterval.set(globalFractionA, globalFractionB);
-    spiralB.refreshComputedProperties();
-    return spiralB;
   }
 
   /** apply `transform` to this spiral's local to world transform. */
@@ -474,12 +464,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     this.refreshComputedProperties();
     return true;
   }
-  /** Clone with a transform applied  */
-  public cloneTransformed(transform: Transform): DirectSpiral3d {
-    const result = this.clone();
-    result.tryTransformInPlace(transform); // ok, we're confident it will always work.
-    return result;
-  }
+
   /** Return the spiral start point. */
   public override startPoint(): Point3d { return this.localToWorld.multiplyPoint3d(this.activeStrokes.startPoint()); }
   /** return the spiral end point. */

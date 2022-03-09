@@ -145,16 +145,8 @@ export class BezierCurve3dH extends BezierCurveBase {
     this._polygon.loadSpanPoles(data, spanIndex);
   }
   /** Clone the entire curve. */
-  public clone(): BezierCurve3dH {
+  public override clone(): BezierCurve3dH {
     return new BezierCurve3dH(this._polygon.clonePolygon());
-  }
-  /**
-   * Return a curve after transform.
-   */
-  public cloneTransformed(transform: Transform): BezierCurve3dH {
-    const curve1 = this.clone();
-    curve1.tryTransformInPlace(transform);
-    return curve1;
   }
   /** Return a (deweighted) point on the curve. If deweight fails, returns 000 */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
