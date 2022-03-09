@@ -854,6 +854,7 @@ export const setWidgetState = produce((
       }
     }
   } else if (state === WidgetState.Closed) {
+    /*
     const id = widgetDef.id;
     let location = findTab(nineZone, id);
     if (!location) {
@@ -876,6 +877,7 @@ export const setWidgetState = produce((
         widget.minimized = minimized;
       return;
     }
+    */
   } else if (state === WidgetState.Hidden) {
     hideWidget(nineZone, widgetDef);
   }

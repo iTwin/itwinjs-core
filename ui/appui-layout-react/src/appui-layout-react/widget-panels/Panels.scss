@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
 
 .nz-widgetPanels-panels {
   display: grid;
@@ -12,26 +13,8 @@
   overflow: hidden;
   position: relative;
 
-  .nz-horizontal-panel-splitter {
-    background-color: $buic-background-widget-panel;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 4px;
-    cursor: col-resize;
-  }
-  .nz-vertical-panel-splitter {
-    background-color: $buic-background-widget-panel;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 4px;
-    cursor: row-resize;
-  }
-
   .nz-widgetPanels-vertical {
+    position: relative;
     display: flex;
     min-height: 100px;
 
@@ -45,7 +28,19 @@
     }
   }
 
+  .nz-vertical-panel-splitter {
+    position: absolute;
+    bottom: -5px;
+    background-color: transparent;
+    display: flex;
+    width: 100%;
+    height: 10px;
+    cursor: row-resize;
+    @include uicore-z-index(drag-target);
+  }
+
   .nz-widgetPanels-horizontal {
+    position: relative;
     display: flex;
     min-width: 100px;
 
@@ -57,7 +52,19 @@
     &:not(:first-child) {
       flex: 1;
     }
+  }
 
+  .nz-horizontal-panel-splitter {
+    position: absolute;
+    right: -5px;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 10px;
+    cursor: col-resize;
+    @include uicore-z-index(drag-target);
   }
 }
 

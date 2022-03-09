@@ -61,7 +61,7 @@ function PanelSplitter({isHorizontal}: {isHorizontal: boolean}) {
     (event: PointerEvent) => {
       if (containerRef.current) {
         const parentPanel = containerRef.current.closest(".nz-widgetPanels-panel");
-        const sectionToResize = containerRef.current.previousElementSibling as HTMLElement;
+        const sectionToResize = containerRef.current.parentElement as HTMLElement;
         if (parentPanel && sectionToResize) {
           const rect = parentPanel.getBoundingClientRect();
           const percent = getPercentage(
@@ -366,8 +366,8 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
                     position={last ? "last" : undefined}
                     widgetIndex={index + 1}
                   />}
+                  {(!last && 0 === index) && <PanelSplitter isHorizontal={horizontal}/>}
                 </div>
-                {(!last && 0 === index) && <PanelSplitter isHorizontal={horizontal}/>}
               </React.Fragment>
             );
           })}
