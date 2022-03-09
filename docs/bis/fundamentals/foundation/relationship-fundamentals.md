@@ -13,11 +13,11 @@ Relationships are one of the main building blocks of BIS. They are used to defin
 
 Relationship inheritance is supported in BIS, but is tightly constrained. All relationships must be abstract, concrete or sealed:
 
-- Abstract relationship classes can never be instantiated. ElementRefersToElements is an example of an abstract relationship. It must be subclassed to be instantiated.
+- Abstract relationship classes can never be instantiated. `ElementRefersToElements` is an example of an abstract relationship. It must be subclassed to be instantiated.
 
-- Concrete relationship classes can be inherited from and can be instantiated. ElementOwnsUniqueAspect is an example of a Concrete relationship.
+- Concrete relationship classes can be inherited from and can be instantiated. `ElementOwnsUniqueAspect` is an example of a Concrete relationship.
 
-- Sealed relationship classes can never be inherited from. ModelContainsElements is an example of a sealed relationship.
+- Sealed relationship classes can never be inherited from. `ModelContainsElements` is an example of a sealed relationship.
 
 In addition, all BIS relationships, excepting the ones used to define new navigation properties, must inherit (directly or indirectly) from a relationship in the BIS core.
 
@@ -32,13 +32,13 @@ Inheriting relationships must “narrow” the relationship:
 
 The strength of a relationship defines the lifetime of objects on its target end point and therefore, it must be specified. The two accepted strengths in BIS are:
 
-- Embedding: Objects control the lifetime of some other objects, considered their children. That is, when a parent object is deleted, related child objects will be deleted as well. ElementOwnsChildElements is an example of an embedding relationship.
+- Embedding: Objects control the lifetime of some other objects, considered their children. That is, when a parent object is deleted, related child objects will be deleted as well. `ElementOwnsChildElements` is an example of an embedding relationship.
 
-- Referencing: Objects point to some other objects without controlling their lifetime. ElementRefersToElements is an example of a referencing relationship.
+- Referencing: Objects point to some other objects without controlling their lifetime. `ElementRefersToElements` is an example of a referencing relationship.
 
 The strength direction of a relationship specifies the orientation in which the strength is interpreted. That is, in a `Forward` relationship, its strength is enforced from Source to Target. Whereas in a `Backward` relationship, its strength is enforced from Target to Source. If a relationship does not specify a strength direction, `Forward` is assumed by default.
 
-ElementOwnsChildElements is an example of a `Forward` relationship.  ModelModelsElement is an example of a `Backward` relationship since its embedding strength is enforced from an Element to its Model.
+`ElementOwnsChildElements` is an example of a `Forward` relationship.  `ModelModelsElement` is an example of a `Backward` relationship since its embedding strength is enforced from an Element to its Model.
 
 In most cases, both the strength and direction of a relationship are already defined by base relationships defined at the core. These settings cannot be modified or overridden by subclasses.
 
@@ -59,15 +59,15 @@ Each endpoint of a relationship must define a multiplicity, they together define
 </ECRelationshipClass>
 ```
 
-The ElementOwnsChildElements relationship defines the following constraints:
+The `ElementOwnsChildElements` relationship defines the following constraints:
 
-- The parent Element (Source) may own any number of child Elements (Target).  Determined by the Target multiplicity.
+- The parent Element (Source) may own any number of child Elements (Target) determined by the Target multiplicity.
 
-- The parent Element controls the lifetime of the child Elements, so deleting the parent deletes the children.  Determined by the relationship strength.  NOTE: Direction is assumed to be from Source to Target because none is specified.
+- The parent Element controls the lifetime of the child Elements, so deleting the parent deletes the children.  Determined by the relationship strength. NOTE: Direction is assumed to be from Source to Target because none is specified.
 
 - An Element may only have one parent. Determined by the Source multiplicity.
 
-Relationships that derive from ElementOwnsChildElements may make the following changes
+Relationships that derive from `ElementOwnsChildElements` may make the following changes:
 
 - Make the relationship mandatory for the parent by changing the target multiplicity to `(1..*)`.
 
@@ -97,7 +97,7 @@ Relationships in BIS are restricted more than in plain EC.
 
 ## Implementation Details Limiting Relationship Flexibility
 
-For the purposes of optimized performance of BIS applications using iModel technology, the full power of relationships is not available in all cases. To understand these limitations, it helps to understand the 2 implementations of relationships in iModel databases.
+For the purposes of optimized performance of BIS applications using iModel technology, the full power of relationships is not available in all cases. To understand these limitations, it helps to understand the two implementations of relationships in iModel databases.
 
 ### iModel-specific implications of Relationship Inheritance
 
@@ -121,11 +121,11 @@ An example of a relationship stored in the Link Table is the ElementGroupsMember
 
 ### Navigation Properties
 
-Navigation Properties are analogous to foreign keys but exposed as EC properties and  EC relationships. As an implementation detail for iModels, their relationship storage (and presentation) strategy enables access via a foreign key of the object being pointed to in the object pointing to it. The side of the relationship stored in the foreign key must have a multiplicity of `(0..1)` or `(1..1)`. The Navigation property is always defined in the base relationship and never via subclassing.
+Navigation Properties are analogous to foreign keys in a database but exposed as EC properties and EC relationships. As an implementation detail for iModels, their relationship storage (and presentation) strategy enables access via a foreign key of the object being pointed to in the object pointing to it. The side of the relationship stored in the foreign key must have a multiplicity of `(0..1)` or `(1..1)`. The Navigation property is always defined in the base relationship and never via subclassing.
 
-For sealed Navigation Properties, a single foreign key database column is used to store the relationship. An example of the use of a navigation property for a sealed relationship is the ModelContainsElements relationship. The relationship has a multiplicity of `(1..1)` on the source side (every Element must be in a Model), so the relationship is stored in the Model navigation property of the target Element.
+For sealed Navigation Properties, a single foreign key database column is used to store the relationship. An example of the use of a navigation property for a sealed relationship is the `ModelContainsElements` relationship. The relationship has a multiplicity of `(1..1)` on the source side (every Element must be in a Model), so the relationship is stored in the Model navigation property of the target Element.
 
-Regarding subclassable Navigation Property relationships, ElementOwnsChildElements relationship can be reviewed as an example. This relationship is not sealed (it can be, and often is, subclassed) so two database columns are used to store it. The relationship has a multiplicity of `(0..1)` on the source side (every Element has 0 or 1 parent), so the relationship is stored in the Parent navigation property of the target.
+Regarding subclassable Navigation Property relationships, `ElementOwnsChildElements` relationship can be reviewed as an example. This relationship is not sealed (it can be, and often is, subclassed) so two database columns are used to store it. The relationship has a multiplicity of `(0..1)` on the source side (every Element has 0 or 1 parent), so the relationship is stored in the Parent navigation property of the target.
 
 Lastly, Navigation Properties can also be defined for Link table relationships. In this case, the link table relationship is specified as an end point of the Navigation Property relationship.
 

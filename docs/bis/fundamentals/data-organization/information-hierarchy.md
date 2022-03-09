@@ -10,6 +10,8 @@ The hierarchies in BIS repositories are intended to facilitate both human and so
 
 As was explained in [Model Fundamentals](./model-fundamentals.md), there are only three mechanisms available in BIS to create a hierarchy:
 
+<!-- TODO: This is no longer true. There are more mechanisms in BIS to create a hierarchy. E.g. SpatialComposition, External Sources -->
+
 * A Model can contain Elements
 * An Element can own child Elements
 * An Element can be *modeled* by (broken down into more detail by) a *SubModel*
@@ -68,7 +70,9 @@ TODO
 
 ## Example Information Hierarchy
 
-![Information Hierarchy](./media/information-hierarchy.png)
+&nbsp;
+![Information Hierarchy](../media/information-hierarchy.png)
+&nbsp;
 
 ---
 | Next: [Modeling Perspectives](./modeling-perspectives.md)

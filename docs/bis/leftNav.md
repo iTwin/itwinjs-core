@@ -29,7 +29,7 @@
 - [Organizing Models and Elements](./fundamentals/data-organization/organizing-models-and-elements.md)
 - [Modeling Systems](./fundamentals/data-organization/modeling-systems.md)
 - [Overlapping Systems](./fundamentals/data-organization/overlapping-systems.md)
-- [Organizing Global Definition Elements](./fundamentals/data-organization/organizing-definition-elements.md)
+- [Organizing Repository-global Definition Elements](./fundamentals/data-organization/organizing-definition-elements.md)
 
 #### Physical Modeling Perspective
 - [3D Guidance](./fundamentals/physical-pers/3d-guidance.md)

@@ -2,7 +2,7 @@
 
 <!-- Responsible for this page: ??? -->
 
-As discussed in [Modeling with BIS](./modeling-with-bis.md), objects in the real world can be thought about from different *modeling perspectives*. A modeling perspective is a way of conceptualizing the real world for a particular purpose. For example, a Sewer System can be thought about from many modeling perspectives:
+As discussed in [Modeling with BIS](../intro/modeling-with-bis.md), objects in the real world can be thought about from different *modeling perspectives*. A modeling perspective is a way of conceptualizing the real world for a particular purpose. For example, a Sewer System can be thought about from many modeling perspectives:
 
 * As a physical 3D reality with form, material and mass (the *physical* perspective).
 * As a system for hydrological conveyance (an *analytical* perspective)
@@ -39,7 +39,7 @@ Some `Model` subclasses do not correspond to modeling perspectives. `RepositoryM
 
 ### Modeling Perspective Consistency of Partitions, Models and Elements
 
-As is described in [Top of the World](./top-of-the-world), for every Subject, there may be zero or more `InformationPartitionElement` child `Element`s. Each of those `InformationPartitionElement`s is effectively a declaration of modeling perspective and starts a `Model` hierarchy that is of that the declared modeling perspective.
+As is described in [Top of the World](./top-of-the-world), for every Subject, there may be zero or more `InformationPartitionElement` child `Element`s. Each of those `InformationPartitionElement`s is effectively a declaration of a modeling perspective and starts a `Model` hierarchy that is of that the declared modeling perspective.
 
 Each `InformationPartitionElement` breaks down into a `Model` that is of the same modeling perspective. That `Model` in turn contains only `Element`s of the same modeling perspective. Some of those `Element`s will have breakdown `Model`s; the breakdown `Model`s must be of the same modeling perspective as the `Element` they break down.
 
@@ -70,34 +70,18 @@ It is not possible to predict all of the modeling perspectives that may eventual
 
 The core modeling perspectives are:
 
-* Geometric (abstract)
-  * Geometric2d (abstract)
-    * Graphical2d (abstract)
-      * Sheet (concrete)
-      * Drawing (concrete)
-        * SectionDrawing (concrete)
-  * Geometric3d (abstract)
-    * Spatial (abstract)
-      * Analytical (abstract)
-      * SpatialLocation (concrete)
-      * Physical (sealed)
-      * WebMercator (concrete) <!--should this be sealed?-->
-* Role (abstract) <!--to be removed-->
-  * Functional (concrete)
-* Information (abstract)
-  * GroupInformation (abstract)
-  * InformationRecord (concrete)
-  * Definition (concrete)
-    * (Repository) (sealed)
-    * Dictionary (sealed)
-  * DocumentList (concrete)
-  * Link (concrete)
-
-<!-- TODO:
-1. Determine which of the above are valid modeling perspectives.
-2. Explain away the ones that aren't valid modeling perspectives.
-3. Document each modeling perspective with at least a couple lines.
--->
+* InformationPartitionElement (abstract)
+  * AnalyticalPartition (abstract)
+  * DefinitionPartition (sealed)
+  * DocumentPartition (sealed)
+  * FunctionalPartition (concrete but considered abstract)
+  * GraphicalPartition3d (sealed)
+  * GroupInformationPartition (sealed)
+  * InformationRecordPartition (sealed)
+  * LinkPartition (sealed)
+  * PhysicalPartition (sealed)
+  * PhysicalSystemPartition (sealed)
+  * SpatialLocationPartition (sealed)
 
 If the need for a new core modeling perspective is discovered (none of the existing core modeling perspectives is appropriate as a parent perspective), new ones can be added.
 
@@ -105,7 +89,7 @@ If the need for a new core modeling perspective is discovered (none of the exist
 
 The Physical modeling perspective views reality as objects with form, material(s) and mass in 3D space. The Physical modeling perspective merits special discussion as it plays such an important role in BIS.
 
-There is one and only one Physical modeling perspective. The Physical modeling perspective is used and shared by most disciplines, just like the physical components of each discipline must co-exist in the same physical space. If there is one sewer pipe in reality, there can only be one physical representation of that sewer pipe.
+There is one and only one Physical modeling perspective for a given `Subject` instance. If there is one sewer pipe in reality, there can only be one physical representation of that sewer pipe.
 
 The Physical modeling perspective cannot be "subclassed". (For legacy reasons there are some subclasses of `PhysicalModel` in BIS schemas, but those subclasses are never used.)
 
@@ -148,23 +132,27 @@ See [Analytical Models and Elements](./analysis-models-and-elements.md) for deta
 
 <!-- Allan is not sure about the many of the others -->
 
-<!-- Saved this text from Top of the World as it might be wanted later for fodder in this chapter:
-
-### DefinitionPartition
+### Definition Partitions
 
 The top of a definition hierarchy starts with a `DefinitionModel` that models a `DefinitionPartition`.
 This allows `DefinitionElements` to be organized by how they relate to the parent `Subject` of the `DefinitionPartition`.
 The can be multiple `DefinitionPartition` Elements and corresponding `DefinitionModel` Models so that definitions (instances of `DefinitionElement`) can be organized by source, discipline, or other criteria.
 Each `DefinitionPartition` is identified by its [Code](./glossary.md#code).
 
-### DocumentPartition
+See [Organizing Repository-global Definition Elements](./organizing-definition-elements.md) for details on the expected organization of repository-global definition elements in the *DictionaryModel*.
+
+### Document Partitions
 
 The top of a document hierarchy starts with a `DocumentListModel` that models a `DocumentPartition`.
 This allows `Document` elements to be organized by how they relate to the parent `Subject` of the `DocumentPartition`.
 `Drawing` and `Sheet` are 2 example subclasses of `Document`.
 `Drawings` and `Sheets` are further broken down by `DrawingModels` and `SheetModels` which graphically break down the content of the drawing or sheet.
 
--->
+The following instance diagram depicts that hierarchy for a hypothetical iModel about a Plant building. Two drawing documents are shown as well as associations between 2D graphics from one of them with the Physical elements of the iModel. BIS offers the `DrawingGraphicRepresentsElement` relationship to address the need of associations between elements in a *Drawing* with elements in a different modeling perspective.
+
+&nbsp;
+![Document Partitions](../media/document-partition.png)
+&nbsp;
 
 ## Domains and Modeling Perspectives
 
