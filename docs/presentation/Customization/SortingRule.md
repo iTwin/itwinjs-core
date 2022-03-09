@@ -61,20 +61,20 @@ Defines the order in which rules are handled - higher priority means the rule is
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
 
 ```ts
-[[include:SortingRule.Condition.Ruleset]]
+[[include:PropertySortingRule.Condition.Ruleset]]
 ```
 
-| Ruleset variable values   | Result                                                                 |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `SORT_INSTANCES = true`   | ![Example of using rule condition](./media/sortingrule-sorted-asc.png) |
-| `SORT_INSTANCES = false`  | ![Example of using rule condition](./media/sortingrule-unsorted.png)   |
+| Condition values | Result                                                                 |
+| ---------------- | ---------------------------------------------------------------------- |
+| `TRUE`           | ![Example of using rule condition](./media/sortingrule-sorted-asc.png) |
+| `FALSE`          | ![Example of using rule condition](./media/sortingrule-unsorted.png)   |
 
 ### Attribute: `class`
 
 Specifies ECClass whose ECInstances should be sorted.
 
 ```ts
-[[include:SortingRule.Class.Ruleset]]
+[[include:PropertySortingRule.Class.Ruleset]]
 ```
 
 ![Example of using class attribute](./media/sortingrule-sorted-asc.png)
@@ -86,7 +86,7 @@ Specifies ECClass whose ECInstances should be sorted.
 Specifies that `class` attribute defined in this rule should be handled polymorphically.
 
 ```ts
-[[include:SortingRule.IsPolymorphic.Ruleset]]
+[[include:PropertySortingRule.IsPolymorphic.Ruleset]]
 ```
 
 | `isPolymorphic` values    | Result                                                                          |
@@ -168,23 +168,23 @@ Defines the order in which rules are handled - higher priority means the rule is
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
 
 ```ts
-[[include:SortingRule.Condition.Ruleset]]
+[[include:DisabledSortingRule.Condition.Ruleset]]
 ```
 
-| Ruleset variable values   | Result                                                                 |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `SORT_INSTANCES = true`   | ![Example of using rule condition](./media/sortingrule-sorted-asc.png) |
-| `SORT_INSTANCES = false`  | ![Example of using rule condition](./media/sortingrule-unsorted.png)   |
+| Condition value | Result                                                                                    |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| `TRUE`          | ![Example of using rule condition](./media/disabledSorting-condition-attribute-true.png)  |
+| `FALSE`         | ![Example of using rule condition](./media/disabledSorting-condition-attribute-false.png) |
 
 ### Attribute: `class`
 
 Specifies ECClass whose instances should not be sorted.
 
 ```ts
-[[include:SortingRule.Class.Ruleset]]
+[[include:DisabledSortingRule.Class.Ruleset]]
 ```
 
-![Example of using class attribute](./media/sortingrule-sorted-asc.png)
+![Example of using class attribute](./media/disabledSorting-class-attribute.png)
 
 ### Attribute: `isPolymorphic`
 
@@ -193,10 +193,10 @@ Specifies ECClass whose instances should not be sorted.
 Specifies that `class` attribute defined in this rule should be handled polymorphically.
 
 ```ts
-[[include:SortingRule.IsPolymorphic.Ruleset]]
+[[include:DisabledSortingRule.IsPolymorphic.Ruleset]]
 ```
 
 | `isPolymorphic` values    | Result                                                                          |
 | ------------------------- | ------------------------------------------------------------------------------- |
-| `isPolymorphic = true`    | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png) |
-| `isPolymorphic = false`   | ![Example of using isPolymorphic attribute](./media/sortingrule-unsorted.png)   |
+| `isPolymorphic = true`    | ![Example of using isPolymorphic attribute](./media/disabledSorting-isPolymorphic-attribute-true.png) |
+| `isPolymorphic = false`   | ![Example of using isPolymorphic attribute](./media/disabledSorting-isPolymorphic-attribute-false.png)   |
