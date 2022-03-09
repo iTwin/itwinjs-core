@@ -23,7 +23,7 @@ import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { DefaultViewCreator } from "../DefaultViewCreator";
+import { ViewCreatorHelper } from "../ViewCreatorHelper";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -38,8 +38,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getDefaultViewStateData(tokenProps: IModelRpcProps, modelIds?: Id64String[]): Promise<SerializedViewStateProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const viewCreator = new DefaultViewCreator(iModelDb);
-    return viewCreator.createDefaultView(modelIds);
+    const viewCreator = new ViewCreatorHelper(iModelDb);
+    return viewCreator.getDefaultViewStateData(modelIds);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {

@@ -72,7 +72,7 @@ export class ViewCreator3d {
 
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
-      await viewState.load(); // replace this with hydrateViewState rpcimpl.
+      await viewState.load();
     } catch {
     }
 
