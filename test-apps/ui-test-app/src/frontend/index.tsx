@@ -14,7 +14,7 @@ import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/realit
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
-  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
+  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiActionId, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
   InitialAppUiSettings,
   ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
@@ -84,6 +84,8 @@ export enum SampleAppUiActionId {
   setIsIModelLocal = "sampleapp:setisimodellocal",
   setInitialViewIds = "sampleapp:setInitialViewIds",
 }
+
+const useUi1Mode = false;
 
 export interface SampleAppState {
   testProperty: string;
@@ -260,7 +262,7 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    await UiFramework.initialize(undefined);
+    await UiFramework.initialize(undefined, undefined, useUi1Mode);
 
     // initialize Presentation
     await Presentation.initialize({
@@ -323,16 +325,19 @@ export class SampleAppIModelApp {
 
     // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
     const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
-    const defaults: InitialAppUiSettings = {
-      colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
-      dragInteraction: false,
-      frameworkVersion: "2",
-      widgetOpacity: 0.8,
-      showWidgetIcon: true,
-    };
+    if (!useUi1Mode) {
+      const defaults: InitialAppUiSettings = {
+        colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
+        dragInteraction: false,
+        frameworkVersion: "2",
+        widgetOpacity: 0.8,
+        showWidgetIcon: true };
 
-    // initialize any settings providers that may need to have defaults set by iModelApp
-    UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+      // initialize any settings providers that may need to have defaults set by iModelApp
+      UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+    } else {
+      window.localStorage.removeItem("AppUiSettings.ShowWidgetIcon");
+    }
 
     UiFramework.useDefaultPopoutUrl = true;
 
