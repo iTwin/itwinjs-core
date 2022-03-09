@@ -6,23 +6,23 @@ import * as React from "react";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { ContextMenu, ContextMenuItem } from "@itwin/core-react";
 import { Slider } from "@itwin/itwinui-react";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./MapLayerManager.scss";
 import { StyleMapLayerSettings } from "../Interfaces";
+import { MapLayersUI } from "../../mapLayers";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeViewport }: { mapLayerSettings: StyleMapLayerSettings, onMenuItemSelection: (action: string, mapLayerSettings: StyleMapLayerSettings) => void, activeViewport: ScreenViewport }) {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const settingsRef = React.useRef<HTMLButtonElement>(null);
-  const [labelDetach] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:LayerMenu.Detach"));
-  const [labelZoomToLayer] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:LayerMenu.ZoomToLayer"));
+  const [labelDetach] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:LayerMenu.Detach"));
+  const [labelZoomToLayer] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:LayerMenu.ZoomToLayer"));
   const [hasRangeData, setHasRangeData] = React.useState<boolean | undefined>();
   const [transparency, setTransparency] = React.useState(mapLayerSettings.transparency);
 
   React.useEffect(() => {
     async function fetchRangeData() {
       let hasRange = false;
-      const indexInDisplayStyle = activeViewport?.displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+      const indexInDisplayStyle = activeViewport?.displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
       if (undefined !== indexInDisplayStyle) {
         hasRange = (undefined !== await activeViewport.displayStyle.getMapLayerRange(indexInDisplayStyle, mapLayerSettings.isOverlay));
       }
@@ -53,7 +53,7 @@ export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, ac
     if (activeViewport) {
       const newTransparency = value;
       const displayStyle = activeViewport.displayStyle;
-      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndUrl(mapLayerSettings.name, mapLayerSettings.url, mapLayerSettings.isOverlay);
+      const indexInDisplayStyle = displayStyle.findMapLayerIndexByNameAndSource(mapLayerSettings.name, mapLayerSettings.source, mapLayerSettings.isOverlay);
       if (-1 !== indexInDisplayStyle) {
         const styleTransparency = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayerSettings.isOverlay)?.transparency;
         const styleTransparencyValue = styleTransparency ? styleTransparency : 0;

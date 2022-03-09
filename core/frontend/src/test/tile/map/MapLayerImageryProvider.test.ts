@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapLayerProps, MapLayerSettings, ServerError } from "@itwin/core-common";
 import { RequestBasicCredentials } from "../../../request/Request";
+import { ImageMapLayerSettings, MapLayerProps, ServerError } from "@itwin/core-common";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
@@ -30,7 +30,7 @@ describe("WmsMapLayerImageryProvider", () => {
   });
 
   it("initialize() should handle 401 error from WmsCapabilities", async () => {
-    const settings = MapLayerSettings.fromJSON(wmsSampleSource);
+    const settings = ImageMapLayerSettings.fromJSON(wmsSampleSource);
     if (!settings)
       chai.assert.fail("Could not create settings");
 
@@ -45,7 +45,7 @@ describe("WmsMapLayerImageryProvider", () => {
   });
 
   it("initialize() should handle 401 error from WmtsCapabilities", async () => {
-    const settings = MapLayerSettings.fromJSON(wmsSampleSource);
+    const settings =ImageMapLayerSettings.fromJSON(wmsSampleSource);
     if (!settings)
       chai.assert.fail("Could not create settings");
 
@@ -60,7 +60,7 @@ describe("WmsMapLayerImageryProvider", () => {
   });
 
   it("initialize() should handle unknown exception from WmsCapabilities", async () => {
-    const settings = MapLayerSettings.fromJSON(wmsSampleSource);
+    const settings = ImageMapLayerSettings.fromJSON(wmsSampleSource);
     if (!settings)
       chai.assert.fail("Could not create settings");
 
@@ -72,7 +72,7 @@ describe("WmsMapLayerImageryProvider", () => {
   });
 
   it("initialize() should handle unknown exception from WmtsCapabilities", async () => {
-    const settings = MapLayerSettings.fromJSON(wmsSampleSource);
+    const settings = ImageMapLayerSettings.fromJSON(wmsSampleSource);
     if (!settings)
       chai.assert.fail("Could not create settings");
 
@@ -84,7 +84,7 @@ describe("WmsMapLayerImageryProvider", () => {
   });
 
   it("loadTile should not throw and return appropriate object", async () => {
-    const settings = MapLayerSettings.fromJSON(wmsSampleSource);
+    const settings =ImageMapLayerSettings.fromJSON(wmsSampleSource);
     if (!settings)
       chai.assert.fail("Could not create settings");
 
@@ -144,7 +144,7 @@ describe("WmsMapLayerImageryProvider", () => {
         {name: "continents", id:0, visible:true},
         {name: "continents2", id:1, visible:false},
       ]};
-    let settings = MapLayerSettings.fromJSON(layerPros);
+    let settings =ImageMapLayerSettings.fromJSON(layerPros);
     if (!settings)
       chai.assert.fail("Could not create settings");
 
@@ -161,7 +161,7 @@ describe("WmsMapLayerImageryProvider", () => {
     // Mark 'continents' and 'continents2' visible, in that case the request
     // should still be in EPSG:4326 because continents is only available in in EPSG:4326
     layerPros.subLayers![1].visible = true;
-    settings = MapLayerSettings.fromJSON(layerPros);
+    settings =ImageMapLayerSettings.fromJSON(layerPros);
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
     url = await provider.constructUrl(0,0,0);
@@ -171,7 +171,7 @@ describe("WmsMapLayerImageryProvider", () => {
     // URL should now be in EPSG:3857 because continents2 can be displayed in [4326,3857],
     // and 3857 is our favorite CRS.
     layerPros.subLayers![0].visible = false;
-    settings = MapLayerSettings.fromJSON(layerPros);
+    settings =ImageMapLayerSettings.fromJSON(layerPros);
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
     url = await provider.constructUrl(0,0,0);
@@ -180,7 +180,7 @@ describe("WmsMapLayerImageryProvider", () => {
     // Mark 'continents' and 'continents2' non-visible... leaving nothing to display.
     // An empty URL should be created in that case
     layerPros.subLayers![1].visible = false;
-    settings = MapLayerSettings.fromJSON(layerPros);
+    settings =ImageMapLayerSettings.fromJSON(layerPros);
     provider = new WmsMapLayerImageryProvider(settings);
     await provider.initialize();
     url = await provider.constructUrl(0,0,0);
@@ -202,7 +202,7 @@ describe("MapLayerImageryProvider with IModelApp", () => {
   });
 
   it("loadTile() should call IModelApp.notifications.outputMessage", async () => {
-    const settings = MapLayerSettings.fromJSON(wmsSampleSource);
+    const settings =ImageMapLayerSettings.fromJSON(wmsSampleSource);
     if (!settings)
       chai.assert.fail("Could not create settings");
     const provider = new WmsMapLayerImageryProvider(settings);
@@ -263,7 +263,7 @@ describe("WmtsMapLayerImageryProvider", () => {
   });
 
   it("initialize() should handle unknown exception from WmsCapabilities", async () => {
-    const settings = MapLayerSettings.fromJSON(wmtsSampleSource);
+    const settings =ImageMapLayerSettings.fromJSON(wmtsSampleSource);
     if (!settings)
       chai.assert.fail("Could not create settings");
 
@@ -275,7 +275,7 @@ describe("WmtsMapLayerImageryProvider", () => {
   });
 
   it("initialize() should handle unknown exception from WmtsCapabilities", async () => {
-    const settings = MapLayerSettings.fromJSON(wmtsSampleSource);
+    const settings =ImageMapLayerSettings.fromJSON(wmtsSampleSource);
     if (!settings)
       chai.assert.fail("Could not create settings");
 

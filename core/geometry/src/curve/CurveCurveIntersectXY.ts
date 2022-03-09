@@ -719,9 +719,9 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
           const strokeCountA = bezierSpanA[a].computeStrokeCountForOptions();
           const strokeCountB = bezierSpanB[b].computeStrokeCountForOptions();
           if (strokeCountA < strokeCountB)
-            this.dispatchBezierBezierStrokeFirst(bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, !_reversed);
+            this.dispatchBezierBezierStrokeFirst(bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, _reversed);
           else
-            this.dispatchBezierBezierStrokeFirst(bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, _reversed);
+            this.dispatchBezierBezierStrokeFirst(bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, !_reversed);
         }
       }
     }

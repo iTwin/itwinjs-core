@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Increase precision for vertex positions when producing decoration graphics, to reduce visual artifacts.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

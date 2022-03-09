@@ -236,13 +236,24 @@ export abstract class BezierCurveBase extends CurvePrimitive {
       if (this.degree < 3)
         radians1 *= 3;  // so quadratics aren't under-stroked
       const radians2 = Math.sqrt(radians1 * sumRadians);
+      const minCount = this.degree; // NOTE: this means 1) a small, nontrivial, straight Bezier is over-stroked, and 2) options.minStrokesPerPrimitive is ignored
       numStrokes = StrokeOptions.applyAngleTol(options,
-        StrokeOptions.applyMaxEdgeLength(options, this.degree, length2), radians2, 0.1);
+        StrokeOptions.applyMaxEdgeLength(options, minCount, length2), radians2, 0.1);
       if (options) {
         numStrokes = options.applyChordTolToLengthAndRadians(numStrokes, sumLength, radians1);
       }
     }
     return numStrokes;
+  }
+
+  /** Return a deep clone. */
+  public abstract override clone(): BezierCurveBase;
+
+  /** Return a transformed deep clone. */
+  public override cloneTransformed(transform: Transform): BezierCurveBase {
+    const curve1 = this.clone();
+    curve1.tryTransformInPlace(transform);
+    return curve1;
   }
 
   /**
@@ -256,5 +267,15 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
     this.emitStrokableParts(handler, options.strokeOptions);
     return handler.claimResult();
+  }
+
+  /** Return a curve primitive which is a portion of this curve.
+   * @param fractionA [in] start fraction
+   * @param fractionB [in] end fraction
+   */
+   public override clonePartialCurve(fractionA: number, fractionB: number): BezierCurveBase {
+    const partialCurve = this.clone();
+    partialCurve._polygon.subdivideToIntervalInPlace(fractionA, fractionB);
+    return partialCurve;
   }
 }
