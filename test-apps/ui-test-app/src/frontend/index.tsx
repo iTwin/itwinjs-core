@@ -341,7 +341,7 @@ export class SampleAppIModelApp {
       // initialize any settings providers that may need to have defaults set by iModelApp
       UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
     } else {
-      window.localStorage.removeItem("AppUiSettings.ShowWidgetIcon");
+      window.localStorage.removeItem("AppUiSettings.FrameworkVersion");
     }
 
     UiFramework.useDefaultPopoutUrl = true;
