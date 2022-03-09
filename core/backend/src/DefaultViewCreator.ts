@@ -1,0 +1,94 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
+import { IModelError, IModelStatus, QueryRowFormat, SerializedViewStateProps } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
+import { IModelDb } from "./IModelDb";
+
+export class DefaultViewCreator {
+  private _imodel: IModelDb;
+  public constructor(iModel: IModelDb) {
+    this._imodel = iModel;
+  }
+  /**
+   * Creates a default [[ViewState3d]] based on the model ids passed in. If no model ids are passed in, all 3D models in the iModel are used.
+   * @param [modelIds] Ids of models to display in the view.
+   * @throws [IModelError]($common) If no 3d models are found in the iModel.
+   * @returns SerializedViewStateProps
+   */
+  public async createDefaultView(modelIds?: Id64String[]): Promise<SerializedViewStateProps> {
+    const models: Id64Array = modelIds ?? await this._getAllModels();
+    const categories: Id64Array = await this._getAllCategories();
+    const modelExtents: Range3d = await this._getModelExtents(models);
+    return {
+      modelIds: CompressedId64Set.compressArray(models),
+      categoryIds: CompressedId64Set.compressArray(categories),
+      modelExtents: modelExtents.toJSON(),
+    };
+  }
+
+  private async _getAllCategories(): Promise<Id64Array> {
+    // Only use categories with elements in them
+    const query = `SELECT DISTINCT Category.Id AS id FROM BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId FROM BisCore.SpatialCategory)`;
+    const categories: Id64Array = await this._executeQuery(query);
+
+    return categories;
+  }
+
+  /**
+   * Gets the union of the extents of each model id passed in. Can return null range if no ids are passed, or no geometry found for the models.
+   * @param modelIdsList array of modelIds to get extents for
+   * @returns Range3d, the union of the extents of each model id
+   */
+  private async _getModelExtents(modelIdsList: Id64String[]): Promise<Range3d> {
+    const modelExtents = new Range3d();
+    if (modelIdsList.length === 0) return modelExtents;
+    const modelIds = new Set(modelIdsList);
+    for (const id of modelIds) {
+      try {
+        const props = this._imodel.nativeDb.queryModelExtents({ id }).modelExtents;
+        modelExtents.union(Range3d.fromJSON(props), modelExtents);
+      } catch (err: any) {
+        if ((err as IModelError).errorNumber === IModelStatus.NoGeometry) { // if there was no geometry, just return null range
+          continue;
+        }
+        if (modelIds.size === 1)
+          throw err; // if they're asking for more than one model, don't throw on error.
+        continue;
+      }
+    }
+    return modelExtents;
+  }
+
+  /**
+   * Get all PhysicalModel ids in the iModel
+   */
+  private async _getAllModels(): Promise<Id64Array> {
+    // Note: IsNotSpatiallyLocated was introduced in a later version of the BisCore ECSchema.
+    // If the iModel has an earlier version, the statement will throw because the property does not exist.
+    // If the iModel was created from an earlier version and later upgraded to a newer version, the property may be NULL for models created prior to the upgrade.
+    const select = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
+    const spatialCriterion = "AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated = false)";
+    let models = [];
+    try {
+      models = await this._executeQuery(`${select} ${spatialCriterion}`);
+    } catch {
+      models = await this._executeQuery(select);
+    }
+
+    return models;
+  }
+  /**
+   * Helper function to execute ECSql queries.
+   */
+  private _executeQuery = async (query: string) => {
+    const rows = [];
+    for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+      rows.push(row.id);
+
+    return rows;
+  };
+}

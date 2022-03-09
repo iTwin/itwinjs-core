@@ -12,10 +12,10 @@ API for creating a 3D default view for an iModel.
 Either takes in a list of modelIds, or displays all 3D models by default.
 */
 
-import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   Camera, CategorySelectorProps, Code, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface, ModelSelectorProps, QueryRowFormat,
-  RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
+  RenderMode, SerializedViewStateProps, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { StandardViewId } from "./StandardView";
@@ -63,15 +63,16 @@ export class ViewCreator3d {
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
-    // Imodelreadrpcinterface.getClient().getDefaultViewStateData
-    await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getDefaultViewStateData(this._imodel.getRpcProps(), options, modelIds);
-    // await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
-    // Basically all of the below should take plac eon the backend, theres no reason to go back and forth frontend backend to do this.
-    const models = modelIds ?? await this._getAllModels();
-    const props = await this._createViewStateProps(models, options);
+    const serializedProps: SerializedViewStateProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getDefaultViewStateData(this._imodel.getRpcProps(), modelIds);
+    const props = await this._createViewStateProps(
+      CompressedId64Set.decompressArray(serializedProps.modelIds),
+      CompressedId64Set.decompressArray(serializedProps.categoryIds),
+      Range3d.fromJSON(serializedProps.modelExtents),
+      options);
+
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
-      await viewState.load();
+      await viewState.load(); // replace this with hydrateViewState rpcimpl.
     } catch {
     }
 
@@ -89,18 +90,9 @@ export class ViewCreator3d {
    * @param models Models to put in view props
    * @param options view creation options like camera On and skybox On
    */
-  private async _createViewStateProps(models: Id64String[], options?: ViewCreator3dOptions): Promise<ViewStateProps> {
+  private async _createViewStateProps(models: Id64Array, categories: Id64Array, modelExtents: Range3d, options?: ViewCreator3dOptions): Promise<ViewStateProps> {
     // Use dictionary model in all props
     const dictionaryId = IModel.dictionaryId;
-    const categories: Id64Array = await this._getAllCategories();
-
-    // model extents
-    const modelExtents = new Range3d();
-    if (models.length > 0) {
-      const modelProps = await this._imodel.models.queryModelRanges(models);
-      for (const props of modelProps)
-        modelExtents.union(Range3d.fromJSON(props), modelExtents);
-    }
 
     if (modelExtents.isNull)
       modelExtents.setFrom(this._imodel.projectExtents);

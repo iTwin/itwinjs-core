@@ -12,7 +12,7 @@ import {
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode,
+  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SerializedViewStateProps, SnapRequestProps, SnapResponseProps, SyncMode,
   TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
@@ -23,7 +23,7 @@ import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { ViewCreator3dBackend } from "../ViewCreator3dBackend";
+import { DefaultViewCreator } from "../DefaultViewCreator";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -36,16 +36,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.expectCurrentActivity, tokenProps, SyncMode.FixedVersion);
   }
 
-  public async getDefaultViewStateData(tokenProps: IModelRpcProps, options?: ViewCreator3dOptions, modelIds?: Id64String[]) {
+  public async getDefaultViewStateData(tokenProps: IModelRpcProps, modelIds?: Id64String[]): Promise<SerializedViewStateProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const viewCreator = new ViewCreator3dBackend(iModelDb, options);
-    const models = modelIds ?? await this._getAllModels();
-    const props = await this._createViewStateProps(models, options);
-    const viewState = SpatialViewState.createFromProps(props, this._imodel);
-    try {
-      await viewState.load();
-    } catch {
-    }
+    const viewCreator = new DefaultViewCreator(iModelDb);
+    return viewCreator.createDefaultView(modelIds);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
