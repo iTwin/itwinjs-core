@@ -8,18 +8,18 @@ import { IModelError, IModelStatus, QueryRowFormat, SerializedViewStateProps } f
 import { Range3d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 
-export class DefaultViewCreator {
+export class ViewCreatorHelper {
   private _imodel: IModelDb;
   public constructor(iModel: IModelDb) {
     this._imodel = iModel;
   }
   /**
-   * Creates a default [[ViewState3d]] based on the model ids passed in. If no model ids are passed in, all 3D models in the iModel are used.
+   * Gets default view state data such as category Ids and modelextents. If no model ids are passed in, all 3D models in the iModel are used.
    * @param [modelIds] Ids of models to display in the view.
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    * @returns SerializedViewStateProps
    */
-  public async createDefaultView(modelIds?: Id64String[]): Promise<SerializedViewStateProps> {
+  public async getDefaultViewStateData(modelIds?: Id64String[]): Promise<SerializedViewStateProps> {
     const models: Id64Array = modelIds ?? await this._getAllModels();
     const categories: Id64Array = await this._getAllCategories();
     const modelExtents: Range3d = await this._getModelExtents(models);
