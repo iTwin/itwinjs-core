@@ -57,8 +57,9 @@ export function Icon(props: IconProps) {
     }
     const webComponentString = IconSpecUtilities.getWebComponentSource(iconString);
     if (webComponentString){
-
-      const sanitizedIconString = sanitizer(iconString);
+      const svgLoader = `<svg-loader src=${webComponentString} id="svg-id"></svg-loader>`;
+      const svgDiv = `<div>${svgLoader}</div>`;
+      const sanitizedIconString = sanitizer(svgDiv, {ALLOWED_TAGS: ["svg-loader"]});
       // we can safely disable jam3/no-sanitizer-with-danger as we are sanitizing above
       // eslint-disable-next-line @typescript-eslint/naming-convention, jam3/no-sanitizer-with-danger
       const webComponentNode = <div dangerouslySetInnerHTML={{__html:sanitizedIconString}}></div>;
