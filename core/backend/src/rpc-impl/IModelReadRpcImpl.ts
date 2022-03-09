@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
@@ -36,10 +36,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.expectCurrentActivity, tokenProps, SyncMode.FixedVersion);
   }
 
-  public async getDefaultViewStateData(tokenProps: IModelRpcProps, modelIds?: Id64String[]): Promise<SerializedViewStateProps> {
+  public async getDefaultViewStateData(tokenProps: IModelRpcProps, modelIds?: CompressedId64Set): Promise<SerializedViewStateProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    let decompressedModelIds;
+    if (modelIds !== undefined) decompressedModelIds = CompressedId64Set.decompressArray(modelIds);
     const viewCreator = new ViewCreatorHelper(iModelDb);
-    return viewCreator.getDefaultViewStateData(modelIds);
+    return viewCreator.getDefaultViewStateData(decompressedModelIds === undefined ? undefined : decompressedModelIds);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {

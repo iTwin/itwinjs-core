@@ -24,8 +24,8 @@ export class ViewCreatorHelper {
     const categories: Id64Array = await this._getAllCategories();
     const modelExtents: Range3d = await this._getModelExtents(models);
     return {
-      modelIds: CompressedId64Set.compressArray(models),
-      categoryIds: CompressedId64Set.compressArray(categories),
+      modelIds: CompressedId64Set.sortAndCompress(models),
+      categoryIds: CompressedId64Set.sortAndCompress(categories),
       modelExtents: modelExtents.toJSON(),
     };
   }

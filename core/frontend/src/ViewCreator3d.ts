@@ -63,7 +63,8 @@ export class ViewCreator3d {
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
-    const serializedProps: SerializedViewStateProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getDefaultViewStateData(this._imodel.getRpcProps(), modelIds);
+    const serializedProps: SerializedViewStateProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getDefaultViewStateData(this._imodel.getRpcProps(),
+      CompressedId64Set.sortAndCompress(modelIds));
     const props = await this._createViewStateProps(
       CompressedId64Set.decompressArray(serializedProps.modelIds),
       CompressedId64Set.decompressArray(serializedProps.categoryIds),
