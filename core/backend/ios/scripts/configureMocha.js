@@ -11,4 +11,4 @@ const BentleyMochaReporter = require("@itwin/build-tools/mocha-reporter");
 mocha.ui("bdd");
 mocha.suite.emit("pre-require", global, null, mocha);
 mocha.timeout(9999999);
-mocha.reporter(BentleyMochaReporter, { "mochaFile": path.resolve(__dirname, "junit_results.xml") });
+mocha.reporter(BentleyMochaReporter, { mochaFile: process.env.TEST_RESULTS_PATH });

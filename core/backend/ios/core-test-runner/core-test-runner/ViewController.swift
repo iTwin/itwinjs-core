@@ -1,49 +1,44 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
-import UIKit
+import Foundation
 import os
 
 import IModelJsNative
 
-class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDocumentPickerDelegate {
-    private var webView : WKWebView? = nil
+class ViewController: ObservableObject {
     private let logger = Logger(subsystem: "com.bentley.core-test-runner", category: "tests")
-    private var numFailed = -1
-    private var testsFinished = false
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        runTests()
-    }
-
-    private func runTests () {
+    @Published var testsFinished = false
+    
+    func runTests() {
+        var testResultsUrl = URL(fileURLWithPath: NSTemporaryDirectory())
+        testResultsUrl.appendPathComponent("mocha_test_results.xml")
+        
+        print(testResultsUrl.path)
+        setenv("TEST_RESULTS_PATH", testResultsUrl.path, 1)
         
         let host = IModelJsHost.sharedInstance()
         let bundlePath = Bundle.main.bundlePath
         let mainPath = bundlePath.appending("/Assets/main.js")
         let main = URL(fileURLWithPath: mainPath)
-        let client = MobileAuthorizationClient(viewController: self)
-        print("(ios): Running tests.")
-        logger.log("(ios)(logger): Running tests.")
-        host.loadBackend(main, withAuthClient: client, withInspect: true) { [self] (numFailed: UInt32) in
-            self.numFailed = Int(numFailed)
+        logger.log("(ios): Running tests.")
+        host.loadBackend(main) { [self] (numFailed: UInt32) in
+            logger.log("(ios): Finished Running tests. \(numFailed) tests failed.")
+            
+            do {
+                let data = try String(contentsOfFile: testResultsUrl.path, encoding: .utf8)
+                for line in data.components(separatedBy: .newlines) {
+                    logger.log("[Mocha_Result_XML]: \(line)")
+                }
+            } catch {
+                logger.log("Failed to read mocha test results.")
+                print(error)
+            }
+            
+            // Indicate via UI that the tests have finished.
             self.testsFinished = true
-        }
-        
-        while !testsFinished {
-        }
-        
-        logger.log("(ios)(logger): Finished running tests (2).")
-        NSLog("(ios)(nslog): Finished running tests (2).")
-        
-        let testOutputPath = bundlePath.appending("/Assets/junit_results.xml")
-        let fileManager = FileManager.default
-        if !fileManager.fileExists(atPath: testOutputPath) {
-            print("(ios): Test results not found. Path: \(testOutputPath)")
-            exit(-1)
         }
     }
 }

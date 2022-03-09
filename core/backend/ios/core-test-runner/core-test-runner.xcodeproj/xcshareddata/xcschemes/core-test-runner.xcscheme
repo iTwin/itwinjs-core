@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1200"
+   LastUpgradeVersion = "1320"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "415D587F23E37F5200907B7B"
+               BlueprintIdentifier = "D398E01327D82FB800575F47"
                BuildableName = "core-test-runner.app"
                BlueprintName = "core-test-runner"
                ReferencedContainer = "container:core-test-runner.xcodeproj">
@@ -32,16 +32,16 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D339655627BC2CFD00355600"
-               BuildableName = "core-test-runner-tests.xctest"
-               BlueprintName = "core-test-runner-tests"
+               BlueprintIdentifier = "D398E07827D83BAA00575F47"
+               BuildableName = "core-test-runner-xcuitest.xctest"
+               BlueprintName = "core-test-runner-xcuitest"
                ReferencedContainer = "container:core-test-runner.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -54,7 +54,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "415D587F23E37F5200907B7B"
+            BlueprintIdentifier = "D398E01327D82FB800575F47"
             BuildableName = "core-test-runner.app"
             BlueprintName = "core-test-runner"
             ReferencedContainer = "container:core-test-runner.xcodeproj">
@@ -71,7 +71,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "415D587F23E37F5200907B7B"
+            BlueprintIdentifier = "D398E01327D82FB800575F47"
             BuildableName = "core-test-runner.app"
             BlueprintName = "core-test-runner"
             ReferencedContainer = "container:core-test-runner.xcodeproj">
