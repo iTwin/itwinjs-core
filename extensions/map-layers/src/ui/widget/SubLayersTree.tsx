@@ -15,7 +15,6 @@ import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, useLayoutResizeObserver, useRefState, WebFontIcon } from "@itwin/core-react";
 import { Input } from "@itwin/itwinui-react";
 import * as React from "react";
-import { useResizeDetector } from "react-resize-detector";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import "./SubLayersTree.scss";
