@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { MapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MapLayerImageryProvider } from "../../internal";
 
@@ -18,7 +18,7 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
   private _zoomMax: number;
   private _baseUrl: string;
 
-  constructor(settings: MapLayerSettings) {
+  constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
     this._baseUrl = settings.url;
     this._zoomMin = 1; this._zoomMax = 20;

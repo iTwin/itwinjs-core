@@ -211,7 +211,7 @@ class GeoNameUpdateTool extends GeoNameTool {
 }
 
 export class GeoNameExtension {
-  private static _defaultNs = "mapLayers";
+  private static _defaultNs = "geoNames";
 
   public static async initialize(): Promise<void> {
     await IModelApp.localization.registerNamespace(this._defaultNs);

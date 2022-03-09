@@ -517,7 +517,7 @@ export class Matrix3d implements BeJSONFunctions {
     return Matrix3d.createScale(scaleFactor, scaleFactor, scaleFactor);
   }
   /**
-   * Construct a rigid matrix using createHeadsUpPerpendicular to generate a vector perpendicular to vectorA..
+   * Construct a rigid matrix using createPerpendicularVectorFavorXYPlane to generate a vector perpendicular to vectorA.
    * *
    */
   public static createRigidHeadsUp(vectorA: Vector3d, axisOrder: AxisOrder = AxisOrder.ZXY, result?: Matrix3d): Matrix3d {
@@ -549,7 +549,7 @@ export class Matrix3d implements BeJSONFunctions {
    * return a vector that is perpendicular to the input direction.
    * * Among the infinite number of perpendiculars possible, this method
    * favors having one near the Z.
-   * That is achieved by crossing "this" vector with the result of createHeadsUpPerpendicularFavorXYPlane.
+   * That is achieved by crossing "this" vector with the result of createPerpendicularVectorFavorXYPlane.
    */
   public static createPerpendicularVectorFavorPlaneContainingZ(vector: Vector3d, result?: Vector3d): Vector3d {
     result = Matrix3d.createPerpendicularVectorFavorXYPlane(vector, result);
@@ -1762,8 +1762,8 @@ export class Matrix3d implements BeJSONFunctions {
    * 4) M = ATranspose * B       MInverse = BInverse * AInverseTranspose
    * 5) M = A * BTranspose       MInverse = BInverseTranspose * AInverse
   */
-  /** Multiply two matrices.
-   *   @return the matrix result
+  /** Multiply the instance matrix A by the input matrix B.
+   *   @return the matrix product A * B
    */
   public multiplyMatrixMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d {
     result = result ? result : new Matrix3d();

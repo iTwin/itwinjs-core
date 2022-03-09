@@ -278,6 +278,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
 
   const activeWidget = visibleWidgets.find((widget) => widget.isActive);
   const minimized = !activeWidget;
+  // istanbul ignore else
   if (activeWidget?.defaultState !== WidgetState.Floating) {
     state = addPanelWidget(state, side, widgetId, tabs, {
       activeTabId: activeWidget ? activeWidget.id : tabs[0],
@@ -611,13 +612,15 @@ export function initializePanel(nineZone: NineZoneState, frontstageDef: Frontsta
   const panelDef = frontstageDef.getStagePanelDef(location);
   nineZone = produce(nineZone, (draft) => {
     const panel = draft.panels[panelSide];
-    panel.size = panelDef?.size;
     panel.minSize = panelDef?.minSize ?? panel.minSize;
     panel.pinned = panelDef?.pinned ?? panel.pinned;
     panel.resizable = panelDef?.resizable ?? panel.resizable;
     if (panelDef?.maxSizeSpec) {
       panel.maxSize = getPanelMaxSize(panelDef.maxSizeSpec, panelSide, nineZone.size);
     }
+
+    const size = panelDef?.size;
+    panel.size = size === undefined ? size : Math.min(Math.max(size, panel.minSize), panel.maxSize);
   });
   return nineZone;
 }
@@ -636,6 +639,7 @@ const stateVersion = 11; // this needs to be bumped when NineZoneState is change
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
   let nineZone = defaultNineZone;
   nineZone = produce(nineZone, (stateDraft) => {
+    // istanbul ignore next
     if (!FrontstageManager.nineZoneSize)
       return;
     stateDraft.size = {
@@ -839,6 +843,16 @@ export const setWidgetState = produce((
     const widget = nineZone.widgets[location.widgetId];
     widget.minimized = false;
     widget.activeTabId = id;
+    // ensure panel containing widget is not collapsed
+    // istanbul ignore else
+    if ("side" in location) {
+      const panel = nineZone.panels[location.side];
+      panel.collapsed && (panel.collapsed = false);
+      // istanbul ignore next
+      if (undefined === panel.size || 0 === panel.size) {
+        panel.size = panel.minSize ?? 200;
+      }
+    }
   } else if (state === WidgetState.Closed) {
     const id = widgetDef.id;
     let location = findTab(nineZone, id);
