@@ -11651,7 +11651,7 @@ export class ToolAdmin {
 // @public (undocumented)
 export namespace ToolAdmin {
     // @alpha
-    export class ActiveSettings {
+    export interface ActiveSettings {
         category?: Id64String;
         model?: Id64String;
     }
