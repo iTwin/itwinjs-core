@@ -1905,35 +1905,49 @@ describe("IModelTransformer", () => {
       const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
       const sourceDb = SnapshotDb.openFile(sourceFileName);
 
-      async function transformWithCrashAndRecover(): Promise<IModelDb> {
+      async function transformWithCrashAndRecover() {
         const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ResumeTrasformationCrash.bim");
         const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
         let transformer = new CrashingTransformer(sourceDb, targetDb);
         const MAX_ITERS = 100;
-        const timer = new StopWatch();
-        timer.start();
         let crashCount = 0;
-        for (let i = 0; i < MAX_ITERS; ++i) {
+
+        let timer: StopWatch;
+
+        // 50% chance we disable crashing
+        if (Math.random() < 0.5)
+          transformer.crashingEnabled = false;
+
+        for (let i = 0; i <= MAX_ITERS; ++i) {
+          timer = new StopWatch();
+          timer.start();
           try {
             await transformer.processSchemas();
             await transformer.processAll();
             break;
           } catch (transformerErr) {
-            crashCount++;
-            const dumpPath = "/tmp/transformer-state.db";
-            const fs = await import("fs");
-            if (fs.existsSync(dumpPath)) fs.unlinkSync(dumpPath);
-            const state = transformer.serializeState(dumpPath);
-            transformer.crashingEnabled = false;
-            transformer = CrashingTransformer.resumeTransformation(state, sourceDb, targetDb);
-            transformer.crashingEnabled = true;
-            console.log(`completed after ${crashCount} crashes`); // eslint-disable-line no-console
-          } finally {
-            timer.reset();
-            console.log(`crashed ${i} times`); // eslint-disable-line no-console
+            try {
+              crashCount++;
+              const dumpPath = "/tmp/transformer-state.db";
+              const fs = await import("fs");
+              if (fs.existsSync(dumpPath)) fs.unlinkSync(dumpPath);
+              transformer.crashingEnabled = false;
+              const state = transformer.serializeState(dumpPath);
+              transformer = CrashingTransformer.resumeTransformation(state, sourceDb, targetDb);
+              transformer.crashingEnabled = true;
+              console.log(`crashed after ${timer.elapsed.seconds} seconds`); // eslint-disable-line no-console
+            } catch (err) {
+              assert.fail((err as Error).message);
+            }
           }
+          if (i === MAX_ITERS) assert.fail("crashed too many times");
         }
-        return targetDb;
+        console.log(`completed after ${crashCount} crashes`); // eslint-disable-line no-console
+        return {
+          resultDb: targetDb,
+          crashingWasEnabled: transformer.crashingEnabled,
+          finalTransformationTime: timer!.elapsedSeconds,
+        };
       }
 
       async function transformNoCrash(): Promise<IModelDb> {
@@ -1945,13 +1959,31 @@ describe("IModelTransformer", () => {
         return targetDb;
       }
 
-      const resumedTarget = await transformWithCrashAndRecover();
+      const { resultDb: crashingTarget, ...crashingTransformResult } = await transformWithCrashAndRecover();
       const regularTarget = await transformNoCrash();
 
-      await assertIdentityTransformation(regularTarget, resumedTarget, { context: { findTargetElementId: (id) => id }});
+      await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+      return crashingTransformResult;
     }
 
-    for (let i = 0; i < 100; ++i)
-      await test();
+    let totalNonCrashingTransformationsTime = 0.0;
+    let totalNonCrashingTransformations = 0;
+    let totalCrashingTransformationsTime = 0.0;
+    let totalCrashingTransformations = 0;
+    for (let i = 0; i < 100; ++i) {
+      const { crashingWasEnabled, finalTransformationTime } = await test();
+      /* eslint-disable no-console */
+      if (crashingWasEnabled) {
+        totalCrashingTransformations++;
+        totalCrashingTransformationsTime += finalTransformationTime;
+      } else {
+        totalNonCrashingTransformations++;
+        totalNonCrashingTransformationsTime += finalTransformationTime;
+      }
+    }
+    const avgNonCrashingTransformationsTime = totalNonCrashingTransformationsTime / totalNonCrashingTransformations;
+    const avgCrashingTransformationsTime = totalCrashingTransformationsTime / totalCrashingTransformations;
+    console.log(`avg non-crashing transformations time: ${avgNonCrashingTransformationsTime}`);
+    console.log(`avg crashing transformations time: ${avgCrashingTransformationsTime}`);
   });
 });
