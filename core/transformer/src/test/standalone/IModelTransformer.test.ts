@@ -13,7 +13,7 @@ import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
-  IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
+  IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelJsNative, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
 } from "@itwin/core-backend";
@@ -1876,28 +1876,44 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("resume transformation", async () => {
-    // NOTE: need to investigate what happens when crashing between inserting an element and labeling it for remapping
-    // the transformer should see the remapped code and consider it to be the same element and just update it...
-    class CrashingTransformer extends IModelTransformer {
-      public crashingEnabled = true;
+  it.only("resume transformation smoke test", async () => {
+    let crashingEnabled = false;
+
+    // here to test that types work when calling resumeTransformation
+    class CrashingTransformer extends IModelTransformer { }
+
+    for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(
+      IModelHost.platform
+    )) as [keyof typeof IModelHost["platform"], PropertyDescriptor][]) {
+      const superValue: unknown = descriptor.value;
+      if (typeof superValue === "function" && descriptor.writable) {
+        sinon.replace(IModelHost.platform, key, function (this: IModelJsNative.DgnDb, ...args: any[]) {
+          if (crashingEnabled) {
+            const METHOD_CRASH_PROBABILITY = 1/200;
+            // this does not at all test mid-method crashes... that might be doable by racing timeouts on async functions...
+            if (crashingEnabled && Math.random() <= METHOD_CRASH_PROBABILITY) throw Error("fake native crash");
+          }
+          const isConstructor = (o: Function): o is new(...a: any[]) => any => "prototype" in o;
+          if (isConstructor(superValue))
+            return new superValue(...args);
+          else return superValue.call(this, ...args);
+        });
+      }
     }
 
     for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(
-      IModelTransformer.prototype)
-    ) as [keyof IModelTransformer, PropertyDescriptor][]) {
+      IModelTransformer.prototype
+    )) as [keyof IModelTransformer, PropertyDescriptor][]) {
       const superValue: unknown = descriptor.value;
       if (typeof superValue === "function" && descriptor.writable) {
-        Object.defineProperty(CrashingTransformer.prototype, key,
-          {
-            ...descriptor,
-            value(this: CrashingTransformer, ...args: any[]) {
-              const METHOD_CRASH_PROBABILITY = 1/200;
-              // this does not at all test mid-method crashes... that might be doable by racing timeouts on async functions...
-              if (this.crashingEnabled && Math.random() <= METHOD_CRASH_PROBABILITY) throw Error("crash");
-              return superValue.call(this, ...args);
-            },
-          });
+        sinon.replace(IModelTransformer.prototype, key, function (this: IModelTransformer, ...args: any[]) {
+          if (crashingEnabled) {
+            const METHOD_CRASH_PROBABILITY = 1/200;
+            // this does not at all test mid-method crashes... that might be doable by racing timeouts on async functions...
+            if (crashingEnabled && Math.random() <= METHOD_CRASH_PROBABILITY) throw Error("fake crash");
+          }
+          return superValue.call(this, ...args);
+        });
       }
     }
 
@@ -1911,12 +1927,13 @@ describe("IModelTransformer", () => {
         let transformer = new CrashingTransformer(sourceDb, targetDb);
         const MAX_ITERS = 100;
         let crashCount = 0;
-
         let timer: StopWatch;
 
-        // 50% chance we disable crashing
+        // 50% chance we disable crashing for this run (so we have a comparison between crashing and non-crashing transformation times)
         if (Math.random() < 0.5)
-          transformer.crashingEnabled = false;
+          crashingEnabled = false;
+        else
+          crashingEnabled = true;
 
         for (let i = 0; i <= MAX_ITERS; ++i) {
           timer = new StopWatch();
@@ -1931,10 +1948,10 @@ describe("IModelTransformer", () => {
               const dumpPath = "/tmp/transformer-state.db";
               const fs = await import("fs");
               if (fs.existsSync(dumpPath)) fs.unlinkSync(dumpPath);
-              transformer.crashingEnabled = false;
+              crashingEnabled = false;
               const state = transformer.serializeState(dumpPath);
               transformer = CrashingTransformer.resumeTransformation(state, sourceDb, targetDb);
-              transformer.crashingEnabled = true;
+              crashingEnabled = true;
               console.log(`crashed after ${timer.elapsed.seconds} seconds`); // eslint-disable-line no-console
             } catch (err) {
               assert.fail((err as Error).message);
@@ -1945,7 +1962,7 @@ describe("IModelTransformer", () => {
         console.log(`completed after ${crashCount} crashes`); // eslint-disable-line no-console
         return {
           resultDb: targetDb,
-          crashingWasEnabled: transformer.crashingEnabled,
+          crashingWasEnabled: crashingEnabled,
           finalTransformationTime: timer!.elapsedSeconds,
         };
       }
@@ -1985,5 +2002,6 @@ describe("IModelTransformer", () => {
     const avgCrashingTransformationsTime = totalCrashingTransformationsTime / totalCrashingTransformations;
     console.log(`avg non-crashing transformations time: ${avgNonCrashingTransformationsTime}`);
     console.log(`avg crashing transformations time: ${avgCrashingTransformationsTime}`);
+    sinon.restore();
   });
 });
