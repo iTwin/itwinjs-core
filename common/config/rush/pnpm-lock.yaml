@@ -1483,7 +1483,6 @@ importers:
       nyc: ^15.1.0
       react: ^17.0.0
       react-beautiful-dnd: ^13.0.0
-      react-resize-detector: ^6.7.6
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -1492,7 +1491,6 @@ importers:
     dependencies:
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.0_react@17.0.2
-      react-resize-detector: 6.7.8_react@17.0.2
     devDependencies:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/appui-layout-react': link:../../ui/appui-layout-react
@@ -19511,18 +19509,6 @@ packages:
       lodash: 4.17.21
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
-      resize-observer-polyfill: 1.5.1
-    dev: false
-
-  /react-resize-detector/6.7.8_react@17.0.2:
-    resolution: {integrity: sha512-0FaEcUBAbn+pq3PT5a9hHRebUfuS1SRLGLpIw8LydU7zX429I6XJgKerKAMPsJH0qWAl6o5bVKNqFJqr6tGPYw==}
-    peerDependencies:
-      react: ^16.0.0 || ^17.0.0
-      react-dom: ^16.0.0 || ^17.0.0
-    dependencies:
-      '@types/resize-observer-browser': 0.1.7
-      lodash: 4.17.21
-      react: 17.0.2
       resize-observer-polyfill: 1.5.1
     dev: false
 
