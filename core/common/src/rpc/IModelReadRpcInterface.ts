@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { CompressedId64Set, GuidString, Id64String } from "@itwin/core-bentley";
+import { GuidString, Id64String } from "@itwin/core-bentley";
 import { Range3dProps } from "@itwin/core-geometry";
 import { CodeProps } from "../Code";
 import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "../ConcurrentQuery";
@@ -25,7 +25,7 @@ import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { TextureData, TextureLoadProps } from "../TextureProps";
-import { SerializedViewStateProps, ViewStateLoadProps, ViewStateProps } from "../ViewProps";
+import { SerializedViewStateProps, ViewStateLoadProps, ViewStateOptions, ViewStateProps } from "../ViewProps";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
 
@@ -76,7 +76,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   /** @deprecated */
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
   public async getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String> { return this.forward(arguments); }
-  public async getDefaultViewStateData(_iModelToken: IModelRpcProps, _modelIds?: CompressedId64Set): Promise<SerializedViewStateProps> { return this.forward(arguments); }
+  public async getDefaultViewStateData(_iModelToken: IModelRpcProps, _options: ViewStateOptions): Promise<SerializedViewStateProps> { return this.forward(arguments); }
   public async requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
   public async cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void> { return this.forward(arguments); }
   public async getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return this.forward(arguments); }

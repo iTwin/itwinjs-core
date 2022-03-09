@@ -31,7 +31,9 @@ export interface SerializedViewStateProps {
   modelExtents: Range3dProps;
   categoryIds: CompressedId64Set;
 }
-
+export interface ViewStateOptions {
+  modelIds?: CompressedId64Set;
+}
 /** Returned from [IModelDb.Views.getViewStateData]($backend).
  * @public
  */

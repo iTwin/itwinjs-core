@@ -13,7 +13,7 @@ import {
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SerializedViewStateProps, SnapRequestProps, SnapResponseProps, SyncMode,
-  TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
+  TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateOptions, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
@@ -36,12 +36,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.expectCurrentActivity, tokenProps, SyncMode.FixedVersion);
   }
 
-  public async getDefaultViewStateData(tokenProps: IModelRpcProps, modelIds?: CompressedId64Set): Promise<SerializedViewStateProps> {
+  public async getDefaultViewStateData(tokenProps: IModelRpcProps, options: ViewStateOptions): Promise<SerializedViewStateProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    let decompressedModelIds;
-    if (modelIds !== undefined) decompressedModelIds = CompressedId64Set.decompressArray(modelIds);
     const viewCreator = new ViewCreatorHelper(iModelDb);
-    return viewCreator.getDefaultViewStateData(decompressedModelIds === undefined ? undefined : decompressedModelIds);
+    return viewCreator.getDefaultViewStateData(options);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
