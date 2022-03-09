@@ -6,6 +6,7 @@
  * @module Extensions
  */
 
+import "./ExtensionRuntime";
 import { IModelApp } from "../IModelApp";
 import { ActivationEvent, BuildExtensionManifest, ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
 import { ExtensionLoader } from "./ExtensionLoader";
@@ -53,6 +54,7 @@ export class ExtensionAdmin {
   };
 
   public constructor() {
+    // TODO: potential circular dependency - look into refactoring
     IModelApp.onAfterStartup.addListener(this.onStartup);
   }
 
