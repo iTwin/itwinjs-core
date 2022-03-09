@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
-import { IModelError, IModelStatus, QueryRowFormat, SerializedViewStateProps } from "@itwin/core-common";
+import { IModelError, IModelStatus, QueryRowFormat, SerializedViewStateProps, ViewCreator3dHelperOptions } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 
-export class ViewCreatorHelper {
+export class ViewCreator3dHelper {
   private _imodel: IModelDb;
   public constructor(iModel: IModelDb) {
     this._imodel = iModel;
@@ -19,8 +19,10 @@ export class ViewCreatorHelper {
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    * @returns SerializedViewStateProps
    */
-  public async getDefaultViewStateData(modelIds?: Id64String[]): Promise<SerializedViewStateProps> {
-    const models: Id64Array = modelIds ?? await this._getAllModels();
+  public async getDefaultViewState3dData(options: ViewCreator3dHelperOptions): Promise<SerializedViewStateProps> {
+    let decompressedModelIds;
+    if (options?.modelIds !== undefined) decompressedModelIds = CompressedId64Set.decompressArray(options.modelIds);
+    const models: Id64Array = decompressedModelIds ?? await this._getAllModels();
     const categories: Id64Array = await this._getAllCategories();
     const modelExtents: Range3d = await this._getModelExtents(models);
     return {

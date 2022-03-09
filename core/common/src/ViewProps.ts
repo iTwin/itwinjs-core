@@ -31,7 +31,7 @@ export interface SerializedViewStateProps {
   modelExtents: Range3dProps;
   categoryIds: CompressedId64Set;
 }
-export interface ViewStateOptions {
+export interface ViewCreator3dHelperOptions {
   modelIds?: CompressedId64Set;
 }
 /** Returned from [IModelDb.Views.getViewStateData]($backend).

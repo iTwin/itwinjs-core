@@ -6,14 +6,14 @@
  * @module RpcInterface
  */
 
-import { CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SerializedViewStateProps, SnapRequestProps, SnapResponseProps, SyncMode,
-  TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateOptions, ViewStateProps,
+  TextureData, TextureLoadProps, ViewCreator3dHelperOptions, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
@@ -23,7 +23,7 @@ import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { ViewCreatorHelper } from "../ViewCreatorHelper";
+import { ViewCreator3dHelper } from "../ViewCreator3dHelper";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -36,10 +36,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.expectCurrentActivity, tokenProps, SyncMode.FixedVersion);
   }
 
-  public async getDefaultViewStateData(tokenProps: IModelRpcProps, options: ViewStateOptions): Promise<SerializedViewStateProps> {
+  public async getDefaultViewState3dData(tokenProps: IModelRpcProps, options: ViewCreator3dHelperOptions): Promise<SerializedViewStateProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const viewCreator = new ViewCreatorHelper(iModelDb);
-    return viewCreator.getDefaultViewStateData(options);
+    const viewCreator = new ViewCreator3dHelper(iModelDb);
+    return viewCreator.getDefaultViewState3dData(options);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
