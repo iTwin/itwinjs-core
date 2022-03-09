@@ -7,13 +7,13 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as Semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
-  IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelJsNative, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
+  IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
 } from "@itwin/core-backend";
@@ -28,7 +28,6 @@ import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
-import { IModelTransformOptions } from "../../IModelTransformer";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1874,143 +1873,5 @@ describe("IModelTransformer", () => {
 
     sourceDb.close();
     targetDb.close();
-  });
-
-  it.only("resume transformation smoke test", async () => {
-    let crashingEnabled = false;
-
-    // here to test that types work when calling resumeTransformation
-    class CrashingTransformer extends IModelTransformer {
-      constructor(opts: {
-        source: IModelDb;
-        target: IModelDb;
-        options?: IModelTransformOptions;
-      }) {
-        super(opts.source, opts.target, opts.options);
-      }
-    }
-
-    for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(
-      IModelHost.platform
-    )) as [keyof typeof IModelHost["platform"], PropertyDescriptor][]) {
-      const superValue: unknown = descriptor.value;
-      if (typeof superValue === "function" && descriptor.writable) {
-        sinon.replace(IModelHost.platform, key, function (this: IModelJsNative.DgnDb, ...args: any[]) {
-          if (crashingEnabled) {
-            const METHOD_CRASH_PROBABILITY = 1/800;
-            // this does not at all test mid-method crashes... that might be doable by racing timeouts on async functions...
-            if (crashingEnabled && Math.random() <= METHOD_CRASH_PROBABILITY) throw Error("fake native crash");
-          }
-          const isConstructor = (o: Function): o is new(...a: any[]) => any => "prototype" in o;
-          if (isConstructor(superValue))
-            return new superValue(...args);
-          else return superValue.call(this, ...args);
-        });
-      }
-    }
-
-    for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(
-      IModelTransformer.prototype
-    )) as [keyof IModelTransformer, PropertyDescriptor][]) {
-      const superValue: unknown = descriptor.value;
-      if (typeof superValue === "function" && descriptor.writable) {
-        sinon.replace(IModelTransformer.prototype, key, function (this: IModelTransformer, ...args: any[]) {
-          if (crashingEnabled) {
-            const METHOD_CRASH_PROBABILITY = 1/800;
-            // this does not at all test mid-method crashes... that might be doable by racing timeouts on async functions...
-            if (crashingEnabled && Math.random() <= METHOD_CRASH_PROBABILITY) throw Error("fake crash");
-          }
-          return superValue.call(this, ...args);
-        });
-      }
-    }
-
-    async function test() {
-      const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
-      const sourceDb = SnapshotDb.openFile(sourceFileName);
-
-      async function transformWithCrashAndRecover() {
-        const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ResumeTrasformationCrash.bim");
-        const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
-        let transformer = new CrashingTransformer({ source: sourceDb, target: targetDb });
-        const MAX_ITERS = 100;
-        let crashCount = 0;
-        let timer: StopWatch;
-
-        // 50% chance we disable crashing for this run (so we have a comparison between crashing and non-crashing transformation times)
-        if (Math.random() < 0.5)
-          crashingEnabled = false;
-        else
-          crashingEnabled = true;
-
-        for (let i = 0; i <= MAX_ITERS; ++i) {
-          timer = new StopWatch();
-          timer.start();
-          try {
-            await transformer.processSchemas();
-            await transformer.processAll();
-            break;
-          } catch (transformerErr) {
-            try {
-              crashCount++;
-              const dumpPath = "/tmp/transformer-state.db";
-              const fs = await import("fs");
-              if (fs.existsSync(dumpPath)) fs.unlinkSync(dumpPath);
-              crashingEnabled = false;
-              const state = transformer.serializeState(dumpPath);
-              transformer = CrashingTransformer.resumeTransformation(state, { source: sourceDb, target: targetDb });
-              crashingEnabled = true;
-              console.log(`crashed after ${timer.elapsed.seconds} seconds`); // eslint-disable-line no-console
-            } catch (err) {
-              assert.fail((err as Error).message);
-            }
-          }
-          if (i === MAX_ITERS) assert.fail("crashed too many times");
-        }
-        console.log(`completed after ${crashCount} crashes`); // eslint-disable-line no-console
-        return {
-          resultDb: targetDb,
-          crashingWasEnabled: crashingEnabled,
-          finalTransformationTime: timer!.elapsedSeconds,
-        };
-      }
-
-      async function transformNoCrash(): Promise<IModelDb> {
-        crashingEnabled = false;
-        const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ResumeTrasformationNoCrash.bim");
-        const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
-        const transformer = new IModelTransformer(sourceDb, targetDb);
-        await transformer.processSchemas();
-        await transformer.processAll();
-        return targetDb;
-      }
-
-      const { resultDb: crashingTarget, ...crashingTransformResult } = await transformWithCrashAndRecover();
-      const regularTarget = await transformNoCrash();
-
-      await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
-      return crashingTransformResult;
-    }
-
-    let totalNonCrashingTransformationsTime = 0.0;
-    let totalNonCrashingTransformations = 0;
-    let totalCrashingTransformationsTime = 0.0;
-    let totalCrashingTransformations = 0;
-    for (let i = 0; i < 100; ++i) {
-      const { crashingWasEnabled, finalTransformationTime } = await test();
-      /* eslint-disable no-console */
-      if (crashingWasEnabled) {
-        totalCrashingTransformations++;
-        totalCrashingTransformationsTime += finalTransformationTime;
-      } else {
-        totalNonCrashingTransformations++;
-        totalNonCrashingTransformationsTime += finalTransformationTime;
-      }
-    }
-    const avgNonCrashingTransformationsTime = totalNonCrashingTransformationsTime / totalNonCrashingTransformations;
-    const avgCrashingTransformationsTime = totalCrashingTransformationsTime / totalCrashingTransformations;
-    console.log(`avg non-crashing transformations time: ${avgNonCrashingTransformationsTime}`);
-    console.log(`avg crashing transformations time: ${avgCrashingTransformationsTime}`);
-    sinon.restore();
   });
 });
