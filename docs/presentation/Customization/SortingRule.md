@@ -125,9 +125,6 @@ Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
 
 > **Note:** Disabling sorting increases performance
 
-> **Note:** This rule is not meant to be used to sort grouping nodes, custom nodes or
-other non ECInstance type of nodes.
-
 ### Attributes
 
 | Name                                            | Required? | Type                                                                 | Default                        |
