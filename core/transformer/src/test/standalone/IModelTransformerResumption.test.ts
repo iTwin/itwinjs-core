@@ -6,20 +6,20 @@
 import { Element, IModelDb, IModelHost, IModelJsNative, SnapshotDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import { StopWatch } from "@itwin/core-bentley";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { IModelTransformer, IModelTransformOptions } from "../../IModelTransformer";
 import { assertIdentityTransformation } from "../IModelTransformerUtils";
 
-describe.only("test resuming transformations", () => {
+describe("test resuming transformations", () => {
   it("simple single crash transform resumption", async () => {
     // here to test that types work when calling resumeTransformation
     class CrashingTransformer extends IModelTransformer {
-      private _nonCrashingCallsLeft = 10;
+      public elementExportsUntilCrash = 10;
       public override onExportElement(sourceElement: Element): void {
-        if (this._nonCrashingCallsLeft === 0) throw Error("crash");
+        if (this.elementExportsUntilCrash === 0) throw Error("crash");
         const result = super.onExportElement(sourceElement);
-        this._nonCrashingCallsLeft--;
+        this.elementExportsUntilCrash--;
         return result;
       }
     }
@@ -31,6 +31,7 @@ describe.only("test resuming transformations", () => {
       const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationCrash.bim");
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
       let transformer = new CrashingTransformer(sourceDb, targetDb);
+      let crashed = false;
 
       try {
         await transformer.processSchemas();
@@ -40,10 +41,13 @@ describe.only("test resuming transformations", () => {
           const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
           const state = transformer.serializeState(dumpPath);
           transformer = CrashingTransformer.resumeTransformation(state, sourceDb, targetDb);
+          transformer.elementExportsUntilCrash = -1; // do not crash this time
+          crashed = true;
         } catch (err) {
           assert.fail((err as Error).message);
         }
       }
+      expect(crashed).to.be.true;
       return targetDb;
     }
 
@@ -59,6 +63,62 @@ describe.only("test resuming transformations", () => {
     const crashingTarget = await transformWithCrashAndRecover();
     const regularTarget = await transformNoCrash();
 
+    await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+  });
+
+  // change "skip" to "only" to test some huge local model that is not worth putting in the actual tests
+  it.only("local test", async () => {
+    class CrashingTransformer extends IModelTransformer {
+      public elementExportsUntilCrash = 2_500_000; // this model has 3 million elements and relationships so this should be a good crash point
+      public override onExportElement(sourceElement: Element): void {
+        if (this.elementExportsUntilCrash === 0) throw Error("crash");
+        const result = super.onExportElement(sourceElement);
+        this.elementExportsUntilCrash--;
+        return result;
+      }
+    }
+
+    const sourceDb = SnapshotDb.openFile("/home/mike/shell.bim");
+
+    async function transformWithCrashAndRecover() {
+      const targetDbPath = "/tmp/shell-out.bim";
+      const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
+      let transformer = new CrashingTransformer(sourceDb, targetDb);
+
+      let crashed = false;
+      try {
+        await transformer.processSchemas();
+        await transformer.processAll();
+      } catch (transformerErr) {
+        try {
+          const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
+          const state = transformer.serializeState(dumpPath);
+          transformer = CrashingTransformer.resumeTransformation(state, sourceDb, targetDb);
+          transformer.elementExportsUntilCrash = -1; // do not crash this time
+          crashed = true;
+        } catch (err) {
+          assert.fail((err as Error).message);
+        }
+      }
+
+      expect(crashed).to.be.true;
+
+      return targetDb;
+    }
+
+    async function transformNoCrash(): Promise<IModelDb> {
+      const targetDbPath = "/tmp/shell-out2.bim";
+      const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      await transformer.processSchemas();
+      await transformer.processAll();
+      return targetDb;
+    }
+
+    const crashingTarget = await transformWithCrashAndRecover();
+    const regularTarget = await transformNoCrash();
+
+    // TODO: need to make this
     await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
   });
 
