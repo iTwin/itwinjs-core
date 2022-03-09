@@ -38,7 +38,7 @@ describe("IModelOpen", () => {
     // Clean folder to re-fetch briefcase
     deleteTestIModelCache();
 
-    const numTries = 100;
+    const numTries = 10;
 
     // Open iModel with no timeout, and ensure all promises resolve to the same briefcase
     const openPromises = new Array<Promise<SnapshotDb>>();

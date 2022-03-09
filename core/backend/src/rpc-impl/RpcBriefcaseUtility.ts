@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, BentleyError, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, BentleyError, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
@@ -37,8 +37,7 @@ export class RpcBriefcaseUtility {
   private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     const { activity, tokenProps } = args;
     const accessToken = activity.accessToken;
-    if (undefined === tokenProps.iModelId)
-      throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
+    assert(undefined !== tokenProps.iModelId);
 
     const iModelId = tokenProps.iModelId;
     let myBriefcaseIds: number[];
@@ -142,12 +141,9 @@ export class RpcBriefcaseUtility {
       return briefcaseDb;
     }
 
-    if (undefined === tokenProps.iModelId)
-      throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
-    if (undefined === tokenProps.iTwinId)
-      throw new IModelError(BentleyStatus.ERROR, "iTwinId is undefined.");
-    if (undefined === tokenProps.changeset)
-      throw new IModelError(BentleyStatus.ERROR, "Changeset is undefined.");
+    assert(undefined !== tokenProps.iModelId);
+    assert(undefined !== tokenProps.iTwinId);
+    assert(undefined !== tokenProps.changeset);
 
     const checkpoint: CheckpointProps = {
       iModelId: tokenProps.iModelId,

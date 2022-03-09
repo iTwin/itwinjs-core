@@ -329,6 +329,7 @@ async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
 
   console.log(`copied WorkspaceDb [${args.dbName}] to [${args.newDbName}], container=${args.containerId}`);
 }
+
 /** pin a WorkspaceDb from a WorkspaceContainer. */
 async function pinWorkspaceDb(args: WorkspaceDbOpt) {
   const container = await loadCloudContainer(args);

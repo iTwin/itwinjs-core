@@ -138,12 +138,12 @@ export class V2CheckpointManager {
   }
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
-    CheckpointManager.onDownloadV2.raiseEvent(job);
     const request = job.request;
     const v2props = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
+    CheckpointManager.onDownloadV2.raiseEvent(job);
     const container = new IModelHost.platform.CloudContainer(v2props);
     await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
     return request.checkpoint.changeset.id;
