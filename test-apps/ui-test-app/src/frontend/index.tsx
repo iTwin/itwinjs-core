@@ -14,7 +14,7 @@ import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/realit
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
-  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiActionId, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
+  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw, FrameworkReducer,
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
   InitialAppUiSettings,
   ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
@@ -85,6 +85,11 @@ export enum SampleAppUiActionId {
   setInitialViewIds = "sampleapp:setInitialViewIds",
 }
 
+/* ----------------------------------------------------------------------------
+* The following variable is used to test initializing UiFramework to use UI 1.0
+* and using that initial value in ui-test-app. By default UiFramework initializes
+* the Redux state to UI 2.0 mode.
+----------------------------------------------------------------------------- */
 const useUi1Mode = false;
 
 export interface SampleAppState {
