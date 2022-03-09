@@ -64,10 +64,10 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 [[include:PropertySortingRule.Condition.Ruleset]]
 ```
 
-| Condition values | Result                                                                 |
-| ---------------- | ---------------------------------------------------------------------- |
-| `TRUE`           | ![Example of using rule condition](./media/sortingrule-sorted-asc.png) |
-| `FALSE`          | ![Example of using rule condition](./media/sortingrule-unsorted.png)   |
+| Condition evaluation result | Result                                                                 |
+| --------------------------- | ---------------------------------------------------------------------- |
+| `TRUE`                      | ![Example of using rule condition](./media/sortingrule-sorted-asc.png) |
+| `FALSE`                     | ![Example of using rule condition](./media/sortingrule-unsorted.png)   |
 
 ### Attribute: `class`
 
@@ -173,10 +173,10 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 [[include:DisabledSortingRule.Condition.Ruleset]]
 ```
 
-| Condition value | Result                                                                                    |
-| --------------- | ----------------------------------------------------------------------------------------- |
-| `TRUE`          | ![Example of using rule condition](./media/disabledSorting-condition-attribute-true.png)  |
-| `FALSE`         | ![Example of using rule condition](./media/disabledSorting-condition-attribute-false.png) |
+| Condition evaluation result | Result                                                                                    |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| `TRUE`                      | ![Example of using rule condition](./media/disabledSorting-condition-attribute-true.png)  |
+| `FALSE`                     | ![Example of using rule condition](./media/disabledSorting-condition-attribute-false.png) |
 
 ### Attribute: `class`
 
