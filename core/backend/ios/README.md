@@ -5,7 +5,7 @@ The goal of this workflow is to generate a core-test-runner xcode project that c
 The following takes place on every `npm run ios:build:test-runner`.
 
 1. Webpack Mocha and tests.
-    - Note the `entry` field in `test.webpack.config.js`. First, Mocha is required globally and configured programmatically. Then the tests are bundled via glob. Finally, mocha is run programmatically. See tools/build/mocha-reporter/index.js for details on how test termination is signalled to core-test-runner.
+    - Note the `entry` field in `ios.webpack.config.js`. First, Mocha is required globally and configured programmatically. Then the tests are bundled via glob. Finally, mocha is run programmatically. On test suite completion, the mocha reporter communicates back to IModelJsNative via 'notifyListening', and passes the number of failed tests.
 
 2. Copy test assets.
     - The ./lib/ios/assets/ directory is referenced in core-test-runner-template/Config.xcconfig. These assets, which include the Webpacked tests (main.js), are copied in a build step defined in the Xcode project.
