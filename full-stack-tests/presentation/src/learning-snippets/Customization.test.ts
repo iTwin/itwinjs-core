@@ -567,7 +567,7 @@ describe("Learning Snippets", () => {
             class: { schemaName: "BisCore", className: "ViewDefinition" },
             values: [{
               specType: InstanceLabelOverrideValueSpecificationType.Property,
-              propertyName: "CodeValue"
+              propertyName: "CodeValue",
             }],
           }, {
             ruleType: RuleTypes.DisabledSorting,
