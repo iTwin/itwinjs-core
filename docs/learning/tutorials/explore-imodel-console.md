@@ -11,11 +11,11 @@ Execute queries
 
 ## Learn more
 
-[Learn more about ECSQL]($docs/learning/ecsql)
+[Learn more about ECSQL](../ecsql.md)
 
 Relaunch iModel Console tutorial by clicking the gear icon in the header
 
-![relaunch imodelconsole tutorial]($docs/learning/tutorials/images/launch-console-tutorial.png)
+![relaunch imodelconsole tutorial](./images/launch-console-tutorial.png)
 
 <br/>
 <br/>
