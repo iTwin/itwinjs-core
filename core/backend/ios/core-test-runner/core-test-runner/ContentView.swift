@@ -12,11 +12,10 @@ struct ContentView: View {
     @ObservedObject var viewController = ViewController()
     
     var body: some View {
-        ZStack {
-            if !viewController.testsFinished {
-                Text("Running tests...")
-            } else {
-                Text("Finished Running Tests.")
+        VStack {
+            Text(viewController.testStatus)
+            if (viewController.numFailed != -1) {
+                Text("\(viewController.numFailed) tests failed.")
             }
         }.onAppear {
             viewController.runTests()

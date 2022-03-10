@@ -5,8 +5,8 @@
 
 var numFailed = -1;
 
-mocha.run(function (numFailed) {
-  numFailed = numFailed;
+mocha.run(function (numTestsFailed) {
+  numFailed = numTestsFailed;
 });
 
 process.on('exit', function () {

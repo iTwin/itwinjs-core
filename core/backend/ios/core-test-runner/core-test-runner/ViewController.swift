@@ -9,10 +9,11 @@ import os
 import IModelJsNative
 
 class ViewController: ObservableObject {
-    private let logger = Logger(subsystem: "com.bentley.core-test-runner", category: "tests")
-    @Published var testsFinished = false
+    @Published var testStatus = "Tests not started."
+    @Published var numFailed = -1
     
     func runTests() {
+        testStatus = "Starting tests..."
         // Environment variable is read in configureMocha.js and passed to BentleyMochaReporter.
         let testResultsUrl = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("mocha_test_results.xml")
         setenv("TEST_RESULTS_PATH", testResultsUrl.path, 1)
@@ -21,20 +22,21 @@ class ViewController: ObservableObject {
         let bundlePath = Bundle.main.bundlePath
         let mainPath = bundlePath.appending("/Assets/main.js")
         let main = URL(fileURLWithPath: mainPath)
-        logger.log("(ios): Running tests.")
+        NSLog("(ios): Running tests.")
         host.loadBackend(main) { [self] (numFailed: UInt32) in
-            logger.log("(ios): Finished Running tests. \(numFailed) tests failed.")
             do {
                 let text = try String(contentsOf: testResultsUrl, encoding: .utf8)
                 for line in text.components(separatedBy: .newlines) {
-                    logger.log("[Mocha_Result_XML]: \(line)")
+                    NSLog("[Mocha_Result_XML]: \(line)")
                 }
             } catch {
-                logger.log("Failed to read mocha test results.")
+                NSLog("(ios): Failed to read mocha test results.")
             }
             
             // Indicate via UI that the tests have finished.
-            self.testsFinished = true
+            self.testStatus = "Tests finished."
+            self.numFailed = Int(numFailed)
+            NSLog("(ios): Tests finished. \(numFailed) tests failed.")
         }
     }
 }

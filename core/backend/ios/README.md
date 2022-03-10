@@ -13,4 +13,4 @@ Steps 1 and 2 occur when running `npm run ios:build:tests`
     - The `runTests` function is triggered when the ContentView appears. It creates an instance of IModelJsHost and directs it to main.js, produced in step 1 above. The callback is triggered by `notifyListening` (runMocha.js).
 
 4. App Center (optional)
-    - Only messages emitted via `logger.log` will appear in the App Center Device Logs. More output is generated when the app is run in XCode. These logs are fetched and parsed into XML in processLogs.js (invoked by the ci-ios pipeline).
+    - Only messages emitted via `logger.log` will appear in the App Center Device Logs. More output is generated when the app is run in XCode. These logs are fetched and parsed into XML in processAppCenterLogs.js (invoked by the ci-ios pipeline).
