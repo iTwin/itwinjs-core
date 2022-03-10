@@ -3,4 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-mocha.run();
+var numFailed = -1;
+
+mocha.run(function (numFailed) {
+  numFailed = numFailed;
+});
+
+process.on('exit', function () {
+  process._linkedBinding("iModelJsMobile").notifyListening(numFailed);
+});

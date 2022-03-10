@@ -13,10 +13,8 @@ class ViewController: ObservableObject {
     @Published var testsFinished = false
     
     func runTests() {
-        var testResultsUrl = URL(fileURLWithPath: NSTemporaryDirectory())
-        testResultsUrl.appendPathComponent("mocha_test_results.xml")
-        
-        print(testResultsUrl.path)
+        // Environment variable is read in configureMocha.js and passed to BentleyMochaReporter.
+        let testResultsUrl = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("mocha_test_results.xml")
         setenv("TEST_RESULTS_PATH", testResultsUrl.path, 1)
         
         let host = IModelJsHost.sharedInstance()
@@ -26,15 +24,13 @@ class ViewController: ObservableObject {
         logger.log("(ios): Running tests.")
         host.loadBackend(main) { [self] (numFailed: UInt32) in
             logger.log("(ios): Finished Running tests. \(numFailed) tests failed.")
-            
             do {
-                let data = try String(contentsOfFile: testResultsUrl.path, encoding: .utf8)
-                for line in data.components(separatedBy: .newlines) {
+                let text = try String(contentsOf: testResultsUrl, encoding: .utf8)
+                for line in text.components(separatedBy: .newlines) {
                     logger.log("[Mocha_Result_XML]: \(line)")
                 }
             } catch {
                 logger.log("Failed to read mocha test results.")
-                print(error)
             }
             
             // Indicate via UI that the tests have finished.

@@ -26,7 +26,7 @@ describe("Category", () => {
     imodel.close();
   });
 
-  it("should insert with default subcategory appearance", () => {
+  it.only("should insert with default subcategory appearance", () => {
     const params: RenderMaterialElement.Params = {
       description: "Field Weld",
       color: [0.9058, 0.298, 0.2352],

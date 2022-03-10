@@ -23,7 +23,7 @@
     "test": "mocha",
     "ios:webpack:tests": "webpack --config ios.webpack.config.js",
     "ios:copy:assets": "cpx \"./src/assets/**/*\" ./lib/ios/assets/assets && cpx \"./src/test/assets/**/*\" ./lib/ios/assets/assets",
-    "ios:build:test-runner": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets"
+    "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets"
   },
   "repository": {
     "type": "git",
