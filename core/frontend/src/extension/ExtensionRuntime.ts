@@ -71,6 +71,7 @@ import {
   ToolAssistanceImage,
   ToolAssistanceInputMethod,
   ViewStatus,
+  // @public real(s) from @itwin/core-frontend
   AccuDrawHintBuilder,
   AccuSnap,
   AuxCoordSystemState,
@@ -240,6 +241,7 @@ import {
   TxnAction,
   GridOrientationType,
   RenderMode,
+  // @public real(s) from @itwin/core-common
   ColorDef,
 } from "@itwin/core-common";
 
