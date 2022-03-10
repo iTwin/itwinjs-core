@@ -8,7 +8,7 @@
 
 import { AccessToken, assert, BeDuration, BentleyError, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
+  BriefcaseProps, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
@@ -115,7 +115,7 @@ export class RpcBriefcaseUtility {
   public static async findOpenIModel(accessToken: AccessToken, iModel: IModelRpcProps) {
     const iModelDb = IModelDb.tryFindByKey(iModel.key);
     if (undefined === iModelDb)
-      throw new IModelError(IModelStatus.NotOpen, "iModel is not opened", () => iModel);
+      throw new IModelNotFoundResponse();
 
     // call reattach, just in case this is a V2 checkpoint whose accessToken is about to expire.
     await iModelDb.reattachDaemon(accessToken);
