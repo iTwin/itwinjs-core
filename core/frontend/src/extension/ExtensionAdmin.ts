@@ -8,8 +8,8 @@
 
 import "./ExtensionRuntime";
 import { IModelApp } from "../IModelApp";
-import { ActivationEvent, BuildExtensionManifest, ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
-import { ExtensionLoader } from "./ExtensionLoader";
+import { ActivationEvent, BuildExtensionManifest, ExtensionLoader, ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
+// import { ExtensionLoader } from "./ExtensionLoader";
 
 /** The Extensions loading system has the following goals:
  *   1. Only fetch what is needed when it is required
