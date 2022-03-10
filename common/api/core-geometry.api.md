@@ -246,7 +246,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     clone(): Arc3d;
     cloneAtZ(z?: number): Arc3d;
     cloneInRotatedBasis(theta: Angle): Arc3d;
-    clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined;
+    clonePartialCurve(fractionA: number, fractionB: number): Arc3d;
     cloneTransformed(transform: Transform): Arc3d;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
@@ -2543,6 +2543,8 @@ export namespace IModelJson {
         topY?: number;
     }
     export interface BSplineSurfaceProps {
+        closedU?: boolean;
+        closedV?: boolean;
         orderU: number;
         orderV: number;
         points: [[[number]]];
@@ -3114,7 +3116,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     clone(): LineSegment3d;
-    clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined;
+    clonePartialCurve(fractionA: number, fractionB: number): LineSegment3d;
     cloneTransformed(transform: Transform): LineSegment3d;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
@@ -3174,7 +3176,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     appendStrokePoint(point: Point3d, fraction?: number): void;
     clear(): void;
     clone(): LineString3d;
-    clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined;
+    clonePartialCurve(fractionA: number, fractionB: number): LineString3d;
     cloneTransformed(transform: Transform): LineString3d;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, explodeLinestrings?: boolean): void;

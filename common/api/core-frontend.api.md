@@ -4952,7 +4952,7 @@ export namespace IModelConnection {
     export class Views {
         // @internal
         constructor(_iModel: IModelConnection);
-        // @deprecated (undocumented)
+        // @deprecated
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
         load(viewDefinitionId: Id64String): Promise<ViewState>;
@@ -11651,7 +11651,7 @@ export class ToolAdmin {
 // @public (undocumented)
 export namespace ToolAdmin {
     // @alpha
-    export class ActiveSettings {
+    export interface ActiveSettings {
         category?: Id64String;
         model?: Id64String;
     }
