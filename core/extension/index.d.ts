@@ -5,6 +5,8 @@
 
 // manually curated section
 export function registerTool(t: typeof import("@itwin/core-frontend").Tool): Promise<void>
+// ExtensionHost must always be in the API
+export { ExtensionHost } from "@itwin/core-frontend/src/extension/ExtensionHost";
 
 // BEGIN GENERATED CODE
 export {

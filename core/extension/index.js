@@ -9,6 +9,8 @@ const ext = globalThis[globalSymbol].getExtensionApi("import.meta.url");
 
 // export extension stuff
 export const { registerTool } = ext.api;
+// exception for ExtensionHost
+export const { ExtensionHost } = ext.exports;
 
 // BEGIN GENERATED CODE
 export const {

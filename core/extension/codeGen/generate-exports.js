@@ -9,6 +9,7 @@ const declarationFilePath = "index.d.ts";
 const declarationFilePathPreview = "preview.d.ts";
 const jsFilePath = "index.js";
 const jsFilePathPreview = "preview.js";
+const runtimeFilePath = '../frontend/src/extension/ExtensionRuntime.ts';
 const generatedCsvPath = "/lib/GeneratedExtensionApi.csv";
 
 const codeGenOpeningComment = `// BEGIN GENERATED CODE`;
@@ -108,6 +109,52 @@ function generateJsCode(exportList) {
   return exportCode + exportTrailer;
 }
 
+// Create the export code for the .ts file
+function generateRuntimeCode(exportListPreview, exportList) {
+  let exportCode = "";
+  let exports = "const extensionExports = {\n";
+  const exportTrailer = `};\n\n`;
+  const addComment = (packageName, release, kind) => `  // @${release} ${kind}(s) from ${packageName}\n`;
+  const tab = "  "; // two space tab
+
+  for (const packageName in exportList) {
+    let imports = "import {\n";
+    let importTrailer = `} from "${packageName}";\n\n`;
+    // since ExtensionRuntime.ts is also in core-frontend we have to add this exception
+    if (packageName === '@itwin/core-frontend')
+      importTrailer = `} from "../core-frontend";\n\n`;
+
+    imports += exportListPreview[packageName].enum.length > 0 ? addComment(packageName, 'preview', 'enum') : "";
+    exportListPreview[packageName].enum.forEach((enumExport) => {
+      imports += `${tab}${enumExport},\n`;
+      exports += `${tab}${enumExport},\n`;
+    });
+
+    imports += exportListPreview[packageName].real.length > 0 ? addComment(packageName, 'preview', 'real') : "";
+    exportListPreview[packageName].real.forEach((realExport) => {
+      imports += `${tab}${realExport},\n`;
+      exports += `${tab}${realExport},\n`;
+    });
+
+    imports += exportList[packageName].enum.length > 0 ? addComment(packageName, 'public', 'enum') : "";
+    exportList[packageName].enum.forEach((enumExport) => {
+      imports += `${tab}${enumExport},\n`;
+      exports += `${tab}${enumExport},\n`;
+    });
+
+    imports += exportList[packageName].real > 0 ? addComment(packageName, 'public', 'real') : "";
+    exportList[packageName].real.forEach((realExport) => {
+      imports += `${tab}${realExport},\n`;
+      exports += `${tab}${realExport},\n`;
+    });
+
+    exportCode += imports + importTrailer;
+  };
+
+  return exportCode + exports + exportTrailer;
+}
+
+
 
 // Find the extension linter's output file and convert to a set of useful lists
 function collectExports(packagePath) {
@@ -129,11 +176,13 @@ function collectExports(packagePath) {
 
 // Replace the target file's code gen block with the provided code
 function addToFile(filePath, generatedCode) {
+  if (!fs.existsSync(filePath))
+    throw Error(`File: ${filePath} does not exist.`);
+
   let fileContents = fs.readFileSync(filePath, "utf8");
 
-  if (!codeGenBlock.test(fileContents)) {
+  if (!codeGenBlock.test(fileContents))
     throw Error(`No block for generated code found in '${filePath}. A block with the code gen opening and closing comments is required.`);
-  }
 
   // Embed generated code in codeGen block
   generatedCode = `${codeGenOpeningComment}\n${generatedCode}${codeGenClosingComment}`;
@@ -172,6 +221,10 @@ function addGeneratedExports(packages) {
   // Generate js code for preview.js
   const jsCodePreview = generateJsCode(exportListPreview);
   addToFile(jsFilePathPreview, jsCodePreview);
+
+  // Generate ts code for ExtensionRuntime.ts
+  const runtimeCode = generateRuntimeCode(exportListPreview, exportList);
+  addToFile(runtimeFilePath, runtimeCode);
 }
 
 const packages = [];
