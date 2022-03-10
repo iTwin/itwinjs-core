@@ -5,8 +5,24 @@
 
 // manually curated section
 export function registerTool(t: typeof import("@itwin/core-frontend").Tool): Promise<void>
+// these types are needed for ExtensionHost
+import type {
+	ToolAdmin,
+	NotificationManager,
+	ViewManager,
+	ElementLocateManager,
+	AccuSnap,
+	RenderSystem
+} from "@itwin/core-frontend";
 // ExtensionHost must always be in the API
-export { ExtensionHost } from "@itwin/core-frontend/src/extension/ExtensionHost";
+export declare class ExtensionHost {
+	public static get toolAdmin(): ToolAdmin;
+  public static get notifications(): NotificationManager;
+  public static get viewManager(): ViewManager;
+  public static get locateManager(): ElementLocateManager;
+  public static get accuSnap(): AccuSnap;
+  public static get renderSystem(): RenderSystem;
+}
 
 // BEGIN GENERATED CODE
 export {
