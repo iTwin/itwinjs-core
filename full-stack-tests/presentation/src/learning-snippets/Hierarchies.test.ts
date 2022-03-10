@@ -173,11 +173,13 @@ describe("Learning Snippets", () => {
 
         // Verify B comes before A
         const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(nodes).to.containSubset([{
+        expect(nodes).to.be.lengthOf(2);
+        expect(nodes[0]).containSubset({
           label: { displayValue: "B" },
-        }, {
+        });
+        expect(nodes[1]).containSubset({
           label: { displayValue: "A" },
-        }]);
+        });
       });
 
       it("uses `onlyIfNotHandled` attribute", async () => {
@@ -597,11 +599,13 @@ describe("Learning Snippets", () => {
 
         // Verify that SpatialCategory comes before PhysicalModel
         const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
-        expect(nodes).to.have.lengthOf(2).and.to.containSubset([{
+        expect(nodes).to.have.lengthOf(2);
+        expect(nodes[0]).to.containSubset({
           label: { displayValue: "Spatial Category" },
-        }, {
+        });
+        expect(nodes[1]).to.containSubset({
           label: { displayValue: "Physical Model" },
-        }]);
+        });
       });
 
       it("uses `doNotSort` attribute", async () => {
