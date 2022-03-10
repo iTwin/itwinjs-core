@@ -142,7 +142,7 @@ function generateRuntimeCode(exportListPreview, exportList) {
       exports += `${tab}${enumExport},\n`;
     });
 
-    imports += exportList[packageName].real > 0 ? addComment(packageName, 'public', 'real') : "";
+    imports += exportList[packageName].real.length > 0 ? addComment(packageName, 'public', 'real') : "";
     exportList[packageName].real.forEach((realExport) => {
       imports += `${tab}${realExport},\n`;
       exports += `${tab}${realExport},\n`;
