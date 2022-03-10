@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BeEvent } from "@itwin/core-bentley";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { MapLayerImageryProvider } from "@itwin/core-frontend";
+import { HitDetail, MapLayerImageryProvider } from "@itwin/core-frontend";
 
 export interface StyleMapLayerSettings {
   /** Name */
@@ -41,7 +42,16 @@ export interface MapFeatureInfoPropertyGridOptions {
   isPropertySelectionEnabled?: boolean;
 }
 
+export type MapHitEvent = BeEvent<(hit: HitDetail) => void>;
+
 export interface MapFeatureInfoOptions {
+  /**
+   * HitDetail Event whenever the map is clicked.
+   * Typically the HitDetail object is provided by ElementLocateManager.doLocate.
+   * Every time this event is raised, FeatureInfoWidget will attempt to retrieve data from MapLayerImageryProviders.
+   */
+  onMapHit: MapHitEvent;
+  disableDefaultFeatureInfoTool?: boolean;
   showLoadProgressAnimation?: boolean;
   propertyGridOptions?: MapFeatureInfoPropertyGridOptions;
 }

@@ -1617,8 +1617,6 @@ export class BingElevationProvider {
     constructor();
     // @internal (undocumented)
     getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
-    // @internal (undocumented)
-    getGraphic(latLongRange: Range2d, corners: Point3d[], groundBias: number, texture: RenderTexture, system: RenderSystem): Promise<RenderGraphic | undefined>;
     getHeight(carto: Cartographic, geodetic?: boolean): Promise<any>;
     getHeightAverage(iModel: IModelConnection): Promise<number>;
     getHeightRange(iModel: IModelConnection): Promise<Range1d>;
@@ -4954,7 +4952,7 @@ export namespace IModelConnection {
     export class Views {
         // @internal
         constructor(_iModel: IModelConnection);
-        // @deprecated (undocumented)
+        // @deprecated
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
         load(viewDefinitionId: Id64String): Promise<ViewState>;
@@ -11653,7 +11651,7 @@ export class ToolAdmin {
 // @public (undocumented)
 export namespace ToolAdmin {
     // @alpha
-    export class ActiveSettings {
+    export interface ActiveSettings {
         category?: Id64String;
         model?: Id64String;
     }

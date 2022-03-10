@@ -472,7 +472,7 @@ function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: 
       nextFieldValues.display.push(nextDisplayValue);
     }
   });
-  const convertedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, { [nextField.name]: nextFieldValues.raw }, { [nextField.name]: nextFieldValues.display }, item.mergedFieldNames, item.extendedData);
+  const convertedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, { [nextField.name]: nextFieldValues.raw }, { [nextField.name]: nextFieldValues.display }, item.mergedFieldNames, item.extendedData); // eslint-disable-line deprecation/deprecation
   return { emptyNestedItem: false, convertedItem };
 }
 
@@ -539,6 +539,6 @@ function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<
     return { emptyNestedItem: true, convertedItem: item };
 
   const converted = convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy, rawValue);
-  const convertedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, { [fieldName]: converted.raw }, { [fieldName]: converted.display }, converted.mergedFieldNames, item.extendedData);
+  const convertedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, { [fieldName]: converted.raw }, { [fieldName]: converted.display }, converted.mergedFieldNames, item.extendedData); // eslint-disable-line deprecation/deprecation
   return { emptyNestedItem: false, convertedItem };
 }

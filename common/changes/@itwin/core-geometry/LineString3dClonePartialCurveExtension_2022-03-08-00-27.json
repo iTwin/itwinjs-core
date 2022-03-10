@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "allow LineString3d.clonePartialCurve to extend start/end segments",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

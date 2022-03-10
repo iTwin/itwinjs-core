@@ -261,7 +261,7 @@ export class SnapDetail extends HitDetail {
     val.parentGeomType = this.parentGeomType;
     val.adjustedPoint.setFrom(this.adjustedPoint);
     if (undefined !== this.primitive)
-      val.primitive = this.primitive.clone() as CurvePrimitive;
+      val.primitive = this.primitive.clone();
     if (undefined !== this.normal)
       val.normal = this.normal.clone();
     return val;

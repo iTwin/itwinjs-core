@@ -708,8 +708,13 @@ export class FrontstageDef {
       if (isFloatingLocation(location))
         return WidgetState.Floating;
 
+      let collapsedPanel = false;
+      if ("side" in location) {
+        const panel = this.nineZoneState.panels[location.side];
+        collapsedPanel = panel.collapsed || undefined === panel.size || 0 === panel.size;
+      }
       const widgetContainer = this.nineZoneState.widgets[location.widgetId];
-      if (widgetDef.id === widgetContainer.activeTabId)
+      if (widgetDef.id === widgetContainer.activeTabId && !collapsedPanel)
         return WidgetState.Open;
       else
         return WidgetState.Closed;

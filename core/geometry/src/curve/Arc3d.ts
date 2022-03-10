@@ -124,7 +124,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    *  Return a clone of the arc, with transform applied
    * @param transform
    */
-  public cloneTransformed(transform: Transform): CurvePrimitive {  // we know tryTransformInPlace succeeds.
+  public cloneTransformed(transform: Transform): Arc3d {  // we know tryTransformInPlace succeeds.
     const c = this.clone();
     c.tryTransformInPlace(transform);
     return c;
@@ -883,15 +883,13 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
-  public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
+  public override clonePartialCurve(fractionA: number, fractionB: number): Arc3d {
     if (fractionB < fractionA) {
       const arcA = this.clonePartialCurve(fractionB, fractionA);
-      if (arcA)
-        arcA.reverseInPlace();
+      arcA.reverseInPlace();
       return arcA;
     }
     const arcB = this.clone();
-
     arcB.sweep.setStartEndRadians(
       this.sweep.fractionToRadians(fractionA),
       this.sweep.fractionToRadians(fractionB));

@@ -1,6 +1,19 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Mon, 24 Jan 2022 14:00:52 GMT and should not be manually modified.
+This log was last generated on Thu, 24 Feb 2022 15:26:55 GMT and should not be manually modified.
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+### Updates
+
+- React to 3.0 breaking change w.r.t ECSQL Query Row Format
+- Respect min/max size when initializing a panel.
+- Provide FrontstageManager.clearFrontstageProviders method to clear out static maps.
+- Add FrontstageDef.isWidgetDisplayed() to allow apps to query whether their widget is visible.
+- Update ToolbarAutoHidePopup context when widgets autohide.
+- Change initializeNineZoneState to properly handle floating widgets.
+- Remove unecessary dependency on itwin/browser-authorization
 
 ## 3.0.0
 Mon, 24 Jan 2022 14:00:52 GMT
