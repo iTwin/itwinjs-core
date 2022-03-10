@@ -27,7 +27,7 @@ class CoreTestRunnerXCUITest: XCTestCase {
         XCTAssert(noTestsFailed.exists)
 
         let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = "Launch Screen"
+        attachment.name = "Tests Finished Screen"
         attachment.lifetime = .keepAlways
         add(attachment)
     }
