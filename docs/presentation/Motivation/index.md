@@ -2,7 +2,7 @@
 
 ## The Problems
 
-As explained in the [ECSQL]($docs/learning/ECSQL.md) overview page, data from iModels can be queried using the language just like querying from any relational database using SQL. That's often the most straightforward way to get raw data from the iModels.
+As explained in the [ECSQL](../../learning/ECSQL.md) overview page, data from iModels can be queried using the language just like querying from any relational database using SQL. That's often the most straightforward way to get raw data from the iModels.
 
 > Try it yourself:
 >
@@ -12,7 +12,7 @@ However, raw data is not something that should be presented to end users - it ne
 
 ![Formatted properties](./media/formatted-properties-metric.png)
 
-In addition, because the data in iModels is normalized, the pieces of data need to be "glued" together before displaying. It's not trivial to determine what needs to be selected from where and what relationships to use - the person writing queries must be familiar not only with the [BIS]($docs/bis/index.md) schema, but also [domains]($docs/bis/intro/schemas-domains.md) that are used in the iModel. And they need to be updated as those domains evolve... Here's an example that demonstrates this:
+In addition, because the data in iModels is normalized, the pieces of data need to be "glued" together before displaying. It's not trivial to determine what needs to be selected from where and what relationships to use - the person writing queries must be familiar not only with the [BIS](../../bis/index.md) schema, but also [domains](../../bis/intro/schemas-domains.md) that are used in the iModel. And they need to be updated as those domains evolve... Here's an example that demonstrates this:
 
 ![Property sources](./media/property-grid-source-queries.png)
 
