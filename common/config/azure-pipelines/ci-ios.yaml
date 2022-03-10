@@ -44,7 +44,7 @@ jobs:
         displayName: rush build
         condition: succeeded()
 
-      - script: 'npm run ios:build:test-runner'
+      - script: 'npm run ios:build:tests'
         workingDirectory: core/backend
         displayName: 'Build imodeljs-backend-test-app'
         failOnStderr: true
