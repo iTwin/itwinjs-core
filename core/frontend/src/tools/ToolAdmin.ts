@@ -319,7 +319,7 @@ export class ToolAdmin {
    * The active settings that placement tools will use.
    * @alpha
    */
-  public readonly activeSettings = new ToolAdmin.ActiveSettings();
+  public readonly activeSettings: ToolAdmin.ActiveSettings = { };
 
   /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select", referring to [[SelectionTool]].
    * @see [[startDefaultTool]] to activate the default tool.
@@ -1895,18 +1895,14 @@ export class WheelEventProcessor {
  * @public
  */
 export namespace ToolAdmin { // eslint-disable-line no-redeclare
-
-  /**
-   * Active settings that placement tools will use.
+  /** Active settings that placement tools will use.
    * @alpha
    */
-  export class ActiveSettings {
+  export interface ActiveSettings {
+    /** The category to which newly created elements will be assigned. */
+    category?: Id64String;
 
-    /** The active category */
-    public category?: Id64String;
-
-    /** The target model */
-    public model?: Id64String;
+    /** The model that will contain newly created elements. */
+    model?: Id64String;
   }
-
 }
