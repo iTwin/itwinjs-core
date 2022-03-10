@@ -39,7 +39,7 @@ steps:
     downloadCurrentBuildArtifacts: ${{ parameters.downloadCurrentBuildArtifacts }}
 
 # Currently BeMetalsmith is an internal only tool
-- script: npm install @bentley/bemetalsmith@4.x
+- script: npm install @bentley/bemetalsmith@4.2.26
   displayName: Install BeMetalsmith
   workingDirectory: $(Build.ArtifactStagingDirectory)
 
