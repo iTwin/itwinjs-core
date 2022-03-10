@@ -70,7 +70,7 @@ export function ViewOverlayHost({viewport, featureOptions, userSuppliedOverlay}:
   });
   if (!displayViewOverlay)
     return null;
-  return userSuppliedOverlay ? <React.Fragment>userSuppliedOverlay(viewport)</React.Fragment> : <DefaultViewOverlay viewport={viewport} featureOptions={featureOptions} />;
+  return userSuppliedOverlay ? <React.Fragment>{userSuppliedOverlay(viewport)}</React.Fragment> : <DefaultViewOverlay viewport={viewport} featureOptions={featureOptions} />;
 }
 /** iModel Viewport Control
  * @public
