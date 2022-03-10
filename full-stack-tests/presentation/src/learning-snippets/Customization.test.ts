@@ -197,9 +197,9 @@ describe("Learning Snippets", () => {
           rulesetOrId: ruleset,
         });
         expect(nodes).to.be.lengthOf(4);
-        expect(nodes[0]).to.containSubset({ label: { displayValue: "-107.42 x -160.99" } });
-        expect(nodes[1]).to.containSubset({ label: { displayValue: "-45.00 x -35.26" } });
-        expect(nodes[2]).to.containSubset({ label: { displayValue: "-90.00 x 0.00" } });
+        expect(nodes[0]).to.containSubset({ label: { displayValue: "-45.00 x -35.26" } });
+        expect(nodes[1]).to.containSubset({ label: { displayValue: "-90.00 x 0.00" } });
+        expect(nodes[2]).to.containSubset({ label: { displayValue: "-107.42 x -160.99" } });
         expect(nodes[3]).to.containSubset({ label: { displayValue: "0.00 x 90.00" } });
       });
 
