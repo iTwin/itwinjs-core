@@ -113,9 +113,7 @@ export class RpcBriefcaseUtility {
    * @param the IModelRpcProps to locate the opened iModel.
    */
   public static async findOpenIModel(accessToken: AccessToken, iModel: IModelRpcProps) {
-    const iModelDb = IModelDb.tryFindByKey(iModel.key);
-    if (undefined === iModelDb)
-      throw new IModelError(IModelStatus.NotOpen, "iModel is not opened", () => iModel);
+    const iModelDb = IModelDb.findByKey(iModel.key);
 
     // call reattach, just in case this is a V2 checkpoint whose accessToken is about to expire.
     await iModelDb.reattachDaemon(accessToken);
