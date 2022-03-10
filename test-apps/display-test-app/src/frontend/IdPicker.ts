@@ -47,7 +47,7 @@ export abstract class IdPicker extends ToolBarDropDown {
       { name: "Hide Selected", value: "Hide" },
       { name: "Hilite Enabled", value: "Hilite" },
       { name: "Un-hilite Enabled", value: "Dehilite" },
-      // Set ToolAdmin.activeSettings.model/category to first enabled entry.
+      // Set [[BriefcaseConnection.activeSettings]].model/category to first enabled entry.
       { name: "Set First Active", value: "SetFirstActive" },
     ];
   }

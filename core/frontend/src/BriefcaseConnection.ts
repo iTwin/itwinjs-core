@@ -146,6 +146,52 @@ class ModelChangeMonitor {
   }
 }
 
+/** Default settings that can be used to control the behavior of [[Tool]]s that modify a [[BriefcaseConnection]].
+ * For example, tools that want to create new elements can consult the briefcase's active settings to
+ * determine into which model and category to insert the elements.
+ * Specialized tools are free to ignore these settings.
+ * @see [[BriefcaseConnection.activeSettings]] to query or modify the current settings for a briefcase.
+ * @beta
+ */
+export class ActiveBriefcaseSettings {
+  private _category?: Id64String;
+  private _model?: Id64String;
+
+  /** An event raised just after the active [[category]] is changed. */
+  public readonly onCategoryChanged = new BeEvent<(previousCategory: Id64String | undefined) => void>();
+
+  /** An event raised just after the active [[model]] is changed. */
+  public readonly onModelChanged = new BeEvent<(previousModel: Id64String | undefined) => void>();
+
+  /* The [Category]($backend) into which new elements should be inserted.
+   * @see [[onCategoryChanged]] to be notified when this property is modified.
+   */
+  public get category(): Id64String | undefined {
+    return this._category;
+  }
+  public set category(category: Id64String | undefined) {
+    const previousCategory = this.category;
+    if (category !== this.category) {
+      this._category = category;
+      this.onCategoryChanged.raiseEvent(previousCategory);
+    }
+  }
+
+  /** The [Model]($backend) into which new elements should be inserted.
+   * @see [[onModelChanged]] to be notified when this property is modified.
+   */
+  public get model(): Id64String | undefined {
+    return this._model;
+  }
+  public set model(model: Id64String | undefined) {
+    const previousModel = this.model;
+    if (model !== this.model) {
+      this.model = model;
+      this.onModelChanged.raiseEvent(previousModel);
+    }
+  }
+}
+
 /** A connection to an editable briefcase on the backend. This class uses [Ipc]($docs/learning/IpcInterface.md) to communicate
  * to the backend and may only be used by [[IpcApp]]s.
  * @public
@@ -153,6 +199,10 @@ class ModelChangeMonitor {
 export class BriefcaseConnection extends IModelConnection {
   protected _isClosed?: boolean;
   private readonly _modelsMonitor: ModelChangeMonitor;
+  /** Default settings that can be used to control the behavior of [[Tool]]s that modify this briefcase.
+   * @beta
+   */
+  public readonly activeSettings = new ActiveBriefcaseSettings();
 
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
