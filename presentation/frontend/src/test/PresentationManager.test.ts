@@ -1343,7 +1343,7 @@ describe("PresentationManager", () => {
       expect(result).to.deep.eq({ total: 0, items: [] });
     });
 
-    it("returns zero response when partial request returns less items then requested", async () => {
+    it("returns zero response when partial request returns less items than requested", async () => {
       const getter = sinon.stub();
       getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
       getter.onSecondCall().resolves({ total: 5, items: [] });
