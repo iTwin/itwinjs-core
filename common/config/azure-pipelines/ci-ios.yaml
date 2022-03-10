@@ -72,13 +72,14 @@ jobs:
             --locale "en_US" \
             --build-dir DerivedData/Build/Products/Release-iphoneos/ \
             --token "$(AppCenterToken)" \
-            --output json > ./ios/test_run.json
+            --output json > ../test_run.json
         workingDirectory: core/backend/ios/core-test-runner
         failOnStderr: true
         displayName: 'Run App Center tests'
-
+        condition: succeeded()
 
       - script: node ./ios/scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterSlug)" "$(AppCenterToken)"
         workingDirectory: core/backend
         failOnStderr: true
         displayName: 'Process Logs'
+        condition: succeeded()
