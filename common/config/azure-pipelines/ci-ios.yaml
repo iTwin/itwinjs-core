@@ -71,7 +71,8 @@ jobs:
             --test-series "$(AppCenterTestSeries)" \
             --locale "en_US" \
             --build-dir DerivedData/Build/Products/Release-iphoneos/ \
-            --token "$(AppCenterToken)"
+            --token "$(AppCenterToken)" \
+            --output json > ./ios/test_run.json
         workingDirectory: core/backend/ios/core-test-runner
         failOnStderr: true
         displayName: 'Run App Center tests'

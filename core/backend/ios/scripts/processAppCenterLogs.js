@@ -10,17 +10,14 @@ const path = require('path');
 const app_center_host = 'api.appcenter.ms';
 const app_center_api_ver = "v0.1";
 const owner_name = process.argv[2]; // app_center_owner;
-const app_name = process.argv[3]; //app_center_app;
+const app_name = process.argv[3];   // app_center_app;
 const api_token = process.argv[4];  // app_center_token;
 const xmlFilter = "[Mocha_Result_XML]: ";
 const deviceLogsPath = "ios/device_logs.txt"
 const resultsPath = "ios/junit_results.xml"
+const testRunId = require("./ios/run_output.json")[0].testRunId;
 
-function getTestRunId(test_run_log_file) {
-  return require(test_run_log_file)[0].testRunId;
-}
-
-async function getTestReportInfo(test_id) {
+async function fetchTestReportInfo(test_id) {
   return new Promise((resolve, reject) => {
     const options = {
       host: app_center_host,
@@ -50,8 +47,8 @@ async function getTestReportInfo(test_id) {
     req.end();
   });
 }
-/** Download device logs and save it to disk */
-async function downloadTextFile(url, dest, cb) {
+
+async function downloadDeviceLogs(url, dest, cb) {
   return new Promise((resolve, reject) => {
     try {
       console.info(`Downloading device log from app-center ${url}`);
@@ -92,12 +89,11 @@ function extractXML(xmlFilter, inputLogFile, outputXmlFile) {
 }
 
 (async function () {
-  const test_id = getTestRunId(path.join(log_dir, "test_run.json"));
-  const testReport = await getTestReportInfo(test_id);
+  const testReport = await fetchTestReportInfo(testRunId);
   console.log("Fetched test report info.")
   console.info(JSON.stringify(testReport, undefined, 2));
   const deviceLogUrl = testReport.device_logs[0].device_log;
-  await downloadTextFile(deviceLogUrl, deviceLogsPath);
+  await downloadDeviceLogs(deviceLogUrl, deviceLogsPath);
   console.log("Downloaded device logs.")
   extractXML(xmlFilter, deviceLogsPath, resultsPath);
   console.log("Extracted XML from device logs.")
