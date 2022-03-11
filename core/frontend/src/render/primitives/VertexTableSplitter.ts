@@ -9,6 +9,9 @@
 import { assert, Id64 } from "@itwin/core-bentley";
 import { PackedFeatureTable } from "@itwin/core-common";
 import { VertexTableWithIndices } from "./VertexTable";
+import { PointStringParams } from "./PointStringParams";
+
+export type ComputeNodeId = (elementId: Id64.Uint32Pair) => number;
 
 class IndexBuffer {
   private _data: Uint8Array;
@@ -85,15 +88,43 @@ class VertexBuffer {
   }
 }
 
+class ColorTableRemapper {
+  private readonly _remappedIndices = new Map<number, number>();
+  private readonly _colorTable: Uint32Array;
+  public readonly colors: number[] = [];
+
+  public constructor(colorTable: Uint32Array) {
+    this._colorTable = colorTable;
+  }
+
+  public remap(vertex: Uint32Array): void {
+    const word = vertex[1];
+    const oldIndex = (word & 0xffff0000) >>> 16;
+    let newIndex = this._remappedIndices.get(oldIndex);
+    if (undefined === newIndex) {
+      newIndex = this.colors.length;
+      this._remappedIndices.set(oldIndex, newIndex);
+      const color = this._colorTable[oldIndex];
+      this.colors.push(color);
+    }
+
+    vertex[1] = (word & (newIndex << 16)) >>> 0;
+  }
+}
+
 class Node {
   public readonly id: number;
-  private readonly _remappedIndices = new Map<number, number>();
   public readonly vertices: VertexBuffer;
+  private readonly _remappedIndices = new Map<number, number>();
   public readonly indices = new IndexBuffer();
+  public readonly colors?: ColorTableRemapper;
+  // ###TODO remap material indices.
 
-  public constructor(id: number, numRgbaPerVertex: number) {
+  public constructor(id: number, numRgbaPerVertex: number, colorTable?: Uint32Array) {
     this.id = id;
     this.vertices = new VertexBuffer(numRgbaPerVertex);
+    if (colorTable)
+      this.colors = new ColorTableRemapper(colorTable);
   }
 
   public addVertex(originalIndex: number, vertex: Uint32Array): void {
@@ -101,6 +132,8 @@ class Node {
     if (undefined === newIndex) {
       newIndex = this.vertices.length;
       this._remappedIndices.set(originalIndex, newIndex);
+
+      this.colors?.remap(vertex);
       this.vertices.push(vertex);
     }
 
@@ -110,20 +143,21 @@ class Node {
 
 class VertexTableSplitter {
   private readonly _input: VertexTableWithIndices & { featureTable: PackedFeatureTable };
-  private readonly _computeNodeId: (elementId: Id64.Uint32Pair) => number;
+  private readonly _computeNodeId: ComputeNodeId;
   private readonly _nodes = new Map<number, Node>();
 
-  private constructor(input: VertexTableWithIndices & { featureTable: PackedFeatureTable }, computeNodeId: (elementId: Id64.Uint32Pair) => number) {
+  private constructor(input: VertexTableWithIndices & { featureTable: PackedFeatureTable }, computeNodeId: ComputeNodeId) {
     this._input = input;
     this._computeNodeId = computeNodeId;
   }
 
-  public static split(source: VertexTableWithIndices, featureTable: PackedFeatureTable, computeNodeId: (elementId: Id64.Uint32Pair) => number): Map<number, Node> {
+  public static split(source: VertexTableWithIndices, featureTable: PackedFeatureTable, computeNodeId: ComputeNodeId): Map<number, Node> {
     const splitter = new VertexTableSplitter({ ...source, featureTable }, computeNodeId);
     splitter.split();
     return splitter._nodes;
   }
 
+  // ###TODO: Produce new color tables and material atlases, remapping indices.
   private split(): void {
     // Track the most recent feature and corresponding node to avoid repeated lookups - vertices for
     // individual features are largely contiguous.
@@ -159,4 +193,13 @@ class VertexTableSplitter {
       curState.node.addVertex(index, vertex);
     }
   }
+}
+
+export function splitPointStringParams(params: PointStringParams, featureTable: PackedFeatureTable, computeNodeId: ComputeNodeId): Map<number, PointStringParams> {
+  const result = new Map<number, PointStringParams>();
+
+  const { indices, vertices } = params;
+  const nodes = VertexTableSplitter.split({ indices, vertices }, featureTable, computeNodeId);
+
+  return result;
 }
