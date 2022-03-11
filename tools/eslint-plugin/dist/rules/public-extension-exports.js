@@ -29,7 +29,7 @@ const syntaxKindFriendlyNames = {
   [ts.SyntaxKind.VariableStatement]: "variable statement"
 }
 
-var firstRun = true;
+let firstRun = true;
 
 /**
  * This rule prevents the exporting of extension APIs that not not meet certain release tags.
@@ -69,7 +69,7 @@ module.exports = {
     const parserServices = getParserServices(context);
 
     const releaseTags = (context.options.length > 0 && context.options[0].releaseTags) || ["public"];
-    const extensionsTag = "extensions"; // SWB temporary extension tag name
+    const extensionsTag = "extensions";
     const previewTag = "preview";
 
     const outputApiFile = (context.options.length > 0 && context.options[0].outputApiFile) || false;
