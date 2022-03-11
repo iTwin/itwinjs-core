@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@itwin/core-bentley";
 import { GeometricModel3dProps, QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { GeometricModel3dState, IModelApp, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
+import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
 import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@itwin/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 

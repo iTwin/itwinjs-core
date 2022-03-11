@@ -163,7 +163,8 @@ export class ActiveBriefcaseSettings {
   /** An event raised just after the active [[model]] is changed. */
   public readonly onModelChanged = new BeEvent<(previousModel: Id64String | undefined) => void>();
 
-  /* The [Category]($backend) into which new elements should be inserted.
+  /* The [Category]($backend) into which new elements should be inserted by default.
+   * Specialized tools are free to ignore this setting.
    * @see [[onCategoryChanged]] to be notified when this property is modified.
    */
   public get category(): Id64String | undefined {
@@ -177,7 +178,8 @@ export class ActiveBriefcaseSettings {
     }
   }
 
-  /** The [Model]($backend) into which new elements should be inserted.
+  /** The [Model]($backend) into which new elements should be inserted by default.
+   * Specialized tools are free to ignore this setting.
    * @see [[onModelChanged]] to be notified when this property is modified.
    */
   public get model(): Id64String | undefined {

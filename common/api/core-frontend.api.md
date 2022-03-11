@@ -1032,6 +1032,17 @@ export enum ActivationEvent {
     onStartup = "onStartup"
 }
 
+// @beta
+export class ActiveBriefcaseSettings {
+    // (undocumented)
+    get category(): Id64String | undefined;
+    set category(category: Id64String | undefined);
+    get model(): Id64String | undefined;
+    set model(model: Id64String | undefined);
+    readonly onCategoryChanged: BeEvent<(previousCategory: Id64String | undefined) => void>;
+    readonly onModelChanged: BeEvent<(previousModel: Id64String | undefined) => void>;
+}
+
 // @public
 export class ActivityMessageDetails {
     constructor(showProgressBar: boolean, showPercentInMessage: boolean, supportsCancellation: boolean, showDialogInitially?: boolean);
@@ -1670,6 +1681,8 @@ export interface BlankConnectionProps {
 // @public
 export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps, openMode: OpenMode);
+    // @beta
+    readonly activeSettings: ActiveBriefcaseSettings;
     close(): Promise<void>;
     get editingScope(): GraphicalEditingScope | undefined;
     enterEditingScope(): Promise<GraphicalEditingScope>;
@@ -7756,6 +7769,7 @@ export interface PreferenceKeyArg {
 // @public
 export abstract class PrimitiveTool extends InteractiveTool {
     autoLockTarget(): void;
+    get briefcase(): BriefcaseConnection | undefined;
     // (undocumented)
     exitTool(): Promise<void>;
     getPrompt(): string;
@@ -11501,8 +11515,6 @@ export class Tool {
 export class ToolAdmin {
     acsContextLock: boolean;
     acsPlaneSnapLock: boolean;
-    // @alpha
-    readonly activeSettings: ToolAdmin.ActiveSettings;
     get activeTool(): InteractiveTool | undefined;
     readonly activeToolChanged: BeEvent<(tool: Tool, start: StartOrResume) => void>;
     // @internal
@@ -11647,15 +11659,6 @@ export class ToolAdmin {
     // (undocumented)
     get viewTool(): ViewTool | undefined;
     }
-
-// @public (undocumented)
-export namespace ToolAdmin {
-    // @alpha
-    export interface ActiveSettings {
-        category?: Id64String;
-        model?: Id64String;
-    }
-}
 
 // @public
 export class ToolAssistance {
