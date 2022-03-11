@@ -16,6 +16,7 @@ public;CategoryDescription
 public;CategoryDescriptionJSON
 public;CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier
 public;CheckBoxRule 
+deprecated;CheckBoxRule 
 public;ChildNodeRule 
 public;ChildNodeSpecification = CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification
 public;ChildNodeSpecificationBase
@@ -33,8 +34,8 @@ public;Content
 public;ContentDescriptorRequestOptions
 public;ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentFlags
-alpha;ContentInstanceKeysRequestOptions
-alpha;ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
+beta;ContentInstanceKeysRequestOptions
+beta;ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentJSON
 public;ContentModifier 
@@ -155,6 +156,7 @@ public;Id64sRulesetVariable
 public;Id64sRulesetVariableJSON 
 public;IdCategoryIdentifier
 public;ImageIdOverride 
+deprecated;ImageIdOverride 
 public;InstanceId = Id64String
 public;InstanceKey
 public;InstanceKey
@@ -197,6 +199,7 @@ public;LabelDefinitionJSON
 public;LabelGroupingNodeKey 
 public;LabelGroupingNodeKeyJSON 
 public;LabelOverride 
+deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
 beta;MultiElementPropertiesRequestOptions
@@ -256,6 +259,8 @@ alpha;PresentationIpcEvents
 internal;PresentationIpcInterface
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
+public;PresentationRpcResponse
+public;PresentationRpcResponseData
 public;PresentationStatus
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 
@@ -281,6 +286,7 @@ public;PropertyEditorSliderParameters
 public;PropertyEditorSpecification
 public;PropertyGroup 
 public;PropertyGroupingValue
+deprecated;PropertyGroupingValue
 public;PropertyInfo
 public;PropertyInfo
 public;PropertyInfoJSON
@@ -365,6 +371,7 @@ public;StrippedRelationshipPath = StrippedRelatedClassInfo[]
 public;StructFieldMemberDescription
 public;StructTypeDescription 
 public;StyleOverride 
+deprecated;StyleOverride 
 public;SubCondition 
 public;Subtract
 public;SupplementationInfo

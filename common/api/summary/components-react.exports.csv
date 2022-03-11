@@ -404,6 +404,7 @@ public;ToolbarOpacitySetting
 internal;ToolbarOverflowContextProps
 public;ToolbarPanelAlignment
 internal;ToolbarPanelAlignmentHelpers
+public;ToolbarPopupAutoHideContext: React.Context
 public;ToolbarPopupContext: React.Context
 public;ToolbarPopupContextProps
 public;ToolbarProps 
@@ -466,6 +467,7 @@ beta;usePropertyGridEventHandler(props:
 beta;usePropertyGridModel(props:
 beta;usePropertyGridModelSource(props:
 internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
+public;useToolbarPopupAutoHideContext(): boolean
 public;useToolbarPopupContext(): ToolbarPopupContextProps
 internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
 internal;useToolItemEntryContext(): ToolbarItemContextArgs

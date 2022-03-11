@@ -7,7 +7,8 @@
  */
 
 import { UiStateEntry, UiStateStorage } from "@itwin/core-react";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiSyncEventArgs } from "@itwin/appui-abstract";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFramework";
 
 // cSpell:ignore configurableui
@@ -20,6 +21,7 @@ export interface InitialAppUiSettings {
   dragInteraction: boolean;
   frameworkVersion: FrameworkVersionId;
   widgetOpacity: number;
+  showWidgetIcon?: boolean;
 }
 
 /** These are the UI settings that are stored in the Redux store. They control the color theme, the UI version,
@@ -44,6 +46,7 @@ export class AppUiSettings implements UserSettingsProvider {
   public dragInteraction: UiStateEntry<boolean>;
   public frameworkVersion: UiStateEntry<FrameworkVersionId>;
   public widgetOpacity: UiStateEntry<number>;
+  public showWidgetIcon: UiStateEntry<boolean>;
 
   private setColorTheme = (theme: string) => {
     UiFramework.setColorTheme(theme);
@@ -62,6 +65,11 @@ export class AppUiSettings implements UserSettingsProvider {
       (value: boolean) => UiFramework.setUseDragInteraction(value), defaults.dragInteraction);
     this._settings.push(this.dragInteraction);
 
+    this.showWidgetIcon = new UiStateEntry<boolean>(AppUiSettings._settingNamespace, "ShowWidgetIcon",
+      () => UiFramework.showWidgetIcon,
+      (value: boolean) => UiFramework.setShowWidgetIcon(value), defaults.showWidgetIcon);
+    this._settings.push(this.showWidgetIcon);
+
     this.frameworkVersion = new UiStateEntry<FrameworkVersionId>(AppUiSettings._settingNamespace, "FrameworkVersion",
       () => UiFramework.uiVersion,
       (value: FrameworkVersionId) => UiFramework.setUiVersion(value), defaults.frameworkVersion);
@@ -74,7 +82,7 @@ export class AppUiSettings implements UserSettingsProvider {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
   }
 
-  private handleSyncUiEvent = async (args: SyncUiEventArgs) => {
+  private handleSyncUiEvent = async (args: UiSyncEventArgs) => {
     if (this._applyingLocalSettings)
       return;
 
@@ -89,6 +97,9 @@ export class AppUiSettings implements UserSettingsProvider {
 
     if (args.eventIds.has("configurableui:set-framework-version"))
       await this.frameworkVersion.saveSetting(UiFramework.getUiStateStorage());
+
+    if (args.eventIds.has("configurableui:set-show-widget-icon"))
+      await this.showWidgetIcon.saveSetting(UiFramework.getUiStateStorage());
 
     if (args.eventIds.has("configurableui:set_widget_opacity"))
       await this.widgetOpacity.saveSetting(UiFramework.getUiStateStorage());

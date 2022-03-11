@@ -117,6 +117,7 @@ public;ColorDef
 public;ColorDefProps = number
 internal;ColorIndex
 public;CommonLoggerCategory
+beta;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
@@ -186,11 +187,14 @@ beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
+alpha;EdgeType
 internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
 alpha;ElementGeometry
+alpha;ElementGeometryBuilderParams
+alpha;ElementGeometryBuilderParamsForPart
 public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 public;ElementGeometryChange
 public;ElementGeometryDataEntry
@@ -198,7 +202,6 @@ alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
 alpha;ElementGeometryInfo
 public;ElementGeometryOpcode
 alpha;ElementGeometryRequest
-alpha;ElementGeometryUpdate
 public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
@@ -238,6 +241,7 @@ public;FilePropertyProps
 public;FillDisplay
 public;FillFlags
 public;FlatBufferGeometryStream
+public;FontId = number
 public;FontMap
 public;FontMapProps
 public;FontProps
@@ -263,6 +267,8 @@ public;GeodeticTransform
 public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
 public;GeodeticTransformProps
 public;GeographicCRS 
+beta;GeographicCRSInterpretRequestProps
+beta;GeographicCRSInterpretResponseProps
 public;GeographicCRSProps
 public;GeometricElement2dProps 
 public;GeometricElement3dProps 
@@ -290,14 +296,9 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;GlbHeader 
 public;GlobeMode
-internal;GltfBufferData
-internal;GltfBufferView
-internal;GltfConstants
-internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
-internal;GltfDataType
-internal;GltfHeader 
-internal;GltfMeshMode
+internal;GltfChunk
 internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
@@ -337,6 +338,8 @@ public;ImageGraphic
 public;ImageGraphicCorners
 public;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
 public;ImageGraphicProps
+beta;ImageMapLayerProps 
+beta;ImageMapLayerSettings 
 public;ImagePrimitive
 public;ImageSource
 public;ImageSourceFormat
@@ -377,6 +380,7 @@ internal;class IpcWebSocket
 internal;IpcWebSocketBackend 
 internal;IpcWebSocketFrontend 
 internal;IpcWebSocketMessage
+internal;IpcWebSocketMessage
 internal;IpcWebSocketMessageType
 internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
@@ -401,8 +405,8 @@ public;Localization
 beta;MapImageryProps
 beta;MapImagerySettings
 beta;MapLayerKey
-beta;MapLayerProps
-beta;MapLayerSettings
+beta;MapLayerProps = ImageMapLayerProps | ModelMapLayerProps
+beta;class MapLayerSettings
 beta;MapSubLayerProps
 beta;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
@@ -424,6 +428,8 @@ public;ModelGeometryChanges
 public;ModelGeometryChangesProps
 public;ModelIdAndGeometryGuid
 public;ModelLoadProps
+beta;ModelMapLayerProps 
+beta;ModelMapLayerSettings 
 public;ModelPlanarClipMaskArgs 
 public;ModelProps 
 public;ModelQueryParams 
@@ -534,10 +540,12 @@ internal;ReadableFormData
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess
-alpha;RealityDataFormat
-alpha;RealityDataProvider
-alpha;RealityDataSourceKey
-alpha;RealityDataSourceProps
+beta;RealityDataFormat
+beta;RealityDataFormat
+beta;RealityDataProvider
+beta;RealityDataSourceKey
+beta;RealityDataSourceKey
+beta;RealityDataSourceProps
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
@@ -689,6 +697,7 @@ public;TextureMapping
 public;TextureMapProps
 public;TextureMapUnits
 public;TextureProps 
+public;TextureTransparency
 public;ThematicDisplay
 public;ThematicDisplayMode
 public;ThematicDisplayProps
@@ -728,6 +737,7 @@ public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
+internal;TypedGltfChunk = GltfChunk &
 public;TypeOfChange
 public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void

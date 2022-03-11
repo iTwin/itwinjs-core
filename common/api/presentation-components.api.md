@@ -500,6 +500,8 @@ export interface PresentationTreeDataProviderDataSourceEntryPoints {
 export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
     appendChildrenCountForGroupingNodes?: boolean;
     // @beta
+    customizeTreeNodeItem?: (item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) => void;
+    // @beta
     dataSourceOverrides?: Partial<PresentationTreeDataProviderDataSourceEntryPoints>;
     imodel: IModelConnection;
     pagingSize?: number;

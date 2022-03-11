@@ -2,17 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module MapLayers
+ */
 
 import { compareStrings } from "@itwin/core-bentley";
-import { Point2d } from "@itwin/core-geometry";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
 } from "@itwin/core-common";
-import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
+import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-
+import { getJson, RequestBasicCredentials } from "../../request/Request";
 import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
 /** @internal */
@@ -96,10 +97,13 @@ export class MapLayerSource {
     return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
   }
 
-  public toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined {
+  public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
     // When MapLayerSetting is created from a MapLayerSource, sub-layers and credentials need to be set separately.
-    const layerSettings = MapLayerSettings.fromJSON({ ...this, subLayers });
-    layerSettings?.setCredentials(this.userName, this.password);
+    const layerSettings = ImageMapLayerSettings.fromJSON({ ...this, subLayers });
+    if (this.userName !== undefined || this.password !== undefined) {
+      layerSettings?.setCredentials(this.userName, this.password);
+    }
+
     return layerSettings;
   }
 
@@ -189,7 +193,7 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const sourcesJson = await getJson("assets/MapLayerSources.json");
+      const sourcesJson = await getJson(`${IModelApp.publicPath}assets/MapLayerSources.json`);
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);

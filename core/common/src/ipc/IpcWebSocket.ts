@@ -7,18 +7,16 @@
  */
 
 import { IpcListener, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RemoveFunction } from "./IpcSocket";
-
-/** @internal */
-export abstract class IpcWebSocketTransport {
-  public abstract send(message: IpcWebSocketMessage): void;
-}
+import { IpcWebSocketTransport } from "./IpcWebSocketTransport";
 
 /** @internal */
 export enum IpcWebSocketMessageType {
   Send,
   Push,
   Invoke,
-  Response
+  Response,
+  Internal,
+  Duplicate
 }
 
 /** @internal */
@@ -29,6 +27,22 @@ export interface IpcWebSocketMessage {
   channel: string;
   method?: string;
   data?: any[];
+  sequence: number;
+}
+
+/** @internal */
+export namespace IpcWebSocketMessage {
+  export function internal(): IpcWebSocketMessage {
+    return { type: IpcWebSocketMessageType.Internal, channel: "", sequence: Number.MIN_SAFE_INTEGER };
+  }
+
+  export function duplicate(): IpcWebSocketMessage {
+    return { type: IpcWebSocketMessageType.Duplicate, channel: "", sequence: Number.MIN_SAFE_INTEGER };
+  }
+
+  export function skip(message: IpcWebSocketMessage): boolean {
+    return message.type === IpcWebSocketMessageType.Internal || message.type === IpcWebSocketMessageType.Duplicate;
+  }
 }
 
 /** @internal */
@@ -89,12 +103,12 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
   }
 
   public send(channel: string, ...data: any[]): void {
-    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Send, channel, data });
+    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Send, channel, data, sequence: -1 });
   }
 
   public async invoke(channel: string, methodName: string, ...args: any[]): Promise<any> {
     const requestId = ++this._nextRequest;
-    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Invoke, channel, method: methodName, data: args, request: requestId });
+    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Invoke, channel, method: methodName, data: args, request: requestId, sequence: -1 });
 
     return new Promise((resolve) => {
       this._pendingRequests.set(requestId, resolve);
@@ -124,7 +138,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
   }
 
   public send(channel: string, ...data: any[]): void {
-    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Push, channel, data });
+    IpcWebSocket.transport.send({ type: IpcWebSocketMessageType.Push, channel, data, sequence: -1 });
   }
 
   public handle(channel: string, handler: (event: Event, methodName: string, ...args: any[]) => Promise<any>): RemoveFunction {
@@ -155,6 +169,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
       channel: message.channel,
       response: message.request,
       data: response,
+      sequence: -1,
     });
   }
 }

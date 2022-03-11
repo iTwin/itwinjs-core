@@ -7,11 +7,13 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelHost, IpcHost } from "@itwin/core-backend";
+import { assert } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError } from "@itwin/presentation-common";
 import { MultiManagerPresentationProps, Presentation } from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
+import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("Presentation", () => {
@@ -52,29 +54,16 @@ describe("Presentation", () => {
       it("sets unused client lifetime provided through props", () => {
         Presentation.initialize({ unusedClientLifetime: faker.random.number() });
         const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
-        expect(storage.props.valueLifetime).to.eq((Presentation.initProps! as MultiManagerPresentationProps).unusedClientLifetime);
+        expect(storage.props.unusedValueLifetime).to.eq((Presentation.initProps! as MultiManagerPresentationProps).unusedClientLifetime);
       });
 
-      describe("getRequestTimeout", () => {
-        it("should throw PresentationError if initialize is not called", () => {
-          expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
-        });
-
-        it("creates a requestTimeout property with default value", () => {
-          Presentation.initialize();
-          expect(Presentation.getRequestTimeout()).to.equal(90000);
-        });
-
-        it("should use value from initialize method parameters", () => {
-          const randomRequestTimeout = faker.random.number({ min: 1, max: 90000 });
-          Presentation.initialize({ requestTimeout: randomRequestTimeout });
-          expect(Presentation.getRequestTimeout()).to.equal(randomRequestTimeout);
-        });
-
-        it("should use 0 as requestTimeout if value passed to initialize method is 0", () => {
-          Presentation.initialize({ requestTimeout: 0 });
-          expect(Presentation.getRequestTimeout()).to.equal(0);
-        });
+      it("sets request timeout to `PresentationRpcImpl`", () => {
+        const supplyImplSpy = sinon.spy(RpcManager, "supplyImplInstance");
+        Presentation.initialize({ requestTimeout: 123 });
+        const impl = supplyImplSpy.args[0][1];
+        assert(impl instanceof PresentationRpcImpl);
+        expect(impl.requestTimeout).to.eq(123);
+        expect(Presentation.getRequestTimeout()).to.eq(123);
       });
 
       it("uses client manager factory provided through props", () => {
@@ -95,6 +84,14 @@ describe("Presentation", () => {
 
   });
 
+  describe("getRequestTimeout", () => {
+
+    it("should throw PresentationError if initialize is not called", () => {
+      expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
+    });
+
+  });
+
   describe("terminate", () => {
 
     it("resets manager instance", () => {
@@ -102,13 +99,6 @@ describe("Presentation", () => {
       expect(Presentation.getManager()).to.be.not.null;
       Presentation.terminate();
       expect(() => Presentation.getManager()).to.throw(PresentationError);
-    });
-
-    it("resets RequestTimeout property", () => {
-      Presentation.initialize();
-      expect(Presentation.getRequestTimeout()).to.be.not.null;
-      Presentation.terminate();
-      expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
     });
 
     it("unregisters PresentationRpcInterface impl", () => {

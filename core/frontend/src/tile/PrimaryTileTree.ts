@@ -7,21 +7,22 @@
  */
 
 import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
-import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
+  BatchType, compareIModelTileTreeIds, EdgeType, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings, PrimaryTileTreeId, RenderMode, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
+import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
+import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { AnimationNodeId } from "../render/GraphicBranch";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
+import { AnimationNodeId } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { formatAnimationBranchId, RenderScheduleState } from "../RenderScheduleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { SceneContext } from "../ViewContext";
 import { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
 import {
-  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
 } from "./internal";
 
@@ -64,7 +65,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
     const options = {
-      edgesRequired: treeId.edgesRequired,
+      edgesRequired: EdgeType.None !== treeId.edges,
       allowInstancing: undefined === treeId.animationId && !treeId.enforceDisplayPriority && !treeId.sectionCut && !id.forceNoInstancing,
       is3d: id.is3d,
       batchType: BatchType.Primary,
@@ -262,8 +263,9 @@ class PrimaryTreeReference extends TileTreeReference {
     const renderMode = this._viewFlagOverrides.renderMode ?? view.viewFlags.renderMode;
     const visibleEdges = this._viewFlagOverrides.visibleEdges ?? view.viewFlags.visibleEdges;
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
+    const edges = edgesRequired ? (IModelApp.tileAdmin.enableIndexedEdges ? EdgeType.Indexed : EdgeType.NonIndexed) : EdgeType.None;
     const sectionCut = this._sectionClip?.clipString;
-    return { type: BatchType.Primary, edgesRequired, animationId, sectionCut };
+    return { type: BatchType.Primary, edges, animationId, sectionCut };
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
@@ -440,13 +442,67 @@ class MaskTreeReference extends TileTreeReference {
     return this._owner;
   }
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edgesRequired: false };
+    return { type: BatchType.Primary, edges: EdgeType.None };
   }
 }
 
 /** @internal */
 export function createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference {
   return new MaskTreeReference(view, model);
+}
+
+/** @internal */
+export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
+  private _id: PrimaryTreeId;
+  private _owner: TileTreeOwner;
+  public get isPlanar() { return true; }
+  public get activeClassifier() { return this._classifier; }
+  public constructor(layerSettings: MapLayerSettings, private _classifier: SpatialClassifier, layerIndex: number, iModel: IModelConnection, private _source?: DisplayStyleState) {
+    super(layerSettings, layerIndex, iModel);
+    this._id = {
+      modelId: _classifier.modelId,
+      is3d: true, // model.is3d,
+      treeId: this.createTreeId(),
+      isPlanProjection: false, // isPlanProjection(view, model),
+      forceNoInstancing: false,
+    };
+
+    this._owner = primaryTreeSupplier.getOwner(this._id, this.iModel);
+  }
+
+  protected createTreeId(): PrimaryTileTreeId {
+    return { type: BatchType.Primary, edges: EdgeType.None };
+  }
+
+  public get treeOwner(): TileTreeOwner {
+    const newId = this.createTreeId();
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
+      this._id = { modelId: this._id.modelId, is3d: this._id.is3d, treeId: newId, isPlanProjection: false, forceNoInstancing: false };
+      this._owner = primaryTreeSupplier.getOwner(this._id, this.iModel);
+    }
+
+    return this._owner;
+  }
+  public get viewFlags(): Partial<ViewFlagsProperties> {
+    return {
+      renderMode: RenderMode.SmoothShade,
+      transparency: true,      // Igored for point clouds as they don't support transparency.
+      textures: true,
+      lighting: false,
+      shadows: false,
+      monochrome: false,
+      materials: false,
+      ambientOcclusion: false,
+      visibleEdges: true,
+      hiddenEdges: false,
+      fill: true,
+    };
+  }
+}
+/** @internal */
+export function createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined {
+  const classifier =  SpatialClassifier.fromModelMapLayer(layerSettings);
+  return classifier ? new ModelMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel) : undefined;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].

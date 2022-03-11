@@ -22,9 +22,8 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, SelectionScopeRequestOptions,
-  SingleElementPropertiesRequestOptions,
+  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  HierarchyRequestOptions, Paged, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -45,7 +44,7 @@ export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManage
  * Data structure for presentation RPC responses
  * @public
  */
-export type PresentationRpcResponse<TResult = undefined> = Promise<{
+export interface PresentationRpcResponseData<TResult = undefined> {
   /** Response status code */
   statusCode: PresentationStatus;
   /** In case of an error response, the error message */
@@ -54,7 +53,13 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<{
   result?: TResult;
   /** @alpha */
   diagnostics?: DiagnosticsScopeLogs[];
-}>;
+}
+
+/**
+ * A promise of [[PresentationRpcResponseData]].
+ * @public
+ */
+export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationRpcResponseData<TResult>>;
 
 /**
  * Data structure for hierarchy request options.
@@ -116,7 +121,7 @@ export type DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions<Dist
 
 /**
  * Data structure for content instance keys' request options.
- * @alpha
+ * @beta
  */
 export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions<ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>>;
 
@@ -175,7 +180,7 @@ export class PresentationRpcInterface extends RpcInterface {
 
   public async getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> { return this.forward(arguments); }
 
-  /** @alpha */
+  /** @beta */
   public async getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{ total: number, items: KeySetJSON }> { return this.forward(arguments); }
 
   public async getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON> { return this.forward(arguments); }

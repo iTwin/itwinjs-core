@@ -461,14 +461,11 @@ export class SourceBuilder {
 }
 
 /** @internal */
-export const enum ShaderBuilderFlags {
-  // No special flags. Vertex data comes from attributes, geometry is not instanced.
-  None = 0,
-  // Vertex data comes from a texture.
-  VertexTable = 1 << 0,
-  // Geometry is instanced.
-  Instanced = 1 << 1,
-  InstancedVertexTable = VertexTable | Instanced,
+export interface ShaderBuilderFlags {
+  /** If defined and true, the geometry is instanced. */
+  readonly instanced?: boolean;
+  /** If defined and greater than zero, the vertex data comes from a texture, and each vertex in the table uses no more than this number of RGBA values. */
+  readonly maxRgbaPerVertex?: number;
 }
 
 /**
@@ -487,8 +484,13 @@ export class ShaderBuilder extends ShaderVariables {
   protected readonly _flags: ShaderBuilderFlags;
   protected _initializers: string[] = new Array<string>();
 
-  public get usesVertexTable() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.VertexTable); }
-  public get usesInstancedGeometry() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.Instanced); }
+  public get usesVertexTable(): boolean {
+    return !!this._flags.maxRgbaPerVertex;
+  }
+
+  public get usesInstancedGeometry(): boolean {
+    return !!this._flags.instanced;
+  }
 
   public addInitializer(initializer: string): void {
     if (-1 === this._initializers.indexOf(initializer))
@@ -657,6 +659,10 @@ export class ShaderBuilder extends ShaderVariables {
  * @internal
  */
 export const enum VertexShaderComponent {
+  // (Optional) Compute the quantized position. By default this simply returns the `a_pos` attribute.
+  // This runs before any initializers.
+  // vec3 computeQuantizedPosition()
+  ComputeQuantizedPosition,
   // (Optional) Adjust the result of unquantizeVertexPosition().
   // vec4 adjustRawPosition(vec4 rawPosition)
   AdjustRawPosition,
@@ -707,7 +713,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
   private buildPrelude(attrMap?: Map<string, AttributeDetails>): SourceBuilder { return this.buildPreludeCommon(attrMap, true); }
 
-  public constructor(flags: ShaderBuilderFlags) {
+  public constructor(flags: ShaderBuilderFlags = { }) {
     super(VertexShaderComponent.COUNT, flags);
 
     this.addDefine("MAT_NORM", "g_nmx");
@@ -721,6 +727,10 @@ export class VertexShaderBuilder extends ShaderBuilder {
     }
 
     addPosition(this, this.usesVertexTable);
+  }
+
+  public get maxRgbaPerVertex(): number | undefined {
+    return this._flags.maxRgbaPerVertex;
   }
 
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
@@ -743,6 +753,10 @@ export class VertexShaderBuilder extends ShaderBuilder {
       prelude.addFunction("vec4 computePosition(vec4 rawPos)", computePosition);
     }
 
+    const computeQPos = this.get(VertexShaderComponent.ComputeQuantizedPosition) ?? "return a_pos;";
+    prelude.addFunction("vec3 computeQuantizedPosition()", computeQPos);
+    main.addline("  vec3 qpos = computeQuantizedPosition();");
+
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
     for (const init of this._initializers) {
@@ -752,7 +766,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
         main.addline(`  { ${init} }\n`);
     }
 
-    main.addline("  vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
+    main.addline("  vec4 rawPosition = unquantizeVertexPosition(qpos, u_qOrigin, u_qScale);");
     const adjustRawPosition = this.get(VertexShaderComponent.AdjustRawPosition);
     if (undefined !== adjustRawPosition) {
       prelude.addFunction("vec4 adjustRawPosition(vec4 rawPos)", adjustRawPosition);
@@ -902,6 +916,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Override fragment color. This is invoked just after alpha is multiplied, and just before FragColor is assigned.
   // vec4 overrideColor(vec4 currentColor)
   OverrideColor,
+  // (Optional) Override render order to be output to pick buffers.
+  // float overrideRenderOrder(float renderOrder)
+  OverrideRenderOrder,
   COUNT,
 }
 
@@ -911,7 +928,7 @@ export const enum FragmentShaderComponent {
 export class FragmentShaderBuilder extends ShaderBuilder {
   public requiresEarlyZWorkaround = false;
 
-  public constructor(flags: ShaderBuilderFlags) {
+  public constructor(flags: ShaderBuilderFlags = { }) {
     super(FragmentShaderComponent.COUNT, flags);
 
     if (System.instance.capabilities.isWebGL2)
@@ -1118,7 +1135,7 @@ export class ProgramBuilder {
   private readonly _flags: ShaderBuilderFlags;
   private readonly _attrMap?: Map<string, AttributeDetails>;
 
-  public constructor(attrMap?: Map<string, AttributeDetails>, flags = ShaderBuilderFlags.None) {
+  public constructor(attrMap?: Map<string, AttributeDetails>, flags: ShaderBuilderFlags = { }) {
     this._attrMap = attrMap;
     this.vert = new VertexShaderBuilder(flags);
     this.frag = new FragmentShaderBuilder(flags);

@@ -25,9 +25,9 @@ Using a closed region as the cutter is a specialized high level operation, just 
 
 Unit Test
 
-- source: imodeljs\core\geometry\src\test\topology\RegionOps.test.ts
+- source: core\geometry\src\test\topology\RegionOps.test.ts
 - test name: "InOutSplits"
-- output: imodeljs\core\geometry\src\test\output\RegionOps\InOutSplits.imjs
+- output: core\geometry\src\test\output\RegionOps\InOutSplits.imjs
 
 ## RegionOps.testPointInOnOutRegionXY
 
@@ -39,9 +39,9 @@ This tests whether single points are in, out, or on an xy region.
 
 Unit Test
 
-- source: imodeljs\core\geometry\src\test\topology\RegionOps.test.ts
+- source: core\geometry\src\test\topology\RegionOps.test.ts
 - test name: "MixedInOut"
-- output: imodeljs\core\geometry\src\test\output\RegionOps\MixedInOut.imjs
+- output: core\geometry\src\test\output\RegionOps\MixedInOut.imjs
 
 ## RegionOps.regionBooleanXY
 
@@ -103,6 +103,6 @@ For a second example, each of regionA and regionB is an array of regions to be t
 
 Unit Test
 
-- source: imodeljs\core\geometry\src\test\topology\RegionBoolean.test.ts
+- source: core\geometry\src\test\topology\RegionBoolean.test.ts
 - test name: "DocDemo"
-- output: imodeljs\core\geometry\src\test\output\sweepBooleans\DocDemo.imjs
+- output: core\geometry\src\test\output\sweepBooleans\DocDemo.imjs

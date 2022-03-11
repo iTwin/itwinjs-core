@@ -261,7 +261,7 @@ export class SnapDetail extends HitDetail {
     val.parentGeomType = this.parentGeomType;
     val.adjustedPoint.setFrom(this.adjustedPoint);
     if (undefined !== this.primitive)
-      val.primitive = this.primitive.clone() as CurvePrimitive;
+      val.primitive = this.primitive.clone();
     if (undefined !== this.normal)
       val.normal = this.normal.clone();
     return val;
@@ -321,13 +321,13 @@ export class SnapDetail extends HitDetail {
 
   private static getSnapSpriteUrl(snapType: SnapMode): string {
     switch (snapType) {
-      case SnapMode.Nearest: return "sprites/SnapPointOn.png";
-      case SnapMode.NearestKeypoint: return "sprites/SnapKeypoint.png";
-      case SnapMode.MidPoint: return "sprites/SnapMidpoint.png";
-      case SnapMode.Center: return "sprites/SnapCenter.png";
-      case SnapMode.Origin: return "sprites/SnapOrigin.png";
-      case SnapMode.Bisector: return "sprites/SnapBisector.png";
-      case SnapMode.Intersection: return "sprites/SnapIntersection.png";
+      case SnapMode.Nearest: return `${IModelApp.publicPath}sprites/SnapPointOn.png`;
+      case SnapMode.NearestKeypoint: return `${IModelApp.publicPath}sprites/SnapKeypoint.png`;
+      case SnapMode.MidPoint: return `${IModelApp.publicPath}sprites/SnapMidpoint.png`;
+      case SnapMode.Center: return `${IModelApp.publicPath}sprites/SnapCenter.png`;
+      case SnapMode.Origin: return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
+      case SnapMode.Bisector: return `${IModelApp.publicPath}sprites/SnapBisector.png`;
+      case SnapMode.Intersection: return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
     }
     return "";
   }

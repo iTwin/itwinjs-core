@@ -8,7 +8,7 @@ import { RelativePosition } from "@itwin/appui-abstract";
 import { OutsideClickEvent, Popup, useOnOutsideClick, WebFontIcon } from "@itwin/core-react";
 import { SubLayersPanel } from "./SubLayersTree";
 import { StyleMapLayerSettings } from "../Interfaces";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayersUI } from "../../mapLayers";
 
 // cSpell:ignore droppable Sublayer
 
@@ -22,8 +22,8 @@ export interface SubLayersPopupButtonProps {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersPopupButton({ mapLayerSettings, activeViewport }: SubLayersPopupButtonProps) {
 
-  const [showSubLayersLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.Show"));
-  const [hideSubLayersLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.Hide"));
+  const [showSubLayersLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.Show"));
+  const [hideSubLayersLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.Hide"));
   const [popupOpen, setPopupOpen] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 

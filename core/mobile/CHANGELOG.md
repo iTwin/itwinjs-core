@@ -1,6 +1,106 @@
 # Change Log - @itwin/core-mobile
 
-This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+This log was last generated on Thu, 10 Mar 2022 21:18:13 GMT and should not be manually modified.
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+_Version update only_
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019
+- use new @itwin package names
+- rename to @itwin/core-mobile
+- remove ClientRequestContext and its subclasses
+- Removed config.app usage
+- remove ClientRequestContext.current
+- Flattened MobileAuthorizationClient heirarchy
+- Bumped dotenv and removed deprecated @types/dotenv
+- Removed references to the deleted config-loader package
+
+## 2.19.28
+Wed, 12 Jan 2022 14:52:38 GMT
+
+_Version update only_
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+_Version update only_
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:53 GMT
+
+_Version update only_
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+_Version update only_
+
+## 2.19.23
+Mon, 22 Nov 2021 20:41:40 GMT
+
+_Version update only_
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+_Version update only_
+
+## 2.19.21
+Wed, 10 Nov 2021 10:58:24 GMT
+
+_Version update only_
+
+## 2.19.20
+Fri, 29 Oct 2021 16:14:22 GMT
+
+_Version update only_
+
+## 2.19.19
+Mon, 25 Oct 2021 16:16:25 GMT
+
+_Version update only_
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+_Version update only_
+
+## 2.19.17
+Thu, 14 Oct 2021 21:19:43 GMT
+
+_Version update only_
+
+## 2.19.16
+Mon, 11 Oct 2021 17:37:46 GMT
+
+_Version update only_
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+_Version update only_
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+_Version update only_
 
 ## 2.19.13
 Tue, 21 Sep 2021 21:06:40 GMT

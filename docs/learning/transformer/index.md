@@ -35,13 +35,13 @@ The [IModelImporter]($transformer) base class is used when the **target** in an 
 While it is possible to import data into an iModel using the standard [IModelDb]($backend) API, the [IModelImporter]($transformer) class offers the following capabilities:
 
 - Callbacks whenever IModelImporter is used to insert, update, or delete entities. Simply override one of the protected `onInsert*`, `onUpdate*`, or `onDelete*` methods.
-- Automatically compute the [IModel.projectExtents]($common) during import via the [IModelImporter.autoExtendProjectExtents]($transformer) setting.
-- The ability to optionally simplify element geometry to optimize visualization workflows via the [IModelImporter.simplifyElementGeometry]($transformer) setting.
+- Automatically compute the [IModel.projectExtents]($common) during import via the [IModelImportOptions.autoExtendProjectExtents]($transformer) setting.
+- The ability to optionally simplify element geometry to optimize visualization workflows via the [IModelImportOptions.simplifyElementGeometry]($transformer) setting.
 - Integration with [IModelTransformer]($transformer)
 
-### IModelImporter.autoExtendProjectExtents
+### IModelImportOptions.autoExtendProjectExtents
 
-[IModelImporter.autoExtendProjectExtents]($transformer) and [IModelImportOptions.autoExtendProjectExtents]($transformer) provide different options for handling the projectExtents of the target iModel.
+[IModelImportOptions.autoExtendProjectExtents]($transformer) provides different options for handling the projectExtents of the target iModel.
 See the following for more information about projectExtents:
 
 - [IModel.projectExtents]($common)
@@ -97,3 +97,15 @@ The following logger categories are provided for use with the [Logger]($bentley)
 - [TransformerLoggerCategory.IModelExporter]($transformer)
 - [TransformerLoggerCategory.IModelTransformer]($transformer)
 - [TransformerLoggerCategory.IModelImporter]($transformer)
+
+## Implementing iModel branching workflows through the transformer
+
+Using the transformer as a framework, it is possible to implement the necessary operations for a branching workflow,
+where *branch iModels* from a *master iModel* form a tree-like change history as branches *synchronize* at distinct points to
+transfer data to the master. The implementation with examples and terminology by the transformer is elaborated in the
+[branching iModels article](./branching-imodels.md).
+
+## ETL examples
+
+More samples of using the transformer to export iModels or subsets of iModels to different formats
+can be found in the [ETL (Extract-Transform-Load) samples repository](https://github.com/iTwin/etl-samples)

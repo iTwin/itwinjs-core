@@ -8,7 +8,8 @@
 
 import deepAssign from "deep-assign";
 import { AccessToken, BentleyError, GuidString, IModelHubStatus, Logger } from "@itwin/core-bentley";
-import { FileHandler, ProgressCallback } from "@bentley/itwin-client";
+import { FileHandler } from "../itwin-client/FileHandler";
+import { ProgressCallback } from "../itwin-client/Request";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -20,7 +21,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 /**
   * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as iModelId argument to those methods.
   *
-  * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [BriefcaseDb]($backend).
+  * For iModel representation in iTwin.js, see [IModel]($common). For the file that is used for that iModel, see [BriefcaseDb]($backend).
   * @internal
   */
 @ECJsonTypeMap.classToJson("wsg", "ContextScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })

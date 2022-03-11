@@ -145,16 +145,8 @@ export class BezierCurve3dH extends BezierCurveBase {
     this._polygon.loadSpanPoles(data, spanIndex);
   }
   /** Clone the entire curve. */
-  public clone(): BezierCurve3dH {
+  public override clone(): BezierCurve3dH {
     return new BezierCurve3dH(this._polygon.clonePolygon());
-  }
-  /**
-   * Return a curve after transform.
-   */
-  public cloneTransformed(transform: Transform): BezierCurve3dH {
-    const curve1 = this.clone();
-    curve1.tryTransformInPlace(transform);
-    return curve1;
   }
   /** Return a (deweighted) point on the curve. If deweight fails, returns 000 */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
@@ -258,12 +250,14 @@ export class BezierCurve3dH extends BezierCurveBase {
       const workB = this._workCoffsB!;
       const packedData = this._polygon.packedData;
       for (let i = 0; i < 3; i++) {
-        // x representing loop pass:   (w * spacePoint.x - curve.x(s), 1.0) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
+        // x representing loop pass:   (w * spacePoint.x - curve.x(s)) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
         // (and p.w is always 1)
+        for (let k = 0; k < workA.length; k++)workA[k] = 0;
+        for (let k = 0; k < workB.length; k++)workB[k] = 0;
         BezierPolynomialAlgebra.scaledComponentSum(workA, packedData, 4, orderA, 3, spacePoint.at(i), // w * spacePoint.x
           i, -1.0); // curve.x(s) * 1.0
-        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, 1.0, 3, 1.0, i);
-        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, -1.0, i, 1.0, 3);
+        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, 1.0, 3, 0.0, i);
+        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, -1.0, i, 0.0, 3);
         BezierPolynomialAlgebra.accumulateProduct(bezier.coffs, workA, workB);
       }
       roots = bezier.roots(0.0, true);

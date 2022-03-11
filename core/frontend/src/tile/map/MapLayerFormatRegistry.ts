@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module MapLayers
+ */
 
 import { assert } from "@itwin/core-bentley";
-import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
+import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
-import { RequestBasicCredentials } from "@bentley/itwin-client";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+import { RequestBasicCredentials } from "../../request/Request";
 
 /** @internal */
 export class MapLayerFormat {
@@ -30,6 +32,7 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 export interface MapLayerSourceValidation {
   status: MapLayerSourceStatus;
   subLayers?: MapSubLayerProps[];
+  authInfo?: MapLayerAuthenticationInfo;
 }
 
 /**
@@ -40,7 +43,7 @@ export interface MapLayerOptions {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   AzureMaps?: MapLayerKey;
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  MapBoxImagery?: MapLayerKey;
+  MapboxImagery?: MapLayerKey;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   BingMaps?: MapLayerKey;
   [format: string]: MapLayerKey | undefined;
@@ -63,11 +66,11 @@ export class MapLayerFormatRegistry {
   public get configOptions(): MapLayerOptions {
     return this._configOptions;
   }
-  public createImageryMapLayerTree(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
+  public createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
     const format = this._formats.get(layerSettings.formatId);
     return format !== undefined ? (format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference) : undefined;
   }
-  public createImageryProvider(layerSettings: MapLayerSettings): MapLayerImageryProvider | undefined {
+  public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     const format = this._formats.get(layerSettings.formatId);
     if (this._configOptions[layerSettings.formatId] !== undefined) {
       const keyValuePair = this._configOptions[layerSettings.formatId]!;

@@ -57,8 +57,14 @@ describe("MessageBox", () => {
     it("MessageSeverity.None", () => {
       const wrapper = mount(<MessageBox opened={true} severity={MessageSeverity.None} buttonCluster={buttonCluster} />);
       const icon = wrapper.find("div.core-message-box-success");
+      expect(icon.length).to.eq(0);
+    });
+    it("MessageSeverity.Success", () => {
+      const wrapper = mount(<MessageBox opened={true} severity={MessageSeverity.Success} buttonCluster={buttonCluster} />);
+      const icon = wrapper.find("div.core-message-box-success");
       expect(icon.length).to.eq(1);
     });
+
   });
 
   describe("MessageContainer.getIconClassName with hollow param", () => {
@@ -69,6 +75,7 @@ describe("MessageBox", () => {
       expect(MessageContainer.getIconClassName(MessageSeverity.Warning, true).length).to.not.eq(0);
       expect(MessageContainer.getIconClassName(MessageSeverity.Error, true).length).to.not.eq(0);
       expect(MessageContainer.getIconClassName(MessageSeverity.Fatal, true).length).to.not.eq(0);
+      expect(MessageContainer.getIconClassName(MessageSeverity.Success, true).length).to.not.eq(0);
     });
   });
 

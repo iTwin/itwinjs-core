@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelBankClient
  */
-import { FileHandler } from "@bentley/itwin-client";
+import { FileHandler } from "../itwin-client/FileHandler";
 import { IModelBaseHandler } from "../imodelhub/BaseHandler";
 
 /**

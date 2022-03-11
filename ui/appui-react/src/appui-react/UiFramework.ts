@@ -14,8 +14,8 @@ import { Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@itwin/core-telemetry";
-import { getClassName, UiAdmin, UiError } from "@itwin/appui-abstract";
-import { LocalStateStorage, SettingsManager, UiEvent, UiStateStorage } from "@itwin/core-react";
+import { getClassName, UiAdmin, UiError, UiEvent } from "@itwin/appui-abstract";
+import { LocalStateStorage, SettingsManager, UiStateStorage } from "@itwin/core-react";
 import { UiIModelComponents } from "@itwin/imodel-components-react";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { ChildWindowManager } from "./childwindow/ChildWindowManager";
@@ -31,7 +31,6 @@ import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
-import { UserInfo } from "./UserInfo";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { FrontstageManager } from "./frontstage/FrontstageManager";
@@ -133,19 +132,21 @@ export class UiFramework {
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
+   * @param startInUi1Mode Used for legacy applications to start up in the deprecated UI 1 mode. This should not set by newer applications.
    */
-  public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void> {
-    return this.initializeEx(store, frameworkStateKey);
+  public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void> {
+    return this.initializeEx(store, frameworkStateKey, startInUi1Mode);
   }
 
   /**
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
+   * @param startInUi1Mode Used for legacy applications to start up in the deprecated UI 1 mode. This should not set by newer applications.
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void> {
+  public static async initializeEx(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void> {
     if (UiFramework._initialized) {
       Logger.logInfo(UiFramework.loggerCategory(UiFramework), `UiFramework.initialize already called`);
       return;
@@ -160,6 +161,9 @@ export class UiFramework {
     // ignore setting _frameworkStateKeyInStore if not using store
     if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
+
+    if (startInUi1Mode)
+      UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetFrameworkVersion, payload: "1" });
 
     // set up namespace and register all tools from package
     const frameworkNamespace = IModelApp.localization?.registerNamespace(UiFramework.localizationNamespace);
@@ -392,17 +396,14 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
   }
 
-  /** @public */
-  public static async setUiStateStorage(storage: UiStateStorage, immediateSync = false) {
-    if (UiFramework._uiStateStorage === storage)
-      return;
-
-    UiFramework._uiStateStorage = storage;
-
+  /** Called by iModelApp to initialize saved UI state from registered UseSettingsProviders
+   * @public
+   */
+  public static async initializeStateFromUserSettingsProviders(immediateSync = false) {
     // let any registered providers to load values from the new storage location
     const providerKeys = [...this._uiSettingsProviderRegistry.keys()];
     for await (const key of providerKeys) {
-      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(storage);
+      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(UiFramework._uiStateStorage);
     }
 
     // istanbul ignore next
@@ -412,6 +413,15 @@ export class UiFramework {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
   }
 
+  /** @public */
+  public static async setUiStateStorage(storage: UiStateStorage, immediateSync = false) {
+    if (UiFramework._uiStateStorage === storage)
+      return;
+
+    UiFramework._uiStateStorage = storage;
+    await this.initializeStateFromUserSettingsProviders(immediateSync);
+  }
+
   /** The UI Settings Storage is a convenient wrapper around Local Storage to assist in caching state information across user sessions.
    * It was previously used to conflate both the state information across session and the information driven directly from user explicit action,
    * which are now handled with user preferences.
@@ -419,16 +429,6 @@ export class UiFramework {
    */
   public static getUiStateStorage(): UiStateStorage {
     return UiFramework._uiStateStorage;
-  }
-
-  /** @public */
-  public static setUserInfo(userInfo: UserInfo | undefined, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetUserInfo, userInfo, immediateSync);
-  }
-
-  /** @public */
-  public static getUserInfo(): UserInfo | undefined {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.userInfo : /* istanbul ignore next */  undefined;
   }
 
   public static setDefaultIModelViewportControlId(iModelViewportControlId: string, immediateSync = false) {
@@ -513,6 +513,17 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1" ? "1" : "2", true);
   }
 
+  public static get showWidgetIcon(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.showWidgetIcon : /* istanbul ignore next */ false;
+  }
+
+  public static setShowWidgetIcon(value: boolean) {
+    if (UiFramework.showWidgetIcon === value)
+      return;
+
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetShowWidgetIcon, value, true);
+  }
+
   public static get useDragInteraction(): boolean {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.useDragInteraction : false;
   }
@@ -521,6 +532,20 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetDragInteraction, useDragInteraction, true);
   }
 
+  /** Returns the variable controlling whether the overlay is displayed in a Viewport
+   * @public
+   */
+  public static get viewOverlayDisplay() {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.viewOverlayDisplay : /* istanbul ignore next */ true;
+  }
+  /** Set the variable that controls display of the view overlay. Applies to all viewports in the app
+ * @public
+ */
+  public static setViewOverlayDisplay(display: boolean) {
+    if (UiFramework.viewOverlayDisplay === display)
+      return;
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetViewOverlayDisplay, display);
+  }
   /** Send logging message to the telemetry system
    * @internal
    */
@@ -541,14 +566,6 @@ export class UiFramework {
       await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
     } catch { }
   }
-  private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
-    // Log Ui Version used
-    Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Ui Version changed to ${args.version} `);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    UiFramework.postTelemetry(`Ui Version changed to ${args.version} `, "F2772C81-962D-4755-807C-2D675A5FF399");
-    UiFramework.setUiVersion(args.version);
-  };
-
   /** Determines whether a ContextMenu is open
    * @alpha
    * */
@@ -556,5 +573,4 @@ export class UiFramework {
     const contextMenu = document.querySelector("div.core-context-menu-opened");
     return contextMenu !== null && contextMenu !== undefined;
   }
-
 }

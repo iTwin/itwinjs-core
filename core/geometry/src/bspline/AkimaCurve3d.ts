@@ -154,26 +154,13 @@ private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive)
     }
     return proxyOk;
   }
-  /**
-   * Return a transformed clone.
-   */
-  public cloneTransformed(transform: Transform): GeometryQuery | undefined {
-    const myClone = this.clone();
-    if (myClone && myClone?.tryTransformInPlace(transform))
-      return myClone;
-    return undefined;
+
+  /** Return a deep clone */
+  public override clone(): AkimaCurve3d {
+    return new AkimaCurve3d(this._options.clone(), this._proxyCurve.clone());
   }
-  /**
-   * Return a clone.
-   */
-  public clone(): GeometryQuery | undefined {
-    const proxyClone = this._proxyCurve.clone();
-    if (proxyClone) {
-      return new AkimaCurve3d(this._options.clone (), proxyClone as CurvePrimitive);
-    }
-    return undefined;
-  }
-/** Test if `other` is also an [[AkimaCurve3d]] */
+
+  /** Test if `other` is also an [[AkimaCurve3d]] */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof AkimaCurve3d; }
 
   public override isAlmostEqual(other: GeometryQuery): boolean{

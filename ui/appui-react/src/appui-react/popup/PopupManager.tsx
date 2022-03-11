@@ -11,9 +11,9 @@ import { Logger } from "@itwin/core-bentley";
 import { XAndY } from "@itwin/core-geometry";
 import {
   AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue,
-  PropertyDescription, PropertyRecord, PropertyValueFormat, RelativePosition,
+  PropertyDescription, PropertyRecord, PropertyValueFormat, RelativePosition, UiEvent,
 } from "@itwin/appui-abstract";
-import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@itwin/core-react";
+import { Orientation, Point, Rectangle, SizeProps } from "@itwin/core-react";
 import { offsetAndContainInContainer } from "@itwin/appui-layout-react";
 import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 import { UiFramework } from "../UiFramework";

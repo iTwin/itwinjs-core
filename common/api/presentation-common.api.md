@@ -141,7 +141,7 @@ export interface CategoryDescriptionJSON {
 // @public
 export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier;
 
-// @public
+// @public @deprecated
 export interface CheckBoxRule extends RuleBase, ConditionContainer {
     condition?: string;
     defaultValue?: boolean;
@@ -270,17 +270,18 @@ export enum ContentFlags {
     KeysOnly = 1,
     MergeResults = 8,
     NoFields = 32,
+    // @deprecated
     ShowImages = 2,
     ShowLabels = 4
 }
 
-// @alpha
+// @beta
 export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
     displayType?: string;
     keys: TKeySet;
 }
 
-// @alpha
+// @beta
 export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions<ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>>;
 
 // @public
@@ -360,8 +361,10 @@ export type ContentSpecification = ContentInstancesOfSpecificClassesSpecificatio
 
 // @public
 export interface ContentSpecificationBase extends ContentModifiersList {
+    onlyIfNotHandled?: boolean;
     priority?: number;
     relatedInstances?: RelatedInstanceSpecification[];
+    // @deprecated
     showImages?: boolean;
     specType: ContentSpecificationTypes;
 }
@@ -383,8 +386,11 @@ export type ContentUpdateInfo = typeof UPDATE_FULL;
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[];
 
 // @public
-export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | // eslint-disable-line deprecation/deprecation
-SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
+export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | // eslint-disable-line deprecation/deprecation
+GroupingRule | ImageIdOverride | // eslint-disable-line deprecation/deprecation
+LabelOverride | // eslint-disable-line deprecation/deprecation
+SortingRule | StyleOverride | // eslint-disable-line deprecation/deprecation
+ExtendedDataRule | NodeArtifactsRule;
 
 // @public
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
@@ -1128,7 +1134,7 @@ export interface IdCategoryIdentifier {
     type: "Id";
 }
 
-// @public
+// @public @deprecated
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
     condition?: string;
     imageIdExpression: string;
@@ -1312,6 +1318,7 @@ export class Item {
         [key: string]: any;
     };
     static fromJSON(json: ItemJSON | string | undefined): Item | undefined;
+    // @deprecated
     imageId: string;
     // @beta
     inputKeys?: InstanceKey[];
@@ -1335,7 +1342,7 @@ export interface ItemJSON {
     extendedData?: {
         [key: string]: any;
     };
-    // (undocumented)
+    // @deprecated (undocumented)
     imageId: string;
     // @beta (undocumented)
     inputKeys?: InstanceKeyJSON[];
@@ -1471,7 +1478,7 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
     type: StandardNodeTypes.DisplayLabelGroupingNode;
 }
 
-// @public
+// @public @deprecated
 export interface LabelOverride extends RuleBase, ConditionContainer {
     condition?: string;
     description?: string;
@@ -1591,17 +1598,24 @@ export interface NoCategoryIdentifier {
 
 // @public
 export interface Node {
+    // @deprecated
     backColor?: string;
     description?: string;
     extendedData?: {
         [key: string]: any;
     };
+    // @deprecated
     fontStyle?: string;
+    // @deprecated
     foreColor?: string;
     hasChildren?: boolean;
+    // @deprecated
     imageId?: string;
+    // @deprecated
     isCheckboxEnabled?: boolean;
+    // @deprecated
     isCheckboxVisible?: boolean;
+    // @deprecated
     isChecked?: boolean;
     isEditable?: boolean;
     isExpanded?: boolean;
@@ -1674,7 +1688,7 @@ export interface NodeInsertionInfoJSON {
 
 // @public
 export interface NodeJSON {
-    // (undocumented)
+    // @deprecated (undocumented)
     backColor?: string;
     // (undocumented)
     description?: string;
@@ -1682,19 +1696,19 @@ export interface NodeJSON {
     extendedData?: {
         [key: string]: any;
     };
-    // (undocumented)
+    // @deprecated (undocumented)
     fontStyle?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     foreColor?: string;
     // (undocumented)
     hasChildren?: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     imageId?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     isCheckboxEnabled?: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     isCheckboxVisible?: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     isChecked?: boolean;
     // (undocumented)
     isEditable?: boolean;
@@ -1883,7 +1897,7 @@ export class PresentationRpcInterface extends RpcInterface {
     computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
     // (undocumented)
     getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined>;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{
         total: number;
         items: KeySetJSON;
@@ -1928,12 +1942,16 @@ export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManage
 };
 
 // @public
-export type PresentationRpcResponse<TResult = undefined> = Promise<{
-    statusCode: PresentationStatus;
+export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationRpcResponseData<TResult>>;
+
+// @public
+export interface PresentationRpcResponseData<TResult = undefined> {
+    // @alpha (undocumented)
+    diagnostics?: DiagnosticsScopeLogs[];
     errorMessage?: string;
     result?: TResult;
-    diagnostics?: DiagnosticsScopeLogs[];
-}>;
+    statusCode: PresentationStatus;
+}
 
 // @public
 export enum PresentationStatus {
@@ -2112,15 +2130,17 @@ export interface PropertyEditorSpecification {
 export interface PropertyGroup extends GroupingSpecificationBase {
     createGroupForSingleItem?: boolean;
     createGroupForUnspecifiedValues?: boolean;
+    // @deprecated
     groupingValue?: PropertyGroupingValue;
     imageId?: string;
     propertyName: string;
     ranges?: PropertyRangeGroupSpecification[];
+    // @deprecated
     sortingValue?: PropertyGroupingValue;
     specType: GroupingSpecificationTypes.Property;
 }
 
-// @public
+// @public @deprecated
 export enum PropertyGroupingValue {
     DisplayLabel = "DisplayLabel",
     PropertyValue = "PropertyValue"
@@ -2452,6 +2472,8 @@ export class RpcRequestsHandler implements IDisposable {
     getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>>): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]>;
+    // (undocumented)
+    readonly maxRequestRepeatCount: number;
     request<TResult, TOptions extends RequestOptions<IModelRpcProps>, TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
     }
 
@@ -2621,7 +2643,6 @@ export interface SelectedNodeInstancesSpecification extends ContentSpecification
     acceptableClassNames?: string[];
     acceptablePolymorphically?: boolean;
     acceptableSchemaName?: string;
-    onlyIfNotHandled?: boolean;
     specType: ContentSpecificationTypes.SelectedNodeInstances;
 }
 
@@ -2799,7 +2820,7 @@ export interface StructTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Struct;
 }
 
-// @public
+// @public @deprecated
 export interface StyleOverride extends RuleBase, ConditionContainer {
     backColor?: string;
     condition?: string;

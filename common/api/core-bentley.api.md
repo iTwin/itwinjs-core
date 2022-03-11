@@ -157,6 +157,7 @@ export enum BriefcaseStatus {
 
 // @public
 export class ByteStream {
+    // @deprecated
     constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
         byteOffset: number;
         byteLength: number;
@@ -165,6 +166,12 @@ export class ByteStream {
     get arrayBuffer(): ArrayBuffer | SharedArrayBuffer;
     get curPos(): number;
     set curPos(pos: number);
+    static fromArrayBuffer(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
+        byteOffset: number;
+        byteLength: number;
+    }): ByteStream;
+    static fromUint8Array(bytes: Uint8Array): ByteStream;
+    get isAtTheEnd(): boolean;
     get isPastTheEnd(): boolean;
     get length(): number;
     nextBytes(numBytes: number): Uint8Array;
@@ -173,6 +180,7 @@ export class ByteStream {
     get nextId64(): Id64String;
     get nextInt32(): number;
     get nextUint16(): number;
+    get nextUint24(): number;
     get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
     get nextUint8(): number;
@@ -947,6 +955,12 @@ export function isIDisposable(obj: unknown): obj is IDisposable;
 // @public
 export function isInstanceOf<T>(obj: any, constructor: Constructor<T>): boolean;
 
+// @internal
+export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass;
+
+// @internal
+export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
+
 // @public (undocumented)
 export interface JSONSchema {
     // (undocumented)
@@ -1211,6 +1225,9 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
 }
 
 // @public
+export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
+
+// @public
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
 };
@@ -1269,6 +1286,9 @@ export enum OpenMode {
     // (undocumented)
     ReadWrite = 2
 }
+
+// @public
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 // @public
 export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
@@ -1408,6 +1428,16 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     protected _remove(value: T): number;
 }
 
+// @alpha
+export enum RealityDataStatus {
+    // (undocumented)
+    InvalidData = 151553,
+    // (undocumented)
+    REALITYDATA_ERROR_BASE = 151552,
+    // (undocumented)
+    Success = 0
+}
+
 // @beta
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
@@ -1496,6 +1526,23 @@ export function utf8ToString(utf8: Uint8Array): string | undefined;
 
 // @internal
 export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
+
+// @internal
+export class YieldManager {
+    constructor(options?: YieldManagerOptions);
+    // (undocumented)
+    protected actualYield(): Promise<void>;
+    // (undocumented)
+    allowYield(): Promise<void>;
+    // (undocumented)
+    options: Readonly<Required<YieldManagerOptions>>;
+}
+
+// @internal
+export interface YieldManagerOptions {
+    // (undocumented)
+    iterationsBeforeYield?: number;
+}
 
 
 // (No @packageDocumentation comment for this package)

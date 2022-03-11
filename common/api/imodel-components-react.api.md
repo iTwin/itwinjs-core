@@ -27,7 +27,7 @@ import { ScreenViewport } from '@itwin/core-frontend';
 import { StandardViewId } from '@itwin/core-frontend';
 import { TentativePoint } from '@itwin/core-frontend';
 import { TypeEditor } from '@itwin/components-react';
-import { UiEvent } from '@itwin/core-react';
+import { UiEvent } from '@itwin/appui-abstract';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
 import { Vector3d } from '@itwin/core-geometry';
@@ -245,27 +245,6 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
     colorDef: ColorDef;
     onColorPick?: ((color: ColorDef, e: React.MouseEvent) => void) | undefined;
     round?: boolean;
-}
-
-// @internal @deprecated
-export class ContextMenu extends React.Component<ContextMenuProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @internal @deprecated
-export class ContextMenuItem extends React.Component<MenuItem> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @internal @deprecated
-export interface ContextMenuProps extends CommonProps {
-    isOpened: boolean;
-    items?: MenuItem[];
-    onClickOutside?: () => void;
-    parent: HTMLElement | null;
-    position: RelativePosition;
 }
 
 // @public
@@ -683,16 +662,6 @@ export enum MapMode {
     Closed = "map-closed",
     // (undocumented)
     Opened = "map-opened"
-}
-
-// @internal @deprecated
-export interface MenuItem {
-    checked?: boolean;
-    disabled?: boolean;
-    icon?: string;
-    isSeparator?: boolean;
-    name?: string;
-    onClick?: () => void;
 }
 
 // @internal @deprecated

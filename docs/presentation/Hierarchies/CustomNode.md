@@ -1,36 +1,175 @@
-# CustomNode
+# Custom Node
 
 > TypeScript type: [CustomNodeSpecification]($presentation-common).
 
-Returns a custom-defined node that's not based on an ECInstance.
+Returns a static custom-defined node that's not based on an ECInstance.
 
 ## Attributes
 
-| Name                   | Required? | Type                                             | Default     | Meaning                                                                                            | Performance Notes |
-| ---------------------- | --------- | ------------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------- | ----------------- |
-| *Node values*          |
-| `type`                 | Yes       | `string`                                         |             | Type of the node.                                                                                  |
-| `label`                | Yes       | `string`                                         |             | Label of the node. May be [localized](../Advanced/Localization.md).                                |
-| `description`          | No        | `string`                                         | `""`        | Description of the node. May be [localized](../Advanced/Localization.md).                          |
-| `imageId`              | No        | `string`                                         | `""`        | Id of the image to use for this custom node.                                                       |
-| *Filtering*            |
-| `hideExpression`       | No        | [ECExpression](./ECExpressions.md#specification) | `""`        | An ECExpression that indicates whether a node should be hidden or not.                             | Expensive         |
-| `hideIfNoChildren`     | No        | `boolean`                                        | `false`     | Hide nodes if they don't have children.                                                            | Expensive         |
-| `hideNodesInHierarchy` | No        | `boolean`                                        | `false`     | Hide nodes provided by this specification and directly show their children.                        | Expensive         |
-| *Ordering*             |
-| `priority`             | No        | `number`                                         | `1000`      | Changes the order of specifications used to create nodes for specific branch.                      |
-| *Misc.*                |
-| `hasChildren`          | No        | `"Always" \| "Never" \| "Unknown"`               | `"Unknown"` | Tells the rules engine that nodes produced using this specification always or never have children. | Improves          |
-| `nestedRules`          | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)          | `[]`        | Specifications of [nested child node rules](./Terminology.md#nested-rule).                         |
+| Name                                                      | Required? | Type                                             | Default     |
+| --------------------------------------------------------- | --------- | ------------------------------------------------ | ----------- |
+| *Node values*                                             |
+| [`type`](#attribute-type)                                 | Yes       | `string`                                         |             |
+| [`label`](#attribute-label)                               | Yes       | `string`                                         |             |
+| [`description`](#attribute-description)                   | No        | `string`                                         | `""`        |
+| [`imageId`](#attribute-imageid)                           | No        | `string`                                         | `""`        |
+| *Filtering*                                               |
+| [`hideExpression`](#attribute-hideexpression)             | No        | [ECExpression](./ECExpressions.md#specification) | `""`        |
+| [`hideIfNoChildren`](#attribute-hideifnochildren)         | No        | `boolean`                                        | `false`     |
+| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy) | No        | `boolean`                                        | `false`     |
+| *Ordering*                                                |
+| [`priority`](#attribute-priority)                         | No        | `number`                                         | `1000`      |
+| *Misc.*                                                   |
+| [`hasChildren`](#attribute-haschildren)                   | No        | `"Always" \| "Never" \| "Unknown"`               | `"Unknown"` |
+| [`nestedRules`](#attribute-nestedrules)                   | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)          | `[]`        |
 
-## Example
+### Attribute: `type`
 
-```JSON
-{
-  "specType": "CustomNode",
-  "type": "T_NodeA",
-  "label": "@MyApp:Label_NodeA@",
-  "description": "@MyApp:Description_NodeA@",
-  "priority": 2000
-}
+Specifies node type, which is assigned to node's key. The type can be used:
+
+- In [ECExpressions](../Advanced/ECExpressions.md) by using the [NavNode.Type](../Advanced/ECExpressions.md#navnode) symbol.
+- In code through [BaseNodeKey.type]($presentation-common).
+
+The given value is often used in [a condition of another child node rule](./ChildNodeRule.md#attribute-condition) to assign children to this node.
+
+```ts
+[[include:Hierarchies.CustomNodeSpecification.Type.Ruleset]]
 ```
+
+![Example of using "type" attribute](./media/hierarchy-with-specification-type-attribute.png)
+
+### Attribute: `label`
+
+Specifies node label. This is a string value that may be [localized](../Advanced/Localization.md).
+
+```ts
+[[include:Hierarchies.CustomNodeSpecification.Label.Ruleset]]
+```
+
+![Example of using "label" attribute](./media/hierarchy-with-specification-label-attribute.png)
+
+### Attribute: `description`
+
+> **Default value:** `""`
+
+Specifies the value of [Node.description]($presentation-common) property, which is a string that [may be localized](../Advanced/Localization.md). UI component displaying the node may choose whether and how to surface this information to users.
+
+```ts
+[[include:Hierarchies.CustomNodeSpecification.Description.Ruleset]]
+```
+
+![Example of using "description" attribute](./media/hierarchy-with-specification-description-attribute.png)
+
+### Attribute: `imageId`
+
+> **Default value:** `""`
+
+Specifies node's image ID. If set, the ID is assigned to [Node.imageId]($presentation-common) and it's up to the UI component
+to decide what to do with it.
+
+```ts
+[[include:Hierarchies.CustomNodeSpecification.ImageId.Ruleset]]
+```
+
+```ts
+[[include:Hierarchies.CustomNodeSpecification.ImageId.Result]]
+```
+
+### Attribute: `hideNodesInHierarchy`
+
+> **Default value:** `false`
+
+When `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
+
+```ts
+[[include:Hierarchies.CustomNodeSpecification.HideNodesInHierarchy.Ruleset]]
+```
+
+| `hideNodesInHierarchy: false`                                                                                                                                   | `hideNodesInHierarchy: true`                                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "hide nodes in hierarchy" attribute set to "false"](./media/hierarchy-with-customnodespecification-hidenodesinhierarchy-attribute-false.png) | ![Example of using "hide nodes in hierarchy" attribute set to "true"](./media/hierarchy-with-customnodespecification-hidenodesinhierarchy-attribute-true.png) |
+
+### Attribute: `hideIfNoChildren`
+
+> **Default value:** `false`
+
+Specifies whether the node created through this specification should be hidden if it has no child nodes.
+
+```ts
+[[include:Hierarchies.Specification.HideIfNoChildren.Ruleset]]
+```
+
+| `hideIfNoChildren: false`                                                                                                                     | `hideIfNoChildren: true`                                                                                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "hide if no children" attribute set to "false"](./media/hierarchy-with-specification-hideifnochildren-attribute-false.png) | ![Example of using "hide if no children" attribute set to "true"](./media/hierarchy-with-specification-hideifnochildren-attribute-true.png) |
+
+### Attribute: `hideExpression`
+
+> **Default value:** `""`
+
+When specified [ECExpression](./ECExpressions.md#specification) evaluates to `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
+
+```ts
+[[include:Hierarchies.Specification.HideExpression.Ruleset]]
+```
+
+| `hideExpression` evaluates to `false`                                                                                                          | `hideExpression` evaluates to `true`                                                                                                         |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "hide expression" attribute evaluating to "false"](./media/hierarchy-with-specification-hideexpression-attribute-false.png) | ![Example of using "hide expression" attribute evaluating to "true"](./media/hierarchy-with-specification-hideexpression-attribute-true.png) |
+
+### Attribute: `priority`
+
+> **Default value:** `1000`
+
+Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
+
+```ts
+[[include:Hierarchies.Specification.Priority.Ruleset]]
+```
+
+![Example of using "priority" attribute](./media/hierarchy-with-specification-priority-attribute.png)
+
+### Attribute: `hasChildren`
+
+> **Default value:** `"Unknown"`
+
+> **Performance note:** Setting the attribute to `Always` or `Never` may substantially improve performance of creating nodes in cases when
+> getting child nodes is expensive.
+
+Generally, when a node is created, the rules engine has to determine whether it has children before returning it. This requires
+evaluating child node rules and, usually, executing additional queries. This attribute allows telling the engine that nodes created
+by this specification always or never have children.
+
+In case when the attribute value "lies":
+
+- When set to `Always`, the returned nodes always have [Node.hasChildren]($presentation-common) set to `true`. Requesting children for such nodes returns
+empty list. It's up to the UI component to handle the case of parent node saying it has children but data source not returning any.
+
+- When set to `Never`, the returned nodes always have [Node.hasChildren]($presentation-common) set to `false`. Requesting children for such nodes returns empty
+list even if there are child node rules that define children for it.
+
+```ts
+[[include:Hierarchies.Specification.HasChildren.Ruleset]]
+```
+
+| `hasChildren: "Always"`                                                                                                             | `hasChildren: "Never"`                                                                                                            |
+| ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "has children" attribute set to "always"](./media/hierarchy-with-specification-haschildren-attribute-always.png) | ![Example of using "has children" attribute set to "never"](./media/hierarchy-with-specification-haschildren-attribute-never.png) |
+
+### Attribute: `nestedRules`
+
+> **Default value:** `[]`
+
+Specifications of [nested child node rules](./Terminology.md#nested-rule) that allow creating child nodes without the need of supplying a condition to
+match the parent node.
+
+This is useful when the same instance node at different hierarchy levels needs to have different child nodes. Specifying a [child node rule](./ChildNodeRule.md)
+at the root level with condition to match the instance ECClass makes the rule create children for all nodes of that ECClass. When that's not desired, different
+[child node rules](./ChildNodeRule.md) may be specified as nested rules for specifications that return instance nodes of the same ECClass - that makes them have
+different children.
+
+```ts
+[[include:Hierarchies.Specification.NestedRules.Ruleset]]
+```
+
+![Example of using "nested rules" attribute](./media/hierarchy-with-specification-nestedrules-attribute.png)

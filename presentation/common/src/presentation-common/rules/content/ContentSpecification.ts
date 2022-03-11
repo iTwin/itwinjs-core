@@ -39,11 +39,20 @@ export interface ContentSpecificationBase extends ContentModifiersList {
    */
   priority?: number;
 
-  /** Should each content record be assigned an image id */
+  /**
+   * Should each content record be assigned an image id
+   * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   */
   showImages?: boolean;
 
   /** Specifications for joining related instances */
   relatedInstances?: RelatedInstanceSpecification[];
+
+  /**
+   * Identifies whether we should ignore this specification if there is already an existing specification
+   * with higher `priority` that already provides content.
+   */
+  onlyIfNotHandled?: boolean;
 }
 
 /**

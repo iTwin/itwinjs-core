@@ -43,6 +43,7 @@
     "testFrontstage3": "Table Content",
     "testFrontstage4": "Test Messages & Dialogs",
     "testFrontstageUi20": "Ui-20 Stage",
+    "testFrontstageNoWidgets": "No Widgets Frontstage",
     "testFrontstage5": "Test 5 Frontstage",
     "viewIModel": "View iModel",
     "editIModel": "Edit iModel",
@@ -227,6 +228,11 @@
         "Pennsylvania": "Pennsylvania",
         "NewYork": "New York"
       }
+    },
+    "MapFeatureInfoTool": {
+      "keyin": "MapFeatureInfo",
+      "description": "Map Feature Info",
+      "flyover": "Map Feature Info"
     },
     "Tool1": {
       "keyin": "Test Tool1",

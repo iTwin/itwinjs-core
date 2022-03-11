@@ -173,28 +173,19 @@ export class ServerBasedLocks implements LockControl {
     this.lockDb.saveChanges();
   }
 
-  /**
-   * Acquire the exclusive lock on one or more elements. This also attempts to acquire a shared lock on all of the element's owners, recursively.
-   * If *any* lock cannot be obtained, no locks are acquired.
-   */
-  public async acquireExclusiveLock(ids: Id64Arg): Promise<void> {
+  public async acquireLocks(arg: { shared?: Id64Arg, exclusive?: Id64Arg }): Promise<void> {
     const locks = new Map<Id64String, LockState>();
-    for (const id of Id64.iterable(ids)) {
-      if (!this.holdsExclusiveLock(id))
-        locks.set(id, LockState.Exclusive);
+    if (arg.shared) {
+      for (const id of Id64.iterable(arg.shared)) {
+        if (!this.holdsSharedLock(id))
+          locks.set(id, LockState.Shared);
+      }
     }
-    return this.acquireAllLocks(locks);
-  }
-
-  /**
-   * Acquire a shared lock on one or more elements. This also attempts to acquire a shared lock on all of the element's owners, recursively.
-   * If *any* lock cannot be obtained, no locks are acquired.
-   */
-  public async acquireSharedLock(ids: Id64Arg): Promise<void> {
-    const locks = new Map<Id64String, LockState>();
-    for (const id of Id64.iterable(ids)) {
-      if (!this.holdsSharedLock(id))
-        locks.set(id, LockState.Shared);
+    if (arg.exclusive) {
+      for (const id of Id64.iterable(arg.exclusive)) {
+        if (!this.holdsExclusiveLock(id))
+          locks.set(id, LockState.Exclusive);
+      }
     }
     return this.acquireAllLocks(locks);
   }

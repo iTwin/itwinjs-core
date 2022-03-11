@@ -12,11 +12,10 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo,
   Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
-  ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition,
-  Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents,
-  RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON,
-  VariableValueTypes,
+  ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyUpdateInfo,
+  InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions,
+  PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo,
+  UpdateInfoJSON, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { LocalizationHelper } from "./LocalizationHelper";
@@ -420,7 +419,7 @@ export class PresentationManager implements IDisposable {
 
   /**
    * Retrieves content item instance keys.
-   * @alpha
+   * @beta
    */
   public async getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<{ total: number, items: () => AsyncGenerator<InstanceKey> }> {
     await this.onConnection(requestOptions.imodel);
@@ -482,11 +481,8 @@ interface PagedGeneratorCreateProps<TPagedResponseItem> {
   get: (pageStart: Required<PageOptions>, requestIndex: number) => Promise<{ total: number, items: TPagedResponseItem[] }>;
 }
 async function createPagedGeneratorResponse<TPagedResponseItem>(props: PagedGeneratorCreateProps<TPagedResponseItem>) {
-  const requestedPageStart = props.page?.start ?? 0;
-  const requestedPageSize = props.page?.size ?? 0;
-  let pageStart = requestedPageStart;
-  let pageSize = requestedPageSize;
-  let receivedItemsCount = 0;
+  let pageStart = props.page?.start ?? 0;
+  let pageSize = props.page?.size ?? 0;
   let requestIndex = 0;
 
   const firstPage = await props.get({ start: pageStart, size: pageSize }, requestIndex++);
@@ -497,21 +493,21 @@ async function createPagedGeneratorResponse<TPagedResponseItem>(props: PagedGene
       while (true) {
         for (const item of partialResult.items) {
           yield item;
-          ++receivedItemsCount;
         }
 
+        const receivedItemsCount = partialResult.items.length;
         if (partialResult.total !== 0 && receivedItemsCount === 0) {
           if (pageStart >= partialResult.total)
             throw new Error(`Requested page with start index ${pageStart} is out of bounds. Total number of items: ${partialResult.total}`);
           throw new Error("Paged request returned non zero total count but no items");
         }
 
-        if (requestedPageSize !== 0 && receivedItemsCount >= requestedPageSize || receivedItemsCount >= (partialResult.total - requestedPageStart))
+        if (pageSize !== 0 && receivedItemsCount >= pageSize || receivedItemsCount >= (partialResult.total - pageStart))
           break;
 
-        if (requestedPageSize !== 0)
-          pageSize = requestedPageSize - receivedItemsCount;
-        pageStart = requestedPageStart + receivedItemsCount;
+        if (pageSize !== 0)
+          pageSize -= receivedItemsCount;
+        pageStart += receivedItemsCount;
 
         partialResult = await props.get({ start: pageStart, size: pageSize }, requestIndex++);
       }

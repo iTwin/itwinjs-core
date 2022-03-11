@@ -10,7 +10,7 @@ import { Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
 import { BRepEntityType, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, LocateSubEntityProps, SolidModelingCommandIpc, SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@itwin/editor-common";
 import { FeatureAppearance, FeatureAppearanceProvider, RgbColor } from "@itwin/core-common";
 import { Point3d, Range3d, Ray3d, Transform } from "@itwin/core-geometry";
-import { AccuDrawHintBuilder, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoordSource, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
+import { AccuDrawHintBuilder, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoordSource, CoreTools, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, SelectionMethod, SelectionSet, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
 
@@ -381,7 +381,61 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   protected _currentSubEntity?: SubEntityData;
   protected _acceptedSubEntities: SubEntityData[] = [];
   protected _locatedSubEntities?: SubEntityLocationProps[];
+  protected _subEntityGraphicPending?: true;
   protected readonly _summaryIds = new Map<Id64String, BRepEntityType[]>();
+
+  protected override provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void {
+    if (this.wantAdditionalSubEntities) {
+      const faceKey = this.wantSubEntityType(SubEntityType.Face) ? "Face" : "";
+      const edgeKey = this.wantSubEntityType(SubEntityType.Edge) ? "Edge" : "";
+      const vertexKey = this.wantSubEntityType(SubEntityType.Vertex) ? "Vertex" : "";
+      const subEntityKey: string = `${faceKey}${edgeKey}${vertexKey}`;
+
+      if(0 === subEntityKey.length) {
+        super.provideToolAssistance(mainInstrText, additionalInstr);
+        return;
+      }
+
+      if (undefined === mainInstrText)
+        mainInstrText = EditTools.translate(`LocateSubEntities.Identify.${subEntityKey}`);
+
+      const leftMsg = EditTools.translate(`LocateSubEntities.Accept.${subEntityKey}`);
+      const rightMsg = this.haveAcceptedSubEntities && this.allowSubEntitySelectNext ? EditTools.translate(`LocateSubEntities.AcceptNext.${subEntityKey}`) : CoreTools.translate("ElementSet.Inputs.Cancel");
+
+      const mouseInstructions: ToolAssistanceInstruction[] = [];
+      const touchInstructions: ToolAssistanceInstruction[] = [];
+
+      if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
+        touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, leftMsg, false, ToolAssistanceInputMethod.Touch));
+      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, leftMsg, false, ToolAssistanceInputMethod.Mouse));
+
+      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rightMsg, false, ToolAssistanceInputMethod.Touch));
+      mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rightMsg, false, ToolAssistanceInputMethod.Mouse));
+
+      if (this.allowSubEntityControlSelect)
+        mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, EditTools.translate(`LocateSubEntities.IdentifyAdditional.${subEntityKey}`), false, ToolAssistanceInputMethod.Mouse));
+
+      if (undefined !== additionalInstr) {
+        for (const instr of additionalInstr) {
+          if (ToolAssistanceInputMethod.Touch === instr.inputMethod)
+            touchInstructions.push(instr);
+          else
+            mouseInstructions.push(instr);
+        }
+      }
+
+      const sections: ToolAssistanceSection[] = [];
+      sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+      sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+      const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, mainInstrText);
+      const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+      IModelApp.notifications.setToolAssistance(instructions);
+      return;
+    }
+
+    super.provideToolAssistance(mainInstrText, additionalInstr);
+  }
 
   protected override get wantAgendaAppearanceOverride(): boolean { return true; }
   protected get wantGeometrySummary(): boolean { return false; }
@@ -731,14 +785,21 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     if (undefined === id)
       return this.changeCurrentSubEntity();
 
-    const current = await this.doPickSubEntities(id, ev);
-    const chordTolerance = current ? computeChordToleranceFromPoint(ev.viewport, Point3d.fromJSON(current[0].point)) : 0.0;
-
-    if (!await this.changeCurrentSubEntity(id, current ? current[0] : undefined, chordTolerance))
+    if (this._subEntityGraphicPending)
       return false;
 
-    IModelApp.viewManager.invalidateDecorationsAllViews();
-    return true;
+    this._subEntityGraphicPending = true;
+
+    const current = await this.doPickSubEntities(id, ev);
+    const chordTolerance = current ? computeChordToleranceFromPoint(ev.viewport, Point3d.fromJSON(current[0].point)) : 0.0;
+    const status = await this.changeCurrentSubEntity(id, current ? current[0] : undefined, chordTolerance);
+
+    this._subEntityGraphicPending = undefined;
+
+    if (status)
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+
+    return status;
   }
 
   protected async createSubEntityGraphic(id: Id64String, data: SubEntityData, chordTolerance?: number): Promise<boolean> {

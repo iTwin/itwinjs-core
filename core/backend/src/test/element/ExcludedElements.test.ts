@@ -51,12 +51,11 @@ describe("ExcludedElements", () => {
 
       const getStyle = (compressExcludedElementIds?: boolean) => {
         const loadProps = { id: styleId, displayStyle: { compressExcludedElementIds } };
-        return imodel.elements.getElementJson<DisplayStyle3d>(loadProps);
+        return imodel.elements.getElement<DisplayStyle3d>(loadProps);
       };
 
       // Unless compressed Ids explicitly requested, the Ids are always decompressed regardless of how they are stored.
       // This is to preserve compatibility with older front-ends that don't understand the compressed Ids; it's an unfortunate default.
-      // ###TODO change the default in iModel.js 3.0.
       expect(getStyle().jsonProperties.styles.excludedElements).to.deep.equal(excludedElementIds);
       expect(getStyle(false).jsonProperties.styles.excludedElements).to.deep.equal(excludedElementIds);
       expect(getStyle(true).jsonProperties.styles.excludedElements).to.equal(excludedElements);
