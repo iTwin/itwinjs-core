@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Create an ios test project to run webpacked core tests.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
