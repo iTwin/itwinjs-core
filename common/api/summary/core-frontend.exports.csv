@@ -25,7 +25,6 @@ public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
 alpha;ActivationEvent
-beta;ActiveBriefcaseSettings
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
@@ -73,6 +72,7 @@ internal;BingMapsImageryLayerProvider
 public;BlankConnection 
 public;BlankConnectionProps
 public;BriefcaseConnection 
+alpha;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
 alpha;BuildExtensionManifest 

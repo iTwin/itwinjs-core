@@ -1032,17 +1032,6 @@ export enum ActivationEvent {
     onStartup = "onStartup"
 }
 
-// @beta
-export class ActiveBriefcaseSettings {
-    // (undocumented)
-    get category(): Id64String | undefined;
-    set category(category: Id64String | undefined);
-    get model(): Id64String | undefined;
-    set model(model: Id64String | undefined);
-    readonly onCategoryChanged: BeEvent<(previousCategory: Id64String | undefined) => void>;
-    readonly onModelChanged: BeEvent<(previousModel: Id64String | undefined) => void>;
-}
-
 // @public
 export class ActivityMessageDetails {
     constructor(showProgressBar: boolean, showPercentInMessage: boolean, supportsCancellation: boolean, showDialogInitially?: boolean);
@@ -1681,10 +1670,10 @@ export interface BlankConnectionProps {
 // @public
 export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps, openMode: OpenMode);
-    // @beta
-    readonly activeSettings: ActiveBriefcaseSettings;
     close(): Promise<void>;
     get editingScope(): GraphicalEditingScope | undefined;
+    // @alpha
+    readonly editorToolSettings: BriefcaseEditorToolSettings;
     enterEditingScope(): Promise<GraphicalEditingScope>;
     hasPendingTxns(): Promise<boolean>;
     get iModelId(): GuidString;
@@ -1703,6 +1692,16 @@ export class BriefcaseConnection extends IModelConnection {
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;
+}
+
+// @alpha
+export class BriefcaseEditorToolSettings {
+    get category(): Id64String | undefined;
+    set category(category: Id64String | undefined);
+    get model(): Id64String | undefined;
+    set model(model: Id64String | undefined);
+    readonly onCategoryChanged: BeEvent<(previousCategory: Id64String | undefined) => void>;
+    readonly onModelChanged: BeEvent<(previousModel: Id64String | undefined) => void>;
 }
 
 // @public

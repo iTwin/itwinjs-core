@@ -351,7 +351,7 @@ export class Viewer extends Window {
     if (!view.iModel.isBriefcaseConnection())
       return;
 
-    const settings = view.iModel.activeSettings;
+    const settings = view.iModel.editorToolSettings;
     if (undefined === settings.category || !view.viewsCategory(settings.category)) {
       settings.category = undefined;
       for (const catId of view.categorySelector.categories) {

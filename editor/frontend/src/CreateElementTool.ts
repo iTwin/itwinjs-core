@@ -175,7 +175,7 @@ export class DynamicGraphicsProvider {
 /** @alpha Placement tool base class for creating new elements. */
 export abstract class CreateElementTool extends PrimitiveTool {
   public get targetCategory(): Id64String {
-    const category = this.briefcase?.activeSettings.category;
+    const category = this.briefcase?.editorToolSettings.category;
     if (undefined === category)
       throw new IModelError(IModelStatus.InvalidCategory, "");
 
@@ -183,7 +183,7 @@ export abstract class CreateElementTool extends PrimitiveTool {
   }
 
   public override get targetModelId(): Id64String {
-    const model = this.briefcase?.activeSettings.model;
+    const model = this.briefcase?.editorToolSettings.model;
     if (undefined === model)
       throw new IModelError(IModelStatus.BadModel, "");
 
@@ -194,7 +194,7 @@ export abstract class CreateElementTool extends PrimitiveTool {
     if (!vp?.iModel.isBriefcaseConnection())
       return false;
 
-    return undefined !== vp.iModel.activeSettings.model && super.isCompatibleViewport(vp, isSelectedViewChange);
+    return undefined !== vp.iModel.editorToolSettings.model && super.isCompatibleViewport(vp, isSelectedViewChange);
   }
 
   /** Whether [[setupAndPromptForNextAction]] should call [[AccuSnap.enableSnap]] for current tool phase.

@@ -47,7 +47,7 @@ export abstract class IdPicker extends ToolBarDropDown {
       { name: "Hide Selected", value: "Hide" },
       { name: "Hilite Enabled", value: "Hilite" },
       { name: "Un-hilite Enabled", value: "Dehilite" },
-      // Set [[BriefcaseConnection.activeSettings]].model/category to first enabled entry.
+      // Set [[BriefcaseConnection.editorToolSettings]].model/category to first enabled entry.
       { name: "Set First Active", value: "SetFirstActive" },
     ];
   }
@@ -163,7 +163,7 @@ export abstract class IdPicker extends ToolBarDropDown {
       case "SetFirstActive":
         if (this._vp.iModel.isBriefcaseConnection()) {
           const first = Array.from(this._enabledIds)[0];
-          this._vp.iModel.activeSettings[this._settingsType] = first;
+          this._vp.iModel.editorToolSettings[this._settingsType] = first;
         }
         return;
       case "":

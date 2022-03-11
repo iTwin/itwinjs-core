@@ -146,22 +146,22 @@ class ModelChangeMonitor {
   }
 }
 
-/** Default settings that can be used to control the behavior of [[Tool]]s that modify a [[BriefcaseConnection]].
- * For example, tools that want to create new elements can consult the briefcase's active settings to
+/** Settings that can be used to control the behavior of [[Tool]]s that modify a [[BriefcaseConnection]].
+ * For example, tools that want to create new elements can consult the briefcase's editor tool settings to
  * determine into which model and category to insert the elements.
  * Specialized tools are free to ignore these settings.
- * @see [[BriefcaseConnection.activeSettings]] to query or modify the current settings for a briefcase.
+ * @see [[BriefcaseConnection.editorToolSettings]] to query or modify the current settings for a briefcase.
  * @see [CreateElementTool]($editor-frontend) for an example of a tool that uses these settings.
  * @alpha
  */
-export class ActiveBriefcaseSettings {
+export class BriefcaseEditorToolSettings {
   private _category?: Id64String;
   private _model?: Id64String;
 
-  /** An event raised just after the active [[category]] is changed. */
+  /** An event raised just after the default [[category]] is changed. */
   public readonly onCategoryChanged = new BeEvent<(previousCategory: Id64String | undefined) => void>();
 
-  /** An event raised just after the active [[model]] is changed. */
+  /** An event raised just after the default [[model]] is changed. */
   public readonly onModelChanged = new BeEvent<(previousModel: Id64String | undefined) => void>();
 
   /** The [Category]($backend) into which new elements should be inserted by default.
@@ -207,7 +207,7 @@ export class BriefcaseConnection extends IModelConnection {
   /** Default settings that can be used to control the behavior of [[Tool]]s that modify this briefcase.
    * @alpha
    */
-  public readonly activeSettings = new ActiveBriefcaseSettings();
+  public readonly editorToolSettings = new BriefcaseEditorToolSettings();
 
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
