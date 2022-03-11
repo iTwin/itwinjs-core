@@ -7,8 +7,12 @@
  */
 
 import { IModelApp } from "../IModelApp";
-import { ActivationEvent, BuildExtensionManifest, ExtensionManifest, LocalExtensionProps, ResolveFunc } from "./Extension";
-import { ExtensionLoader } from "./ExtensionLoader";
+import {
+  ActivationEvent,
+  Extension,
+  ExtensionManifest,
+  ExtensionProvider,
+} from "./Extension";
 
 /** The Extensions loading system has the following goals:
  *   1. Only fetch what is needed when it is required
@@ -39,11 +43,8 @@ import { ExtensionLoader } from "./ExtensionLoader";
  * @alpha
  */
 export class ExtensionAdmin {
-  /** The list of places to download an Extension.  */
-  private _extensionLoaders: ExtensionLoader[] = [];
-
   /** Defines the set of extensions that are currently known and can be invoked during activation events.  */
-  private _installedExtensions: Map<string, LocalExtensionProps> = new Map<string, LocalExtensionProps>();
+  private _extensions: Map<string, Extension> = new Map<string, Extension>();
 
   /** Fired when an Extension has been added or removed.
    * @internal
@@ -56,34 +57,35 @@ export class ExtensionAdmin {
     IModelApp.onAfterStartup.addListener(this.onStartup);
   }
 
-  /** Add an ExtensionLoader to the front of the list of extension loaders. Extension loaders are invoked front to back.
-   * @param extensionLoader Extension loader to add
+  /**
+   * Register a local or remote extension
+   * @param provider
+   * @alpha
    */
-  public addExtensionLoaderFront(extensionLoader: ExtensionLoader) {
-    this._extensionLoaders.unshift(extensionLoader);
+  public async addExtension(provider: ExtensionProvider): Promise<void> {
+    const manifest = await this.getManifest(provider);
+    this._extensions.set(manifest.name, {
+      manifest,
+      main: provider.main,
+      jsUrl: provider.jsUrl,
+    });
   }
 
-  /** Add an ExtensionLoader to the list of extension loaders in use.
-   * @param extensionLoader Extension loader to add
+  /**
+   * Register a list of local and/or remote extensions
+   * @param providers
+   * @alpha
    */
-  public addExtensionLoader(extensionLoader: ExtensionLoader) {
-    this._extensionLoaders.push(extensionLoader);
-  }
-
-  /** Add an Extension intend to be bundled during compilation.
-   * @param manifestLoader A function that loads the manifest file.
-   * @param mainFunc The main function to be executed upon
-   */
-  public async addBuildExtension(manifestPromise: Promise<BuildExtensionManifest>, mainFunc?: ResolveFunc): Promise<void> {
-    const manifest = await this.getManifest(manifestPromise);
-    this._installedExtensions.set(manifest.name, { manifest, mainFunc });
+  public async addExtensions(providers: ExtensionProvider[]): Promise<void[]> {
+    return Promise.all(
+      providers.map(async (provider) => this.addExtension(provider))
+    );
   }
 
   /** Loops over all enabled Extensions and triggers each one if the provided event is defined. */
   private async activateExtensionEvents(event: string) {
-    for (const extension of this._installedExtensions.values()) {
-      if (!extension.manifest.activationEvents)
-        continue;
+    for (const extension of this._extensions.values()) {
+      if (!extension.manifest.activationEvents) continue;
       for (const activationEvent of extension.manifest.activationEvents) {
         if (activationEvent === event) {
           this.execute(extension); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -95,8 +97,19 @@ export class ExtensionAdmin {
   /** Resolves an import function provided for build-time Extensions that should return a valid
    * Extension Manifest.
    */
-  private async getManifest(loader: Promise<ExtensionManifest>): Promise<ExtensionManifest> {
-    const manifest =  await loader;
+  private async getManifest(
+    provider: ExtensionProvider
+  ): Promise<ExtensionManifest> {
+    let manifest: ExtensionManifest;
+    if (provider.manifestPromise) {
+      manifest = await provider.manifestPromise;
+    } else if (provider.manifestUrl) {
+      manifest = await (await fetch(provider.manifestUrl)).json();
+    } else {
+      throw new Error(
+        "Please provide a method to retrieve the Extension manifest"
+      );
+    }
     return manifest;
   }
 
@@ -107,9 +120,20 @@ export class ExtensionAdmin {
   //
   // The global scope is important for an Extension as that is where the reference to the Extension Implementation is supplied
   // from the application side.
-  private async execute(extension: LocalExtensionProps): Promise<void> {
-    if (extension.mainFunc)
-      return extension.mainFunc();
+  // TODO Are these comments accurate?
+  private async execute(extension: Extension): Promise<void> {
+    if (extension.main) return extension.main();
+    if (extension.jsUrl) {
+      const main = await import(/* webpackIgnore: true */ extension.jsUrl);
+      if (typeof main === "function") {
+        return main();
+      }
+      if (!main.default) {
+        throw new Error(
+          `No default export was found in remote extension ${extension.manifest.name}`
+        );
+      }
+      return main.default();
+    }
   }
-
 }

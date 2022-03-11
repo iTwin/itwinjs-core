@@ -20,7 +20,7 @@ export type ResolveFunc = () => Promise<any>;
 
 /** Defines the format of an Extension manifest
  * @alpha
-*/
+ */
 export interface ExtensionManifest {
   /** The extension name */
   readonly name: string;
@@ -34,23 +34,54 @@ export interface ExtensionManifest {
    * e.g "./lib/main.js"
    */
   readonly main: string;
-  /** List of activation events this Extension supports. */
-  readonly activationEvents: ActivationEvent[];
-}
-
-/** @alpha */
-export interface BuildExtensionManifest extends ExtensionManifest {
   /** Only valid when the Extension is loaded at build-time.
    *
    * Defines the main ES module that will be imported
    */
-  readonly module: string;
+  readonly module?: string;
+  /** List of activation events this Extension supports. */
+  readonly activationEvents: ActivationEvent[] | string[];
 }
 
-/** Describes an Extension that has already been downloaded and has a location files can be easily executed.
+/**
+ * Methods to provide an extension's content (local function vs remote function)
  * @alpha
-*/
-export interface LocalExtensionProps {
+ */
+interface ExtensionContentProvider {
+  /**
+   * A local function that is the starting execution point for the Extension.
+   * Typically used with locally installed Extensions
+   */
+  readonly main?: ResolveFunc;
+  /**
+   * The url for an endpoint that responds with a Javascript file that contains a default function that is the starting execution point for the Extension.
+   * Typically used with remote Extensions
+   */
+  readonly jsUrl?: string;
+}
+
+/**
+ * A "ready to use" Extension (contains a manifest object).
+ * Will be used as the type for in-memory extensions in the ExtensionAdmin
+ * @alpha
+ */
+export interface Extension extends ExtensionContentProvider {
   readonly manifest: ExtensionManifest;
-  readonly mainFunc?: ResolveFunc;
+}
+
+/**
+ * Properties that are required to construct an Extension.
+ * Is the parameter type for the "ExtensionAdmin.addExtension" method, which is the preferred method for consumers to provide/register an Extension
+ */
+export interface ExtensionProvider extends ExtensionContentProvider {
+  /**
+   * A local promise that resolves the manifest.
+   * Typically used with locally installed Extensions
+   */
+  readonly manifestPromise?: Promise<ExtensionManifest>;
+  /**
+   * The url for an endpoint that responds with the manifest.
+   * Typically used with remote Extensions
+   */
+  readonly manifestUrl?: string;
 }
