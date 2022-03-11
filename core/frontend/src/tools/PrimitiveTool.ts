@@ -37,7 +37,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return this.targetView.view.iModel;
   }
 
-  /** Get the briefcase on which this tool operates, if the tool has successfully installed and [[iModel]] is a briefcase. */
+  /** Get the briefcase on which this tool operates, if the tool has successfully installed and the target [[iModel]] is a briefcase. */
   public get briefcase(): BriefcaseConnection | undefined {
     const iModel = this.targetView?.view.iModel;
     return iModel?.isBriefcaseConnection() ? iModel : undefined;

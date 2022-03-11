@@ -151,7 +151,8 @@ class ModelChangeMonitor {
  * determine into which model and category to insert the elements.
  * Specialized tools are free to ignore these settings.
  * @see [[BriefcaseConnection.activeSettings]] to query or modify the current settings for a briefcase.
- * @beta
+ * @see [CreateElementTool]($editor-frontend) for an example of a tool that uses these settings.
+ * @alpha
  */
 export class ActiveBriefcaseSettings {
   private _category?: Id64String;
@@ -163,9 +164,10 @@ export class ActiveBriefcaseSettings {
   /** An event raised just after the active [[model]] is changed. */
   public readonly onModelChanged = new BeEvent<(previousModel: Id64String | undefined) => void>();
 
-  /* The [Category]($backend) into which new elements should be inserted by default.
-   * Specialized tools are free to ignore this setting.
+  /** The [Category]($backend) into which new elements should be inserted by default.
+   * Specialized tools are free to ignore this setting and instead use their own logic to select an appropriate category.
    * @see [[onCategoryChanged]] to be notified when this property is modified.
+   * @see [CreateElementTool.targetCategory]($editor-frontend) for an example of a tool that uses this setting.
    */
   public get category(): Id64String | undefined {
     return this._category;
@@ -179,8 +181,9 @@ export class ActiveBriefcaseSettings {
   }
 
   /** The [Model]($backend) into which new elements should be inserted by default.
-   * Specialized tools are free to ignore this setting.
+   * Specialized tools are free to ignore this setting and instead use their own logic to select an appropriate model.
    * @see [[onModelChanged]] to be notified when this property is modified.
+   * @see [CreateElementTool.targetModel]($editor-frontend) for an example of a tool that uses this setting.
    */
   public get model(): Id64String | undefined {
     return this._model;
@@ -202,7 +205,7 @@ export class BriefcaseConnection extends IModelConnection {
   protected _isClosed?: boolean;
   private readonly _modelsMonitor: ModelChangeMonitor;
   /** Default settings that can be used to control the behavior of [[Tool]]s that modify this briefcase.
-   * @beta
+   * @alpha
    */
   public readonly activeSettings = new ActiveBriefcaseSettings();
 
