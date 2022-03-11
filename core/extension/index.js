@@ -5,7 +5,7 @@
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
-const ext = globalThis[globalSymbol].getExtensionApi("import.meta.url");
+const ext = globalThis[globalSymbol].getExtensionApi(import.meta.url);
 
 // re-export tool
 export const {

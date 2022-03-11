@@ -7,9 +7,7 @@
  */
 
 import * as path from "path";
-
-/** @internal */
-export const PRESENTATION_COMMON_ROOT = __dirname;
+import { PRESENTATION_COMMON_ROOT } from "@itwin/presentation-common";
 
 /**
  * Path to presentation-backend assets root directory.
