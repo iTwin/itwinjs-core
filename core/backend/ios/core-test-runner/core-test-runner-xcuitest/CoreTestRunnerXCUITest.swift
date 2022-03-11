@@ -1,10 +1,3 @@
-//
-//  core_test_runner_xcuitestLaunchTests.swift
-//  core-test-runner-xcuitest
-//
-//  Created by Daniel Toby on 3/8/22.
-//
-
 import XCTest
 
 class CoreTestRunnerXCUITest: XCTestCase {

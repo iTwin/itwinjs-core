@@ -41,7 +41,7 @@ jobs:
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
 
-      - script: node common/scripts/install-run-rush.js build -v -p max
+      - script: node common/scripts/install-run-rush.js build -v -p max --to core-backend
         displayName: rush build
         condition: succeeded()
 
