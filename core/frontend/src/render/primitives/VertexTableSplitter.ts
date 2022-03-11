@@ -141,18 +141,23 @@ class Node {
   }
 }
 
+interface VertexTableSplitArgs extends VertexTableWithIndices {
+  featureTable: PackedFeatureTable;
+  colorTable?: Uint32Array;
+}
+
 class VertexTableSplitter {
-  private readonly _input: VertexTableWithIndices & { featureTable: PackedFeatureTable };
+  private readonly _input: VertexTableSplitArgs;
   private readonly _computeNodeId: ComputeNodeId;
   private readonly _nodes = new Map<number, Node>();
 
-  private constructor(input: VertexTableWithIndices & { featureTable: PackedFeatureTable }, computeNodeId: ComputeNodeId) {
+  private constructor(input: VertexTableSplitArgs, computeNodeId: ComputeNodeId) {
     this._input = input;
     this._computeNodeId = computeNodeId;
   }
 
-  public static split(source: VertexTableWithIndices, featureTable: PackedFeatureTable, computeNodeId: ComputeNodeId): Map<number, Node> {
-    const splitter = new VertexTableSplitter({ ...source, featureTable }, computeNodeId);
+  public static split(source: VertexTableSplitArgs, computeNodeId: ComputeNodeId): Map<number, Node> {
+    const splitter = new VertexTableSplitter(source, computeNodeId);
     splitter.split();
     return splitter._nodes;
   }
@@ -199,7 +204,8 @@ export function splitPointStringParams(params: PointStringParams, featureTable: 
   const result = new Map<number, PointStringParams>();
 
   const { indices, vertices } = params;
-  const nodes = VertexTableSplitter.split({ indices, vertices }, featureTable, computeNodeId);
+  const colorTable = undefined === vertices.uniformColor ? new Uint32Array(vertices.data.buffer, vertices.numVertices * vertices.numRgbaPerVertex * 4) : undefined;
+  const nodes = VertexTableSplitter.split({ indices, vertices, featureTable, colorTable }, computeNodeId);
 
   return result;
 }
