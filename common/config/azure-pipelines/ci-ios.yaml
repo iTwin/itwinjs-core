@@ -78,8 +78,16 @@ jobs:
         displayName: 'Run App Center tests'
         condition: succeeded()
 
-      - script: node ./ios/scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterSlug)" "$(AppCenterToken)"
+      - script: node ./ios/scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)"
         workingDirectory: core/backend
         failOnStderr: true
         displayName: 'Process Logs'
         condition: succeeded()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Test Results"
+        inputs:
+          testResultsFiles: "ios/junit_results.xml"
+          testRunTitle: "Core - Backend Tests - iOS"
+          searchFolder: core/backend
+        condition: succeededOrFailed()

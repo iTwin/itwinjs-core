@@ -7,17 +7,20 @@ const https = require('https');
 const fs = require('fs');
 const readline = require('readline');
 const path = require('path');
+
 const app_center_host = 'api.appcenter.ms';
 const app_center_api_ver = "v0.1";
 const owner_name = process.argv[2]; // app_center_owner;
 const app_name = process.argv[3];   // app_center_app;
 const api_token = process.argv[4];  // app_center_token;
+
+const test_id = require("../run_output.json")[0].testRunId; // TODO: Pass path to test results.
+
 const xmlFilter = "[Mocha_Result_XML]: ";
 const deviceLogsPath = "ios/device_logs.txt"
 const resultsPath = "ios/junit_results.xml"
-const testRunId = require("../run_output.json")[0].testRunId;
 
-async function fetchTestReportInfo(test_id) {
+async function fetchTestReportInfo() {
   return new Promise((resolve, reject) => {
     const options = {
       host: app_center_host,
@@ -89,12 +92,14 @@ function extractXML(xmlFilter, inputLogFile, outputXmlFile) {
 }
 
 (async function () {
-  const testReport = await fetchTestReportInfo(testRunId);
+  const testReport = await fetchTestReportInfo();
   console.log("Fetched test report info.")
   console.info(JSON.stringify(testReport, undefined, 2));
+
   const deviceLogUrl = testReport.device_logs[0].device_log;
   await downloadDeviceLogs(deviceLogUrl, deviceLogsPath);
   console.log("Downloaded device logs.")
+
   extractXML(xmlFilter, deviceLogsPath, resultsPath);
   console.log("Extracted XML from device logs.")
 })();
