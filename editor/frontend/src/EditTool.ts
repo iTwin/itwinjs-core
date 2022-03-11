@@ -14,6 +14,7 @@ import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSave
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
 import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
 import { MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
+import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
 /** @alpha Options for [[EditTools.initialize]]. */
@@ -114,6 +115,9 @@ export class EditTools {
         CreateEllipseTool,
         CreateLineStringTool,
         CreateRectangleTool,
+        BreakCurveTool,
+        ExtendCurveTool,
+        OffsetCurveTool,
       ];
 
       for (const tool of tools)

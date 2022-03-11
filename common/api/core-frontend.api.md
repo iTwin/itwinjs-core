@@ -5333,6 +5333,9 @@ export interface ITwinIdArg {
     readonly iTwinId?: GuidString;
 }
 
+// @public (undocumented)
+export const ITWINJS_CORE_VERSION: string;
+
 // @public
 export enum KeyinParseError {
     MismatchedQuotes = 4,
@@ -11651,7 +11654,7 @@ export class ToolAdmin {
 // @public (undocumented)
 export namespace ToolAdmin {
     // @alpha
-    export class ActiveSettings {
+    export interface ActiveSettings {
         category?: Id64String;
         model?: Id64String;
     }
