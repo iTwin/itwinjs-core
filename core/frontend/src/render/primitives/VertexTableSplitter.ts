@@ -10,17 +10,6 @@ import { assert, Id64 } from "@itwin/core-bentley";
 import { PackedFeatureTable } from "@itwin/core-common";
 import { VertexTableWithIndices } from "./VertexTable";
 
-/** Given a VertexTable and corresponding indices, split it into smaller vertex tables based on element Id.
- * @param input The original VertexTable and the indices defining the geometry.
- * @param computeNodeId A function that accepts an element Id and returns the unsigned integer Id of the node to which it belongs.
- * @returns A mapping of node Ids to the vertices and indices associated with that node.
- * @internal
- */
-export function splitVerticesByNodeId(input: VertexTableWithIndices & { featureTable: PackedFeatureTable }, computeNodeId: (elementId: Id64.Uint32Pair) => number): Map<number, VertexTableWithIndices> {
-  const splitter = new VertexTableSplitter(input, computeNodeId);
-  return splitter.result;
-}
-
 class IndexBuffer {
   private _data: Uint8Array;
   private _length: number;
@@ -99,23 +88,23 @@ class VertexBuffer {
 class Node {
   public readonly id: number;
   private readonly _remappedIndices = new Map<number, number>();
-  private readonly _vertices: VertexBuffer;
-  private readonly _indices = new IndexBuffer();
+  public readonly vertices: VertexBuffer;
+  public readonly indices = new IndexBuffer();
 
   public constructor(id: number, numRgbaPerVertex: number) {
     this.id = id;
-    this._vertices = new VertexBuffer(numRgbaPerVertex);
+    this.vertices = new VertexBuffer(numRgbaPerVertex);
   }
 
   public addVertex(originalIndex: number, vertex: Uint32Array): void {
     let newIndex = this._remappedIndices.get(originalIndex);
     if (undefined === newIndex) {
-      newIndex = this._vertices.length;
+      newIndex = this.vertices.length;
       this._remappedIndices.set(originalIndex, newIndex);
-      this._vertices.push(vertex);
+      this.vertices.push(vertex);
     }
 
-    this._indices.push(newIndex);
+    this.indices.push(newIndex);
   }
 }
 
@@ -124,15 +113,15 @@ class VertexTableSplitter {
   private readonly _computeNodeId: (elementId: Id64.Uint32Pair) => number;
   private readonly _nodes = new Map<number, Node>();
 
-  public constructor(input: VertexTableWithIndices & { featureTable: PackedFeatureTable }, computeNodeId: (elementId: Id64.Uint32Pair) => number) {
+  private constructor(input: VertexTableWithIndices & { featureTable: PackedFeatureTable }, computeNodeId: (elementId: Id64.Uint32Pair) => number) {
     this._input = input;
     this._computeNodeId = computeNodeId;
-    this.split();
   }
 
-  public get result(): Map<number, VertexTableWithIndices> {
-    const result = new Map<number, VertexTableWithIndices>();
-    return result;
+  public static split(source: VertexTableWithIndices, featureTable: PackedFeatureTable, computeNodeId: (elementId: Id64.Uint32Pair) => number): Map<number, Node> {
+    const splitter = new VertexTableSplitter({ ...source, featureTable }, computeNodeId);
+    splitter.split();
+    return splitter._nodes;
   }
 
   private split(): void {
