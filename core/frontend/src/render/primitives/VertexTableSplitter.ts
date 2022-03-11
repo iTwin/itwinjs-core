@@ -7,6 +7,7 @@
  */
 
 import { assert, Id64 } from "@itwin/core-bentley";
+import { PackedFeatureTable } from "@itwin/core-common";
 import { VertexTableWithIndices } from "./VertexTable";
 
 /** Given a VertexTable and corresponding indices, split it into smaller vertex tables based on element Id.
@@ -15,7 +16,7 @@ import { VertexTableWithIndices } from "./VertexTable";
  * @returns A mapping of node Ids to the vertices and indices associated with that node.
  * @internal
  */
-export function splitVerticesByNodeId(input: VertexTableWithIndices, computeNodeId: (elementId: Id64.Uint32Pair) => number): Map<number, VertexTableWithIndices> {
+export function splitVerticesByNodeId(input: VertexTableWithIndices & { featureTable: PackedFeatureTable }, computeNodeId: (elementId: Id64.Uint32Pair) => number): Map<number, VertexTableWithIndices> {
   const splitter = new VertexTableSplitter(input, computeNodeId);
   return splitter.result;
 }
@@ -119,11 +120,11 @@ class Node {
 }
 
 class VertexTableSplitter {
-  private readonly _input: VertexTableWithIndices;
+  private readonly _input: VertexTableWithIndices & { featureTable: PackedFeatureTable };
   private readonly _computeNodeId: (elementId: Id64.Uint32Pair) => number;
   private readonly _nodes = new Map<number, Node>();
 
-  public constructor(input: VertexTableWithIndices, computeNodeId: (elementId: Id64.Uint32Pair) => number) {
+  public constructor(input: VertexTableWithIndices & { featureTable: PackedFeatureTable }, computeNodeId: (elementId: Id64.Uint32Pair) => number) {
     this._input = input;
     this._computeNodeId = computeNodeId;
     this.split();
