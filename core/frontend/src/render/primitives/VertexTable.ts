@@ -8,7 +8,9 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
-import { ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, QParams2d, QParams3d, QPoint2d, QPoint3dList } from "@itwin/core-common";
+import {
+  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, PackedFeatureTable, QParams2d, QParams3d, QPoint2d, QPoint3dList,
+} from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
 import { MeshArgs, Point3dList, PolylineArgs } from "./mesh/MeshPrimitives";
@@ -252,6 +254,7 @@ export class VertexTable implements VertexTableProps {
 export interface VertexTableWithIndices {
   vertices: VertexTable;
   indices: VertexIndices;
+  featureTable: PackedFeatureTable;
 }
 
 /**
