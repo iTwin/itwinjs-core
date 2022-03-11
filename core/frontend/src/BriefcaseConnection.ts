@@ -188,7 +188,7 @@ export class ActiveBriefcaseSettings {
   public set model(model: Id64String | undefined) {
     const previousModel = this.model;
     if (model !== this.model) {
-      this.model = model;
+      this._model = model;
       this.onModelChanged.raiseEvent(previousModel);
     }
   }
