@@ -206,7 +206,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/semver': ^5.5.0
-      '@ungap/url-search-params': ^0.1.2
+      buffer: ^6.0.3
       chai: ^4.1.2
       eslint: ^7.11.0
       flatbuffers: ~1.12.0
@@ -215,12 +215,14 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^5.5.0
+      string_decoder: ^1.3.0
       typescript: ~4.4.0
     dependencies:
-      '@ungap/url-search-params': 0.1.4
+      buffer: 6.0.3
       flatbuffers: 1.12.0
       js-base64: 3.7.2
       semver: 5.7.1
+      string_decoder: 1.3.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
@@ -7345,9 +7347,8 @@ packages:
 
   /@itwin/browser-authorization/0.5.1:
     resolution: {integrity: sha512-TI7nd4I5Lc9MrJnf40kk+u4bTCym1xH9IBJNkvVt+7unjUSbRuUaPS6wC6WTu2DoYbIocEIEBWTqNOR67lAHGA==}
-    peerDependencies:
-      '@itwin/core-bentley': ^3.0.0
     dependencies:
+      '@itwin/core-bentley': link:../../core/bentley
       oidc-client: 1.11.5
     dev: false
 
@@ -7398,17 +7399,6 @@ packages:
       - supports-color
       - utf-8-validate
     dev: true
-
-  /@itwin/core-bentley/3.0.0:
-    resolution: {integrity: sha512-tfFM6lKVtjUMrQM/amHrEgJRtIhpqI5bGMtX8MwM9bBeH3hLGY8eTA8A7ReflWmUky+gHhpvN3TGsC7VLqqrIw==}
-    dev: false
-
-  /@itwin/core-geometry/3.0.0:
-    resolution: {integrity: sha512-00KlHwya2ZhYF4XmrbRJ6RyxaROJJ3j9rTiGKdT8oYvuf+dm5fRA1a+V8HPPKonSiTwpmQYOr0Ro3X6v+CjpDQ==}
-    dependencies:
-      '@itwin/core-bentley': 3.0.0
-      flatbuffers: 1.12.0
-    dev: false
 
   /@itwin/electron-authorization/0.8.3:
     resolution: {integrity: sha512-gKsQewSx4e/a74WJvROzq+dmUb05zE2evMLLywKP+CQULwq2uX0IeI0MRGI/FeVS9T9xBSv90sSzxmrugBtPrQ==}
@@ -7582,10 +7572,9 @@ packages:
 
   /@itwin/reality-data-client/0.7.0:
     resolution: {integrity: sha512-fUbS3953g3zXNagcgwmJ7n2DHvL15KlBQZ5NlpWpGdotRgtOKAxeJqybPJBnoM10dErmJVC+Cbv3JVc2Nar/Mw==}
-    peerDependencies:
-      '@itwin/core-common': ^3.0.0
     dependencies:
-      '@itwin/core-geometry': 3.0.0
+      '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
       axios: 0.25.0
     transitivePeerDependencies:
       - debug
@@ -9230,10 +9219,6 @@ packages:
 
   /@ungap/promise-all-settled/1.1.2:
     resolution: {integrity: sha512-sL/cEvJWAnClXw0wHk85/2L0G6Sj8UB0Ctc1TEMbKSsmpRosqhwj9gWgFRZSrBr2f9tiXISwNhCPmlfqUqyb9Q==}
-
-  /@ungap/url-search-params/0.1.4:
-    resolution: {integrity: sha512-RLwrxCTDNiNev9hpr9rDq8NyeQ8Nn0X1we4Wu7Tlf368I8r+7hBj3uObhifhuLk74egaYaSX5nUsBlWz6kjj+A==}
-    dev: false
 
   /@webassemblyjs/ast/1.8.5:
     resolution: {integrity: sha512-aJMfngIZ65+t71C3y2nBBg5FFG0Okt9m0XEgWZ7Ywgn1oMAT8cNwx00Uv1cQyHtidq0Xn94R4TAywO+LCQ+ZAQ==}
