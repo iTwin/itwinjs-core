@@ -20,7 +20,7 @@ import { EdgeParams } from "./EdgeParams";
  * The order of the indices specifies the order in which vertices are drawn.
  * @internal
  */
-export class VertexIndices {
+export class VertexIndices implements Iterable<number> {
   public readonly data: Uint8Array;
 
   /**
@@ -67,6 +67,15 @@ export class VertexIndices {
       indices.push(this.decodeIndex(i));
 
     return indices;
+  }
+
+  public [Symbol.iterator]() {
+    function * iterator(indices: VertexIndices) {
+      for (let i = 0; i < indices.length; i++)
+        yield indices.decodeIndex(i);
+    }
+
+    return iterator(this);
   }
 }
 
@@ -237,6 +246,12 @@ export class VertexTable implements VertexTableProps {
     else
       return undefined;
   }
+}
+
+/** @internal */
+export interface VertexTableWithIndices {
+  vertices: VertexTable;
+  indices: VertexIndices;
 }
 
 /**
