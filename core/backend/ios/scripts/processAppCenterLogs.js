@@ -31,9 +31,6 @@ async function fetchTestReportInfo() {
         'X-API-Token': api_token,
       },
     };
-    console.log("===================================")
-    console.log(`/${app_center_api_ver}/apps/${owner_name}/${app_name}/test_runs/${test_id}/report`)
-    console.log(options)
     const req = https.request(options, function (res) {
       res.setEncoding('utf-8');
       let responseString = '';
