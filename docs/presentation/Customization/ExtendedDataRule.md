@@ -2,7 +2,7 @@
 
 > TypeScript type: [ExtendedDataRule]($presentation-common).
 
-Extended data rule is used to inject some arbitrary data into presentation data objects (nodes, content records).
+Extended data rule is used to inject some arbitrary data into presentation data objects (nodes, content records). See [Extended data usage](../Customization/ExtendedDataUsage.md) page for information on how to use injected data in our UI components.
 
 ## Typical Use Case
 
@@ -21,24 +21,46 @@ flag can then be accessed on the frontend and used to determine how the row shou
 
 ## Attributes
 
-| Name               | Required? | Type                                                                 | Default | Meaning                                                                                  |
-| ------------------ | --------- | -------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------- |
-| *Filtering*        |
-| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    | Specifications that define schema requirements for the rule to take effect.              |
-| `priority`         | No        | `number`                                                             | `1000`  | Defines the order in which presentation rules are evaluated.                             |
-| `onlyIfNotHandled` | No        | `boolean`                                                            | `false` | Should this rule be ignored if there is already an existing rule with a higher priority. |
-| `condition`        | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    | Defines a condition for the rule, which needs to be met in order to execute it.          |
-| *Extended Data*    |
-| `items`            | No        | `{ [key: string]: ECExpression }`                                    |         | A map of ECExpressions whose evaluation results are used as extended data values         |
+| Name                                            | Required? | Type                                                                 | Default |
+| ----------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
+| *Filtering*                                     |
+| [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`condition`](#attribute-condition)             | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+| *Extended Data*                                 |
+| [`items`](#attribute-items)                     | No        | `{ [key: string]: ECExpression }`                                    |         |
 
-## Example
+### Attribute: `requiredSchemas`
 
-```JSON
-{
-  "ruleType": "ExtendedData",
-  "requiredSchemas": [{ "name": "MySchema", "minVersion": "1.2.3" }],
-  "items": {
-    "isModel": "this.IsOfClass(\"Model\", \"BisCore\")"
-  }
-}
+> **Default value:** `[]`
+
+A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+
+```ts
+[[include:ExtendedDataRule.RequiredSchemas.Ruleset]]
+```
+
+### Attribute: `condition`
+
+> **Default value:** `""`
+
+Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
+
+```ts
+[[include:ExtendedDataRule.Condition.Ruleset]]
+```
+
+```ts
+[[include:ExtendedDataRule.Condition.Result]]
+```
+
+### Attribute: `items`
+
+A map of ECExpressions whose evaluation results are used as extended data values.
+
+```ts
+[[include:ExtendedDataRule.Items.Ruleset]]
+```
+
+```ts
+[[include:ExtendedDataRule.Items.Result]]
 ```

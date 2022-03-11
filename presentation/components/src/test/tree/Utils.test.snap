@@ -1,5 +1,30 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Utils createPartialTreeNodeItem uses provided callback to customize tree node 1`] = `
+Object {
+  "__presentation-components/key": Object {
+    "pathFromRoot": Array [],
+    "type": "",
+    "version": 0,
+  },
+  "description": "custom-description",
+  "icon": "custom-icon",
+  "id": "",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "test",
+      "value": "test",
+      "valueFormat": 0,
+    },
+  },
+}
+`;
+
 exports[`Utils createTreeNodeItem appends grouped nodes count if requested 1`] = `
 Object {
   "__presentation-components/key": Object {
@@ -179,6 +204,46 @@ Object {
   "style": Object {
     "colorOverrides": Object {
       "color": 69262,
+    },
+  },
+}
+`;
+
+exports[`Utils createTreeNodeItem uses provided callback to customize tree node 1`] = `
+Object {
+  "__presentation-components/key": Object {
+    "instanceKeys": Array [
+      Object {
+        "className": "harness",
+        "id": "0x14af6000000cdf3",
+      },
+      Object {
+        "className": "Health",
+        "id": "0xf87f00000121ba",
+      },
+    ],
+    "pathFromRoot": Array [
+      "41098202-0113-4061-b4f4-6d7625fa7310",
+      "346ddc01-cc61-4177-aa7e-cf3dfd8b3352",
+    ],
+    "type": "ECInstancesNode",
+    "version": 2,
+  },
+  "autoExpand": true,
+  "description": "custom-description",
+  "hasChildren": true,
+  "icon": "custom-icon",
+  "id": "346ddc01-cc61-4177-aa7e-cf3dfd8b3352/41098202-0113-4061-b4f4-6d7625fa7310",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Ergonomic",
+      "value": "reboot",
+      "valueFormat": 0,
     },
   },
 }

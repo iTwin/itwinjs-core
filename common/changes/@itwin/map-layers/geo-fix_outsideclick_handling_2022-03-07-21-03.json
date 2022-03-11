@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Fixed issue that would close the new maplayer dialog when a new layer type was picked.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

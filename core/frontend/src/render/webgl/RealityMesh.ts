@@ -218,6 +218,7 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
 
 /** @internal */
 export class RealityMeshGeometry extends IndexedGeometry implements IDisposable, RenderMemory.Consumer {
+  public readonly hasTextures: boolean;
   public override get asRealityMesh(): RealityMeshGeometry | undefined { return this; }
   public override get isDisposed(): boolean { return this._realityMeshParams.isDisposed; }
   public get uvQParams() { return this._realityMeshParams.uvParams.params; }
@@ -228,6 +229,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
   private constructor(private _realityMeshParams: RealityMeshGeometryParams, public textureParams: RealityTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean, private _isTerrain: boolean) {
     super(_realityMeshParams);
+    this.hasTextures = undefined !== textureParams && textureParams.params.some((x) => undefined !== x.texture);
   }
 
   public override dispose() {
