@@ -5333,6 +5333,9 @@ export interface ITwinIdArg {
     readonly iTwinId?: GuidString;
 }
 
+// @public (undocumented)
+export const ITWINJS_CORE_VERSION: string;
+
 // @public
 export enum KeyinParseError {
     MismatchedQuotes = 4,
