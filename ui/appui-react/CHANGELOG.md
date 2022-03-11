@@ -1,6 +1,14 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Thu, 24 Feb 2022 15:26:55 GMT and should not be manually modified.
+This log was last generated on Thu, 10 Mar 2022 21:18:13 GMT and should not be manually modified.
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+### Updates
+
+- Optimize ModelsTree search ruleset
+- Make fix to displaying a custom view overlay.
 
 ## 3.0.1
 Thu, 24 Feb 2022 15:26:55 GMT
