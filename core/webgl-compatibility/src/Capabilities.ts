@@ -86,7 +86,8 @@ function isIntegratedGraphics(args: {unmaskedVendor?: string, unmaskedRenderer?:
       return true;
   }
 
-  // ###TODO: Detect AMD integrated graphics
+  // NB: For now, we do not attempt to detect AMD integrated graphics.
+  // It appears that AMD integrated graphics are not usually paired with a graphics card so detecting integrated usage there is less important than Intel.
 
   return false;
 }
