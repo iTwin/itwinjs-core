@@ -161,8 +161,10 @@ export abstract class IdPicker extends ToolBarDropDown {
         this.hiliteEnabled("Hilite" === which);
         return;
       case "SetFirstActive":
-        const first = Array.from(this._enabledIds)[0];
-        IModelApp.toolAdmin.activeSettings[this._settingsType] = first;
+        if (this._vp.iModel.isBriefcaseConnection()) {
+          const first = Array.from(this._enabledIds)[0];
+          this._vp.iModel.activeSettings[this._settingsType] = first;
+        }
         return;
       case "":
         return;
