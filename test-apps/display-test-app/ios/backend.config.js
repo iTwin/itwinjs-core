@@ -48,6 +48,10 @@ function getConfig(env) {
           use: 'null-loader'
         },
         {
+          test: /itwin\+electron-authorization/g,
+          use: 'null-loader'
+        },
+        {
           test: /ElectronBackend\.js/g,
           use: 'null-loader'
         }
