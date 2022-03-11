@@ -191,7 +191,10 @@ export abstract class CreateElementTool extends PrimitiveTool {
   }
 
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
-    return undefined !== this.briefcase?.activeSettings.model && super.isCompatibleViewport(vp, isSelectedViewChange);
+    if (!vp?.iModel.isBriefcaseConnection())
+      return false;
+
+    return undefined !== vp.iModel.activeSettings.model && super.isCompatibleViewport(vp, isSelectedViewChange);
   }
 
   /** Whether [[setupAndPromptForNextAction]] should call [[AccuSnap.enableSnap]] for current tool phase.
