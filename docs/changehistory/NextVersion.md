@@ -61,11 +61,11 @@ display-test-app provides [an example tool](https://github.com/iTwin/itwinjs-cor
 
 ## Font Workspaces
 
-It is now possible to store and load fonts from a Font Workspace. See [Fonts]($docs/learning/backend/Fonts.md) for more details.
+It is now possible to store and load fonts from a Font Workspace. See [Fonts](../learning/backend/Fonts.md) for more details.
 
 ## Promote QuantityFormatter from beta to public
 
-The [QuantityFormatter]($core-frontend), accessed via `IModelApp.quantityFormatter`, is now public and provides a set of APIs to format and parse standard quantity types. For more documentation and samples see [Quantity Formatting]($docs/learning/frontend/QuantityFormatting.md).
+The [QuantityFormatter]($core-frontend), accessed via `IModelApp.quantityFormatter`, is now public and provides a set of APIs to format and parse standard quantity types. For more documentation and samples see [Quantity Formatting](../learning/frontend/QuantityFormatting.md).
 
 ## New SchemaUnitProvider
 
@@ -87,7 +87,7 @@ It is now possible to retrieve `Units` from schemas stored in IModels. The new [
 
 ## Optimization of geometry in IModelImporter
 
-The geometry produced by [connectors](https://www.itwinjs.org/learning/imodel-connectors/) and [transformation workflows]($docs/learning/transformer/index.md) is not always ideal. One common issue is a proliferation of [GeometryPart]($backend)s to which only one reference exists. In most cases, it would be more efficient to embed the part's geometry directly into the referencing element's [geometry stream](https://www.itwinjs.org/learning/common/geometrystream/).
+The geometry produced by [connectors](https://www.itwinjs.org/learning/imodel-connectors/) and [transformation workflows](../learning/transformer/index.md) is not always ideal. One common issue is a proliferation of [GeometryPart]($backend)s to which only one reference exists. In most cases, it would be more efficient to embed the part's geometry directly into the referencing element's [geometry stream](https://www.itwinjs.org/learning/common/geometrystream/).
 
 [IModelImporter.optimizeGeometry]($transformer) has been introduced to enable this kind of optimization. It takes an [OptimizeGeometryOptions]($transformer) object specifying which optimizations to apply, and applies them to all of the 3d geometry in the iModel. Currently, only the optimization described above is supported, but more are expected to be added in the future.
 
