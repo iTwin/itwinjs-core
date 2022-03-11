@@ -11,8 +11,7 @@ import {
 } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { UiFramework } from "@itwin/appui-react";
-import { ToolbarItemUtilities } from "@itwin/appui-abstract";
-import genericToolSvg from "./generic-tool.svg?sprite";
+import { IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { UiItemsProvidersTest } from "../ui-items-providers-test";
 
 /** Sample Primitive tool where user selects an element for processing */
@@ -21,7 +20,7 @@ export class GenericLocateTool extends PrimitiveTool {
   public elementId: string | undefined;
   public static override get toolId() { return "uiItemsProvidersTest-GenericLocateTool"; }
   public static get toolStringKey() { return `tools.${GenericLocateTool.toolId}.`; }
-  public static override iconSpec = `svg:${genericToolSvg}`;
+  public static override iconSpec = "generic-tool.svg";
   public static useDefaultPosition = false;
   public override autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.getSelectionMode(); }
@@ -120,7 +119,8 @@ export class GenericLocateTool extends PrimitiveTool {
 
   public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
     const overrides = undefined !== groupPriority ? { groupPriority } : {};
-    return ToolbarItemUtilities.createActionButton(GenericLocateTool.toolId, itemPriority, GenericLocateTool.iconSpec, GenericLocateTool.flyover,
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(`${IModelApp.publicPath}images/${this.iconSpec}`);
+    return ToolbarItemUtilities.createActionButton(GenericLocateTool.toolId, itemPriority, iconSpec, GenericLocateTool.flyover,
       async () => { await IModelApp.tools.run(GenericLocateTool.toolId, IModelApp.viewManager.selectedView, true); },
       overrides);
   }

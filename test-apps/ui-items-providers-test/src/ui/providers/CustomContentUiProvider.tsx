@@ -8,7 +8,6 @@ import {
   BackstageItemUtilities, CommonToolbarItem, IconSpecUtilities, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider,
 } from "@itwin/appui-abstract";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
-import { IconHelper } from "@itwin/core-react";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { CustomFrontstage } from "../frontstages/CustomContent";
 
@@ -38,9 +37,7 @@ export class CustomContentUiProvider implements UiItemsProvider {
       toolbarUsage === ToolbarUsage.ContentManipulation &&
       toolbarOrientation === ToolbarOrientation.Horizontal
     ) {
-      const internalData = new Map<string, any>();
-      const iconData = IconHelper.getIconData(IconSpecUtilities.createWebComponentIconSpec("http://localhost:3000/images/imodeljs-icon.svg"), internalData );
-      const overrides = { internalData };
+      const iconData = IconSpecUtilities.createWebComponentIconSpec(`${IModelApp.publicPath}images/visibility-semi-transparent.svg`);
 
       const getSvgTestButton = ToolbarItemUtilities.createActionButton(
         "custom-visibility-tool",
@@ -50,7 +47,6 @@ export class CustomContentUiProvider implements UiItemsProvider {
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "custom-visibility-tool activated", undefined, OutputMessageType.Toast));
         },
-        overrides,
       );
 
       return [getSvgTestButton];
@@ -60,9 +56,10 @@ export class CustomContentUiProvider implements UiItemsProvider {
 
   public provideBackstageItems(): BackstageItem[] {
     const label = UiItemsProvidersTest.translate("backstage.customContentFrontstageLabel");
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(`${IModelApp.publicPath}images/imodeljs-icon.svg`);
     return [
       // use 200 to group it with secondary stages in ui-test-app
-      BackstageItemUtilities.createStageLauncher(CustomFrontstage.stageId, 200, 2, label, "from provider", "icon-flag-2"),
+      BackstageItemUtilities.createStageLauncher(CustomFrontstage.stageId, 200, 2, label, "from provider", iconSpec),
     ];
   }
 }

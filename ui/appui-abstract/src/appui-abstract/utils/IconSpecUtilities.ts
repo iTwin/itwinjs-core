@@ -12,7 +12,7 @@
 export class IconSpecUtilities {
   /** Prefix for an SVG IconSpec */
   public static readonly SVG_PREFIX = "svg:";
-  public static readonly WEB_COMPONENT_PREFIX = "IC:";
+  public static readonly WEB_COMPONENT_PREFIX = "webSvg:";
 
   /** Create an IconSpec for an SVG */
   public static createSvgIconSpec(svgSrc: string): string {
@@ -33,7 +33,7 @@ export class IconSpecUtilities {
 
   public static getWebComponentSource(iconSpec: string): string | undefined {
     if (iconSpec.startsWith(IconSpecUtilities.WEB_COMPONENT_PREFIX) && iconSpec.length > 3) {
-      return iconSpec.slice(3);
+      return iconSpec.slice(7);
     }
 
     return undefined;
