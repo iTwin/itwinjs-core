@@ -36,6 +36,7 @@
   }
 
   &.nz-minimized {
+    min-height: 30px;
     .nz-widget-floatingWidget_handle {
       visibility: hidden;
     }

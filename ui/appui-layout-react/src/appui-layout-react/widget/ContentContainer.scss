@@ -8,9 +8,11 @@
   min-width: 0;
   position: relative;
   display: flex;
+}
 
-  &.nz-minimized {
+.nz-widget-floatingWidget {
+  .nz-widget-content-container.nz-minimized {
     flex-basis: 0;
     overflow: hidden;
-  }
+   }
 }

@@ -620,7 +620,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
 
     case "WIDGET_TAB_CLICK": {
       const widget = state.widgets[action.widgetId];
-      const isActive = action.id === widget.activeTabId;
+      // const isActive = action.id === widget.activeTabId;
       const floatingWidget = state.floatingWidgets.byId[action.widgetId];
       if (floatingWidget) {
         const size = Rectangle.create(floatingWidget.bounds).getSize();
@@ -634,40 +634,20 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         return;
       }
 
-      const panel = action.side ? state.panels[action.side] : undefined;
-      if (isActive && panel) {
-        for (const wId of panel.widgets) {
-          const w = state.widgets[wId];
-          w.minimized = true;
-        }
-        widget.minimized = false;
-      }
+      // const panel = action.side ? state.panels[action.side] : undefined;
+      // if (isActive && panel) {
+      //   for (const wId of panel.widgets) {
+      //     const w = state.widgets[wId];
+      //     w.minimized = true;
+      //   }
+      //   widget.minimized = false;
+      // }
       return;
     }
     case "WIDGET_TAB_DOUBLE_CLICK": {
-      const panel = action.side ? state.panels[action.side] : undefined;
       const widget = state.widgets[action.widgetId];
-      const active = action.id === widget.activeTabId;
-      const panelWidgets = panel?.widgets || [];
-      const maximized = panelWidgets.filter((wId) => {
-        return !state.widgets[wId].minimized;
-      }, 0);
-      if (widget.minimized) {
-        setWidgetActiveTabId(state, widget.id, action.id);
-        for (const wId of panelWidgets) {
-          const w = state.widgets[wId];
-          w.minimized = w.id !== widget.id;
-        }
-        return;
-      }
-      if (!active) {
-        setWidgetActiveTabId(state, widget.id, action.id);
-        return;
-      }
-      if (maximized.length > 1)
-        widget.minimized = true;
       if (action.floatingWidgetId !== undefined)
-        widget.minimized = true;
+        widget.minimized = !widget.minimized;
       return;
     }
     case "WIDGET_TAB_DRAG_START": {
@@ -1187,9 +1167,8 @@ export function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPosit
   };
 }
 
-function getMaxWidgetCount(side: PanelSide) {
-  if (side === "left" || side === "right")
-    return 3;
+// note: panel side is no longer needed since only 2 panel sections are desired for any "PanelSide"
+function getMaxWidgetCount(_side: PanelSide) {
   return 2;
 }
 

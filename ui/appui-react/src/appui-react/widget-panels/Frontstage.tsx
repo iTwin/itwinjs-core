@@ -44,7 +44,7 @@ import { FrameworkRootState } from "../redux/StateManager";
 import { useSelector } from "react-redux";
 import { useUiVisibility } from "../hooks/useUiVisibility";
 
-const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "middle", "end"];
+const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "end"];
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -378,16 +378,14 @@ export function addMissingWidgets(frontstageDef: FrontstageDef, initialState: Ni
   state = appendWidgets(state, determineNewWidgets(frontstageDef.centerLeft?.widgetDefs, initialState), "left", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.start.widgetDefs, initialState), "left", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomLeft?.widgetDefs, initialState), "left", 1);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.middle.widgetDefs, initialState), "left", 1);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelWidgetDefs, initialState), "left", 2);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.end.widgetDefs, initialState), "left", 2);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelWidgetDefs, initialState), "left", 1);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.end.widgetDefs, initialState), "left", 1);
 
   state = appendWidgets(state, determineNewWidgets(frontstageDef.centerRight?.widgetDefs, initialState), "right", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.start.widgetDefs, initialState), "right", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomRight?.widgetDefs, initialState), "right", 1);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.middle.widgetDefs, initialState), "right", 1);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelWidgetDefs, initialState), "right", 2);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.end.widgetDefs, initialState), "right", 2);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelWidgetDefs, initialState), "right", 1);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.end.widgetDefs, initialState), "right", 1);
 
   state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.panelWidgetDefs, initialState), "top", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.panelZones.start.widgetDefs, initialState), "top", 0);
@@ -443,10 +441,8 @@ function getWidgetLabel(label: string) {
 
 type WidgetIdTypes =
   "leftStart" |
-  "leftMiddle" |
   "leftEnd" |
   "rightStart" |
-  "rightMiddle" |
   "rightEnd" |
   "topStart" |
   "topEnd" |
@@ -472,16 +468,12 @@ export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): Widget
     case "left": {
       if (key === "start") {
         return "leftStart";
-      } else if (key === "middle") {
-        return "leftMiddle";
       }
       return "leftEnd";
     }
     case "right": {
       if (key === "start") {
         return "rightStart";
-      } else if (key === "middle") {
-        return "rightMiddle";
       }
       return "rightEnd";
     }
@@ -505,70 +497,80 @@ function getNextAvailablePanelWidgetId(panel: PanelState) {
   return getWidgetId(panel.side, panelZoneKeys[index]);
 }
 
-function isVerticalPanelSide(side: PanelSide) { return !isHorizontalPanelSide(side); }
-
 /** @internal */
 export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[] {
   switch (panelZone) {
     case "leftStart": {
-      return [
-        ...frontstageDef.centerLeft?.widgetDefs || [],
-        ...frontstageDef.leftPanel?.panelZones.start.widgetDefs || [],
-      ];
-    }
-    case "leftMiddle": {
-      return [
-        ...frontstageDef.bottomLeft?.widgetDefs || [],
-        ...frontstageDef.leftPanel?.panelZones.middle.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.centerLeft?.widgetDefs || []];
+      frontstageDef.leftPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "leftEnd": {
-      return [
-        ...frontstageDef.leftPanel?.panelWidgetDefs || [],
-        ...frontstageDef.leftPanel?.panelZones.end.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.bottomLeft?.widgetDefs || []];
+      frontstageDef.leftPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      frontstageDef.leftPanel?.panelWidgetDefs.forEach((widgetDef)=> {
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "rightStart": {
-      return [
-        ...frontstageDef.centerRight?.widgetDefs || [],
-        ...frontstageDef.rightPanel?.panelZones.start.widgetDefs || [],
-      ];
-    }
-    case "rightMiddle": {
-      return [
-        ...frontstageDef.bottomRight?.widgetDefs || [],
-        ...frontstageDef.rightPanel?.panelZones.middle.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.centerRight?.widgetDefs || []];
+      frontstageDef.rightPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "rightEnd": {
-      return [
-        ...frontstageDef.rightPanel?.panelWidgetDefs || [],
-        ...frontstageDef.rightPanel?.panelZones.end.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.bottomRight?.widgetDefs || []];
+      frontstageDef.rightPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      frontstageDef.rightPanel?.panelWidgetDefs.forEach((widgetDef)=> {
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "topStart": {
-      return [
-        ...frontstageDef.topPanel?.panelWidgetDefs || [],
-        ...frontstageDef.topPanel?.panelZones.start.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.topPanel?.panelWidgetDefs || []];
+      frontstageDef.topPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "topEnd": {
-      return [
-        ...frontstageDef.topMostPanel?.panelWidgetDefs || [], // eslint-disable-line deprecation/deprecation
-        ...frontstageDef.topPanel?.panelZones.end.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.topMostPanel?.panelWidgetDefs || []]; // eslint-disable-line deprecation/deprecation
+      frontstageDef.topPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "bottomStart": {
-      return [
-        ...frontstageDef.bottomPanel?.panelWidgetDefs || [],
-        ...frontstageDef.bottomPanel?.panelZones.start.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.bottomPanel?.panelWidgetDefs || []];
+      frontstageDef.bottomPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "bottomEnd": {
-      return [
-        ...frontstageDef.bottomMostPanel?.panelWidgetDefs || [], // eslint-disable-line deprecation/deprecation
-        ...frontstageDef.bottomPanel?.panelZones.end.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.bottomMostPanel?.panelWidgetDefs || []]; // eslint-disable-line deprecation/deprecation
+      frontstageDef.bottomPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
   }
 }
@@ -582,12 +584,6 @@ export function addPanelWidgets(
   const start = getWidgetId(side, "start");
   const startWidgets = getPanelZoneWidgets(frontstageDef, start);
   state = addWidgets(state, startWidgets, side, start);
-
-  if (isVerticalPanelSide(side)) {
-    const middle = getWidgetId(side, "middle");
-    const middleWidgets = getPanelZoneWidgets(frontstageDef, middle);
-    state = addWidgets(state, middleWidgets, side, middle);
-  }
 
   const end = getWidgetId(side, "end");
   const endWidgets = getPanelZoneWidgets(frontstageDef, end);

@@ -54,6 +54,7 @@
     min-height: 0;
   }
 
+  /* ------------ not supported minimized panels ----
   &.nz-minimized {
     flex: 0 0 auto;
 
@@ -80,4 +81,5 @@
       min-width: 0;
     }
   }
+  -------------------------------------------------*/
 }

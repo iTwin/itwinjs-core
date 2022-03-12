@@ -1151,7 +1151,7 @@ describe("Frontstage local storage wrapper", () => {
         const w3 = new WidgetDef({ id: "w3" });
         sinon.stub(frontstageDef, "leftPanel").get(() => panelDef);
         sinon.stub(panelDef.panelZones, "start").get(() => start);
-        sinon.stub(panelDef.panelZones, "middle").get(() => middle);
+        // sinon.stub(panelDef.panelZones, "middle").get(() => middle);
         sinon.stub(panelDef.panelZones, "end").get(() => end);
         sinon.stub(start, "widgetDefs").get(() => [w1]);
         sinon.stub(middle, "widgetDefs").get(() => [w2]);
@@ -1358,9 +1358,9 @@ describe("Frontstage local storage wrapper", () => {
         getWidgetId("left", "start").should.eq("leftStart");
       });
 
-      it("should return 'leftMiddle'", () => {
-        getWidgetId("left", "middle").should.eq("leftMiddle");
-      });
+      //      it("should return 'leftMiddle'", () => {
+      //        getWidgetId("left", "middle").should.eq("leftMiddle");
+      //      });
 
       it("should return 'leftEnd'", () => {
         getWidgetId("left", "end").should.eq("leftEnd");
@@ -1370,9 +1370,9 @@ describe("Frontstage local storage wrapper", () => {
         getWidgetId("right", "start").should.eq("rightStart");
       });
 
-      it("should return 'rightMiddle'", () => {
-        getWidgetId("right", "middle").should.eq("rightMiddle");
-      });
+      //      it("should return 'rightMiddle'", () => {
+      //        getWidgetId("right", "middle").should.eq("rightMiddle");
+      //      });
 
       it("should return 'rightEnd'", () => {
         getWidgetId("right", "end").should.eq("rightEnd");

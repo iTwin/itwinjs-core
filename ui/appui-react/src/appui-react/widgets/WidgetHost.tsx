@@ -66,15 +66,28 @@ export class WidgetHost {
    * @internal
    */
   public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined,
-    widgetDefs: WidgetDef[], frontstageApplicationData?: any
+    allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any
   ): void {
-    widgetDefs.push(...this._widgetDefs);
-    this._dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, section, frontstageApplicationData)
-      ?.filter((widgetDef) => {
-        const duplicate = widgetDefs.find((wDef) => wDef.id === widgetDef.id);
-        return !duplicate;
-      });
-    this._dynamicWidgetDefs && widgetDefs.push(...this._dynamicWidgetDefs);
+    // get widgetDefs not already in allStageWidgetDefs and add them
+    const uniqueWidgets = this._widgetDefs.filter((widgetDef) => {
+      return !allStageWidgetDefs.find((wDef) => wDef.id === widgetDef.id);
+    });
+
+    allStageWidgetDefs.push(...uniqueWidgets);
+
+    // build a list of unique dynamic widgets
+    const dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, section, frontstageApplicationData);
+    const uniqueDynamicWidgetDefs = dynamicWidgetDefs?.filter((widgetDef) => {
+      return ((!allStageWidgetDefs.find((wDef) => wDef.id === widgetDef.id)) &&
+             (!this._dynamicWidgetDefs?.find((wDef) => wDef.id === widgetDef.id)));
+    });
+
+    // Now that we no longer support a middle panel section, yet we have existing API that allows a middle section to be
+    // defined, the following is needed to combining middle and end panel section widgets into a single set of widgets
+    if (uniqueDynamicWidgetDefs) {
+      allStageWidgetDefs.push(...uniqueDynamicWidgetDefs);
+      this._dynamicWidgetDefs = [...(this._dynamicWidgetDefs??[]), ...uniqueDynamicWidgetDefs];
+    }
     this.sortWidgetDefs();
   }
 
