@@ -48,13 +48,6 @@ export function Icon(props: IconProps) {
           <SvgSprite src={svgSource} />
         </i>
       );
-    if (React.isValidElement(iconString)) {
-      return (
-        <i className={classnames("icon", "core-svg-icon", props.className)} style={props.style}>
-          {props.iconSpec}
-        </i>
-      );
-    }
     const webComponentString = IconSpecUtilities.getWebComponentSource(iconString);
     if (webComponentString){
       const svgLoader = `<svg-loader src=${webComponentString} id="svg-id"></svg-loader>`;

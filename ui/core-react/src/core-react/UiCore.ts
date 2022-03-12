@@ -38,7 +38,8 @@ export class UiCore {
 
     UiCore._localization = localization;
     await UiCore._localization.registerNamespace(UiCore.localizationNamespace);
-    customElements.define("svg-loader", IconWebComponent);
+    if (window.customElements.get("svg-loader") === undefined)
+      window.customElements.define("svg-loader", IconWebComponent);
 
     UiCore._initialized = true;
   }
