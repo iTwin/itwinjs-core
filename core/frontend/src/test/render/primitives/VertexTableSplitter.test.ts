@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ColorDef, ColorIndex, FeatureIndex, FeatureTable, LinePixels, PolylineData, PolylineFlags, QParams3d, QPoint3d, QPoint3dList,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, LinePixels, PackedFeatureTable, PolylineData, PolylineFlags, QParams3d, QPoint3d, QPoint3dList,
 } from "@itwin/core-common";
 import {
   IModelApp,
@@ -67,12 +67,32 @@ function setMaxTextureSize(max: number): void {
   });
 }
 
+function expectPointStrings(params: PointStringParams, _expectedPts: Point[], _expectedColors: ColorDef[]): void {
+  expect(params.vertices.numRgbaPerVertex).to.equal(3);
+}
+
 describe.only("VertexTableSplitter", () => {
   before(() => IModelApp.startup());
   after(() => IModelApp.shutdown());
   beforeEach(() => setMaxTextureSize(2048));
 
   it("splits point string params based on node Id", () => {
+    const points: Point[] = [
+      { qpos: 1, color: 0, feature: 0 },
+      { qpos: 0, color: 0, feature: 1 },
+      { qpos: 5, color: 0, feature: 2 },
+      { qpos: 4, color: 0, feature: 1 },
+      { qpos: 5, color: 0, feature: 2 },
+    ];
+
+    const featureTable = new FeatureTable(100);
+    featureTable.insert(new Feature("0x1"));
+    featureTable.insert(new Feature("0x2"));
+    featureTable.insert(new Feature("0x10000000002"));
+
+    const params = makePointStringParams(points, ColorDef.red);
+    const split = splitPointStringParams(params, PackedFeatureTable.pack(featureTable), (id) => id.upper > 0 ? 1 : 0);
+    expect(split.size).to.equal(2);
   });
 
   it("produces uniform color for nodes containing only a single color and sets color indices to zero", () => {
