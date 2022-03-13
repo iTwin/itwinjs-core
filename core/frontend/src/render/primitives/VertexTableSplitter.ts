@@ -200,6 +200,10 @@ class VertexTableSplitter {
   }
 }
 
+/** Given a PointStringParams and a function that can associate a node Id with an element Id, produce a mapping of nodes to PointStringParams, splitting up
+ * the input params as needed.
+ * @internal
+ */
 export function splitPointStringParams(params: PointStringParams, featureTable: PackedFeatureTable, computeNodeId: ComputeNodeId): Map<number, PointStringParams> {
   const result = new Map<number, PointStringParams>();
 
