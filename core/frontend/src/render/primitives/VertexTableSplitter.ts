@@ -17,7 +17,7 @@ class IndexBuffer {
   private _data: Uint8Array;
   private _numIndices = 0;
   private readonly _index32 = new Uint32Array(1);
-  private readonly _index8 = new Uint8Array(this._index32, 0, 3);
+  private readonly _index8 = new Uint8Array(this._index32.buffer, 0, 3);
 
   public constructor() {
     this._data = new Uint8Array(9);
@@ -173,7 +173,7 @@ class VertexTableSplitter {
 
     const vertSize = this._input.vertices.numRgbaPerVertex;
     const vertex = new Uint32Array(vertSize);
-    const vertexTable = new Uint32Array(this._input.vertices.data.buffer, this._input.vertices.data.byteOffset, this._input.vertices.data.byteLength / 4);
+    const vertexTable = new Uint32Array(this._input.vertices.data.buffer, this._input.vertices.data.byteOffset, this._input.vertices.numVertices * vertSize);
 
     for (const index of this._input.indices) {
       // Extract the data for this vertex without allocating new typed arrays.

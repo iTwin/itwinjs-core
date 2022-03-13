@@ -30,14 +30,13 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
 
   const featureIds = new Set<number>(points.map((x) => x.feature));
   const featureIndex = new FeatureIndex();
+  expect(featureIds.size).least(1);
   switch (featureIds.size) {
-    case 0:
-      break;
     case 1:
       featureIndex.featureID = points[0].feature;
       break;
     default:
-      featureIndex.featureIDs = new Uint32Array(Array.from(featureIds));
+      featureIndex.featureIDs = new Uint32Array(points.map((x) => x.feature));
       break;
   }
 
@@ -82,7 +81,7 @@ describe.only("VertexTableSplitter", () => {
       { qpos: 0, color: 0, feature: 1 },
       { qpos: 5, color: 0, feature: 2 },
       { qpos: 4, color: 0, feature: 1 },
-      { qpos: 5, color: 0, feature: 2 },
+      { qpos: 2, color: 0, feature: 2 },
     ];
 
     const featureTable = new FeatureTable(100);
