@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/*
 import { expect } from "chai";
 import {
-  ColorDef, ColorIndex, FeatureIndex, FeatureTable,
+  ColorDef, ColorIndex, FeatureIndex, FeatureTable, LinePixels, PolylineData, PolylineFlags, QParams3d, QPoint3d, QPoint3dList,
 } from "@itwin/core-common";
 import {
   IModelApp,
@@ -29,10 +28,36 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
     colorIndex.initNonUniform(tbgr, points.map((x) => x.color), false);
   }
 
+  const featureIds = new Set<number>(points.map((x) => x.feature));
   const featureIndex = new FeatureIndex();
+  switch (featureIds.size) {
+    case 0:
+      break;
+    case 1:
+      featureIndex.featureID = points[0].feature;
+      break;
+    default:
+      featureIndex.featureIDs = new Uint32Array(Array.from(featureIds));
+      break;
+  }
+
+  const qpoints = new QPoint3dList();
+  for (const point of points)
+    qpoints.push(QPoint3d.fromScalars(point.qpos, point.qpos, point.qpos));
+
   const args: PolylineArgs = {
     colors: colorIndex,
-  }
+    features: featureIndex,
+    width: 1,
+    linePixels: LinePixels.Solid,
+    flags: new PolylineFlags(false, true, true),
+    points: qpoints,
+    polylines: [ new PolylineData([...new Array<number>(points.length).keys()], points.length) ],
+  };
+
+  const params = PointStringParams.create(args)!;
+  expect(params).not.to.be.undefined;
+  return params;
 }
 
 function setMaxTextureSize(max: number): void {
@@ -59,4 +84,3 @@ describe.only("VertexTableSplitter", () => {
   it("produces rectangular vertex tables", () => {
   });
 });
-*/
