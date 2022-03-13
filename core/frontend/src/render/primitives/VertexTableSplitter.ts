@@ -15,38 +15,38 @@ export type ComputeNodeId = (elementId: Id64.Uint32Pair) => number;
 
 class IndexBuffer {
   private _data: Uint8Array;
-  private _length: number;
+  private _numIndices = 0;
   private readonly _index32 = new Uint32Array(1);
   private readonly _index8 = new Uint8Array(this._index32, 0, 3);
 
   public constructor() {
     this._data = new Uint8Array(9);
-    this._length = 0;
   }
 
-  public get length(): number {
-    return this._length;
+  public get numIndices(): number {
+    return this._numIndices;
   }
 
   public push(index: number): void {
-    this.reserve(this.length + 3);
+    this.reserve(this.numIndices + 1);
     this._index32[0] = index;
-    this._data.set(this._index8, this.length * 3);
-    this._length += 3;
+    this._data.set(this._index8, this.numIndices * 3);
+    this._numIndices++;
   }
 
-  private reserve(newSize: number): void {
-    if (this._data.length >= newSize)
+  private reserve(numTotalIndices: number): void {
+    const numTotalBytes = numTotalIndices * 3;
+    if (this._data.length >= numTotalBytes)
       return;
 
-    newSize = Math.floor(newSize * 1.5);
+    const numBytes = Math.floor(numTotalBytes * 1.5);
     const prevData = this._data;
-    this._data = new Uint8Array(newSize);
+    this._data = new Uint8Array(numBytes);
     this._data.set(prevData, 0);
   }
 
   public toUint8Array(): Uint8Array {
-    return this._data.subarray(0, this.length);
+    return this._data.subarray(0, this.numIndices * 3);
   }
 }
 
@@ -173,7 +173,7 @@ class VertexTableSplitter {
 
     const vertSize = this._input.vertices.numRgbaPerVertex;
     const vertex = new Uint32Array(vertSize);
-    const vertexTable = new Uint32Array(this._input.vertices.data);
+    const vertexTable = new Uint32Array(this._input.vertices.data.buffer, this._input.vertices.data.byteOffset, this._input.vertices.data.byteLength / 4);
 
     for (const index of this._input.indices) {
       // Extract the data for this vertex without allocating new typed arrays.
@@ -182,7 +182,7 @@ class VertexTableSplitter {
         vertex[i] = vertexTable[vertexOffset + i];
 
       // Determine to which element the vertex belongs and find the corresponding Node.
-      const featureIndex = vertexTable[index * vertSize] & 0x00ffffff;
+      const featureIndex = vertex[2] & 0x00ffffff;
       if (curState.featureIndex !== featureIndex) {
         curState.featureIndex = featureIndex;
         const elemId = this._input.featureTable.getElementIdPair(featureIndex);
