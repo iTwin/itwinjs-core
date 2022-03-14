@@ -31,7 +31,7 @@ describe.only("Cloud workspace containers", () => {
     const testDbName = "testDb";
 
     await initializeContainer(containerId);
-    const wsCont1 = workspace1.getContainer({ containerId, cloudProps: { ...CloudSqliteTest.storage, containerId, writeable: true, sasToken: CloudSqliteTest.makeSasToken(containerId, "rwadl") } });
+    const wsCont1 = workspace1.getContainer({ ...CloudSqliteTest.storage, containerId, writeable: true, sasToken: CloudSqliteTest.makeSasToken(containerId, "rwadl") });
     assert(undefined !== wsCont1.cloudContainer);
 
     await CloudSqlite.withWriteLock("Cloud workspace test", wsCont1.cloudContainer, async () => {
@@ -46,14 +46,14 @@ describe.only("Cloud workspace containers", () => {
       wsDbEdit.close();
     });
 
-    const wsCont2 = workspace2.getContainer({ containerId, cloudProps: { ...CloudSqliteTest.storage, containerId, sasToken: CloudSqliteTest.makeSasToken(containerId, "rl") } });
+    const wsCont2 = workspace2.getContainer({ ...CloudSqliteTest.storage, containerId, sasToken: CloudSqliteTest.makeSasToken(containerId, "rl") });
     const ws2Cloud = wsCont2.cloudContainer;
     assert(ws2Cloud !== undefined);
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => ws2Cloud.acquireWriteLock("other session")).to.throw("container is not writeable");
 
-    let ws2 = await wsCont2.getWorkspaceDb({ dbName: testDbName });
+    let ws2 = await wsCont2.getWorkspaceDb(testDbName);
     let val = ws2.getString("string 1");
     expect(val).equals("value of string 1");
     ws2.container.dropWorkspaceDb(ws2);
@@ -68,7 +68,7 @@ describe.only("Cloud workspace containers", () => {
     });
 
     await ws2Cloud.checkForChanges();
-    ws2 = await wsCont2.getWorkspaceDb({ dbName: testDbName });
+    ws2 = await wsCont2.getWorkspaceDb(testDbName);
     val = ws2.getString("string 1");
     expect(val).equals(newVal);
     ws2.container.dropWorkspaceDb(ws2);

@@ -77,26 +77,16 @@ export type WorkspaceDbVersion = string;
  */
 export type WorkspaceResourceName = string;
 
-/** supply either container name of id, not both
- * @beta
- */
-export type ContainerNameOrId = { containerName: WorkspaceContainerName, containerId?: never } | { containerId: WorkspaceContainerId, containerName?: never };
-
 /**
  * Properties that specify a WorkspaceContainer.
  * @beta
  */
-export type WorkspaceContainerProps = ContainerNameOrId & {
-  cloudProps?: CloudSqlite.ContainerAccessProps;
-};
+export type WorkspaceContainerProps = Optional<CloudSqlite.ContainerAccessProps, "accountName" | "storageType" | "sasToken">;
 
 /** Properties of a WorkspaceDb
  * @beta
  */
-export type WorkspaceDbProps = ContainerNameOrId & {
-  /** the name of the WorkspaceDb */
-  dbName: WorkspaceDbName;
-};
+export type WorkspaceDbProps = WorkspaceContainerProps & CloudSqlite.DbNameProp;
 
 /** Properties that specify a WorkspaceResource within a WorkspaceDb.
  * @beta
@@ -182,11 +172,11 @@ export interface Workspace {
   getContainer(props: WorkspaceContainerProps): WorkspaceContainer;
 
   /**
-   * Resolve a WorkspaceContainerProps to a WorkspaceContainerId. If props is an object with an `id` member, that value is returned unchanged.
-   * If it is a string, then the highest priority [[WorkspaceSetting.containerAlias]] setting with an entry for the WorkspaceContainerName
+   * Resolve a WorkspaceContainerName to a WorkspaceContainerId.
+   * The highest priority [[WorkspaceSetting.containerAlias]] setting with an entry for the WorkspaceContainerName
    * is used. If no WorkspaceSetting.containerAlias entry for the WorkspaceContainerName can be found, the name is returned as the id.
    */
-  resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
+  resolveContainerName(containerName: WorkspaceContainerName): WorkspaceContainerId;
 
   /**
    * Get an open [[WorkspaceDb]]. If the WorkspaceDb is present but not open, it is opened first.
@@ -217,7 +207,7 @@ export interface WorkspaceContainer {
   /** @internal */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
 
-  getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerName">): Promise<WorkspaceDb>;
+  getWorkspaceDb(dbName: string): Promise<WorkspaceDb>;
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace. */
   dropWorkspaceDb(container: WorkspaceDb): void;
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
@@ -260,15 +250,11 @@ export class ITwinWorkspace implements Workspace {
     this._containers.set(toAdd.id, toAdd);
   }
   public getContainer(props: WorkspaceContainerProps): WorkspaceContainer {
-    const id = this.resolveContainerId(props);
-    if (undefined === id)
-      throw new Error(`can't resolve workspace container name [${props.containerName}]`);
-
-    return this._containers.get(id) ?? new ITwinWorkspaceContainer(this, id, props.cloudProps);
+    return this._containers.get(props.containerId) ?? new ITwinWorkspaceContainer(this, props);
   }
 
   public async getWorkspaceDb(props: WorkspaceDbProps): Promise<WorkspaceDb> {
-    return this.getContainer(props).getWorkspaceDb(props);
+    return this.getContainer(props).getWorkspaceDb(props.dbName);
   }
 
   public async loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority) {
@@ -287,19 +273,16 @@ export class ITwinWorkspace implements Workspace {
     this._containers.clear();
   }
 
-  public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId {
-    if (undefined !== props.containerId)
-      return props.containerId; // if the container id is supplied, just use it
-
+  public resolveContainerName(containerName: WorkspaceContainerName): WorkspaceContainerId {
     return this.settings.resolveSetting(WorkspaceSetting.ContainerAlias, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
-          if (typeof entry === "object" && entry.name === props.containerName && typeof entry.id === "string")
+          if (typeof entry === "object" && entry.name === containerName && typeof entry.id === "string")
             return entry.id;
         }
       }
       return undefined; // keep going through all settings dictionaries
-    }, props.containerName);
+    }, containerName);
   }
 }
 
@@ -323,12 +306,14 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
       throw new Error(`invalid containerId: [${id}]`);
   }
 
-  public constructor(workspace: ITwinWorkspace, id: WorkspaceContainerId, cloudProps?: CloudSqlite.ContainerAccessProps) {
-    ITwinWorkspaceContainer.validateContainerId(id);
+  public constructor(workspace: ITwinWorkspace, props: WorkspaceContainerProps) {
+    ITwinWorkspaceContainer.validateContainerId(props.containerId);
     this.workspace = workspace;
-    this.id = id;
-    if (cloudProps)
-      this.cloudContainer = new IModelHost.platform.CloudContainer(cloudProps);
+    this.id = props.containerId;
+
+    if (undefined !== props.storageType && undefined !== props.accountName)
+      this.cloudContainer = new IModelHost.platform.CloudContainer(props as CloudSqlite.ContainerAccessProps);
+
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
     this.cloudContainer?.attach(this.workspace.cloudCache);
@@ -340,8 +325,8 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this._wsDbs.set(toAdd.dbName, toAdd);
   }
 
-  public async getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerName">): Promise<WorkspaceDb> {
-    const db = this._wsDbs.get(props.dbName) ?? new ITwinWorkspaceDb(props.dbName, this);
+  public async getWorkspaceDb(dbName: string): Promise<WorkspaceDb> {
+    const db = this._wsDbs.get(dbName) ?? new ITwinWorkspaceDb(dbName, this);
     if (!db.isOpen)
       db.open();
     return db;
@@ -360,7 +345,6 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     for (const [_name, db] of this._wsDbs)
       db.close();
     this._wsDbs.clear();
-    this.cloudContainer?.detach();
   }
 
   public purgeContainerFiles() {

@@ -187,14 +187,13 @@ describe("Example Code", () => {
     settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
     settings.addDictionary("iModel", SettingsPriority.iModel, iModelDict);
 
-    expect(workspace.resolveContainerId({ containerName: fontContainerName })).equals("fonts-02"); // iModel has higher priority than iTwin
-    expect(workspace.resolveContainerId({ containerId: "fonts-01" })).equals("fonts-01"); // can specify id directly
+    expect(workspace.resolveContainerName(fontContainerName)).equals("fonts-02"); // iModel has higher priority than iTwin
 
     settings.dropDictionary("iModel"); // drop iModel dict
-    expect(workspace.resolveContainerId({ containerName: fontContainerName })).equals("fonts-01"); // now resolves to iTwin value
+    expect(workspace.resolveContainerName(fontContainerName)).equals("fonts-01"); // now resolves to iTwin value
 
     settings.dropDictionary("iTwin"); // drop iTwin dict
-    expect(workspace.resolveContainerId({ containerName: fontContainerName })).equals(fontContainerName); // no resolution, resolves to name
+    expect(workspace.resolveContainerName(fontContainerName)).equals(fontContainerName); // no resolution, resolves to name
     // __PUBLISH_EXTRACT_END__
   });
 

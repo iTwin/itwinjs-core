@@ -18,7 +18,7 @@ import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 // cspell:ignore nodir
 /* eslint-disable id-blacklist,no-console */
 
-interface EditorOpts extends CloudSqlite.ContainerAccessProps {
+interface EditorOpts extends WorkspaceContainerProps {
   /** Allows overriding the location of WorkspaceDbs. If not present, defaults to `${homedir}/iTwin/Workspace` */
   directory?: LocalDirName;
   /** number of simultaneous http requests */
@@ -102,22 +102,9 @@ function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceDbOpt>(
   }
 }
 
-function getCloudArg(args: EditorOpts): WorkspaceContainerProps {
-  return {
-    ...args,
-    cloudProps: args.accountName ? {
-      sasToken: args.sasToken,
-      accountName: args.accountName,
-      containerId: args.containerId,
-      storageType: args.storageType,
-      writeable: true,
-    } : undefined,
-  };
-}
-
 async function loadContainer(args: EditorOpts) {
-  const container = IModelHost.appWorkspace.getContainer(getCloudArg(args));
-  await container.cloudContainer?.pollManifest();
+  const container = IModelHost.appWorkspace.getContainer({ ...args, writeable: true });
+  await container.cloudContainer?.checkForChanges();
   return container;
 }
 
@@ -290,7 +277,7 @@ async function deleteWorkspaceDb(args: WorkspaceDbOpt) {
 
 /** initialize (empty if it exists) a WorkspaceContainer. */
 async function initializeContainer(args: EditorOpts) {
-  const container = IModelHost.appWorkspace.getContainer(getCloudArg(args));
+  const container = IModelHost.appWorkspace.getContainer(args);
   if (undefined === container.cloudContainer)
     throw new Error("No cloud container supplied");
   const yesNo = await askQuestion(`Are you sure you want to initialize container "${args.containerId}"? [y/n]: `);
@@ -313,7 +300,7 @@ async function purgeWorkspace(args: EditorOpts) {
     await container.cleanDeletedBlocks();
   });
 
-  await container.pollManifest(); // re-read manifest to get current garbage count
+  await container.checkForChanges(); // re-read manifest to get current garbage count
   console.log(`purged ${nGarbage - container.garbageBlocks} blocks from container "${args.containerId}"`);
 }
 
