@@ -113,6 +113,7 @@ function processKeyboardNavigation(optionValues: ListboxItemProps[], itemIndex: 
  * @alpha
  */
 export function Listbox(props: ListboxProps) {
+  // eslint-disable-next-line deprecation/deprecation
   const { ariaLabel, ariaLabelledBy, id, children, selectedValue, className, onListboxValueChange, onKeyPress, ...otherProps } = props;
   const listRef = React.useRef<HTMLUListElement>(null);
   const [listId] = React.useState(() => { return id ?? Guid.createValue(); });
