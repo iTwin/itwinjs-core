@@ -131,7 +131,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
     // Electron only
     try {
-      const { app } = require("electron");
+      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
       if (app !== undefined) app.exit();
     } catch {
 
