@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Move ToolAdmin.activeSettings to BriefcaseConnection and add PrimitiveTool.briefcase.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
