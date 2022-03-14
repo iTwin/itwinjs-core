@@ -5,7 +5,6 @@
   "main": "lib/cjs/hypermodeling-frontend.js",
   "module": "lib/esm/hypermodeling-frontend.js",
   "typings": "lib/cjs/hypermodeling-frontend",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs",

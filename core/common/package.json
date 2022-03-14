@@ -5,7 +5,6 @@
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
   "typings": "lib/cjs/core-common",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "npm run -s build:cjs",

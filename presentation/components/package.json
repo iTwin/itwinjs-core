@@ -5,7 +5,6 @@
   "main": "lib/cjs/presentation-components.js",
   "module": "lib/esm/presentation-components.js",
   "typings": "lib/cjs/presentation-components",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",

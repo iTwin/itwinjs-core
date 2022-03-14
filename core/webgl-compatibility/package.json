@@ -6,7 +6,6 @@
   "main": "lib/cjs/webgl-compatibility.js",
   "module": "lib/esm/webgl-compatibility.js",
   "typings": "lib/cjs/webgl-compatibility.js",
-  "imodeljsSharedLibrary": true,
   "scripts": {
     "build": "npm run -s build:cjs",
     "build:ci": "npm run -s build && npm run -s build:esm",

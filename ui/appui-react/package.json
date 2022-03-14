@@ -5,7 +5,6 @@
   "main": "lib/cjs/appui-react.js",
   "module": "lib/esm/appui-react.js",
   "typings": "lib/cjs/appui-react",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",

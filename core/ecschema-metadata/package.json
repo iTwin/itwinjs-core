@@ -5,7 +5,6 @@
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
   "typings": "lib/cjs/ecschema-metadata",
-  "imodeljsSharedLibrary": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/ecschema-metadata"
