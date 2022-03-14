@@ -81,10 +81,8 @@ const integratedIntelGpuMatchers = [
 ];
 
 function isIntegratedGraphics(args: {unmaskedVendor?: string, unmaskedRenderer?: string}): boolean {
-  if (args.unmaskedRenderer && args.unmaskedRenderer.includes("Intel")) {
-    if (args.unmaskedRenderer && integratedIntelGpuMatchers.some((x) => x.test(args.unmaskedRenderer!)))
-      return true;
-  }
+  if (args.unmaskedRenderer && args.unmaskedRenderer.includes("Intel") && integratedIntelGpuMatchers.some((x) => x.test(args.unmaskedRenderer!)))
+    return true;
 
   // NB: For now, we do not attempt to detect AMD integrated graphics.
   // It appears that AMD integrated graphics are not usually paired with a graphics card so detecting integrated usage there is less important than Intel.
