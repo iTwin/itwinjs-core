@@ -348,8 +348,10 @@ export class Viewer extends Window {
   private updateActiveSettings(): void {
     // NOTE: First category/model is fine for testing purposes...
     const view = this.viewport.view;
-    const settings = IModelApp.toolAdmin.activeSettings;
+    if (!view.iModel.isBriefcaseConnection())
+      return;
 
+    const settings = view.iModel.editorToolSettings;
     if (undefined === settings.category || !view.viewsCategory(settings.category)) {
       settings.category = undefined;
       for (const catId of view.categorySelector.categories) {

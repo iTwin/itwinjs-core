@@ -405,6 +405,7 @@ export interface BackgroundMapProps {
 
 // @beta
 export class BackgroundMapProvider {
+    clone(changedProps: BackgroundMapProviderProps): BackgroundMapProvider;
     equals(other: BackgroundMapProvider): boolean;
     // @internal (undocumented)
     static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BackgroundMapProvider;
