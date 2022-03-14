@@ -84,8 +84,9 @@ function expectPointStrings(params: PointStringParams, expectedColors: ColorDef 
   const numColors = expectedColors instanceof ColorDef ? 0 : expectedColors.length;
   const data = new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numColors);
   if (Array.isArray(expectedColors)) {
+    const colorTableStart = vertexTable.numVertices * vertexTable.numRgbaPerVertex;
     for (let i = 0; i < expectedColors.length; i++) {
-      const color = ColorDef.fromJSON(data[vertexTable.numVertices + i]);
+      const color = ColorDef.fromAbgr(data[colorTableStart + i]);
       expect(color.equals(expectedColors[i])).to.be.true;
     }
   }
@@ -144,10 +145,35 @@ describe.only("VertexTableSplitter", () => {
     ]);
   });
 
-  it("produces uniform color for nodes containing only a single color and sets color indices to zero", () => {
-  });
+  it("collapses color tables and remaps color indices", () => {
+    const featureTable = new FeatureTable(100);
+    featureTable.insert(new Feature("0x1"));
+    featureTable.insert(new Feature("0x2"));
 
-  it("produces color tables containing only colors used by each node and remaps color indices", () => {
+    const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
+
+    const points = [
+      { x: 1, color: 2, feature: 0 },
+      { x: 2, color: 0, feature: 0 },
+      { x: 3, color: 1, feature: 1 },
+      { x: 4, color: 1, feature: 1 },
+    ];
+
+    const params = makePointStringParams(points, colors);
+    expectPointStrings(params, colors, points);
+
+    const split = splitPointStringParams(params, PackedFeatureTable.pack(featureTable), 2048, (id) => id.lower);
+    expect(split.size).to.equal(2);
+
+    expectPointStrings(split.get(1)!, [ ColorDef.blue, ColorDef.red ], [
+      { x: 1, color: 0, feature: 0 },
+      { x: 2, color: 1, feature: 0 },
+    ]);
+
+    expectPointStrings(split.get(2)!, ColorDef.green, [
+      { x: 3, color: 0, feature: 1 },
+      { x: 4, color: 0, feature: 1 },
+    ]);
   });
 
   it("produces rectangular vertex tables", () => {

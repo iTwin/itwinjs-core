@@ -157,7 +157,7 @@ class ColorTableRemapper {
 
   public buildColorTable(): ColorTable {
     assert(this.colors.length > 0);
-    return this.colors.length > 1 ? new Uint32Array(this.colors) : ColorDef.fromJSON(this.colors[0]);
+    return this.colors.length > 1 ? new Uint32Array(this.colors) : ColorDef.fromAbgr(this.colors[0]);
   }
 }
 
