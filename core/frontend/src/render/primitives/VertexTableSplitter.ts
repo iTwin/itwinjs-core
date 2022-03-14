@@ -136,14 +136,16 @@ class ColorTableRemapper {
   private readonly _remappedIndices = new Map<number, number>();
   private readonly _colorTable: Uint32Array;
   public readonly colors: number[] = [];
+  private readonly _32 = new Uint32Array(1);
+  private readonly _16 = new Uint16Array(this._32.buffer);
 
   public constructor(colorTable: Uint32Array) {
     this._colorTable = colorTable;
   }
 
   public remap(vertex: Uint32Array): void {
-    const word = vertex[1];
-    const oldIndex = (word & 0xffff0000) >>> 16;
+    this._32[0] = vertex[1];
+    const oldIndex = this._16[1];
     let newIndex = this._remappedIndices.get(oldIndex);
     if (undefined === newIndex) {
       newIndex = this.colors.length;
@@ -152,7 +154,8 @@ class ColorTableRemapper {
       this.colors.push(color);
     }
 
-    vertex[1] = (word & (newIndex << 16)) >>> 0;
+    this._16[1] = newIndex;
+    vertex[1] = this._32[0];
   }
 
   public buildColorTable(): ColorTable {
