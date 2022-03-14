@@ -77,11 +77,11 @@ const buggyIntelMatchers = [
 // https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
 const integratedIntelGpuMatchers = [
   /(U)?HD Graphics/,
-  /Iris (Pro|Plus|Xe)/,
+  /Iris/,
 ];
 
 function isIntegratedGraphics(args: {unmaskedVendor?: string, unmaskedRenderer?: string}): boolean {
-  if (args.unmaskedVendor && args.unmaskedVendor.includes("Intel")) {
+  if (args.unmaskedRenderer && args.unmaskedRenderer.includes("Intel")) {
     if (args.unmaskedRenderer && integratedIntelGpuMatchers.some((x) => x.test(args.unmaskedRenderer!)))
       return true;
   }
