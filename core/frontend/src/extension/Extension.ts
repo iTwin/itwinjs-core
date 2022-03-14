@@ -89,7 +89,7 @@ export type ExtensionProvider = ExtensionContentProvider &
         manifestUrl?: never;
       }
     | {
-        readonly manifestPromise: never;
+        readonly manifestPromise?: never;
         /**
          * The url for an endpoint that responds with the manifest.
          * Typically used with remote Extensions
