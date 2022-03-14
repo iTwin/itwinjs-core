@@ -67,15 +67,19 @@ class VertexBuffer {
     return this._length;
   }
 
+  public get vertexSize(): number {
+    return this._source.numRgbaPerVertex;
+  }
+
   public push(vertex: Uint32Array): void {
-    assert(vertex.length === this._source.numRgbaPerVertex);
+    assert(vertex.length === this.vertexSize);
     this.reserve(this._length + 1);
-    this._data.set(vertex, this.length);
+    this._data.set(vertex, this.length * this.vertexSize);
     this._length++;
   }
 
   private reserve(newSize: number): void {
-    newSize *= this._source.numRgbaPerVertex;
+    newSize *= this.vertexSize;
     if (this._data.length >= newSize)
       return;
 
@@ -86,7 +90,7 @@ class VertexBuffer {
   }
 
   public toUint8Array(): Uint8Array {
-    return new Uint8Array(this._data.buffer, 0, this._length * 4 * this._source.numRgbaPerVertex);
+    return new Uint8Array(this._data.buffer, 0, this._length * 4 * this.vertexSize);
   }
 
   public buildVertexTable(maxDimension: number, colorTable: ColorTable | undefined): VertexTable {
@@ -96,7 +100,7 @@ class VertexBuffer {
     assert(undefined !== colorTable);
 
     const colorTableLength = colorTable instanceof Uint32Array ? colorTable.length : 0;
-    const dimensions = computeDimensions(this._length, this._source.numRgbaPerVertex, colorTableLength, maxDimension);
+    const dimensions = computeDimensions(this._length, this.vertexSize, colorTableLength, maxDimension);
 
     let rgbaData = this._data;
     if (dimensions.width * dimensions.height > this._data.length) {
@@ -105,7 +109,7 @@ class VertexBuffer {
     }
 
     if (colorTable instanceof Uint32Array)
-      rgbaData.set(colorTable, this._source.numRgbaPerVertex * this.length);
+      rgbaData.set(colorTable, this.vertexSize * this.length);
 
     const tableProps: VertexTableProps = {
       data: new Uint8Array(rgbaData.buffer, rgbaData.byteOffset, rgbaData.byteLength),
