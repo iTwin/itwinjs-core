@@ -41,6 +41,7 @@ function getConfig(env) {
     },
     target: "node",
     devtool: "source-map",
+    resolve: { mainFields: ["main", "module"] },
     module: {
       rules: [
         {
