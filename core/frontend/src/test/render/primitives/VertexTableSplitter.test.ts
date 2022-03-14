@@ -14,7 +14,7 @@ import {
 } from "../../../render-primitives";
 
 interface Point {
-  qpos: number; // quantized position - x y and z all have same coordinate.
+  x: number; // quantized x coordinate - y will be x+1 and z will be x+5.
   color: number; // color index
   feature: number; // feature index
 }
@@ -42,7 +42,7 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
 
   const qpoints = new QPoint3dList();
   for (const point of points)
-    qpoints.push(QPoint3d.fromScalars(point.qpos, point.qpos, point.qpos));
+    qpoints.push(QPoint3d.fromScalars(point.x, point.x + 1, point.x + 5));
 
   const args: PolylineArgs = {
     colors: colorIndex,
@@ -66,8 +66,44 @@ function setMaxTextureSize(max: number): void {
   });
 }
 
-function expectPointStrings(params: PointStringParams, _expectedPts: Point[], _expectedColors: ColorDef[]): void {
-  expect(params.vertices.numRgbaPerVertex).to.equal(3);
+function expectPointStrings(params: PointStringParams, expectedColors: ColorDef | ColorDef[], expectedPts: Point[]): void {
+  const vertexTable = params.vertices;
+  expect(vertexTable.numRgbaPerVertex).to.equal(3);
+  expect(vertexTable.numVertices).to.equal(expectedPts.length);
+  if (expectedColors instanceof ColorDef) {
+    expect(vertexTable.uniformColor).not.to.be.undefined;
+    expect(vertexTable.uniformColor!.equals(expectedColors)).to.be.true;
+  } else {
+    expect(vertexTable.uniformColor).to.be.undefined;
+  }
+
+  let curIndex = 0;
+  for (const index of params.indices)
+    expect(index).to.equal(curIndex++);
+
+  const numColors = expectedColors instanceof ColorDef ? 0 : expectedColors.length;
+  const data = new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numColors);
+  if (Array.isArray(expectedColors)) {
+    for (let i = 0; i < expectedColors.length; i++) {
+      const color = ColorDef.fromJSON(data[vertexTable.numVertices + i]);
+      expect(color.equals(expectedColors[i])).to.be.true;
+    }
+  }
+
+  for (let i = 0; i < vertexTable.numVertices; i++) {
+    const x = data[0] & 0xffff;
+    const y = (data[0] & 0xffff0000) >>> 16;
+    const z = data[1] & 0xffff;
+    const colorIndex = (data[1] & 0xffff0000) >>> 16;
+    const featureIndex = data[2] & 0x00ffffff;
+
+    const pt = expectedPts[i];
+    expect(x).to.equal(pt.x);
+    expect(y).to.equal(pt.x + 1);
+    expect(z).to.equal(pt.x + 5);
+    expect(colorIndex).to.equal(pt.color);
+    expect(featureIndex).to.equal(pt.feature);
+  }
 }
 
 describe.only("VertexTableSplitter", () => {
@@ -76,22 +112,33 @@ describe.only("VertexTableSplitter", () => {
   beforeEach(() => setMaxTextureSize(2048));
 
   it("splits point string params based on node Id", () => {
-    const points: Point[] = [
-      { qpos: 1, color: 0, feature: 0 },
-      { qpos: 0, color: 0, feature: 1 },
-      { qpos: 5, color: 0, feature: 2 },
-      { qpos: 4, color: 0, feature: 1 },
-      { qpos: 2, color: 0, feature: 2 },
-    ];
-
     const featureTable = new FeatureTable(100);
     featureTable.insert(new Feature("0x1"));
     featureTable.insert(new Feature("0x2"));
     featureTable.insert(new Feature("0x10000000002"));
 
+    const points: Point[] = [
+      { x: 1, color: 0, feature: 0 },
+      { x: 0, color: 0, feature: 1 },
+      { x: 5, color: 0, feature: 2 },
+      { x: 4, color: 0, feature: 1 },
+      { x: 2, color: 0, feature: 2 },
+    ];
+
     const params = makePointStringParams(points, ColorDef.red);
     const split = splitPointStringParams(params, PackedFeatureTable.pack(featureTable), IModelApp.renderSystem.maxTextureSize, (id) => id.upper > 0 ? 1 : 0);
     expect(split.size).to.equal(2);
+
+    expectPointStrings(split.get(0)!, ColorDef.red, [
+      { x: 1, color: 0, feature: 0 },
+      { x: 0, color: 0, feature: 1 },
+      { x: 4, color: 0, feature: 1 },
+    ]);
+
+    expectPointStrings(split.get(1)!, ColorDef.red, [
+      { x: 5, color: 0, feature: 2 },
+      { x: 2, color: 0, feature: 2 },
+    ]);
   });
 
   it("produces uniform color for nodes containing only a single color and sets color indices to zero", () => {
