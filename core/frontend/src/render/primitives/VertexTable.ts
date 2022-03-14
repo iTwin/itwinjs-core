@@ -88,8 +88,8 @@ export interface Dimensions {
 }
 
 /** @internal */
-export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number): Dimensions {
-  const maxSize = IModelApp.renderSystem.maxTextureSize;
+export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number, maxSize?: number): Dimensions {
+  maxSize = maxSize ?? IModelApp.renderSystem.maxTextureSize;
   const nRgba = nEntries * nRgbaPerEntry + nExtraRgba;
 
   if (nRgba < maxSize)

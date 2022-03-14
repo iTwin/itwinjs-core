@@ -7,8 +7,10 @@
  */
 
 import { assert, Id64 } from "@itwin/core-bentley";
-import { PackedFeatureTable } from "@itwin/core-common";
-import { VertexTableWithIndices } from "./VertexTable";
+import { ColorDef, PackedFeatureTable } from "@itwin/core-common";
+import {
+  computeDimensions, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,
+} from "./VertexTable";
 import { PointStringParams } from "./PointStringParams";
 
 export type ComputeNodeId = (elementId: Id64.Uint32Pair) => number;
@@ -53,12 +55,12 @@ class IndexBuffer {
 class VertexBuffer {
   private _data: Uint32Array;
   private _length: number;
-  private readonly _numRgbaPerVertex;
+  private readonly _source: VertexTable;
 
-  public constructor(numRgbaPerVertex: number) {
-    this._data = new Uint32Array(3 * numRgbaPerVertex);
+  public constructor(source: VertexTable) {
+    this._source = source;
+    this._data = new Uint32Array(3 * source.numRgbaPerVertex);
     this._length = 0;
-    this._numRgbaPerVertex = numRgbaPerVertex;
   }
 
   public get length(): number {
@@ -66,14 +68,14 @@ class VertexBuffer {
   }
 
   public push(vertex: Uint32Array): void {
-    assert(vertex.length === this._numRgbaPerVertex);
+    assert(vertex.length === this._source.numRgbaPerVertex);
     this.reserve(this._length + 1);
     this._data.set(vertex, this.length);
     this._length++;
   }
 
   private reserve(newSize: number): void {
-    newSize *= this._numRgbaPerVertex;
+    newSize *= this._source.numRgbaPerVertex;
     if (this._data.length >= newSize)
       return;
 
@@ -84,9 +86,47 @@ class VertexBuffer {
   }
 
   public toUint8Array(): Uint8Array {
-    return new Uint8Array(this._data.buffer, 0, this._length * 4 * this._numRgbaPerVertex);
+    return new Uint8Array(this._data.buffer, 0, this._length * 4 * this._source.numRgbaPerVertex);
+  }
+
+  public buildVertexTable(maxDimension: number, colorTable: ColorTable | undefined): VertexTable {
+    // ###TODO support material atlas.
+    const source = this._source;
+    colorTable = colorTable ?? source.uniformColor;
+    assert(undefined !== colorTable);
+
+    const colorTableLength = colorTable instanceof Uint32Array ? colorTable.length : 0;
+    const dimensions = computeDimensions(this._length, this._source.numRgbaPerVertex, colorTableLength, maxDimension);
+
+    let rgbaData = this._data;
+    if (dimensions.width * dimensions.height > this._data.length) {
+      rgbaData = new Uint32Array(dimensions.width * dimensions.height);
+      rgbaData.set(this._data, 0);
+    }
+
+    if (colorTable instanceof Uint32Array)
+      rgbaData.set(colorTable, this._source.numRgbaPerVertex * this.length);
+
+    const tableProps: VertexTableProps = {
+      data: new Uint8Array(rgbaData.buffer, rgbaData.byteOffset, rgbaData.byteLength),
+      usesUnquantizedPositions: source.usesUnquantizedPositions,
+      qparams: source.qparams,
+      width: dimensions.width,
+      height: dimensions.height,
+      hasTranslucency: source.hasTranslucency,
+      uniformColor: colorTable instanceof ColorDef ? colorTable : undefined,
+      featureIndexType: source.featureIndexType,
+      uniformFeatureID: source.uniformFeatureID,
+      numVertices: this.length,
+      numRgbaPerVertex: source.numRgbaPerVertex,
+      uvParams: source.uvParams,
+    };
+
+    return new VertexTable(tableProps);
   }
 }
+
+type ColorTable = Uint32Array | ColorDef;
 
 class ColorTableRemapper {
   private readonly _remappedIndices = new Map<number, number>();
@@ -110,21 +150,24 @@ class ColorTableRemapper {
 
     vertex[1] = (word & (newIndex << 16)) >>> 0;
   }
+
+  public buildColorTable(): ColorTable {
+    assert(this.colors.length > 0);
+    return this.colors.length > 1 ? new Uint32Array(this.colors) : ColorDef.fromJSON(this.colors[0]);
+  }
 }
 
 class Node {
-  public readonly id: number;
   public readonly vertices: VertexBuffer;
   private readonly _remappedIndices = new Map<number, number>();
   public readonly indices = new IndexBuffer();
   public readonly colors?: ColorTableRemapper;
   // ###TODO remap material indices.
 
-  public constructor(id: number, numRgbaPerVertex: number, colorTable?: Uint32Array) {
-    this.id = id;
-    this.vertices = new VertexBuffer(numRgbaPerVertex);
-    if (colorTable)
-      this.colors = new ColorTableRemapper(colorTable);
+  public constructor(vertexTable: VertexTable) {
+    this.vertices = new VertexBuffer(vertexTable);
+    if (undefined == vertexTable.uniformColor)
+      this.colors = new ColorTableRemapper(new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + 4 * vertexTable.numVertices * vertexTable.numRgbaPerVertex));
   }
 
   public addVertex(originalIndex: number, vertex: Uint32Array): void {
@@ -138,6 +181,13 @@ class Node {
     }
 
     this.indices.push(newIndex);
+  }
+
+  public buildOutput(maxDimension: number): VertexTableWithIndices {
+    return {
+      indices: new VertexIndices(this.indices.toUint8Array()),
+      vertices: this.vertices.buildVertexTable(maxDimension, this.colors?.buildColorTable()),
+    };
   }
 }
 
@@ -189,7 +239,7 @@ class VertexTableSplitter {
         const nodeId = this._computeNodeId(elemId);
         let node = this._nodes.get(nodeId);
         if (undefined === node)
-          this._nodes.set(nodeId, node = new Node(nodeId, vertSize));
+          this._nodes.set(nodeId, node = new Node(this._input.vertices));
 
         curState.node = node;
       }
@@ -204,12 +254,17 @@ class VertexTableSplitter {
  * the input params as needed.
  * @internal
  */
-export function splitPointStringParams(params: PointStringParams, featureTable: PackedFeatureTable, computeNodeId: ComputeNodeId): Map<number, PointStringParams> {
+export function splitPointStringParams(params: PointStringParams, featureTable: PackedFeatureTable, maxVertexTableDimension: number, computeNodeId: ComputeNodeId): Map<number, PointStringParams> {
   const result = new Map<number, PointStringParams>();
 
   const { indices, vertices } = params;
   const colorTable = undefined === vertices.uniformColor ? new Uint32Array(vertices.data.buffer, vertices.numVertices * vertices.numRgbaPerVertex * 4) : undefined;
   const nodes = VertexTableSplitter.split({ indices, vertices, featureTable, colorTable }, computeNodeId);
+
+  for (const [id, node] of nodes) {
+    const { vertices, indices } = node.buildOutput(maxVertexTableDimension);
+    result.set(id, new PointStringParams(vertices, indices, params.weight));
+  }
 
   return result;
 }

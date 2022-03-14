@@ -90,7 +90,7 @@ describe.only("VertexTableSplitter", () => {
     featureTable.insert(new Feature("0x10000000002"));
 
     const params = makePointStringParams(points, ColorDef.red);
-    const split = splitPointStringParams(params, PackedFeatureTable.pack(featureTable), (id) => id.upper > 0 ? 1 : 0);
+    const split = splitPointStringParams(params, PackedFeatureTable.pack(featureTable), IModelApp.renderSystem.maxTextureSize, (id) => id.upper > 0 ? 1 : 0);
     expect(split.size).to.equal(2);
   });
 
