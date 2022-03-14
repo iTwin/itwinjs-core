@@ -2,63 +2,73 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
+
 import { expect } from "chai";
 import { join } from "path";
+import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
+import { assert } from "@itwin/core-bentley";
+import { CloudSqliteTest } from "./CloudSqlite.test";
 
-describe("Cloud workspace containers", () => {
+describe.only("Cloud workspace containers", () => {
 
-  it.skip("cloud containers", async () => {
-    const accountProps: CloudSqlite.AccountProps = {
-      accountName: "devstoreaccount1",
-      storageType: "azure?emulator=127.0.0.1:10000&sas=0",
-    };
-    const containerProps: CloudSqlite.ContainerProps = {
-      containerId: "test-container",
-      sasToken: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
-    };
+  async function initializeContainer(containerId: string) {
+    const cloudCont1 = CloudSqliteTest.makeCloudSqliteContainer(containerId, false);
+    await CloudSqliteTest.initializeContainers([cloudCont1]);
+  }
+  it("cloud workspace", async () => {
 
+    const containerId = "test-1-2-3";
     const containerDict = {
-      "cloudSqlite/accountProps": accountProps,
-      "cloudSqlite/containerProps": containerProps,
+      "cloudSqlite/accountProps": CloudSqliteTest.storage,
+      "cloudSqlite/containerId": containerId,
     };
-    const workspace = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestCloudWorkspaces") });
-    const settings = workspace.settings;
+
+    const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), cloudCache: { name: "test1", clearContents: true } });
+    const workspace2 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), cloudCache: { name: "test2", clearContents: true } });
+    const settings = workspace1.settings;
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 
     const testDbName = "testDb";
-    const container = workspace.getContainer({ containerName: containerProps.containerId, cloudProps: { ...containerProps, ...accountProps } });
-    const ws1 = new EditableWorkspaceDb(testDbName, container);
 
-    const account1 = settings.getObject<CloudSqlite.AccountProps>("cloudSqlite/accountProps")!;
-    expect(account1).deep.equals(accountProps);
-    const contain1 = settings.getObject<CloudSqlite.ContainerProps>("cloudSqlite/containerProps")!;
-    expect(contain1).deep.equals(containerProps);
+    await initializeContainer(containerId);
+    const wsCont1 = workspace1.getContainer({ containerId, cloudProps: { ...CloudSqliteTest.storage, containerId, writeable: true, sasToken: CloudSqliteTest.makeSasToken(containerId, "rwadl") } });
+    assert(undefined !== wsCont1.cloudContainer);
 
-    EditableWorkspaceDb.createEmpty(ws1.dbFileName);
+    await CloudSqlite.withWriteLock("Cloud workspace test", wsCont1.cloudContainer, async () => {
+      const wsDbEdit = new EditableWorkspaceDb(testDbName, wsCont1);
+      await wsDbEdit.createDb();
+      const account1 = settings.getObject<CloudSqlite.AccountProps>("cloudSqlite/accountProps")!;
+      expect(account1).deep.equals(CloudSqliteTest.storage);
+      const contain1 = settings.getString("cloudSqlite/containerId")!;
+      expect(contain1).equals(containerId);
 
-    ws1.open();
-    ws1.addString("string 1", "value of string 1");
-    ws1.close();
-    // await ws1.upload(cloudAccess);
+      wsDbEdit.addString("string 1", "value of string 1");
+      wsDbEdit.close();
+    });
 
-    //    IModelJsFs.unlinkSync(dbName);
-    let ws2 = await container.getWorkspaceDb({ dbName: testDbName });
+    const wsCont2 = workspace2.getContainer({ containerId, cloudProps: { ...CloudSqliteTest.storage, containerId, sasToken: CloudSqliteTest.makeSasToken(containerId, "rl") } });
+    const ws2Cloud = wsCont2.cloudContainer;
+    assert(ws2Cloud !== undefined);
+
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    expect(() => ws2Cloud.acquireWriteLock("other session")).to.throw("container is not writeable");
+
+    let ws2 = await wsCont2.getWorkspaceDb({ dbName: testDbName });
     let val = ws2.getString("string 1");
     expect(val).equals("value of string 1");
     ws2.container.dropWorkspaceDb(ws2);
 
+    // change the workspace in one cache and see that it is updated in the other
     const newVal = "new value for string 1";
-    const ws3 = new EditableWorkspaceDb(testDbName, container);
-    // await  ws3.openCloudDb(cloudAccess);
-    ws3.open();
-    ws3.updateString("string 1", newVal);
-    ws3.close();
+    await CloudSqlite.withWriteLock("Cloud workspace test", wsCont1.cloudContainer, async () => {
+      const ws3 = new EditableWorkspaceDb(testDbName, wsCont1);
+      ws3.open();
+      ws3.updateString("string 1", newVal);
+      ws3.close();
+    });
 
-    //  await CloudSqlite.deleteDb({ ...ws3, ...cloudAccess });
-    // await ws3.upload(cloudAccess);
-
-    ws2 = await container.getWorkspaceDb({ dbName: testDbName });
+    await ws2Cloud.checkForChanges();
+    ws2 = await wsCont2.getWorkspaceDb({ dbName: testDbName });
     val = ws2.getString("string 1");
     expect(val).equals(newVal);
     ws2.container.dropWorkspaceDb(ws2);

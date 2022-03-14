@@ -2273,56 +2273,6 @@ describe("iModel", () => {
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb3.key));
   });
 
-  it("Password-protected Snapshot iModels", () => {
-    const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "pws1.bim");
-    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "pws2.bim");
-    const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "pws3.bim");
-    const snapshotFile4: string = IModelTestUtils.prepareOutputFile("IModel", "pws4.bim");
-
-    // create snapshot from scratch without a password, then unnecessarily specify a password to open
-    let snapshotDb1 = SnapshotDb.createFrom(imodel1, snapshotFile1);
-    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
-    snapshotDb1.close();
-    snapshotDb1 = SnapshotDb.openFile(snapshotFile1, { password: "unnecessaryPassword" });
-    assert.isTrue(snapshotDb1.isSnapshotDb());
-    assert.isTrue(snapshotDb1.isSnapshot);
-    assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
-    assert.isFalse(hasClassView(snapshotDb1, "bis.Element"));
-
-    // create snapshot from scratch and give it a password
-    let snapshotDb2 = SnapshotDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
-    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
-    const subjectName2 = "TestSubject2";
-    const subjectId2 = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
-    assert.isTrue(Id64.isValidId64(subjectId2));
-    snapshotDb2.close();
-    snapshotDb2 = SnapshotDb.openFile(snapshotFile2, { password: "password" });
-    assert.isTrue(snapshotDb2.isSnapshotDb());
-    assert.isTrue(snapshotDb2.isSnapshot);
-    assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
-    assert.exists(snapshotDb2.elements.getElement(subjectId2));
-    assert.isTrue(hasClassView(snapshotDb2, "bis.Element"));
-
-    // create a new snapshot from a non-password-protected snapshot and then give it a password
-    let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { password: "password" });
-    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
-    snapshotDb3.close();
-    snapshotDb3 = SnapshotDb.openFile(snapshotFile3, { password: "password" });
-    assert.isTrue(snapshotDb3.isSnapshotDb());
-    assert.isTrue(snapshotDb3.isSnapshot);
-    assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
-
-    // it is invalid to create a snapshot from a password-protected iModel
-    assert.throws(() => SnapshotDb.createFrom(snapshotDb2, snapshotFile4), IModelError);
-    assert.isFalse(IModelJsFs.existsSync(snapshotFile4));
-    assert.throws(() => SnapshotDb.createFrom(snapshotDb2, snapshotFile4, { password: "password" }), IModelError);
-    assert.isFalse(IModelJsFs.existsSync(snapshotFile4));
-
-    snapshotDb1.close();
-    snapshotDb2.close();
-    snapshotDb3.close();
-  });
-
   it("upgrade the domain schema in a StandaloneDb", async () => {
     const testFileName = IModelTestUtils.prepareOutputFile("UpgradeIModel", "testImodel.bim");
     const seedFileName = IModelTestUtils.resolveAssetFile("testImodel.bim");

@@ -9,7 +9,7 @@ import { SQLiteDb } from "../../SQLiteDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 
-describe.only("SQLiteDb", () => {
+describe("SQLiteDb", () => {
 
   it("should create new SQLiteDb", () => {
     const fileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "db1.db");

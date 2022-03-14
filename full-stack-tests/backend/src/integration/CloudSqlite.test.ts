@@ -12,54 +12,19 @@ import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
-describe("CloudSqlite", () => {
-  type TestContainer = IModelJsNative.CloudContainer & { isPublic: boolean };
-  let caches: IModelJsNative.CloudCache[];
-  let testContainers: TestContainer[];
-  let credentials: azureBlob.StorageSharedKeyCredential;
-  let testBimGuid: GuidString;
-  const user = "CloudSqlite test";
-  const httpAddr = "127.0.0.1:10000";
-
-  const storage: CloudSqlite.AccountProps = {
+export namespace CloudSqliteTest {
+  export type TestContainer = IModelJsNative.CloudContainer & { isPublic: boolean };
+  export const httpAddr = "127.0.0.1:10000";
+  export const storage: CloudSqlite.AccountProps = {
     accountName: "devstoreaccount1",
     storageType: `azure?emulator=${httpAddr}&sas=1`,
   };
-  const emulatorKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+  export const credential = new azureBlob.StorageSharedKeyCredential(storage.accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
 
-  const makeEmptyDir = (name: LocalDirName) => {
-    mkdirsSync(name);
-    emptyDirSync(name);
-  };
-
-  const makeContainer = (containerId: string, isPublic: boolean): TestContainer => {
-    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, writeable: true, sasToken: "" }) as TestContainer;
-    cont.isPublic = isPublic;
-    return cont;
-  };
-  const makeCache = (name: string) => {
-    const rootDir = join(IModelHost.cacheDir, name);
-    makeEmptyDir(rootDir);
-    return new IModelHost.platform.CloudCache({ name, rootDir });
-  };
-  const setSasToken = (container: IModelJsNative.CloudContainer, permissionFlags: string) => {
-    const now = new Date();
-    container.sasToken = azureBlob.generateBlobSASQueryParameters({
-      containerName: container.containerId,
-      permissions: azureBlob.ContainerSASPermissions.parse(permissionFlags),
-      startsOn: now,
-      expiresOn: new Date(now.valueOf() + 86400),
-    }, credentials).toString();
-  };
-
-  before(async () => {
-    testContainers = [makeContainer("test1", false), makeContainer("test2", false), makeContainer("test3", true)];
-    caches = [makeCache("cache1"), makeCache("cache2")];
-    credentials = new azureBlob.StorageSharedKeyCredential(storage.accountName, emulatorKey);
-    const pipeline = azureBlob.newPipeline(credentials);
+  export async function initializeContainers(containers: TestContainer[]) {
+    const pipeline = azureBlob.newPipeline(credential);
     const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${storage.accountName}`, pipeline);
-
-    for await (const container of testContainers) {
+    for await (const container of containers) {
       setSasToken(container, "racwdl");
       try {
         await blobService.deleteContainer(container.containerId);
@@ -68,6 +33,61 @@ describe("CloudSqlite", () => {
       await blobService.createContainer(container.containerId, container.isPublic ? { access: "blob" } : undefined);
       container.initializeContainer();
     }
+  }
+  export function makeEmptyDir(name: LocalDirName) {
+    mkdirsSync(name);
+    emptyDirSync(name);
+  }
+
+  export function makeCloudSqliteContainer(containerId: string, isPublic: boolean): TestContainer {
+    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, writeable: true, sasToken: "" }) as TestContainer;
+    cont.isPublic = isPublic;
+    return cont;
+  }
+
+  export function makeCloudSqliteContainers(props: [string, boolean][]): TestContainer[] {
+    const containers = [];
+    for (const entry of props)
+      containers.push(makeCloudSqliteContainer(entry[0], entry[1]));
+
+    return containers;
+  }
+  export function makeCaches(names: string[]) {
+    const caches = [];
+    for (const name of names) {
+      const rootDir = join(IModelHost.cacheDir, name);
+      makeEmptyDir(rootDir);
+      caches.push(new IModelHost.platform.CloudCache({ name, rootDir }));
+    }
+    return caches;
+  }
+  export function makeSasToken(containerName: string, permissionFlags: string) {
+    const now = new Date();
+    return azureBlob.generateBlobSASQueryParameters({
+      containerName,
+      permissions: azureBlob.ContainerSASPermissions.parse(permissionFlags),
+      startsOn: now,
+      expiresOn: new Date(now.valueOf() + 86400),
+    }, credential).toString();
+  }
+  export function setSasToken(container: IModelJsNative.CloudContainer, permissionFlags: string) {
+    container.sasToken = makeSasToken(container.containerId, permissionFlags);
+  }
+}
+
+describe.only("CloudSqlite", () => {
+  let caches: IModelJsNative.CloudCache[];
+  let testContainers: CloudSqliteTest.TestContainer[];
+  let testBimGuid: GuidString;
+  const user = "CloudSqlite test";
+
+  before(async () => {
+    testContainers = CloudSqliteTest.makeCloudSqliteContainers([["test1", false], ["test2", false], ["test3", true]]);
+    caches = CloudSqliteTest.makeCaches(["cache1", "cache2"]);
+    await CloudSqliteTest.initializeContainers(testContainers);
+
+    expect(caches[0].isDaemon).false;
+
     const testBimFileName = join(KnownTestLocations.assetsDir, "test.bim");
     const imodel = SnapshotDb.openFile(testBimFileName);
     testBimGuid = imodel.iModelId;
@@ -87,7 +107,7 @@ describe("CloudSqlite", () => {
     const tempDbFile = join(KnownLocations.tmpdir, "TestWorkspaces", "testws.db");
     if (existsSync(tempDbFile))
       rmSync(tempDbFile);
-    EditableWorkspaceDb.createEmpty(tempDbFile); // just create a db with a few tables
+    EditableWorkspaceDb.createEmpty(tempDbFile); // just to create a db with a few tables
 
     await uploadFile(testContainers[0], caches[0], "c0-db1", tempDbFile);
     await uploadFile(testContainers[0], caches[0], "testBim", testBimFileName);
@@ -168,14 +188,14 @@ describe("CloudSqlite", () => {
     expect(contain1.queryDatabases().length).equals(2);
 
     contain1.detach();
-    setSasToken(contain1, "rwl"); // don't ask for delete permission
+    CloudSqliteTest.setSasToken(contain1, "rwl"); // don't ask for delete permission
     contain1.attach(caches[1]);
     await CloudSqlite.withWriteLock(user, contain1, async () => {
       await expect(contain1.cleanDeletedBlocks()).eventually.rejectedWith("not authorized").property("errorNumber", 403);
     });
 
     contain1.detach();
-    setSasToken(contain1, "rwdl"); // now ask for delete permission
+    CloudSqliteTest.setSasToken(contain1, "rwdl"); // now ask for delete permission
     contain1.attach(caches[1]);
 
     await CloudSqlite.withWriteLock(user, contain1, async () => contain1.cleanDeletedBlocks());
@@ -185,9 +205,9 @@ describe("CloudSqlite", () => {
     expect(() => contain1.attach(caches[0])).throws("container already attached");
 
     // can't attach two containers with same name
-    const cont2 = makeContainer(contain1.containerId, false);
+    const cont2 = CloudSqliteTest.makeCloudSqliteContainer(contain1.containerId, false);
 
-    setSasToken(cont2, "racwdl");
+    CloudSqliteTest.setSasToken(cont2, "racwdl");
 
     expect(() => cont2.attach(caches[1])).throws("container with that name already attached");
     expect(cont2.isAttached).false;
@@ -233,7 +253,7 @@ describe("CloudSqlite", () => {
     expect(() => contain1.attach(caches[0])).throws("403").property("errorNumber", 403);
 
     // Now attempt to obtain the write lock with a token that doesn't authorize it, expecting auth error
-    setSasToken(contain1, "rl"); // get a read-only token
+    CloudSqliteTest.setSasToken(contain1, "rl"); // get a read-only token
     contain1.attach(caches[0]); // attach works with readonly token
     expect(contain1.isAttached);
     // eslint-disable-next-line @typescript-eslint/promise-function-async

@@ -16,7 +16,8 @@ import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
-import { IModelHost } from "../IModelHost";
+import { IModelHost, KnownLocations } from "../IModelHost";
+import { existsSync, rmSync } from "fs-extra";
 
 // cspell:ignore rowid
 
@@ -83,8 +84,6 @@ export type ContainerNameOrId = { containerName: WorkspaceContainerName, contain
 
 /**
  * Properties that specify a WorkspaceContainer.
- * This can either be a WorkspaceContainerName or a WorkspaceContainerId. If id is supplied,
- * it is used directly. Otherwise name must be resolved via [[Workspace.resolveContainerId]].
  * @beta
  */
 export type WorkspaceContainerProps = ContainerNameOrId & {
@@ -145,9 +144,14 @@ export interface WorkspaceDb {
    * To edit them, you must first copy them to another location.
    */
   getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
+
+  prefetch(): Promise<void>;
 }
 
-export type WorkspaceCloudCacheProps = Optional<CloudSqlite.CacheProps, "name" | "rootDir">;
+export interface WorkspaceCloudCacheProps extends Optional<CloudSqlite.CacheProps, "name" | "rootDir"> {
+  /** if true, empty the cache before using it. */
+  clearContents?: boolean;
+}
 
 /**
  * Options for constructing a [[Workspace]].
@@ -183,6 +187,7 @@ export interface Workspace {
    * is used. If no WorkspaceSetting.containerAlias entry for the WorkspaceContainerName can be found, the name is returned as the id.
    */
   resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
+
   /**
    * Get an open [[WorkspaceDb]]. If the WorkspaceDb is present but not open, it is opened first.
    * If `cloudProps` are supplied, and if container is not  present or not up-to-date, it is downloaded first.
@@ -217,10 +222,6 @@ export interface WorkspaceContainer {
   dropWorkspaceDb(container: WorkspaceDb): void;
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
   close(): void;
-  /** attach this container to its cloud service */
-  attach(): void;
-  /** detach this container from its cloud service */
-  detach(): void;
 }
 
 /** @internal */
@@ -237,10 +238,11 @@ export class ITwinWorkspace implements Workspace {
         ...this._cloudCacheProps,
         rootDir: this._cloudCacheProps?.rootDir ?? join(this.containerDir, "cloud"),
         cacheSize: this._cloudCacheProps?.cacheSize ?? "20G",
-        name: "workspace",
+        name: this._cloudCacheProps?.name ?? "workspace",
       };
-
       IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
+      if (cacheProps.clearContents)
+        fs.emptyDirSync(cacheProps.rootDir);
       this._cloudCache = new IModelHost.platform.CloudCache(cacheProps);
     }
     return this._cloudCache;
@@ -329,16 +331,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
       this.cloudContainer = new IModelHost.platform.CloudContainer(cloudProps);
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
-  }
-
-  public attach() {
-    if (false === this.cloudContainer?.isAttached)
-      this.cloudContainer.attach(this.workspace.cloudCache);
-  }
-
-  public detach() {
-    if (true === this.cloudContainer?.isAttached)
-      this.cloudContainer.detach();
+    this.cloudContainer?.attach(this.workspace.cloudCache);
   }
 
   public addWorkspaceDb(toAdd: ITwinWorkspaceDb) {
@@ -348,7 +341,6 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   }
 
   public async getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerName">): Promise<WorkspaceDb> {
-    this.attach();
     const db = this._wsDbs.get(props.dbName) ?? new ITwinWorkspaceDb(props.dbName, this);
     if (!db.isOpen)
       db.open();
@@ -368,6 +360,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     for (const [_name, db] of this._wsDbs)
       db.close();
     this._wsDbs.clear();
+    this.cloudContainer?.detach();
   }
 
   public purgeContainerFiles() {
@@ -419,7 +412,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     container.addWorkspaceDb(this);
   }
 
-  public open(): void {
+  public open() {
     this.sqliteDb.openDb(this.dbFileName, OpenMode.Readonly, this.container.cloudContainer);
   }
 
@@ -482,6 +475,14 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     fs.chmodSync(localFileName, "0444"); // set file readonly
     return localFileName;
   }
+
+  public async prefetch(): Promise<void> {
+    const cloudContainer = this.container.cloudContainer;
+    if (cloudContainer !== undefined) {
+      await cloudContainer.pinDatabase(this.dbName, true);
+      await cloudContainer.pinDatabase(this.dbName, false);
+    }
+  }
 }
 
 /**
@@ -524,6 +525,21 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
       }
     });
     this.sqliteDb.saveChanges();
+  }
+
+  public async createDb() {
+    if (!this.container.cloudContainer) {
+      EditableWorkspaceDb.createEmpty(this.dbFileName);
+    } else {
+      // currently the only way to create a workspaceDb in a cloud container is to create a temporary workspaceDb and upload it.
+      const tempDbFile = join(KnownLocations.tmpdir, `empty.${workspaceDbFileExt}`);
+      if (existsSync(tempDbFile))
+        rmSync(tempDbFile);
+      EditableWorkspaceDb.createEmpty(tempDbFile);
+      await CloudSqlite.uploadDb(this.container.cloudContainer, { localFileName: tempDbFile, dbName: this.dbFileName });
+      rmSync(tempDbFile);
+    }
+    this.open();
   }
 
   /** Create a new, empty, EditableWorkspaceDb for importing Workspace resources. */

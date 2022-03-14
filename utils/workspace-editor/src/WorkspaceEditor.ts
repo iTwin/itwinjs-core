@@ -87,7 +87,7 @@ const askQuestion = async (query: string) => {
 /** Create a new empty WorkspaceDb  */
 async function createWorkspaceDb(args: WorkspaceDbOpt) {
   const wsFile = new EditableWorkspaceDb(args.dbName, IModelHost.appWorkspace.getContainer(args));
-  EditableWorkspaceDb.createEmpty(wsFile.dbFileName);
+  await wsFile.createDb();
   console.log(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
 }
 
@@ -102,7 +102,7 @@ function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceDbOpt>(
   }
 }
 
-function getCloudProps(args: EditorOpts): WorkspaceContainerProps {
+function getCloudArg(args: EditorOpts): WorkspaceContainerProps {
   return {
     ...args,
     cloudProps: args.accountName ? {
@@ -116,11 +116,8 @@ function getCloudProps(args: EditorOpts): WorkspaceContainerProps {
 }
 
 async function loadContainer(args: EditorOpts) {
-  const container = IModelHost.appWorkspace.getContainer(getCloudProps(args));
-  if (container.cloudContainer) {
-    container.attach();
-    await container.cloudContainer.pollManifest();
-  }
+  const container = IModelHost.appWorkspace.getContainer(getCloudArg(args));
+  await container.cloudContainer?.pollManifest();
   return container;
 }
 
@@ -293,7 +290,7 @@ async function deleteWorkspaceDb(args: WorkspaceDbOpt) {
 
 /** initialize (empty if it exists) a WorkspaceContainer. */
 async function initializeContainer(args: EditorOpts) {
-  const container = IModelHost.appWorkspace.getContainer(getCloudProps(args));
+  const container = IModelHost.appWorkspace.getContainer(getCloudArg(args));
   if (undefined === container.cloudContainer)
     throw new Error("No cloud container supplied");
   const yesNo = await askQuestion(`Are you sure you want to initialize container "${args.containerId}"? [y/n]: `);
