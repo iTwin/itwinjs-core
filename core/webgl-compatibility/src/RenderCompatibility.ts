@@ -109,7 +109,7 @@ export interface WebGLRenderCompatibilityInfo {
   unmaskedRenderer?: string;
   /** The vendor string reported by this client's graphics driver. */
   unmaskedVendor?: string;
-  /** If true, there is a likelihood that integrated graphics are being used.
+  /** If true, there is a likelihood that integrated graphics are being used. This can be used to warn users on systems with both integrated graphics and dedicated graphics that they should try to switch to their dedicated graphics for better performance.
    * @note This property has the possibility of providing false positives and negatives. A user should use this property mainly as a hint and manually verify what graphics chip is being used.
    * @beta
    */
