@@ -72,6 +72,7 @@ internal;BingMapsImageryLayerProvider
 public;BlankConnection 
 public;BlankConnectionProps
 public;BriefcaseConnection 
+alpha;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
 alpha;BuildExtensionManifest 
@@ -642,8 +643,6 @@ public;TileVisibility
 beta;TokenArg
 public;Tool
 public;ToolAdmin
-public;ToolAdmin
-alpha;ActiveSettings
 public;ToolAssistance
 public;ToolAssistanceImage
 public;ToolAssistanceInputMethod
