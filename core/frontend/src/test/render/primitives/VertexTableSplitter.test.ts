@@ -91,11 +91,12 @@ function expectPointStrings(params: PointStringParams, expectedColors: ColorDef 
   }
 
   for (let i = 0; i < vertexTable.numVertices; i++) {
-    const x = data[0] & 0xffff;
-    const y = (data[0] & 0xffff0000) >>> 16;
-    const z = data[1] & 0xffff;
-    const colorIndex = (data[1] & 0xffff0000) >>> 16;
-    const featureIndex = data[2] & 0x00ffffff;
+    const idx = i * vertexTable.numRgbaPerVertex;
+    const x = data[idx] & 0xffff;
+    const y = (data[idx] & 0xffff0000) >>> 16;
+    const z = data[idx + 1] & 0xffff;
+    const colorIndex = (data[idx + 1] & 0xffff0000) >>> 16;
+    const featureIndex = data[idx + 2] & 0x00ffffff;
 
     const pt = expectedPts[i];
     expect(x).to.equal(pt.x);
@@ -126,6 +127,8 @@ describe.only("VertexTableSplitter", () => {
     ];
 
     const params = makePointStringParams(points, ColorDef.red);
+    expectPointStrings(params, ColorDef.red, points);
+
     const split = splitPointStringParams(params, PackedFeatureTable.pack(featureTable), IModelApp.renderSystem.maxTextureSize, (id) => id.upper > 0 ? 1 : 0);
     expect(split.size).to.equal(2);
 
