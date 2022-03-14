@@ -64,10 +64,10 @@ export class ExtensionAdmin {
    */
   public async addExtension(provider: ExtensionProvider): Promise<void> {
     const manifest = await this.getManifest(provider);
+    const { manifestPromise, manifestUrl, ...extensionContent } = provider;
     this._extensions.set(manifest.name, {
       manifest,
-      main: provider.main,
-      jsUrl: provider.jsUrl,
+      ...extensionContent,
     });
   }
 

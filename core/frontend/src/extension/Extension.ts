@@ -47,41 +47,53 @@ export interface ExtensionManifest {
  * Methods to provide an extension's content (local function vs remote function)
  * @alpha
  */
-interface ExtensionContentProvider {
-  /**
-   * A local function that is the starting execution point for the Extension.
-   * Typically used with locally installed Extensions
-   */
-  readonly main?: ResolveFunc;
-  /**
-   * The url for an endpoint that responds with a Javascript file that contains a default function that is the starting execution point for the Extension.
-   * Typically used with remote Extensions
-   */
-  readonly jsUrl?: string;
-}
+type ExtensionContentProvider =
+  | {
+      /**
+       * A local function that is the starting execution point for the Extension.
+       * Typically used with locally installed Extensions
+       */
+      readonly main: ResolveFunc;
+      jsUrl?: never;
+    }
+  | {
+      main?: never;
+      /**
+       * The url for an endpoint that responds with a Javascript file that contains a default function that is the starting execution point for the Extension.
+       * Typically used with remote Extensions
+       */
+      readonly jsUrl: string;
+    };
 
 /**
  * A "ready to use" Extension (contains a manifest object).
  * Will be used as the type for in-memory extensions in the ExtensionAdmin
  * @alpha
  */
-export interface Extension extends ExtensionContentProvider {
+export type Extension = ExtensionContentProvider & {
   readonly manifest: ExtensionManifest;
-}
+};
 
 /**
  * Properties that are required to construct an Extension.
  * Is the parameter type for the "ExtensionAdmin.addExtension" method, which is the preferred method for consumers to provide/register an Extension
  */
-export interface ExtensionProvider extends ExtensionContentProvider {
-  /**
-   * A local promise that resolves the manifest.
-   * Typically used with locally installed Extensions
-   */
-  readonly manifestPromise?: Promise<ExtensionManifest>;
-  /**
-   * The url for an endpoint that responds with the manifest.
-   * Typically used with remote Extensions
-   */
-  readonly manifestUrl?: string;
-}
+export type ExtensionProvider = ExtensionContentProvider &
+  (
+    | {
+        /**
+         * A local promise that resolves the manifest.
+         * Typically used with locally installed Extensions
+         */
+        readonly manifestPromise: Promise<ExtensionManifest>;
+        manifestUrl?: never;
+      }
+    | {
+        readonly manifestPromise: never;
+        /**
+         * The url for an endpoint that responds with the manifest.
+         * Typically used with remote Extensions
+         */
+        manifestUrl: string;
+      }
+  );
