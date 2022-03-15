@@ -67,7 +67,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
 
   private _update = (vp: Viewport) => {
     // set progress animation before the next repaint.
-    setImmediate(() => this._refreshState(vp));
+    setTimeout(() => this._refreshState(vp));
   };
 
   private _onViewOpen = (vp: ScreenViewport) => {

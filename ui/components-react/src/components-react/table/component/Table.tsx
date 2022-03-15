@@ -1391,7 +1391,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _deactivateCellEditor = (): void => {
     if (this.state.cellEditorState.active)
-      this.setState({ cellEditorState: { active: false } }, () => setImmediate(() => this.setFocusToSelected()));
+      this.setState({ cellEditorState: { active: false } }, () => setTimeout(() => this.setFocusToSelected()));
   };
 
   /** @internal */
