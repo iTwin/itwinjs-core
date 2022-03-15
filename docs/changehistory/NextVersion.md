@@ -3,6 +3,13 @@ publish: false
 ---
 # NextVersion
 
+## Upgrade Note - peer dependency changes
+
+- The `core-backend` package has changed it's peer dependency on `ecschema-metadata` to optional.  So it is no longer necessary to list `ecschema-metadata` as a dependency unless you use the `IModelSchemaLoader`.
+- The package `ecschema-metadata` now has `core-quantity` as a peer dependency.
+
+So if you are upgrading from 2.x or 3.0 and depend on `core-backend` you must either add `core-quantity` or remove `ecschema-metadata`.
+
 ## Simplified material creation
 
 [RenderSystem.createMaterial]($frontend) presents an awkward API requiring the instantiation of several related objects to create even a simple [RenderMaterial]($common). It also requires an [IModelConnection]($frontend). It has been deprecated in favor of [RenderSystem.createRenderMaterial]($frontend), which accepts a single [CreateRenderMaterialArgs]($frontend) object concisely specifying only the properties of interest to the caller. For example, the following:
@@ -72,18 +79,12 @@ The [QuantityFormatter]($core-frontend), accessed via `IModelApp.quantityFormatt
 It is now possible to retrieve `Units` from schemas stored in IModels. The new [SchemaUnitProvider]($ecschema-metadata) can now be created and used by the [QuantityFormatter]($core-frontend) or any method in the `core-quantity` package that requires a [UnitsProvider]($quantity). Below is an example, extracted from `ui-test-app`, that demonstrates how to register the IModel-specific `UnitsProvider` as the IModelConnection is created. This new provider will provide access to a wide variety of Units that were not available in the standalone `BasicUnitsProvider`.
 
 ```ts
-    try{
-    // Reset QuantityFormatter UnitsProvider with new iModelConnection
-      const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-      const context = new SchemaContext();
-      context.addLocater(schemaLocater);
-      await IModelApp.quantityFormatter.setUnitsProvider (new SchemaUnitProvider(context));
-    } catch (_) {
-      await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider(); // reset to use internal BasicUnitsProvider
-    }
-
-    UiFramework.setIModelConnection(iModelConnection, true);
+    // Provide the QuantityFormatter with the iModelConnection so it can find the unit definitions defined in the iModel
+    const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
+    await IModelApp.quantityFormatter.setUnitsProvider (new SchemaUnitProvider(schemaLocater));
 ```
+
+>IMPORTANT: the `core-quantity` package is not a peer dependency of the `ecschema-metadata` package
 
 ## AppUI Updates
 
