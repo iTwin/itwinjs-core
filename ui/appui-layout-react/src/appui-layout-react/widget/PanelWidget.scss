@@ -6,7 +6,6 @@
 
 .nz-widget-panelWidget {
   $border-width: 1px;
-
   border: 0px solid $buic-background-5;
 
   &.nz-border-top {
@@ -25,6 +24,7 @@
     border-right-width: $border-width;
   }
 
+  &.nz-widget-widget,
   &.nz-init,
   &.nz-transition {
     flex-grow: 1;
@@ -54,32 +54,10 @@
     min-height: 0;
   }
 
-  /* ------------ not supported minimized panels ----
-  &.nz-minimized {
-    flex: 0 0 auto;
-
-    >.nz-content {
-      overflow: hidden;
-    }
-
-    &.nz-horizontal {
-      >.nz-content {
-        width: 0;
-      }
-    }
-
-    &:not(.nz-horizontal) {
-      >.nz-content {
-        height: 0;
-      }
-    }
-  }
-
   &:not(.nz-minimized) {
     >.nz-content {
       min-height: 0;
       min-width: 0;
     }
   }
-  -------------------------------------------------*/
 }

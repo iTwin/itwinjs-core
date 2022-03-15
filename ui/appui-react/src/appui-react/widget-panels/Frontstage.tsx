@@ -716,6 +716,32 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
         isFloatingStateWindowResizable: widgetDef?.isFloatingStateWindowResizable,
       };
     }
+
+    // remove center panel section is one is found in left or right panels
+    const oldLeftMiddleIndex = saved.panels.left.widgets.findIndex((value) => value === "leftMiddle");
+    if (-1 !== oldLeftMiddleIndex) {
+      draft.panels.left.widgets = saved.panels.left.widgets.filter((value) => value !== "leftMiddle");
+
+      if ("leftEnd" in draft.widgets) {
+        draft.widgets.leftMiddle.tabs.forEach((tab)=>draft.widgets.leftEnd.tabs.push(tab));
+      } else {
+        draft.widgets.leftEnd = {...draft.widgets.leftMiddle};
+        delete draft.widgets.leftMiddle;
+      }
+    }
+
+    const oldRightMiddleIndex = saved.panels.right.widgets.findIndex((value) => value === "rightMiddle");
+    if (-1 !== oldRightMiddleIndex) {
+      draft.panels.right.widgets = saved.panels.right.widgets.filter((value) => value !== "rightMiddle");
+
+      if ("rightEnd" in draft.widgets) {
+        draft.widgets.rightMiddle.tabs.forEach((tab)=>draft.widgets.rightEnd.tabs.push(tab));
+      } else {
+        draft.widgets.rightEnd = {...draft.widgets.rightMiddle};
+        delete draft.widgets.rightMiddle;
+      }
+    }
+
     return;
   });
   if (FrontstageManager.nineZoneSize && (0 !== FrontstageManager.nineZoneSize.height || 0 !== FrontstageManager.nineZoneSize.width)) {
@@ -849,32 +875,7 @@ export const setWidgetState = produce((
         panel.size = panel.minSize ?? 200;
       }
     }
-  } else if (state === WidgetState.Closed) {
-    /*
-    const id = widgetDef.id;
-    let location = findTab(nineZone, id);
-    if (!location) {
-      addRemovedTab(nineZone, widgetDef);
-      location = findTab(nineZone, id);
-      assert(!!location);
-    }
-    const widget = nineZone.widgets[location.widgetId];
-    if (id !== widget.activeTabId)
-      return;
-    const minimized = widget.minimized;
-    widget.minimized = true;
-    if ("side" in location) {
-      const panel = nineZone.panels[location.side];
-      const maximized = panel.widgets.find((wId) => {
-        const w = nineZone.widgets[wId];
-        return !w.minimized;
-      });
-      if (maximized === undefined)
-        widget.minimized = minimized;
-      return;
-    }
-    */
-  } else if (state === WidgetState.Hidden) {
+  }  else if (state === WidgetState.Hidden) {
     hideWidget(nineZone, widgetDef);
   }
 });

@@ -156,6 +156,7 @@ export interface PanelState {
   readonly size: number | undefined;
   readonly widgets: ReadonlyArray<WidgetState["id"]>;
   readonly maxWidgetCount: number;
+  readonly splitterPercent: number | undefined;  // default to 50
 }
 
 /** @internal future */
@@ -218,6 +219,13 @@ export interface PanelSetSizeAction {
   readonly type: "PANEL_SET_SIZE";
   readonly side: PanelSide;
   readonly size: number;
+}
+
+/** @internal future */
+export interface PanelSetSplitterPercentAction {
+  readonly type: "PANEL_SET_SPLITTER_VALUE";
+  readonly side: PanelSide;
+  readonly percent: number;
 }
 
 /** @internal future */
@@ -363,6 +371,7 @@ export type NineZoneActionTypes =
   PanelToggleCollapsedAction |
   PanelSetCollapsedAction |
   PanelSetSizeAction |
+  PanelSetSplitterPercentAction |
   PanelToggleSpanAction |
   PanelTogglePinnedAction |
   PanelInitializeAction |
@@ -418,6 +427,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const panel = state.panels[action.side];
       const newSize = Math.min(Math.max(action.size, panel.minSize), panel.maxSize);
       state.panels[action.side].size = newSize;
+      return;
+    }
+    case "PANEL_SET_SPLITTER_VALUE": {
+      const percent = Math.min(Math.max(action.percent, 0), 100);
+      state.panels[action.side].splitterPercent = percent;
       return;
     }
     case "PANEL_TOGGLE_SPAN": {
@@ -700,10 +714,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           tabs: [action.id],
         };
       } else if (isTabTargetWidgetState(target)) {
-        state.panels[target.side].widgets.splice(target.widgetIndex, 0, target.newWidgetId);
-        state.widgets[target.newWidgetId] = {
+        const newWidgetPanelId = `${target.side}${0 === target.widgetIndex ? "Start" : "End"}`;
+        state.panels[target.side].widgets.splice(target.widgetIndex, 0, newWidgetPanelId);
+        state.widgets[newWidgetPanelId] = {
           activeTabId: action.id,
-          id: target.newWidgetId,
+          id: newWidgetPanelId,
           minimized: false,
           tabs: [action.id],
         };
@@ -1059,6 +1074,7 @@ export function createPanelState(side: PanelSide) {
     size: undefined,
     widgets: [],
     maxWidgetCount: getMaxWidgetCount(side),
+    splitterPercent: 50,
   };
 }
 

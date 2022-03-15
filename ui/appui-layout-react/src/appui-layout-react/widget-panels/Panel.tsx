@@ -43,6 +43,8 @@ export type VerticalPanelSide = LeftPanelSide | RightPanelSide;
 export type PanelSide = VerticalPanelSide | HorizontalPanelSide;
 
 function PanelSplitter({isHorizontal}: {isHorizontal: boolean}) {
+  const dispatch = React.useContext(NineZoneDispatchContext);
+  const panel = React.useContext(PanelStateContext);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const splitterProcessingActiveRef = React.useRef<boolean>(false);
 
@@ -59,7 +61,7 @@ function PanelSplitter({isHorizontal}: {isHorizontal: boolean}) {
 
   const updatePanelSize = React.useCallback(
     (event: PointerEvent) => {
-      if (containerRef.current) {
+      if (containerRef.current && panel?.side) {
         const parentPanel = containerRef.current.closest(".nz-widgetPanels-panel");
         const sectionToResize = containerRef.current.parentElement as HTMLElement;
         if (parentPanel && sectionToResize) {
@@ -69,13 +71,15 @@ function PanelSplitter({isHorizontal}: {isHorizontal: boolean}) {
             isHorizontal ?  rect.right : rect.bottom,
             isHorizontal ?  event.clientX : event.clientY,
           );
-          if (isHorizontal)
-            sectionToResize.style.width = `${percent}%`;
-          else
-            sectionToResize.style.height = `${percent}%`;
+
+          dispatch({
+            type: "PANEL_SET_SPLITTER_VALUE",
+            side: panel.side,
+            percent,
+          });
         }
       }
-    }, [getPercentage, isHorizontal]);
+    }, [getPercentage, isHorizontal, panel, dispatch]);
 
   const handlePointerMove = React.useCallback((event: Event): void => {
     if (splitterProcessingActiveRef.current) {
@@ -319,6 +323,19 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     spanBottom && "nz-span-bottom",
     transition && `nz-${transition}`,
   );
+
+  const splitterControlledPanelStyle = React.useMemo (()=>{
+    const splitterPercent = panel.splitterPercent??50;
+    const styleToApply: React.CSSProperties = {};
+    if (splitterPercent) {
+      if (horizontal)
+        styleToApply.width = `${splitterPercent}%`;
+      else
+        styleToApply.height = `${splitterPercent}%`;
+    }
+    return styleToApply;
+  }, [horizontal, panel.splitterPercent]);
+
   return (
     <WidgetPanelContext.Provider value={widgetPanel}>
       <div
@@ -346,10 +363,12 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
               (last && 0 === index) && "nz-panel-section-full-size"
             );
 
+            const panelStyle = index===0 && panel.widgets.length > 1 ? splitterControlledPanelStyle : undefined;
+
             return (
               <React.Fragment key={widgetId}>
-                <div className={panelClassName}>
-                  {index === 0 && showTargets && <WidgetTarget
+                <div className={panelClassName} style={panelStyle}>
+                  {index === 0 && (widgetId.endsWith("End")) && showTargets && <WidgetTarget
                     position="first"
                     widgetIndex={0}
                   />}
@@ -362,7 +381,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
                     widgetId={widgetId}
                     ref={getRef(widgetId)}
                   />
-                  {showTargets && <WidgetTarget
+                  {showTargets && (widgetId.endsWith("Start")) &&  <WidgetTarget
                     position={last ? "last" : undefined}
                     widgetIndex={index + 1}
                   />}

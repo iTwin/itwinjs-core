@@ -176,7 +176,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     "nz-widget-tab",
     active && "nz-active",
     !widgetTabsEntryContext && "nz-overflown",
-    widget.minimized && "nz-minimized",
+    undefined === side && widget.minimized && "nz-minimized",
     first && "nz-first",
     last && "nz-last",
     firstInactive && "nz-first-inactive",
