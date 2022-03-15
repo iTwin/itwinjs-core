@@ -6,7 +6,6 @@
  * @module Core
  */
 
-import * as path from "path";
 import { NodeKey } from "./hierarchy/Key";
 import { KeySet } from "./KeySet";
 
@@ -87,7 +86,3 @@ export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
 /** @internal */
 export const PRESENTATION_COMMON_ROOT = __dirname;
-
-/** @internal */
-// istanbul ignore next
-export const getLocalesDirectory = (assetsDirectory: string) => path.join(assetsDirectory, "locales");
