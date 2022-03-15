@@ -133,15 +133,41 @@ describe("ColorDef", () => {
 
   it("determines whether string and numeric values represent valid colors", () => {
     // Iterating over an enum produces both the keys and the values, as strings.
-    for (const value in ColorByName) {
-      const num = Number(value);
-      if (Number.isNaN(num)) {
-        expect(ColorDef.isValidColor(value)).to.be.true;
-        expect(ColorDef.isValidColor(`${value}xx`)).to.be.false;
+    for (const [key, value] of Object.entries(ColorByName)) {
+      expect(ColorDef.isValidColor(key)).to.be.true;
+      expect(ColorDef.isValidColor(`${key}xx`)).to.be.false;
+
+      expect(ColorDef.isValidColor(value)).to.be.true;
+      expect(ColorDef.isValidColor(value + 0.5)).to.be.false;
+      expect(ColorDef.isValidColor(-value)).to.equal(0 === value);
+    }
+  });
+
+  it("looks up name from numeric representation", () => {
+    interface Duplicates {
+      [key: string]: keyof typeof ColorByName | undefined;
+    }
+
+    const duplicates: Duplicates = {
+      cyan: "aqua",
+      darkGrey: "darkGray",
+      darkSlateGrey: "darkSlateGray",
+      dimGrey: "dimGray",
+      grey: "gray",
+      lightGrey: "lightGray",
+      lightSlateGrey: "lightSlateGray",
+      magenta: "fuchsia",
+      slateGrey: "slateGray",
+    };
+
+    for (const [key, value] of Object.entries(ColorByName)) {
+      const name = ColorDef.getName(value);
+      const duplicate = duplicates[key];
+      if (duplicate) {
+        expect(name).to.equal(duplicate);
+        expect(value).to.equal(ColorByName[duplicate]);
       } else {
-        expect(ColorDef.isValidColor(num)).to.be.true;
-        expect(ColorDef.isValidColor(num + 0.5)).to.be.false;
-        expect(ColorDef.isValidColor(-num)).to.equal(0 === num);
+        expect(name).to.equal(key);
       }
     }
   });
