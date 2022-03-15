@@ -12,7 +12,7 @@ import {
   MockRender,
 } from "../../../core-frontend";
 import {
-  MeshArgs, MeshParams, PointStringParams, PolylineArgs, splitPointStringParams, SurfaceType,
+  MeshArgs, MeshParams, PointStringParams, PolylineArgs, splitPointStringParams, SurfaceType, VertexTable,
 } from "../../../render-primitives";
 
 interface Point {
@@ -80,16 +80,30 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
   return params;
 }
 
+function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[]): void {
+  if (expected instanceof ColorDef) {
+    expect(vertexTable.uniformColor).not.to.be.undefined;
+    expect(vertexTable.uniformColor!.equals(expected)).to.be.true;
+  } else {
+    expect(vertexTable.uniformColor).to.be.undefined;
+  }
+
+  if (Array.isArray(expected)) {
+    const numColors = expected.length;
+    const data = new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numColors);
+    const colorTableStart = vertexTable.numVertices * vertexTable.numRgbaPerVertex;
+    for (let i = 0; i < expected.length; i++) {
+      const color = ColorDef.fromAbgr(data[colorTableStart + i]);
+      expect(color.equals(expected[i])).to.be.true;
+    }
+  }
+}
+
 function expectPointStrings(params: PointStringParams, expectedColors: ColorDef | ColorDef[], expectedPts: Point[]): void {
   const vertexTable = params.vertices;
   expect(vertexTable.numRgbaPerVertex).to.equal(3);
   expect(vertexTable.numVertices).to.equal(expectedPts.length);
-  if (expectedColors instanceof ColorDef) {
-    expect(vertexTable.uniformColor).not.to.be.undefined;
-    expect(vertexTable.uniformColor!.equals(expectedColors)).to.be.true;
-  } else {
-    expect(vertexTable.uniformColor).to.be.undefined;
-  }
+  expectColors(vertexTable, expectedColors);
 
   let curIndex = 0;
   for (const index of params.indices)
@@ -97,13 +111,6 @@ function expectPointStrings(params: PointStringParams, expectedColors: ColorDef 
 
   const numColors = expectedColors instanceof ColorDef ? 0 : expectedColors.length;
   const data = new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numColors);
-  if (Array.isArray(expectedColors)) {
-    const colorTableStart = vertexTable.numVertices * vertexTable.numRgbaPerVertex;
-    for (let i = 0; i < expectedColors.length; i++) {
-      const color = ColorDef.fromAbgr(data[colorTableStart + i]);
-      expect(color.equals(expectedColors[i])).to.be.true;
-    }
-  }
 
   for (let i = 0; i < vertexTable.numVertices; i++) {
     const idx = i * vertexTable.numRgbaPerVertex;
@@ -128,11 +135,20 @@ interface TriMeshPoint extends Point {
   uv?: number; // x component of uv param in [0..1]; y will be x / 2
 }
 
+function makeTriangleStrip(firstPoint: TriMeshPoint, numTriangles: number): TriMeshPoint[] {
+  const strip = [ firstPoint ];
+  const pointCount = numTriangles + 2;
+  for (let i = 1; i < pointCount; i++)
+    strip.push({ ...firstPoint, x: firstPoint.x + i });
+
+  return strip;
+}
+
 interface TriMesh {
   points: TriMeshPoint[];
   indices: number[];
   colors: ColorDef | ColorDef[];
-  materials: RenderMaterial | RenderMaterial[];
+  materials?: RenderMaterial | RenderMaterial[];
   texture?: RenderTexture;
 }
 
@@ -171,6 +187,7 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
     vertIndices: mesh.indices,
     normals,
     fillFlags: FillFlags.None,
+    // ###TODO test material atlases
     material: mesh.materials instanceof RenderMaterial ? mesh.materials : undefined,
     textureMapping,
     colors: makeColorIndex(mesh.points, mesh.colors),
@@ -178,6 +195,14 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
   };
 
   return MeshParams.create(args);
+}
+
+function expectMesh(params: MeshParams, expectedColors: ColorDef | ColorDef[], expected: TriMesh): void {
+  const vertexTable = params.vertices;
+  const type = getSurfaceType(expected);
+  expect(vertexTable.numRgbaPerVertex).to.equal(SurfaceType.Unlit === type ? 3 : 4);
+  expect(vertexTable.numVertices).to.equal(expected.points.length);
+  expectColors(vertexTable, expectedColors);
 }
 
 describe.only("VertexTableSplitter", () => {
@@ -318,7 +343,33 @@ describe.only("VertexTableSplitter", () => {
   it("splits polyline params based on node Id", () => {
   });
 
-  it("splits surface params based on node Id", () => {
+  it("splits unlit surface params based on node Id", () => {
+    const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
+    const featureTable = makePackedFeatureTable("0x1", "0x2", "0x3");
+    const mesh = {
+      points: [
+        ...makeTriangleStrip({ x: 0, color: 2, feature: 0 }, 2),
+        ...makeTriangleStrip({ x: 4, color: 0, feature: 0 }, 1),
+        ...makeTriangleStrip({ x: 7, color: 1, feature: 1 }, 1),
+        ...makeTriangleStrip({ x: 10, color: 1, feature: 1 }, 2),
+        ...makeTriangleStrip({ x: 14, color: 0, feature: 2 }, 3),
+      ],
+      indices: [
+        0, 1, 2,
+        1, 2, 3,
+        4, 6, 5,
+        7, 8, 9,
+        12, 11, 10,
+        11, 10, 13,
+        14, 15, 16,
+        16, 15, 17,
+        14, 18, 17,
+      ],
+      colors,
+    };
+
+    const params = makeMeshParams(mesh);
+    expectMesh(params, colors, mesh);
   });
 
   it("splits edge params based on node Ids", () => {
