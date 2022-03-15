@@ -4611,6 +4611,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
+    getMassPropertiesPerCandidate(_iModelToken: IModelRpcProps, _props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
+    // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
@@ -5280,6 +5282,20 @@ export enum MassPropertiesOperation {
     AccumulateAreas = 1,
     AccumulateLengths = 0,
     AccumulateVolumes = 2
+}
+
+// @public
+export interface MassPropertiesPerCandidateRequestProps {
+    // (undocumented)
+    candidates: CompressedId64Set;
+    // (undocumented)
+    operations: MassPropertiesOperation[];
+}
+
+// @public
+export interface MassPropertiesPerCandidateResponseProps extends MassPropertiesResponseProps {
+    // (undocumented)
+    candidate: Id64String;
 }
 
 // @public
