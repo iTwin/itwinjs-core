@@ -83,6 +83,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/core-extension",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/core-frontend",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -343,6 +347,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "buffer",
+      "allowedCategories": [ "common", "internal" ]
+    },
+    {
       "name": "cache-require-paths",
       "allowedCategories": [ "internal" ]
     },
@@ -457,6 +465,10 @@
     {
       "name": "enzyme-to-json",
       "allowedCategories": [ "extensions", "frontend" ]
+    },
+    {
+      "name": "esbuild",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "eslint",
@@ -863,6 +875,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "string_decoder",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "superagent",
       "allowedCategories": [ "backend", "common", "frontend" ]
     },
@@ -905,6 +921,10 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "url",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "username",
