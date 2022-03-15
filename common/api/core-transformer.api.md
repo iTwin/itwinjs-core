@@ -14,6 +14,7 @@ import { ElementMultiAspect } from '@itwin/core-backend';
 import { ElementProps } from '@itwin/core-common';
 import { ElementUniqueAspect } from '@itwin/core-backend';
 import { FontProps } from '@itwin/core-common';
+import { Id64 } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelCloneContext } from '@itwin/core-backend';
 import { IModelDb } from '@itwin/core-backend';
@@ -25,6 +26,13 @@ import { Relationship } from '@itwin/core-backend';
 import { RelationshipProps } from '@itwin/core-backend';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
+
+// @beta (undocumented)
+export type HandlerResponse = MaybeAsync<HandlerResult | void>;
+
+// @beta (undocumented)
+export interface HandlerResult {
+}
 
 // @beta
 export class IModelExporter {
@@ -61,21 +69,21 @@ export class IModelExporter {
     wantGeometry: boolean;
     wantSystemSchemas: boolean;
     wantTemplateModels: boolean;
-}
+    }
 
 // @beta
 export abstract class IModelExportHandler {
-    onDeleteElement(_elementId: Id64String): void;
-    onDeleteModel(_modelId: Id64String): void;
-    onDeleteRelationship(_relInstanceId: Id64String): void;
-    onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): void;
-    onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
-    onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
-    onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
-    onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
-    onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
-    onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
-    onExportSchema(_schema: Schema): Promise<void>;
+    onDeleteElement(_elementId: Id64String): HandlerResponse;
+    onDeleteModel(_modelId: Id64String): HandlerResponse;
+    onDeleteRelationship(_relInstanceId: Id64String): HandlerResponse;
+    onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): HandlerResponse;
+    onExportElement(_element: Element, _isUpdate: boolean | undefined): HandlerResponse;
+    onExportElementMultiAspects(_aspects: ElementMultiAspect[]): HandlerResponse;
+    onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): HandlerResponse;
+    onExportFont(_font: FontProps, _isUpdate: boolean | undefined): HandlerResponse;
+    onExportModel(_model: Model, _isUpdate: boolean | undefined): HandlerResponse;
+    onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): HandlerResponse;
+    onExportSchema(_schema: Schema): HandlerResponse;
     onProgress(): Promise<void>;
     shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     shouldExportElement(_element: Element): boolean;
@@ -135,7 +143,6 @@ export interface IModelImportOptions {
 export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
     readonly context: IModelCloneContext;
-    protected _deferredElementIds: Set<string>;
     detectElementDeletes(): Promise<void>;
     detectRelationshipDeletes(): Promise<void>;
     dispose(): void;
@@ -147,7 +154,7 @@ export class IModelTransformer extends IModelExportHandler {
     onDeleteModel(_sourceModelId: Id64String): void;
     onDeleteRelationship(sourceRelInstanceId: Id64String): void;
     onExportCodeSpec(sourceCodeSpec: CodeSpec): void;
-    onExportElement(sourceElement: Element): void;
+    onExportElement(sourceElement: Element): HandlerResponse;
     onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
     onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void;
     onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
@@ -158,12 +165,15 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
+    protected _partiallyCommittedElements: Id64.Uint32Map<PartiallyCommittedElement>;
+    protected _pendingReferences: PendingReferenceMap<PartiallyCommittedElement>;
     processAll(): Promise<void>;
     processChanges(accessToken: AccessToken, startChangesetId?: string): Promise<void>;
     processChildElements(sourceElementId: Id64String): Promise<void>;
     processCodeSpec(codeSpecName: string): Promise<void>;
     processCodeSpecs(): Promise<void>;
-    processDeferredElements(numRetries?: number): Promise<void>;
+    // @deprecated
+    processDeferredElements(_numRetries?: number): Promise<void>;
     processElement(sourceElementId: Id64String): Promise<void>;
     processFonts(): Promise<void>;
     processModel(sourceModeledElementId: Id64String): Promise<void>;
@@ -175,10 +185,10 @@ export class IModelTransformer extends IModelExportHandler {
     protected _schemaExportDir: string;
     shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     shouldExportElement(_sourceElement: Element): boolean;
-    shouldExportElementAspect(sourceAspect: ElementAspect): boolean;
     shouldExportRelationship(_sourceRelationship: Relationship): boolean;
     shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
-    protected skipElement(sourceElement: Element): void;
+    // @deprecated (undocumented)
+    protected skipElement(_sourceElement: Element): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
     get targetScopeElementId(): Id64String;

@@ -222,11 +222,6 @@ export enum ChangeSetStatus {
     WrongDgnDb = 90130
 }
 
-// @beta
-export namespace ClassUtils {
-    export function isProperSubclassOf<SuperClass extends new (..._: any[]) => InstanceType<SuperClass>, SubClass extends new (..._: any[]) => InstanceType<SubClass>>(subclass: SubClass | SuperClass, superclass: SuperClass): subclass is SuperClass;
-}
-
 // @public
 export type CloneFunction<T> = (value: T) => T;
 
@@ -595,22 +590,34 @@ export namespace Id64 {
     export function sizeOf(arg: Id64Arg): number;
     export function toIdSet(arg: Id64Arg, makeCopy?: boolean): Id64Set;
     export class Uint32Map<T> {
+        [Symbol.iterator](): IterableIterator<[number, number, T]>;
         clear(): void;
+        delete(low: number, high: number): boolean;
+        deleteById(id: Id64String): boolean;
+        entries(): IterableIterator<[number, number, T]>;
+        entriesById(): IterableIterator<[string, T]>;
         forEach(func: (lo: number, hi: number, value: T) => void): void;
         get(low: number, high: number): T | undefined;
         getById(id: Id64String): T | undefined;
+        has(low: number, high: number): boolean;
+        hasById(id: Id64String): boolean;
         get isEmpty(): boolean;
+        keys(): IterableIterator<[number, number]>;
+        keysById(): IterableIterator<string>;
         // (undocumented)
         protected readonly _map: Map<number, Map<number, T>>;
         set(low: number, high: number, value: T): void;
         setById(id: Id64String, value: T): void;
         get size(): number;
+        values(): IterableIterator<T>;
+        valuesById(): IterableIterator<T>;
     }
     export interface Uint32Pair {
         lower: number;
         upper: number;
     }
     export class Uint32Set {
+        [Symbol.iterator](): IterableIterator<[number, number]>;
         constructor(ids?: Id64Arg);
         add(low: number, high: number): void;
         addId(id: Id64String): void;
@@ -628,6 +635,8 @@ export namespace Id64 {
         get size(): number;
         toId64Array(): Id64Array;
         toId64Set(): Id64Set;
+        values(): IterableIterator<[number, number]>;
+        valuesById(): IterableIterator<string>;
     }
 }
 

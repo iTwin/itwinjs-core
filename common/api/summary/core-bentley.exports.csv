@@ -22,7 +22,6 @@ public;BeUiEvent
 beta;BriefcaseStatus
 public;ByteStream
 beta;ChangeSetStatus
-beta;ClassUtils
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number
 public;compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number
