@@ -182,6 +182,8 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Top Start1 widget</h2>,
           isFloatingStateSupported: true,
+          defaultFloatingSize: {width: 400, height: 600 },
+          isFloatingStateWindowResizable: true,
         });
       widgets.push(
         {

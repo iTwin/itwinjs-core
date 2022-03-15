@@ -20,6 +20,7 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
+import { Rectangle, SizeProps } from "@itwin/core-react";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -140,6 +141,7 @@ export class WidgetDef {
   private _saveTransientState?: () => void;
   private _restoreTransientState?: () => boolean;
   private _preferredPanelSize: "fit-content" | undefined;
+  private _defaultFloatingSize: SizeProps | undefined;
   private _canPopout?: boolean;
   private _floatingContainerId?: string;
   private _defaultFloatingPosition: PointProps | undefined;
@@ -193,6 +195,10 @@ export class WidgetDef {
   /** @internal */
   public get defaultFloatingPosition() { return this._defaultFloatingPosition; }
   public set defaultFloatingPosition(position: PointProps | undefined) { this._defaultFloatingPosition = position; }
+
+  /** @internal */
+  public get defaultFloatingSize() { return this._defaultFloatingSize; }
+  public set defaultFloatingSize(size: SizeProps | undefined) { this._defaultFloatingSize = size; }
 
   /** @internal */
   public get defaultState() { return this._defaultState; }
@@ -270,6 +276,7 @@ export class WidgetDef {
       me._badgeType = widgetProps.badgeType;
 
     me._preferredPanelSize = widgetProps.preferredPanelSize;
+    me._defaultFloatingSize = widgetProps.defaultFloatingSize;
     me._onWidgetStateChanged = widgetProps.onWidgetStateChanged;
     me._saveTransientState = widgetProps.saveTransientState;
     me._restoreTransientState = widgetProps.restoreTransientState;

@@ -41,14 +41,14 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly isStatusBar?: boolean;
   /** Indicates whether this Widget should fill the available space in the Zone. */
   readonly fillZone?: boolean;
-  /** Indicates if widget can be popped out to a child window. */
+  /** Indicates if widget can be popped out to a child window. Defaults to false. */
   readonly canPopout?: boolean;
-  /** If the widget state is changed to `floating` and the floatingContainerId is defined then the widget will be added to a
-   * floating panel by that name. If no name is specified the current practice of using a GUID is used. */
+  /** If the widget state is changed to `floating` and the floatingContainerId is defined, the widget will be added to a
+   * floating panel by that name. If no name is specified, a GUID is used. */
   readonly floatingContainerId?: string;
-  /** Indicates if widget can be in floating state. */
+  /** Indicates if widget can be in floating state, default to true. */
   readonly isFloatingStateSupported?: boolean;
-  /** Indicates if floating widget is resizable. */
+  /** Indicates if floating widget is resizable, defaults to false which caused the widget to be auto-sized.. */
   readonly isFloatingStateWindowResizable?: boolean;
   /** Defines that default Top Left position when widget is floated via API calls */
   readonly defaultFloatingPosition?: { x: number, y: number };
@@ -68,4 +68,8 @@ export interface AbstractWidgetProps extends ProvidedItem {
    * @note Return true if the state is restored or the Widget will remount.
    */
   readonly restoreTransientState?: () => boolean;
+  /** Optional default size to use when floating a widget. If not specified then the default is to size to content if possible.
+   * Certain widget can't be intrinsically sized and must specify a content. These are typically ones that use a canvas element
+   * internally. */
+  defaultFloatingSize?: { width: number, height: number };
 }

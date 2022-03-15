@@ -292,6 +292,7 @@ export interface PanelWidgetDragStartAction {
   readonly id: WidgetState["id"];
   readonly bounds: RectangleProps;
   readonly side: PanelSide;
+  readonly userSized?: boolean;
 }
 
 /** @internal future */
@@ -339,6 +340,7 @@ export interface WidgetTabDragStartAction {
   readonly floatingWidgetId: FloatingWidgetState["id"] | undefined;
   readonly id: TabState["id"];
   readonly position: PointProps;
+  readonly userSized?: boolean;
 }
 
 /** @internal future */
@@ -457,6 +459,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       state.floatingWidgets.allIds.push(action.newFloatingWidgetId);
       state.floatingWidgets.byId[action.newFloatingWidgetId] = {
         bounds: Rectangle.create(action.bounds).toProps(),
+        userSized: action.userSized,
         id: action.newFloatingWidgetId,
         home: {
           side: action.side,
@@ -727,11 +730,13 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         const nzBounds = Rectangle.createFromSize(state.size);
         const bounds = Rectangle.createFromSize(tab.preferredFloatingWidgetSize || target.size).offset(state.draggedTab.position);
         const containedBounds = bounds.containIn(nzBounds);
+        const userSized = tab?.userSized || (tab?.isFloatingStateWindowResizable && !!tab.preferredFloatingWidgetSize);
+
         state.floatingWidgets.byId[target.newFloatingWidgetId] = {
           bounds: containedBounds.toProps(),
           id: target.newFloatingWidgetId,
           home: state.draggedTab.home,
-          userSized: tab.userSized,
+          userSized,
         };
         state.floatingWidgets.allIds.push(target.newFloatingWidgetId);
         state.widgets[target.newFloatingWidgetId] = {

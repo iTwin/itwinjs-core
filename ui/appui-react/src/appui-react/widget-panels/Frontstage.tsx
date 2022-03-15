@@ -270,6 +270,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
       label,
       iconSpec: widget.iconSpec,
       preferredPanelWidgetSize: widget.preferredPanelSize,
+      preferredFloatingWidgetSize: widget.defaultFloatingSize,
       canPopout: widget.canPopout,
       isFloatingStateWindowResizable: widget.isFloatingStateWindowResizable,
     });
@@ -301,9 +302,11 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
     const label = getWidgetLabel(widgetDef.label);
     const saveTab = state.tabs[widgetDef.id];
     const preferredPanelWidgetSize = saveTab ? saveTab.preferredPanelWidgetSize : widgetDef.preferredPanelSize;
-    const preferredFloatingWidgetSize = saveTab ? saveTab.preferredFloatingWidgetSize : undefined;
+    const preferredFloatingWidgetSize = saveTab ? saveTab.preferredFloatingWidgetSize : widgetDef.defaultFloatingSize;
     const preferredPopoutWidgetSize = saveTab ? saveTab.preferredPopoutWidgetSize : undefined;
-    const userSized = saveTab ? saveTab.userSized : undefined;
+    // if a defaultFloatingSize is specified then this mean the widget can't determine its intrinsic size and must be explicitly sized
+    const userSized = saveTab ? (saveTab.userSized || !!widgetDef.defaultFloatingSize && !!saveTab.preferredFloatingWidgetSize)
+      : !!widgetDef.defaultFloatingSize;
     state = addTab(state, widgetDef.id, {
       label,
       iconSpec: widgetDef.iconSpec,

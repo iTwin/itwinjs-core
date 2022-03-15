@@ -381,7 +381,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
                     widgetId={widgetId}
                     ref={getRef(widgetId)}
                   />
-                  {showTargets && (widgetId.endsWith("Start")) &&  <WidgetTarget
+                  {showTargets && (widgetId.endsWith("Start")) && <WidgetTarget
                     position={last ? "last" : undefined}
                     widgetIndex={index + 1}
                   />}

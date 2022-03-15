@@ -74,6 +74,8 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
           bounds = bounds.setSize(activeTab.preferredFloatingWidgetSize);
         }
 
+        const userSized = activeTab?.userSized || (activeTab?.isFloatingStateWindowResizable && !!activeTab.preferredFloatingWidgetSize);
+
         // Pointer is outside of tab area. Need to re-adjust widget bounds so that tab is behind pointer
         if (initialPointerPosition.x > bounds.right) {
           const offset = initialPointerPosition.x - bounds.right + 20;
@@ -91,6 +93,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
           id,
           bounds,
           side,
+          userSized,
         });
       }, [activeTab, dispatch, floatingWidgetId, id, side, measureNz]);
       useDragWidget({

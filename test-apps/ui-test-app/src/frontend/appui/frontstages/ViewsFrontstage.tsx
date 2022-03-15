@@ -415,7 +415,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                     },
                   },
                 }}
-                fillZone={true} />,
+                fillZone={true} defaultFloatingSize={{width:330, height:540}} isFloatingStateWindowResizable={true} />,
             ]}
           />
         }
@@ -448,8 +448,10 @@ export class ViewsFrontstage extends FrontstageProvider {
                   id={ViewsFrontstage.unifiedSelectionPropertyGridId}
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
                   applicationData={{ iModelConnection }}
+                  isFloatingStateWindowResizable={true}
                 />,
-                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder"
+                  labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               ]}
           />
         }
