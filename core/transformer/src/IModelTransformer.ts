@@ -803,9 +803,9 @@ export class IModelTransformer extends IModelExportHandler {
         loggerCategory,
         [
           "The following elements were never fully resolved:",
-          [...this._partiallyCommittedElements.keysById()].join(','),
+          [...this._partiallyCommittedElements.keysById()].join(","),
           "This indicates that either some predecessors were excluded from the transformation",
-          "or the source has dangling predecessors."
+          "or the source has dangling predecessors.",
         ].join("\n")
       );
       for (const partiallyCommittedElem of this._partiallyCommittedElements.valuesById()) {
