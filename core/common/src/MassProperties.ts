@@ -32,7 +32,7 @@ export interface MassPropertiesRequestProps {
 /** Information required to request mass properties for each element separately from the front end to the back end.
  * @public
  */
-export interface SeparateMassPropertiesRequestProps {
+export interface MassPropertiesPerCandidateRequestProps {
   operations: MassPropertiesOperation[];
   candidates: CompressedId64Set;
 }
@@ -56,6 +56,6 @@ export interface MassPropertiesResponseProps {
 /** Information returned from the back end to the front end holding the result of the mass properties calculation for a single candidate.
  * @public
  */
-export interface SeparateMassPropertiesResponseProps extends MassPropertiesResponseProps {
+export interface MassPropertiesPerCandidateResponseProps extends MassPropertiesResponseProps {
   candidate: Id64String;
 }
