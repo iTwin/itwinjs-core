@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { ColorByName } from "../ColorByName";
 import { ColorDef } from "../ColorDef";
 
@@ -129,5 +129,20 @@ describe("ColorDef", () => {
     assert.equal(0, t2.b);
     assert.equal(100, t2.t);
 
+  });
+
+  it("determines whether string and numeric values represent valid colors", () => {
+    // Iterating over an enum produces both the keys and the values, as strings.
+    for (const value in ColorByName) {
+      const num = Number(value);
+      if (Number.isNaN(num)) {
+        expect(ColorDef.isValidColor(value)).to.be.true;
+        expect(ColorDef.isValidColor(`${value}xx`)).to.be.false;
+      } else {
+        expect(ColorDef.isValidColor(num)).to.be.true;
+        expect(ColorDef.isValidColor(num + 0.5)).to.be.false;
+        expect(ColorDef.isValidColor(-num)).to.equal(0 === num);
+      }
+    }
   });
 });

@@ -55,14 +55,7 @@ export class ColorDef {
    * Create a new ColorDef.
    * @param val value to use.
    * If a number, it is interpreted as a 0xTTBBGGRR (Red in the low byte, high byte is transparency 0==fully opaque) value.
-   *
-   * If a string, must be in one of the following forms:
-   * *"rgb(255,0,0)"*
-   * *"rgba(255,0,0,.2)"*
-   * *"rgb(100%,0%,0%)"*
-   * *"hsl(120,50%,50%)"*
-   * *"#rrggbb"*
-   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case insensitive.
+   * If a string, it must be in one of the forms supported by [[fromString]], otherwise, otherwise, otherwise, otherwise 
    */
   public static create(val?: string | ColorDefProps) {
     return this.fromTbgr(this.computeTbgr(val));
@@ -127,22 +120,40 @@ export class ColorDef {
    * *"hsl(120,50%,50%)"*
    * *"#rrbbgg"*
    * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case-insensitive.
+   *
+   * If `val` is not a valid string representation of a color, this function returns [[black]].
    */
   public static fromString(val: string): ColorDef {
     return this.fromTbgr(this.computeTbgrFromString(val));
   }
 
-  /** Compute the 0xTTBBGGRR value corresponding to a string representation of a color. The following representations are supported:
-   * *"rgb(255,0,0)"*
-   * *"rgba(255,0,0,.2)"*
-   * *"rgb(100%,0%,0%)"*
-   * *"hsl(120,50%,50%)"*
-   * *"#rrbbgg"*
-   * *"blanchedAlmond"* (see possible values from [[ColorByName]]). Case-insensitive.
+  /** Determine whether the input is a valid representation of a ColorDef.
+   * @see [[fromString]] for the definition of a valid string representation.
+   * @see [[ColorDefProps]] for the definition of a valid numeric representation.
+   */
+  public static isValidColor(val: string | number): boolean {
+    if (typeof val === "number")
+      return val >= 0 && val <= 0xffffffff && Math.floor(val) === val;
+
+    return undefined !== this.tryComputeTbgrFromString(val);
+  }
+
+  /** Compute the 0xTTBBGGRR value corresponding to a string representation of a color.
+   * If `val` is not a valid string representation of a color, this function returns 0 (black).
+   * @see [[fromString]] for the definition of a valid string representation.
+   * @see [[tryComputeTbgrFromString]] to determine if `val` is a valid string representation of a color.
    */
   public static computeTbgrFromString(val: string): number {
+    return this.tryComputeTbgrFromString(val) ?? 0;
+  }
+
+  /** Try to compute the 0xTTBBGGRR value corresponding to a string representation of a ColorDef.
+   * @returns the corresponding numeric representation, or `undefined` if the input does not represent a color.
+   * @see [[fromString]] for the definition of a valid string representation.
+   */
+  public static tryComputeTbgrFromString(val: string): number | undefined {
     if (typeof val !== "string")
-      return 0;
+      return undefined;
 
     val = val.toLowerCase();
     let m = /^((?:rgb|hsl)a?)\(\s*([^\)]*)\)/.exec(val);
@@ -207,12 +218,12 @@ export class ColorDef {
     }
 
     if (val && val.length > 0) {   // ColorRgb value
-      const colorByName = Object.entries(ColorByName).find((entry) => typeof entry[1] === "string" && entry[1].toLowerCase() === val);
-      if (colorByName)
-        return Number(colorByName[0]);
+      for (const [key, value] of Object.entries(ColorByName))
+        if (key.toLowerCase() === val)
+          return value;
     }
 
-    return 0;
+    return undefined;
   }
 
   /** Get the r,g,b,t values from this ColorDef. Values will be integers between 0-255. */
@@ -330,9 +341,15 @@ export class ColorDef {
     return ColorDef.getName(this.tbgr);
   }
 
-  /** Obtain the name of the color in the [[ColorByName]] list associated with the specified 0xTTBBGGRR value, or undefined if no such named color exists. */
+  /** Obtain the name of the color in the [[ColorByName]] list associated with the specified 0xTTBBGGRR value, or undefined if no such named color exists.
+   * @note A handful of colors (like "aqua" and "cyan") have identical tbgr values; in such cases the first match will be returned.
+   */
   public static getName(tbgr: number): string | undefined {
-    return ColorByName[tbgr];
+    for (const [key, value] of Object.entries(ColorByName))
+      if (value === tbgr)
+        return key;
+
+    return undefined;
   }
 
   /** Convert this ColorDef to a string in the form "#rrggbb" where values are hex digits of the respective colors */
