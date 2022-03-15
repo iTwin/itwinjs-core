@@ -53,7 +53,7 @@ describe("<ColorPickerButton/>", () => {
     const spyOnColorPick = sinon.spy();
 
     function handleColorPick(color: ColorDef): void {
-      expect(color.tbgr).to.be.equal(ColorByName.red as number);
+      expect(color.tbgr).to.be.equal(ColorByName.red);
       spyOnColorPick();
     }
 

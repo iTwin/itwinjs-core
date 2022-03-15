@@ -56,7 +56,7 @@ describe("ColorPickerDialog", () => {
       const spyOnOK = sinon.spy();
 
       function handleOK(color: ColorDef): void {
-        expect(color.tbgr).to.be.equal(ColorByName.blue as number);
+        expect(color.tbgr).to.be.equal(ColorByName.blue);
         spyOnOK();
       }
 
@@ -82,7 +82,7 @@ describe("ColorPickerDialog", () => {
         ];
 
       function handleOK(color: ColorDef): void {
-        expect(color.tbgr).to.be.equal(ColorByName.black as number);
+        expect(color.tbgr).to.be.equal(ColorByName.black);
         spyOnOK();
       }
 
