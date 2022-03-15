@@ -794,7 +794,6 @@ export class IModelTransformer extends IModelExportHandler {
   public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
 
   private finalizeTransformation() {
-    // if ignoring dangling predecessors, then any unresolved pending references should be force updated
     if (this._partiallyCommittedElements.size > 0) {
       Logger.logWarning(
         loggerCategory,
@@ -808,9 +807,6 @@ export class IModelTransformer extends IModelExportHandler {
       for (const partiallyCommittedElem of this._partiallyCommittedElements.valuesById()) {
         partiallyCommittedElem.forceComplete();
       }
-    } else {
-      // process deferred relationships since if their sources+targets were deferred, they may not have been processed
-      await this.processRelationships(ElementRefersToElements.classFullName);
     }
   }
 
