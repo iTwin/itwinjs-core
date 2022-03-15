@@ -1651,16 +1651,25 @@ describe("IModelTransformer", () => {
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
     class ProcessTargetLastTransformer extends IModelTransformer {
-      private _exportedNavPropHolder = false;
-      public override onExportElement(sourceElem: Element) {
-        if (sourceElem.id === elemWithNavPropId) {
-          super.onExportElement(sourceElem);
-          this._exportedNavPropHolder = true;
-        } else if (sourceElem.id === navPropTargetId && !this._exportedNavPropHolder) {
-          this.skipElement(sourceElem);
-        } else {
-          super.onExportElement(sourceElem);
-        }
+      public constructor(source: IModelDb, target: IModelDb, opts?: IModelTransformOptions) {
+        super(
+          new (
+            class extends IModelExporter {
+              public override async exportElement(elementId: string) {
+                if (elementId === navPropTargetId) {
+                  // don't export it, we'll export it later, after the holder
+                } else if (elementId === elemWithNavPropId) {
+                  super.exportElement(elemWithNavPropId);
+                  super.exportElement(navPropTargetId);
+                } else {
+                  super.exportElement(elementId);
+                }
+              }
+            }
+          )(source),
+          target,
+          opts
+        );
       }
     }
 
