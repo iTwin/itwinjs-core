@@ -7,7 +7,7 @@ import {
   ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, LinePixels, PackedFeatureTable, PolylineData, PolylineFlags, QParams3d, QPoint3d, QPoint3dList,
 } from "@itwin/core-common";
 import {
-  IModelApp,
+  IModelApp, MockRender,
 } from "../../../core-frontend";
 import {
   PointStringParams, PolylineArgs, VertexIndices, VertexTable, splitPointStringParams,
@@ -17,6 +17,14 @@ interface Point {
   x: number; // quantized x coordinate - y will be x+1 and z will be x+5.
   color: number; // color index
   feature: number; // feature index
+}
+
+function makePackedFeatureTable(...elementIds: string[]): PackedFeatureTable {
+  const featureTable = new FeatureTable(100);
+  for (const elementId of elementIds)
+    featureTable.insert(new Feature(elementId));
+
+  return PackedFeatureTable.pack(featureTable);
 }
 
 function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): PointStringParams {
@@ -57,13 +65,6 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
   const params = PointStringParams.create(args)!;
   expect(params).not.to.be.undefined;
   return params;
-}
-
-function setMaxTextureSize(max: number): void {
-  Object.defineProperty(IModelApp.renderSystem, "maxTextureSize", {
-    value: max,
-    writable: false,
-  });
 }
 
 function expectPointStrings(params: PointStringParams, expectedColors: ColorDef | ColorDef[], expectedPts: Point[]): void {
@@ -109,15 +110,25 @@ function expectPointStrings(params: PointStringParams, expectedColors: ColorDef 
 }
 
 describe.only("VertexTableSplitter", () => {
-  before(() => IModelApp.startup());
-  after(() => IModelApp.shutdown());
+  class MockSystem extends MockRender.System {
+    public static maxTextureSize = 2048;
+    public override get maxTextureSize() { return MockSystem.maxTextureSize; }
+  }
+
+  before(async () => {
+    MockRender.App.systemFactory = () => new MockSystem();
+    await MockRender.App.startup();
+  });
+
   beforeEach(() => setMaxTextureSize(2048));
+  after(() => MockRender.App.shutdown());
+
+  function setMaxTextureSize(max: number) {
+    MockSystem.maxTextureSize = max;
+  }
 
   it("splits point string params based on node Id", () => {
-    const featureTable = new FeatureTable(100);
-    featureTable.insert(new Feature("0x1"));
-    featureTable.insert(new Feature("0x2"));
-    featureTable.insert(new Feature("0x10000000002"));
+    const featureTable = makePackedFeatureTable("0x1", "0x2", "0x10000000002");
 
     const points: Point[] = [
       { x: 1, color: 0, feature: 0 },
@@ -130,7 +141,7 @@ describe.only("VertexTableSplitter", () => {
     const params = makePointStringParams(points, ColorDef.red);
     expectPointStrings(params, ColorDef.red, points);
 
-    const split = splitPointStringParams({ params, featureTable: PackedFeatureTable.pack(featureTable), maxDimension: 2048, computeNodeId: (id) => id.upper > 0 ? 1 : 0 });
+    const split = splitPointStringParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.upper > 0 ? 1 : 0 });
     expect(split.size).to.equal(2);
 
     expectPointStrings(split.get(0)!, ColorDef.red, [
@@ -146,9 +157,7 @@ describe.only("VertexTableSplitter", () => {
   });
 
   it("collapses color tables and remaps color indices", () => {
-    const featureTable = new FeatureTable(100);
-    featureTable.insert(new Feature("0x1"));
-    featureTable.insert(new Feature("0x2"));
+    const featureTable = makePackedFeatureTable("0x1", "0x2");
 
     const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
 
@@ -162,7 +171,7 @@ describe.only("VertexTableSplitter", () => {
     const params = makePointStringParams(points, colors);
     expectPointStrings(params, colors, points);
 
-    const split = splitPointStringParams({ params, featureTable: PackedFeatureTable.pack(featureTable), maxDimension: 2048, computeNodeId: (id) => id.lower });
+    const split = splitPointStringParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.lower });
     expect(split.size).to.equal(2);
 
     expectPointStrings(split.get(1)!, [ ColorDef.blue, ColorDef.red ], [
@@ -177,6 +186,62 @@ describe.only("VertexTableSplitter", () => {
   });
 
   it("produces rectangular vertex tables", () => {
+    setMaxTextureSize(6);
+
+    const expectDimensions = (p: PointStringParams, w: number, h: number) => {
+      expect(p.vertices.width).to.equal(w);
+      expect(p.vertices.height).to.equal(h);
+    };
+
+    const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
+    const featureTable = makePackedFeatureTable("0x2", "0x20", "0x200", "0x2000");
+    const points = [
+      { x: 0, color: 0, feature: 0 },
+      { x: 1, color: 1, feature: 0 },
+
+      { x: 2, color: 2, feature: 1 },
+
+      { x: 3, color: 1, feature: 2 },
+      { x: 4, color: 1, feature: 2 },
+      { x: 5, color: 1, feature: 2 },
+
+      { x: 6, color: 2, feature: 3 },
+      { x: 7, color: 0, feature: 3 },
+      { x: 8, color: 2, feature: 3 },
+    ];
+
+    const params = makePointStringParams(points, colors);
+    expectPointStrings(params, colors, points);
+
+    const split = splitPointStringParams({ params, featureTable, maxDimension: 6, computeNodeId: (id) => id.lower });
+    expect(split.size).to.equal(4);
+
+    const p1 = split.get(0x2)!;
+    expectDimensions(p1, 6, 2);
+    expectPointStrings(p1, [ ColorDef.red, ColorDef.green ], [
+      { x: 0, color: 0, feature: 0 },
+      { x: 1, color: 1, feature: 0 },
+    ]);
+
+    const p2 = split.get(0x20)!;
+    expectDimensions(p2, 3, 1);
+    expectPointStrings(p2, ColorDef.blue, [{ x: 2, color: 0, feature: 1 }]);
+
+    const p3 = split.get(0x200)!;
+    expectDimensions(p3, 6, 2);
+    expectPointStrings(p3, ColorDef.green, [
+      { x: 3, color: 0, feature: 2 },
+      { x: 4, color: 0, feature: 2 },
+      { x: 5, color: 0, feature: 2 },
+    ]);
+
+    const p4 = split.get(0x2000)!;
+    expectDimensions(p4, 6, 2);
+    expectPointStrings(p4, [ColorDef.blue, ColorDef.red], [
+      { x: 6, color: 0, feature: 3 },
+      { x: 7, color: 1, feature: 3 },
+      { x: 8, color: 0, feature: 3 },
+    ]);
   });
 
   it("splits polyline params based on node Id", () => {
