@@ -8,7 +8,7 @@
 
 // cSpell:ignore configurableui checkmark
 
-import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg?sprite";
+import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg";
 import "./UiSettingsPage.scss";
 import * as React from "react";
 import { SettingsTabEntry } from "@itwin/core-react";
@@ -213,7 +213,7 @@ export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFr
   return {
     itemPriority, tabId: "uifw:UiStateStorage",
     label: UiFramework.translate("settings.uiSettingsPage.label"),
-    icon: IconSpecUtilities.createSvgIconSpec(widowSettingsIconSvg),
+    icon: IconSpecUtilities.createWebComponentIconSpec(widowSettingsIconSvg),
     page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,
     isDisabled: false,
     tooltip: UiFramework.translate("settings.uiSettingsPage.tooltip"),

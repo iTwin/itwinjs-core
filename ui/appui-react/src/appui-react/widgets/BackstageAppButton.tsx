@@ -56,7 +56,7 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
       isInitialMount.current = false;
       onElementRef(ref);
     } else {
-      setIcon(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
+      setIcon(props.icon ? props.icon : IconSpecUtilities.createWebComponentIconSpec(widgetIconSvg));
     }
   }, [props.icon, onElementRef]);
 
