@@ -3,14 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Point2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, LinePixels, PackedFeatureTable, PolylineData, PolylineFlags, QParams3d, QPoint3d, QPoint3dList,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags, QPoint3d, QPoint3dList,
+  RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
-  IModelApp, MockRender,
+  MockRender,
 } from "../../../core-frontend";
 import {
-  PointStringParams, PolylineArgs, VertexIndices, VertexTable, splitPointStringParams,
+  MeshArgs, MeshParams, PointStringParams, PolylineArgs, splitPointStringParams, SurfaceType,
 } from "../../../render-primitives";
 
 interface Point {
@@ -27,7 +29,7 @@ function makePackedFeatureTable(...elementIds: string[]): PackedFeatureTable {
   return PackedFeatureTable.pack(featureTable);
 }
 
-function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): PointStringParams {
+function makeColorIndex(points: Point[], colors: ColorDef | ColorDef[]): ColorIndex {
   const colorIndex = new ColorIndex();
   if (colors instanceof ColorDef) {
     colorIndex.initUniform(colors);
@@ -36,6 +38,10 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
     colorIndex.initNonUniform(tbgr, points.map((x) => x.color), false);
   }
 
+  return colorIndex;
+}
+
+function makeFeatureIndex(points: Point[]): FeatureIndex {
   const featureIds = new Set<number>(points.map((x) => x.feature));
   const featureIndex = new FeatureIndex();
   expect(featureIds.size).least(1);
@@ -47,6 +53,13 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
       featureIndex.featureIDs = new Uint32Array(points.map((x) => x.feature));
       break;
   }
+
+  return featureIndex;
+}
+
+function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): PointStringParams {
+  const colorIndex = makeColorIndex(points, colors);
+  const featureIndex = makeFeatureIndex(points);
 
   const qpoints = new QPoint3dList();
   for (const point of points)
@@ -107,6 +120,64 @@ function expectPointStrings(params: PointStringParams, expectedColors: ColorDef 
     expect(colorIndex).to.equal(pt.color);
     expect(featureIndex).to.equal(pt.feature);
   }
+}
+
+interface TriMeshPoint extends Point {
+  material?: number; // material index for material atlas
+  normal?: number; // oct-encoded normal
+  uv?: number; // x component of uv param in [0..1]; y will be x / 2
+}
+
+interface TriMesh {
+  points: TriMeshPoint[];
+  indices: number[];
+  colors: ColorDef | ColorDef[];
+  materials: RenderMaterial | RenderMaterial[];
+  texture?: RenderTexture;
+}
+
+function getSurfaceType(mesh: TriMesh): SurfaceType {
+  const expectConsistent = (fn: (point :TriMeshPoint) => boolean) => expect(mesh.points.some(fn)).to.equal(mesh.points.every(fn));
+
+  expectConsistent((x) => undefined === x.material);
+  expectConsistent((x) => undefined === x.normal);
+  expectConsistent((x) => undefined === x.uv);
+
+  const hasUv = undefined !== mesh.points[0].uv;
+  const hasNormal = undefined !== mesh.points[0].normal;
+  expect(hasUv).to.equal(undefined !== mesh.texture);
+
+  return hasUv ? (hasNormal ? SurfaceType.TexturedLit : SurfaceType.Textured) : (hasNormal ? SurfaceType.Lit : SurfaceType.Unlit);
+}
+
+function makeMeshParams(mesh: TriMesh): MeshParams {
+  const type = getSurfaceType(mesh);
+
+  const qpoints = new QPoint3dList();
+  for (const point of mesh.points)
+    qpoints.push(QPoint3d.fromScalars(point.x, point.x + 1, point.x + 5));
+
+  const normals = SurfaceType.Lit === type || SurfaceType.TexturedLit === type ? mesh.points.map((pt) => new OctEncodedNormal(pt.normal!)) : undefined;
+  let textureMapping;
+  if (mesh.texture) {
+    textureMapping = {
+      texture: mesh.texture,
+      uvParams: mesh.points.map((pt) => new Point2d(pt.uv!, pt.uv! * 0.5)),
+    };
+  }
+
+  const args: MeshArgs = {
+    points: qpoints,
+    vertIndices: mesh.indices,
+    normals,
+    fillFlags: FillFlags.None,
+    material: mesh.materials instanceof RenderMaterial ? mesh.materials : undefined,
+    textureMapping,
+    colors: makeColorIndex(mesh.points, mesh.colors),
+    features: makeFeatureIndex(mesh.points),
+  };
+
+  return MeshParams.create(args);
 }
 
 describe.only("VertexTableSplitter", () => {
@@ -248,6 +319,9 @@ describe.only("VertexTableSplitter", () => {
   });
 
   it("splits surface params based on node Id", () => {
+  });
+
+  it("splits edge params based on node Ids", () => {
   });
 
   it("collapses material atlases and remaps material indices", () => {
