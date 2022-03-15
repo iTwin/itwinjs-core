@@ -6,14 +6,14 @@
  * @module RpcInterface
  */
 
-import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { BentleyStatus, GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode,
-  TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
+  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SeparateMassPropertiesRequestProps, SeparateMassPropertiesResponseProps, SnapRequestProps,
+  SnapResponseProps, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
@@ -192,6 +192,32 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getMassProperties(tokenProps: IModelRpcProps, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return iModelDb.getMassProperties(props);
+  }
+
+  public async getSeparateMassProperties(tokenProps: IModelRpcProps, props: SeparateMassPropertiesRequestProps): Promise<SeparateMassPropertiesResponseProps[]> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    const result: SeparateMassPropertiesResponseProps[] = [];
+
+    for (const candidate of props.candidates) {
+      const massPropResults: MassPropertiesResponseProps[] = [];
+
+      for (const op of props.operations) {
+        const massProperties = await iModelDb.getMassProperties({ operation: op, candidates: [candidate] });
+        massPropResults.push(massProperties);
+      }
+
+      let singleCandidateResult: SeparateMassPropertiesResponseProps = { status: BentleyStatus.ERROR, candidate };
+
+      if (!massPropResults.some((r) => r.status === BentleyStatus.ERROR)) {
+        for (const r of massPropResults) {
+          singleCandidateResult = { ...singleCandidateResult, ...r };
+        }
+      }
+
+      result.push(singleCandidateResult);
+    }
+
+    return result;
   }
 
   public async getToolTipMessage(tokenProps: IModelRpcProps, id: string): Promise<string[]> {
