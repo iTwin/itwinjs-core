@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { BentleyStatus, Id64Array } from "@itwin/core-bentley";
+import { BentleyStatus, CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
 
 /** Specify whether to accumulate volumes, areas, or lengths for the supplied elements.
@@ -29,6 +29,14 @@ export interface MassPropertiesRequestProps {
   candidates?: Id64Array;
 }
 
+/** Information required to request mass properties for each element separately from the front end to the back end.
+ * @public
+ */
+export interface SeparateMassPropertiesRequestProps {
+  operations: MassPropertiesOperation[];
+  candidates: CompressedId64Set;
+}
+
 /** Information returned from the back end to the front end holding the result of the mass properties calculation.
  * @public
  */
@@ -43,4 +51,11 @@ export interface MassPropertiesResponseProps {
   ixz?: number;
   iyz?: number;
   moments?: XYZProps;
+}
+
+/** Information returned from the back end to the front end holding the result of the mass properties calculation for a single candidate.
+ * @public
+ */
+export interface SeparateMassPropertiesResponseProps extends MassPropertiesResponseProps {
+  candidate: Id64String;
 }
