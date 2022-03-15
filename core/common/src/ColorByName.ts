@@ -12,7 +12,7 @@
  * @note If your colors don't look right, likely you're using 0xRRGGBB where ColorDef expects 0xBBGGRR.
  * @public
  */
-export const ColorByName = {
+export const ColorByName = { // eslint-disable-line @typescript-eslint/naming-convention
   aliceBlue: 0xFFF8F0,
   amber: 0x00BFFF,
   antiqueWhite: 0xD7EBFA,
@@ -163,4 +163,4 @@ export const ColorByName = {
   whiteSmoke: 0xF5F5F5,
   yellow: 0x00FFFF,
   yellowGreen: 0x32CD9A,
-}
+};
