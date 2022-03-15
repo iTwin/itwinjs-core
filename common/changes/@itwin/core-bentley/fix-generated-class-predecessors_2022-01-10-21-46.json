@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-bentley",
-      "comment": "added ClassUtils.isProperSubclassOf utility",
+      "comment": "add more Map and ById methods to Id64.Uint32Map",
       "type": "none"
     }
   ],
