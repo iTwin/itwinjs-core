@@ -6,13 +6,13 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { BentleyStatus, CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SeparateMassPropertiesRequestProps, SeparateMassPropertiesResponseProps, SnapRequestProps,
+  IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesPerCandidateRequestProps,
+  MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps,
   SnapResponseProps, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
@@ -194,11 +194,11 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.getMassProperties(props);
   }
 
-  public async getSeparateMassProperties(tokenProps: IModelRpcProps, props: SeparateMassPropertiesRequestProps): Promise<SeparateMassPropertiesResponseProps[]> {
+  public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const result: SeparateMassPropertiesResponseProps[] = [];
+    const result: MassPropertiesPerCandidateResponseProps[] = [];
 
-    for (const candidate of props.candidates) {
+    for (const candidate of CompressedId64Set.iterable(props.candidates)) {
       const massPropResults: MassPropertiesResponseProps[] = [];
 
       for (const op of props.operations) {
@@ -206,15 +206,20 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
         massPropResults.push(massProperties);
       }
 
-      let singleCandidateResult: SeparateMassPropertiesResponseProps = { status: BentleyStatus.ERROR, candidate };
+      let singleCandidateResult: MassPropertiesPerCandidateResponseProps = { status: BentleyStatus.ERROR, candidate };
 
-      if (!massPropResults.some((r) => r.status === BentleyStatus.ERROR)) {
-        for (const r of massPropResults) {
+      if (massPropResults.some((r) => r.status !== BentleyStatus.ERROR)) {
+        singleCandidateResult.status = BentleyStatus.SUCCESS;
+        for (const r of massPropResults.filter((mpr) => mpr.status !== BentleyStatus.ERROR)) {
           singleCandidateResult = { ...singleCandidateResult, ...r };
         }
       }
 
       result.push(singleCandidateResult);
+
+      if (result.length === 1000) {
+        break;
+      }
     }
 
     return result;
