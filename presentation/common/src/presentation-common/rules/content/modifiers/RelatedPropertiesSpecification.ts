@@ -59,6 +59,13 @@ export interface RelatedPropertiesSpecification {
   propertiesSource: RelationshipPathSpecification;
 
   /**
+   * Condition for filtering instances targeted by the [[propertiesSource]] attribute.
+   *
+   * **See:** [ECExpressions available in instance filter]($docs/presentation/Content/ECExpressions.md#instance-filter)
+   */
+  instanceFilter?: string;
+
+  /**
    * Should the target class specified in [[propertiesSource]] be handled
    * polymorphically. This means properties of not only the target class, but also all its subclasses
    * are loaded.

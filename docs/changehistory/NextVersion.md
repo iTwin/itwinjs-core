@@ -105,3 +105,9 @@ If you are using [IModelTransformer]($transformer), you can configure automatic 
   const transformer = new IModelTransformer(sourceIModel, targetIModel, options);
   transformer.processAll();
 ```
+
+## Presentation
+
+### Filtering related property instances
+
+The [related properties specification](../presentation/Content/RelatedPropertiesSpecification.md) allows including properties of related instances when requesting content  for the primary instance. However, sometimes there's a need show properties of only a few related instances rather than all of them. That can now be done by supplying an instance filter - see the [`instanceFilter` attribute section](../presentation/Content/RelatedPropertiesSpecification.md#attribute-instancefilter) for more details.

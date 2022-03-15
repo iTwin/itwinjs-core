@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, Field, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import {
+  ContentSpecificationTypes, Field, KeySet, NestedContentField, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes,
+} from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
@@ -887,6 +889,52 @@ describe("Learning Snippets", () => {
             }, {
               label: "User Label",
             }],
+          }]);
+        });
+
+        it("uses `instanceFilter` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Content.Customization.RelatedPropertiesSpecification.InstanceFilter.Ruleset
+          // There's a content rule for returning content of given instance. The produced content is customized to
+          // additionally include properties of child elements by following the `bis.ElementOwnsChildElements` relationship
+          // in forward direction, but only of children whose `CodeValue` starts with a "Bis" substring.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.Content,
+              specifications: [{
+                specType: ContentSpecificationTypes.SelectedNodeInstances,
+                relatedProperties: [{
+                  propertiesSource: [{
+                    relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
+                    direction: RelationshipDirection.Forward,
+                  }],
+                  instanceFilter: `this.CodeValue ~ "Bis%"`,
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // Ensure that the custom property was created
+          const content = (await Presentation.presentation.getContent({
+            imodel,
+            rulesetOrId: ruleset,
+            keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+            descriptor: {},
+          }))!;
+          const childElementField = getFieldByLabel(content.descriptor.fields, "Element") as NestedContentField;
+          const childElementCodeField = getFieldByLabel(childElementField.nestedFields, "Code");
+          expect(content.contentSet[0].values[childElementField.name]).to.have.lengthOf(2).and.to.containSubset([{
+            primaryKeys: [{ id: "0xe" }],
+            values: {
+              [childElementCodeField.name]: "BisCore.RealityDataSources",
+            },
+          }, {
+            primaryKeys: [{ id: "0x10" }],
+            values: {
+              [childElementCodeField.name]: "BisCore.DictionaryModel",
+            },
           }]);
         });
 
