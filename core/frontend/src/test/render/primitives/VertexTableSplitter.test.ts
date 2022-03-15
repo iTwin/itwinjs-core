@@ -217,7 +217,7 @@ describe.only("VertexTableSplitter", () => {
     expect(split.size).to.equal(4);
 
     const p1 = split.get(0x2)!;
-    expectDimensions(p1, 6, 2);
+    expectDimensions(p1, 3, 3);
     expectPointStrings(p1, [ ColorDef.red, ColorDef.green ], [
       { x: 0, color: 0, feature: 0 },
       { x: 1, color: 1, feature: 0 },
@@ -228,7 +228,7 @@ describe.only("VertexTableSplitter", () => {
     expectPointStrings(p2, ColorDef.blue, [{ x: 2, color: 0, feature: 1 }]);
 
     const p3 = split.get(0x200)!;
-    expectDimensions(p3, 6, 2);
+    expectDimensions(p3, 3, 3);
     expectPointStrings(p3, ColorDef.green, [
       { x: 3, color: 0, feature: 2 },
       { x: 4, color: 0, feature: 2 },
