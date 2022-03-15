@@ -80,4 +80,14 @@ export class BackgroundMapProvider {
   public equals(other: BackgroundMapProvider): boolean {
     return this.name === other.name && this.type === other.type;
   }
+
+  /** Produce a copy of this provider with identical properties except for those explicitly specified by `changedProps`.
+   * Any properties explicitly set to `undefined` in `changedProps` will be reset to their default values.
+   */
+  public clone(changedProps: BackgroundMapProviderProps): BackgroundMapProvider {
+    return BackgroundMapProvider.fromJSON({
+      ...this.toJSON(),
+      ...changedProps,
+    });
+  }
 }

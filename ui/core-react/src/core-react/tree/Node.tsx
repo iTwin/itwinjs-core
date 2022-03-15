@@ -115,8 +115,10 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         checkbox = this.props.renderOverrides.renderCheckbox(props);
       } else {
         checkbox = (
-          <Checkbox {...props}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => this._onCheckboxChange(e.target.checked)} data-testid={this.createSubComponentTestId("checkbox")}
+          <Checkbox
+            {...props}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => this._onCheckboxChange(e.target.checked)}
+            data-testid={this.createSubComponentTestId("checkbox")}
           />
         );
       }
@@ -186,7 +188,6 @@ export class TreeNode extends React.Component<TreeNodeProps> {
 
   private _onClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    if (this.props.onClick)
-      this.props.onClick(e);
+    this.props.onClick?.(e);
   };
 }

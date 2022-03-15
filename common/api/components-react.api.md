@@ -1246,9 +1246,9 @@ export function getVisibleDescendants(model: TreeModel, parentNode: TreeModelNod
 export interface GridCategoryItem extends FlatGridItemBase {
     // (undocumented)
     readonly derivedCategory: PropertyCategory;
-    // (undocumented)
+    // @deprecated (undocumented)
     getChildCategories(): GridCategoryItem[];
-    // (undocumented)
+    // @deprecated (undocumented)
     getDescendantCategoriesAndSelf(): GridCategoryItem[];
     // (undocumented)
     readonly name: string;
@@ -1493,9 +1493,9 @@ export interface IMutableFlatPropertyGridItem {
 export interface IMutableGridCategoryItem extends IMutableFlatPropertyGridItem {
     // (undocumented)
     derivedCategory: PropertyCategory;
-    // (undocumented)
+    // @deprecated (undocumented)
     getChildCategories(): IMutableGridCategoryItem[];
-    // (undocumented)
+    // @deprecated (undocumented)
     getDescendantCategoriesAndSelf(): IMutableGridCategoryItem[];
     // (undocumented)
     isRootCategory: boolean;
@@ -3684,6 +3684,9 @@ export class ToolbarPanelAlignmentHelpers {
 }
 
 // @public
+export const ToolbarPopupAutoHideContext: React.Context<boolean>;
+
+// @public
 export const ToolbarPopupContext: React.Context<ToolbarPopupContextProps>;
 
 // @public (undocumented)
@@ -4210,6 +4213,9 @@ export function useRenderedStringValue(record: PropertyRecord, stringValueCalcul
     stringValue?: string;
     element: React.ReactNode;
 };
+
+// @public
+export function useToolbarPopupAutoHideContext(): boolean;
 
 // @public
 export function useToolbarPopupContext(): ToolbarPopupContextProps;

@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BackgroundMapType } from "../BackgroundMapProvider";
-import { BaseMapLayerSettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../core-common";
+import { BaseMapLayerSettings, ImageMapLayerProps, ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../core-common";
 
 const testMapSubLayer0 = { name: "TestName", visible: true, title: "TestTitle" };
 const testMapSubLayer1 = { name: "TestName", visible: true, title: "TestTitle", id: 0, parent: -1, children: [1, 2, 3] };
@@ -61,14 +61,13 @@ const testMapLayer4 = { name: "TestName", url: "www.bentley.com", formatId: "WMS
 const testMapLayer6 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: false };
 const legacyMapLayer = BaseMapLayerSettings.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } });
 
-describe("MapLayerSettings", () => {
-  const expectMatches = (output: MapLayerProps, expected: MapLayerProps) => {
+describe("ImageMapLayerSettings", () => {
+  const expectMatches = (output: ImageMapLayerProps, expected: ImageMapLayerProps) => {
     expect(output.name).to.equal(expected.name);
     expect(output.visible).to.equal(expected.visible);
     expect(output.url).to.equal(expected.url);
     expect(output.transparency).to.equal(expected.transparency);
     expect(output.transparentBackground).to.equal(expected.transparentBackground);
-    expect(output.isBase).to.equal(expected.isBase);
 
     if (expected.subLayers) {
       expect(output.subLayers).not.to.be.undefined;
@@ -78,19 +77,19 @@ describe("MapLayerSettings", () => {
     }
   };
 
-  const expectSettingsMatches = (output: MapLayerSettings, expected: MapLayerSettings) => {
+  const expectSettingsMatches = (output: ImageMapLayerSettings, expected: ImageMapLayerSettings) => {
     expectMatches(output.toJSON(), expected.toJSON());
     expect(output.userName).to.equal(expected.userName);
     expect(output.password).to.equal(expected.password);
   };
 
   it("round-trips through JSON", () => {
-    const roundTrip = (input: MapLayerProps, expected: MapLayerProps | "input") => {
+    const roundTrip = (input: ImageMapLayerProps, expected: ImageMapLayerProps | "input") => {
 
       if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as MapLayerProps;
+        expected = JSON.parse(JSON.stringify(input)) as ImageMapLayerProps;
 
-      const settings = MapLayerSettings.fromJSON(input)!;
+      const settings = ImageMapLayerSettings.fromJSON(input)!;
       expect(settings).not.to.be.undefined;
       const output = settings.toJSON();
       expectMatches(output, expected);
@@ -106,12 +105,12 @@ describe("MapLayerSettings", () => {
   });
 
   it("clones", () => {
-    const clone = (input: MapLayerProps, changed: Partial<MapLayerProps>, expected: MapLayerProps) => {
-      const settings = MapLayerSettings.fromJSON(input);
+    const clone = (input: ImageMapLayerProps, changed: Partial<ImageMapLayerProps>, expected: ImageMapLayerProps) => {
+      const settings = ImageMapLayerSettings.fromJSON(input);
       const output = settings.clone(changed);
       expectMatches(output.toJSON(), expected);
     };
-    const cloneSettings = (input: MapLayerSettings) => {
+    const cloneSettings = (input: ImageMapLayerSettings) => {
       const cloned = input.clone({});
       expectSettingsMatches(input, cloned);
     };
@@ -127,8 +126,8 @@ describe("MapLayerSettings", () => {
     clone(testMapLayer0, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", transparency: .5, visible: true });
     clone(testMapLayer3, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], transparency: .5, visible: true });
 
-    // Test settings not part of MapLayerProps
-    const settings1 = MapLayerSettings.fromJSON(testMapLayer0)!;
+    // Test settings not part of ImageMapLayerProps
+    const settings1 = ImageMapLayerSettings.fromJSON(testMapLayer0)!;
     settings1.setCredentials("TestUser", "TestPassword");
     cloneSettings(settings1);
   });

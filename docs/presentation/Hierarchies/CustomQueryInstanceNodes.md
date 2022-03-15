@@ -6,24 +6,24 @@ Returns nodes for instances returned by a provided ECSQL query.
 
 ## Attributes
 
-| Name                                                                        | Required? | Type                                                                                | Default     |
-| --------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------- | ----------- |
+| Name                                                                        | Required? | Type                                                                   | Default     |
+| --------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------- | ----------- |
 | *Filtering*                                                                 |
-| [`queries`](#attribute-queries)                                             | No        | [`QuerySpecification[]`](#string-query-specification)                               | `[]`        |
-| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy)                   | No        | `boolean`                                                                           | `false`     |
-| [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                                                           | `false`     |
-| [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                                    | `""`        |
-| [`suppressSimilarAncestorsCheck`](#attribute-suppresssimilarancestorscheck) | No        | `boolean`                                                                           | `false`     |
+| [`queries`](#attribute-queries)                                             | No        | [`QuerySpecification[]`](#string-query-specification)                  | `[]`        |
+| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy)                   | No        | `boolean`                                                              | `false`     |
+| [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                                              | `false`     |
+| [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                       | `""`        |
+| [`suppressSimilarAncestorsCheck`](#attribute-suppresssimilarancestorscheck) | No        | `boolean`                                                              | `false`     |
 | *Ordering*                                                                  |
-| [`priority`](#attribute-priority)                                           | No        | `number`                                                                            | `1000`      |
-| [`doNotSort`](#attribute-donotsort)                                         | No        | `boolean`                                                                           | `false`     |
+| [`priority`](#attribute-priority)                                           | No        | `number`                                                               | `1000`      |
+| [`doNotSort`](#attribute-donotsort)                                         | No        | `boolean`                                                              | `false`     |
 | *Grouping*                                                                  |
-| [`groupByClass`](#attribute-groupbyclass)                                   | No        | `boolean`                                                                           | `true`      |
-| [`groupByLabel`](#attribute-groupbylabel)                                   | No        | `boolean`                                                                           | `true`      |
+| [`groupByClass`](#attribute-groupbyclass)                                   | No        | `boolean`                                                              | `true`      |
+| [`groupByLabel`](#attribute-groupbylabel)                                   | No        | `boolean`                                                              | `true`      |
 | *Misc.*                                                                     |
-| [`hasChildren`](#attribute-haschildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                                  | `"Unknown"` |
-| [`relatedInstances`](#attribute-relatedinstances)                           | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md) | `[]`        |
-| [`nestedRules`](#attribute-nestedrules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                             | `[]`        |
+| [`hasChildren`](#attribute-haschildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                     | `"Unknown"` |
+| [`relatedInstances`](#attribute-relatedinstances)                           | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md) | `[]`        |
+| [`nestedRules`](#attribute-nestedrules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                | `[]`        |
 
 ### Attribute: `queries`
 
@@ -218,13 +218,13 @@ list even if there are child node rules that define children for it.
 
 > **Default value:** `[]`
 
-Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used when creating the nodes. There
+Specifications of [related instances](../RelatedInstanceSpecification.md) that can be used when creating the nodes. There
 are several use cases when this is useful:
 
-- When there's a need to only load instances that have a related instance. Providing a [related instance](../Common-Rules/RelatedInstanceSpecification.md)
-  specification with [isRequired](../Common-Rules/RelatedInstanceSpecification.md) set to `true` filters-out the instances that don't have the related instance.
+- When there's a need to only load instances that have a related instance. Providing a [related instance](../RelatedInstanceSpecification.md)
+  specification with [isRequired](../RelatedInstanceSpecification.md#attribute-isrequired) set to `true` filters-out the instances that don't have the related instance.
 
-- When there's a need to filter instances by a related instance value. The [alias](../Common-Rules/RelatedInstanceSpecification.md) attribute may then be used
+- When there's a need to filter instances by a related instance value. The [alias](../RelatedInstanceSpecification.md#attribute-alias) attribute may then be used
   in the [`instanceFilter` attribute](#attribute-instancefilter) to reference related instance property values.
 
 - When there's a need to group by related instance property values. Related instance classes are included when looking for [grouping rules](./GroupingRule.md), which allows
@@ -232,7 +232,7 @@ are several use cases when this is useful:
 
 - When there's a need to customize nodes based on related instance property values. Related instance classes are included when looking for [customization rules](../Customization/index.md),
   which allows referencing related instances and their properties in [customization rule ECExpressions](../Customization/ECExpressions.md#override-value) by their
-  [alias](../Common-Rules/RelatedInstanceSpecification.md).
+  [alias](../RelatedInstanceSpecification.md#attribute-alias).
 
 ```ts
 [[include:Hierarchies.Specification.RelatedInstances.Ruleset]]

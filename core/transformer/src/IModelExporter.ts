@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { AccessToken, assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
 import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
@@ -448,6 +448,8 @@ export class IModelExporter {
     return this.trackProgress();
   }
 
+  private _yieldManager = new YieldManager();
+
   /** Export the model contents.
    * @param modelId The only required parameter
    * @param elementClassFullName Can be optionally specified if the goal is to export a subset of the model contents
@@ -483,6 +485,7 @@ export class IModelExporter {
       }
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         await this.exportElement(statement.getValue(0).getId());
+        await this._yieldManager.allowYield();
       }
     });
   }
@@ -673,6 +676,7 @@ export class IModelExporter {
         const relInstanceId: Id64String = statement.getValue(0).getId();
         const relProps: RelationshipProps = this.sourceDb.relationships.getInstanceProps(baseRelClassFullName, relInstanceId);
         await this.exportRelationship(relProps.classFullName, relInstanceId); // must call exportRelationship using the actual classFullName, not baseRelClassFullName
+        await this._yieldManager.allowYield();
       }
     });
   }

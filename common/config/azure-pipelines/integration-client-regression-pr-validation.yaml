@@ -5,6 +5,7 @@
 
 trigger:
   - master
+pr: none
 
 variables:
   - group: iModel.js non-secret config variables

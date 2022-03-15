@@ -50,4 +50,24 @@
         <ECNavigationProperty propertyName="derivedNavProp" relationshipName="DerivedElemRel" direction="Forward"/>
     </ECEntityClass>
 
+    <ECEntityClass typeName="Derived2">
+        <BaseClass>DerivedWithNavProp</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Derived3">
+        <BaseClass>Derived2</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Derived4">
+        <BaseClass>Derived3</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Derived5">
+        <BaseClass>Derived4</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Derived6">
+        <BaseClass>Derived5</BaseClass>
+    </ECEntityClass>
+
 </ECSchema>

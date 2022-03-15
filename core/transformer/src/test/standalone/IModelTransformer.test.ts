@@ -1637,7 +1637,7 @@ describe("IModelTransformer", () => {
       code: Code.createEmpty(),
     } as ElementProps);
 
-    const _elemWithNavPropId = sourceDb.elements.insertElement({
+    const elemWithNavPropId = sourceDb.elements.insertElement({
       classFullName: "TestGeneratedClasses:TestElementWithNavProp",
       navProp: {
         id: navPropTargetId,
@@ -1650,7 +1650,21 @@ describe("IModelTransformer", () => {
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
-    const transformer = new IModelTransformer(sourceDb, targetDb);
+    class ProcessTargetLastTransformer extends IModelTransformer {
+      private _exportedNavPropHolder = false;
+      public override onExportElement(sourceElem: Element) {
+        if (sourceElem.id === elemWithNavPropId) {
+          super.onExportElement(sourceElem);
+          this._exportedNavPropHolder = true;
+        } else if (sourceElem.id === navPropTargetId && !this._exportedNavPropHolder) {
+          this.skipElement(sourceElem);
+        } else {
+          super.onExportElement(sourceElem);
+        }
+      }
+    }
+
+    const transformer = new ProcessTargetLastTransformer(sourceDb, targetDb);
     await transformer.processSchemas();
     await transformer.processAll();
 
@@ -1683,7 +1697,7 @@ describe("IModelTransformer", () => {
   });
 
   it("exhaustive identity transform", async () => {
-    const seedDb = SnapshotDb.openFile(path.join(__dirname, "..", "assets", "alignments.bim"));
+    const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformSource.bim");
     const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
 
@@ -1763,7 +1777,6 @@ describe("IModelTransformer", () => {
     const _relInstId = sourceDb.relationships.insertInstance(relProps as RelationshipProps);
 
     sourceDb.saveChanges();
-
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeferredElementWithRelationships-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 

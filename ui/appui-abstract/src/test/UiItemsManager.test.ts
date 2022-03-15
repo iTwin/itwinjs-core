@@ -88,6 +88,15 @@ describe("UiItemsManager", () => {
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
 
+  it("can clear all providers", () => {
+    const testUiProvider = new TestUiItemsProvider("TestUiItemsProvider");
+    expect(UiItemsManager.hasRegisteredProviders).to.be.false;
+    UiItemsManager.register(testUiProvider);
+    expect(UiItemsManager.hasRegisteredProviders).to.be.true;
+    UiItemsManager.clearAllProviders();
+    expect(UiItemsManager.hasRegisteredProviders).to.be.false;
+  });
+
   it("if no registered providers no tools are available", () => {
     const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
     expect(toolSpecs.length).to.be.eq(0);

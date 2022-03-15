@@ -10,4 +10,4 @@ If you already have access to an iModel this will guide you through locating the
 
 ## iTwin Hub screenshot
 
-![itwin hub overview]($docs/learning/tutorials/images/itwin-hub.png)
+![itwin hub overview](./images/itwin-hub.png)

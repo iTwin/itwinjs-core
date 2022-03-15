@@ -33,6 +33,7 @@ export * from "./StringUtils";
 export * from "./Time";
 export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
+export * from "./YieldManager";
 
 /** @docs-package-description
  * The core-bentley package contains classes to solve problems that are common for both client and server use cases.

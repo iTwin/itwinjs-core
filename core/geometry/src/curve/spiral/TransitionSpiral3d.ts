@@ -14,6 +14,8 @@ import { Transform } from "../../geometry3d/Transform";
 import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
 import { Geometry } from "../../Geometry";
 import { LineString3d } from "../LineString3d";
+import { CurveOffsetXYHandler } from "../internalContexts/CurveOffsetXYHandler";
+import { OffsetOptions } from "../internalContexts/PolygonOffsetContext";
 /**
  * This is the set of valid type names for "integrated" spirals
  * * Behavior is expressed by a `NormalizedTransition` snap function.
@@ -98,6 +100,29 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     return 1.0 / curvature;
   }
 
+  /** Return a deep clone. */
+  public abstract override clone(): TransitionSpiral3d;
+
+  /** Recompute strokes */
+  public abstract refreshComputedProperties(): void;
+
+  /** Return (if possible) a spiral which is a portion of this curve. */
+  public override clonePartialCurve(fractionA: number, fractionB: number): TransitionSpiral3d {
+    const spiralB = this.clone();
+    const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
+    const globalFractionB = this._activeFractionInterval.fractionToPoint(fractionB);
+    spiralB._activeFractionInterval.set(globalFractionA, globalFractionB);
+    spiralB.refreshComputedProperties();
+    return spiralB;
+  }
+
+  /** Clone with a transform applied  */
+  public override cloneTransformed(transform: Transform): TransitionSpiral3d {
+    const result = this.clone();
+    result.tryTransformInPlace(transform); // ok, we're confident it will always work.
+    return result;
+  }
+
   /** Return the average of the start and end curvatures. */
   public static averageCurvature(radiusLimits: Segment1d): number {
     return 0.5 * (TransitionSpiral3d.radiusToCurvature(radiusLimits.x0) + TransitionSpiral3d.radiusToCurvature(radiusLimits.x1));
@@ -160,5 +185,18 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
       return rigidData;
     }
     return undefined;
+  }
+
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
+   *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
   }
 }

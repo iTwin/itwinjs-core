@@ -12,7 +12,7 @@ import {
   AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalSchema,
   GeometricElement3d, GeometryPart, IModelDb, IModelJsFs, InformationPartitionElement, InformationRecordModel, Model, ModelSelector,
-  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps,
+  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Relationship, RelationshipProps,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
@@ -229,7 +229,9 @@ export async function assertIdentityTransformation(
   const targetToSourceElemsMap = new Map<Element, Element | undefined>();
   const targetElemIds = new Set<Id64String>();
 
-  for await (const [sourceElemId] of sourceDb.query("SELECT ECInstanceId FROM bis.Element")) {
+  for await (const [sourceElemId] of sourceDb.query(
+    "SELECT ECInstanceId FROM bis.Element"
+  )) {
     const targetElemId = transformer.context.findTargetElementId(sourceElemId);
     const sourceElem = sourceDb.elements.getElement(sourceElemId);
     const targetElem = targetDb.elements.tryGetElement(targetElemId);
@@ -445,10 +447,9 @@ export class TransformerExtensiveTestScenario {
     assert.isTrue(targetDb.codeSpecs.hasName("InformationRecords"));
     assert.isFalse(targetDb.codeSpecs.hasName("SourceCodeSpec"));
     assert.isFalse(targetDb.codeSpecs.hasName("ExtraCodeSpec"));
+
     // Font
-    if (Platform.platformName.startsWith("win")) {
-      assert.exists(targetDb.fontMap.getFont("Arial"));
-    }
+    assert.exists(targetDb.fontMap.getFont("Arial"));
     // Subject
     const subjectId: Id64String = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, targetSubjectName))!;
     assert.isTrue(Id64.isValidId64(subjectId));
