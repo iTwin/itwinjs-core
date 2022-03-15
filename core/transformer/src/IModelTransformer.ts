@@ -104,13 +104,6 @@ export interface IModelTransformOptions {
   danglingPredecessorsBehavior?: "reject" | "ignore";
 }
 
-// TODO things to test:
-// - exhaustive transforming all (null?) properties of biscore classes
-// - test case for cyclic nav prop references
-// - test case for, if I use collectPredecessorIds for classes that don't implement requiredReferenceKeys and
-//   I don't defer but instead immediately try to transform them, what happens if there's a cycle of predecessors? What happened in the old system?
-// - need to add behavior for what to do if an element is never finalized (it should have been "skipped" or not?)
-
 /** a container for tracking the state of a partially committed element and finalizing it when it's ready to be fully committed */
 class PartiallyCommittedElement {
   public constructor(
