@@ -5,12 +5,11 @@
   "main": "lib/ui-items-providers-test.js",
   "typings": "lib/ui-items-providers-test",
   "scripts": {
-    "prebuild": "npm run -s pseudolocalize && npm run -s copy:assets && npm run -s copy:public",
+    "prebuild": "npm run -s pseudolocalize && npm run -s copy:assets",
     "build": "npm run -s prebuild && tsc 1>&2",
     "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\"",
-    "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
     "cover": "",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",

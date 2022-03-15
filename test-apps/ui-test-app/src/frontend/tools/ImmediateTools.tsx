@@ -20,7 +20,7 @@ import {
   ChildWindowLocationProps, ContentDialog, ContentDialogManager, ContentGroup, ContentLayoutManager, ContentProps,
   FrontstageManager, StageContentLayout, StageContentLayoutProps, UiFramework,
 } from "@itwin/appui-react";
-import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
+import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
 import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";
 import tool4IconSvg from "@bentley/icons-generic/icons/3d.svg?sprite";
@@ -184,7 +184,7 @@ export class RemoveSavedContentLayoutTool extends Tool {
 
 export class OpenComponentExamplesPopoutTool extends Tool {
   public static override toolId = "openComponentExamplesChildWindow";
-  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(toolIconSvg);
+  public static override iconSpec = "@bentley/icons-generic/icons/window-add.svg";
 
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
@@ -225,7 +225,8 @@ export class OpenComponentExamplesPopoutTool extends Tool {
     const overrides = {
       groupPriority,
     };
-    return ToolbarItemUtilities.createActionButton(OpenComponentExamplesPopoutTool.toolId, itemPriority, OpenComponentExamplesPopoutTool.iconSpec, OpenComponentExamplesPopoutTool.flyover,
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(toolIconSvg);
+    return ToolbarItemUtilities.createActionButton(OpenComponentExamplesPopoutTool.toolId, itemPriority, iconSpec, OpenComponentExamplesPopoutTool.flyover,
       async () => { await IModelApp.tools.run(OpenComponentExamplesPopoutTool.toolId); }, overrides);
   }
 }

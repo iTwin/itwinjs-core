@@ -12,6 +12,7 @@ import { UnitsPopupUiDataProvider } from "../dialogs/UnitsPopup";
 import { IModelApp } from "@itwin/core-frontend";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { OpenAbstractDialogTool } from "../../tools/OpenAbstractModalDialogTool";
+import statusFieldSvg from "../icons/StatusField.svg";
 
 /**
  * The GeneralUiItemsProvider provides additional items to any frontstage that has a usage value of StageUsage.General.
@@ -34,7 +35,7 @@ export class GeneralUiItemsProvider implements UiItemsProvider {
   }
 
   public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
-    const unitsIcon = IconSpecUtilities.createWebComponentIconSpec(`${IModelApp.publicPath}images/StatusField.svg`);
+    const unitsIcon = IconSpecUtilities.createWebComponentIconSpec(statusFieldSvg);
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(

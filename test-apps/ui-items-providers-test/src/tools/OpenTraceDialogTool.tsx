@@ -12,6 +12,7 @@ import { ModalDialogManager } from "@itwin/appui-react";
 import { SampleModalDialog } from "../ui/dialogs/SampleModalDialog";
 import { IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { UiItemsProvidersTest } from "../ui-items-providers-test";
+import connectedQuerySvg from "../ui/icons/connected-query.svg";
 
 /**
  * Immediate tool that will open an example modal dialog.The tool is created and register to allow the user
@@ -20,7 +21,7 @@ import { UiItemsProvidersTest } from "../ui-items-providers-test";
  */
 export class OpenTraceDialogTool extends Tool {
   public static override toolId = "uiItemsProvidersTest-OpenTraceDialogTool";
-  public static override iconSpec = "connected-query.svg";
+  public static override iconSpec = connectedQuerySvg;
 
   // istanbul ignore next
   public static override get minArgs() { return 0; }
@@ -49,7 +50,7 @@ export class OpenTraceDialogTool extends Tool {
     const overrides = {
       groupPriority,
     };
-    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(`${IModelApp.publicPath}images/${this.iconSpec}`);
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(`${this.iconSpec}`);
     return ToolbarItemUtilities.createActionButton(OpenTraceDialogTool.toolId, itemPriority, iconSpec, OpenTraceDialogTool.flyover,
       async () => { await IModelApp.tools.run(OpenTraceDialogTool.toolId); },
       overrides);

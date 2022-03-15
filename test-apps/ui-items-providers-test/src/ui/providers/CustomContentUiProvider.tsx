@@ -10,6 +10,7 @@ import {
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { CustomFrontstage } from "../frontstages/CustomContent";
+import visibilitySemiTransparentSvg from "../icons/visibility-semi-transparent.svg";
 
 /**
  * Test UiItemsProvider that provide buttons, widgets, and backstage item to NetworkTracing stage.
@@ -37,7 +38,7 @@ export class CustomContentUiProvider implements UiItemsProvider {
       toolbarUsage === ToolbarUsage.ContentManipulation &&
       toolbarOrientation === ToolbarOrientation.Horizontal
     ) {
-      const iconData = IconSpecUtilities.createWebComponentIconSpec(`${IModelApp.publicPath}images/visibility-semi-transparent.svg`);
+      const iconData = IconSpecUtilities.createWebComponentIconSpec(visibilitySemiTransparentSvg);
 
       const getSvgTestButton = ToolbarItemUtilities.createActionButton(
         "custom-visibility-tool",
@@ -56,10 +57,9 @@ export class CustomContentUiProvider implements UiItemsProvider {
 
   public provideBackstageItems(): BackstageItem[] {
     const label = UiItemsProvidersTest.translate("backstage.customContentFrontstageLabel");
-    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(`${IModelApp.publicPath}images/imodeljs-icon.svg`);
     return [
       // use 200 to group it with secondary stages in ui-test-app
-      BackstageItemUtilities.createStageLauncher(CustomFrontstage.stageId, 200, 2, label, "from provider", iconSpec),
+      BackstageItemUtilities.createStageLauncher(CustomFrontstage.stageId, 200, 2, label, "from provider", "icon-flag-2"),
     ];
   }
 }
