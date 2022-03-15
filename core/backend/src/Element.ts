@@ -363,15 +363,6 @@ export class Element extends Entity {
     return predecessorIds;
   }
 
-  // FIXME: rename to requiredReferencePaths
-  /** A *required reference* is an element that had to be inserted before this element could have been inserted.j
-   * This is the list of property paths on this element that store references to those elements
-   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces requires references.
-   * @note any property listed here must be added to the predecessor ids in [[collectPredecessorIds]]
-   * @beta
-   */
-  public static readonly requiredReferenceKeys: ReadonlyArray<string> = ["parent", "model"];
-
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
@@ -464,7 +455,6 @@ export abstract class GeometricElement extends Element {
     predecessorIds.add(this.category);
     // TODO: GeometryPartIds?
   }
-  public static override readonly requiredReferenceKeys = [...super.requiredReferenceKeys, "category"];
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.
