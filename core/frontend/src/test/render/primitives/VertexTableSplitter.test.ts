@@ -130,7 +130,7 @@ describe.only("VertexTableSplitter", () => {
     const params = makePointStringParams(points, ColorDef.red);
     expectPointStrings(params, ColorDef.red, points);
 
-    const split = splitPointStringParams(params, PackedFeatureTable.pack(featureTable), IModelApp.renderSystem.maxTextureSize, (id) => id.upper > 0 ? 1 : 0);
+    const split = splitPointStringParams({ params, featureTable: PackedFeatureTable.pack(featureTable), maxDimension: 2048, computeNodeId: (id) => id.upper > 0 ? 1 : 0 });
     expect(split.size).to.equal(2);
 
     expectPointStrings(split.get(0)!, ColorDef.red, [
@@ -162,7 +162,7 @@ describe.only("VertexTableSplitter", () => {
     const params = makePointStringParams(points, colors);
     expectPointStrings(params, colors, points);
 
-    const split = splitPointStringParams(params, PackedFeatureTable.pack(featureTable), 2048, (id) => id.lower);
+    const split = splitPointStringParams({ params, featureTable: PackedFeatureTable.pack(featureTable), maxDimension: 2048, computeNodeId: (id) => id.lower });
     expect(split.size).to.equal(2);
 
     expectPointStrings(split.get(1)!, [ ColorDef.blue, ColorDef.red ], [
@@ -177,5 +177,14 @@ describe.only("VertexTableSplitter", () => {
   });
 
   it("produces rectangular vertex tables", () => {
+  });
+
+  it("splits polyline params based on node Id", () => {
+  });
+
+  it("splits surface params based on node Id", () => {
+  });
+
+  it("collapses material atlases and remaps material indices", () => {
   });
 });

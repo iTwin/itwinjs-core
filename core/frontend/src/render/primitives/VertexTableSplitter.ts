@@ -257,20 +257,30 @@ class VertexTableSplitter {
   }
 }
 
+export interface SplitVertexTableArgs {
+  featureTable: PackedFeatureTable;
+  maxDimension: number;
+  computeNodeId: ComputeNodeId;
+}
+
+export interface SplitPointStringArgs extends SplitVertexTableArgs {
+  params: PointStringParams;
+}
+
 /** Given a PointStringParams and a function that can associate a node Id with an element Id, produce a mapping of nodes to PointStringParams, splitting up
  * the input params as needed.
  * @internal
  */
-export function splitPointStringParams(params: PointStringParams, featureTable: PackedFeatureTable, maxVertexTableDimension: number, computeNodeId: ComputeNodeId): Map<number, PointStringParams> {
+export function splitPointStringParams(args: SplitPointStringArgs): Map<number, PointStringParams> {
   const result = new Map<number, PointStringParams>();
 
-  const { indices, vertices } = params;
+  const { indices, vertices } = args.params;
   const colorTable = undefined === vertices.uniformColor ? new Uint32Array(vertices.data.buffer, vertices.numVertices * vertices.numRgbaPerVertex * 4) : undefined;
-  const nodes = VertexTableSplitter.split({ indices, vertices, featureTable, colorTable }, computeNodeId);
+  const nodes = VertexTableSplitter.split({ indices, vertices, featureTable: args.featureTable, colorTable }, args.computeNodeId);
 
   for (const [id, node] of nodes) {
-    const { vertices, indices } = node.buildOutput(maxVertexTableDimension);
-    result.set(id, new PointStringParams(vertices, indices, params.weight));
+    const { vertices, indices } = node.buildOutput(args.maxDimension);
+    result.set(id, new PointStringParams(vertices, indices, args.params.weight));
   }
 
   return result;
