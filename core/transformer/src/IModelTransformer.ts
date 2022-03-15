@@ -273,9 +273,11 @@ export class IModelTransformer extends IModelExportHandler {
       if (Boolean(this._options.preserveElementIdsForFiltering) !== this.importer.preserveElementIdsForFiltering) {
         Logger.logWarning(
           loggerCategory,
-          "A custom importer was passed as a target but its 'preserveElementIdsForFiltering' option is out of sync with the transformer's option."
-          + "\nThe custom importer target's option will be force updated to use the transformer's value."
-          + "\nThis behavior is deprecated and will be removed in a future version, throwing an error if they are out of sync."
+          [
+            "A custom importer was passed as a target but its 'preserveElementIdsForFiltering' option is out of sync with the transformer's option.",
+            "The custom importer target's option will be force updated to use the transformer's value.",
+            "This behavior is deprecated and will be removed in a future version, throwing an error if they are out of sync.",
+          ].join("\n")
         );
         this.importer.preserveElementIdsForFiltering = Boolean(this._options.preserveElementIdsForFiltering);
       }
@@ -545,11 +547,13 @@ export class IModelTransformer extends IModelExportHandler {
           case "reject":
             throw new IModelError(
               IModelStatus.NotFound,
-              `Found a reference to an element "${predecessorId}" that doesn't exist while looking for predecessors of "${element.id}".`
-              + "\nThis must have been caused by an upstream application that changed the iModel."
-              + "\nYou can set the IModelTransformerOptions.danglingPredecessorsBehavior option to 'ignore' to ignore this, but this will leave the iModel"
-              + "\nin a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom"
-              + "\ntransformer to remove the reference and fix affected elements may be suitable."
+              [
+                `Found a reference to an element "${predecessorId}" that doesn't exist while looking for predecessors of "${element.id}".`,
+                "This must have been caused by an upstream application that changed the iModel.",
+                "You can set the IModelTransformerOptions.danglingPredecessorsBehavior option to 'ignore' to ignore this, but this will leave the iModel",
+                "in a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom",
+                "transformer to remove the reference and fix affected elements may be suitable.",
+              ].join("\n")
             );
         }
       }
@@ -797,12 +801,12 @@ export class IModelTransformer extends IModelExportHandler {
     if (this._partiallyCommittedElements.size > 0) {
       Logger.logWarning(
         loggerCategory,
-        "the following elements were never fully resolved:"
-        + `\n${[
-          ...this._partiallyCommittedElements.keysById(),
-        ].join("\n")}` +
-        "\nThis indicates that either some predecessors were excluded from the transformation"+
-        "\nor the source has dangling predecessors."
+        [
+          "The following elements were never fully resolved:",
+          [...this._partiallyCommittedElements.keysById()].join(','),
+          "This indicates that either some predecessors were excluded from the transformation",
+          "or the source has dangling predecessors."
+        ].join("\n")
       );
       for (const partiallyCommittedElem of this._partiallyCommittedElements.valuesById()) {
         partiallyCommittedElem.forceComplete();
