@@ -80,6 +80,10 @@ function makePointStringParams(points: Point[], colors: ColorDef | ColorDef[]): 
   return params;
 }
 
+function getVertexTableData(vertexTable: VertexTable, numExtraRgba: number): Uint32Array {
+  return new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numExtraRgba);
+}
+
 function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[]): void {
   if (expected instanceof ColorDef) {
     expect(vertexTable.uniformColor).not.to.be.undefined;
@@ -89,8 +93,7 @@ function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[])
   }
 
   if (Array.isArray(expected)) {
-    const numColors = expected.length;
-    const data = new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numColors);
+    const data = getVertexTableData(vertexTable, expected.length);
     const colorTableStart = vertexTable.numVertices * vertexTable.numRgbaPerVertex;
     for (let i = 0; i < expected.length; i++) {
       const color = ColorDef.fromAbgr(data[colorTableStart + i]);
@@ -99,19 +102,8 @@ function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[])
   }
 }
 
-function expectPointStrings(params: PointStringParams, expectedColors: ColorDef | ColorDef[], expectedPts: Point[]): void {
-  const vertexTable = params.vertices;
-  expect(vertexTable.numRgbaPerVertex).to.equal(3);
-  expect(vertexTable.numVertices).to.equal(expectedPts.length);
-  expectColors(vertexTable, expectedColors);
-
-  let curIndex = 0;
-  for (const index of params.indices)
-    expect(index).to.equal(curIndex++);
-
-  const numColors = expectedColors instanceof ColorDef ? 0 : expectedColors.length;
-  const data = new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numColors);
-
+function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[]): void {
+  const data = getVertexTableData(vertexTable, 0);
   for (let i = 0; i < vertexTable.numVertices; i++) {
     const idx = i * vertexTable.numRgbaPerVertex;
     const x = data[idx] & 0xffff;
@@ -127,6 +119,19 @@ function expectPointStrings(params: PointStringParams, expectedColors: ColorDef 
     expect(colorIndex).to.equal(pt.color);
     expect(featureIndex).to.equal(pt.feature);
   }
+}
+
+function expectPointStrings(params: PointStringParams, expectedColors: ColorDef | ColorDef[], expectedPts: Point[]): void {
+  const vertexTable = params.vertices;
+  expect(vertexTable.numRgbaPerVertex).to.equal(3);
+  expect(vertexTable.numVertices).to.equal(expectedPts.length);
+  expectColors(vertexTable, expectedColors);
+
+  let curIndex = 0;
+  for (const index of params.indices)
+    expect(index).to.equal(curIndex++);
+
+  expectBaseVertices(vertexTable, expectedPts);
 }
 
 interface TriMeshPoint extends Point {
@@ -197,12 +202,27 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
   return MeshParams.create(args);
 }
 
-function expectMesh(params: MeshParams, expectedColors: ColorDef | ColorDef[], expected: TriMesh): void {
+function expectMesh(params: MeshParams, expectedColors: ColorDef | ColorDef[], mesh: TriMesh): void {
   const vertexTable = params.vertices;
-  const type = getSurfaceType(expected);
+  const type = getSurfaceType(mesh);
   expect(vertexTable.numRgbaPerVertex).to.equal(SurfaceType.Unlit === type ? 3 : 4);
-  expect(vertexTable.numVertices).to.equal(expected.points.length);
+  expect(vertexTable.numVertices).to.equal(mesh.points.length);
   expectColors(vertexTable, expectedColors);
+
+  const surface = params.surface;
+  let curIndex = 0;
+  for (const index of surface.indices)
+    expect(index).to.equal(mesh.indices[curIndex++]);
+
+  expect(surface.textureMapping?.texture).to.equal(mesh.texture);
+  if (Array.isArray(mesh.materials)) {
+    expect(surface.material).to.be.undefined;
+    // ###TODO material atlases
+  } else {
+    expect(surface.material).to.equal(mesh.materials)
+  }
+
+  expectBaseVertices(vertexTable, mesh.points);
 }
 
 describe.only("VertexTableSplitter", () => {
