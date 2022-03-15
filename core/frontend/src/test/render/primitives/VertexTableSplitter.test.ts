@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2d } from "@itwin/core-geometry";
+import { Point2d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags, QPoint3d, QPoint3dList,
-  RenderMaterial, RenderTexture,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
+  QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
   MockRender,
@@ -207,7 +207,9 @@ function expectMesh(params: MeshParams, expectedColors: ColorDef | ColorDef[], m
   const type = getSurfaceType(mesh);
   expect(vertexTable.numRgbaPerVertex).to.equal(SurfaceType.Unlit === type ? 3 : 4);
   expect(vertexTable.numVertices).to.equal(mesh.points.length);
+
   expectColors(vertexTable, expectedColors);
+  expectBaseVertices(vertexTable, mesh.points);
 
   const surface = params.surface;
   let curIndex = 0;
@@ -222,7 +224,37 @@ function expectMesh(params: MeshParams, expectedColors: ColorDef | ColorDef[], m
     expect(surface.material).to.equal(mesh.materials)
   }
 
-  expectBaseVertices(vertexTable, mesh.points);
+  if (SurfaceType.Unlit === type)
+    return;
+
+  const data = getVertexTableData(vertexTable, 0);
+  if (SurfaceType.Textured === type || SurfaceType.TexturedLit === type) {
+    const uvs = mesh.points.map((p) => new Point2d(p.uv!, p.uv! * 0.5));
+    const qparams = QParams2d.fromRange(Range2d.createArray(uvs));
+    for (const vertIndex of surface.indices) {
+      const dataIndex = vertIndex * vertexTable.numRgbaPerVertex;
+      const u = data[dataIndex + 3] & 0xffff;
+      const v = (data[dataIndex + 3] & 0xffff0000) >>> 16;
+      const uv = qparams.unquantize(u, v);
+      expect(uv.x).to.equal(mesh.points[vertIndex].uv);
+      expect(uv.y).to.equal(mesh.points[vertIndex].uv! * 0.5);
+    }
+  }
+
+  if (SurfaceType.Lit === type || SurfaceType.TexturedLit === type) {
+    const getNormal = (i: number) => {
+      if (SurfaceType.Lit === type)
+        return data[i + 3] & 0xffff;
+      else
+        return (data[i + 4] & 0xffff0000) >>> 16;
+    };
+
+    for (const vertIndex of surface.indices) {
+      const dataIndex = vertIndex * vertexTable.numRgbaPerVertex;
+      const normal = getNormal(dataIndex);
+      expect(normal).to.equal(mesh.points[vertIndex].normal);
+    }
+  }
 }
 
 describe.only("VertexTableSplitter", () => {
