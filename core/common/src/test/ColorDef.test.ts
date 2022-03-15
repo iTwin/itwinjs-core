@@ -132,7 +132,6 @@ describe("ColorDef", () => {
   });
 
   it("determines whether string and numeric values represent valid colors", () => {
-    // Iterating over an enum produces both the keys and the values, as strings.
     for (const [key, value] of Object.entries(ColorByName)) {
       expect(ColorDef.isValidColor(key)).to.be.true;
       expect(ColorDef.isValidColor(`${key}xx`)).to.be.false;
@@ -141,6 +140,8 @@ describe("ColorDef", () => {
       expect(ColorDef.isValidColor(value + 0.5)).to.be.false;
       expect(ColorDef.isValidColor(-value)).to.equal(0 === value);
     }
+
+    expect(ColorDef.isValidColor(0x100000000)).to.be.false;
   });
 
   it("looks up name from numeric representation", () => {
