@@ -2,16 +2,16 @@
 
 The [Icon]($core-react:Icon) category in the `@itwin/core-react` package includes components that render icons when given an icon name or SVG source or path.
 
-The [Icon]($core-react) React component displays an icon based on an IconSpec.
-An [IconSpec]($core-react:Icon) can be a string, ReactNode or
-[ConditionalStringValue]($appui-abstract).
-When the IconSpec is a string, the value is either a Webfont name or a formatted string that includes an imported SVG.
+The [Icon]($core-react) React component displays an icon based on an IconSpec. An [IconSpec]($core-react:Icon) can be a string, ReactNode or [ConditionalStringValue]($appui-abstract).
+When the IconSpec is a string, the value is either a Webfont symbol name or a formatted string that specifies an imported SVG.
 When using an SVG, we use the web component svg-loader to load the SVG from its path. This web component is defined in UiCore.initialize() as follows:
+
 ```tsx
     if (window.customElements.get("svg-loader") === undefined)
       window.customElements.define("svg-loader", IconWebComponent);
 ```
-If your app does not initialize UiFramework or UiCore, you'll need to define this custom element to use the loader.
+
+If your app does not initialize UiFramework or UiCore, you'll need to define this custom element to use the svg-loader.
 
 The [IconComponent]($core-react) will automatically use the svg-loader in IconWebComponent, assuming the customElement has been defined.
 
