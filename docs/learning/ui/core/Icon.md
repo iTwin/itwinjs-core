@@ -13,7 +13,7 @@ When using an SVG, we use the web component svg-loader to load the SVG from its 
 ```
 If your app does not initialize UiFramework or UiCore, you'll need to define this custom element to use the loader.
 
-he [IconComponent]($core-react) will automatically use the svg-loader in IconWebComponent, assuming the customElement has been defined.
+The [IconComponent]($core-react) will automatically use the svg-loader in IconWebComponent, assuming the customElement has been defined.
 
 The formatted svg icon string begins with "webSvg:".
 The `IconSpecUtilities.createWebComponentIconSpec` can be used to format the SVG string. See example usage below.
