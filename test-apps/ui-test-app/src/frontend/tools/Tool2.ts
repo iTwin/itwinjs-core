@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 
 import { Point3d } from "@itwin/core-geometry";
 import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg";
