@@ -15,7 +15,7 @@ export class IconSpecUtilities {
   public static readonly WEB_COMPONENT_PREFIX = "webSvg:";
 
   /** Create an IconSpec for an SVG loaded into web component with sprite loader
-   * @public @deprecated
+   * @public @deprecated Use createWebComponentIconSpec()
   */
   public static createSvgIconSpec(svgSrc: string): string {
     return `${IconSpecUtilities.SVG_PREFIX}${svgSrc}`;

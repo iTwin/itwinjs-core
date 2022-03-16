@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Point3d } from "@itwin/core-geometry";
-import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg?sprite";
+import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg";
 import {
   BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
 } from "@itwin/core-frontend";
@@ -12,7 +12,7 @@ import { IconSpecUtilities } from "@itwin/appui-abstract";
 
 export class Tool2 extends PrimitiveTool {
   public static override toolId = "Tool2";
-  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(placeholderSvg);
+  public static override iconSpec = IconSpecUtilities.createWebComponentIconSpec(placeholderSvg);
   public readonly points: Point3d[] = [];
 
   public override requireWriteableTarget(): boolean { return false; }

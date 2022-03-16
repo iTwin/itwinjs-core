@@ -21,11 +21,11 @@ import {
   FrontstageManager, StageContentLayout, StageContentLayoutProps, UiFramework,
 } from "@itwin/appui-react";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg";
-import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
-import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";
-import tool4IconSvg from "@bentley/icons-generic/icons/3d.svg?sprite";
-import layoutRestoreIconSvg from "@bentley/icons-generic/icons/download.svg?sprite";
-import removeLayoutIconSvg from "@bentley/icons-generic/icons/remove.svg?sprite";
+import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg";
+import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg";
+import tool4IconSvg from "@bentley/icons-generic/icons/3d.svg";
+import layoutRestoreIconSvg from "@bentley/icons-generic/icons/download.svg";
+import removeLayoutIconSvg from "@bentley/icons-generic/icons/remove.svg";
 import layoutSaveIconSvg from "@bentley/icons-generic/icons/upload.svg?sprite";
 import { PopupTestPanel } from "./PopupTestPanel";
 import { PopupTestView } from "./PopupTestView";
@@ -129,7 +129,7 @@ export class SaveContentLayoutTool extends Tool {
 
 export class RestoreSavedContentLayoutTool extends Tool {
   public static override toolId = "RestoreSavedContentLayoutTool";
-  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(layoutRestoreIconSvg);
+  public static override iconSpec = IconSpecUtilities.createWebComponentIconSpec(layoutRestoreIconSvg);
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
   public static override get keyin(): string {
@@ -161,7 +161,7 @@ export class RestoreSavedContentLayoutTool extends Tool {
 
 export class RemoveSavedContentLayoutTool extends Tool {
   public static override toolId = "RemoveSavedContentLayoutTool";
-  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(removeLayoutIconSvg);
+  public static override iconSpec = IconSpecUtilities.createWebComponentIconSpec(removeLayoutIconSvg);
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
   public static override get keyin(): string {
@@ -232,7 +232,7 @@ export class OpenComponentExamplesPopoutTool extends Tool {
 }
 export class OpenCustomPopoutTool extends Tool {
   public static override toolId = "OpenCustomPopout";
-  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(tool2IconSvg);
+  public static override iconSpec = IconSpecUtilities.createWebComponentIconSpec(tool2IconSvg);
 
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
@@ -276,7 +276,7 @@ export class OpenCustomPopoutTool extends Tool {
 
 export class OpenViewPopoutTool extends Tool {
   public static override toolId = "OpenViewPopout";
-  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(tool3IconSvg);
+  public static override iconSpec = IconSpecUtilities.createWebComponentIconSpec(tool3IconSvg);
 
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
@@ -346,7 +346,7 @@ export function IModelViewDialog({ x, y, id, title }: { x?: number, y?: number, 
 export class OpenViewDialogTool extends Tool {
   private static _counter = 0;
   public static override toolId = "OpenViewDialog";
-  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(tool4IconSvg);
+  public static override iconSpec = IconSpecUtilities.createWebComponentIconSpec(tool4IconSvg);
   public static get dialogId(): string {
     return `ui-test-app:popup-view-dialog-${OpenViewDialogTool._counter}`;
   }
