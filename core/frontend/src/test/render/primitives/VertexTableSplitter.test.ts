@@ -140,11 +140,12 @@ interface TriMeshPoint extends Point {
   uv?: number; // x component of uv param in [0..1]; y will be x / 2
 }
 
-function makeTriangleStrip(firstPoint: TriMeshPoint, numTriangles: number): TriMeshPoint[] {
-  const strip = [ firstPoint ];
+function makeTriangleStrip(firstPoint: TriMeshPoint, numTriangles: number, adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): TriMeshPoint[] {
+  adjustPt = adjustPt ?? ((pt: TriMeshPoint) => pt);
+  const strip = [ adjustPt(firstPoint) ];
   const pointCount = numTriangles + 2;
   for (let i = 1; i < pointCount; i++)
-    strip.push({ ...firstPoint, x: firstPoint.x + i });
+    strip.push(adjustPt({ ...firstPoint, x: firstPoint.x + i }));
 
   return strip;
 }
@@ -304,7 +305,7 @@ describe.only("VertexTableSplitter", () => {
     ]);
   });
 
-  it("collapses color tables and remaps color indices", () => {
+  it("reconstructs or collapses color tables and remaps color indices", () => {
     const featureTable = makePackedFeatureTable("0x1", "0x2");
 
     const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
@@ -395,16 +396,16 @@ describe.only("VertexTableSplitter", () => {
   it("splits polyline params based on node Id", () => {
   });
 
-  it("splits unlit surface params based on node Id", () => {
+  function makeSurface(adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): { params: MeshParams, colors: ColorDef[], featureTable: PackedFeatureTable, mesh: TriMesh } {
     const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
     const featureTable = makePackedFeatureTable("0x1", "0x2", "0x3");
     const mesh = {
       points: [
-        ...makeTriangleStrip({ x: 0, color: 2, feature: 0 }, 2),
-        ...makeTriangleStrip({ x: 4, color: 0, feature: 0 }, 1),
-        ...makeTriangleStrip({ x: 7, color: 1, feature: 1 }, 1),
-        ...makeTriangleStrip({ x: 10, color: 1, feature: 1 }, 2),
-        ...makeTriangleStrip({ x: 14, color: 0, feature: 2 }, 3),
+        ...makeTriangleStrip({ x: 0, color: 2, feature: 0 }, 2, adjustPt),
+        ...makeTriangleStrip({ x: 4, color: 0, feature: 0 }, 1, adjustPt),
+        ...makeTriangleStrip({ x: 7, color: 1, feature: 1 }, 1, adjustPt),
+        ...makeTriangleStrip({ x: 10, color: 1, feature: 1 }, 2, adjustPt),
+        ...makeTriangleStrip({ x: 14, color: 0, feature: 2 }, 3, adjustPt),
       ],
       indices: [
         0, 1, 2,
@@ -422,11 +423,25 @@ describe.only("VertexTableSplitter", () => {
 
     const params = makeMeshParams(mesh);
     expectMesh(params, colors, mesh);
+    return { params, colors, featureTable, mesh };
+  }
+
+  it("splits unlit surface params based on node Id", () => {
+    const { params, colors, featureTable } = makeSurface();
+  });
+
+  it("splits lit surface params based on node Id", () => {
+  });
+
+  it("splits textured surface params based on node Id", () => {
+  });
+
+  it("splits textured lit surface params based on node Id", () => {
   });
 
   it("splits edge params based on node Ids", () => {
   });
 
-  it("collapses material atlases and remaps material indices", () => {
+  it("reconstructs or collapses material atlases and remaps material indices", () => {
   });
 });
