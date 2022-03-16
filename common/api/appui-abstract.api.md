@@ -76,6 +76,10 @@ export interface AbstractWidgetProps extends ProvidedItem {
         x: number;
         y: number;
     };
+    defaultFloatingSize?: {
+        width: number;
+        height: number;
+    };
     readonly defaultState?: WidgetState;
     readonly fillZone?: boolean;
     readonly floatingContainerId?: string;

@@ -449,6 +449,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
                   applicationData={{ iModelConnection }}
                   isFloatingStateWindowResizable={true}
+                  defaultFloatingSize={{width:200, height:300}}
                 />,
                 <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder"
                   labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,

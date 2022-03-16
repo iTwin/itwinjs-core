@@ -16,6 +16,7 @@
   .nz-widgetPanels-vertical {
     position: relative;
     display: flex;
+    flex-direction: column;
     min-height: 100px;
 
     /* if only one panel section set flex:1 */

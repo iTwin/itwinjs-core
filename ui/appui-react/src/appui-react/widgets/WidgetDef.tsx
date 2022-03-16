@@ -20,7 +20,7 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
-import { Rectangle, SizeProps } from "@itwin/core-react";
+import { SizeProps } from "@itwin/core-react";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],

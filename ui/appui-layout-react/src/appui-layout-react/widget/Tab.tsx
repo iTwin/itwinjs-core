@@ -102,7 +102,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     });
     dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
-  }, [dispatch, floatingWidgetId, handleDragStart, measure, side, widgetContext, widgetId, id, overflowContext]);
+  }, [measure, tab?.userSized, tab?.isFloatingStateWindowResizable, tab.preferredFloatingWidgetSize, widgetContext, overflowContext, handleDragStart, dispatch, floatingWidgetId, side, widgetId, id]);
   const handleClick = React.useCallback(() => {
     overflowContext && overflowContext.close();
     dispatch({

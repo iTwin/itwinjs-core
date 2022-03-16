@@ -7,10 +7,9 @@
  */
 
 import "./PinToggle.scss";
-import classnames from "classnames";
 import * as React from "react";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
-import { PanelSide, PanelStateContext } from "../widget-panels/Panel";
+import { PanelStateContext } from "../widget-panels/Panel";
 import { assert } from "@itwin/core-bentley";
 import { Icon } from "@itwin/core-react";
 
@@ -53,14 +52,3 @@ export const PinToggle = React.memo(function PinToggle() { // eslint-disable-lin
     </button >
   );
 });
-
-function getPinToggleIcon(pinned: boolean, side: PanelSide) {
-  if (pinned) {
-    if (side === "top")
-      return "icon-chevron-up";
-    else if (side === "bottom")
-      return "icon-chevron-down";
-    return `icon-chevron-${side}`;
-  }
-  return "icon-pin";
-}
