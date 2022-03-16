@@ -410,8 +410,8 @@ describe.only("VertexTableSplitter", () => {
   it("splits polyline params based on node Id", () => {
   });
 
-  function makeSurface(adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): { params: MeshParams, colors: ColorDef[], featureTable: PackedFeatureTable, mesh: TriMesh } {
-    const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
+  function makeSurface(adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): { params: MeshParams, colors: ColorDef | ColorDef[], featureTable: PackedFeatureTable, mesh: TriMesh } {
+    let colors: ColorDef | ColorDef[] = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
     const featureTable = makePackedFeatureTable("0x1", "0x2", "0x3");
     const mesh: TriMesh = {
       points: [
@@ -435,25 +435,29 @@ describe.only("VertexTableSplitter", () => {
       colors,
     };
 
-    if (undefined !== mesh.points[0].uv)
+    if (undefined !== mesh.points[0].uv) {
+      mesh.colors = colors = ColorDef.from(1, 2, 3);
       mesh.texture = MockSystem.makeTexture();
+    }
 
     const params = makeMeshParams(mesh);
     expectMesh(params, mesh);
     return { params, colors, featureTable, mesh };
   }
 
-  it("splits unlit surface params based on node Id", () => {
-    const { params, featureTable } = makeSurface();
+  function testMeshParams(adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): void {
+    const { params, featureTable } = makeSurface(adjustPt);
+    const texture = params.surface.textureMapping?.texture;
 
     const split = splitMeshParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.lower });
     expect(split.size).to.equal(3);
 
     expectMesh(split.get(1)!, {
-      colors: [ ColorDef.blue, ColorDef.red ],
+      texture,
+      colors: texture ? ColorDef.from(1, 2, 3) : [ ColorDef.blue, ColorDef.red ],
       points: [
-        ...makeTriangleStrip({ x: 0, color: 0, feature: 0 }, 2),
-        ...makeTriangleStrip({ x: 10, color: 1, feature: 0 }, 1),
+        ...makeTriangleStrip({ x: 0, color: 0, feature: 0 }, 2, adjustPt),
+        ...makeTriangleStrip({ x: 10, color: 1, feature: 0 }, 1, adjustPt),
       ], indices: [
         0, 1, 2,
         1, 2, 3,
@@ -462,10 +466,11 @@ describe.only("VertexTableSplitter", () => {
     });
 
     expectMesh(split.get(2)!, {
-      colors: ColorDef.green,
+      texture,
+      colors: texture ? ColorDef.from(1, 2, 3) : ColorDef.green,
       points: [
-        ...makeTriangleStrip({ x: 20, color: 0, feature: 1 }, 1),
-        ...makeTriangleStrip({ x: 30, color: 0, feature: 1 }, 2),
+        ...makeTriangleStrip({ x: 20, color: 0, feature: 1 }, 1, adjustPt),
+        ...makeTriangleStrip({ x: 30, color: 0, feature: 1 }, 2, adjustPt),
       ], indices: [
         0, 1, 2,
         3, 4, 5,
@@ -474,14 +479,19 @@ describe.only("VertexTableSplitter", () => {
     });
 
     expectMesh(split.get(3)!, {
-      colors: ColorDef.red,
-      points: makeTriangleStrip({ x: 40, color: 0, feature: 2 }, 3),
+      texture,
+      colors: texture ? ColorDef.from(1, 2, 3) : ColorDef.red,
+      points: makeTriangleStrip({ x: 40, color: 0, feature: 2 }, 3, adjustPt),
       indices: [
         0, 1, 2,
         2, 1, 3,
         0, 4, 3,
       ],
     });
+  }
+
+  it("splits unlit surface params based on node Id", () => {
+    testMeshParams();
   });
 
   function setNormal(pt: TriMeshPoint): TriMeshPoint {
@@ -490,7 +500,7 @@ describe.only("VertexTableSplitter", () => {
   }
 
   it("splits lit surface params based on node Id", () => {
-    makeSurface((pt) => setNormal(pt));
+    testMeshParams(setNormal);
   });
 
   function setUv(pt: TriMeshPoint): TriMeshPoint {
@@ -500,11 +510,11 @@ describe.only("VertexTableSplitter", () => {
   }
 
   it("splits textured surface params based on node Id", () => {
-    makeSurface((pt) => setUv(pt));
+    testMeshParams(setUv);
   });
 
   it("splits textured lit surface params based on node Id", () => {
-    makeSurface((pt) => { setNormal(pt); return setUv(pt); });
+    testMeshParams((pt) => { setNormal(pt); return setUv(pt); });
   });
 
   it("splits edge params based on node Ids", () => {
