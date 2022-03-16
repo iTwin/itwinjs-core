@@ -2912,7 +2912,7 @@ export class ShortDateTypeConverter extends DateTimeTypeConverterBase {
     protected getTimeFormat(): TimeFormat;
 }
 
-// @public
+// @public @deprecated
 export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
     constructor(props: ShowHideDialogProps<T>);
     // @internal (undocumented)
@@ -2923,17 +2923,17 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
     readonly state: ShowHideDialogState<T>;
     }
 
-// @public
+// @public @deprecated
 export interface ShowHideDialogProps<T extends ShowHideID> extends GlobalDialogProps {
     initialHidden?: T[];
     items: Array<ShowHideItem<T>>;
     onShowHideChange?: (cols: T[]) => boolean | undefined;
 }
 
-// @public
+// @public @deprecated
 export type ShowHideID = string | number | symbol;
 
-// @public
+// @public @deprecated
 export interface ShowHideItem<T extends ShowHideID> {
     // (undocumented)
     id: T;
