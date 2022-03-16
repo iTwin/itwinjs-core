@@ -32,6 +32,7 @@ interface EditorOpts extends WorkspaceContainerProps {
 /** options for performing an operation on a WorkspaceDb */
 interface WorkspaceDbOpt extends EditorOpts {
   dbName: WorkspaceDbName;
+  like?: string;
 }
 /** options for copying a workspaceDb */
 interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
@@ -86,7 +87,7 @@ const askQuestion = async (query: string) => {
 
 /** Create a new empty WorkspaceDb  */
 async function createWorkspaceDb(args: WorkspaceDbOpt) {
-  const wsFile = new EditableWorkspaceDb(args.dbName, IModelHost.appWorkspace.getContainer(args));
+  const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer(args));
   await wsFile.createDb();
   console.log(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
 }
@@ -118,12 +119,12 @@ async function loadCloudContainer(args: EditorOpts): Promise<IModelJsNative.Clou
 
 /** Open for write, call a function to process, then close a WorkspaceDb */
 async function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: EditableWorkspaceDb, args: T) => void) {
-  processWorkspace(args, new EditableWorkspaceDb(args.dbName, await loadContainer(args)), fn);
+  processWorkspace(args, new EditableWorkspaceDb(args, await loadContainer(args)), fn);
 }
 
 /** Open for read, call a function to process, then close a WorkspaceDb */
 async function readWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: ITwinWorkspaceDb, args: T) => void) {
-  processWorkspace(args, new ITwinWorkspaceDb(args.dbName, await loadContainer(args)), fn);
+  processWorkspace(args, new ITwinWorkspaceDb(args, await loadContainer(args)), fn);
 }
 
 /** List the contents of a WorkspaceDb */
@@ -225,7 +226,7 @@ async function removeResource(args: RemoveResourceOpts) {
 /** Vacuum a WorkspaceDb. */
 async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
   const container = await loadContainer(args);
-  const localFile = new ITwinWorkspaceDb(args.dbName, container).dbFileName;
+  const localFile = new ITwinWorkspaceDb(args, container).dbFileName;
   IModelHost.platform.DgnDb.vacuum(localFile, container.cloudContainer);
   console.log(`${localFile} vacuumed`);
 }
@@ -363,7 +364,7 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
   const garbageMsg = nGarbage ? `, ${nGarbage} garbage block${nGarbage > 1 ? "s" : ""}` : "";
   console.log(`WorkspaceDbs in CloudContainer "${args.containerId}"${writeLockMsg}${hasLocalMsg}${garbageMsg}`);
 
-  const dbs = container.queryDatabases();
+  const dbs = container.queryDatabases(args.like);
   for (const dbName of dbs) {
     const db = container.queryDatabase(dbName);
     if (db) {
@@ -506,7 +507,7 @@ async function main() {
     handler: runCommand(exportWorkspaceDb),
   });
   Yargs.command({
-    command: "queryDbs",
+    command: "queryDbs [like]",
     describe: "query the list of WorkspaceDbs in a cloud container",
     handler: runCommand(queryWorkspaceDbs),
   });

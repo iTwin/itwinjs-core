@@ -11,7 +11,7 @@ import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
-import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, ITwinWorkspaceDb, WorkspaceDbProps } from "../../workspace/Workspace";
+import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, ITwinWorkspaceDb, WorkspaceContainerProps, WorkspaceDbProps } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -19,9 +19,9 @@ describe("WorkspaceFile", () => {
 
   const workspace = new ITwinWorkspace(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
-  function makeEditableDb(props: WorkspaceDbProps) {
+  function makeEditableDb(props: WorkspaceDbProps & WorkspaceContainerProps) {
     const container = workspace.getContainer(props);
-    const wsFile = new EditableWorkspaceDb(props.dbName, container);
+    const wsFile = new EditableWorkspaceDb(props, container);
 
     IModelJsFs.purgeDirSync(container.filesDir);
     if (IModelJsFs.existsSync(wsFile.dbFileName))
@@ -68,8 +68,8 @@ describe("WorkspaceFile", () => {
   it("WorkspaceDbNames", () => {
     const container = new ITwinWorkspaceContainer(workspace, { containerId: "test" });
     const expectBadName = (names: string[]) => {
-      names.forEach((name) => {
-        expect(() => new ITwinWorkspaceDb(name, container)).to.throw("dbName");
+      names.forEach((dbName) => {
+        expect(() => new ITwinWorkspaceDb({ dbName }, container)).to.throw("dbName");
       });
     };
 
@@ -79,6 +79,7 @@ describe("WorkspaceFile", () => {
       "1/2",
       "a\\b",
       `a"b`,
+      "base:1.2.3",
       "a:b",
       "a.b",
       "a?b",
@@ -92,7 +93,7 @@ describe("WorkspaceFile", () => {
       " leading space",
       "trailing space "]);
 
-    new ITwinWorkspaceDb(Guid.createValue(), container); // guids should be valid
+    new ITwinWorkspaceDb({ dbName: Guid.createValue() }, container); // guids should be valid
   });
 
   it("create new WorkspaceDb", async () => {

@@ -18,6 +18,7 @@ import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
 import { IModelHost, KnownLocations } from "../IModelHost";
 import { existsSync, rmSync } from "fs-extra";
+import * as semver from "semver";
 
 // cspell:ignore rowid
 
@@ -62,7 +63,7 @@ export type WorkspaceDbName = string;
 
 /**
  * The version name for a WorkspaceDb. More than one version of a WorkspaceDb may be stored in the same WorkspaceContainer. This
- * string identifies a specific version.
+ * string identifies a specific version or a range of acceptable versions according to [semver Range format](https://github.com/npm/node-semver)
  * @beta
  */
 export type WorkspaceDbVersion = string;
@@ -86,7 +87,7 @@ export type WorkspaceContainerProps = Optional<CloudSqlite.ContainerAccessProps,
 /** Properties of a WorkspaceDb
  * @beta
  */
-export type WorkspaceDbProps = WorkspaceContainerProps & CloudSqlite.DbNameProp;
+export interface WorkspaceDbProps extends CloudSqlite.DbNameProp { version?: WorkspaceDbVersion, includePrerelease?: boolean }
 
 /** Properties that specify a WorkspaceResource within a WorkspaceDb.
  * @beta
@@ -105,7 +106,7 @@ export type WorkspaceResourceProps = WorkspaceDbProps & {
  */
 export interface WorkspaceDb {
   readonly container: WorkspaceContainer;
-  /** The WorkspaceDbName of this WorkspaceDb. */
+  /** The base name of this WorkspaceDb, without version */
   readonly dbName: WorkspaceDbName;
   /** event raised when this WorkspaceDb is closed. */
   readonly onClosed: BeEvent<() => void>;
@@ -183,12 +184,14 @@ export interface Workspace {
    * If `cloudProps` are supplied, and if container is not  present or not up-to-date, it is downloaded first.
    * @returns a Promise that is resolved when the container is local, opened, and available for access.
    */
-  getWorkspaceDb(props: WorkspaceDbProps): Promise<WorkspaceDb>;
+  getWorkspaceDb(props: WorkspaceDbProps & WorkspaceContainerProps): Promise<WorkspaceDb>;
+
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
    * @returns a Promise that is resolved when the settings resource has been loaded.
    */
   loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
+
   /** Close this Workspace. All WorkspaceContainers are dropped. */
   close(): void;
 }
@@ -206,8 +209,10 @@ export interface WorkspaceContainer {
 
   /** @internal */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
+  /** @internal */
+  resolveFileName(props: WorkspaceDbProps): string;
 
-  getWorkspaceDb(dbName: string): Promise<WorkspaceDb>;
+  getWorkspaceDb(props: WorkspaceDbProps): Promise<WorkspaceDb>;
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace. */
   dropWorkspaceDb(container: WorkspaceDb): void;
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
@@ -253,11 +258,11 @@ export class ITwinWorkspace implements Workspace {
     return this._containers.get(props.containerId) ?? new ITwinWorkspaceContainer(this, props);
   }
 
-  public async getWorkspaceDb(props: WorkspaceDbProps): Promise<WorkspaceDb> {
-    return this.getContainer(props).getWorkspaceDb(props.dbName);
+  public async getWorkspaceDb(props: WorkspaceDbProps & WorkspaceContainerProps): Promise<WorkspaceDb> {
+    return this.getContainer(props).getWorkspaceDb(props);
   }
 
-  public async loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority) {
+  public async loadSettingsDictionary(settingRsc: WorkspaceResourceProps & WorkspaceContainerProps, priority: SettingsPriority) {
     const db = await this.getWorkspaceDb(settingRsc);
     const setting = db.getString(settingRsc.rscName);
     if (undefined === setting)
@@ -319,14 +324,45 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.cloudContainer?.attach(this.workspace.cloudCache);
   }
 
+  public resolveFileName(props: WorkspaceDbProps): string {
+    const cloudContainer = this.cloudContainer;
+    const dbName = props.dbName;
+    if (undefined === cloudContainer)
+      return join(this.dirName, `${dbName}.${workspaceDbFileExt}`); // local file, versions not allowed
+
+    const dbs = cloudContainer.queryDatabases(`${dbName}%`); // get all databases that start with dbName
+    if (dbs.length === 0)
+      return dbName;
+
+    const versions = [];
+    for (const db of dbs) {
+      const parts = db.split(":");
+      if (parts[0] === dbName && "string" === typeof parts[1] && parts[1].length > 0) {
+        versions.push(parts[1]);
+      }
+    }
+
+    if (versions.length === 0)
+      return dbName;
+
+    const range = props.version ?? "*";
+    try {
+      const version = semver.maxSatisfying(versions, range, { loose: true, includePrerelease: props.includePrerelease });
+      if (version)
+        return `${dbName}:${version}`;
+    } catch (e: unknown) {
+    }
+    throw new Error(`No version of [${dbName}] available for "${range}"`);
+  }
+
   public addWorkspaceDb(toAdd: ITwinWorkspaceDb) {
     if (undefined !== this._wsDbs.get(toAdd.dbName))
-      throw new Error("dbName already exists in workspace");
+      throw new Error(`workspaceDb ${toAdd.dbName} already exists in workspace`);
     this._wsDbs.set(toAdd.dbName, toAdd);
   }
 
-  public async getWorkspaceDb(dbName: string): Promise<WorkspaceDb> {
-    const db = this._wsDbs.get(dbName) ?? new ITwinWorkspaceDb(dbName, this);
+  public async getWorkspaceDb(props: WorkspaceDbProps): Promise<WorkspaceDb> {
+    const db = this._wsDbs.get(props.dbName) ?? new ITwinWorkspaceDb(props, this);
     if (!db.isOpen)
       db.open();
     return db;
@@ -387,12 +423,11 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     return { localFileName, info };
   }
 
-  public constructor(dbName: WorkspaceDbName, container: WorkspaceContainer) {
-    ITwinWorkspaceDb.validateDbName(dbName);
-    this.dbName = dbName;
+  public constructor(props: WorkspaceDbProps, container: WorkspaceContainer) {
+    ITwinWorkspaceDb.validateDbName(props.dbName);
+    this.dbName = props.dbName;
     this.container = container;
-    const cloudContainer = container.cloudContainer;
-    this.dbFileName = cloudContainer ? this.dbName : join(container.dirName, `${dbName}.${workspaceDbFileExt}`);
+    this.dbFileName = container.resolveFileName(props);
     container.addWorkspaceDb(this);
   }
 
@@ -462,10 +497,8 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
 
   public async prefetch(): Promise<void> {
     const cloudContainer = this.container.cloudContainer;
-    if (cloudContainer !== undefined) {
-      await cloudContainer.pinDatabase(this.dbName, true);
-      await cloudContainer.pinDatabase(this.dbName, false);
-    }
+    if (cloudContainer !== undefined)
+      CloudSqlite.prefetch(cloudContainer, this.dbName);
   }
 }
 
@@ -511,7 +544,20 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     this.sqliteDb.saveChanges();
   }
 
-  public async createDb() {
+  private validateVersion(version?: string) {
+    version = version ?? "1.0.0";
+    if (version) {
+      const opts = { loose: true, includePrerelease: true };
+      // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
+      const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
+      if (!semVersion)
+        throw new Error("invalid version specification");
+      version = semVersion;
+    }
+    return version;
+  }
+
+  public async createDb(version?: string) {
     if (!this.container.cloudContainer) {
       EditableWorkspaceDb.createEmpty(this.dbFileName);
     } else {
@@ -520,6 +566,9 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
       if (existsSync(tempDbFile))
         rmSync(tempDbFile);
       EditableWorkspaceDb.createEmpty(tempDbFile);
+      version = this.validateVersion(version);
+      if (version)
+        this.dbFileName = `${this.dbName}:${version}`;
       await CloudSqlite.uploadDb(this.container.cloudContainer, { localFileName: tempDbFile, dbName: this.dbFileName });
       rmSync(tempDbFile);
     }
@@ -537,10 +586,16 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     db.closeDb();
   }
 
-  public async cloneVersion(oldVersion: WorkspaceDbVersion, newVersion: WorkspaceDbVersion) {
+  public async cloneVersion(dbName: WorkspaceDbName, oldVersion: string | undefined, newVersion: WorkspaceDbVersion) {
     if (!this.container.cloudContainer)
       throw new Error("no cloud container");
-    return this.container.cloudContainer.copyDatabase(oldVersion, newVersion);
+    const newVer = this.validateVersion(newVersion);
+    if (!newVer)
+      throw Error("invalid version number");
+    let oldDb = dbName;
+    if (oldVersion)
+      oldDb += `:${oldVersion}`;
+    return this.container.cloudContainer.copyDatabase(oldDb, `${dbName}:${newVer}`);
   }
 
   public async upload(args: CloudSqlite.TransferDbProps) {

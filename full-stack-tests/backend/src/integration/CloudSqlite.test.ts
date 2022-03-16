@@ -109,9 +109,9 @@ describe.only("CloudSqlite", () => {
       rmSync(tempDbFile);
     EditableWorkspaceDb.createEmpty(tempDbFile); // just to create a db with a few tables
 
-    await uploadFile(testContainers[0], caches[0], "c0-db1", tempDbFile);
+    await uploadFile(testContainers[0], caches[0], "c0-db1:0", tempDbFile);
     await uploadFile(testContainers[0], caches[0], "testBim", testBimFileName);
-    await uploadFile(testContainers[1], caches[0], "c1-db1", tempDbFile);
+    await uploadFile(testContainers[1], caches[0], "c1-db1:2.1", tempDbFile);
     await uploadFile(testContainers[2], caches[0], "c2-db1", tempDbFile);
     await uploadFile(testContainers[2], caches[0], "testBim", testBimFileName);
   });
@@ -126,7 +126,7 @@ describe.only("CloudSqlite", () => {
     // first container has 2 databases
     let dbs = contain1.queryDatabases();
     expect(dbs.length).equals(2);
-    expect(dbs[0]).equals("c0-db1");
+    expect(dbs).contains("c0-db1:0");
 
     let dbProps = contain1.queryDatabase(dbs[0]);
     assert(dbProps !== undefined);
@@ -137,13 +137,13 @@ describe.only("CloudSqlite", () => {
 
     // open a cloud database for read
     const db = new SQLiteDb();
-    db.openDb("c0-db1", OpenMode.Readonly, contain1);
+    db.openDb("c0-db1:0", OpenMode.Readonly, contain1);
     expect(db.isOpen);
     db.closeDb();
 
     dbProps = contain1.queryDatabase(dbs[0]);
     assert(dbProps !== undefined);
-    expect(dbProps.localBlocks).greaterThan(0);
+    expect(dbProps.totalBlocks).greaterThan(0);
 
     let imodel = SnapshotDb.openFile("testBim", { container: contain1 });
     expect(imodel.getBriefcaseId()).equals(0);
