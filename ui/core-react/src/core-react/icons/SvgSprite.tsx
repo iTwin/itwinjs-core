@@ -21,7 +21,8 @@ export interface SvgSpriteProps extends CommonProps {
 }
 
 /** Svg element wrapper.
- * @public @deprecated Use IconComponent
+ * This component is deprecate -- use IconComponent
+ * @public @deprecated
  */
 export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
   public override render() {

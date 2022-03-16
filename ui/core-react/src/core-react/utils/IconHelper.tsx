@@ -17,10 +17,6 @@ export class IconHelper {
   public static get reactIconKey(): string {
     return "#-react-iconspec-node-#";
   }
-  public static get iconWebComponentKey(): string {
-    return "#-webcomponent-icon-node-#";
-  }
-
   /** Returns an <Icon> ReactNode from the many ways an icon can be specified.
    * @param icon abstract icon specification.
    * @param internalData a map that may hold a React.ReactNode stored in an abstract item definition.
@@ -48,12 +44,7 @@ export class IconHelper {
       if (internalData)
         return <Icon iconSpec={internalData.get(IconHelper.reactIconKey) as React.ReactNode} />;
       return null;
-    } else if (iconString === IconHelper.iconWebComponentKey) {
-      if (internalData)
-        return <Icon iconSpec={internalData.get(IconHelper.iconWebComponentKey)} />;
-      return null;
     }
-
     return <Icon iconSpec={iconString} />;
   }
 
