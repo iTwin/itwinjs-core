@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import "./TreeWidget.css";
 import React from "react";
+import { ControlledTree, LoadedImage, SelectionMode, TreeNodeRenderer, TreeRenderer, useTreeModel } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
   DiagnosticsProps, useControlledPresentationTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler,
 } from "@itwin/presentation-components";
-import { ControlledTree, SelectionMode, useTreeModel } from "@itwin/components-react";
 
 const PAGING_SIZE = 10;
 
@@ -49,6 +49,21 @@ export function Tree(props: Props) {
   const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader: filteredNodeLoader, collapsedChildrenDisposalEnabled: true, name: "TreeWithHooks" });
   const treeModel = useTreeModel(filteredModelSource);
 
+  const imageLoader = React.useMemo(() => ({
+    load: (): LoadedImage => ({
+      sourceType: "svg",
+      value: "airplane.svg#my-icon",
+    }),
+  }), []);
+
+  const nodeRenderer = React.useCallback((nodeRendererProps) => (
+    <TreeNodeRenderer {...nodeRendererProps} imageLoader={imageLoader} />
+  ), [imageLoader]);
+
+  const treeRenderer = React.useCallback((treeRendererProps) => (
+    <TreeRenderer {...treeRendererProps} nodeRenderer={nodeRenderer} />
+  ), [nodeRenderer]);
+
   return (
     <ControlledTree
       model={treeModel}
@@ -57,6 +72,7 @@ export function Tree(props: Props) {
       selectionMode={SelectionMode.Extended}
       nodeHighlightingProps={nodeHighlightingProps}
       iconsEnabled={true}
+      treeRenderer={treeRenderer}
       width={props.width}
       height={props.height}
     />

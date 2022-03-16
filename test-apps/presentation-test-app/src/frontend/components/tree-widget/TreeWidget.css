@@ -34,3 +34,7 @@
   flex-grow: 1;
   min-height: 50px;
 }
+
+.treewidget .filteredTree .core-tree-node-icon > div {
+  height: 16px;
+}
