@@ -102,7 +102,7 @@ function expectColors(vertexTable: VertexTable, expected: ColorDef | ColorDef[])
   }
 }
 
-function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[]): void {
+function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[], hasColorIndex = true): void {
   const data = getVertexTableData(vertexTable, 0);
   for (let i = 0; i < vertexTable.numVertices; i++) {
     const idx = i * vertexTable.numRgbaPerVertex;
@@ -116,7 +116,11 @@ function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[]): voi
     expect(x).to.equal(pt.x);
     expect(y).to.equal(pt.x + 1);
     expect(z).to.equal(pt.x + 5);
-    expect(colorIndex).to.equal(pt.color);
+
+    // Textured meshes don't use color tables and may reuse the color index for other purposes like normal.
+    if (hasColorIndex)
+      expect(colorIndex).to.equal(pt.color);
+
     expect(featureIndex).to.equal(pt.feature);
   }
 }
@@ -137,7 +141,7 @@ function expectPointStrings(params: PointStringParams, expectedColors: ColorDef 
 interface TriMeshPoint extends Point {
   material?: number; // material index for material atlas
   normal?: number; // oct-encoded normal
-  uv?: number; // x component of uv param in [0..1]; y will be x / 2
+  uv?: 0 | 0.5 | 1; // u component of uv param; v will be -u
 }
 
 function makeTriangleStrip(firstPoint: TriMeshPoint, numTriangles: number, adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): TriMeshPoint[] {
@@ -184,7 +188,7 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
   if (mesh.texture) {
     textureMapping = {
       texture: mesh.texture,
-      uvParams: mesh.points.map((pt) => new Point2d(pt.uv!, pt.uv! * 0.5)),
+      uvParams: mesh.points.map((pt) => new Point2d(pt.uv!, -pt.uv!)),
     };
   }
 
@@ -210,7 +214,7 @@ function expectMesh(params: MeshParams, expectedColors: ColorDef | ColorDef[], m
   expect(vertexTable.numVertices).to.equal(mesh.points.length);
 
   expectColors(vertexTable, expectedColors);
-  expectBaseVertices(vertexTable, mesh.points);
+  expectBaseVertices(vertexTable, mesh.points, SurfaceType.Textured !== type && SurfaceType.TexturedLit !== type);
 
   const surface = params.surface;
   let curIndex = 0;
@@ -230,7 +234,7 @@ function expectMesh(params: MeshParams, expectedColors: ColorDef | ColorDef[], m
 
   const data = getVertexTableData(vertexTable, 0);
   if (SurfaceType.Textured === type || SurfaceType.TexturedLit === type) {
-    const uvs = mesh.points.map((p) => new Point2d(p.uv!, p.uv! * 0.5));
+    const uvs = mesh.points.map((p) => new Point2d(p.uv!, -p.uv!));
     const qparams = QParams2d.fromRange(Range2d.createArray(uvs));
     for (const vertIndex of surface.indices) {
       const dataIndex = vertIndex * vertexTable.numRgbaPerVertex;
@@ -238,7 +242,7 @@ function expectMesh(params: MeshParams, expectedColors: ColorDef | ColorDef[], m
       const v = (data[dataIndex + 3] & 0xffff0000) >>> 16;
       const uv = qparams.unquantize(u, v);
       expect(uv.x).to.equal(mesh.points[vertIndex].uv);
-      expect(uv.y).to.equal(mesh.points[vertIndex].uv! * 0.5);
+      expect(uv.y).to.equal(-(mesh.points[vertIndex].uv!));
     }
   }
 
@@ -262,6 +266,16 @@ describe.only("VertexTableSplitter", () => {
   class MockSystem extends MockRender.System {
     public static maxTextureSize = 2048;
     public override get maxTextureSize() { return MockSystem.maxTextureSize; }
+
+    public static makeTexture(): RenderTexture {
+      class Texture extends RenderTexture {
+        public constructor() { super(RenderTexture.Type.Normal); }
+        public dispose() { }
+        public get bytesUsed() { return 4; }
+      }
+
+      return new Texture();
+    }
   }
 
   before(async () => {
@@ -399,7 +413,7 @@ describe.only("VertexTableSplitter", () => {
   function makeSurface(adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): { params: MeshParams, colors: ColorDef[], featureTable: PackedFeatureTable, mesh: TriMesh } {
     const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
     const featureTable = makePackedFeatureTable("0x1", "0x2", "0x3");
-    const mesh = {
+    const mesh: TriMesh = {
       points: [
         ...makeTriangleStrip({ x: 0, color: 2, feature: 0 }, 2, adjustPt),
         ...makeTriangleStrip({ x: 4, color: 0, feature: 0 }, 1, adjustPt),
@@ -421,6 +435,9 @@ describe.only("VertexTableSplitter", () => {
       colors,
     };
 
+    if (undefined !== mesh.points[0].uv)
+      mesh.texture = MockSystem.makeTexture();
+
     const params = makeMeshParams(mesh);
     expectMesh(params, colors, mesh);
     return { params, colors, featureTable, mesh };
@@ -431,12 +448,21 @@ describe.only("VertexTableSplitter", () => {
   });
 
   it("splits lit surface params based on node Id", () => {
+    makeSurface((pt) => { pt.normal = pt.x; return pt; });
   });
 
+  function setUv(pt: TriMeshPoint): TriMeshPoint {
+    pt.uv = (pt.x % 2) / 2 as 0 | 0.5 | 1;
+    expect(pt.uv === 0 || pt.uv === 0.5 || pt.uv === 1).to.be.true;
+    return pt;
+  }
+
   it("splits textured surface params based on node Id", () => {
+    makeSurface((pt) => setUv(pt));
   });
 
   it("splits textured lit surface params based on node Id", () => {
+    makeSurface((pt) => { pt.normal = pt.x; return setUv(pt); });
   });
 
   it("splits edge params based on node Ids", () => {
