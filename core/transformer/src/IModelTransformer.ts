@@ -127,10 +127,31 @@ class PartiallyCommittedElement {
 
 class ElementProcessState {
   public constructor(
+    public elementId: string,
+    /** whether or not the element was imported to the target yet, does not mean the model that submodels it is */
     public elemInTarget: boolean,
-    public subModelInTarget: boolean,
+    /** whether or not the model that submodels this element was imported to the target yet. If undefined, means it is not submodeled */
+    public subModelInTarget: boolean | undefined,
   ) {}
-  public get inTarget() { return !this.elemInTarget && !this.subModelInTarget; }
+  public static fromElementAndTransformer(elementId: Id64String, transformer: IModelTransformer): ElementProcessState {
+    const dbHasModelWithId = (db: IModelDb) => db.withPreparedStatement("SELECT 1 FROM bis.Model WHERE ECInstanceId=? LIMIT 1", (stmt) => {
+      stmt.bindId(1, elementId);
+      const stepResult = stmt.step();
+      if (stepResult === DbResult.BE_SQLITE_DONE) return false;
+      if (stepResult === DbResult.BE_SQLITE_ROW) return true;
+      else throw new IModelError(stepResult, "expected 1 or no rows");
+    });
+    const isSubModeled = dbHasModelWithId(transformer.sourceDb);
+    const idOfElemInTarget = transformer.context.findTargetElementId(elementId);
+    const isElemInTarget = Id64.invalid === idOfElemInTarget;
+    const subModelInTarget = isSubModeled
+      ? isElemInTarget
+        ? dbHasModelWithId(transformer.targetDb)
+        : false
+      : undefined;
+    return new ElementProcessState(elementId, isElemInTarget, subModelInTarget);
+  }
+  public get inTarget() { return this.elemInTarget && this.subModelInTarget; }
 }
 
 /** apply a function to each Id64s in a supported container of Id64s */
@@ -502,21 +523,6 @@ export class IModelTransformer extends IModelExportHandler {
     };
   }
 
-  /** returns the processing state of an element
-   * if the element is submodeled then it may be in the target but the model isn't yet
-   */
-  private findElementProcessState(id: Id64String): ElementProcessState {
-    // TODO: make isSubModeled efficient
-    const isSubModeled = this.sourceDb.models.tryGetSubModel(id); // always running this :/
-    const idInTarget = this.context.findTargetElementId(id);
-    if (Id64.invalid === idInTarget) return new ElementProcessState(true, isSubModeled !== undefined);
-    if (isSubModeled) {
-      const modelInTarget = this.targetDb.models.tryGetModelProps(idInTarget) !== undefined;
-      if (!modelInTarget) return new ElementProcessState(false, true);
-    }
-    return new ElementProcessState(false, false);
-  }
-
   /** collect references this element has that are yet to be mapped, and if necessary create a
    * PartiallyCommittedElement for it to track resolution of unmapped references
    * @returns {boolean}
@@ -527,7 +533,7 @@ export class IModelTransformer extends IModelExportHandler {
     let thisPartialElem: PartiallyCommittedElement | undefined;
 
     for (const predecessorId of element.getPredecessorIds()) {
-      const predecessorState = this.findElementProcessState(predecessorId);
+      const predecessorState = ElementProcessState.fromElementAndTransformer(predecessorId, this);
       if (predecessorState.inTarget) continue;
       Logger.logTrace(loggerCategory, `Deferred resolution of predecessor '${predecessorId}' of element '${element.id}'`);
       // TODO: instead of loading the entire element run a small has query
@@ -598,89 +604,96 @@ export class IModelTransformer extends IModelExportHandler {
    * This override calls [[onTransformElement]] and then [IModelImporter.importElement]($transformer) to update the target iModel.
    */
   public override onExportElement(sourceElement: Element): HandlerResponse {
-    const asyncImpl = async () => {
-      const elemClass = sourceElement.constructor as typeof Element;
-      for (const referenceKey of elemClass.requiredReferenceKeys) {
+    const elemClass = sourceElement.constructor as typeof Element;
+
+    const requiredPredecessorsProcessStates = elemClass.requiredReferenceKeys
+      .map((referenceKey) => {
         const idContainer = sourceElement[referenceKey as keyof Element];
-        await Promise.all(mapId64(idContainer, async (id) => {
+        return mapId64(idContainer, (id) => {
           if (id === Id64.invalid || id === IModel.rootSubjectId) return; // not allowed to directly export the root subject
           const withinSameIModel = this.sourceDb === this.targetDb;
-          if (withinSameIModel) { // within the same iModel, can use existing DefinitionElements without remapping
+          if (withinSameIModel) {
+            // within the same iModel, can use existing DefinitionElements without remapping
             const asDefinitionElem = this.sourceDb.elements.tryGetElement(id, DefinitionElement);
             if (asDefinitionElem && !(asDefinitionElem instanceof RecipeDefinitionElement)) {
               this.context.remapElement(id, id);
             }
           }
-          const readiness = this.findElementProcessState(id);
-          if (readiness.inTarget) return;
-          await this.exporter.exportElement(id); // must export element first if not done so
-          if (readiness.subModelInTarget) await this.exporter.exportModel(id);
-        }));
-      }
+          return ElementProcessState.fromElementAndTransformer(id, this);
+        }).filter((maybeProcessState): maybeProcessState is ElementProcessState => maybeProcessState !== undefined);
+      })
+      .flat()
 
-      let targetElementId: Id64String | undefined;
-      let targetElementProps: ElementProps;
-      if (this._options.preserveElementIdsForFiltering) {
-        targetElementId = sourceElement.id;
-        targetElementProps = this.onTransformElement(sourceElement);
-      } else if (this._options.wasSourceIModelCopiedToTarget) {
-        targetElementId = sourceElement.id;
-        targetElementProps = this.targetDb.elements.getElementProps(targetElementId);
-      } else {
-        targetElementId = this.context.findTargetElementId(sourceElement.id);
-        targetElementProps = this.onTransformElement(sourceElement);
-      }
-      // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing predecessor so not worth checking)
-      if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
-        targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
-        if (undefined !== targetElementId) {
-          const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
-          if (targetElement.classFullName === targetElementProps.classFullName) { // ensure code remapping doesn't change the target class
-            this.context.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
-          } else {
-            targetElementId = undefined;
-            targetElementProps.code = Code.createEmpty(); // clear out invalid code
-          }
+    if (requiredPredecessorsProcessStates.length > 0) {
+      this.exporter["_preExportTask"] = (async () => {
+        for (const processState of requiredPredecessorsProcessStates) {
+          if (processState.inTarget) return;
+          await this.exporter.exportElement(processState.elementId); // must export element first if not done so
+          if (processState.subModelInTarget) await this.exporter.exportModel(processState.elementId);
         }
-      }
-      if (undefined !== targetElementId && Id64.isValidId64(targetElementId)) {
-        // compare LastMod of sourceElement to ExternalSourceAspect of targetElement to see there are changes to import
-        if (!this.hasElementChanged(sourceElement, targetElementId)) {
-          return;
-        }
-      }
+      })();
+    }
 
-      this.collectUnmappedReferences(sourceElement);
-
-      // TODO: untangle targetElementId state...
-      if (targetElementId === Id64.invalid)
-        targetElementId = undefined;
-
-      targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
-      if (!this._options.wasSourceIModelCopiedToTarget) {
-        this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
-      }
-      this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
-      // now that we've mapped this elem we can fix unmapped references to it
-      for (const referencer of this._pendingReferences.getReferencers(sourceElement.id)) {
-        const isModelRef = false; // we're in onExportElement so no
-        const key = {referencer, referenced: sourceElement.id, isModelRef};
-        const pendingRef = this._pendingReferences.get(key);
-        if (!pendingRef) continue;
-        pendingRef.resolvePredecessor(sourceElement.id, isModelRef);
-        this._pendingReferences.delete(key);
-      }
-      if (!this._options.noProvenance) {
-        const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
-        if (aspectProps.id === undefined) {
-          this.provenanceDb.elements.insertAspect(aspectProps);
+    let targetElementId: Id64String | undefined;
+    let targetElementProps: ElementProps;
+    if (this._options.preserveElementIdsForFiltering) {
+      targetElementId = sourceElement.id;
+      targetElementProps = this.onTransformElement(sourceElement);
+    } else if (this._options.wasSourceIModelCopiedToTarget) {
+      targetElementId = sourceElement.id;
+      targetElementProps = this.targetDb.elements.getElementProps(targetElementId);
+    } else {
+      targetElementId = this.context.findTargetElementId(sourceElement.id);
+      targetElementProps = this.onTransformElement(sourceElement);
+    }
+    // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing predecessor so not worth checking)
+    if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
+      targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
+      if (undefined !== targetElementId) {
+        const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
+        if (targetElement.classFullName === targetElementProps.classFullName) { // ensure code remapping doesn't change the target class
+          this.context.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
         } else {
-          this.provenanceDb.elements.updateAspect(aspectProps);
+          targetElementId = undefined;
+          targetElementProps.code = Code.createEmpty(); // clear out invalid code
         }
       }
-    };
+    }
+    if (undefined !== targetElementId && Id64.isValidId64(targetElementId)) {
+      // compare LastMod of sourceElement to ExternalSourceAspect of targetElement to see there are changes to import
+      if (!this.hasElementChanged(sourceElement, targetElementId)) {
+        return;
+      }
+    }
 
-    return asyncImpl();
+    this.collectUnmappedReferences(sourceElement);
+
+    // TODO: untangle targetElementId state...
+    if (targetElementId === Id64.invalid)
+      targetElementId = undefined;
+
+    targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
+    if (!this._options.wasSourceIModelCopiedToTarget) {
+      this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
+    }
+    this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
+    // now that we've mapped this elem we can fix unmapped references to it
+    for (const referencer of this._pendingReferences.getReferencers(sourceElement.id)) {
+      const isModelRef = false; // we're in onExportElement so no
+      const key = {referencer, referenced: sourceElement.id, isModelRef};
+      const pendingRef = this._pendingReferences.get(key);
+      if (!pendingRef) continue;
+      pendingRef.resolvePredecessor(sourceElement.id, isModelRef);
+      this._pendingReferences.delete(key);
+    }
+    if (!this._options.noProvenance) {
+      const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
+      if (aspectProps.id === undefined) {
+        this.provenanceDb.elements.insertAspect(aspectProps);
+      } else {
+        this.provenanceDb.elements.updateAspect(aspectProps);
+      }
+    }
   }
 
   /** Override of [IModelExportHandler.onDeleteElement]($transformer) that is called when [IModelExporter]($transformer) detects that an Element has been deleted from the source iModel.

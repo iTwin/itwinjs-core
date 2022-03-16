@@ -573,11 +573,27 @@ export class IModelExporter {
     // the order and `await`ing of calls beyond here is depended upon by the IModelTransformer for a current bug workaround
     if (this.shouldExportElement(element)) {
       await this.handler.onExportElement(element, isUpdate);
+      // non-breaking change async behavior hack
+      if (this._preExportTask) {
+        await this._preExportTask;
+        this._preExportTask = undefined;
+        await this.handler.onExportElement(element, isUpdate);
+      }
+      // end hack
       await this.trackProgress();
       await this.exportElementAspects(elementId);
       return this.exportChildElements(elementId);
     }
   }
+
+  /**
+   * @internal
+   * This is a hack that will be removed in a follow up change when a breaking change is possible.
+   * The breaking change is to make [[IModelExportHandler.onExportElement]] async, it is breaking because consumers
+   * without the no-floating-promises linter rule will not notice that now any calls to `super.onExportElement` will no longer
+   * be synchronous and it may break their custom transformer subclasses that used that assumption
+   */
+  private _preExportTask: Promise<void> | undefined = undefined;
 
   /**
    * @internal
