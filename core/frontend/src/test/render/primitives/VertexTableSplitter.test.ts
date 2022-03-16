@@ -12,7 +12,7 @@ import {
   MockRender,
 } from "../../../core-frontend";
 import {
-  MeshArgs, MeshParams, PointStringParams, PolylineArgs, splitPointStringParams, SurfaceType, VertexTable,
+  MeshArgs, MeshParams, PointStringParams, PolylineArgs, splitMeshParams, splitPointStringParams, SurfaceType, VertexTable,
 } from "../../../render-primitives";
 
 interface Point {
@@ -416,18 +416,18 @@ describe.only("VertexTableSplitter", () => {
     const mesh: TriMesh = {
       points: [
         ...makeTriangleStrip({ x: 0, color: 2, feature: 0 }, 2, adjustPt),
-        ...makeTriangleStrip({ x: 4, color: 0, feature: 0 }, 1, adjustPt),
-        ...makeTriangleStrip({ x: 7, color: 1, feature: 1 }, 1, adjustPt),
-        ...makeTriangleStrip({ x: 10, color: 1, feature: 1 }, 2, adjustPt),
-        ...makeTriangleStrip({ x: 14, color: 0, feature: 2 }, 3, adjustPt),
+        ...makeTriangleStrip({ x: 10, color: 0, feature: 0 }, 1, adjustPt),
+        ...makeTriangleStrip({ x: 20, color: 1, feature: 1 }, 1, adjustPt),
+        ...makeTriangleStrip({ x: 30, color: 1, feature: 1 }, 2, adjustPt),
+        ...makeTriangleStrip({ x: 40, color: 0, feature: 2 }, 3, adjustPt),
       ],
       indices: [
         0, 1, 2,
         1, 2, 3,
-        4, 6, 5,
+        4, 5, 6,
         7, 8, 9,
-        12, 11, 10,
-        11, 10, 13,
+        10, 11, 12,
+        10, 11, 13,
         14, 15, 16,
         16, 15, 17,
         14, 18, 17,
@@ -445,6 +445,21 @@ describe.only("VertexTableSplitter", () => {
 
   it("splits unlit surface params based on node Id", () => {
     const { params, colors, featureTable } = makeSurface();
+
+    const split = splitMeshParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.lower });
+    expect(split.size).to.equal(3);
+
+    expectMesh(split.get(1)!, [ ColorDef.blue, ColorDef.red ], {
+      points: [
+        ...makeTriangleStrip({ x: 0, color: 0, feature: 0 }, 2),
+        ...makeTriangleStrip({ x: 10, color: 1, feature: 0 }, 1),
+      ], indices: [
+        0, 1, 2,
+        1, 2, 3,
+        4, 5, 6,
+      ],
+      colors,
+    });
   });
 
   function setNormal(pt: TriMeshPoint): TriMeshPoint {
