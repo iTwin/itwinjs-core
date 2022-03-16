@@ -9,7 +9,7 @@
 import { assert, Id64 } from "@itwin/core-bentley";
 import { ColorDef, PackedFeatureTable } from "@itwin/core-common";
 import {
-  computeDimensions, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,
+  computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,
 } from "./VertexTable";
 import { PointStringParams } from "./PointStringParams";
 
@@ -200,7 +200,6 @@ class Node {
 
 interface VertexTableSplitArgs extends VertexTableWithIndices {
   featureTable: PackedFeatureTable;
-  colorTable?: Uint32Array;
 }
 
 class VertexTableSplitter {
@@ -274,13 +273,54 @@ export interface SplitPointStringArgs extends SplitVertexTableArgs {
 export function splitPointStringParams(args: SplitPointStringArgs): Map<number, PointStringParams> {
   const result = new Map<number, PointStringParams>();
 
-  const { indices, vertices } = args.params;
-  const colorTable = undefined === vertices.uniformColor ? new Uint32Array(vertices.data.buffer, vertices.numVertices * vertices.numRgbaPerVertex * 4) : undefined;
-  const nodes = VertexTableSplitter.split({ indices, vertices, featureTable: args.featureTable, colorTable }, args.computeNodeId);
+  const nodes = VertexTableSplitter.split({
+    indices: args.params.indices,
+    vertices: args.params.vertices,
+    featureTable: args.featureTable,
+  }, args.computeNodeId);
 
   for (const [id, node] of nodes) {
     const { vertices, indices } = node.buildOutput(args.maxDimension);
     result.set(id, new PointStringParams(vertices, indices, args.params.weight));
+  }
+
+  return result;
+}
+
+export interface SplitMeshArgs extends SplitVertexTableArgs {
+  params: MeshParams;
+}
+
+export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
+  const result = new Map<number, MeshParams>();
+
+  const nodes = VertexTableSplitter.split({
+    indices: args.params.surface.indices,
+    vertices: args.params.vertices,
+    featureTable: args.featureTable,
+  }, args.computeNodeId);
+
+  for (const [id, node] of nodes) {
+    const { vertices, indices } = node.buildOutput(args.maxDimension);
+    const params = new MeshParams(
+      vertices, {
+        type: args.params.surface.type,
+        indices,
+        fillFlags: args.params.surface.fillFlags,
+        hasBakedLighting: args.params.surface.hasBakedLighting,
+        hasFixedNormals: args.params.surface.hasFixedNormals,
+        textureMapping: args.params.surface.textureMapping,
+        // ###TODO handle material atlases
+        material: args.params.surface.material,
+      },
+      // ###TODO handle edges
+      args.params.edges,
+      args.params.isPlanar,
+      // ###TODO handle aux channels.......
+      args.params.auxChannels,
+    );
+
+    result.set(id, params);
   }
 
   return result;
