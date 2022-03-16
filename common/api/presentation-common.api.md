@@ -141,7 +141,7 @@ export interface CategoryDescriptionJSON {
 // @public
 export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier;
 
-// @public
+// @public @deprecated
 export interface CheckBoxRule extends RuleBase, ConditionContainer {
     condition?: string;
     defaultValue?: boolean;
@@ -270,6 +270,7 @@ export enum ContentFlags {
     KeysOnly = 1,
     MergeResults = 8,
     NoFields = 32,
+    // @deprecated
     ShowImages = 2,
     ShowLabels = 4
 }
@@ -363,6 +364,7 @@ export interface ContentSpecificationBase extends ContentModifiersList {
     onlyIfNotHandled?: boolean;
     priority?: number;
     relatedInstances?: RelatedInstanceSpecification[];
+    // @deprecated
     showImages?: boolean;
     specType: ContentSpecificationTypes;
 }
@@ -384,8 +386,11 @@ export type ContentUpdateInfo = typeof UPDATE_FULL;
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[];
 
 // @public
-export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | // eslint-disable-line deprecation/deprecation
-SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
+export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | // eslint-disable-line deprecation/deprecation
+GroupingRule | ImageIdOverride | // eslint-disable-line deprecation/deprecation
+LabelOverride | // eslint-disable-line deprecation/deprecation
+SortingRule | StyleOverride | // eslint-disable-line deprecation/deprecation
+ExtendedDataRule | NodeArtifactsRule;
 
 // @public
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
@@ -927,9 +932,6 @@ export const getFieldByName: (fields: Field[], name: string | undefined, recurse
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
 
-// @internal (undocumented)
-export const getLocalesDirectory: (assetsDirectory: string) => string;
-
 // @public
 export interface GroupingNodeKey extends BaseNodeKey {
     groupedInstancesCount: number;
@@ -1129,7 +1131,7 @@ export interface IdCategoryIdentifier {
     type: "Id";
 }
 
-// @public
+// @public @deprecated
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
     condition?: string;
     imageIdExpression: string;
@@ -1313,6 +1315,7 @@ export class Item {
         [key: string]: any;
     };
     static fromJSON(json: ItemJSON | string | undefined): Item | undefined;
+    // @deprecated
     imageId: string;
     // @beta
     inputKeys?: InstanceKey[];
@@ -1336,7 +1339,7 @@ export interface ItemJSON {
     extendedData?: {
         [key: string]: any;
     };
-    // (undocumented)
+    // @deprecated (undocumented)
     imageId: string;
     // @beta (undocumented)
     inputKeys?: InstanceKeyJSON[];
@@ -1472,7 +1475,7 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
     type: StandardNodeTypes.DisplayLabelGroupingNode;
 }
 
-// @public
+// @public @deprecated
 export interface LabelOverride extends RuleBase, ConditionContainer {
     condition?: string;
     description?: string;
@@ -1592,17 +1595,24 @@ export interface NoCategoryIdentifier {
 
 // @public
 export interface Node {
+    // @deprecated
     backColor?: string;
     description?: string;
     extendedData?: {
         [key: string]: any;
     };
+    // @deprecated
     fontStyle?: string;
+    // @deprecated
     foreColor?: string;
     hasChildren?: boolean;
+    // @deprecated
     imageId?: string;
+    // @deprecated
     isCheckboxEnabled?: boolean;
+    // @deprecated
     isCheckboxVisible?: boolean;
+    // @deprecated
     isChecked?: boolean;
     isEditable?: boolean;
     isExpanded?: boolean;
@@ -1675,7 +1685,7 @@ export interface NodeInsertionInfoJSON {
 
 // @public
 export interface NodeJSON {
-    // (undocumented)
+    // @deprecated (undocumented)
     backColor?: string;
     // (undocumented)
     description?: string;
@@ -1683,19 +1693,19 @@ export interface NodeJSON {
     extendedData?: {
         [key: string]: any;
     };
-    // (undocumented)
+    // @deprecated (undocumented)
     fontStyle?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     foreColor?: string;
     // (undocumented)
     hasChildren?: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     imageId?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     isCheckboxEnabled?: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     isCheckboxVisible?: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     isChecked?: boolean;
     // (undocumented)
     isEditable?: boolean;
@@ -2807,7 +2817,7 @@ export interface StructTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Struct;
 }
 
-// @public
+// @public @deprecated
 export interface StyleOverride extends RuleBase, ConditionContainer {
     backColor?: string;
     condition?: string;

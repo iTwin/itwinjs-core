@@ -67,6 +67,9 @@ export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | u
 // @internal (undocumented)
 export function getKeysForContentRequest(keys: Readonly<KeySet>, classInstanceKeysProcessor?: (keys: Map<string, Set<string>>) => void): NativePresentationKeySetJSON;
 
+// @internal (undocumented)
+export const getLocalesDirectory: (assetsDirectory: string) => string;
+
 // @beta
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
 

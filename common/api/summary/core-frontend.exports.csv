@@ -72,6 +72,7 @@ internal;BingMapsImageryLayerProvider
 public;BlankConnection 
 public;BlankConnectionProps
 public;BriefcaseConnection 
+alpha;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
 alpha;BuildExtensionManifest 
@@ -321,6 +322,7 @@ public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => it
 public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
 beta;ITwinIdArg
+public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
@@ -641,8 +643,6 @@ public;TileVisibility
 beta;TokenArg
 public;Tool
 public;ToolAdmin
-public;ToolAdmin
-alpha;ActiveSettings
 public;ToolAssistance
 public;ToolAssistanceImage
 public;ToolAssistanceInputMethod

@@ -16,18 +16,22 @@ import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtoco
 import { RpcRequest } from "../core/RpcRequest";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const os = (typeof (process) !== "undefined") ? require("os") : undefined;
+let hostname = "";
 function getHostname(): string {
-  if (os !== undefined) {
-    return os.hostname();
-  } else {
-    if (typeof (window) !== "undefined") {
-      return window.location.host;
-    } else {
-      return "imodeljs-mobile";
+  if (!hostname) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const os = require("os");
+      hostname = os.hostname();
+    } catch (_) {
+      if (globalThis.window) {
+        hostname = globalThis.window.location.host;
+      } else {
+        hostname = "imodeljs-mobile";
+      }
     }
   }
+  return hostname;
 }
 
 /** @internal */
