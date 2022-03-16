@@ -207,13 +207,13 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
   return MeshParams.create(args);
 }
 
-function expectMesh(params: MeshParams, expectedColors: ColorDef | ColorDef[], mesh: TriMesh): void {
+function expectMesh(params: MeshParams, mesh: TriMesh): void {
   const vertexTable = params.vertices;
   const type = getSurfaceType(mesh);
   expect(vertexTable.numRgbaPerVertex).to.equal(SurfaceType.Unlit === type ? 3 : 4);
   expect(vertexTable.numVertices).to.equal(mesh.points.length);
 
-  expectColors(vertexTable, expectedColors);
+  expectColors(vertexTable, mesh.colors);
   expectBaseVertices(vertexTable, mesh.points, SurfaceType.Textured !== type && SurfaceType.TexturedLit !== type);
 
   const surface = params.surface;
@@ -439,17 +439,18 @@ describe.only("VertexTableSplitter", () => {
       mesh.texture = MockSystem.makeTexture();
 
     const params = makeMeshParams(mesh);
-    expectMesh(params, colors, mesh);
+    expectMesh(params, mesh);
     return { params, colors, featureTable, mesh };
   }
 
   it("splits unlit surface params based on node Id", () => {
-    const { params, colors, featureTable } = makeSurface();
+    const { params, featureTable } = makeSurface();
 
     const split = splitMeshParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.lower });
     expect(split.size).to.equal(3);
 
-    expectMesh(split.get(1)!, [ ColorDef.blue, ColorDef.red ], {
+    expectMesh(split.get(1)!, {
+      colors: [ ColorDef.blue, ColorDef.red ],
       points: [
         ...makeTriangleStrip({ x: 0, color: 0, feature: 0 }, 2),
         ...makeTriangleStrip({ x: 10, color: 1, feature: 0 }, 1),
@@ -458,7 +459,28 @@ describe.only("VertexTableSplitter", () => {
         1, 2, 3,
         4, 5, 6,
       ],
-      colors,
+    });
+
+    expectMesh(split.get(2)!, {
+      colors: ColorDef.green,
+      points: [
+        ...makeTriangleStrip({ x: 20, color: 0, feature: 1 }, 1),
+        ...makeTriangleStrip({ x: 30, color: 0, feature: 1 }, 2),
+      ], indices: [
+        0, 1, 2,
+        3, 4, 5,
+        3, 4, 6,
+      ],
+    });
+
+    expectMesh(split.get(3)!, {
+      colors: ColorDef.red,
+      points: makeTriangleStrip({ x: 40, color: 0, feature: 2 }, 3),
+      indices: [
+        0, 1, 2,
+        2, 1, 3,
+        0, 4, 3,
+      ],
     });
   });
 
