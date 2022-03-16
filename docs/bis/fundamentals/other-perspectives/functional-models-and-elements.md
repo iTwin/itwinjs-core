@@ -6,7 +6,7 @@ The functional domain allows defining objects that represent systems or processe
 
 The functional definition of a process is usually defined early in the design of a project. These objects show up in design diagrams and data sheets. The Functional objects eventually will be created in the Physical model. The physical objects will be related to the functional object with a *fulfills* relationship.
 
-![Model Hierarchy](./media/Func-Phys-Graphic.png)
+![Model Hierarchy](../media/Func-Phys-Graphic.png)
 
 ## Functional Elements
 
@@ -20,7 +20,7 @@ Each of these class inherit from the abstract class `func.FunctionalElement`.
 The Functional schema is part of the domain schemas but delivered with DgnPlatform.
 -->
 
-![Class Hierarchy](./media/FuncClassHier.png)
+![Class Hierarchy](../media/FuncClassHier.png)
 
 FunctionalBreakdownElements are used to defined breakdown structures in a functional model. These elements group other FunctionalBreakdownElements or FunctionComponentElements. For example, a Plant Unit would groups Plant Sub-Units. A Plant Sub-Unit groups Equipment and Pipeline. Or a BuildingRequirement groups BuildingStoryRequirements. BuildingStoryRequirements groups SpaceRequirements.
 
@@ -44,7 +44,7 @@ For example, a building application would typically create one FunctionalModel p
 
 In most cases today, the functional model models a partition related to the root subject.
 
-![Model Hierarchy](./media/FuncModelHier.png)
+![Model Hierarchy](../media/FuncModelHier.png)
 
 <!-- TODO: Not sure if there is a workflow for functional models.
 ## Typical Functional Model Workflows
@@ -56,7 +56,7 @@ In the Plant functional domain there is a complete set of classes that define th
 
 Plant does have functional breakdown for pipelines and instrument loops that group functional components and are always the end of the function breakdown hierarchy. They are only configurable by adding properties. There are many non-configurable relations that relate functional components to one another to define the layout of the function model. **See diagram.
 
-![Model Hierarchy](./media/plantfuncmodel.png)
+![Model Hierarchy](../media/plantfuncmodel.png)
 
 ---
 | Next: [Analysis Models and Elements](./analysis-models-and-elements.md)

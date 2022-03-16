@@ -1,12 +1,12 @@
 # Base Infrastructure Schemas (BIS)
 
-The acronym “BIS” stands for “Base Infrastructure Schema*s*” but is commonly used as a singular noun. It is pronounced “biz”. BIS is a family of modular schemas for modeling [Federated Digital Twins for Infrastructure Engineering](./intro/federated-digital-twins.md).
+The acronym “BIS” stands for “Base Infrastructure Schema*s*” but is commonly used as a singular noun. It is pronounced “biz”. BIS is a family of modular schemas for modeling [Federated Digital Twins for Infrastructure Engineering](./fundamentals/intro/federated-digital-twins.md).
 
 BIS is a “conceptual schema” that expresses taxonomy, data structure, and relationships for modeling real-world Entities. It is written using Bentley’s open [“EC” schema language](../ec/ec-schema.md) for Entity-Relationship modeling.
 
 ## Open and Extensible
 
-BIS is an “open” and extensible family of schemas. It is modularized into [Domains](./intro/glossary.md#Domain). The “BIS Core” Domain expresses the fundamental modeling concepts. Each Domain is expressed as a separate [ECSchema](../ec/ec-schema.md). Anyone can author a new Domain schema by following the rules and guidelines in this documentation. Users can also extend Domain schemas by adding custom classes, properties, and relationships.
+BIS is an “open” and extensible family of schemas. It is modularized into [Domains](./fundamentals/intro/glossary.md#Domain). The “BIS Core” Domain expresses the fundamental modeling concepts. Each Domain is expressed as a separate [ECSchema](../ec/ec-schema.md). Anyone can author a new Domain schema by following the rules and guidelines in this documentation. Users can also extend Domain schemas by adding custom classes, properties, and relationships.
 
 ## BIS Repository
 
@@ -20,7 +20,7 @@ Any given BIS Repository will always include the “BIS Core” Domain and one o
 
 ## Scope
 
-To support [Federated Digital Twins for Infrastructure Engineering](./intro/federated-digital-twins.md), BIS is used to model:
+To support [Federated Digital Twins for Infrastructure Engineering](./fundamentals/intro/federated-digital-twins.md), BIS is used to model:
 
 - Physical infrastructure in physical space
 - Functional systems implemented by the physical infrastructure (process plants)
@@ -29,4 +29,4 @@ To support [Federated Digital Twins for Infrastructure Engineering](./intro/fede
 - Business concepts and processes involved in Infrastructure workflows (projects, enterprises, phases, inspections, handover, etc.)
 - Information related to infrastructure and business workflows (documents, drawings, contracts, specifications, reports, RFIs, Issues, Deliverables, Versions etc.)
 
-> Next: [Federated Digital Twins](./intro/federated-digital-twins.md)
+> Next: [Federated Digital Twins](./fundamentals/intro/federated-digital-twins.md)

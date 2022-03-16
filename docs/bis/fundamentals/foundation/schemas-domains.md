@@ -10,23 +10,19 @@ With Domains being the main concept in BIS behind how the world is divided in, a
 
 Domains are [organized into layers](../intro/bis-organization) based on how generic or specialized the subject matter of the ECSchema in a domain is. The most generic ECSchema in BIS, which lies at the base of this hierarchy – depicted in the figure below – is BisCore.
 
-Schemas in any layer may be dependent upon schemas in any lower layer. The layers of the schema hierarchy are intended to avoid circular dependencies while still allowing different domains to interoperate.
+Schemas in any layer may be dependent upon schemas at the same or any lower layer. The layers of the schema hierarchy are intended to avoid circular dependencies while still allowing different domains to interoperate.
 
 ![A Layered Approach](../media/a-family-of-schemas.png)
 
 ### The BisCore layer
 
-BisCore defines the core ECClasses and organizational strategies that all other data types in other domains must follow. Classes such as Model, Element and UniqueAspect are in the BisCore.
+BisCore defines the core ECClasses and organizational strategies that all other data types in other domains must follow. Classes such as Model, Element and UniqueAspect are in the BisCore schema.
 
 ### The Common layer
 
-The next layer in the BIS family of ECSchemas above “Core” is “Common”. That is where broad concepts applicable to multiple disciplines are defined. As an example, a Building “Common” schema may include concepts like grids, but not details of architecture (such as Windows), or structure (such as beams).
+The next layer in the BIS family of ECSchemas above “Core” is "Common". That is where broad concepts applicable to multiple disciplines are defined. As an example, a Building “Common” schema may include concepts like grids, but not details of architecture (such as Windows), or structure (such as beams).
 
-The three layers above “Common” specialize on a single discipline (in the figure above, sharing the same initial letter), while differentiating in their purpose: “Interoperability”, “Physical” and “Functional/Analytical”.
-
-### The Interoperability layer
-
-The “Interoperability” layer aims to contain concepts that other disciplines will need to implement or reference. As an example, an IElectricalLoad mixin defined by the electrical discipline may allow other disciplines to define required electrical service (pumps, elevators, server rooms, etc.).
+The layers above "Common" specialize on a single discipline (in the figure above, sharing the same initial letter), while differentiating in their purpose: "Physical" and "Other" (e.g. Functional/Analytical).
 
 ### The Physical layer
 

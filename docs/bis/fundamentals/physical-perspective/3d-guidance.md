@@ -2,7 +2,7 @@
 
 3D modeling is central to BIS and iModels. There is a hierarchy of 3D-related Modeling Perspectives.
 
-![3D Perspectives](./media/3d-modeling-perspective-hierarchy.png)
+![3D Perspectives](../media/3d-modeling-perspective-hierarchy.png)
 
 For each perspective, there are corresponding Model, and Element classes that have a similar inheritance hierarchy. There are corresponding InformationPartitionElement subclasses for some (but not all) of the perspectives.
 
@@ -21,13 +21,13 @@ The “Analytical” perspective is for modeling abstract mathematical/geometric
 
 ## 3D Elements
 
-![3D Elements](./media/3d-elements.png)
+![3D Elements](../media/3d-elements.png)
 
 The Element class hierarchy mirrors the perspective hierarchy. Relationship constraints can use “SpatialElement” when they want a source or target Element to represent a “real” physical Entity or spatial location Entity.
 
 ## 3D Models
 
-![3D Models](./media/3d-models.png)
+![3D Models](../media/3d-models.png)
 
 The Model class hierarchy also largely mirrors the perspective hierarchy, but it is complicated by legacy, deprecated classes, depicted with red strike-through, above.
 
@@ -43,23 +43,23 @@ There are some other existing specializations of SpatialModel related to “real
 
 The bis:PhysicalPartition of a bis:Subject contains its “physical backbone”. There should not be more than one per bis:Subject.
 
-The class bis:SpatialLocationPartition exists, but has not been used in practice and should be avoided. Since the “SpatialLocation” perspective is a subset of the “Physical” perspective, SpatialLocationElements can be part of the “physical backbone”.
+The class bis:SpatialLocationPartition exists to cover specialized cases such as Road or Rail Alignments, Grids or data from Geographic Information Systems, whose elements are modeled primarily as `SpatialLocation`. However, since the “SpatialLocation” perspective is a subset of the “Physical” perspective, in general SpatialLocationElements can be part of the “physical backbone”.
 
-We anticipate concrete specializations bis:AnalyticalPartition that will be analysis-specific.
+We anticipate concrete specializations of bis:AnalyticalPartition that will be analysis-specific.
 
 Generally, the Partition and Model of a given perspective should have the same modifiers, e.g. they should both be either abstract, concrete, or sealed. If they are abstract, their corresponding Element class should be abstract. It is also common for the Partition/Model to be concrete or sealed while the corresponding Element is abstract, as is the case for Physical and SpatialLocation.
 
 The class hierarchy under InformationPartitionElement is largely “flattened”. The 3D-related Partitions are highlighted below. As indicated, iModel authors should avoid usage of SpatialLocationPartition.
 
-![3D Partitions](./media/3d-partitions.png)
+![3D Partitions](../media/3d-partitions.png)
 
 ## Guidance for new specializations of the 3D Geometric Perspective
 
-If your new Element is modeling the physical geometry (including physical materials) of an Entity with mass, it should be a direct or indirect specialization of PhysicalElement. You will not create specializations of PhysicalPartition or PhysicalModel.
+If your new Element is modeling the physical geometry (including physical materials) of an Entity with mass, it should be a direct or indirect specialization of `PhysicalElement`. You will not create specializations of `PhysicalPartition` or `PhysicalModel`.
 
-If your new Element is modeling a real-world location in space, then specialize SpatialLocationElement. Your element will either be placed in a PhysicalModel or a SpatialLocationModel that is sub-modeling some other SpatialLocationElement.
+If your new Element is modeling a real-world location in space, then specialize `SpatialLocationElement`. Your element will either be placed in a `PhysicalModel` or a `SpatialLocationModel` that is sub-modeling some other `SpatialLocationElement`.
 
-If your new Element is modeling a 3d geometric abstraction of something in real-world coordinates, you should specialize each of AnalyticalElement, AnalyticalModel, and AnalyticalPartition.
+If your new Element is modeling a 3d geometric abstraction of something in real-world coordinates, you should specialize each of `AnalyticalElement`, `AnalyticalModel` and `AnalyticalPartition`.
 
 If your new Element doesn’t fall into any of the categories above, please consult with Bentley’s BIS experts to determine if new specializations of Geometric3d Partition/Model/Element are needed.
 

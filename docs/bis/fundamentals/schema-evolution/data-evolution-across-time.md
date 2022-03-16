@@ -12,11 +12,11 @@ It is best to start with as few assumptions and requirements as possible. The St
 
 ### Simple Stair Inheritance Diagram
 
-![Start Simple](./media/start-simple.png)
+![Start Simple](../media/start-simple.png)
 
 ### Simple Stair Instance Diagram
 
-![Stair](./media/stair.png)
+![Stair](../media/stair.png)
 
 The Stair instance can be defined purely by the GeometryStream EC Property (inherited from GeometricElement3d) within the instance. A Stair modeled like that might be created through import from IFC. It is unlikely that a Stair designed natively in a iModel application would be defined in this manner.
 
@@ -26,11 +26,11 @@ Using Types allows easier and clearer Stair definition. As a Stair is a Physical
 
 ### Stair Using Types Inheritance Diagram
 
-![Using Types](./media/using-types.png)
+![Using Types](../media/using-types.png)
 
 ### Stair Using Types Instance Diagram
 
-![Stair Inheritance](./media/stair-inheritance.png)
+![Stair Inheritance](../media/stair-inheritance.png)
 
 The JsonProperties property that Stair inherited from Element is used to store whatever instance data is needed by the particular StairType instance (width, height and length are likely). This Type modeling is likely to used extensively in both the preliminary design and design phases.
 
@@ -60,11 +60,11 @@ This modeling allows the stair to be defined by any PhysicalElement; the Stair c
 
 ### Stair Using Children Inheritance Diagram
 
-![Stair defined by Physical Element](./media/stair-physical-element.png)
+![Stair defined by Physical Element](../media/stair-physical-element.png)
 
 ### Stair Using Children Instance Diagram
 
-![Stair Inheritance defined by Child Element](./media/stair-inheritance-child-defined.png)
+![Stair Inheritance defined by Child Element](../media/stair-inheritance-child-defined.png)
 
 All of these modeling approaches will all be available through the schema, but will never be used simultaneously by the same instance.
 

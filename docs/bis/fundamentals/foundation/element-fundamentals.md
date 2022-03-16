@@ -83,17 +83,15 @@ The largest advantage of JSON properties is that they do not require any schema 
 
 Each Element *lives in* a single Model. That Model *contains* and *owns* the Element. Models cannot be deleted unless all of their Elements are first deleted. Models provide context and scope for their Elements.
 
-Every `Model` models (breaks down or describes) some `Element`. This is the basic building block of the [Information Hierarchy](./information-hierarchy.md), which is a key principle of BIS and supports modeling of reality from multiple perspectives and multiple granularities in a single Repository. It also results in a coherent and predictable structure in every BIS Repository, where all information is traceable to a single [Root Subject](./glossary.md#subject-root) for the entire BIS Repository.
+Every `Model` models (breaks down or describes) some `Element`. This is the basic building block of the [Information Hierarchy](../data-organization/information-hierarchy.md), which is a key principle of BIS and supports modeling of reality from multiple perspectives and multiple granularities in a single Repository. It also results in a coherent and predictable structure in every BIS Repository, where all information is traceable to a single [Root Subject](../glossary.md#subject-root) for the entire BIS Repository.
 
-There is one exception to the “Every Model models an Element” rule: There is exactly one RepositoryModel in every BIS Repository which does not Model another Element (at least not another Element in the same BIS Repository). This RepositoryModel is at the top of the Model/Element [Information Hierarchy](./information-hierarchy.md).
+There is one exception to the “Every Model models an Element” rule: There is exactly one RepositoryModel in every BIS Repository which does not Model another Element (at least not another Element in the same BIS Repository). This RepositoryModel is at the top of the Model/Element [Information Hierarchy](../data-organization/information-hierarchy.md).
 
 ## ElementIds in iModels
 
 When stored in an iModel, Elements also have a unique 64-bit *local* identifier, called an ElementId. ElementId is generated when new Elements are created by storing the BriefcaseId in the high 24 bits, with the next-available sequence number in the lower 40 bits. This allows new Elements to be created in any Briefcase without fear of ElementId collision.
 
-<!-- TODO
-What is a briefcase?
--->
+The BriefcaseId of an iModel is the unique identifier assigned to a Briefcase. A Briefcase corresponds to a local copy of an iModel from iModelHub that can pull and potentially push changesets.
 
 ## Elements and Child Elements
 

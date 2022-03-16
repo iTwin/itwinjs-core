@@ -24,7 +24,7 @@ AnalyticalElements must always be contained in AnalyticalModels. AnalyticalEleme
 
 As `AnalyticalModel`s are used to assist in the design or understanding of physical infrastructure, AnalyticalModels are often linked to `PhysicalModel`s. Such link is expressed via `AnalyticalElementSimulatesSpatialElement` relationships between their elements.
 
-At the [Top of the World](./information-hierarchy.md), a specialized analysis is introduced via an `AnalyticalPartition` subclass, which is broken down by an AnalyticalModel.
+At the [Top of the World](../data-organization/information-hierarchy.md), a specialized analysis is introduced via an `AnalyticalPartition` subclass, which is broken down by an AnalyticalModel.
 
 ## Typical Analytical Model Workflows
 
@@ -52,7 +52,7 @@ Similarly, AnalyticalElement subclasses would be created to represent the key co
 
 The complete results of the thermal analysis would likely be large and would not be stored directly in the iModel. However, key or summary results would likely be stored in Elements (InformationElements or AnalyticalElements) in the AnalyticalModel.
 
-![Analytical Hierarchy](./media/analytical-hierarchy.png)
+![Analytical Hierarchy](../media/analytical-hierarchy.png)
 
 ---
 | Next: [Information Models and Elements](./information-models-and-elements.md)

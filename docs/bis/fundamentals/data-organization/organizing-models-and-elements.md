@@ -1,6 +1,6 @@
 # Organizing Models and Elements
 
-[Information Hierarchy](./information-hierarchy.md) explains the mechanics of how `Model`s, `Element`s, and parent-child relationships among `Element`s can be used together to model [Entities](../glossary.md#Entity) in the real-world from various [Modeling Perspectives](./modeling-perspectives.md) and at various [Modeling Granularities](../glossary.md#Granularity).
+[Information Hierarchy](./information-hierarchy.md) explains the mechanics of how `Model`s, `Element`s and parent-child relationships among `Element`s can be used together to model [Entities](../glossary.md#Entity) in the real-world from various [Modeling Perspectives](./modeling-perspectives.md) and at various [Modeling Granularities](../glossary.md#Granularity).
 
 [Top of the World](./top-of-the-world.md) explains how and why Elements are structured within the [RepositoryModel](../glossary.md#RepositoryModel) to describe what the [BIS Repository](../glossary.md#Bis-Repository) is “about”. The ‘leaf nodes’ in the `RepositoryModel` are [InformationPartitionElements](../glossary.md#InformationPartitionElement) (henceforth “partitions”) that establish a [Modeling Perspective](./modeling-perspectives.md) for a given [Subject](../glossary.md#Subject).
 
@@ -45,7 +45,7 @@ In summary:
 
 The top-`Model` models the complete [Entity](../glossary.md#Entity) established by the `Subject` and partition.
 
-The top-`Model` should contain one `Element` for each discrete Object included in the `Subject`. When the modeled `Subject` refers to a single discrete Object, the top-`Model` will contain only a single `Element` that corresponds directly to a perspective on that Object. In this case, the Code and DisplayLabel of that `Element` may be the same or similar to that of the `Subject` (particularly if this is the [Primary Perspective] for the Object.) because they are “about” the same thing.
+The top-`Model` should contain one `Element` for each discrete Object included in the `Subject`. When the modeled `Subject` refers to a single discrete Object, the top-`Model` will contain only a single `Element` that corresponds directly to a perspective on that Object. In this case, the Code and DisplayLabel of that `Element` may be the same or similar to that of the `Subject` (particularly if this is the [Primary Perspective] for the Object) because they are “about” the same thing.
 
 When the modeled `Subject` is ‘compound’ (referring to multiple discrete Objects), there will be multiple `Element`s in the top-`Model`. An example compound-`Subject` might be “Deliverables of Phase II of Project X”. The project’s contract will contain a list of the top-level things-to-be-built, and the top-`Model` would contain one `Element` for each thing-to-be-built in that list. This honors the [Single Responsible Party Principal (SRPP)](./srpp.md) because one General Contractor will ultimately be responsible for all of the deliverables.
 
@@ -53,7 +53,7 @@ If you find that a top-`Model` is unable to follow the [SRPP](./srpp.md), then t
 
 ## Modeling from the “Top-Model” on down
 
-The top-`Model` is where modeling from a given perspective really begins.  As a domain author, you are faced with many options for modeling your domain, which are described below.
+The top-`Model` is where modeling from a given perspective really begins. As a domain author, you are faced with many options for modeling your domain, which are described below.
 
 ### Multiple domain contexts
 

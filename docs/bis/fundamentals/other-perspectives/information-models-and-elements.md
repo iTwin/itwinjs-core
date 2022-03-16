@@ -60,7 +60,7 @@ InformationPartitionElement is an abstract base class for elements that indicate
 An InformationPartitionElement is always parented to a Subject and broken down by a Model.
 An InformationPartitionElement is always contained by the RepositoryModel.
 
-See [Information Hierarchy](./information-hierarchy.md) for more details.
+See [Information Hierarchy](../data-organization/information-hierarchy.md) for more details.
 
 ### InformationReferenceElement
 
@@ -93,7 +93,7 @@ LinkElement base classes include:
 Subjects are Elements that are used to identify things that the repository is about.
 Subjects are logical references to those external things.
 
-See [Information Hierarchy](./information-hierarchy.md) for more details.
+See [Information Hierarchy](../data-organization/information-hierarchy.md) for more details.
 
 ### Document
 

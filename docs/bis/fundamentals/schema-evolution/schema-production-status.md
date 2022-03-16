@@ -1,9 +1,5 @@
 # Schema Production Status
 
-<!-- Responsible for this page: Allan Bommer -->
-
-[!alert text="<img src="./media/clean-01.svg" style="width:2%;height:2%;">  Please be aware that as of May 2019 not all features described by this documentation have been implemented." kind="danger"]
-
 ## Schema Evolution
 
 Schemas that have been released for production use in end-user workflows evolve over time as new capabilities are added and other improvements are made. To manage and track this schema evolution, schema versioning is used. See [Schema Versioning and Generations](schema-versioning-and-generations.md) for details on BIS's schema versioning strategy.

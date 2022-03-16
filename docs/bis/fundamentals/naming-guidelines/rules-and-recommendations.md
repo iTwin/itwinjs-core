@@ -78,3 +78,9 @@ The rules and recommendations below try to balance these concerns:
 | Rule | **Shorten the target portion if possible**<br>Use the *role* within the relationship or a shortened form of the target constraint class. | E.g. "PhysicalElementIsOf`Type`"<br><br>In this case, fully specifying the target constraint of `PhysicalType` would make the relationship class name longer without adding much clarity since the source constraint gives a strong hint as to the target constraint. |
 | Rule | **The relationship name should indicate the multiplicity**<br>The source is always singular and the target indicates multiplicity. | E.g. `ElementOwnsChildElements` (1:N), `ElementHasLinks` (N:N), `PhysicalElementIsOfType` (N:1) |
 | Rule | **Don't use conjunctions**<br>  Do not use a singular noun or verb, even if it clearly defines a relationship. Always use noun-verb-noun | E.g. Don't use `Marriage` or `ManAndWoman`; use `PersonIsMarriedToPerson` |
+
+## Enumeration
+
+|   | Description | Note |
+|---|-------------|------|
+| Rec. | In general, use names postfixed with *Type* or no postfix at all. | E.g. `SurfaceVariationType`, `CoordinateSystem` or `ExternalSourceAttachmentRole`. |

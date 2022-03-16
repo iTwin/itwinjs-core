@@ -1,15 +1,18 @@
 # PhysicalModel Hierarchy
 
-<!-- Responsible for this page: Allan Bommer -->
-
-[!alert text="<img src="./media/clean-01.svg" style="width:2%;height:2%;">  Please be aware that this documentation is a work in progress, and is subject to change." kind="danger"]
-
 ## Introduction
 
 Each `Subject` in a BIS Repository can have one `PhysicalPartition` child Element, under which the `PhysicalModel`s pertaining to the `Subject` will be organized using mechanisms described in [Model Hierarchy](information-hierarchy.md). The Model Hierarchy is constrained by [Modeling Perspective](information-hierarchy.md#InformationPartitionElements), but within the Physical Perspective, it is desirable to further organize Models according to Sites, Facilities, Systems, and Components to make the hierarchy of Models understandable by software and users. This section describes “Model Affinity” (a way of specifying “constraints” on the `ModelContainsElements` relationship) and the best-practice for using them to organize the Physical Model Hierarchy.
 
-![Top of the PhysicalModel Hierarchy](./media/physical-hierarchy-organization-top-of-the-world.png)
+&nbsp;
+![Top of the PhysicalModel Hierarchy](../media/physical-hierarchy-organization-top-of-the-world.png)
+&nbsp;
 
+## Physical Backbone
+
+A key organizational strategy for both the BIS schemas and the organization of data within BIS repositories is the “physical backbone”. For schema design the physical world is a unifying reality upon which all disciplines can agree when coming to a consensus on how to represent something in BIS.
+
+Within a BIS repository, the representation of the physical world becomes the framework upon which we can organize other data. All data in BIS repositories is expected to be about or related to physical infrastructure. The physical infrastructure is modeled as a hierarchy and other non-physical information is stored relative to that hierarchy.
 
 ## Organization Strategy
 
@@ -39,11 +42,11 @@ This page provides an overview of the basis of those validation rules and the me
 
 ### PhysicalModels and the Elements that they Model
 
-As described in [Model Hierarchy](information-hierarchy.md), every `Model` breaks-down an `Element`. The `Model` and the `Element` represent the same real-world Entity, but the `Model` provides more granular information about the Entity.
+As described in [Model Hierarchy](../data-organization/information-hierarchy.md), every `Model` breaks-down an `Element`. The `Model` and the `Element` represent the same real-world Entity, but the `Model` provides more granular information about the Entity.
 
 Breakdown `Model`s are weakly-typed in BIS. To understand the real-world Entity that a `Model` is modeling, it is necessary to look at the `Element` which the `Model` is breaking down. ***PhysicalModel should not be subclassed.*** The few `PhysicalModel` subclasses that exist are deprecated and should not be used. When terms such as "Site Model" are used, they indicate "a `Model` that breaks down a `Site`", but do not indicate a strongly-typed `SiteModel`.
 
-![Element and Model Modeling Building](./media/physical-hierarchy-organization-building-model.png)
+![Element and Model Modeling Building](../media/physical-hierarchy-organization-building-model.png)
 
 ## ModelAffinity Custom Attribute
 While strong-typing is not used, there is still a desire to provide validation of the organization of the data in a `PhysicalModel` hierarchy. To run this validation, the software must be able to determine which `Model`s are appropriate containers for each `Element`. This is determined through the `ModelAffinity` custom attribute.
@@ -223,7 +226,7 @@ General-Use `Elements` can be placed in any `PhysicalModel`. General-Use Compone
 
 The following diagram illustrates all variations of the PhysicalModel hierarchy breakdown that will *not* generate warnings or errors.
 
-![Example Organization](./media/physical-hierarchy-organization-example.png)
+![Example Organization](../media/physical-hierarchy-organization-example.png)
 
 ---
 ---
