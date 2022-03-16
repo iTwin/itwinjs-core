@@ -102,18 +102,13 @@
     ],
     "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
-      "@typescript-eslint/no-non-null-assertion": "error"
-    },
-    "overrides": [
-      {
-        "files": [
-          "*.test.ts",
-          "**/test/**/*.ts"
-        ],
-        "rules": {
-          "@typescript-eslint/no-non-null-assertion": "off"
+      "@typescript-eslint/no-non-null-assertion": "error",
+      "@typescript-eslint/dot-notation": [
+        "error",
+        {
+          "allowProtectedClassPropertyAccess": true
         }
-      }
-    ]
+      ]
+    }
   }
 }

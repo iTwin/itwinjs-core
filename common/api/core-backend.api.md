@@ -2193,6 +2193,7 @@ export class IModelCloneContext {
     filterSubCategory(sourceSubCategoryId: Id64String): void;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
+    findTargetModelId(sourceModelId: Id64String): Id64String;
     get hasSubCategoryFilter(): boolean;
     // @internal
     importCodeSpec(sourceCodeSpecId: Id64String): void;
