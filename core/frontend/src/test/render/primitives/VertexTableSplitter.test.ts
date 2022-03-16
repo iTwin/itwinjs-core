@@ -251,7 +251,7 @@ function expectMesh(params: MeshParams, expectedColors: ColorDef | ColorDef[], m
       if (SurfaceType.Lit === type)
         return data[i + 3] & 0xffff;
       else
-        return (data[i + 4] & 0xffff0000) >>> 16;
+        return (data[i + 1] & 0xffff0000) >>> 16;
     };
 
     for (const vertIndex of surface.indices) {
@@ -447,8 +447,13 @@ describe.only("VertexTableSplitter", () => {
     const { params, colors, featureTable } = makeSurface();
   });
 
+  function setNormal(pt: TriMeshPoint): TriMeshPoint {
+    pt.normal = pt.x + 5;
+    return pt;
+  }
+
   it("splits lit surface params based on node Id", () => {
-    makeSurface((pt) => { pt.normal = pt.x; return pt; });
+    makeSurface((pt) => setNormal(pt));
   });
 
   function setUv(pt: TriMeshPoint): TriMeshPoint {
@@ -462,7 +467,7 @@ describe.only("VertexTableSplitter", () => {
   });
 
   it("splits textured lit surface params based on node Id", () => {
-    makeSurface((pt) => { pt.normal = pt.x; return setUv(pt); });
+    makeSurface((pt) => { setNormal(pt); return setUv(pt); });
   });
 
   it("splits edge params based on node Ids", () => {
