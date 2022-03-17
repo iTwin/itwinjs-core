@@ -16,9 +16,9 @@ import { MenuItemHelpers } from "../shared/MenuItem";
 import { CalculatorPopup } from "./CalculatorPopup";
 import { MenuButtonPopup } from "./MenuButtonPopup";
 
-import angleIcon from "./angle.svg?sprite";
-import lengthIcon from "./distance.svg?sprite";
-import heightIcon from "./height-2.svg?sprite";
+import angleIcon from "./angle.svg";
+import lengthIcon from "./distance.svg";
+import heightIcon from "./height-2.svg";
 
 /** AccuDraw Popup Manager class
  * @alpha
@@ -67,17 +67,17 @@ export class AccuDrawPopupManager {
   }
 
   public static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
-    const propertyDescription = new AngleDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(angleIcon));
+    const propertyDescription = new AngleDescription(undefined, undefined, IconSpecUtilities.createWebComponentIconSpec(angleIcon));
     return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit as OnValueCommitFunc, onCancel);
   }
 
   public static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
-    const propertyDescription = new LengthDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(lengthIcon));
+    const propertyDescription = new LengthDescription(undefined, undefined, IconSpecUtilities.createWebComponentIconSpec(lengthIcon));
     return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit as OnValueCommitFunc, onCancel);
   }
 
   public static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
-    const propertyDescription = new LengthDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(heightIcon));
+    const propertyDescription = new LengthDescription(undefined, undefined, IconSpecUtilities.createWebComponentIconSpec(heightIcon));
     return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit as OnValueCommitFunc, onCancel);
   }
 }

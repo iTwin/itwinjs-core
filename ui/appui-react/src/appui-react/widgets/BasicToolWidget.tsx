@@ -23,7 +23,7 @@ import { useUiVisibility } from "../hooks/useUiVisibility";
 export interface BasicToolWidgetProps {
   /** if true include hide/isolate Models and Categories */
   showCategoryAndModelsContextTools?: boolean;
-  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
   icon?: string;
   /** optional set of additional items to include in horizontal toolbar */
   additionalHorizontalItems?: CommonToolbarItem[];

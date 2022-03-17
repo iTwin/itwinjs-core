@@ -13,6 +13,7 @@ import {
 } from "@itwin/core-frontend";
 import {
   ColorEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem,
+  IconSpecUtilities,
   InputEditorSizeParams,
   PropertyDescription, PropertyEditorParamTypes, StandardEditorNames, SuppressLabelEditorParams, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
@@ -22,8 +23,8 @@ import { Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { FormatterSpec } from "@itwin/core-quantity";
 import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
-import sampleToolSvg from "./SampleTool.svg?sprite";
 import { UiItemsProvidersTest } from "../ui-items-providers-test";
+import sampleToolSvg from "./SampleTool.svg";
 
 enum ToolOptions {
   Red,
@@ -37,7 +38,7 @@ enum ToolOptions {
 export class SampleTool extends PrimitiveTool {
   // ensure toolId is unique by adding "uiItemsProvidersTest-" prefix
   public static override toolId = "uiItemsProvidersTest-SampleTool";
-  public static override iconSpec = `svg:${sampleToolSvg}`;
+  public static override iconSpec = sampleToolSvg;
   public readonly points: Point3d[] = [];
   private _showCoordinatesOnPointerMove = false;
   private _stationFormatterSpec?: FormatterSpec;
@@ -529,7 +530,9 @@ export class SampleTool extends PrimitiveTool {
 
   public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
     const overrides = undefined !== groupPriority ? { groupPriority } : {};
-    return ToolbarItemUtilities.createActionButton(SampleTool.toolId, itemPriority, SampleTool.iconSpec, SampleTool.flyover,
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(this.iconSpec);
+
+    return ToolbarItemUtilities.createActionButton(SampleTool.toolId, itemPriority, iconSpec, SampleTool.flyover,
       async () => { await IModelApp.tools.run(SampleTool.toolId); },
       overrides);
   }
