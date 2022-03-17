@@ -24,7 +24,7 @@ BIS is not a monolithic schema, but is modularized into a family of “domain”
 ![A Family of Schemas](../media/a-family-of-schemas.png)
 &nbsp;
 
-Schemas in any layer may refer to (be dependent upon) schemas in the same layer of in any lower layer. The layers of the schema hierarchy are intended to avoid circular dependencies while still allowing different domains to interoperate.
+Schemas in any layer may refer to (be dependent upon) schemas in the same layer or in any lower layer. The layers of the schema hierarchy are intended to avoid circular dependencies while still allowing different domains to interoperate.
 
 At the base of this hierarchy is the Core layer. It emcompases schemas defining the “fabric of the universe” and some key organizational strategies. All classes in other layers descend from classes in the BisCore schema, allowing BIS-based software to understand – at least at some basic level – all BIS schemas, even BIS schemas it has never seen before.
 
