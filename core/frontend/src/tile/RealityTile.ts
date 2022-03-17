@@ -275,16 +275,49 @@ export class RealityTile extends Tile {
     }
   }
 
-  public purgeContents(olderThan: BeTimePoint): void {
-    // Discard contents of tiles that have not been "used" recently, where "used" may mean: selected/preloaded for display or content requested.
-    // Note we do not discard the child Tile objects themselves.
-    if (this.usageMarker.isExpired(olderThan))
-      this.disposeContents();
+  public purgeContents(olderThan: BeTimePoint): void{
+    const tilesToPurge = new Set<RealityTile>();
 
+    // Get the list of tiles to purge
+    this.getTilesToPurge(olderThan, tilesToPurge);
+
+    // Discard contents of tiles that have been marked.
+    // Note we do not discard the child Tile objects themselves.
+    for (const tile of tilesToPurge)
+      tile.disposeContents();
+  }
+
+  // Populate a set with tiles that should be disposed. Prevent some tile to be disposed to avoid holes when moving.
+  // Return true if the current tile is "protected".
+  private getTilesToPurge(olderThan: BeTimePoint, tilesToPurge: Set<RealityTile>): boolean {
     const children = this.realityChildren;
-    if (children)
-      for (const child of children)
-        child.purgeContents(olderThan);
+
+    // Protected tiles cannot be purged. They are:
+    // * used tiles (where "used" may mean: selected/preloaded for display or content requested);
+    // * parents and siblings of other protected tiles.
+    let hasProtectedChildren = false;
+
+    if (children) {
+      for (const child of children) {
+        hasProtectedChildren = child.getTilesToPurge(olderThan, tilesToPurge) || hasProtectedChildren;
+      }
+    }
+
+    if (children && hasProtectedChildren) {
+      // Siblings of protected tiles are protected too. We need to remove them from it
+      for (const child of children) {
+        tilesToPurge.delete(child);
+      }
+
+      return true; // Parents of protected tiles are protected
+    }
+
+    const isInUse = this.usageMarker.getIsTileInUse();
+    if (!isInUse && this.usageMarker.isTimestampExpired(olderThan)) {
+      tilesToPurge.add(this);
+    }
+
+    return isInUse;
   }
 
   public computeVisibilityFactor(args: TileDrawArgs): number {
