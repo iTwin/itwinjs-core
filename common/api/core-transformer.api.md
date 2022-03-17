@@ -63,7 +63,7 @@ export class IModelExporter {
     wantGeometry: boolean;
     wantSystemSchemas: boolean;
     wantTemplateModels: boolean;
-    }
+}
 
 // @beta
 export abstract class IModelExportHandler {

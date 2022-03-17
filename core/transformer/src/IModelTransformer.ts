@@ -449,7 +449,9 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
-  /** @deprecated Mark the specified Element so its processing can be deferred. */
+  /** This no longer has any effect except emitting a warning
+   * @deprecated
+   */
   protected skipElement(_sourceElement: Element): void {
     Logger.logWarning(loggerCategory, `Tried to defer/skip an element, which is no longer necessary`);
   }

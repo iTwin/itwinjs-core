@@ -208,7 +208,7 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** @beta */
-  public static override readonly requiredReferenceKeys = [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
 
   /** @internal */
   protected static override onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
@@ -349,7 +349,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   }
 
   /** @beta */
-  public static override readonly requiredReferenceKeys = [...super.requiredReferenceKeys, "modelSelectorId"];
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "modelSelectorId"];
 
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
