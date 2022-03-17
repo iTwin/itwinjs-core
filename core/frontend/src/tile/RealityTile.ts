@@ -180,6 +180,37 @@ export class RealityTile extends Tile {
     }
   }
 
+  // Preload tiles that are protected:
+  // * used tiles (where "used" may mean: selected/preloaded for display or content requested);
+  // * parents and siblings of other protected tiles.
+  public preloadProtectedTiles(args: TileDrawArgs, context: TraversalSelectionContext): boolean {
+    const children = this.realityChildren;
+    let hasProtectedChildren = false;
+
+    if (children) {
+      for (const child of children) {
+        hasProtectedChildren = child.preloadProtectedTiles(args, context) || hasProtectedChildren;
+      }
+    }
+
+    if (children && hasProtectedChildren) {
+      for (const child of children) {
+        if (child.isDisplayable && !child.isLoaded)
+          context.preload(child, args);
+      }
+
+      return true; // Parents of protected tiles are protected
+    }
+
+    // Special case of the root tile
+    if (this === this.realityRoot.rootTile) {
+      context.preload(this, args);
+      return true;
+    }
+
+    return context.selected.find((tile) => tile === this) !== undefined;
+  }
+
   protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
@@ -340,25 +371,6 @@ export class RealityTile extends Tile {
       return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
 
     return this.maximumSize / args.getPixelSize(this);
-  }
-
-  public preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number) {
-    const visibility = this.computeVisibilityFactor(args);
-    if (visibility < 0)
-      return;
-
-    if (visibility * preloadSizeModifier > 1) {
-      if (this.isDisplayable)
-        context.preload(this, args);
-    } else {
-      const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
-      if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-        args.markChildrenLoading();
-      } else if (undefined !== this.realityChildren) {
-        for (const child of this.realityChildren)
-          child.preloadTilesInFrustum(args, context, preloadSizeModifier);
-      }
-    }
   }
 
   protected get _anyChildNotFound(): boolean {

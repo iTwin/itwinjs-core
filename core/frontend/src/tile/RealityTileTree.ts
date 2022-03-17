@@ -10,7 +10,7 @@ import { assert, BeTimePoint } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps,
 } from "@itwin/core-geometry";
-import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
+import { Cartographic, ColorDef, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { GeoConverter } from "../GeoServices";
 import { IModelApp } from "../IModelApp";
@@ -18,7 +18,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import {
-  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
+  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
   TileGraphicType, TileParams, TileTree, TileTreeParams,
 } from "./internal";
 
@@ -109,8 +109,6 @@ export class TraversalSelectionContext {
   }
 }
 
-const scratchFrustum = new Frustum();
-const scratchFrustumPlanes = new FrustumPlanes();
 const scratchCarto = Cartographic.createZero();
 const scratchPoint = Point3d.createZero(), scratchOrigin = Point3d.createZero();
 const scratchRange = Range3d.createNull();
@@ -384,7 +382,7 @@ export class RealityTileTree extends TileTree {
         rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
 
       if (!freezeTiles)
-        this.preloadTilesForScene(args, context, undefined);
+        rootTile.preloadProtectedTiles(args, context);
     }
 
     if (!freezeTiles)
@@ -418,22 +416,6 @@ export class RealityTileTree extends TileTree {
 
     IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles);
     return selected;
-  }
-
-  public preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform) {
-    const preloadFrustum = args.viewingSpace.getPreloadFrustum(frustumTransform, scratchFrustum);
-    const preloadFrustumPlanes = new FrustumPlanes(preloadFrustum);
-    const worldToNpc = preloadFrustum.toMap4d();
-    const preloadWorldToViewMap = args.viewingSpace.calcNpcToView().multiplyMapMap(worldToNpc!);
-    const preloadArgs = new RealityTileDrawArgs(args, preloadWorldToViewMap, preloadFrustumPlanes);
-
-    scratchFrustumPlanes.init(preloadFrustum);
-    if (context.preloadDebugBuilder) {
-      context.preloadDebugBuilder.setSymbology(ColorDef.blue, ColorDef.blue, 2, 0);
-      context.preloadDebugBuilder.addFrustum(preloadFrustum);
-    }
-
-    this.rootTile.preloadTilesInFrustum(preloadArgs, context, 2);
   }
 
   protected logTiles(label: string, tiles: IterableIterator<Tile>) {
