@@ -11,7 +11,7 @@ interface PendingReferenceProps {
   isModelRef: boolean;
 }
 
-/** A reference that may need */
+/** A reference relationships from an element, "referencer", to an element or its submodel, "referenced" */
 export class PendingReference implements PendingReferenceProps {
   public referencer!: Id64String;
   public referenced!: Id64String;
@@ -46,12 +46,14 @@ export class PendingReferenceMap<T> implements Map<PendingReferenceProps, T> {
   public getReferencers(referenced: Id64String): Set<Id64String> {
     let referencers = this._referencedToReferencers.get(referenced);
     if (referencers === undefined) {
+      // lazy add an empty entry if there wasn't one
       referencers = new Set();
       this._referencedToReferencers.set(referenced, referencers);
     }
     return referencers;
   }
 
+  /** if you have just the props of a pending reference, initialize a new class instance from it so we can use its convenience methods */
   private static promoteRef(ref: PendingReferenceProps | PendingReference): PendingReference {
     if (ref instanceof PendingReference)
       return ref;

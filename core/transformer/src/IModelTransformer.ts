@@ -7,7 +7,7 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OrderedId64Array, YieldManager } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
@@ -151,14 +151,10 @@ class ElementProcessState {
   public get needsImport() { return this.needsElemImport || this.needsModelImport; }
 }
 
-/** apply a function to each Id64s in a supported container of Id64s */
+/** apply a function to each Id64s in a supported container type of Id64s */
 function mapId64<R>(
   idContainer:
   | Id64String
-  | CompressedId64Set
-  | OrderedId64Array
-  | Id64Set
-  | Id64String[]
   | { id: Id64String }
   | undefined,
   func: (id: Id64String) => R
@@ -167,40 +163,21 @@ function mapId64<R>(
   const isId64String = (arg: any): arg is Id64String => typeof arg === "string";
   const isRelatedElem = (arg: any): arg is RelatedElement =>
     arg && typeof arg === "object" && "id" in arg;
-  const isId64Array = (arg: any): arg is Id64String[] => Array.isArray(arg);
-  const isId64Set = (arg: any): arg is Id64Set => arg instanceof Set;
-  const isId64OrderedArray = (arg: any): arg is OrderedId64Array =>
-    arg instanceof OrderedId64Array;
-  const isCompressedId64Set = (arg: any): arg is CompressedId64Set =>
-    /\*|\+/.test(arg);
 
   const results = [];
 
   // is a string if compressed or singular id64, but check for singular just checks if it's a string so do this test first
   if (idContainer === undefined) {
     // nothing
-  } else if (isCompressedId64Set(idContainer)) {
-    for (const id of CompressedId64Set.iterable(idContainer)) {
-      results.push(func(id));
-    }
   } else if (isId64String(idContainer)) {
     results.push(func(idContainer));
   } else if (isRelatedElem(idContainer)) {
     results.push(func(idContainer.id));
-  } else if (
-    isId64Array(idContainer) ||
-    isId64OrderedArray(idContainer) ||
-    isId64Set(idContainer)
-  ) {
-    for (const id of idContainer) {
-      results.push(func(id));
-    }
   } else {
-    throw Error(
-      `Id64 container '${idContainer}' is unsupported.\n` +
-        `Currently only singular Id64, prop-like objects containing an "id" property, arrays of Id64, sets of Id64, OrderedId64Array objects,\n` +
-        `or CompressedId64Set's are supported.`
-    );
+    throw Error([
+      `Id64 container '${idContainer}' is unsupported.`,
+      "Currently only singular Id64 strings or prop-like objects containing an 'id' property are supported.",
+    ].join("\n"));
   }
   return results;
 }
@@ -513,7 +490,6 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** callback to perform when a partial element says it's ready to be completed
    * transforms the source element with all references now valid, then updates the partial element with the results
-   * @internal
    */
   private makePartialElementCompleter(sourceElem: Element) {
     return () => {
