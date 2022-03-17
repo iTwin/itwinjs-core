@@ -264,7 +264,7 @@ export interface VertexTableWithIndices {
 export class MeshParams {
   public readonly vertices: VertexTable;
   public readonly surface: SurfaceParams;
-  public readonly edges?: EdgeParams;
+  public edges?: EdgeParams;
   public readonly isPlanar: boolean;
   public readonly auxChannels?: AuxChannelTable;
 

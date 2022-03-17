@@ -104,7 +104,8 @@ class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
   }
 }
 
-class IndexBuffer {
+/** Exported strictly for tests. */
+export class IndexBuffer {
   private readonly _builder: Uint8ArrayBuilder;
   private readonly _index32 = new Uint32Array(1);
   private readonly _index8 = new Uint8Array(this._index32.buffer, 0, 3);

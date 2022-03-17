@@ -12,7 +12,8 @@ import {
   MockRender,
 } from "../../../core-frontend";
 import {
-  MeshArgs, MeshParams, PointStringParams, PolylineArgs, splitMeshParams, splitPointStringParams, SurfaceType, VertexTable,
+  EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, splitMeshParams, splitPointStringParams, SegmentEdgeParams,
+  SurfaceType, VertexTable,
 } from "../../../render-primitives";
 
 interface Point {
@@ -260,6 +261,91 @@ function expectMesh(params: MeshParams, mesh: TriMesh): void {
       expect(normal).to.equal(mesh.points[vertIndex].normal);
     }
   }
+}
+
+interface Edges {
+  // index, other index, quad index
+  segments?: Array<[ number, number, number ]>,
+  // segments plus oct-encoded normal pair
+  silhouettes?: Array<[ number, number, number, number ]>,
+  // ###TODO indexed edges
+  // ###TODO polyline edges
+}
+
+function makeEdgeParams(edges: Edges): EdgeParams {
+  let segments, silhouettes, polylines, indexed;
+  if (edges.segments) {
+    const indices = new IndexBuffer();
+    const endPointAndQuadIndices = new Uint32Array(edges.segments.length);
+    for (let i = 0; i < edges.segments.length; i++) {
+      indices.push(edges.segments[i][0]);
+      endPointAndQuadIndices[i] = edges.segments[i][1];
+    }
+
+    segments = {
+      indices: indices.toVertexIndices(),
+      endPointAndQuadIndices: new Uint8Array(endPointAndQuadIndices.buffer),
+    };
+  }
+
+  if (edges.silhouettes) {
+    const indices = new IndexBuffer();
+    const endPointAndQuadIndices = new Uint32Array(edges.silhouettes.length);
+    const normalPairs = new Uint32Array(edges.silhouettes.length);
+    for (let i = 0; i < edges.silhouettes.length; i++) {
+      indices.push(edges.silhouettes[i][0]);
+      const endPoint = edges.silhouettes[i][1];
+      const quad = edges.silhouettes[i][2];
+      endPointAndQuadIndices[i] = (endPoint | (quad << 24)) >>> 0;
+      normalPairs[i] = edges.silhouettes[i][3];
+    }
+
+    silhouettes = {
+      indices: indices.toVertexIndices(),
+      endPointAndQuadIndices: new Uint8Array(endPointAndQuadIndices.buffer),
+      normalPairs: new Uint8Array(normalPairs.buffer),
+    };
+  }
+
+  return {
+    segments, silhouettes, polylines, indexed,
+    weight: 12,
+    linePixels: LinePixels.Invisible,
+  };
+}
+
+function expectSegments(params: SegmentEdgeParams, expected: Array<[number, number, number]> | Array<[number, number, number, number]>): void {
+  let i = 0;
+  expect(params.endPointAndQuadIndices.length % 4).to.equal(0);
+  const epaq = new Uint32Array(params.endPointAndQuadIndices.buffer, params.endPointAndQuadIndices.byteOffset, params.endPointAndQuadIndices.length / 4);
+  for (const index of params.indices) {
+    expect(index).to.equal(expected[i][0]);
+    const endPointAndQuad = epaq[i++];
+    expect(endPointAndQuad & 0x00ffffff).to.equal(expected[i][1]);
+    expect((endPointAndQuad & 0xff000000) >>> 0).to.equal(expected[i][2]);
+  }
+}
+
+function expectEdges(params: EdgeParams | undefined, expected: Edges | undefined): void {
+  expect(undefined === params).to.equal(undefined === expected);
+  if (!params || !expected)
+    return;
+
+  expect(undefined === params.segments).to.equal(undefined === expected.segments);
+  expect(undefined === params.silhouettes).to.equal(undefined === expected.silhouettes);
+
+  if (params.segments)
+    expectSegments(params.segments, expected.segments!);
+
+  if (params.silhouettes) {
+    expectSegments(params.silhouettes, expected.silhouettes!);
+    expect(params.silhouettes.normalPairs.length % 4).to.equal(0);
+    const normals = new Uint32Array(params.silhouettes.normalPairs.buffer, params.silhouettes.normalPairs.byteOffset, params.silhouettes.normalPairs.length / 4);
+    for (let i = 0; i < expected.silhouettes!.length; i++)
+      expect(normals[i]).to.equal(expected.silhouettes![i][3]);
+  }
+
+  // ###TODO polylines, indexed
 }
 
 describe.only("VertexTableSplitter", () => {
@@ -514,10 +600,32 @@ describe.only("VertexTableSplitter", () => {
   });
 
   it("splits textured lit surface params based on node Id", () => {
-    testMeshParams((pt) => { setNormal(pt); return setUv(pt); });
+    testMeshParams((pt) => setUv(setNormal(pt)));
   });
 
   it("splits edge params based on node Ids", () => {
+    const surface = makeSurface(setNormal);
+    const edges = {
+      segments: [
+      ],
+      silhouettes: [
+      ],
+      // ###TODO indexed edges
+      // ###TODO polyline edges
+    };
+
+    surface.params.edges = makeEdgeParams(edges);
+    expectEdges(surface.params.edges, edges);
+
+    const { params, featureTable } = surface;
+    const split = splitMeshParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.lower });
+    expect(split.size).to.equal(3);
+  });
+
+  it("omits edges for nodes that lack them", () => {
+  });
+
+  it("creates rectangular edge tables", () => {
   });
 
   it("reconstructs or collapses material atlases and remaps material indices", () => {
