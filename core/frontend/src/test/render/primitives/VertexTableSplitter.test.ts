@@ -279,7 +279,9 @@ function makeEdgeParams(edges: Edges): EdgeParams {
     const endPointAndQuadIndices = new Uint32Array(edges.segments.length);
     for (let i = 0; i < edges.segments.length; i++) {
       indices.push(edges.segments[i][0]);
-      endPointAndQuadIndices[i] = edges.segments[i][1];
+      const endPoint = edges.segments[i][1];
+      const quad = edges.segments[i][2];
+      endPointAndQuadIndices[i] = (endPoint | (quad << 24)) >>> 0;
     }
 
     segments = {
@@ -320,9 +322,10 @@ function expectSegments(params: SegmentEdgeParams, expected: Array<[number, numb
   const epaq = new Uint32Array(params.endPointAndQuadIndices.buffer, params.endPointAndQuadIndices.byteOffset, params.endPointAndQuadIndices.length / 4);
   for (const index of params.indices) {
     expect(index).to.equal(expected[i][0]);
-    const endPointAndQuad = epaq[i++];
+    const endPointAndQuad = epaq[i];
     expect(endPointAndQuad & 0x00ffffff).to.equal(expected[i][1]);
-    expect((endPointAndQuad & 0xff000000) >>> 0).to.equal(expected[i][2]);
+    expect((endPointAndQuad & 0xff000000) >>> 24).to.equal(expected[i][2]);
+    ++i;
   }
 }
 
@@ -508,13 +511,18 @@ describe.only("VertexTableSplitter", () => {
         ...makeTriangleStrip({ x: 40, color: 0, feature: 2 }, 3, adjustPt),
       ],
       indices: [
+        // feature 0
         0, 1, 2,
         1, 2, 3,
         4, 5, 6,
+
+        // feature 1
         7, 8, 9,
         10, 11, 12,
         10, 11, 13,
         14, 15, 16,
+
+        // feature 2
         16, 15, 17,
         14, 18, 17,
       ],
@@ -605,10 +613,29 @@ describe.only("VertexTableSplitter", () => {
 
   it("splits edge params based on node Ids", () => {
     const surface = makeSurface(setNormal);
-    const edges = {
+    const edges: Edges = {
       segments: [
+        [0, 1, 0],
+        [1, 2, 1],
+        [0, 2, 2],
+
+        [10, 12, 3],
+        [10, 13, 0],
+        [13, 16, 1],
+
+        [15, 17, 2],
+        [16, 18, 3],
       ],
       silhouettes: [
+        [2, 3, 0, 123],
+        [4, 6, 1, 0xfedcba98],
+
+        [7, 8, 2, 0],
+        [8, 9, 3, 0xffffffff],
+
+        [15, 16, 0, 321],
+        [16, 17, 1, 789],
+        [15, 18, 2, 0xdeadbeef],
       ],
       // ###TODO indexed edges
       // ###TODO polyline edges
