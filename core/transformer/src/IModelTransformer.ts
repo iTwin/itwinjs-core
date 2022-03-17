@@ -12,7 +12,7 @@ import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
-  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement,
   KnownLocations, Model, RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
@@ -241,6 +241,11 @@ export class IModelTransformer extends IModelExportHandler {
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
 
+  /** The element classes that are considered to define provenance in the iModel */
+  public static get provenanceElementClasses(): (typeof Entity)[] {
+    return [ FolderLink, SynchronizationConfigLink, ExternalSource, ExternalSourceAttachment, ExternalSourceAspect ];
+  }
+
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
    * @param target Specifies the target IModelImporter or the target IModelDb that will be used to construct the target IModelImporter.
@@ -267,11 +272,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.exporter.registerHandler(this);
     this.exporter.wantGeometry = options?.loadSourceGeometry ?? false; // optimization to not load source GeometryStreams by default
     if (!this._options.includeSourceProvenance) { // clone provenance from the source iModel into the target iModel?
-      this.exporter.excludeElementClass(FolderLink.classFullName);
-      this.exporter.excludeElementClass(SynchronizationConfigLink.classFullName);
-      this.exporter.excludeElementClass(ExternalSource.classFullName);
-      this.exporter.excludeElementClass(ExternalSourceAttachment.classFullName);
-      this.exporter.excludeElementAspectClass(ExternalSourceAspect.classFullName);
+      IModelTransformer.provenanceElementClasses.forEach(cls => this.exporter.excludeElementClass(cls.classFullName));
     }
     this.exporter.excludeElementAspectClass(ChannelRootAspect.classFullName); // Channel boundaries within the source iModel are not relevant to the target iModel
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
