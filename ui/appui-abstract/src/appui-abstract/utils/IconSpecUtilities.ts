@@ -44,7 +44,7 @@ export class IconSpecUtilities {
   */
 
   public static getWebComponentSource(iconSpec: string): string | undefined {
-    if (iconSpec.startsWith(IconSpecUtilities.WEB_COMPONENT_PREFIX) && iconSpec.length > 3) {
+    if (iconSpec.startsWith(IconSpecUtilities.WEB_COMPONENT_PREFIX) && iconSpec.length > 7) {
       return iconSpec.slice(7);
     }
 
