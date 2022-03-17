@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Id64 } from "@itwin/core-bentley";
+import { assert, Constructor, Id64 } from "@itwin/core-bentley";
 import { ColorDef, PackedFeatureTable } from "@itwin/core-common";
 import {
   computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,
@@ -15,56 +15,123 @@ import { PointStringParams } from "./PointStringParams";
 
 export type ComputeNodeId = (elementId: Id64.Uint32Pair) => number;
 
-class IndexBuffer {
-  private _data: Uint8Array;
-  private _numIndices = 0;
-  private readonly _index32 = new Uint32Array(1);
-  private readonly _index8 = new Uint8Array(this._index32.buffer, 0, 3);
-
-  public constructor() {
-    this._data = new Uint8Array(9);
-  }
-
-  public get numIndices(): number {
-    return this._numIndices;
-  }
-
-  public push(index: number): void {
-    this.reserve(this.numIndices + 1);
-    this._index32[0] = index;
-    this._data.set(this._index8, this.numIndices * 3);
-    this._numIndices++;
-  }
-
-  private reserve(numTotalIndices: number): void {
-    const numTotalBytes = numTotalIndices * 3;
-    if (this._data.length >= numTotalBytes)
-      return;
-
-    const numBytes = Math.floor(numTotalBytes * 1.5);
-    const prevData = this._data;
-    this._data = new Uint8Array(numBytes);
-    this._data.set(prevData, 0);
-  }
-
-  public toUint8Array(): Uint8Array {
-    return this._data.subarray(0, this.numIndices * 3);
-  }
+interface TypedArrayBuilderOptions {
+  growthFactor?: number;
+  initialCapacity?: number;
 }
 
-class VertexBuffer {
-  private _data: Uint32Array;
-  private _length: number;
-  private readonly _source: VertexTable;
+class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
+  protected readonly _constructor: Constructor<T>;
+  protected _data: T;
+  protected _length: number;
+  protected readonly _growthFactor: number;
 
-  public constructor(source: VertexTable) {
-    this._source = source;
-    this._data = new Uint32Array(3 * source.numRgbaPerVertex);
+  protected constructor(constructor: Constructor<T>, options?: TypedArrayBuilderOptions) {
+    this._constructor = constructor;
+    this._data = new constructor(options?.initialCapacity ?? 0);
+    this._growthFactor = options?.growthFactor ?? 1.5;
     this._length = 0;
   }
 
   public get length(): number {
     return this._length;
+  }
+
+  public get capacity(): number {
+    return this._data.length;
+  }
+
+  public ensureCapacity(newCapacity: number): number {
+    if (this.capacity >= newCapacity)
+      return this.capacity;
+
+    newCapacity *= this._growthFactor;
+    const prevData = this._data;
+    this._data = new this._constructor(newCapacity);
+    this._data.set(prevData, 0);
+
+    assert(this.capacity === newCapacity);
+    return this.capacity;
+  }
+
+  public push(value: number): void {
+    this.ensureCapacity(this.length + 1);
+    this._data[this.length] = value;
+    ++this._length;
+  }
+
+  public append(values: T): void {
+    const newLength = this.length + values.length;
+    this.ensureCapacity(newLength);
+    this._data.set(values, this.length);
+    this._length = newLength;
+  }
+
+  public toTypedArray(includeUnusedCapacity = false): T {
+    if (includeUnusedCapacity)
+      return this._data;
+
+    const subarray = this._data.subarray(0, this.length);
+    assert(subarray instanceof this._constructor);
+    assert(subarray.buffer === this._data.buffer);
+    return subarray;
+  }
+}
+
+class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
+  public constructor(options?: TypedArrayBuilderOptions) {
+    super(Uint8Array, options);
+  }
+}
+
+class Uint16ArrayBuilder extends TypedArrayBuilder<Uint16Array> {
+  public constructor(options?: TypedArrayBuilderOptions) {
+    super(Uint16Array, options);
+  }
+}
+
+class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
+  public constructor(options?: TypedArrayBuilderOptions) {
+    super(Uint32Array, options);
+  }
+}
+
+class IndexBuffer {
+  private readonly _builder: Uint8ArrayBuilder;
+  private readonly _index32 = new Uint32Array(1);
+  private readonly _index8 = new Uint8Array(this._index32.buffer, 0, 3);
+
+  public constructor() {
+    this._builder = new Uint8ArrayBuilder({ initialCapacity: 9 });
+  }
+
+  public get numIndices(): number {
+    assert((this._builder.length % 3) === 0);;;;
+    return this._builder.length / 3;
+  }
+
+  public push(index: number): void {
+    this._index32[0] = index;
+    this._builder.append(this._index8);
+  }
+
+  public toUint8Array(): Uint8Array {
+    return this._builder.toTypedArray();
+  }
+}
+
+class VertexBuffer {
+  private readonly _builder: Uint32ArrayBuilder;
+  private readonly _source: VertexTable;
+
+  public constructor(source: VertexTable) {
+    this._source = source;
+    this._builder = new Uint32ArrayBuilder({ initialCapacity: 3 * source.numRgbaPerVertex });
+  }
+
+  public get length(): number {
+    assert((this._builder.length % this.vertexSize) === 0);
+    return this._builder.length / this.vertexSize;
   }
 
   public get vertexSize(): number {
@@ -73,24 +140,7 @@ class VertexBuffer {
 
   public push(vertex: Uint32Array): void {
     assert(vertex.length === this.vertexSize);
-    this.reserve(this._length + 1);
-    this._data.set(vertex, this.length * this.vertexSize);
-    this._length++;
-  }
-
-  private reserve(newSize: number): void {
-    newSize *= this.vertexSize;
-    if (this._data.length >= newSize)
-      return;
-
-    newSize = Math.floor(newSize * 1.5);
-    const prevData = this._data;
-    this._data = new Uint32Array(newSize);
-    this._data.set(prevData, 0);
-  }
-
-  public toUint8Array(): Uint8Array {
-    return new Uint8Array(this._data.buffer, 0, this._length * 4 * this.vertexSize);
+    this._builder.append(vertex);
   }
 
   public buildVertexTable(maxDimension: number, colorTable: ColorTable | undefined): VertexTable {
@@ -100,12 +150,13 @@ class VertexBuffer {
     assert(undefined !== colorTable);
 
     const colorTableLength = colorTable instanceof Uint32Array ? colorTable.length : 0;
-    const dimensions = computeDimensions(this._length, this.vertexSize, colorTableLength, maxDimension);
+    const dimensions = computeDimensions(this.length, this.vertexSize, colorTableLength, maxDimension);
 
-    let rgbaData = this._data;
-    if (dimensions.width * dimensions.height > this._data.length) {
+    let rgbaData = this._builder.toTypedArray();
+    if (dimensions.width * dimensions.height > rgbaData.length) {
+      const prevData = rgbaData;
       rgbaData = new Uint32Array(dimensions.width * dimensions.height);
-      rgbaData.set(this._data, 0);
+      rgbaData.set(prevData, 0);
     }
 
     if (colorTable instanceof Uint32Array)
