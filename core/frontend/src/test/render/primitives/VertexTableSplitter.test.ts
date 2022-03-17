@@ -12,8 +12,8 @@ import {
   MockRender,
 } from "../../../core-frontend";
 import {
-  EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, splitMeshParams, splitPointStringParams, SegmentEdgeParams,
-  SurfaceType, VertexTable,
+  EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, PolylineParams, splitMeshParams, splitPointStringParams, SegmentEdgeParams,
+  SurfaceType, TesselatedPolyline, VertexTable,
 } from "../../../render-primitives";
 
 interface Point {
@@ -263,17 +263,59 @@ function expectMesh(params: MeshParams, mesh: TriMesh): void {
   }
 }
 
+// index, prev index, next index, param
+type PolylineIndices = [number, number, number, number];
+
+function makePolyline(verts: PolylineIndices[]): TesselatedPolyline {
+  const indices = new IndexBuffer();
+  const prev = new IndexBuffer();
+  const nextAndParam = new Uint32Array(verts.length);
+
+  for (let i = 0; i < verts.length; i++) {
+    const vert = verts[i];
+    indices.push(vert[0]);
+    prev.push(vert[1]);
+    nextAndParam[i] = (vert[2] | (vert[3] << 24)) >>> 0;
+  }
+
+  return {
+    indices: indices.toVertexIndices(),
+    prevIndices: prev.toVertexIndices(),
+    nextIndicesAndParams: new Uint8Array(nextAndParam.buffer),
+  };
+}
+
+function expectPolyline(polyline: TesselatedPolyline, expected: PolylineIndices[]): void {
+  expect(polyline.indices.length).to.equal(expected.length);
+  expect(polyline.prevIndices.length).to.equal(expected.length);
+  expect(polyline.nextIndicesAndParams.length).to.equal(4 * expected.length);
+
+  let i = 0;
+  const niap = new Uint32Array(polyline.nextIndicesAndParams.buffer, polyline.nextIndicesAndParams.byteOffset, polyline.nextIndicesAndParams.length / 4);
+  const prevIter = polyline.prevIndices[Symbol.iterator]();
+  for (const index of polyline.indices) {
+    const pt = expected[i];
+    expect(index).to.equal(pt[0]);
+    expect(prevIter.next().value).to.equal(pt[1]);
+
+    const nextAndParam = niap[i];
+    expect(nextAndParam & 0x00ffffff).to.equal(pt[2]);
+    expect((nextAndParam & 0xff000000) >>> 24).to.equal(pt[3]);
+    ++i;
+  }
+}
+
 interface Edges {
   // index, other index, quad index
   segments?: Array<[ number, number, number ]>,
   // segments plus oct-encoded normal pair
   silhouettes?: Array<[ number, number, number, number ]>,
   // ###TODO indexed edges
-  // ###TODO polyline edges
+  polylines?: PolylineIndices[],
 }
 
 function makeEdgeParams(edges: Edges): EdgeParams {
-  let segments, silhouettes, polylines, indexed;
+  let segments, silhouettes, indexed;
   if (edges.segments) {
     const indices = new IndexBuffer();
     const endPointAndQuadIndices = new Uint32Array(edges.segments.length);
@@ -310,7 +352,8 @@ function makeEdgeParams(edges: Edges): EdgeParams {
   }
 
   return {
-    segments, silhouettes, polylines, indexed,
+    segments, silhouettes, indexed,
+    polylines: edges.polylines ? makePolyline(edges.polylines) : undefined,
     weight: 12,
     linePixels: LinePixels.Invisible,
   };
@@ -337,11 +380,10 @@ function expectEdges(params: EdgeParams | undefined, expected: Edges | undefined
     return;
 
   expect(undefined === params.segments).to.equal(undefined === expected.segments);
-  expect(undefined === params.silhouettes).to.equal(undefined === expected.silhouettes);
-
   if (params.segments)
     expectSegments(params.segments, expected.segments!);
 
+  expect(undefined === params.silhouettes).to.equal(undefined === expected.silhouettes);
   if (params.silhouettes) {
     expectSegments(params.silhouettes, expected.silhouettes!);
     expect(params.silhouettes.normalPairs.length).to.equal(expected.silhouettes!.length * 4);
@@ -351,7 +393,11 @@ function expectEdges(params: EdgeParams | undefined, expected: Edges | undefined
       expect(normals[i]).to.equal(expected.silhouettes![i][3]);
   }
 
-  // ###TODO polylines, indexed
+  expect(undefined === params.polylines).to.equal(undefined === expected.polylines);
+  if (params.polylines)
+    expectPolyline(params.polylines, expected.polylines!);
+
+  // ###TODO indexed edges
 }
 
 describe.only("VertexTableSplitter", () => {
@@ -638,9 +684,21 @@ describe.only("VertexTableSplitter", () => {
         [15, 16, 0, 0],
         [16, 17, 1, 789],
         [15, 18, 2, 0xdeadbeef],
+      ], polylines: [
+        [0, 0, 1, 0],
+        [1, 0, 5, 1],
+        [5, 1, 5, 2],
+
+        [9, 9, 11, 3],
+        [11, 9, 11, 0],
+
+        [14, 14, 15, 1],
+        [15, 14, 16, 2],
+        [16, 15, 17, 3],
+        [17, 16, 18, 0],
+        [18, 17, 18, 1],
       ],
       // ###TODO indexed edges
-      // ###TODO polyline edges
     };
 
     surface.params.edges = makeEdgeParams(edges);
@@ -653,6 +711,7 @@ describe.only("VertexTableSplitter", () => {
     expectEdges(split.get(1)!.edges, {
       segments: edges.segments!.slice(0, 3),
       silhouettes: edges.silhouettes!.slice(0, 2),
+      polylines: edges.polylines!.slice(0, 3),
     });
 
     expectEdges(split.get(2)!.edges, {
@@ -663,6 +722,7 @@ describe.only("VertexTableSplitter", () => {
         [0, 1, 2, 0xfedcba98],
         [1, 2, 3, 0xffffffff],
       ],
+      polylines: edges.polylines!.slice(3, 5).map((p) => [ p[0] - 7, p[1] - 7, p[2] - 7, p[3] ]),
     });
 
     expectEdges(split.get(3)!.edges, {
@@ -675,6 +735,7 @@ describe.only("VertexTableSplitter", () => {
         [2, 3, 1, 789],
         [1, 4, 2, 0xdeadbeef],
       ],
+      polylines: edges.polylines!.slice(5, 10).map((p) => [ p[0] - 14, p[1] - 14, p[2] - 14, p[3] ]),
     });
   });
 
