@@ -145,8 +145,7 @@ export class IModelCloneContext {
         targetElementProps.code.scope = IModel.rootSubjectId;
       }
     }
-    // unlike other references, code cannot be null. If it is null, use an empty code instead, it will be updated
-    // once pending references are resolved
+    // unlike other references, code cannot be null. If it is null, use an empty code instead
     if (targetElementProps.code.scope === Id64.invalid || targetElementProps.code.spec === Id64.invalid) {
       targetElementProps.code = Code.createEmpty();
     }
