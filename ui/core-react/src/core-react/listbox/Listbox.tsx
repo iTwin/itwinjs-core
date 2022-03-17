@@ -186,7 +186,9 @@ export function Listbox(props: ListboxProps) {
       }
     }
 
-    onKeyDown?.(event);
+    // istanbul ignore else
+    if (onKeyDown)
+      onKeyDown(event);
   }, [focusValue, optionValues, focusOption, onKeyDown, handleValueChange]);
 
   const isInitialMount = React.useRef(true);
