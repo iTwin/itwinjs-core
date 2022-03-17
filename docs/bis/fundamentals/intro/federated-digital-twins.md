@@ -1,7 +1,9 @@
 
 # Federated Digital Twins for Infrastructure Engineering
 
-Bentley defines “Digital Twin” as a digital “replica” of a real physical thing and (optionally) related processes, including the functionality of systems and the roles of people and organizations. The Digital Twin may also include analysis and simulation models of the infrastructure and processes.
+Bentley defines "Digital Twin" as a digital representation of physical things and (optionally) related processes, including the functionality of systems and the roles of people and organizations. The Digital Twin may also include analysis and simulation models of the things and processes.
+
+Bentley defines "iTwin" as an Infrastructure Digital Twin, implemented as a federation of digital representations such as iModels, Reality Data, Sensor (IoT) Data, etc.
 
 ## Connected to physical reality
 
@@ -21,11 +23,11 @@ A Digital Twin should be a cohesive digital replica against which to write servi
 
 ## Federated
 
-iModels are central to Bentley’s Digital Twins, but not all information belongs in an iModel due to its Entity-Relationship modeling and transactional model. For example, iModels are not an appropriate place to store video. IoT data changes too quickly, and there are already well-established IoT systems and data historians.
+iModels are central to iTwins, but not all information belongs in an iModel. For example, iModels are not an appropriate place to store video. IoT data changes too quickly, and there are already well-established IoT systems and data historians.
 
 There will always be existing “silos” of data which (for whatever reason) are not migrated into iModels, but which contain information that should be part of our Digital Twin.
 
-To achieve a cohesive Digital Twin encompassing both iModels and other services, we create adapters that “align” data to BIS—allowing us to view the existing services as [BIS Repositories](./glossary.md#Bis-Repository). These adapters will support a federated data access layer (in development) to allow users to query the entire Federated Digital Twin as-a-whole for analytics and insights.
+To achieve a cohesive Digital Twin encompassing both iModels and other representations, the iTwin Platform supplies services and software components that federate multiple representations into a cohesive Digital Twin.
 
 ## Digital Twins for Lifecycle Phases
 
