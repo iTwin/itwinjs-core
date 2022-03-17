@@ -25,7 +25,7 @@ Enums in TypeScript have some shortcomings, one of which resulted in a bug that 
 
 ### Non-deferring transformer implementation
 
-The transformer no longer internally defers elements with not-yet-transformed references, waiting for the reference to be transformed before
-trying to transform the referencer again. Instead elements are partially transformed once when they are encountered, and if they had missing
-predecessors, a second, final, time when all its predecessors have been transformed or when the transformer has no more elements to process.
-This means that [IModelTransformer.onTransformElement]($transformer) may be called twice on the same element, and should avoid side-effects.
+The transformer no longer internally defers elements that reference yet-untransformed elements. Instead elements are inserted with a partial
+transformation when they are encountered, and if they had yet-untransformed predecessors, their props are transformed a second, final, time
+when all its predecessors have also been inserted. This means that [IModelTransformer.onTransformElement]($transformer) may be called twice
+on the same element, and overrides of it should avoid side-effects.
