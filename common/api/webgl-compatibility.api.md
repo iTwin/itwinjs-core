@@ -105,6 +105,7 @@ export enum DepthType {
 // @public
 export interface GraphicsDriverBugs {
     fragDepthDoesNotDisableEarlyZ?: true;
+    mrtCanFail?: true;
 }
 
 // @public
