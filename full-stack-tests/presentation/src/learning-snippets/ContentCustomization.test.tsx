@@ -670,7 +670,7 @@ describe("Learning Snippets", () => {
           }]).and.to.have.lengthOf(4);
         });
 
-        it.only("uses `renderer` attribute", async () => {
+        it("uses `renderer` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Renderer.Ruleset
           // There's a content rule for returning content of given `bis.Subject` instance. In addition,
           // it assigns the `CodeValue` property a custom "my-renderer" renderer.
