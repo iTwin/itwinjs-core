@@ -19,7 +19,7 @@ iTwin.js UI and presentation packages register some built-in value renderers tha
 
 The renderer renders nothing when property value is `undefined`. When it's defined, the value is rendered as a clickable text.
 
-For the text itself, the first option is the property's display value. If it's not set, then the [Type Converter](../../learning/ui/components/TypeConverters.md) system is used to calculate displayed string from the raw value.
+The property display value is used for the displayed text. If it is not set, then the [Type Converter](../../learning/ui/components/TypeConverters.md) system is used to calculate displayed string from the raw property value.
 
 When the clickable text clicked on, the available unified selection context is used to replace active selection with the instance key stored in the value by calling [UnifiedSelectionContext.replaceSelection]($presentation-components).
 
