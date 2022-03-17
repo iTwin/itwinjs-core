@@ -11,7 +11,10 @@ interface PendingReferenceProps {
   isModelRef: boolean;
 }
 
-/** A reference relationships from an element, "referencer", to an element or its submodel, "referenced" */
+/**
+ * A reference relationships from an element, "referencer", to an element or its submodel, "referenced"
+ * @internal
+ */
 export class PendingReference implements PendingReferenceProps {
   public referencer!: Id64String;
   public referenced!: Id64String;

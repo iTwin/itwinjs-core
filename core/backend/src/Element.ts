@@ -464,7 +464,7 @@ export abstract class GeometricElement extends Element {
     // TODO: GeometryPartIds?
   }
   /** @beta */
-  public static override readonly requiredReferenceKeys = [...super.requiredReferenceKeys, "category"];
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "category"];
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.

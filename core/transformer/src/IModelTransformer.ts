@@ -104,14 +104,20 @@ export interface IModelTransformOptions {
   danglingPredecessorsBehavior?: "reject" | "ignore";
 }
 
-/** a container for tracking the state of a partially committed element and finalizing it when it's ready to be fully committed */
+/**
+ * A container for tracking the state of a partially committed element and finalizing it when it's ready to be fully committed
+ * @internal
+ */
 class PartiallyCommittedElement {
   public constructor(
-    /** a set of "model|element ++ ID64" pairs, e.g. `model0x11` or `element0x12` */
+    /**
+     * A set of "model|element ++ ID64" pairs, e.g. `model0x11` or `element0x12`.
+     * It is possible for the submodel of an element to be separately resolved from the actual element,
+     * so its resolution must be tracked separately
+     */
     private _missingPredecessors: Set<string>,
     private _onComplete: () => void
   ) {}
-  /** returns whether it completed the partial element */
   public resolvePredecessor(id: Id64String, isModelRef: boolean) {
     const key = PartiallyCommittedElement.makePredecessorKey(id, isModelRef);
     this._missingPredecessors.delete(key);
@@ -125,6 +131,11 @@ class PartiallyCommittedElement {
   }
 }
 
+/**
+ * A helper for checking the in-transformation processing state of an element,
+ * whether it has been transformed, and if its submodel has been
+ * @internal
+ */
 class ElementProcessState {
   public constructor(
     public elementId: string,
@@ -151,7 +162,12 @@ class ElementProcessState {
   public get needsImport() { return this.needsElemImport || this.needsModelImport; }
 }
 
-/** apply a function to each Id64s in a supported container type of Id64s */
+/**
+ * Apply a function to each Id64 in a supported container type of Id64s.
+ * Currently only supports raw Id64String or RelatedElement-like objects containing an `id` property that is a Id64String,
+ * which matches the possible containers of references in [Element.requiredReferenceKeys]($backend).
+ * @internal
+ */
 function mapId64<R>(
   idContainer:
   | Id64String
@@ -593,9 +609,10 @@ export class IModelTransformer extends IModelExportHandler {
         const idContainer = sourceElement[referenceKey as keyof Element];
         return mapId64(idContainer, (id) => {
           if (id === Id64.invalid || id === IModel.rootSubjectId) return; // not allowed to directly export the root subject
-          const withinSameIModel = this.sourceDb === this.targetDb;
-          if (withinSameIModel) {
-            // within the same iModel, can use existing DefinitionElements without remapping
+          if (!this.context.isBetweenIModels) {
+            // Within the same iModel, can use existing DefinitionElements without remapping
+            // This is relied upon by the TemplateModelCloner
+            // TODO: extract this out to only be in the TemplateModelCloner
             const asDefinitionElem = this.sourceDb.elements.tryGetElement(id, DefinitionElement);
             if (asDefinitionElem && !(asDefinitionElem instanceof RecipeDefinitionElement)) {
               this.context.remapElement(id, id);
@@ -605,8 +622,9 @@ export class IModelTransformer extends IModelExportHandler {
         });
       })
       .flat()
-      .filter((maybeProcessState): maybeProcessState is ElementProcessState => maybeProcessState !== undefined)
-      .filter((processState) => processState.needsImport);
+      .filter((maybeProcessState): maybeProcessState is ElementProcessState =>
+        maybeProcessState !== undefined && maybeProcessState.needsImport
+      );
 
     if (unresolvedPredecessorsProcessStates.length > 0) {
       for (const processState of unresolvedPredecessorsProcessStates) {
