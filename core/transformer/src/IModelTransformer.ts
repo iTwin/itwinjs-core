@@ -602,10 +602,11 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public override shouldExportElement(_sourceElement: Element): boolean { return true; }
 
-  /** Override of [IModelExportHandler.onExportElement]($transformer) that imports an element into the target iModel when it is exported from the source iModel.
-   * This override calls [[onTransformElement]] and then [IModelImporter.importElement]($transformer) to update the target iModel.
+  /**
+   * If they haven't been already, import all of the required predecessors
+   * @internal do not call, override or implement this, it will be removed
    */
-  public override onExportElement(sourceElement: Element): void {
+  public override async preExportElement(sourceElement: Element): Promise<void> {
     const elemClass = sourceElement.constructor as typeof Element;
 
     const unresolvedPredecessorsProcessStates = elemClass.requiredReferenceKeys
@@ -629,17 +630,18 @@ export class IModelTransformer extends IModelExportHandler {
       .filter((processState) => processState.needsImport);
 
     if (unresolvedPredecessorsProcessStates.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/dot-notation
-      this.exporter["_preExportTask"] = async () => {
-        for (const processState of unresolvedPredecessorsProcessStates) {
-          // must export element first if not done so
-          if (processState.needsElemImport) await this.exporter.exportElement(processState.elementId);
-          if (processState.needsModelImport) await this.exporter.exportModel(processState.elementId);
-        }
-      };
-      return;
+      for (const processState of unresolvedPredecessorsProcessStates) {
+        // must export element first if not done so
+        if (processState.needsElemImport) await this.exporter.exportElement(processState.elementId);
+        if (processState.needsModelImport) await this.exporter.exportModel(processState.elementId);
+      }
     }
+  }
 
+  /** Override of [IModelExportHandler.onExportElement]($transformer) that imports an element into the target iModel when it is exported from the source iModel.
+   * This override calls [[onTransformElement]] and then [IModelImporter.importElement]($transformer) to update the target iModel.
+   */
+  public override onExportElement(sourceElement: Element): void {
     let targetElementId: Id64String | undefined;
     let targetElementProps: ElementProps;
     if (this._options.preserveElementIdsForFiltering) {
