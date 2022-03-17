@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("RelatedPropertiesSpecification", () => {
 
       it("uses `propertiesSource` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.RelatedPropertiesSpecification.PropertiesSource.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.RelatedPropertiesSpecification.PropertiesSource.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
         // additionally include properties of parent element by following the `bis.ElementOwnsChildElements` relationship
         // in backwards direction.
@@ -70,7 +70,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `handleTargetClassPolymorphically` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.RelatedPropertiesSpecification.HandleTargetClassPolymorphically.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.RelatedPropertiesSpecification.HandleTargetClassPolymorphically.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
         // additionally include properties of parent element by following the `bis.ElementOwnsChildElements` relationship
         // in backwards direction. Setting `handleTargetClassPolymorphically` to `true` makes sure that the concrete target class is
@@ -116,7 +116,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `relationshipMeaning` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.RelatedPropertiesSpecification.RelationshipMeaning.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.RelatedPropertiesSpecification.RelationshipMeaning.Ruleset
         // There's a content rule for returning content of given `bis.PhysicalModel` instance. The produced content is customized to
         // additionally include properties of modeled element by following the `bis.ModelModelsElement` relationship.
         // Setting `relationshipMeaning` to `SameInstance` makes sure that all related properties are placed into a category
@@ -178,7 +178,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `properties` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.RelatedPropertiesSpecification.Properties.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.RelatedPropertiesSpecification.Properties.Ruleset
         // There's a content rule for returning content of given `bis.PhysicalModel` instance. The produced content is customized to
         // additionally include specific properties of modeled Element by following the `bis.ModelModelsElement` relationship.
         const ruleset: Ruleset = {
@@ -219,7 +219,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `autoExpand` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.RelatedPropertiesSpecification.AutoExpand.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.RelatedPropertiesSpecification.AutoExpand.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
         // additionally include all properties of child subjects by following the `bis.SubjectOwnsSubjects` relationship and that
         // the properties should be automatically expanded.
@@ -265,7 +265,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `skipIfDuplicate` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.RelatedPropertiesSpecification.SkipIfDuplicate.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.RelatedPropertiesSpecification.SkipIfDuplicate.Ruleset
         // There's a content rule for returning content of given `bis.PhysicalModel` instance. There are also two specifications
         // requesting to load related properties:
         // - the one specified through a content modifier requests all properties of the target class and has `skipIfDuplicate` flag.
@@ -320,7 +320,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `nestedRelatedProperties` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.RelatedPropertiesSpecification.NestedRelatedProperties.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.RelatedPropertiesSpecification.NestedRelatedProperties.Ruleset
         // There's a content rule for returning content of given `bis.PhysicalModel` instance. There's also a related properties
         // specification that loads modeled element properties and properties of `bis.LinkElement` related to the modeled element.
         const ruleset: Ruleset = {

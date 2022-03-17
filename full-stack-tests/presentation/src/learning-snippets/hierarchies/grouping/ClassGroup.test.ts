@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("ClassGroup", () => {
 
       it("uses `baseClass` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.ClassGroup.BaseClass.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.ClassGroup.BaseClass.Ruleset
         // The ruleset contains a root nodes rule for `bis.Element` instances and a grouping rule that puts
         // all `bis.PhysicalElement` instances into a class group.
         const ruleset: Ruleset = {

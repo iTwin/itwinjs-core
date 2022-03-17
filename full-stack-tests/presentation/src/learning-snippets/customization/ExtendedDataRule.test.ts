@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("ExtendedDataRule", () => {
 
       it("uses `requiredSchemas` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ExtendedDataRule.RequiredSchemas.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.RequiredSchemas.Ruleset
         // The ruleset has rule that returns content of given input instances. Also there is an extended data rule
         // to add additional data for `bis.ExternalSourceAspect` instances content. `bis.ExternalSourceAspect` ECClass was
         // introduced in BisCore version 1.0.2, so the rule needs a `requiredSchemas` attribute to only use the rule
@@ -65,7 +65,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `condition` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ExtendedDataRule.Condition.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Condition.Ruleset
         // The ruleset has root node rule that returns custom nodes "A" and "B". Also there is an extended data rule
         // to add additional data to "B" nodes.
         const ruleset: Ruleset = {
@@ -93,7 +93,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ ExtendedDataRule.Condition.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Condition.Result
         // Ensure only "B" node has `extendedData` property.
         const nodes = await Presentation.presentation.getNodes({
           imodel,
@@ -112,7 +112,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `items` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ExtendedDataRule.Items.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Items.Ruleset
         // The ruleset has root node rule that returns custom "A" node. Also there is an extended data rule
         // to add additional data to node.
         const ruleset: Ruleset = {
@@ -137,7 +137,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ ExtendedDataRule.Items.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.ExtendedDataRule.Items.Result
         // Ensure node has `extendedData` property containing items defined in rule.
         const nodes = await Presentation.presentation.getNodes({
           imodel,

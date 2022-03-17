@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("ContentRule", () => {
 
       it("uses `SelectedNode` symbol in rule condition", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentRule.Condition.SelectedNodeSymbol
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentRule.Condition.SelectedNodeSymbol
         // The ruleset has two content rules:
         // - the one for `bis.Element` returns content for input instances
         // - the one for `bis.Model` returns content for input model's contained elements
@@ -75,7 +75,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses ruleset variables in rule condition", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentRule.Condition.RulesetVariables.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentRule.Condition.RulesetVariables.Ruleset
         // The ruleset has two content rules that return content for `bis.SpatialCategory` and `bis.GeometricModel` instances. Both
         // rules can be enabled or disabled with a ruleset variable.
         const ruleset: Ruleset = {
@@ -138,7 +138,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `requiredSchemas` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentRule.RequiredSchemas.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentRule.RequiredSchemas.Ruleset
         // The ruleset has one content rule that returns content of `bis.ExternalSourceAspect` instances. The
         // ECClass was introduced in BisCore version 1.0.2, so the rule needs a `requiredSchemas` attribute
         // to only use the rule if the version meets the requirement.
@@ -170,7 +170,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentRule.Priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentRule.Priority.Ruleset
         // The ruleset has two content rules that return content for `bis.SpatialCategory` and
         // `bis.GeometricModel` respectively. The rules have different priorities and higher priority
         // rule is handled first - it's content appears first.
@@ -212,7 +212,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `onlyIfNotHandled` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentRule.OnlyIfNotHandled.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentRule.OnlyIfNotHandled.Ruleset
         // The ruleset has two root node rules that return content for `bis.SpatialCategory` and
         // `bis.GeometricModel` respectively. The `bis.SpatialCategory` rule has lower priority and `onlyIfNotHandled`
         // attribute, which allows it to be overriden by higher priority rules.

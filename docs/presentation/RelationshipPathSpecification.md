@@ -40,7 +40,7 @@ attribute allows specializing it to `bis.PhysicalElement` or some other `bis.Ele
 ### Using single-step relationship path
 
 ```ts
-[[include:RelationshipPathSpecification.SingleStep.Ruleset]]
+[[include:Presentation.RelationshipPathSpecification.SingleStep.Ruleset]]
 ```
 
 | Input                          | Result                                                                                                                                |
@@ -51,7 +51,7 @@ attribute allows specializing it to `bis.PhysicalElement` or some other `bis.Ele
 ### Using multi-step relationship path
 
 ```ts
-[[include:RelationshipPathSpecification.MultiStep.Ruleset]]
+[[include:Presentation.RelationshipPathSpecification.MultiStep.Ruleset]]
 ```
 
 ![Categories of input model elements](./media/relationshippathspecification-multistep.png)

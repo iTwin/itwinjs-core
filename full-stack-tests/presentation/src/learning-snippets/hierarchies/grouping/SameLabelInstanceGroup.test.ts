@@ -32,7 +32,7 @@ describe("Learning Snippets", () => {
     describe("SameLabelInstanceGroup", () => {
 
       it("uses `applicationStage = Query` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.Query.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.Query.Ruleset
         // The ruleset contains a root nodes rule for `bis.SubCategory` instances. The grouping rule
         // tells the rules engine to group them by label by creating a single ECInstances node for grouped instances.
         const ruleset: Ruleset = {
@@ -69,7 +69,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `applicationStage = PostProcess` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Ruleset
         // The ruleset contains a root nodes rule for `bis.InformationPartitionElement` and `bis.Model` instances. The grouping rules
         // tells the rules engine to group them by label. `bis.InformationPartitionElement` and `bis.Model` classes have no common base class,
         // so two different grouping rules are required to define this kind of grouping and that also means that `Query` type

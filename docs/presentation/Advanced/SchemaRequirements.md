@@ -34,7 +34,7 @@ used in it.
 ### Specifying required schema in a hierarchy rule
 
 ```ts
-[[include:Hierarchies.RequiredSchemas.Ruleset]]
+[[include:Presentation.Hierarchies.RequiredSchemas.Ruleset]]
 ```
 
 ### Specifying required schema in content modifier

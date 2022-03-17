@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("PropertyCategorySpecification", () => {
 
       it("allows referencing by `id`", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Id.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Id.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The rule contains a custom
         // category specification that is referenced by properties override, putting all properties into the
         // "Custom" category.
@@ -68,7 +68,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `label` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Label.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Label.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition,
         // it puts all properties into a custom category with "Custom Category" label.
         const ruleset: Ruleset = {
@@ -107,7 +107,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `description` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Description.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Description.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition, it puts
         // all properties into a custom category with a description.
         const ruleset: Ruleset = {
@@ -131,7 +131,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Description.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Description.Result
         // Ensure category description is assigned
         const content = (await Presentation.presentation.getContent({
           imodel,
@@ -147,7 +147,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `parentId` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.ParentId.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.ParentId.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition, it
         // puts all properties into a custom category with "Nested Category" label which in turn is put into "Root Category".
         const ruleset: Ruleset = {
@@ -193,7 +193,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Priority.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content
         // is customized to put `CodeValue` property into "Category A" category and `UserLabel` property into
         // "Category B" category. Both categories are assigned custom priorities.
@@ -225,7 +225,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Priority.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Priority.Result
         // Ensure that correct category priorities are assigned
         const content = (await Presentation.presentation.getContent({
           imodel,
@@ -251,7 +251,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `autoExpand` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.AutoExpand.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.AutoExpand.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content
         // is customized to put all properties into a custom category which has the `autoExpand` flag.
         const ruleset: Ruleset = {
@@ -275,7 +275,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.AutoExpand.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.AutoExpand.Result
         // Ensure that categories have the `expand` flag
         const content = (await Presentation.presentation.getContent({
           imodel,
@@ -291,7 +291,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `renderer` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Renderer.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Renderer.Ruleset
         // There's a content rule for returning content of given instance. The produced content
         // is customized to put all properties into a custom category which uses a custom "my-category-renderer"
         // renderer.
@@ -318,7 +318,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertyCategorySpecification.Renderer.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertyCategorySpecification.Renderer.Result
         // Ensure that categories have the `expand` flag
         const content = (await Presentation.presentation.getContent({
           imodel,

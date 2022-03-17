@@ -51,7 +51,7 @@ When the [`count` attribute](#attribute-count) is omitted or set to `1`, the spe
 ### Jumping through the same relationship recursively fixed number of times
 
 ```ts
-[[include:RepeatableRelationshipPathSpecification.SingleStepWithCount.Ruleset]]
+[[include:Presentation.RepeatableRelationshipPathSpecification.SingleStepWithCount.Ruleset]]
 ```
 
 ![Content of the grand-parent element](./media/repeatablerelationshippathspecification-singlestep-with-count.png)
@@ -59,7 +59,7 @@ When the [`count` attribute](#attribute-count) is omitted or set to `1`, the spe
 ### Jumping through the relationship recursively unbounded number of times
 
 ```ts
-[[include:RepeatableRelationshipPathSpecification.RecursiveSingleStep.Ruleset]]
+[[include:Presentation.RepeatableRelationshipPathSpecification.RecursiveSingleStep.Ruleset]]
 ```
 
 When the root subject is provided as input, content for all its child elements is returned:
@@ -69,7 +69,7 @@ When the root subject is provided as input, content for all its child elements i
 ### Combining recursive and non-recursive steps
 
 ```ts
-[[include:RepeatableRelationshipPathSpecification.RecursiveAndNonRecursiveSpecificationsCombination.Ruleset]]
+[[include:Presentation.RepeatableRelationshipPathSpecification.RecursiveAndNonRecursiveSpecificationsCombination.Ruleset]]
 ```
 
 When a physical model is provided as input, categories' content of all its elements and their children is returned:
@@ -79,7 +79,7 @@ When a physical model is provided as input, categories' content of all its eleme
 ### Combining multiple unbounded recursive steps
 
 ```ts
-[[include:RepeatableRelationshipPathSpecification.MultipleRecursiveSpecificationsCombination.Ruleset]]
+[[include:Presentation.RepeatableRelationshipPathSpecification.MultipleRecursiveSpecificationsCombination.Ruleset]]
 ```
 
 ![Content of multiple recursive relationship steps](./media/repeatablerelationshippathspecification-combinedrecursivesteps.png)

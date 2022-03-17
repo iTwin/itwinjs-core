@@ -36,7 +36,7 @@ describe("Learning Snippets", () => {
     describe("PropertySpecification", () => {
 
       it("uses `overridesPriority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.OverridesPriority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.OverridesPriority.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition, the `UserLabel`
         // property has a couple of property overrides which set renderer, editor and label. The label is
         // overriden by both specifications and the one with higher `overridesPriority` takes precedence.
@@ -86,7 +86,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `labelOverride` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.LabelOverride.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.LabelOverride.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition, the `UserLabel`
         // property has a label override that relabels it to "Custom Label".
         const ruleset: Ruleset = {
@@ -118,7 +118,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `categoryId` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.CategoryId.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.CategoryId.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition, the `UserLabel`
         // property is placed into a custom category by assigning it a `categoryId`.
         const ruleset: Ruleset = {
@@ -157,7 +157,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `isDisplayed` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.IsDisplayed.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.IsDisplayed.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition,
         // the `LastMod` property, which is hidden using a custom attribute in ECSchema, is force-displayed
         // using a property override.
@@ -190,7 +190,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `doNotHideOtherPropertiesOnDisplayOverride` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.DoNotHideOtherPropertiesOnDisplayOverride.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.DoNotHideOtherPropertiesOnDisplayOverride.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition,
         // the `UserLabel` property is set to be displayed with `doNotHideOtherPropertiesOnDisplayOverride` flag,
         // which ensures other properties are also kept displayed.
@@ -224,7 +224,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `renderer` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Renderer.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.Renderer.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition,
         // it assigns the `CodeValue` property a custom "my-renderer" renderer.
         const ruleset: Ruleset = {
@@ -245,7 +245,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Renderer.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.Renderer.Result
         // Ensure the `CodeValue` field is assigned the "my-renderer" renderer
         const content = (await Presentation.presentation.getContent({
           imodel,
@@ -262,7 +262,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
 
         try {
-          // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Renderer.Register
+          // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.Renderer.Register
           // The custom renderer renders the property value in red
           PropertyValueRendererManager.defaultManager.registerRenderer("my-renderer", {
             canRender: () => true,
@@ -298,7 +298,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `editor` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Editor.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.Editor.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition,
         // it assigns the `UserLabel` property a custom "my-editor" editor.
         const ruleset: Ruleset = {
@@ -319,7 +319,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Editor.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.PropertySpecification.Editor.Result
         // Ensure the `UserLabel` field is assigned the "my-editor" editor
         const content = (await Presentation.presentation.getContent({
           imodel,

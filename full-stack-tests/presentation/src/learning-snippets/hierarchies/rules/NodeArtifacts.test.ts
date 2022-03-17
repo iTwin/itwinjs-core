@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("NodeArtifacts", () => {
 
       it("uses `condition` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.NodeArtifacts.Condition.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.NodeArtifacts.Condition.Ruleset
         // The ruleset has a root nodes rule that returns `bis.Model` nodes only if their child node
         // artifacts contain an artifact "IsSpecialChild". There's also a child nodes rule that produces
         // hidden child nodes for `bis.Model` and `bis.GeometricElement3d` nodes have the "IsSpecialChild" artifact value
@@ -70,7 +70,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ Hierarchies.NodeArtifacts.Condition.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.NodeArtifacts.Condition.Result
         // Confirm we get only the GeometricModel3d
         const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
         expect(nodes).to.have.lengthOf(1).and.containSubset([{
@@ -81,7 +81,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `items` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.NodeArtifacts.Items.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.NodeArtifacts.Items.Ruleset
         // The ruleset has a root nodes rule that returns `bis.Model` nodes only if their child node
         // artifacts contain an artifact "IsSpecialChild". There's also a child nodes rule that produces
         // hidden child nodes for `bis.Model` and the nodes have a calculated "IsSpecialChild" artifact value
@@ -123,7 +123,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ Hierarchies.NodeArtifacts.Items.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.NodeArtifacts.Items.Result
         // Confirm we get only the GeometricModel3d
         const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
         expect(nodes).to.have.lengthOf(1).and.containSubset([{

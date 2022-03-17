@@ -29,7 +29,7 @@ describe("Learning Snippets", () => {
     describe("Shared attributes", () => {
 
       it("uses `onlyIfNotHandled` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SharedAttributes.OnlyIfNotHandled.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.SharedAttributes.OnlyIfNotHandled.Ruleset
         // This ruleset defines two specifications that return content for `bis.ViewDefinition` and `bis.PhysicalModel`
         // instances respectively.
         const ruleset: Ruleset = {
@@ -70,7 +70,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SharedAttributes.Priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.SharedAttributes.Priority.Ruleset
         // Specifications to return content for `bis.PhysicalModel` and `bis.DictionaryModel` respectively.
         // The `bis.PhysicalModel` specification has lower priority so it's displayed after the
         // higher priority specification.
@@ -107,7 +107,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `relatedProperties` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SharedAttributes.RelatedProperties.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.SharedAttributes.RelatedProperties.Ruleset
         // This ruleset returns content for `bis.SpatialViewDefinition`, which includes all properties from related `bis.DisplayStyle` instances.
         const ruleset: Ruleset = {
           id: "example",
@@ -144,7 +144,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `calculatedProperties` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SharedAttributes.CalculatedProperties.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.SharedAttributes.CalculatedProperties.Ruleset
         // In addition to returning content for all `bis.SpatialViewDefinition` instances, this ruleset also adds a
         // custom `Camera view direction` property to each instance.
         const ruleset: Ruleset = {
@@ -179,7 +179,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `propertyCategories` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SharedAttributes.PropertyCategories.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.SharedAttributes.PropertyCategories.Ruleset
         // This ruleset places camera-related `bis.SpatialViewDefinition` properties inside a custom category.
         const ruleset: Ruleset = {
           id: "example",
@@ -226,7 +226,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `propertyOverrides` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SharedAttributes.PropertyOverrides.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.SharedAttributes.PropertyOverrides.Ruleset
         // The specification returns content for `bis.ViewDefinition` with one
         // overriden property label.
         const ruleset: Ruleset = {
@@ -264,7 +264,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `relatedInstances` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SharedAttributes.RelatedInstances.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.SharedAttributes.RelatedInstances.Ruleset
         // The specification returns content for `bis.ModelSelector` filtered by related
         // `bis.SpatialViewDefinition` instance `Yaw` property value.
         const ruleset: Ruleset = {

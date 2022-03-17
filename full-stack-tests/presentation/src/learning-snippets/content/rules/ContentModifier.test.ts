@@ -29,7 +29,7 @@ describe("Learning Snippets", () => {
     describe("ContentModifier", () => {
 
       it("uses `class` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentModifier.Class.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentModifier.Class.Ruleset
         // The ruleset has a content rule that returns content of all `bis.SpatialCategory` and `bis.GeometricModel`
         // instances.There's also a content modifier that creates a custom calculated property only for `bis.Category` instances.
         const ruleset: Ruleset = {
@@ -80,7 +80,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `requiredSchemas` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentModifier.RequiredSchemas.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentModifier.RequiredSchemas.Ruleset
         // The ruleset has a content rule that returns content of given input instances. There's also
         // a content modifier that tells us to load `bis.ExternalSourceAspect` related properties, but the
         // ECClass was introduced in BisCore version 1.0.2, so the modifier needs a `requiredSchemas` attribute
@@ -124,7 +124,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentModifier.Priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentModifier.Priority.Ruleset
         // The ruleset has a content rule that returns content of all `bis.SpatialCategory`
         // instances.There's also a content modifier that tells us to hide all properties
         // of `bis.Element` instances and a higher priority modifier that tells us to show
@@ -177,7 +177,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `relatedProperties` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentModifier.RelatedProperties.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentModifier.RelatedProperties.Ruleset
         // The ruleset has a content rule that returns content of given input instances. There's also
         // a content modifier that includes properties of the related `bis.Category` for all `bis.GeometricElement3d`
         // instances' content.
@@ -219,7 +219,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `calculatedProperties` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentModifier.CalculatedProperties.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentModifier.CalculatedProperties.Ruleset
         // The ruleset has a content rule that returns content of given input instances. There's also
         // a content modifier that creates a calculated property for `bis.GeometricElement3d` instances.
         const ruleset: Ruleset = {
@@ -257,7 +257,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `propertyCategories` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentModifier.PropertyCategories.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentModifier.PropertyCategories.Ruleset
         // The ruleset has a content rule that returns content of given input instances. There's also
         // a content modifier that moves all `bis.GeometricElement3d` properties into a custom category.
         const ruleset: Ruleset = {
@@ -307,7 +307,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `propertyOverrides` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentModifier.PropertyOverrides.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentModifier.PropertyOverrides.Ruleset
         // The ruleset has a content rule that returns content of given input instances. There's also
         // a content modifier that customizes display of `bis.GeometricElement3d` properties.
         const ruleset: Ruleset = {

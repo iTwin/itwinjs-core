@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("SelectedNodeInstances", () => {
 
       it("uses `acceptableSchemaName` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SelectedNodeInstances.AcceptableSchemaName.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.SelectedNodeInstances.AcceptableSchemaName.Ruleset
         // The ruleset has a specification that only returns content for input class instances which
         // are under `BisCore` schema.
         const ruleset: Ruleset = {
@@ -58,7 +58,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `acceptableClassNames` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SelectedNodeInstances.AcceptableClassNames.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.SelectedNodeInstances.AcceptableClassNames.Ruleset
         // The ruleset has a specification that only returns content for input class instances which
         // are of class `bis.SpatialViewDefinition`.
         const ruleset: Ruleset = {
@@ -88,7 +88,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `acceptablePolymorphically` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SelectedNodeInstances.AcceptablePolymorphically.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.SelectedNodeInstances.AcceptablePolymorphically.Ruleset
         // The ruleset has a specification that returns content for `bis.ViewDefinition` input class instances
         // and all deriving classes.
         const ruleset: Ruleset = {

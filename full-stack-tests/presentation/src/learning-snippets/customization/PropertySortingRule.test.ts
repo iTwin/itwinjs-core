@@ -30,7 +30,7 @@ describe("Learning Snippets", () => {
     describe("PropertySortingRule", () => {
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ PropertySortingRule.Priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.PropertySortingRule.Priority.Ruleset
         // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
         // consisting of `Roll` and `Pitch` property values. Also there are two customization rules to sort
         // instances by `Roll` and `Pitch` properties. The rules have different priorities and higher priority
@@ -84,7 +84,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `condition` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ PropertySortingRule.Condition.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.PropertySortingRule.Condition.Ruleset
         // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
         // consisting of `Roll` and `Pitch` property values. Also there are customization rule to sort
         // instances by `Pitch` property.
@@ -132,7 +132,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `class` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ PropertySortingRule.Class.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.PropertySortingRule.Class.Ruleset
         // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
         // consisting of `Roll` and `Pitch` property values. Also there are customization rule to sort
         // `bis.SpatialViewDefinition` instances by `Pitch` property
@@ -179,7 +179,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `isPolymorphic` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ PropertySortingRule.IsPolymorphic.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.PropertySortingRule.IsPolymorphic.Ruleset
         // This ruleset lists `bis.SpatialViewDefinition` instances with their `Roll` and `Pitch` properties as instance
         // labels. Sorting rule targets `bis.ViewDefinition3d`, the base class of `bis.SpatialViewDefinition`, so to
         // sort instances of the derived classes, `isPolymorphic` attribute needs to be `true`.
@@ -227,7 +227,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `propertyName` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ PropertySortingRule.PropertyName.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.PropertySortingRule.PropertyName.Ruleset
         // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
         // consisting of `Roll` and `Pitch` property values. Also there are customization rule to sort
         // instances of any class by `Pitch` property.
@@ -273,7 +273,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `sortAscending` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ PropertySortingRule.SortAscending.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.PropertySortingRule.SortAscending.Ruleset
         // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
         // consisting of `Roll` and `Pitch` property values. Also there are customization rule to sort
         // instances by `Pitch` property in descending order

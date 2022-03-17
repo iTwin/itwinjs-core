@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
   describe("Hierarchy Grouping", () => {
 
     it("uses `condition` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.Condition.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.Condition.Ruleset
       // There's a hierarchy of `bis.Model` instances and their elements. In addition, there's a grouping rule for `bis.Element`
       // that only takes effect if element's model has `IsPrivate` flag set to `true`.
       const ruleset: Ruleset = {
@@ -103,7 +103,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `createGroupForSingleItem` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset
       // There's a root nodes rule that returns nodes for all `bis.Element` instances and there's a grouping rule
       // that groups those elements by `CodeValue` property. The grouping rule has the `createGroupForSingleItem`
       // flag, so property grouping nodes are created even if they group only a single element.

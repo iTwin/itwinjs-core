@@ -29,7 +29,7 @@ describe("Learning Snippets", () => {
     describe("CalculatedPropertiesSpecification", () => {
 
       it("uses `label` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.CalculatedPropertiesSpecification.Label.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Label.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
         // additionally have a calculated "My Calculated Property" property.
         const ruleset: Ruleset = {
@@ -61,7 +61,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `value` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.CalculatedPropertiesSpecification.Value.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Value.Ruleset
         // There's a content rule for returning content of given `bis.GeometricElement3d` instance. The produced content is
         // customized to additionally have a calculated "Element Volume" property whose value is calculated based on
         // element's `BBoxHigh` and `BBoxLow` property values.
@@ -97,7 +97,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.CalculatedPropertiesSpecification.Priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.Priority.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
         // additionally have a "My Calculated Property" property with priority set to `9999`. This should make the property
         // appear at the top in the UI, since generally properties have a priority of `1000`.

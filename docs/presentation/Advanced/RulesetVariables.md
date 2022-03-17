@@ -24,7 +24,7 @@ The below example creates either a models' or an elements' hierarchy based on th
 By default the ruleset value is not set, which means neither of the two root node rules pass the condition. The result is empty hierarchy:
 
 ```ts
-[[include:RulesetVariables.InRuleCondition.Ruleset]]
+[[include:Presentation.RulesetVariables.InRuleCondition.Ruleset]]
 ```
 
 ![Empty Hierarchy](./media/ruleset-variables/empty-hierarchy.png)
@@ -32,7 +32,7 @@ By default the ruleset value is not set, which means neither of the two root nod
 Setting the ruleset value to `models` creates a models' hierarchy:
 
 ```ts
-[[include:RulesetVariables.InRuleCondition.SetToModels]]
+[[include:Presentation.RulesetVariables.InRuleCondition.SetToModels]]
 ```
 
 ![Models' Hierarchy](./media/ruleset-variables/models-hierarchy.png)
@@ -40,7 +40,7 @@ Setting the ruleset value to `models` creates a models' hierarchy:
 Setting the ruleset value to `elements` creates an elements' hierarchy:
 
 ```ts
-[[include:RulesetVariables.InRuleCondition.SetToElements]]
+[[include:Presentation.RulesetVariables.InRuleCondition.SetToElements]]
 ```
 
 ![Elements' Hierarchy](./media/ruleset-variables/elements-hierarchy.png)
@@ -54,7 +54,7 @@ The below example shows a hierarchy of elements grouped by class. When the `elem
 By default the ruleset value is not set - a hierarchy for all elements is created:
 
 ```ts
-[[include:RulesetVariables.InInstanceFilter.Ruleset]]
+[[include:Presentation.RulesetVariables.InInstanceFilter.Ruleset]]
 ```
 
 ![Empty Hierarchy](./media/ruleset-variables/elements-hierarchy.png)
@@ -62,7 +62,7 @@ By default the ruleset value is not set - a hierarchy for all elements is create
 Setting the ruleset value to specific IDs creates the hierarchy only for specific elements:
 
 ```ts
-[[include:RulesetVariables.InInstanceFilter.SetIds]]
+[[include:Presentation.RulesetVariables.InInstanceFilter.SetIds]]
 ```
 
 ![Filtered Elements' Hierarchy](./media/ruleset-variables/filtered-elements-hierarchy.png)
@@ -70,7 +70,7 @@ Setting the ruleset value to specific IDs creates the hierarchy only for specifi
 Clearing the ruleset value brings us back to the initial unfiltered view:
 
 ```ts
-[[include:RulesetVariables.InInstanceFilter.Unset]]
+[[include:Presentation.RulesetVariables.InInstanceFilter.Unset]]
 ```
 
 ![Elements' Hierarchy](./media/ruleset-variables/elements-hierarchy.png)
@@ -84,7 +84,7 @@ The below example shows a hierarchy that loads *Spatial View Definition* element
 By default the ruleset value is not set - *CodeValue* property value is used as the label:
 
 ```ts
-[[include:RulesetVariables.InCustomizationRuleValueExpression.Ruleset]]
+[[include:Presentation.RulesetVariables.InCustomizationRuleValueExpression.Ruleset]]
 ```
 
 ![Spatial View Definitions](./media/ruleset-variables/spatial-view-definitions.png)
@@ -92,7 +92,7 @@ By default the ruleset value is not set - *CodeValue* property value is used as 
 Setting the ruleset variable value makes it appear in front of every node's label:
 
 ```ts
-[[include:RulesetVariables.InCustomizationRuleValueExpression.SetValue]]
+[[include:Presentation.RulesetVariables.InCustomizationRuleValueExpression.SetValue]]
 ```
 
 ![Spatial View Definitions - Prefixed Labels](./media/ruleset-variables/spatial-view-definitions-prefixed.png)

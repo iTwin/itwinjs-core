@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("InstanceNodesOfSpecificClassesSpecification", () => {
 
       it("uses `classes` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.InstanceNodesOfSpecificClassesSpecification.Classes.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.InstanceNodesOfSpecificClassesSpecification.Classes.Ruleset
         // The ruleset has a specification that returns nodes for instances of `bis.PhysicalModel` class and all
         // its subclasses.
         const ruleset: Ruleset = {
@@ -57,7 +57,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `excludedClasses` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.InstanceNodesOfSpecificClassesSpecification.ExcludedClasses.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.InstanceNodesOfSpecificClassesSpecification.ExcludedClasses.Ruleset
         // The ruleset has a specification that returns nodes for all instances of `bis.Model` class
         // excluding instances of `bis.DefinitionModel`, `bis.GroupInformationModel` and their subclasses.
         const ruleset: Ruleset = {
@@ -86,7 +86,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `instanceFilter` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.InstanceNodesOfSpecificClassesSpecification.InstanceFilter.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.InstanceNodesOfSpecificClassesSpecification.InstanceFilter.Ruleset
         // The ruleset has a specification that returns nodes for `bis.ViewDefinition` instances whose
         // `CodeValue` property value ends with "View 1".
         const ruleset: Ruleset = {

@@ -30,7 +30,7 @@ describe("Learning Snippets", () => {
     describe("InstanceLabelOverride", () => {
 
       it("uses `requiredSchemas` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.RequiredSchemas.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.RequiredSchemas.Ruleset
         // The ruleset has root node rule that returns `Generic.PhysicalObject` instances and
         // customization rule to override label using related `bis.ExternalSourceAspect` property.
         // `bis.ExternalSourceAspect` ECClass was introduced in BisCore version 1.0.2, so the rule needs
@@ -75,7 +75,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.Priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.Priority.Ruleset
         // The ruleset has root node rule that returns `bis.GeometricModel3d` instances and two
         // customization rules to override labels. The rules have different priorities and
         // higher priority rule is handled first.
@@ -121,7 +121,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `onlyIfNotHandled` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.OnlyIfNotHandled.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.OnlyIfNotHandled.Ruleset
         // The ruleset has root node rule that returns `bis.GeometricModel3d` instances and two
         // customization rules to override label. The first label override rule has lower priority and
         // `onlyIfNodeHandled` attribute, which allows it to be overriden by higher priority rules. Even
@@ -169,7 +169,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `class` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.Class.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.Class.Ruleset
         // The ruleset has root node rule that returns `bis.Model` instances.
         // Also there is customization rule to override label only for `bis.GeometricModel3d` instances.
         const ruleset: Ruleset = {
@@ -212,7 +212,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses composite value specification", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.CompositeValueSpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.CompositeValueSpecification.Ruleset
         // The ruleset has root node rule that returns `bis.GeometricElement3d` instances and
         // customization rule to override instance label composed of string "ECClass" and instance ECClass name.
         const ruleset: Ruleset = {
@@ -252,7 +252,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses property value specification", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.PropertyValueSpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.PropertyValueSpecification.Ruleset
         // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances and
         // customization rule to override instance label using `Pitch` property value.
         const ruleset: Ruleset = {
@@ -291,7 +291,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses related property value specification", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.RelatedPropertyValueSpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.RelatedPropertyValueSpecification.Ruleset
         // The ruleset has root node rule that returns `meta.ECEnumerationDef` instances and
         // customization rule to override instance label using `Alias` property value of
         // `meta.ECSchemaDef` instance that is containing `meta.ECEnumerationDef` instance.
@@ -349,7 +349,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses string value specification", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.StringValueSpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.StringValueSpecification.Ruleset
         // The ruleset has root node rule that returns `bis.GeometricModel3d` instances and
         // customization rule to override label using string "Model Node".
         const ruleset: Ruleset = {
@@ -385,7 +385,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses class name value specification", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.ClassNameValueSpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.ClassNameValueSpecification.Ruleset
         // The ruleset has root node rule that returns `bis.GeometricModel3d` instances and
         // customization rule to override instance label using full name of instance ECClass.
         const ruleset: Ruleset = {
@@ -421,7 +421,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses class label value specification", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.ClassLabelValueSpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.ClassLabelValueSpecification.Ruleset
         // The ruleset has root node rule that returns 'bis.GeometricModel3d' instances and
         // customization rule to override instance label with instance class label.
         const ruleset: Ruleset = {
@@ -456,7 +456,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses briefcaseId value specification", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.BriefcaseIdValueSpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.BriefcaseIdValueSpecification.Ruleset
         // The ruleset has root node rule that returns `bis.GeometricModel3d` instances and
         // customization rule to override instance label with BriefcaseId value.
         const ruleset: Ruleset = {
@@ -491,7 +491,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses localId value specification", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.LocalIdValueSpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.LocalIdValueSpecification.Ruleset
         // The ruleset has root node rule that returns `bis.GeometricModel3d` instances and
         // customization rule to override instance label with LocalId value.
         const ruleset: Ruleset = {
@@ -526,7 +526,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses related instance label value specification", async () => {
-        // __PUBLISH_EXTRACT_START__ InstanceLabelOverride.RelatedInstanceLabelValueSpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.InstanceLabelOverride.RelatedInstanceLabelValueSpecification.Ruleset
         // The ruleset has root node rule that returns `Generic.PhysicalObject` instances and
         // customization rule to override instance label with label of `bis.Model` instance
         // containing `Generic.PhysicalObject` instance.

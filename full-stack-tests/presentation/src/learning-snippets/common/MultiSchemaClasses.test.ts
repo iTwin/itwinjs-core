@@ -26,7 +26,7 @@ describe("Learning Snippets", () => {
   describe("MultiSchemaClasses", () => {
 
     it("uses all attributes", async () => {
-      // __PUBLISH_EXTRACT_START__ MultiSchemaClasses.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.MultiSchemaClasses.Ruleset
       // This ruleset produces content for instances of `bis.PhysicalModel` and `bis.SpatialCategory` classes.
       // Descendants of these classes will be considered incompatible with the specified class filter because
       // `arePolymorphic` attribute is set to`false`.

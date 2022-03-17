@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("CustomQueryInstanceNodesSpecification", () => {
 
       it("uses `queries` attribute with StringQuerySpecification", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.CustomQueryInstanceNodesSpecification.StringQuerySpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomQueryInstanceNodesSpecification.StringQuerySpecification.Ruleset
         // The ruleset has a root nodes' specification that uses a given query to get all `bis.Model` instances.
         const ruleset: Ruleset = {
           id: "example",
@@ -72,7 +72,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `queries` attribute with ECPropertyValueQuerySpecification", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.CustomQueryInstanceNodesSpecification.ECPropertyValueQuerySpecification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomQueryInstanceNodesSpecification.ECPropertyValueQuerySpecification.Ruleset
         // The ruleset has a root nodes' specification that returns `MyDomain.MyParentElement` nodes. It also has
         // a children specification that returns `MyDomain.MyChildElement` children for `MyDomain.MyParentElement`
         // parent nodes using `ChildrenQuery` property value of the parent element.

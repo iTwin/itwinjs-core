@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("RelatedInstanceNodesSpecification", () => {
 
       it("uses `relationshipPaths` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.RelatedInstanceNodesSpecification.RelationshipPaths.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.RelatedInstanceNodesSpecification.RelationshipPaths.Ruleset
         // The ruleset has a specification that returns `bis.PhysicalModel` root nodes. The child node specification
         // returns `bis.GeometricElement3d` instance nodes that are related to their model through `bis.ModelContainsElements`
         // relationship by following it in forward direction (from `bis.Model` to `bis.Element`).

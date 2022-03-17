@@ -30,7 +30,7 @@ describe("Learning Snippets", () => {
     describe("DisabledSortingRule", () => {
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ DisabledSortingRule.Priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.DisabledSortingRule.Priority.Ruleset
         // The ruleset has root node rule that returns `bis.SpatialViewDefinition` instances with labels
         // consisting of `Roll` and `Pitch` property values. Also there are two customization rules to sort
         // instances by `Roll` property and to disable `bis.SpatialViewDefinition` instances sorting.
@@ -83,7 +83,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `condition` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ DisabledSortingRule.Condition.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.DisabledSortingRule.Condition.Ruleset
         // The ruleset has root node rule that returns `bis.ViewDefinition` instances with labels
         // consisting of `CodeValue` property value. Also there are customization rule to disable
         // instances sorting.
@@ -126,7 +126,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `class` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ DisabledSortingRule.Class.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.DisabledSortingRule.Class.Ruleset
         // The ruleset has root node rule that returns `bis.ViewDefinition` instances with labels
         // consisting of class name and `CodeValue` property value. Also there two are customization rules to sort
         // instances by `CodeValue` property and to disable `bis.SpatialViewDefinition` instances sorting.
@@ -178,7 +178,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `isPolymorphic` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ DisabledSortingRule.IsPolymorphic.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.DisabledSortingRule.IsPolymorphic.Ruleset
         // The ruleset has root node rule that returns `bis.ViewDefinition` instances with labels
         // consisting of class name and `CodeValue` property value. Also there are two customization rules to sort
         // instances by `CodeValue` property and to disable `bis.ViewDefinition2d` instances sorting polymorphically.

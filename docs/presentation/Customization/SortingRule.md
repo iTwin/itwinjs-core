@@ -34,7 +34,7 @@ instances are first sorted by the highest priority rule and then the lower prior
 A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
 
 ```ts
-[[include:Sorting.RequiredSchemas.Ruleset]]
+[[include:Presentation.Sorting.RequiredSchemas.Ruleset]]
 ```
 
 | `minVersion` value   | Result                                                                             |
@@ -49,7 +49,7 @@ A list of ECSchema requirements that need to be met for the rule to be used. See
 Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined.
 
 ```ts
-[[include:PropertySortingRule.Priority.Ruleset]]
+[[include:Presentation.PropertySortingRule.Priority.Ruleset]]
 ```
 
 ![Example of using priority attribute](./media/sortingrule-sorted-asc.png)
@@ -61,7 +61,7 @@ Defines the order in which rules are handled - higher priority means the rule is
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
 
 ```ts
-[[include:PropertySortingRule.Condition.Ruleset]]
+[[include:Presentation.PropertySortingRule.Condition.Ruleset]]
 ```
 
 | Condition evaluation result | Result                                                                 |
@@ -74,7 +74,7 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 Specifies ECClass whose ECInstances should be sorted.
 
 ```ts
-[[include:PropertySortingRule.Class.Ruleset]]
+[[include:Presentation.PropertySortingRule.Class.Ruleset]]
 ```
 
 ![Example of using class attribute](./media/sortingrule-sorted-asc.png)
@@ -86,20 +86,20 @@ Specifies ECClass whose ECInstances should be sorted.
 Specifies that `class` attribute defined in this rule should be handled polymorphically.
 
 ```ts
-[[include:PropertySortingRule.IsPolymorphic.Ruleset]]
+[[include:Presentation.PropertySortingRule.IsPolymorphic.Ruleset]]
 ```
 
-| `isPolymorphic` values    | Result                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------- |
-| `isPolymorphic = true`    | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png) |
-| `isPolymorphic = false`   | ![Example of using isPolymorphic attribute](./media/sortingrule-unsorted.png)   |
+| `isPolymorphic` values  | Result                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| `isPolymorphic = true`  | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png) |
+| `isPolymorphic = false` | ![Example of using isPolymorphic attribute](./media/sortingrule-unsorted.png)   |
 
 ### Attribute: `propertyName`
 
 Specifies name of the property which should be used for sorting.
 
 ```ts
-[[include:PropertySortingRule.PropertyName.Ruleset]]
+[[include:Presentation.PropertySortingRule.PropertyName.Ruleset]]
 ```
 
 ![Example of using propertyName attribute](./media/sortingrule-sorted-asc.png)
@@ -111,13 +111,13 @@ Specifies name of the property which should be used for sorting.
 Specifies whether instances should be sorted in ascending order or descending.
 
 ```ts
-[[include:PropertySortingRule.SortAscending.Ruleset]]
+[[include:Presentation.PropertySortingRule.SortAscending.Ruleset]]
 ```
 
-| `sortAscending` values    | Result                                                                           |
-| ------------------------- | -------------------------------------------------------------------------------- |
-| `sortAscending = true`    | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png)  |
-| `sortAscending = false`   | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-desc.png) |
+| `sortAscending` values  | Result                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| `sortAscending = true`  | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png)  |
+| `sortAscending = false` | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-desc.png) |
 
 ## Disabled Sorting Rule
 
@@ -127,9 +127,9 @@ Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
 
 ### Attributes
 
-| Name                                            | Required? | Type                                                                 | Default                        |
-| ----------------------------------------------- | --------- | -------------------------------------------------------------------- | ------------------------------ |
-| *Filtering*                                     |
+| Name                                              | Required? | Type                                                                 | Default                        |
+| ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------------------------------ |
+| *Filtering*                                       |
 | [`requiredSchemas`](#attribute-requiredschemas-1) | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`                           |
 | [`priority`](#attribute-priority-1)               | No        | `number`                                                             | `1000`                         |
 | [`condition`](#attribute-condition-1)             | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)       | `""`                           |
@@ -143,7 +143,7 @@ Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
 A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
 
 ```ts
-[[include:Sorting.RequiredSchemas.Ruleset]]
+[[include:Presentation.Sorting.RequiredSchemas.Ruleset]]
 ```
 
 | `minVersion` value   | Result                                                                             |
@@ -158,7 +158,7 @@ A list of ECSchema requirements that need to be met for the rule to be used. See
 Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined.
 
 ```ts
-[[include:DisabledSortingRule.Priority.Ruleset]]
+[[include:Presentation.DisabledSortingRule.Priority.Ruleset]]
 ```
 
 ![Example of using priority attribute](./media/sortingrule-unsorted.png)
@@ -170,7 +170,7 @@ Defines the order in which rules are handled - higher priority means the rule is
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
 
 ```ts
-[[include:DisabledSortingRule.Condition.Ruleset]]
+[[include:Presentation.DisabledSortingRule.Condition.Ruleset]]
 ```
 
 | Condition evaluation result | Result                                                                                    |
@@ -183,7 +183,7 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 Specifies ECClass whose instances should not be sorted.
 
 ```ts
-[[include:DisabledSortingRule.Class.Ruleset]]
+[[include:Presentation.DisabledSortingRule.Class.Ruleset]]
 ```
 
 ![Example of using class attribute](./media/disabledSorting-class-attribute.png)
@@ -195,10 +195,10 @@ Specifies ECClass whose instances should not be sorted.
 Specifies that `class` attribute defined in this rule should be handled polymorphically.
 
 ```ts
-[[include:DisabledSortingRule.IsPolymorphic.Ruleset]]
+[[include:Presentation.DisabledSortingRule.IsPolymorphic.Ruleset]]
 ```
 
-| `isPolymorphic` values    | Result                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------- |
-| `isPolymorphic = true`    | ![Example of using isPolymorphic attribute](./media/disabledSorting-isPolymorphic-attribute-true.png) |
-| `isPolymorphic = false`   | ![Example of using isPolymorphic attribute](./media/disabledSorting-isPolymorphic-attribute-false.png)   |
+| `isPolymorphic` values  | Result                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| `isPolymorphic = true`  | ![Example of using isPolymorphic attribute](./media/disabledSorting-isPolymorphic-attribute-true.png)  |
+| `isPolymorphic = false` | ![Example of using isPolymorphic attribute](./media/disabledSorting-isPolymorphic-attribute-false.png) |

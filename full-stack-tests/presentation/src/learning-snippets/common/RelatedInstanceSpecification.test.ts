@@ -30,7 +30,7 @@ describe("Learning Snippets", () => {
   describe("RelatedInstanceSpecification", () => {
 
     it("using in instance filter", async () => {
-      // __PUBLISH_EXTRACT_START__ RelatedInstanceSpecification.UsingInInstanceFilter.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingInInstanceFilter.Ruleset
       // This ruleset defines a specification that returns content for `bis.ViewDefinition` instances. In addition,
       // there's a related instance specification, that describes a path to a related display style, and an
       // instance filter that filters using its property.
@@ -74,7 +74,7 @@ describe("Learning Snippets", () => {
     });
 
     it("using for customization", async () => {
-      // __PUBLISH_EXTRACT_START__ RelatedInstanceSpecification.UsingForCustomization.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingForCustomization.Ruleset
       // This ruleset defines a specification that returns nodes for `meta.ECClassDef` instances. In addition,
       // there's a related instance specification, that describes a path to the schema that the class belongs to.
       // Finally, there's an extended data rule that sets full class name on each of the nodes. Full class name consists
@@ -111,7 +111,7 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
 
-      // __PUBLISH_EXTRACT_START__ RelatedInstanceSpecification.UsingForCustomization.Result
+      // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingForCustomization.Result
       // Every node should have its full class name in extended data
       const nodes = await Presentation.presentation.getNodes({
         imodel,
@@ -128,7 +128,7 @@ describe("Learning Snippets", () => {
     });
 
     it("using for grouping", async () => {
-      // __PUBLISH_EXTRACT_START__ RelatedInstanceSpecification.UsingForGrouping.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.RelatedInstanceSpecification.UsingForGrouping.Ruleset
       // This ruleset defines a specification that returns nodes for `meta.ECClassDef` instances. In addition,
       // there's a related instance specification, that describes a path to the schema that the class belongs to.
       // Finally, there's a grouping rule that requests grouping on `ECSchemaDef.Name` property. Because

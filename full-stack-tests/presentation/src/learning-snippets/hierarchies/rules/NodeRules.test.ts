@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("RootNodes & ChildNodes", () => {
 
       it("uses `ParentNode` symbol in rule condition", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.Condition.ParentNodeSymbol
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Condition.ParentNodeSymbol
         // This ruleset defines a tree with node "A" at the top and node "B" as child of "A".
         const ruleset: Ruleset = {
           id: "example",
@@ -65,7 +65,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses ruleset variables in rule condition", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.Condition.RulesetVariables.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Condition.RulesetVariables.Ruleset
         // This ruleset defines two rules that can be enabled or disabled by setting variable DISPLAY_A_NODES and
         // DISPLAY_B_NODES values.
         const ruleset: Ruleset = {
@@ -113,7 +113,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `requiredSchemas` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.RequiredSchemas.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.RequiredSchemas.Ruleset
         // The ruleset has one root node rule that returns `bis.ExternalSourceAspect` instances. The
         // ECClass was introduced in BisCore version 1.0.2, so the rule needs a `requiredSchemas` attribute
         // to only use the rule if the version meets the requirement.
@@ -140,7 +140,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.Priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Priority.Ruleset
         // The ruleset has two root node rules that return nodes "A" and "B" respectively. The rules
         // have different priorities and higher priority rule is handled first - it's node appears first.
         const ruleset: Ruleset = {
@@ -178,7 +178,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `onlyIfNotHandled` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.OnlyIfNotHandled.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.OnlyIfNotHandled.Ruleset
         // The ruleset has two root node rules that return nodes "A" and "B" respectively. The "A" rule has
         // lower priority and `onlyIfNotHandled` attribute, which allows it to be overriden by higher priority rules.
         // The "B" rule does exactly that.
@@ -214,7 +214,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `customizationRules` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.CustomizationRules.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomizationRules.Ruleset
         // The ruleset has a global label override rule and two root node rules that return nodes "A" and "B"
         // respectively. The "B" rule has a label override of its own.
         const ruleset: Ruleset = {
@@ -258,7 +258,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `subConditions` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.SubConditions.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.SubConditions.Ruleset
         // The ruleset has a root node rule with a schemas requirement and 2 sub-conditions. The latter are only used if schemas
         // requirement is met. Each sub-condition can have additional conditions.
         const ruleset: Ruleset = {
@@ -296,7 +296,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `autoExpand` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.AutoExpand.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.AutoExpand.Ruleset
         // The ruleset defines a root node "A" which should be automatically expanded. The flag is only
         // set if the node actually has children.
         const ruleset: Ruleset = {

@@ -26,7 +26,7 @@ describe("Learning Snippets", () => {
   describe("RelationshipPathSpecification", () => {
 
     it("using single-step specification", async () => {
-      // __PUBLISH_EXTRACT_START__ RelationshipPathSpecification.SingleStep.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.RelationshipPathSpecification.SingleStep.Ruleset
       // This ruleset defines a specification that returns content for given `bis.Model` instances. The
       // content is created for model elements found by following the `bis.ModelContainsElements`
       // relationship and picking only `bis.PhysicalElement` type of elements.
@@ -70,7 +70,7 @@ describe("Learning Snippets", () => {
     });
 
     it("using multi-step specification", async () => {
-      // __PUBLISH_EXTRACT_START__ RelationshipPathSpecification.MultiStep.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.RelationshipPathSpecification.MultiStep.Ruleset
       // This ruleset defines a specification that returns content for given `bis.GeometricModel3d` instances. The
       // content is created for categories of model elements found by following the `bis.ModelContainsElements` and
       // `bis.GeometricElement3dIsInCategory` relationships.

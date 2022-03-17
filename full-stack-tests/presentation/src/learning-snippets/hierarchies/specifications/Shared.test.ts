@@ -27,7 +27,7 @@ describe("Learning Snippets", () => {
   describe("Hierarchy Specifications", () => {
 
     it("uses `hideNodesInHierarchy` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HideNodesInHierarchy.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.HideNodesInHierarchy.Ruleset
       // The ruleset contains a root node specification for `bis.PhysicalModel` nodes which are grouped by class and hidden. This
       // means class grouping nodes are displayed, but instance nodes are hidden and instead their children are displayed. The
       // children are determined by another rule.
@@ -65,7 +65,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `hideIfNoChildren` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HideIfNoChildren.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.HideIfNoChildren.Ruleset
       // The ruleset contains root node specifications for two custom nodes which are only
       // displayed if they have children. One of them has children and the other - not, so
       // only one of them is displayed
@@ -116,7 +116,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `hideExpression` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HideExpression.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.HideExpression.Ruleset
       // The ruleset contains root node specifications for two custom nodes which are only
       // displayed if they have children. One of them has children and the other - not, so
       // only one of them is displayed
@@ -167,7 +167,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `suppressSimilarAncestorsCheck` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.SuppressSimilarAncestorsCheck.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.SuppressSimilarAncestorsCheck.Ruleset
       // The ruleset contains a root node specification that returns the root `bis.Subject` node. Also, there are two
       // child node rules:
       // - For any `bis.Model` node, return its contained `bis.Element` nodes.
@@ -263,7 +263,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `priority` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.Priority.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.Priority.Ruleset
       // This ruleset produces a list of `bis.PhysicalModel` and `bis.SpatialCategory` instances and groups them by
       // class. "Spatial Category" group will appear first because it has been given a higher priority value.
       const ruleset: Ruleset = {
@@ -296,7 +296,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `doNotSort` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.DoNotSort.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.DoNotSort.Ruleset
       // The ruleset has a specification that returns unsorted `bis.Model` nodes - the order is undefined.
       const ruleset: Ruleset = {
         id: "example",
@@ -319,7 +319,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `groupByClass` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.GroupByClass.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.GroupByClass.Ruleset
       // The ruleset contains a specification that returns `bis.Model` nodes without grouping them
       // by class.
       const ruleset: Ruleset = {
@@ -343,7 +343,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `groupByLabel` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.GroupByLabel.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.GroupByLabel.Ruleset
       // The ruleset contains a specification that returns `meta.ECPropertyDef` nodes without grouping them
       // by label.
       const ruleset: Ruleset = {
@@ -372,7 +372,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `hasChildren` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HasChildren.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.HasChildren.Ruleset
       // This ruleset produces a hierarchy of a single root node that hosts a list of `Model` instances. Assuming all
       // iModels contain at least one model, the result of this ruleset can be computed quicker by setting
       // `hasChildren` attribute to `"Always"`.
@@ -431,7 +431,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `relatedInstances` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.RelatedInstances.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.RelatedInstances.Ruleset
       // The ruleset contains a root nodes' specification that returns nodes for `bis.Elements` that are in
       // a category containing "a" in either `UserLabel` or `CodeValue` property.
       const ruleset: Ruleset = {
@@ -466,7 +466,7 @@ describe("Learning Snippets", () => {
     });
 
     it("uses `nestedRules` attribute", async () => {
-      // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.NestedRules.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Specification.NestedRules.Ruleset
       // The ruleset contains two root nodes' specifications:
       // - The first one returns `bis.SpatialCategory` nodes
       // - The second one returns `bis.PhysicalModel` nodes and also has a nested child node rule

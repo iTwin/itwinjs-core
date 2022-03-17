@@ -23,7 +23,7 @@ The default property category is a category that gets assigned to properties tha
 Lists schema requirements that need to be met for the rule to take effect. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
 
 ```ts
-[[include:Content.Customization.DefaultPropertyCategoryOverride.RequiredSchemas.Ruleset]]
+[[include:Presentation.Content.Customization.DefaultPropertyCategoryOverride.RequiredSchemas.Ruleset]]
 ```
 
 ![Example of using "required schemas" attribute](./media/defaultpropertycategoryoverride-with-requiredschemas-attribute.png)
@@ -35,7 +35,7 @@ Lists schema requirements that need to be met for the rule to take effect. See m
 Controls rule priority. Because there can only be one default category, default category override with the highest priority value will override all other rules of the same type.
 
 ```ts
-[[include:Content.Customization.DefaultPropertyCategoryOverride.Priority.Ruleset]]
+[[include:Presentation.Content.Customization.DefaultPropertyCategoryOverride.Priority.Ruleset]]
 ```
 
 ![Example of using "priority" attribute](./media/defaultpropertycategoryoverride-with-priority-attribute.png)
@@ -45,7 +45,7 @@ Controls rule priority. Because there can only be one default category, default 
 Specification for the custom property category.
 
 ```ts
-[[include:Content.Customization.DefaultPropertyCategoryOverride.Specification.Ruleset]]
+[[include:Presentation.Content.Customization.DefaultPropertyCategoryOverride.Specification.Ruleset]]
 ```
 
 ![Example of using "specification" attribute](./media/defaultpropertycategoryoverride-with-specification-attribute.png)

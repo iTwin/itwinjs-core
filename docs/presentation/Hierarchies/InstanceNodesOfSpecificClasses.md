@@ -32,7 +32,7 @@ Returns nodes for instances of specific ECClasses.
 Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) that specify which ECClasses need to be selected to form the result.
 
 ```ts
-[[include:Hierarchies.InstanceNodesOfSpecificClassesSpecification.Classes.Ruleset]]
+[[include:Presentation.Hierarchies.InstanceNodesOfSpecificClassesSpecification.Classes.Ruleset]]
 ```
 
 ![Example of using "classes" attribute](./media/hierarchy-with-specification-classes-attribute.png)
@@ -44,7 +44,7 @@ Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) t
 Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) that prevents specified ECClasses and subclasses from being selected by [`classes` attribute](#attribute-classes).
 
 ```ts
-[[include:Hierarchies.InstanceNodesOfSpecificClassesSpecification.ExcludedClasses.Ruleset]]
+[[include:Presentation.Hierarchies.InstanceNodesOfSpecificClassesSpecification.ExcludedClasses.Ruleset]]
 ```
 
 ![Example of using "excluded classes" attribute](./media/hierarchy-with-specification-excludedclasses-attribute.png)
@@ -56,7 +56,7 @@ Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) t
 Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering instances of ECClasses specified through the [`classes` attribute](#attribute-classes).
 
 ```ts
-[[include:Hierarchies.InstanceNodesOfSpecificClassesSpecification.InstanceFilter.Ruleset]]
+[[include:Presentation.Hierarchies.InstanceNodesOfSpecificClassesSpecification.InstanceFilter.Ruleset]]
 ```
 
 ![Example of using "instance filter" attribute](./media/hierarchy-with-specification-instancefilter-attribute.png)
@@ -68,7 +68,7 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 When `true`, instances nodes produced by this specification are omitted and their children appear one hierarchy level higher. **Note:** only instance nodes are hidden - grouping nodes are not affected by this attribute.
 
 ```ts
-[[include:Hierarchies.Specification.HideNodesInHierarchy.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.HideNodesInHierarchy.Ruleset]]
 ```
 
 | `hideNodesInHierarchy: false`                                                                                                                         | `hideNodesInHierarchy: true`                                                                                                                        |
@@ -82,7 +82,7 @@ When `true`, instances nodes produced by this specification are omitted and thei
 Specifies whether nodes created through this specification should be hidden if they have no child nodes.
 
 ```ts
-[[include:Hierarchies.Specification.HideIfNoChildren.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.HideIfNoChildren.Ruleset]]
 ```
 
 | `hideIfNoChildren: false`                                                                                                                     | `hideIfNoChildren: true`                                                                                                                    |
@@ -96,7 +96,7 @@ Specifies whether nodes created through this specification should be hidden if t
 When specified [ECExpression](./ECExpressions.md#specification) evaluates to `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
 
 ```ts
-[[include:Hierarchies.Specification.HideExpression.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.HideExpression.Ruleset]]
 ```
 
 | `hideExpression` evaluates to `false`                                                                                                          | `hideExpression` evaluates to `true`                                                                                                         |
@@ -110,7 +110,7 @@ When specified [ECExpression](./ECExpressions.md#specification) evaluates to `tr
 Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this specification. See more in [Infinite Hierarchies Prevention page](./InfiniteHierarchiesPrevention.md).
 
 ```ts
-[[include:Hierarchies.Specification.SuppressSimilarAncestorsCheck.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.SuppressSimilarAncestorsCheck.Ruleset]]
 ```
 
 ![Example of using "suppress similar ancestors check" attribute](./media/hierarchy-with-specification-suppresssimilarancestorscheck-attribute.png)
@@ -122,7 +122,7 @@ Specifies whether similar ancestor nodes' checking should be suppressed when cre
 Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
 
 ```ts
-[[include:Hierarchies.Specification.Priority.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.Priority.Ruleset]]
 ```
 
 ![Example of using "priority" attribute](./media/hierarchy-with-specification-priority-attribute.png)
@@ -136,7 +136,7 @@ Controls the order in which specifications are handled — specification with hi
 Suppress sorting of nodes returned by this specification. With this attribute set to `true`, the order of returned nodes is undefined.
 
 ```ts
-[[include:Hierarchies.Specification.DoNotSort.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.DoNotSort.Ruleset]]
 ```
 
 ![Example of using "do not sort" attribute](./media/hierarchy-with-specification-donotsort-attribute.png)
@@ -148,7 +148,7 @@ Suppress sorting of nodes returned by this specification. With this attribute se
 Controls whether returned instances should be grouped by ECClass.
 
 ```ts
-[[include:Hierarchies.Specification.GroupByClass.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.GroupByClass.Ruleset]]
 ```
 
 | `groupByClass: false`                                                                                                          | `groupByClass: true`                                                                                                                  |
@@ -167,7 +167,7 @@ Label grouping node is created only if all of these conditions match:
 - There's at least one sibling node with a different label.
 
 ```ts
-[[include:Hierarchies.Specification.GroupByLabel.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.GroupByLabel.Ruleset]]
 ```
 
 | `groupByLabel: false`                                                                                                          | `groupByLabel: true`                                                                                                                  |
@@ -194,7 +194,7 @@ empty list. It's up to the UI component to handle the case of parent node saying
 list even if there are child node rules that define children for it.
 
 ```ts
-[[include:Hierarchies.Specification.HasChildren.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.HasChildren.Ruleset]]
 ```
 
 | `hasChildren: "Always"`                                                                                                             | `hasChildren: "Never"`                                                                                                            |
@@ -222,7 +222,7 @@ are several use cases when this is useful:
   [alias](../RelatedInstanceSpecification.md#attribute-alias).
 
 ```ts
-[[include:Hierarchies.Specification.RelatedInstances.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.RelatedInstances.Ruleset]]
 ```
 
 ![Example of using "related instances" attribute](./media/hierarchy-with-specification-relatedinstances-attribute.png)
@@ -240,7 +240,7 @@ at the root level with condition to match the instance ECClass makes the rule cr
 different children.
 
 ```ts
-[[include:Hierarchies.Specification.NestedRules.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.NestedRules.Ruleset]]
 ```
 
 ![Example of using "nested rules" attribute](./media/hierarchy-with-specification-nestedrules-attribute.png)

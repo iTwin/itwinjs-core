@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("CustomNodeSpecification", () => {
 
       it("uses `type` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.Type.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomNodeSpecification.Type.Ruleset
         // The ruleset has a root node specification that returns a single custom node with specified parameters. There's
         // also a child node rule that assigns the child based on root node's type.
         const ruleset: Ruleset = {
@@ -65,7 +65,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `label` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.Label.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomNodeSpecification.Label.Ruleset
         // The ruleset has a root node specification that returns a single custom node with specified parameters.
         const ruleset: Ruleset = {
           id: "example",
@@ -89,7 +89,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `description` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.Description.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomNodeSpecification.Description.Ruleset
         // The ruleset has a root node specification that returns a single custom node and assigns it a description.
         const ruleset: Ruleset = {
           id: "example",
@@ -114,7 +114,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `imageId` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.ImageId.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomNodeSpecification.ImageId.Ruleset
         // The ruleset has a root node specification that returns a single custom node and assigns it an image identifier.
         const ruleset: Ruleset = {
           id: "example",
@@ -131,7 +131,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.ImageId.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomNodeSpecification.ImageId.Result
         // Verify that node with correct image identifier is returned
         const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
         expect(nodes).to.have.lengthOf(1).and.to.containSubset([{
@@ -141,7 +141,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `hideNodesInHierarchy` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.HideNodesInHierarchy.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.CustomNodeSpecification.HideNodesInHierarchy.Ruleset
         // This ruleset produces a hierarchy that consists of two custom nodes. The parent node is hidden by
         // `hideNodesInHierarchy` attribute, thus its child appears one hierarchy level higher.
         const ruleset: Ruleset = {

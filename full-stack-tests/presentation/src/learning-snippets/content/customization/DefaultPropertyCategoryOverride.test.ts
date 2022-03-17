@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("DefaultPropertyCategoryOverride", () => {
 
       it("uses `requiredSchemas` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.DefaultPropertyCategoryOverride.RequiredSchemas.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.DefaultPropertyCategoryOverride.RequiredSchemas.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition, there are two default
         // property category overrides:
         // - For iModels containing BisCore version 1.0.1 and older, the default property category should be "Custom Category OLD".
@@ -73,7 +73,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.DefaultPropertyCategoryOverride.Priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.DefaultPropertyCategoryOverride.Priority.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition, there are two default
         // property category overrides of different priorities. The high priority rule should take precedence.
         const ruleset: Ruleset = {
@@ -116,7 +116,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `specification` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Content.Customization.DefaultPropertyCategoryOverride.Specification.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.DefaultPropertyCategoryOverride.Specification.Ruleset
         // There's a content rule for returning content of given `bis.Subject` instance. In addition, there's a default property
         // category override to place properties into.
         const ruleset: Ruleset = {

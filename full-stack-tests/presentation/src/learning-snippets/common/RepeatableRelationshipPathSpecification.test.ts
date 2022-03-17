@@ -26,7 +26,7 @@ describe("Learning Snippets", () => {
   describe("RepeatableRelationshipPathSpecification", () => {
 
     it("using single-step specification with `count`", async () => {
-      // __PUBLISH_EXTRACT_START__ RepeatableRelationshipPathSpecification.SingleStepWithCount.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.RepeatableRelationshipPathSpecification.SingleStepWithCount.Ruleset
       // This ruleset defines a specification that returns content for given `bis.Element` instances by
       // returning their grandparent property values.
       const ruleset: Ruleset = {
@@ -62,7 +62,7 @@ describe("Learning Snippets", () => {
     });
 
     it("using recursive specification", async () => {
-      // __PUBLISH_EXTRACT_START__ RepeatableRelationshipPathSpecification.RecursiveSingleStep.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.RepeatableRelationshipPathSpecification.RecursiveSingleStep.Ruleset
       // This ruleset defines a specification that returns content for all children of the given `bis.Element`.
       const ruleset: Ruleset = {
         id: "example",
@@ -113,7 +113,7 @@ describe("Learning Snippets", () => {
     });
 
     it("combining recursive and non-recursive specifications", async () => {
-      // __PUBLISH_EXTRACT_START__ RepeatableRelationshipPathSpecification.RecursiveAndNonRecursiveSpecificationsCombination.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.RepeatableRelationshipPathSpecification.RecursiveAndNonRecursiveSpecificationsCombination.Ruleset
       // This ruleset defines a specification that returns content for categories of all elements in
       // the given `bis.Model` and their children.
       const ruleset: Ruleset = {
@@ -157,7 +157,7 @@ describe("Learning Snippets", () => {
     });
 
     it("combining multiple recursive specifications", async () => {
-      // __PUBLISH_EXTRACT_START__ RepeatableRelationshipPathSpecification.MultipleRecursiveSpecificationsCombination.Ruleset
+      // __PUBLISH_EXTRACT_START__ Presentation.RepeatableRelationshipPathSpecification.MultipleRecursiveSpecificationsCombination.Ruleset
       // The ruleset contains a three-step relationship path that finds all `bis.GeometricElement3d` elements related to given model
       // through the `bis.ModelContainsElements` relationship, then finds all `bis.SpatialCategory` elements related to `bis.GeometricElement3d`
       // found in the previous step through `bis.GeometricElement3dIsInCategory` relationship and finds all `bis.SubCategory` elements related

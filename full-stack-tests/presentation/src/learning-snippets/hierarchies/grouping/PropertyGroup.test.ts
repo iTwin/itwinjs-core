@@ -28,7 +28,7 @@ describe("Learning Snippets", () => {
     describe("PropertyGroup", () => {
 
       it("uses `createGroupForUnspecifiedValues` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.CreateGroupForUnspecifiedValues.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.PropertyGroup.CreateGroupForUnspecifiedValues.Ruleset
         // The ruleset contains a root nodes rule for `bis.Element` instances and a grouping rule that groups them
         // by `UserLabel` property. By default all nodes whose instance doesn't have a value for the property would
         // be placed under a "Not Specified" grouping node, but the grouping rule has this behavior disabled through
@@ -68,7 +68,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `imageId` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.ImageId.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.PropertyGroup.ImageId.Ruleset
         // The ruleset contains a root nodes rule for `bis.Element` instances and a grouping rule that groups them
         // by `UserLabel` property. The grouping rule also sets an image identifier for all grouping nodes.
         const ruleset: Ruleset = {
@@ -95,7 +95,7 @@ describe("Learning Snippets", () => {
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.ImageId.Result
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.PropertyGroup.ImageId.Result
         // Confirm that all grouping nodes got the `imageId`
         const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
         expect(nodes).to.not.be.empty;
@@ -112,7 +112,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `ranges` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.Ranges.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.Hierarchies.Grouping.PropertyGroup.Ranges.Ruleset
         // The ruleset contains a root nodes rule for `bis.GeometricElement3d` and a grouping rule that groups them
         // by `Yaw` property into 3 ranges: "Negative", "Positive" and "Zero".
         const ruleset: Ruleset = {

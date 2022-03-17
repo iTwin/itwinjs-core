@@ -25,7 +25,7 @@ The most commonly used symbols are:
 - `SelectedNode` to define which type of [input](./Terminology.md#input-instance) this rule is creating content for.
 
   ```ts
-  [[include:ContentRule.Condition.SelectedNodeSymbol]]
+  [[include:Presentation.ContentRule.Condition.SelectedNodeSymbol]]
   ```
 
   | Input instance | Result                                                                                                                                       |
@@ -36,7 +36,7 @@ The most commonly used symbols are:
 - [Ruleset variables](../Advanced/RulesetVariables.md#using-variables-in-rule-condition) to dynamically enable / disable the rule.
 
   ```ts
-  [[include:ContentRule.Condition.RulesetVariables.Ruleset]]
+  [[include:Presentation.ContentRule.Condition.RulesetVariables.Ruleset]]
   ```
 
   | Ruleset variable values                                    | Result                                                                                                                         |
@@ -50,7 +50,7 @@ The most commonly used symbols are:
 A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
 
 ```ts
-[[include:ContentRule.RequiredSchemas.Ruleset]]
+[[include:Presentation.ContentRule.RequiredSchemas.Ruleset]]
 ```
 
 ### Attribute: `priority`
@@ -58,7 +58,7 @@ A list of ECSchema requirements that need to be met for the rule to be used. See
 Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
 
 ```ts
-[[include:ContentRule.Priority.Ruleset]]
+[[include:Presentation.ContentRule.Priority.Ruleset]]
 ```
 
 ![Example of using priority attribute](./media/content-with-priority-attribute.png)
@@ -68,7 +68,7 @@ Defines the order in which rules are handled - higher priority means the rule is
 Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
 
 ```ts
-[[include:ContentRule.OnlyIfNotHandled.Ruleset]]
+[[include:Presentation.ContentRule.OnlyIfNotHandled.Ruleset]]
 ```
 
 ![Example of using onlyIfNotHandled attribute](./media/content-with-onlyifnothandled-attribute.png)

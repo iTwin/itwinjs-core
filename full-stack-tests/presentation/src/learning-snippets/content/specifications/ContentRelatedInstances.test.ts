@@ -29,7 +29,7 @@ describe("Learning Snippets", () => {
     describe("ContentInstancesOfSpecificClasses", () => {
 
       it("uses `classes` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.Classes.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentInstancesOfSpecificClasses.Classes.Ruleset
         // The specification returns content of all `bis.PhysicalModel` classes.
         const ruleset: Ruleset = {
           id: "example",
@@ -57,7 +57,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `excludedClasses` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset
         // The specification returns content of all classes derived from `bis.Model` except for excluded `bis.PhysicalModel` class.
         const ruleset: Ruleset = {
           id: "example",
@@ -87,7 +87,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `handlePropertiesPolymorphically` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.HandlePropertiesPolymorphically.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentInstancesOfSpecificClasses.HandlePropertiesPolymorphically.Ruleset
         // This ruleset returns content of all `bis.ViewDefinition` instances, including all properties from derived classes.
         const ruleset: Ruleset = {
           id: "example",
@@ -134,7 +134,7 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `instanceFilter` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset
+        // __PUBLISH_EXTRACT_START__ Presentation.ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset
         // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0.
         const ruleset: Ruleset = {
           id: "example",
