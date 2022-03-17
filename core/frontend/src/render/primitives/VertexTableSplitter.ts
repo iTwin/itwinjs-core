@@ -372,7 +372,7 @@ function remapSegmentEdges(type: "segments" | "silhouettes", source: EdgeParams,
   let srcNormalPairs;
   if (type === "silhouettes") {
     assert(undefined !== source.silhouettes);
-    srcNormalPairs = new Uint16Array(source.silhouettes.normalPairs.buffer, source.silhouettes.normalPairs.byteOffset, source.silhouettes.normalPairs.length / 2);
+    srcNormalPairs = new Uint32Array(source.silhouettes.normalPairs.buffer, source.silhouettes.normalPairs.byteOffset, source.silhouettes.normalPairs.length / 4);
   }
 
   let curIndexIndex = 0;

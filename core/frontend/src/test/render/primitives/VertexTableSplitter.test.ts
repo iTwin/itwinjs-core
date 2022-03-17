@@ -318,6 +318,8 @@ function makeEdgeParams(edges: Edges): EdgeParams {
 
 function expectSegments(params: SegmentEdgeParams, expected: Array<[number, number, number]> | Array<[number, number, number, number]>): void {
   let i = 0;
+  expect(params.indices.length).to.equal(expected.length);
+  expect(params.endPointAndQuadIndices.length).to.equal(4 * expected.length);
   expect(params.endPointAndQuadIndices.length % 4).to.equal(0);
   const epaq = new Uint32Array(params.endPointAndQuadIndices.buffer, params.endPointAndQuadIndices.byteOffset, params.endPointAndQuadIndices.length / 4);
   for (const index of params.indices) {
@@ -342,6 +344,7 @@ function expectEdges(params: EdgeParams | undefined, expected: Edges | undefined
 
   if (params.silhouettes) {
     expectSegments(params.silhouettes, expected.silhouettes!);
+    expect(params.silhouettes.normalPairs.length).to.equal(expected.silhouettes!.length * 4);
     expect(params.silhouettes.normalPairs.length % 4).to.equal(0);
     const normals = new Uint32Array(params.silhouettes.normalPairs.buffer, params.silhouettes.normalPairs.byteOffset, params.silhouettes.normalPairs.length / 4);
     for (let i = 0; i < expected.silhouettes!.length; i++)
@@ -625,15 +628,14 @@ describe.only("VertexTableSplitter", () => {
 
         [15, 17, 2],
         [16, 18, 3],
-      ],
-      silhouettes: [
+      ], silhouettes: [
         [2, 3, 0, 123],
-        [4, 6, 1, 0xfedcba98],
+        [4, 6, 1, 987],
 
-        [7, 8, 2, 0],
+        [7, 8, 2, 0xfedcba98],
         [8, 9, 3, 0xffffffff],
 
-        [15, 16, 0, 321],
+        [15, 16, 0, 0],
         [16, 17, 1, 789],
         [15, 18, 2, 0xdeadbeef],
       ],
@@ -647,6 +649,11 @@ describe.only("VertexTableSplitter", () => {
     const { params, featureTable } = surface;
     const split = splitMeshParams({ params, featureTable, maxDimension: 2048, computeNodeId: (id) => id.lower });
     expect(split.size).to.equal(3);
+
+    expectEdges(split.get(1)!.edges, {
+      segments: edges.segments!.slice(0, 3),
+      silhouettes: edges.silhouettes!.slice(0, 2),
+    });
   });
 
   it("omits edges for nodes that lack them", () => {
