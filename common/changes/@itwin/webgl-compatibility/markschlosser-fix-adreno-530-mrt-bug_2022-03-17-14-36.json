@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/webgl-compatibility",
+      "comment": "Add a workaround for a problem on Adreno 530 graphics chips which can cause multiple target rendering to fail.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/webgl-compatibility"
+}
