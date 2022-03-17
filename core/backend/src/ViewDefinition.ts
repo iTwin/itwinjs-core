@@ -207,6 +207,7 @@ export abstract class ViewDefinition extends DefinitionElement {
     }
   }
 
+  /** @beta */
   public static override readonly requiredReferenceKeys = [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
 
   /** @internal */
@@ -347,6 +348,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     predecessorIds.add(this.modelSelectorId);
   }
 
+  /** @beta */
   public static override readonly requiredReferenceKeys = [...super.requiredReferenceKeys, "modelSelectorId"];
 
   /** Load this view's ModelSelector from the IModelDb. */

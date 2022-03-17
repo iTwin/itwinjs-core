@@ -588,33 +588,6 @@ export class IModelExporter {
    */
   private _preExportTask: (() => Promise<void>) | undefined = undefined;
 
-  /**
-   * @internal
-   * it is a silent behavior change to make onExportElement async in the IModelTransformer, because a consumer could have overridden it like so:
-   * ```ts
-   * class MyIModelTransformer {
-   *   onExportElement(sourceElement) {
-   *     super.onExportElement(sourceElement); // does not return or await the super call which may be a promise
-   *     doStuff(); // this may rely on the result of incomplete code!
-   *   }
-   * }
-   * ```
-   * thus the promise of the IModelTransformer is "floating" (not-awaited). They need to either return or await it explicitly.
-   * In order to avoid a breaking behavior change for now (but it may be a breaking linter change if you use no-floating-promises),
-   * core subclasses that return a promise when overriding [[IModelExportHandler]] handlers must set `ensureSubclassPromiseAwaitedHack`
-   * with a promise that resolves when the handler is complete.
-   * This way even if the consumer is using the old synchronous override logic, and thus they ignored an asynchronous call made by the core,
-   * we can still await it ourselves internally.
-   * The core [[IModelExportHandler]]-derived classes and their async handlers are:
-   * - IModelTransformer -> onExportElement
-   * ensureSubclassPromiseAwaitedHack needs to be `await`ed in [[IModelExporter]] after any of those handler calls
-   *
-   * Once we're ready to make a breaking change we can remove this and require that if consumers override a core IModelExporterHandler-derived
-   * class with an explicit promise return type on one of the handlers, it must be awaited
-   * @deprecated as a mark to remove this the next time we can make a breaking change
-   */
-  private _ensureCoreAsyncHandlerAwaitedHack: Promise<any> | undefined;
-
   /** Export the child elements of the specified element from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
