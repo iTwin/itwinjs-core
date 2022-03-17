@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream } from "@itwin/core-bentley";
-import { Point3d, Transform } from "@itwin/core-geometry";
+import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -38,7 +38,7 @@ export abstract class RealityTileLoader {
 
   public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     // ###TODO: Handle case where tile tree reference(s) have a transform different from tree's (background map with ground bias).
-    return RealityTileLoader.computeTileClosestToEyePriority(tile, viewports, tile.tree.iModelTransform);
+    return RealityTileLoader.computeTileLocationPriority(tile, viewports, tile.tree.iModelTransform);
   }
 
   public abstract loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
@@ -146,14 +146,26 @@ export abstract class RealityTileLoader {
 
   public get viewFlagOverrides(): ViewFlagOverrides { return defaultViewFlagOverrides; }
 
-  public static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number {
-    // Prioritize tiles closer to eye.
-    // NB: In NPC coords, 0 = far plane, 1 = near plane.
+  public static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number {
+    // Compute a priority value for tiles that are:
+    // * Closer to the eye;
+    // * Closer to the center of the screen.
+    // This way, we can load in priority tiles that are more likely to be important.
+
     const center = location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
     let minDistance = 1.0;
     for (const viewport of viewports) {
       const npc = viewport.worldToNpc(center, scratchTileCenterView);
-      const distance = 1.0 - npc.z;
+
+      // NB: In NPC coords, 0 = far plane, 1 = near plane.
+      const distanceToEye = 1.0 - npc.z;
+      const distanceToCenter = npc.distanceXY(new Point2d(0.5, 0.5)) / 0.707; // Math.sqrt(0.5) = 0.707
+
+      // Distance is a mix of the two previously computed values, still in range [0; 1]
+      // We use this factor to determine how much the distance to the center of the screen is important compared to distance to the eye
+      const distanceToCenterWeight = 0.3;
+      const distance = distanceToEye * (1.0 - distanceToCenterWeight) + distanceToCenter * distanceToCenterWeight;
+
       minDistance = Math.min(distance, minDistance);
     }
 
