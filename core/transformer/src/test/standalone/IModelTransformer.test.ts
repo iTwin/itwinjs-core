@@ -1659,10 +1659,10 @@ describe("IModelTransformer", () => {
                 if (elementId === navPropTargetId) {
                   // don't export it, we'll export it later, after the holder
                 } else if (elementId === elemWithNavPropId) {
-                  super.exportElement(elemWithNavPropId);
-                  super.exportElement(navPropTargetId);
+                  await super.exportElement(elemWithNavPropId);
+                  await super.exportElement(navPropTargetId);
                 } else {
-                  super.exportElement(elementId);
+                  await super.exportElement(elementId);
                 }
               }
             }

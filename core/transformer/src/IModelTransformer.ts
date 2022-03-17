@@ -277,8 +277,8 @@ export class IModelTransformer extends IModelExportHandler {
     this.exporter.registerHandler(this);
     this.exporter.wantGeometry = options?.loadSourceGeometry ?? false; // optimization to not load source GeometryStreams by default
     if (!this._options.includeSourceProvenance) { // clone provenance from the source iModel into the target iModel?
-      IModelTransformer.provenanceElementClasses.forEach(cls => this.exporter.excludeElementClass(cls.classFullName));
-      IModelTransformer.provenanceElementAspectClasses.forEach(cls => this.exporter.excludeElementAspectClass(cls.classFullName));
+      IModelTransformer.provenanceElementClasses.forEach((cls) => this.exporter.excludeElementClass(cls.classFullName));
+      IModelTransformer.provenanceElementAspectClasses.forEach((cls) => this.exporter.excludeElementAspectClass(cls.classFullName));
     }
     this.exporter.excludeElementAspectClass(ChannelRootAspect.classFullName); // Channel boundaries within the source iModel are not relevant to the target iModel
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
@@ -629,6 +629,7 @@ export class IModelTransformer extends IModelExportHandler {
       .filter((processState) => processState.needsImport);
 
     if (unresolvedPredecessorsProcessStates.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/dot-notation
       this.exporter["_preExportTask"] = async () => {
         for (const processState of unresolvedPredecessorsProcessStates) {
           // must export element first if not done so

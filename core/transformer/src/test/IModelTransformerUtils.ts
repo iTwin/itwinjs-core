@@ -227,9 +227,9 @@ export async function assertIdentityTransformation(
     // [IModelTransformerOptions.includeSourceProvenance]$(transformer) is set to true
     classesToIgnoreMissingElemsOfInTarget = IModelTransformer.provenanceElementClasses,
   }: {
-    expectedElemsOnlyInSource?: Partial<ElementProps>[],
+    expectedElemsOnlyInSource?: Partial<ElementProps>[];
     /** before checking elements that are only in the source are correct, filter out elements of these classes */
-    classesToIgnoreMissingElemsOfInTarget ?: (typeof Entity)[],
+    classesToIgnoreMissingElemsOfInTarget?: (typeof Entity)[];
   } = {}
 ) {
   const geometryConversionTolerance = 1e-10;
@@ -342,7 +342,7 @@ export async function assertIdentityTransformation(
     .filter(([_inTarget, inSource]) => inSource === undefined)
     .map(([inTarget]) => [inTarget.id, inTarget]));
   const notIgnoredElementsOnlyInSourceAsInvariant = [...onlyInSourceElements.values()]
-    .filter(elem => !classesToIgnoreMissingElemsOfInTarget.some(cls => elem instanceof cls))
+    .filter((elem) => !classesToIgnoreMissingElemsOfInTarget.some((cls) => elem instanceof cls))
     .map((elem) => {
       const rawProps = { ...elem } as Partial<Mutable<Element>>;
       delete rawProps.iModel;
