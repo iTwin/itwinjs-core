@@ -3119,8 +3119,6 @@ export class Model extends Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
-    // @beta
-    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // (undocumented)
     setJsonProperty(name: string, value: any): void;
     setUserProperties(nameSpace: string, value: any): void;
