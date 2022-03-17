@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { UiError } from "@itwin/appui-abstract";
-import { SvgSprite, WebFontIcon, WebFontIconProps } from "@itwin/core-react";
+import { IconSpecUtilities, UiError } from "@itwin/appui-abstract";
+import { Icon, WebFontIcon, WebFontIconProps } from "@itwin/core-react";
 import { UiComponents } from "../UiComponents";
 import { Image, ImageFileFormat, LoadedBinaryImage, LoadedImage } from "./IImageLoader";
 
@@ -36,8 +36,9 @@ export class ImageRenderer {
 
   /** Render svg string into JSX */
   private renderSvg(svg: string) {
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(svg);
     return (
-      <div><SvgSprite src={svg} /></div>
+      <div><Icon iconSpec={iconSpec} /></div>
     );
   }
 

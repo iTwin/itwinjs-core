@@ -74,7 +74,7 @@ export interface AbstractStatusBarItem extends ProvidedItem {
 export interface AbstractStatusBarActionItem extends AbstractStatusBarItem {
   /** method to execute when icon is pressed */
   readonly execute: () => void;
-  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix  to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue;
   /** Label. */
   readonly label?: string | ConditionalStringValue;
@@ -86,7 +86,7 @@ export interface AbstractStatusBarActionItem extends AbstractStatusBarItem {
  * @public
  */
 export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem {
-  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix  to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue;
   /** Label. */
   readonly label: string | ConditionalStringValue;

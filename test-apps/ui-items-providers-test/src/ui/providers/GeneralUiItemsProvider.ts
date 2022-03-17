@@ -5,14 +5,14 @@
 
 import {
   AbstractStatusBarItemUtilities,
-  CommonStatusBarItem, CommonToolbarItem, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
+  CommonStatusBarItem, CommonToolbarItem, IconSpecUtilities, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
 } from "@itwin/appui-abstract";
 import { SampleTool } from "../../tools/SampleTool";
-import statusBarButtonSvg from "../icons/StatusField.svg?sprite";
 import { UnitsPopupUiDataProvider } from "../dialogs/UnitsPopup";
 import { IModelApp } from "@itwin/core-frontend";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { OpenAbstractDialogTool } from "../../tools/OpenAbstractModalDialogTool";
+import statusFieldSvg from "../icons/StatusField.svg";
 
 /**
  * The GeneralUiItemsProvider provides additional items to any frontstage that has a usage value of StageUsage.General.
@@ -35,7 +35,7 @@ export class GeneralUiItemsProvider implements UiItemsProvider {
   }
 
   public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
-    const unitsIcon = `svg:${statusBarButtonSvg}`;
+    const unitsIcon = IconSpecUtilities.createWebComponentIconSpec(statusFieldSvg);
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(

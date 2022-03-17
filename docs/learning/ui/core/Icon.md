@@ -2,17 +2,24 @@
 
 The [Icon]($core-react:Icon) category in the `@itwin/core-react` package includes components that render icons when given an icon name or SVG source or path.
 
-The [Icon]($core-react) React component displays an icon based on an IconSpec.
-An [IconSpec]($core-react:Icon) can be a string, ReactNode or
-[ConditionalStringValue]($appui-abstract).
-When the IconSpec is a string, the value is either a Webfont name or a formatted string that includes an imported SVG.
-When using an SVG, it must be imported using the webpack loader `svg-sprite-loader`.
-The formatted string begins with "svg:".
-The `IconSpecUtilities.createSvgIconSpec` can be used to format the SVG string. See example usage below.
+The [Icon]($core-react) React component displays an icon based on an IconSpec. An [IconSpec]($core-react:Icon) can be a string, ReactNode or [ConditionalStringValue]($appui-abstract).
+When the IconSpec is a string, the value is either a Webfont symbol name or a formatted string that specifies an imported SVG.
+When using an SVG, we use the web component svg-loader to load the SVG from its path. This web component is defined in UiCore.initialize() as follows:
 
-The [SvgSprite]($core-react) React component displays an icon using `<svg>` and `<use>` elements to reference an imported SVG file. The SVG file must be imported using the webpack loader `svg-sprite-loader`.
+```tsx
+    if (window.customElements.get("svg-loader") === undefined)
+      window.customElements.define("svg-loader", IconWebComponent);
+```
 
-The [SvgSprite]($core-react) React component displays an icon using an `<svg>` element and an array of SVG paths.
+If your app does not initialize UiFramework or UiCore, you'll need to define this custom element to use the svg-loader.
+
+The [Icon]($core-react) will automatically use the svg-loader in IconWebComponent, assuming the customElement has been defined.
+
+The formatted svg icon string begins with "webSvg:".
+The `IconSpecUtilities.createWebComponentIconSpec` can be used to format the SVG string. See example usage below.
+
+The sprite SVG loader has been deprecated.
+The [SvgSprite]($core-react) React component has been deprecated.
 
 ## Examples
 
@@ -32,9 +39,9 @@ This example shows how to use an SVG from `@bentley/icons-generic`.
 import { IconSpecUtilities } from "@itwin/appui-abstract";
 import { Icon } from "@itwin/core-react";
 
-import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg?sprite";
+import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg";
 . . .
-const iconSpec = IconSpecUtilities.createSvgIconSpec(placeholderSvg);
+const iconSpec = IconSpecUtilities.createWebComponentIconSpec(placeholderSvg);
 . . .
 <Icon iconSpec={iconSpec} />
 ```
@@ -44,22 +51,11 @@ const iconSpec = IconSpecUtilities.createSvgIconSpec(placeholderSvg);
 This example shows how to use an SVG from within the application.
 
 ```tsx
-import rotateSvg from "../icons/rotate.svg?sprite";
+import rotateSvg from "../icons/rotate.svg";
 . . .
-const iconSpec = IconSpecUtilities.createSvgIconSpec(rotateSvg);
+const iconSpec = IconSpecUtilities.createWebComponentIconSpec(rotateSvg);
 . . .
 <Icon iconSpec={iconSpec} />
-```
-
-### SvgSprite and SVG File
-
-Rather then using the Icon component with SVG files, the SvgSprite component can be used.
-
-```tsx
-import { Icon } from "@itwin/core-react";
-import rotateSvg from "../icons/rotate.svg?sprite";
-. . .
-<SvgSprite src={rotateSvg} />
 ```
 
 ### SvgPath

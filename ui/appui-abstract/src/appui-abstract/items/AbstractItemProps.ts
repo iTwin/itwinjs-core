@@ -25,7 +25,7 @@ export interface CommonItemProps {
   badgeType?: BadgeType;
   /** if set, it is used to explicitly set the description shown by components that support a description. */
   description?: string | ConditionalStringValue;
-  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix  to imported symbol Id. */
   icon?: string | ConditionalStringValue;
   /** optional data to be used by item implementor. */
   readonly internalData?: Map<string, any>;
