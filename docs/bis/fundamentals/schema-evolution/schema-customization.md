@@ -83,5 +83,5 @@ There needs to be a default strategy for converting the dynamic schemas to desce
 -->
 
 ---
-| Next: [Data Evolution Across Time](./appendix-a-data-evolution-across-time.md)
+| Next: [Data Evolution Across Time](./data-evolution-across-time.md)
 |:---

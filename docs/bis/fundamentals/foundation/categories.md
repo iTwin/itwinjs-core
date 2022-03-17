@@ -94,5 +94,5 @@ Each iModel Connector job should create a `DefinitionModel` for its Categories. 
 iModel Connectors should respect and use the standard SpatialCategories defined by the Domains.
 
 ---
-| Next: [Schema Customization](./schema-customization.md)
+| Next: [Information Hierarchy](../data-organization/information-hierarchy.md)
 |:---

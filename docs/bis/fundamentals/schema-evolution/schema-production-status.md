@@ -85,5 +85,5 @@ An iModel's `ProductionStatus` can conceptually be upgraded as follows:
 In the future, the ability for a user to upgrade the `ProductionStatus` of an iModel will be provided.
 
 ---
-| Next: [BIS Schema Units](./units.md)
+| Next: [Rules and Recommendations](../naming-guidelines/rules-and-recommendations.md)
 |:---

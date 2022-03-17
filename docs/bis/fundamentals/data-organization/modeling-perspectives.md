@@ -30,7 +30,7 @@ Modeling perspectives are also manifested in `Element` subclasses. Often there i
 
 <!-- The above paragraph is intentionally vague. I am hoping we can approve it for now and improve it when we figure out our mixin (or whatever strategy)-->
 
-[Top of the World](./top-of-the-world.md) discusses `InformationPartitionElement`s and [Model Fundamentals](model-fundamentals.md) discusses `Model`s.
+[Top of the World](./top-of-the-world.md) discusses `InformationPartitionElement`s and [Model Fundamentals](../foundation/model-fundamentals.md) discusses `Model`s.
 
 <!-- Temporarily left this out:>
 
@@ -93,7 +93,7 @@ There is one and only one Physical modeling perspective for a given `Subject` in
 
 The Physical modeling perspective cannot be "subclassed". (For legacy reasons there are some subclasses of `PhysicalModel` in BIS schemas, but those subclasses are never used.)
 
-See [Physical Models and Elements](./physical-models-and-elements.md) for details of physical modeling.
+See [Physical Models and Elements](../physical-perspective/physical-models-and-elements.md) for details of physical modeling.
 
 #### Physical Backbone
 
@@ -105,7 +105,7 @@ Functional modeling perspectives view reality as objects intended to perform a f
 
 An example of a functional modeling perspective is viewing the interconnected components of a process plant as a system that performs a function.
 
-See [Functional Models and Elements](./functional-models-and-elements.md) for details of functional modeling.
+See [Functional Models and Elements](../other-perspectives/functional-models-and-elements.md) for details of functional modeling.
 
 ### Analytical Modeling Perspectives
 
@@ -117,7 +117,7 @@ There are similarities between the Functional and Analytical perspectives. The p
 
 Note that some analyses can be performed directly on the Physical Perspective data; these analyses do not require conceptually reality from a custom perspective.
 
-See [Analytical Models and Elements](./analysis-models-and-elements.md) for details of analytical modeling.
+See [Analytical Models and Elements](../other-perspectives/analysis-models-and-elements.md) for details of analytical modeling.
 
 <!-- Allan believes the following partitions/models have much value, but are a force-fit as a modeling perspective:
 - Definition
@@ -137,7 +137,7 @@ See [Analytical Models and Elements](./analysis-models-and-elements.md) for deta
 The top of a definition hierarchy starts with a `DefinitionModel` that models a `DefinitionPartition`.
 This allows `DefinitionElements` to be organized by how they relate to the parent `Subject` of the `DefinitionPartition`.
 The can be multiple `DefinitionPartition` Elements and corresponding `DefinitionModel` Models so that definitions (instances of `DefinitionElement`) can be organized by source, discipline, or other criteria.
-Each `DefinitionPartition` is identified by its [Code](./glossary.md#code).
+Each `DefinitionPartition` is identified by its [Code](../glossary.md#code).
 
 See [Organizing Repository-global Definition Elements](./organizing-definition-elements.md) for details on the expected organization of repository-global definition elements in the *DictionaryModel*.
 

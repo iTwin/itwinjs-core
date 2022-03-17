@@ -32,11 +32,11 @@
 - [Organizing Repository-global Definition Elements](./fundamentals/data-organization/organizing-definition-elements.md)
 
 #### Physical Modeling Perspective
-- [3D Guidance](./fundamentals/physical-pers/3d-guidance.md)
-- [PhysicalModel Hierarchy](./fundamentals/physicalpers/physical-hierarchy-organization.md)
-- [Physical Models and Elements](./fundamentals/physicalpers/physical-models-and-elements.md)
-- [Type Definitions](./fundamentals/physicalpers/type-definitions.md)
-- [Physical Materials](./fundamentals/physicalpers/physical-materials.md)
+- [3D Guidance](./fundamentals/physical-perspective/3d-guidance.md)
+- [PhysicalModel Hierarchy](./fundamentals/physical-perspective/physical-hierarchy-organization.md)
+- [Physical Models and Elements](./fundamentals/physical-perspective/physical-models-and-elements.md)
+- [Type Definitions](./fundamentals/physical-perspective/type-definitions.md)
+- [Physical Materials](./fundamentals/physical-perspective/physical-materials.md)
 
 #### Other Modeling Perspectives
 - [Functional Models and Elements](./fundamentals/other-perspectives/functional-models-and-elements.md)
@@ -45,7 +45,7 @@
 
 #### Schema Evolution
 - [Schema Customization](./fundamentals/schema-evolution/schema-customization.md)
-- [Data Evolution Across Time](./fundamentals/schema-evolution/appendix-a-data-evolution-across-time.md)
+- [Data Evolution Across Time](./fundamentals/schema-evolution/data-evolution-across-time.md)
 - [Schema Versioning](./fundamentals/schema-evolution/schema-versioning-and-generations.md)
 - [Schema Production Status](./fundamentals/schema-evolution/schema-production-status.md)
 
@@ -60,7 +60,8 @@
 #### Other topics
 - [BIS Schema Units](./fundamentals/other-topics/units.md)
 - [BIS Schema Validation](./fundamentals/other-topics/bis-schema-validation.md)
-- [BIS Glossary](./fundamentals/other-topics/glossary.md)
+
+#### [BIS Glossary](./fundamentals/glossary.md)
 
 &nbsp;
 

@@ -20,7 +20,7 @@ The rules are broken into the different parts of the Schema they are validated a
 
 #### BIS-001 <a name="BIS-001"></a>
 
-A schema must load and pass EC3.1 [spec validation](../ec/ec-schema-validation.md).
+A schema must load and pass EC3.1 [spec validation](../../ec/ec-schema-validation.md).
 
 #### BIS-002 <a name="BIS-002"></a>
 
@@ -245,5 +245,5 @@ Relationship Constraint should not use abstract constraint which derives from a 
 Struct classes must not have base classes.
 
 ---
-| Next: [BIS Glossary](./glossary.md)
+| Next: [BIS Glossary](../glossary.md)
 |:---

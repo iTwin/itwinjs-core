@@ -8,7 +8,7 @@ The hierarchies in BIS repositories are intended to facilitate both human and so
 
 ## Hierarchy Constructs
 
-As was explained in [Model Fundamentals](./model-fundamentals.md), there are only three mechanisms available in BIS to create a hierarchy:
+As was explained in [Model Fundamentals](../foundation/model-fundamentals.md), there are only three mechanisms available in BIS to create a hierarchy:
 
 <!-- TODO: This is no longer true. There are more mechanisms in BIS to create a hierarchy. E.g. SpatialComposition, External Sources -->
 

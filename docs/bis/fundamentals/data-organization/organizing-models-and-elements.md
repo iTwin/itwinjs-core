@@ -13,7 +13,7 @@ These principles and rules govern how `Model`s and `Element`s are organized to m
 - BIS conceives that a real-world Object consists of multiple [Entities](../glossary.md#Entity), each from a different [Modeling Perspective.](./modeling-perspectives.md)
 - An `Element` models an [Entity](../glossary.md#Entity).
 - An `Element` can only be placed in a `Model` of compatible [Modeling Perspective](./modeling-perspectives.md).
-- A sub-Model of an `Element` models the same [Entity](./glossary.md#Entity) as the `Element`, but at a finer granularity.
+- A sub-Model of an `Element` models the same [Entity](../glossary.md#Entity) as the `Element`, but at a finer granularity.
 - `Model`s can only sub-model `Element`s of a compatible [Modeling Perspective](./modeling-perspectives.md).
 - A parent `Element` identifies an [Entity](../glossary.md#Entity) and may model a part of it, but it together with its child `Element`s model the [Entity](../glossary.md#Entity).
 - Parent `Element`s and Child `Element`s must be in the same `Model`.
@@ -31,7 +31,7 @@ These principles and rules govern how `Model`s and `Element`s are organized to m
 
 ### A top-Model models a top-level Entity from a specified perspective
 
-As described in [Top of the World](./top-of-the-world.md) the root `Subject` identifies the real-world [Object](../glossary.md#Object) modeled in a `BIS Repository`.  When [modeling an Object with BIS](./modeling-with-bis.md) it is split into multiple [Entities](../glossary.md#Entity), one for each modeling perspective.  Each modeling perspective is represented by a partition `Element` added as a child of the `Subject`.  A top-Model is created for each partition to model the Object from the Entities perspective.
+As described in [Top of the World](./top-of-the-world.md) the root `Subject` identifies the real-world [Object](../glossary.md#Object) modeled in a `BIS Repository`.  When [modeling an Object with BIS](../intro/modeling-with-bis.md) it is split into multiple [Entities](../glossary.md#Entity), one for each modeling perspective.  Each modeling perspective is represented by a partition `Element` added as a child of the `Subject`.  A top-Model is created for each partition to model the Object from the Entities perspective.
 
 In summary:
 
@@ -93,7 +93,7 @@ Use these questions to determine whether to use parent-child modeling vs sub-mod
 
 ![Whole-Part Mapping Flowchart](../media/organizing-models-and-elements-03.png)
 
-That last question needs elaboration. What are typical reasons why users need to both model the [Entity](./glossary.md#Entity) as-a-whole and also model it as a collection of fine-grained parts? Reasons include:
+That last question needs elaboration. What are typical reasons why users need to both model the [Entity](../glossary.md#Entity) as-a-whole and also model it as a collection of fine-grained parts? Reasons include:
 
 - According to the [SRPP](./srpp.md), if one party determines that X should exist in a particular place, but delegates responsibility for modeling X in detail to a second party, the delegate would need to do their work in their own `Model`.
 - If some workflows want to deal with the Entity-as-a-whole, but other workflows (e.g. fabrication for construction) need to deal with it as a set of parts, the fabricator would want a `Model` focused on the parts used to fabricate the whole.

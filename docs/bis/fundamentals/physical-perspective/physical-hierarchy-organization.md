@@ -252,5 +252,5 @@ We need a Site class that implements ISite. Should it be Sealed?
 5. Provide validation code/capability that uses ModelAffinity data.
 
 ---
-| Next: [Categories](./categories.md)
+| Next: [Physical Models and Elements](./physical-models-and-elements.md)
 |:---
