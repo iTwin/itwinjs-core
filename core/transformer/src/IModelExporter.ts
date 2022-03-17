@@ -575,8 +575,9 @@ export class IModelExporter {
       await this.handler.onExportElement(element, isUpdate);
       // non-breaking change async behavior hack
       if (this._preExportTask) {
-        await this._preExportTask;
+        const preExportTask = this._preExportTask; // store the preExportTask in this scope, it can be overridden by nested calls
         this._preExportTask = undefined;
+        await preExportTask();
         await this.handler.onExportElement(element, isUpdate);
       }
       // end hack
@@ -593,7 +594,7 @@ export class IModelExporter {
    * without the no-floating-promises linter rule will not notice that now any calls to `super.onExportElement` will no longer
    * be synchronous and it may break their custom transformer subclasses that used that assumption
    */
-  private _preExportTask: Promise<void> | undefined = undefined;
+  private _preExportTask: (() => Promise<void>) | undefined = undefined;
 
   /**
    * @internal

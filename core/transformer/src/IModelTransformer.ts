@@ -128,30 +128,27 @@ class PartiallyCommittedElement {
 class ElementProcessState {
   public constructor(
     public elementId: string,
-    /** whether or not the element was imported to the target yet, does not mean the model that submodels it is */
-    public elemInTarget: boolean,
-    /** whether or not the model that submodels this element was imported to the target yet. If undefined, means it is not submodeled */
-    public subModelInTarget: boolean | undefined,
+    /** whether or not this element needs to be processed */
+    public needsElemImport: boolean,
+    /** whether or not this element's submodel needs to be processed */
+    public needsModelImport: boolean,
   ) {}
   public static fromElementAndTransformer(elementId: Id64String, transformer: IModelTransformer): ElementProcessState {
-    const dbHasModelWithId = (db: IModelDb) => db.withPreparedStatement("SELECT 1 FROM bis.Model WHERE ECInstanceId=? LIMIT 1", (stmt) => {
-      stmt.bindId(1, elementId);
+    // we don't need to load all of the props of the model to check if the model exists
+    const dbHasModel = (db: IModelDb, id: Id64String) => db.withPreparedStatement("SELECT 1 FROM bis.Model WHERE ECInstanceId=? LIMIT 1", (stmt) => {
+      stmt.bindId(1, id);
       const stepResult = stmt.step();
       if (stepResult === DbResult.BE_SQLITE_DONE) return false;
       if (stepResult === DbResult.BE_SQLITE_ROW) return true;
       else throw new IModelError(stepResult, "expected 1 or no rows");
     });
-    const isSubModeled = dbHasModelWithId(transformer.sourceDb);
+    const isSubModeled = dbHasModel(transformer.sourceDb, elementId);
     const idOfElemInTarget = transformer.context.findTargetElementId(elementId);
-    const isElemInTarget = Id64.invalid === idOfElemInTarget;
-    const subModelInTarget = isSubModeled
-      ? isElemInTarget
-        ? dbHasModelWithId(transformer.targetDb)
-        : false
-      : undefined;
-    return new ElementProcessState(elementId, isElemInTarget, subModelInTarget);
+    const isElemInTarget = Id64.invalid !== idOfElemInTarget;
+    const needsModelImport = isSubModeled && (!isElemInTarget || !dbHasModel(transformer.targetDb, idOfElemInTarget));
+    return new ElementProcessState(elementId, !isElemInTarget, needsModelImport);
   }
-  public get inTarget() { return this.elemInTarget && this.subModelInTarget; }
+  public get needsImport() { return this.needsElemImport || this.needsModelImport; }
 }
 
 /** apply a function to each Id64s in a supported container of Id64s */
@@ -534,7 +531,7 @@ export class IModelTransformer extends IModelExportHandler {
 
     for (const predecessorId of element.getPredecessorIds()) {
       const predecessorState = ElementProcessState.fromElementAndTransformer(predecessorId, this);
-      if (predecessorState.inTarget) continue;
+      if (!predecessorState.needsImport) continue;
       Logger.logTrace(loggerCategory, `Deferred resolution of predecessor '${predecessorId}' of element '${element.id}'`);
       // TODO: instead of loading the entire element run a small has query
       const predecessor = this.sourceDb.elements.tryGetElement(predecessorId);
@@ -561,13 +558,11 @@ export class IModelTransformer extends IModelExportHandler {
         if (!this._partiallyCommittedElements.hasById(element.id))
           this._partiallyCommittedElements.setById(element.id, thisPartialElem);
       }
-      if (predecessorState.subModelInTarget) {
+      if (predecessorState.needsModelImport) {
         missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
         this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: true}, thisPartialElem);
       }
-      if (predecessorState.elemInTarget) {
-        // TODO: need to make pending references themselves determine if a model is needed at element resolution time...
-        // to avoid this complicated logic here
+      if (predecessorState.needsElemImport) {
         missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
         this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: false}, thisPartialElem);
       }
@@ -606,7 +601,7 @@ export class IModelTransformer extends IModelExportHandler {
   public override onExportElement(sourceElement: Element): HandlerResponse {
     const elemClass = sourceElement.constructor as typeof Element;
 
-    const requiredPredecessorsProcessStates = elemClass.requiredReferenceKeys
+    const unresolvedPredecessorsProcessStates = elemClass.requiredReferenceKeys
       .map((referenceKey) => {
         const idContainer = sourceElement[referenceKey as keyof Element];
         return mapId64(idContainer, (id) => {
@@ -620,18 +615,21 @@ export class IModelTransformer extends IModelExportHandler {
             }
           }
           return ElementProcessState.fromElementAndTransformer(id, this);
-        }).filter((maybeProcessState): maybeProcessState is ElementProcessState => maybeProcessState !== undefined);
+        });
       })
       .flat()
+      .filter((maybeProcessState): maybeProcessState is ElementProcessState => maybeProcessState !== undefined)
+      .filter((processState) => processState.needsImport);
 
-    if (requiredPredecessorsProcessStates.length > 0) {
-      this.exporter["_preExportTask"] = (async () => {
-        for (const processState of requiredPredecessorsProcessStates) {
-          if (processState.inTarget) return;
-          await this.exporter.exportElement(processState.elementId); // must export element first if not done so
-          if (processState.subModelInTarget) await this.exporter.exportModel(processState.elementId);
+    if (unresolvedPredecessorsProcessStates.length > 0) {
+      this.exporter["_preExportTask"] = async () => {
+        for (const processState of unresolvedPredecessorsProcessStates) {
+          // must export element first if not done so
+          if (processState.needsElemImport) await this.exporter.exportElement(processState.elementId);
+          if (processState.needsModelImport) await this.exporter.exportModel(processState.elementId);
         }
-      })();
+      };
+      return;
     }
 
     let targetElementId: Id64String | undefined;
