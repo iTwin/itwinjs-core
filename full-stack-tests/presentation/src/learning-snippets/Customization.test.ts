@@ -5,11 +5,12 @@
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
-  ChildNodeSpecificationTypes, ContentSpecificationTypes, InstanceLabelOverrideValueSpecificationType, KeySet, RelationshipDirection,
-  Ruleset, RuleTypes, VariableValueTypes,
+  ChildNodeSpecificationTypes, ContentSpecificationTypes, InstanceLabelOverrideValueSpecificationType, KeySet, RelationshipDirection, Ruleset,
+  RuleTypes, VariableValueTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
+import { printRuleset } from "./Utils";
 
 describe("Learning Snippets", () => {
 
@@ -53,6 +54,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         const content = await Presentation.presentation.getContent({
           imodel,
@@ -92,6 +94,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // __PUBLISH_EXTRACT_START__ ExtendedDataRule.Condition.Result
         // Ensure only "B" node has `extendedData` property.
@@ -135,6 +138,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // __PUBLISH_EXTRACT_START__ ExtendedDataRule.Items.Result
         // Ensure node has `extendedData` property containing items defined in rule.
@@ -191,6 +195,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         const nodes = await Presentation.presentation.getNodes({
           imodel,
@@ -247,6 +252,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that nodes are sorted by `Pitch` property
         const nodes = await Presentation.presentation.getNodes({
@@ -293,6 +299,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that nodes are sorted by `Pitch` property
         const nodes = await Presentation.presentation.getNodes({
@@ -340,6 +347,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that nodes are sorted by `Pitch` property
         const nodes = await Presentation.presentation.getNodes({
@@ -387,6 +395,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that nodes of `bis.SpatialViewDefinition` class instances are sorted
         const nodes = await Presentation.presentation.getNodes({
@@ -432,6 +441,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that nodes are sorted by `Pitch` property
         const nodes = await Presentation.presentation.getNodes({
@@ -478,6 +488,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that nodes are sorted by `Pitch` in descending order
         const nodes = await Presentation.presentation.getNodes({
@@ -534,6 +545,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that nodes are not sorted by `Pitch` property
         const nodes = await Presentation.presentation.getNodes({
@@ -575,6 +587,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that nodes are not sorted by `Pitch` property
         const nodes = await Presentation.presentation.getNodes({
@@ -628,6 +641,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         const nodes = await Presentation.presentation.getNodes({
           imodel,
@@ -680,6 +694,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         const nodes = await Presentation.presentation.getNodes({
           imodel,
@@ -728,6 +743,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that label was not overriden because imodel has older BisCore schema than required by label override
         const nodes = await Presentation.presentation.getNodes({
@@ -774,6 +790,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that label override with higher priority was applied
         const nodes = await Presentation.presentation.getNodes({
@@ -821,6 +838,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that only label override with higher priority was applied
         const nodes = await Presentation.presentation.getNodes({
@@ -856,6 +874,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that only `bis.GeometricModel3d` instances label was overriden
         const nodes = await Presentation.presentation.getNodes({
@@ -902,6 +921,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that label was set to composed value
         const nodes = await Presentation.presentation.getNodes({
@@ -937,6 +957,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that labels was set to `Pitch` property value
         const nodes = await Presentation.presentation.getNodes({
@@ -980,6 +1001,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that labels were set to related `meta.ECSchemaDef` instance `Alias` property value
         const nodes = await Presentation.presentation.getNodes({
@@ -1032,6 +1054,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that label was set to "Model Node"
         const nodes = await Presentation.presentation.getNodes({
@@ -1067,6 +1090,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that label was set to full class name
         const nodes = await Presentation.presentation.getNodes({
@@ -1101,6 +1125,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that label value was set to instance ECClass label
         const nodes = await Presentation.presentation.getNodes({
@@ -1135,6 +1160,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that only label override with higher priority was applied
         const nodes = await Presentation.presentation.getNodes({
@@ -1169,6 +1195,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that only label override with higher priority was applied
         const nodes = await Presentation.presentation.getNodes({
@@ -1208,6 +1235,7 @@ describe("Learning Snippets", () => {
           }],
         };
         // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
 
         // verify that only label override with higher priority was applied
         const nodes = await Presentation.presentation.getNodes({

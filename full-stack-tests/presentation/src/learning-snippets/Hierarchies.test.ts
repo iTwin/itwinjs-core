@@ -13,6 +13,7 @@ import {
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
+import { printRuleset } from "./Utils";
 
 describe("Learning Snippets", () => {
 
@@ -1730,10 +1731,3 @@ describe("Learning Snippets", () => {
   });
 
 });
-
-function printRuleset(ruleset: Ruleset) {
-  if (process.env.PRINT_RULESETS) {
-    // eslint-disable-next-line no-console
-    console.log(JSON.stringify(ruleset, undefined, 2));
-  }
-}

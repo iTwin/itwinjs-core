@@ -7,22 +7,23 @@ import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
+import { printRuleset } from "./Utils";
 
 describe("Learning Snippets", () => {
 
+  let imodel: IModelConnection;
+
+  beforeEach(async () => {
+    await initialize();
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+  });
+
+  afterEach(async () => {
+    await imodel.close();
+    await terminate();
+  });
+
   describe("Ruleset Variables", () => {
-
-    let imodel: IModelConnection;
-
-    beforeEach(async () => {
-      await initialize();
-      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
-    });
-
-    afterEach(async () => {
-      await imodel.close();
-      await terminate();
-    });
 
     it("uses ruleset variable in rule condition", async () => {
       // __PUBLISH_EXTRACT_START__ RulesetVariables.InRuleCondition.Ruleset
@@ -49,6 +50,7 @@ describe("Learning Snippets", () => {
         }],
       };
       // __PUBLISH_EXTRACT_END__
+      printRuleset(ruleset);
 
       // No variable set - the request should return 0 nodes
       const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
@@ -136,6 +138,7 @@ describe("Learning Snippets", () => {
         }],
       };
       // __PUBLISH_EXTRACT_END__
+      printRuleset(ruleset);
 
       // No variable set - the request should return grouping nodes of all elements
       let nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
@@ -270,6 +273,7 @@ describe("Learning Snippets", () => {
         }],
       };
       // __PUBLISH_EXTRACT_END__
+      printRuleset(ruleset);
 
       // No variable set - the request should return nodes without any prefix
       let nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
