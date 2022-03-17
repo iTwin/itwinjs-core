@@ -1405,6 +1405,8 @@ export class Element extends Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
+    // @beta
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;
     setUserProperties(nameSpace: string, value: any): void;
@@ -1979,6 +1981,8 @@ export abstract class GeometricElement extends Element {
     is2d(): this is GeometricElement2d;
     is3d(): this is GeometricElement3d;
     abstract get placement(): Placement2d | Placement3d;
+    // (undocumented)
+    static readonly requiredReferenceKeys: string[];
     toJSON(): GeometricElementProps;
 }
 
@@ -2193,7 +2197,6 @@ export class IModelCloneContext {
     filterSubCategory(sourceSubCategoryId: Id64String): void;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
-    findTargetModelId(sourceModelId: Id64String): Id64String;
     get hasSubCategoryFilter(): boolean;
     // @internal
     importCodeSpec(sourceCodeSpecId: Id64String): void;
@@ -3116,6 +3119,8 @@ export class Model extends Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
+    // @beta
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // (undocumented)
     setJsonProperty(name: string, value: any): void;
     setUserProperties(nameSpace: string, value: any): void;
@@ -3913,6 +3918,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
     modelSelectorId: Id64String;
+    // (undocumented)
+    static readonly requiredReferenceKeys: string[];
     // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
 }
@@ -4390,6 +4397,8 @@ export abstract class ViewDefinition extends DefinitionElement {
     loadDisplayStyle(): DisplayStyle;
     // @internal (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
+    // (undocumented)
+    static readonly requiredReferenceKeys: string[];
     setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
     // @internal (undocumented)
     toJSON(): ViewDefinitionProps;

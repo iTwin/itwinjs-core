@@ -1,7 +1,5 @@
 sep=;
 Release Tag;API Item
-beta;HandlerResponse = MaybeAsync
-beta;HandlerResult
 beta;IModelExporter
 beta;class IModelExportHandler
 beta;IModelImporter 

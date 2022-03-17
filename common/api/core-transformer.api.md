@@ -13,6 +13,7 @@ import { ElementAspectProps } from '@itwin/core-common';
 import { ElementMultiAspect } from '@itwin/core-backend';
 import { ElementProps } from '@itwin/core-common';
 import { ElementUniqueAspect } from '@itwin/core-backend';
+import { Entity } from '@itwin/core-backend';
 import { FontProps } from '@itwin/core-common';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
@@ -26,13 +27,6 @@ import { Relationship } from '@itwin/core-backend';
 import { RelationshipProps } from '@itwin/core-backend';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
-
-// @beta (undocumented)
-export type HandlerResponse = MaybeAsync<HandlerResult | void>;
-
-// @beta (undocumented)
-export interface HandlerResult {
-}
 
 // @beta
 export class IModelExporter {
@@ -73,17 +67,17 @@ export class IModelExporter {
 
 // @beta
 export abstract class IModelExportHandler {
-    onDeleteElement(_elementId: Id64String): HandlerResponse;
-    onDeleteModel(_modelId: Id64String): HandlerResponse;
-    onDeleteRelationship(_relInstanceId: Id64String): HandlerResponse;
-    onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): HandlerResponse;
-    onExportElement(_element: Element, _isUpdate: boolean | undefined): HandlerResponse;
-    onExportElementMultiAspects(_aspects: ElementMultiAspect[]): HandlerResponse;
-    onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): HandlerResponse;
-    onExportFont(_font: FontProps, _isUpdate: boolean | undefined): HandlerResponse;
-    onExportModel(_model: Model, _isUpdate: boolean | undefined): HandlerResponse;
-    onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): HandlerResponse;
-    onExportSchema(_schema: Schema): HandlerResponse;
+    onDeleteElement(_elementId: Id64String): void;
+    onDeleteModel(_modelId: Id64String): void;
+    onDeleteRelationship(_relInstanceId: Id64String): void;
+    onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): void;
+    onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
+    onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
+    onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
+    onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
+    onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
+    onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
+    onExportSchema(_schema: Schema): Promise<void>;
     onProgress(): Promise<void>;
     shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     shouldExportElement(_element: Element): boolean;
@@ -154,7 +148,7 @@ export class IModelTransformer extends IModelExportHandler {
     onDeleteModel(_sourceModelId: Id64String): void;
     onDeleteRelationship(sourceRelInstanceId: Id64String): void;
     onExportCodeSpec(sourceCodeSpec: CodeSpec): void;
-    onExportElement(sourceElement: Element): HandlerResponse;
+    onExportElement(sourceElement: Element): void;
     onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
     onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void;
     onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
@@ -182,6 +176,8 @@ export class IModelTransformer extends IModelExportHandler {
     processSchemas(): Promise<void>;
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
     get provenanceDb(): IModelDb;
+    static get provenanceElementAspectClasses(): (typeof Entity)[];
+    static get provenanceElementClasses(): (typeof Entity)[];
     protected _schemaExportDir: string;
     shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     shouldExportElement(_sourceElement: Element): boolean;
