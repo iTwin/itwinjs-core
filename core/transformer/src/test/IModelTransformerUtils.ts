@@ -1129,59 +1129,59 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
     return 1 + this.getIndentLevelForElement(element);
   }
-  public override async onExportSchema(schema: Schema) {
+  public override async onExportSchema(schema: Schema): Promise<void> {
     this.writeLine(`[Schema] ${schema.name}`);
     return super.onExportSchema(schema);
   }
-  public override onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined) {
+  public override onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined): void {
     this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}${this.formatOperationName(isUpdate)}`);
-    return super.onExportCodeSpec(codeSpec, isUpdate);
+    super.onExportCodeSpec(codeSpec, isUpdate);
   }
-  public override onExportFont(font: FontProps, isUpdate: boolean | undefined) {
+  public override onExportFont(font: FontProps, isUpdate: boolean | undefined): void {
     if (this._firstFont) {
       this.writeSeparator();
       this._firstFont = false;
     }
     this.writeLine(`[Font] ${font.id}, ${font.name}`);
-    return super.onExportFont(font, isUpdate);
+    super.onExportFont(font, isUpdate);
   }
-  public override onExportModel(model: Model, isUpdate: boolean | undefined) {
+  public override onExportModel(model: Model, isUpdate: boolean | undefined): void {
     this.writeSeparator();
     this.writeLine(`[Model] ${model.classFullName}, ${model.id}, ${model.name}${this.formatOperationName(isUpdate)}`);
-    return super.onExportModel(model, isUpdate);
+    super.onExportModel(model, isUpdate);
   }
-  public override onExportElement(element: Element, isUpdate: boolean | undefined) {
+  public override onExportElement(element: Element, isUpdate: boolean | undefined): void {
     const indentLevel: number = this.getIndentLevelForElement(element);
     this.writeLine(`[Element] ${element.classFullName}, ${element.id}, ${element.getDisplayLabel()}${this.formatOperationName(isUpdate)}`, indentLevel);
-    return super.onExportElement(element, isUpdate);
+    super.onExportElement(element, isUpdate);
   }
-  public override onDeleteElement(elementId: Id64String) {
+  public override onDeleteElement(elementId: Id64String): void {
     this.writeLine(`[Element] ${elementId}, DELETE`);
-    return super.onDeleteElement(elementId);
+    super.onDeleteElement(elementId);
   }
-  public override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined) {
+  public override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
     const indentLevel: number = this.getIndentLevelForElementAspect(aspect);
     this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}${this.formatOperationName(isUpdate)}`, indentLevel);
-    return super.onExportElementUniqueAspect(aspect, isUpdate);
+    super.onExportElementUniqueAspect(aspect, isUpdate);
   }
-  public override onExportElementMultiAspects(aspects: ElementMultiAspect[]) {
+  public override onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
     const indentLevel: number = this.getIndentLevelForElementAspect(aspects[0]);
     for (const aspect of aspects) {
       this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}`, indentLevel);
     }
-    return super.onExportElementMultiAspects(aspects);
+    super.onExportElementMultiAspects(aspects);
   }
-  public override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined) {
+  public override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
     if (this._firstRelationship) {
       this.writeSeparator();
       this._firstRelationship = false;
     }
     this.writeLine(`[Relationship] ${relationship.classFullName}, ${relationship.id}${this.formatOperationName(isUpdate)}`);
-    return super.onExportRelationship(relationship, isUpdate);
+    super.onExportRelationship(relationship, isUpdate);
   }
-  public override onDeleteRelationship(relInstanceId: Id64String) {
+  public override onDeleteRelationship(relInstanceId: Id64String): void {
     this.writeLine(`[Relationship] ${relInstanceId}, DELETE`);
-    return super.onDeleteRelationship(relInstanceId);
+    super.onDeleteRelationship(relInstanceId);
   }
 }
 
@@ -1234,26 +1234,26 @@ export class ClassCounter extends IModelExportHandler {
     });
     IModelJsFs.appendFileSync(this.outputFileName, `\n`);
   }
-  public override onExportModel(model: Model, isUpdate: boolean | undefined) {
+  public override onExportModel(model: Model, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._modelClassCounts, model.classFullName);
-    return super.onExportModel(model, isUpdate);
+    super.onExportModel(model, isUpdate);
   }
-  public override onExportElement(element: Element, isUpdate: boolean | undefined) {
+  public override onExportElement(element: Element, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._elementClassCounts, element.classFullName);
-    return super.onExportElement(element, isUpdate);
+    super.onExportElement(element, isUpdate);
   }
-  public override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined) {
+  public override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
-    return super.onExportElementUniqueAspect(aspect, isUpdate);
+    super.onExportElementUniqueAspect(aspect, isUpdate);
   }
-  public override onExportElementMultiAspects(aspects: ElementMultiAspect[]) {
+  public override onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
     for (const aspect of aspects) {
       this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
     }
-    return super.onExportElementMultiAspects(aspects);
+    super.onExportElementMultiAspects(aspects);
   }
-  public override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined) {
+  public override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._relationshipClassCounts, relationship.classFullName);
-    return super.onExportRelationship(relationship, isUpdate);
+    super.onExportRelationship(relationship, isUpdate);
   }
 }
