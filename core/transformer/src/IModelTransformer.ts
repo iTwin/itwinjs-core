@@ -460,6 +460,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @param sourceElement The Element from the source iModel to transform.
    * @returns ElementProps for the target iModel.
    * @note A subclass can override this method to provide custom transform behavior.
+   * @note This can be called more than once for an element in arbitrary order, so it should not have side-effects.
    */
   public onTransformElement(sourceElement: Element): ElementProps {
     Logger.logTrace(loggerCategory, `onTransformElement(${sourceElement.id}) "${sourceElement.getDisplayLabel()}"`);
