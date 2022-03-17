@@ -89,7 +89,7 @@ export interface GraphicsDriverBugs {
    * The workaround for this bug has minimal impact on performance and no impact on visual fidelity.
    */
   fragDepthDoesNotDisableEarlyZ?: true;
-  /** If true, the graphics driver inappropriately fails to handle multi-target rendering because shaders can fail to link.
+  /** If true, the graphics driver fails to handle multi-target rendering because shaders can fail to link.
    * This URL (https://developer.qualcomm.com/forum/qdn-forums/software/adreno-gpu-sdk/34738) discusses the problem and workaround, specific to a certain Qualcomm GPU.
    *
    * Affects Adreno 530.
