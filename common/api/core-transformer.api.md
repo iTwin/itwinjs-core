@@ -63,7 +63,7 @@ export class IModelExporter {
     wantGeometry: boolean;
     wantSystemSchemas: boolean;
     wantTemplateModels: boolean;
-}
+    }
 
 // @beta
 export abstract class IModelExportHandler {
@@ -79,6 +79,8 @@ export abstract class IModelExportHandler {
     onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     onExportSchema(_schema: Schema): Promise<void>;
     onProgress(): Promise<void>;
+    // @internal
+    preExportElement(_element: Element): Promise<void>;
     shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     shouldExportElement(_element: Element): boolean;
     shouldExportElementAspect(_aspect: ElementAspect): boolean;
@@ -161,6 +163,8 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     protected _partiallyCommittedElements: Id64.Uint32Map<PartiallyCommittedElement>;
     protected _pendingReferences: PendingReferenceMap<PartiallyCommittedElement>;
+    // @internal
+    preExportElement(sourceElement: Element): Promise<void>;
     processAll(): Promise<void>;
     processChanges(accessToken: AccessToken, startChangesetId?: string): Promise<void>;
     processChildElements(sourceElementId: Id64String): Promise<void>;
@@ -183,7 +187,7 @@ export class IModelTransformer extends IModelExportHandler {
     shouldExportElement(_sourceElement: Element): boolean;
     shouldExportRelationship(_sourceRelationship: Relationship): boolean;
     shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
-    // @deprecated (undocumented)
+    // @deprecated
     protected skipElement(_sourceElement: Element): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;

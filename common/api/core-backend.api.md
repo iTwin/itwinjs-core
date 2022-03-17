@@ -1982,7 +1982,7 @@ export abstract class GeometricElement extends Element {
     is3d(): this is GeometricElement3d;
     abstract get placement(): Placement2d | Placement3d;
     // @beta (undocumented)
-    static readonly requiredReferenceKeys: string[];
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     toJSON(): GeometricElementProps;
 }
 
@@ -3919,7 +3919,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     loadModelSelector(): ModelSelector;
     modelSelectorId: Id64String;
     // @beta (undocumented)
-    static readonly requiredReferenceKeys: string[];
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
 }
@@ -4398,7 +4398,7 @@ export abstract class ViewDefinition extends DefinitionElement {
     // @internal (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
     // @beta (undocumented)
-    static readonly requiredReferenceKeys: string[];
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
     // @internal (undocumented)
     toJSON(): ViewDefinitionProps;
