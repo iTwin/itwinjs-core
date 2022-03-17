@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Camera } from "@itwin/core-common";
-import { Viewport } from "@itwin/core-frontend";
+import { IModelConnection, Viewport } from "@itwin/core-frontend";
 import { Angle, AngleProps, Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { createButton, createTextBox } from "@itwin/frontend-devtools";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -249,6 +249,8 @@ class CameraPath {
 export class CameraPathsMenu extends ToolBarDropDown {
   private readonly _element: HTMLElement;
   private readonly _viewport: Viewport;
+  private _imodel: IModelConnection;
+
   private _paths: Array<CameraPath>;
   private _selectedPath?: CameraPath | undefined;
   private _onStateChanged = () => {};
@@ -274,6 +276,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
     super();
 
     this._viewport = viewport;
+    this._imodel = viewport.iModel;
 
     this._newPathName = "";
     this._paths = [];
@@ -296,6 +299,15 @@ export class CameraPathsMenu extends ToolBarDropDown {
   public get isOpen() { return "none" !== this._element.style.display; }
   protected _open() { this._element.style.display = "block"; }
   protected _close() { this._element.style.display = "none"; }
+
+  public override get onViewChanged(): Promise<void> | undefined {
+    if (this._imodel !== this._viewport.iModel) {
+      this._imodel = this._viewport.iModel;
+      return this.populate();
+    } else {
+      return undefined;
+    }
+  }
 
   public async populate(): Promise<void> {
     if (!this._viewport.iModel.isOpen)
