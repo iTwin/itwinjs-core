@@ -156,7 +156,7 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
 
   private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     if (this._processSyncUiEvent(this.props.items, args)) {
-      setImmediate(() => {
+      setTimeout(() => {
         // if sync event changed number of displayable buttons layout the toolbar and re-render
         const items = this.generateToolbarItems(this.props.items, new Size(this.state.width, this.state.height));
         this.setState({ items });

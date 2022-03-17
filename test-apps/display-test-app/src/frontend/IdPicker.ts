@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@itwin/core-bentley";
 import { GeometricModel3dProps, QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { GeometricModel3dState, IModelApp, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
+import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
 import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@itwin/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 
@@ -47,7 +47,7 @@ export abstract class IdPicker extends ToolBarDropDown {
       { name: "Hide Selected", value: "Hide" },
       { name: "Hilite Enabled", value: "Hilite" },
       { name: "Un-hilite Enabled", value: "Dehilite" },
-      // Set ToolAdmin.activeSettings.model/category to first enabled entry.
+      // Set [[BriefcaseConnection.editorToolSettings]].model/category to first enabled entry.
       { name: "Set First Active", value: "SetFirstActive" },
     ];
   }
@@ -161,8 +161,10 @@ export abstract class IdPicker extends ToolBarDropDown {
         this.hiliteEnabled("Hilite" === which);
         return;
       case "SetFirstActive":
-        const first = Array.from(this._enabledIds)[0];
-        IModelApp.toolAdmin.activeSettings[this._settingsType] = first;
+        if (this._vp.iModel.isBriefcaseConnection()) {
+          const first = Array.from(this._enabledIds)[0];
+          this._vp.iModel.editorToolSettings[this._settingsType] = first;
+        }
         return;
       case "":
         return;
@@ -252,7 +254,7 @@ export class CategoryPicker extends IdPicker {
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
     const bindings = view.is2d() ? [view.baseModelId] : undefined;
     const rows: any[] = [];
-    for await (const row of view.iModel.query(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1000 } })) {
+    for await (const row of view.iModel.query(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     rows.sort((lhs, rhs) => {

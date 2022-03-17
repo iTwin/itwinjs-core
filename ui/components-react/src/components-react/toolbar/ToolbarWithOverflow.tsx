@@ -318,8 +318,8 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
     };
   });
   const handlePopupPanelOpenClose = React.useCallback((isOpening: boolean) => {
-    // use setImmediate to avoid warning about setting state in ToolbarWithOverflow from render method of PopupItem/PopupItemWithDrag
-    setImmediate(() => {
+    // use setTimeout to avoid warning about setting state in ToolbarWithOverflow from render method of PopupItem/PopupItemWithDrag
+    setTimeout(() => {
       // istanbul ignore next
       if (!isMounted.current)
         return;
