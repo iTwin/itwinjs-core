@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "ListBox component: `onKeyPress` has been deprecated, switch to `onKeyDown`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}
