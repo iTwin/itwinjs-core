@@ -73,6 +73,11 @@ const buggyIntelMatchers = [
   /ANGLE \(Intel, Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
 ];
 
+// Regexes to match Qualcomm GPUs that suffer from GraphicsDriverBugs.mrtCanFail.
+const buggyAdrenoMatchers = [
+  /Adreno \(TM\) 530/,
+];
+
 // Regexes to match as many Intel integrated GPUs as possible.
 // https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
 const integratedIntelGpuMatchers = [
@@ -137,7 +142,7 @@ export class Capabilities {
 
   /** These getters check for existence of extension objects to determine availability of features.  In WebGL2, could just return true for some. */
   public get supportsNonPowerOf2Textures(): boolean { return false; }
-  public get supportsDrawBuffers(): boolean { return this._isWebGL2 || this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers") !== undefined; }
+  public get supportsDrawBuffers(): boolean { return (this._isWebGL2 || this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers") !== undefined) && true !== this.driverBugs.mrtCanFail; }
   public get supportsInstancing(): boolean { return this._isWebGL2 || this.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays") !== undefined; }
   public get supports32BitElementIndex(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_element_index_uint>("OES_element_index_uint") !== undefined; }
   public get supportsTextureFloat(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_texture_float>("OES_texture_float") !== undefined; }
@@ -280,7 +285,22 @@ export class Capabilities {
       }
     }
 
-    if (this._isWebGL2 && undefined !== gl2) {
+    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+    const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
+    const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
+
+    this._driverBugs = {};
+    if (unmaskedRenderer) {
+      if (buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
+        this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
+      if (buggyAdrenoMatchers.some((x) => x.test(unmaskedRenderer)))
+        this._driverBugs.mrtCanFail = true;
+    }
+
+    if (this._driverBugs.mrtCanFail) {
+      this._maxColorAttachments = 1;
+      this._maxDrawBuffers = 1;
+    } else if (this._isWebGL2 && undefined !== gl2) {
       this._maxColorAttachments = gl.getParameter(gl2.MAX_COLOR_ATTACHMENTS);
       this._maxDrawBuffers = gl.getParameter(gl2.MAX_DRAW_BUFFERS);
     } else {
@@ -288,10 +308,6 @@ export class Capabilities {
       this._maxColorAttachments = dbExt !== undefined ? gl.getParameter(dbExt.MAX_COLOR_ATTACHMENTS_WEBGL) : 1;
       this._maxDrawBuffers = dbExt !== undefined ? gl.getParameter(dbExt.MAX_DRAW_BUFFERS_WEBGL) : 1;
     }
-
-    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
-    const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
-    const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
 
     // Determine the maximum color-renderable attachment type.
     const allowFloatRender =
@@ -322,10 +338,6 @@ export class Capabilities {
     this._presentFeatures = this._gatherFeatures();
     const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
     const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
-
-    this._driverBugs = {};
-    if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
-      this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
 
     return {
       status: this._getCompatibilityStatus(missingRequiredFeatures, missingOptionalFeatures),
