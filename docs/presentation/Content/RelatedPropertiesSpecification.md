@@ -9,6 +9,7 @@ This specification allows including related instance properties into the content
 | Name                                                                              | Required? | Type                                                                                | Default             |
 | --------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------- | ------------------- |
 | [`propertiesSource`](#attribute-propertiessource)                                 | Yes       | [`RelationshipPathSpecification`](../Common-Rules/RelationshipPathSpecification.md) |                     |
+| [`instanceFilter`](#attribute-instancefilter)                                     | No        | [ECExpression](./ECExpressions.md#instance-filter)                                  | `""`                |
 | [`handleTargetClassPolymorphically`](#attribute-handletargetclasspolymorphically) | No        | `boolean`                                                                           | `false`             |
 | [`relationshipMeaning`](#attribute-relationshipmeaning)                           | No        | `"SameInstance" \| "RelatedInstance"`                                               | `"RelatedInstance"` |
 | [`properties`](#attribute-properties)                                             | No        | `Array<string \| PropertySpecification> \| "_none_" \| "*"`                         | `"*"`               |
@@ -31,6 +32,18 @@ The path may point to more than one related instance, so the result always store
 Here's how the result looks like if there's more than one related instance:
 
 ![Example of using the "properties source" attribute pointing to multiple related instances](./media/relatedpropertiesspecification-with-propertiessource-attribute-with-multiple-targets.png)
+
+### Attribute: `instanceFilter`
+
+Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering instances targeted by the [`propertiesSource` attribute](#attribute-propertiessource).
+
+```ts
+[[include:Content.Customization.RelatedPropertiesSpecification.InstanceFilter.Ruleset]]
+```
+
+| without filter                                                                                                                       | with filter                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| ![Example when selecting all related instances](./media/relatedpropertiesspecification-with-instancefilter-attribute-unfiltered.png) | ![Example when filtering related instances](./media/relatedpropertiesspecification-with-instancefilter-attribute-filtered.png) |
 
 ### Attribute: `handleTargetClassPolymorphically`
 

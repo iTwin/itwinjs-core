@@ -2326,6 +2326,7 @@ export enum RelatedPropertiesSpecialValues {
 export interface RelatedPropertiesSpecification {
     autoExpand?: boolean;
     handleTargetClassPolymorphically?: boolean;
+    instanceFilter?: string;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
     properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     propertiesSource: RelationshipPathSpecification;
