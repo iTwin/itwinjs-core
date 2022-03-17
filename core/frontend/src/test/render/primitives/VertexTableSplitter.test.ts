@@ -523,9 +523,9 @@ describe.only("VertexTableSplitter", () => {
         7, 8, 9,
         10, 11, 12,
         10, 11, 13,
-        14, 15, 16,
 
         // feature 2
+        14, 15, 16,
         16, 15, 17,
         14, 18, 17,
       ],
@@ -623,9 +623,9 @@ describe.only("VertexTableSplitter", () => {
         [0, 2, 2],
 
         [10, 12, 3],
-        [10, 13, 0],
-        [13, 16, 1],
+        [10, 11, 0],
 
+        [14, 16, 1],
         [15, 17, 2],
         [16, 18, 3],
       ], silhouettes: [
@@ -653,6 +653,28 @@ describe.only("VertexTableSplitter", () => {
     expectEdges(split.get(1)!.edges, {
       segments: edges.segments!.slice(0, 3),
       silhouettes: edges.silhouettes!.slice(0, 2),
+    });
+
+    expectEdges(split.get(2)!.edges, {
+      segments: [
+        [3, 5, 3],
+        [3, 4, 0],
+      ], silhouettes: [
+        [0, 1, 2, 0xfedcba98],
+        [1, 2, 3, 0xffffffff],
+      ],
+    });
+
+    expectEdges(split.get(3)!.edges, {
+      segments: [
+        [0, 2, 1],
+        [1, 3, 2],
+        [2, 4, 3],
+      ], silhouettes: [
+        [1, 2, 0, 0],
+        [2, 3, 1, 789],
+        [1, 4, 2, 0xdeadbeef],
+      ],
     });
   });
 
