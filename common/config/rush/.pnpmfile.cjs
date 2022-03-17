@@ -35,6 +35,7 @@ function readPackage(pkg) {
 
   // https://github.com/iTwin/reality-data-client
   else if (pkg.name == "@itwin/reality-data-client") {
+    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
     pkg.dependencies["@itwin/core-common"] = "workspace:*";
     pkg.dependencies["@itwin/core-geometry"] = "workspace:*";
   }
