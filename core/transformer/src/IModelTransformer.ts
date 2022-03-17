@@ -20,7 +20,7 @@ import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
-import { HandlerResponse, IModelExporter, IModelExportHandler } from "./IModelExporter";
+import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { PendingReferenceMap } from "./PendingReferenceMap";
@@ -605,7 +605,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.onExportElement]($transformer) that imports an element into the target iModel when it is exported from the source iModel.
    * This override calls [[onTransformElement]] and then [IModelImporter.importElement]($transformer) to update the target iModel.
    */
-  public override onExportElement(sourceElement: Element): HandlerResponse {
+  public override onExportElement(sourceElement: Element): void {
     const elemClass = sourceElement.constructor as typeof Element;
 
     const unresolvedPredecessorsProcessStates = elemClass.requiredReferenceKeys
