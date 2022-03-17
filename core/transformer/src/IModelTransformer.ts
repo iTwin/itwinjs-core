@@ -243,7 +243,12 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** The element classes that are considered to define provenance in the iModel */
   public static get provenanceElementClasses(): (typeof Entity)[] {
-    return [ FolderLink, SynchronizationConfigLink, ExternalSource, ExternalSourceAttachment, ExternalSourceAspect ];
+    return [FolderLink, SynchronizationConfigLink, ExternalSource, ExternalSourceAttachment];
+  }
+
+  /** The element aspect classes that are considered to define provenance in the iModel */
+  public static get provenanceElementAspectClasses(): (typeof Entity)[] {
+    return [ExternalSourceAspect];
   }
 
   /** Construct a new IModelTransformer
@@ -273,6 +278,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.exporter.wantGeometry = options?.loadSourceGeometry ?? false; // optimization to not load source GeometryStreams by default
     if (!this._options.includeSourceProvenance) { // clone provenance from the source iModel into the target iModel?
       IModelTransformer.provenanceElementClasses.forEach(cls => this.exporter.excludeElementClass(cls.classFullName));
+      IModelTransformer.provenanceElementAspectClasses.forEach(cls => this.exporter.excludeElementAspectClass(cls.classFullName));
     }
     this.exporter.excludeElementAspectClass(ChannelRootAspect.classFullName); // Channel boundaries within the source iModel are not relevant to the target iModel
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
