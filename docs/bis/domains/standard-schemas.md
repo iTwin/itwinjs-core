@@ -1,11 +1,11 @@
-# Standard Schemas
+## Standard Schemas
 
-## [BisCustomAttributes](./BisCustomAttributes.ecschema.md)
+### [BisCustomAttributes](./BisCustomAttributes.ecschema.md)
 
-## [CoreCustomAttributes](./CoreCustomAttributes.ecschema.md)
+### [CoreCustomAttributes](./CoreCustomAttributes.ecschema.md)
 
-## [ECDbMap](./ECDbMap.ecschema.md)
+### [ECDbMap](./ECDbMap.ecschema.md)
 
-## [Formats](./Formats.ecschema.md)
+### [Formats](./Formats.ecschema.md)
 
-## [Units](./Units.ecschema.md)
+### [Units](./Units.ecschema.md)

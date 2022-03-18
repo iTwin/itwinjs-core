@@ -66,7 +66,12 @@
 &nbsp;
 
 ### BIS Schema Reference
-- [BIS Schema Reference](./domains/index.md)
+- [Overview](./domains/index.md)
+- [Core domains](./domains/core-domains.md)
+- [Common domains](./domains/common-domains.md)
+- [Multi-discipline domains](./domains/multidiscipline-domains.md)
+- [Building domains](./domains/building-domains.md)
+- [Civil domains](./domains/civil-domains.md)
 
 &nbsp;
 
