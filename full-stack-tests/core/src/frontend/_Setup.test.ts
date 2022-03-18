@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ProcessDetector } from "@itwin/core-bentley";
+import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 
@@ -29,3 +29,5 @@ if (!ProcessDetector.isElectronAppFrontend) {
     });
   });
 }
+
+UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);

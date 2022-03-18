@@ -79,12 +79,7 @@ export class TileRequestChannels {
 
     for (const channel of this.iModelChannels)
       this.add(channel);
-  }
 
-  /** Lazily called by [[TileAdmin]] once it can determine whether a cloud storage cache is configured.
-   * @internal
-   */
-  public enableCloudStorageCache(): void {
     this.add(this.iModelChannels.enableCloudStorageCache(this.httpConcurrency));
   }
 

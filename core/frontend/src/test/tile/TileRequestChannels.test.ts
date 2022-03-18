@@ -56,10 +56,8 @@ describe("TileRequestChannels", () => {
     expect(channels.size).to.equal(4);
   });
 
-  it("enables cloud storage cache", () => {
+  it("always enables cloud storage cache", () => {
     const channels = new TileRequestChannels(undefined, false);
-    expect(channels.iModelChannels.cloudStorage).to.be.undefined;
-    channels.enableCloudStorageCache();
     expect(channels.iModelChannels.cloudStorage).not.to.be.undefined;
     expect(channels.iModelChannels.cloudStorage!.concurrency).to.equal(channels.httpConcurrency);
     expectClassName(channels.iModelChannels.cloudStorage!, "CloudStorageCacheChannel");
