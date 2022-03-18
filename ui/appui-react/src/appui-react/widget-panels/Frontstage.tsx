@@ -697,7 +697,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
       };
     }
 
-    // remove center panel section is one is found in left or right panels
+    // remove center panel section if one is found in left or right panels
     const oldLeftMiddleIndex = saved.panels.left.widgets.findIndex((value) => value === "leftMiddle");
     if (-1 !== oldLeftMiddleIndex) {
       draft.panels.left.widgets = saved.panels.left.widgets.filter((value) => value !== "leftMiddle");
