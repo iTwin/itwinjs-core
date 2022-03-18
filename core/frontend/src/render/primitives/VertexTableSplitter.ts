@@ -111,8 +111,8 @@ export class IndexBuffer {
   private readonly _index32 = new Uint32Array(1);
   private readonly _index8 = new Uint8Array(this._index32.buffer, 0, 3);
 
-  public constructor() {
-    this._builder = new Uint8ArrayBuilder({ initialCapacity: 9 });
+  public constructor(initialCapacity = 3) {
+    this._builder = new Uint8ArrayBuilder({ initialCapacity: initialCapacity * 3 });
   }
 
   public get numIndices(): number {
@@ -552,13 +552,63 @@ export interface SplitPolylineArgs extends SplitVertexTableArgs {
   params: PolylineParams;
 }
 
+interface PolylineNode extends Node {
+  prevIndices?: IndexBuffer;
+  nextIndicesAndParams?: Uint32ArrayBuilder;
+}
+
 export function splitPolylineParams(args: SplitPolylineArgs): Map<number, PolylineParams> {
   const nodes = VertexTableSplitter.split({
     indices: args.params.polyline.indices,
     vertices: args.params.vertices,
     featureTable: args.featureTable,
-  }, args.computeNodeId);
+  }, args.computeNodeId) as Map<number, PolylineNode>;
+
+  const src = args.params.polyline;
+  const srcNextAndParam = new Uint32Array(src.nextIndicesAndParams.buffer, src.nextIndicesAndParams.byteOffset, src.nextIndicesAndParams.length / 4);
+  let curIndexIndex = 0;
+  const remappedIndex = { } as unknown as RemappedIndex;
+  for (const prevIndex of src.prevIndices) {
+    if (remapIndex(remappedIndex, prevIndex, nodes)) {
+      const node = remappedIndex.node as PolylineNode;
+      if (!node.prevIndices) {
+        assert(undefined === node.nextIndicesAndParams);
+        node.prevIndices = new IndexBuffer(node.indices.numIndices);
+        node.nextIndicesAndParams = new Uint32ArrayBuilder({ initialCapacity: node.indices.numIndices });
+      } else {
+        assert(undefined !== node.nextIndicesAndParams);
+      }
+
+      node.prevIndices.push(remappedIndex.index);
+
+      let nextAndParam = srcNextAndParam[curIndexIndex];
+      const nextIndex = (nextAndParam & 0x00ffffff) >>> 0;
+      const newNextIndex = remappedIndex.node.remappedIndices.get(nextIndex);
+      assert(undefined !== newNextIndex);
+      nextAndParam = (nextAndParam & 0xff000000) | newNextIndex;
+      node.nextIndicesAndParams.push(nextAndParam);
+    }
+
+    ++curIndexIndex;
+  }
 
   const result = new Map<number, PolylineParams>();
+  for (const [id, node] of nodes) {
+    assert(undefined !== node.prevIndices && undefined !== node.nextIndicesAndParams);
+    const { vertices, indices } = node.buildOutput(args.maxDimension);
+    const params = new PolylineParams(
+      vertices, {
+        indices,
+        prevIndices: node.prevIndices.toVertexIndices(),
+        nextIndicesAndParams: node.nextIndicesAndParams.toUint8Array(),
+      },
+      args.params.weight,
+      args.params.linePixels,
+      args.params.isPlanar,
+      args.params.type);
+
+      result.set(id, params);
+  }
+
   return result;
 }
