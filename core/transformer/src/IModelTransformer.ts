@@ -510,7 +510,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** callback to perform when a partial element says it's ready to be completed
    * transforms the source element with all references now valid, then updates the partial element with the results
    */
-  private makePartialElementCompleter(sourceElem: Element) {
+  private makePartialElementOnCompleteCallback(sourceElem: Element) {
     return () => {
       const sourceElemId = sourceElem.id;
       const targetElemId = this.context.findTargetElementId(sourceElem.id);
@@ -556,7 +556,7 @@ export class IModelTransformer extends IModelExportHandler {
         }
       }
       if (thisPartialElem === undefined) {
-        thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
+        thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementOnCompleteCallback(element));
         if (!this._partiallyCommittedElements.hasById(element.id))
           this._partiallyCommittedElements.setById(element.id, thisPartialElem);
       }
