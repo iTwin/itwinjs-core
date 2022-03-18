@@ -3,23 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as path from "path";
-import { CloudSqlite } from "@bentley/imodeljs-native";
+import * as sinon from "sinon";
 import { Guid, Logger } from "@itwin/core-bentley";
 import {
   BatchType, ContentIdProvider, defaultTileOptions, EdgeType, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
 } from "@itwin/core-common";
-import { V2CheckpointAccessProps } from "../../BackendHubAccess";
-import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
+import { IModelJsFs } from "../../IModelJsFs";
+import { GeometricModel3d } from "../../Model";
 import { RpcTrace } from "../../RpcBackend";
 import { IModelTestUtils, TestUtils } from "../index";
-import { IModelJsFs } from "../../IModelJsFs";
-
-import { HubMock } from "..";
-import { GeometricModel3d } from "../../Model";
-import exp = require("constants");
 
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",

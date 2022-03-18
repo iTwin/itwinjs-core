@@ -498,7 +498,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   public async prefetch(): Promise<void> {
     const cloudContainer = this.container.cloudContainer;
     if (cloudContainer !== undefined)
-      CloudSqlite.prefetch(cloudContainer, this.dbName);
+      return CloudSqlite.prefetch(cloudContainer, this.dbName);
   }
 }
 
