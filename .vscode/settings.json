@@ -115,4 +115,8 @@
     "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
     "source.fixAll.eslint": true // then run ESLint auto-fix
   },
+  "gitlens.advanced.blame.customArguments": [
+    "--ignore-rev",
+    "007be59f93813bc5525b1fe2afc48f20761bca56"
+  ]
 }
