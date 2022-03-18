@@ -12,7 +12,7 @@ import {
   computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,
 } from "./VertexTable";
 import { PointStringParams } from "./PointStringParams";
-import { TesselatedPolyline } from "./PolylineParams";
+import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
 import { EdgeParams } from "./EdgeParams";
 
 export type ComputeNodeId = (elementId: Id64.Uint32Pair) => number;
@@ -332,14 +332,13 @@ export interface SplitPointStringArgs extends SplitVertexTableArgs {
  * @internal
  */
 export function splitPointStringParams(args: SplitPointStringArgs): Map<number, PointStringParams> {
-  const result = new Map<number, PointStringParams>();
-
   const nodes = VertexTableSplitter.split({
     indices: args.params.indices,
     vertices: args.params.vertices,
     featureTable: args.featureTable,
   }, args.computeNodeId);
 
+  const result = new Map<number, PointStringParams>();
   for (const [id, node] of nodes) {
     const { vertices, indices } = node.buildOutput(args.maxDimension);
     result.set(id, new PointStringParams(vertices, indices, args.params.weight));
@@ -357,7 +356,7 @@ interface RemappedSilhouetteEdges extends RemappedSegmentEdges {
   normalPairs: Uint32ArrayBuilder;
 }
 
-class RemappedPolyline {
+class RemappedPolylineEdges {
   public readonly indices = new IndexBuffer();
   public readonly prevIndices = new IndexBuffer();
   public readonly nextIndicesAndParams = new Uint32ArrayBuilder();
@@ -366,7 +365,7 @@ class RemappedPolyline {
 interface RemappedEdges {
   segments?: RemappedSegmentEdges;
   silhouettes?: RemappedSilhouetteEdges;
-  polylines?: RemappedPolyline;
+  polylines?: RemappedPolylineEdges;
   // ###TODO indexed edges
 }
 
@@ -437,7 +436,7 @@ function remapSegmentEdges(type: "segments" | "silhouettes", source: EdgeParams,
   }
 }
 
-function remapPolyline(src: TesselatedPolyline, nodes: Map<number, Node>, getRemapper: (nodeId: number) => RemappedPolyline): void {
+function remapPolylineEdges(src: TesselatedPolyline, nodes: Map<number, Node>, edges: Map<number, RemappedEdges>): void {
   const srcNextAndParam = new Uint32Array(src.nextIndicesAndParams.buffer, src.nextIndicesAndParams.byteOffset, src.nextIndicesAndParams.length / 4);
   const prevIter = src.prevIndices[Symbol.iterator]();
   let curIndexIndex = 0;
@@ -455,10 +454,16 @@ function remapPolyline(src: TesselatedPolyline, nodes: Map<number, Node>, getRem
       assert(undefined !== newNextIndex);
       nextAndParam = (nextAndParam & 0xff000000) | newNextIndex;
 
-      const polyline = getRemapper(remappedIndex.id);
-      polyline.indices.push(remappedIndex.index);
-      polyline.prevIndices.push(newPrevIndex);
-      polyline.nextIndicesAndParams.push(nextAndParam);
+      let entry = edges.get(remappedIndex.id);
+      if (!entry)
+        edges.set(remappedIndex.id, entry = { });
+
+      if (!entry.polylines)
+        entry.polylines = new RemappedPolylineEdges();
+
+      entry.polylines.indices.push(remappedIndex.index);
+      entry.polylines.prevIndices.push(newPrevIndex);
+      entry.polylines.nextIndicesAndParams.push(nextAndParam);
     }
 
     ++curIndexIndex;
@@ -470,18 +475,8 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>): Map<number, E
   remapSegmentEdges("segments", source, nodes, edges);
   remapSegmentEdges("silhouettes", source, nodes, edges);
 
-  if (source.polylines) {
-    remapPolyline(source.polylines, nodes, (nodeId: number) => {
-      let entry = edges.get(nodeId);
-      if (!entry)
-        edges.set(nodeId, entry = { });
-
-      if (!entry.polylines)
-        entry.polylines = new RemappedPolyline();
-
-      return entry.polylines;
-    });
-  }
+  if (source.polylines)
+    remapPolylineEdges(source.polylines, nodes, edges);
 
   // ###TODO indexed edges
 
@@ -550,5 +545,20 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
     result.set(id, params);
   }
 
+  return result;
+}
+
+export interface SplitPolylineArgs extends SplitVertexTableArgs {
+  params: PolylineParams;
+}
+
+export function splitPolylineParams(args: SplitPolylineArgs): Map<number, PolylineParams> {
+  const nodes = VertexTableSplitter.split({
+    indices: args.params.polyline.indices,
+    vertices: args.params.vertices,
+    featureTable: args.featureTable,
+  }, args.computeNodeId);
+
+  const result = new Map<number, PolylineParams>();
   return result;
 }
