@@ -17,7 +17,7 @@ import { WidgetState } from "./WidgetState";
 export interface AbstractWidgetProps extends ProvidedItem {
   /** Gets the widget content */
   readonly getWidgetContent: () => any;
-  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue;
   /** Id used to uniquely identify the widget.
    * @note It is recommended to provide unique widget id to correctly save/restore App layout.

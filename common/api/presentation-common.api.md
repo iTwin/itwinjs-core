@@ -932,9 +932,6 @@ export const getFieldByName: (fields: Field[], name: string | undefined, recurse
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
 
-// @internal (undocumented)
-export const getLocalesDirectory: (assetsDirectory: string) => string;
-
 // @public
 export interface GroupingNodeKey extends BaseNodeKey {
     groupedInstancesCount: number;

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Icon
  */
@@ -12,7 +13,7 @@ import * as React from "react";
 import { CommonProps } from "../utils/Props";
 
 /** Properties of [[SvgSprite]] component.
- * @public
+ * @public @deprecated
  */
 export interface SvgSpriteProps extends CommonProps {
   /** Source for the Svg */
@@ -20,7 +21,8 @@ export interface SvgSpriteProps extends CommonProps {
 }
 
 /** Svg element wrapper.
- * @public
+ * This component is deprecate -- use IconComponent
+ * @public @deprecated
  */
 export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
   public override render() {

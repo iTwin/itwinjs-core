@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../utils/Props";
 import { Badge } from "./Badge";
-import betaBadgeIcon from "./technical-preview-badge.svg?sprite";
+import betaBadgeIcon from "./technical-preview-badge.svg";
 
 /** Beta Badge React component
  * @internal

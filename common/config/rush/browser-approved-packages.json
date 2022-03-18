@@ -348,7 +348,7 @@
     },
     {
       "name": "buffer",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "cache-require-paths",
@@ -792,7 +792,7 @@
     },
     {
       "name": "react-resize-detector",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "react-select",
@@ -873,6 +873,10 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "string_decoder",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "superagent",
