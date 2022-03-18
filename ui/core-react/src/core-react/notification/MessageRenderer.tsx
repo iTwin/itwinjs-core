@@ -6,8 +6,8 @@
  * @module Notification
  */
 
-import * as React from "react";
-import * as DOMPurify from "dompurify";
+import React from "react";
+import DOMPurify from "dompurify";
 import { isHTMLElement, isReactMessage, MessageType } from "./MessageType";
 import { ClassNameProps } from "../utils/Props";
 

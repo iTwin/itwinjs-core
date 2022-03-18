@@ -13,7 +13,7 @@ import classnames from "classnames";
 import { ConditionalStringValue, IconSpecUtilities } from "@itwin/appui-abstract";
 import { SvgSprite } from "./SvgSprite";
 import { CommonProps } from "../utils/Props";
-import { sanitize as sanitizer } from "dompurify";
+import DOMPurify from "dompurify";
 
 /** Prototype for an IconSpec which can be a string, ReactNode or ConditionalStringValue.
  * @public
@@ -53,7 +53,7 @@ export function Icon(props: IconProps) {
     if (webComponentString){
       const svgLoader = `<svg-loader src=${webComponentString} id="svg-id"></svg-loader>`;
       const svgDiv = `<div>${svgLoader}</div>`;
-      const sanitizedIconString = sanitizer(svgDiv, {ALLOWED_TAGS: ["svg-loader"]});
+      const sanitizedIconString = DOMPurify.sanitize(svgDiv, {ALLOWED_TAGS: ["svg-loader"]});
       // we can safely disable jam3/no-sanitizer-with-danger as we are sanitizing above
       // eslint-disable-next-line @typescript-eslint/naming-convention, jam3/no-sanitizer-with-danger
       const webComponentNode = <div dangerouslySetInnerHTML={{__html:sanitizedIconString}}></div>;
