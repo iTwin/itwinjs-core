@@ -26,10 +26,3 @@ Enums in TypeScript have some shortcomings, one of which resulted in a bug that 
 ## Deprecations in @itwin/core-react package
 
 Using the sprite loader for SVG icons is deprecated. This includes [SvgSprite]($core-react) and the methods getSvgIconSpec() and getSvgIconSource() methods on [IconSpecUtilities]($appui-abstract). The sprite loader has been replaced with a web component [IconWebComponent]($core-react) used by [Icon]($core-react) to load SVGs onto icons.
-
-### Non-deferring transformer implementation
-
-The transformer no longer internally defers elements that reference yet-untransformed elements. Instead elements are inserted with a partial
-transformation when they are encountered, and if they had yet-untransformed predecessors, their props are transformed a second, final, time
-when all its predecessors have also been inserted. This means that [IModelTransformer.onTransformElement]($transformer) may be called twice
-on the same element, and overrides of it should avoid side-effects.
