@@ -357,7 +357,10 @@ const computeNormal = `
   if (!u_surfaceFlags[kSurfaceBitIndex_HasNormals])
     return vec3(0.0);
   vec2 normal;
-  normal = (u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal]) ? g_vertLutData3.xy : g_vertLutData1.zw;
+  vec2 tc = g_vertexBaseCoords;
+  tc.x += g_vert_stepX * (u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? 3.0 : 1.0);
+  vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  normal = (u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal]) ? enc.xy : enc.zw;
   return normalize(MAT_NORM * octDecodeNormal(normal));
 `;
 
@@ -371,7 +374,9 @@ const applyBackgroundColor = `
 `;
 
 const computeTexCoord = `
-  vec4 rgba = g_vertLutData3;
+  vec2 tc = g_vertexBaseCoords;
+  tc.x += g_vert_stepX * 3.0;
+  vec4 rgba = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
   return chooseVec2WithBitFlag(vec2(0.0), unquantize2d(qcoords, u_qTexCoordParams), surfaceFlags, kSurfaceBit_HasTexture);
 `;
