@@ -6,22 +6,22 @@ Returns content for selected (input) instances.
 
 ## Attributes
 
-| Name                                                                | Required? | Type                                                                   | Default |
-| ------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------- | ------- |
+| Name                                                                | Required? | Type                                                                            | Default |
+| ------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------- | ------- |
 | *Filtering*                                                         |
-| [`acceptableSchemaName`](#attribute-acceptableschemaname)           | No        | `string`                                                               | `""`    |
-| [`acceptableClassNames`](#attribute-acceptableclassnames)           | No        | `string[]`                                                             | `[]`    |
-| [`acceptablePolymorphically`](#attribute-acceptablepolymorphically) | No        | `boolean`                                                              | `false` |
-| [`onlyIfNotHandled`](#attribute-onlyifnothandled)                   | No        | `boolean`                                                              | `false` |
+| [`acceptableSchemaName`](#attribute-acceptableschemaname)           | No        | `string`                                                                        | `""`    |
+| [`acceptableClassNames`](#attribute-acceptableclassnames)           | No        | `string[]`                                                                      | `[]`    |
+| [`acceptablePolymorphically`](#attribute-acceptablepolymorphically) | No        | `boolean`                                                                       | `false` |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)                   | No        | `boolean`                                                                       | `false` |
 | *Ordering*                                                          |
-| [`priority`](#attribute-priority)                                   | No        | `number`                                                               | `1000`  |
+| [`priority`](#attribute-priority)                                   | No        | `number`                                                                        | `1000`  |
 | *Content Modifiers*                                                 |
-| [`relatedProperties`](#attribute-relatedproperties)                 | No        | `RelatedPropertiesSpecification[]`                                     | `[]`    |
-| [`calculatedProperties`](#attribute-calculatedproperties)           | No        | `CalculatedPropertiesSpecification[]`                                  | `[]`    |
-| [`propertyCategories`](#attribute-propertycategories)               | No        | `PropertyCategorySpecification[]`                                      | `[]`    |
-| [`propertyOverrides`](#attribute-propertyoverrides)                 | No        | `PropertySpecification[]`                                              | `[]`    |
+| [`relatedProperties`](#attribute-relatedproperties)                 | No        | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md)       | `[]`    |
+| [`calculatedProperties`](#attribute-calculatedproperties)           | No        | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md) | `[]`    |
+| [`propertyCategories`](#attribute-propertycategories)               | No        | [`PropertyCategorySpecification[]`](./PropertyCategorySpecification.md)         | `[]`    |
+| [`propertyOverrides`](#attribute-propertyoverrides)                 | No        | [`PropertySpecification[]`](./PropertySpecification.md)                         | `[]`    |
 | *Misc.*                                                             |
-| [`relatedInstances`](#attribute-relatedinstances)                   | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md) | `[]`    |
+| [`relatedInstances`](#attribute-relatedinstances)                   | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md)          | `[]`    |
 
 ### Attribute: `acceptableSchemaName`
 

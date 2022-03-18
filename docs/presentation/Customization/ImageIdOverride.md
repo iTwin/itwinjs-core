@@ -11,7 +11,7 @@ ImageId override rules allow setting an image ID to specific types of ECInstance
 | Name                                                | Required? | Type                                                                 | Default |
 | --------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
 | *Filtering*                                         |
-| [`requiredSchemas`](#attribute-requiredschemas)     | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`requiredSchemas`](#attribute-requiredschemas)     | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`priority`](#attribute-priority)                   | No        | `number`                                                             | `1000`  |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled)   | No        | `boolean`                                                            | `false` |
 | [`condition`](#attribute-condition)                 | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
@@ -21,7 +21,7 @@ ImageId override rules allow setting an image ID to specific types of ECInstance
 
 > **Default value:** `[]`
 
-Specifications that define schema requirements for the rule to take effect.
+Specifications that define [ECSchema requirements](../RequiredSchemaSpecification.md) for the rule to take effect.
 
 ### Attribute: `priority`
 

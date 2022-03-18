@@ -26,7 +26,7 @@ Use `NodeArtifacts` on the *ModelB* nodes and a `hideExpression` on *Subject* no
 | -------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
 | *Filtering*                                        |
 | [`condition`](#attributer-condition)               | No        | [ECExpression](../Customization/ECExpressions.md#rule-condition)     | `""`    |
-| [`requiredSchemas`](#attributer-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`requiredSchemas`](#attributer-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`priority`](#attributer-priority)                 | No        | `number`                                                             | `1000`  |
 | [`onlyIfNotHandled`](#attributer-onlyifnothandled) | No        | `boolean`                                                            | `false` |
 | *Artifacts*                                        |
@@ -50,7 +50,7 @@ Specifies an ECExpression that allows applying node artifacts based on evaluatio
 
 > **Default value:** `[]`
 
-A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
 
 ```ts
 [[include:Presentation.Hierarchies.RequiredSchemas.Ruleset]]

@@ -11,7 +11,7 @@ The default property category is a category that gets assigned to properties tha
 | Name                                            | Required? | Type                                                                  | Default |
 | ----------------------------------------------- | --------- | --------------------------------------------------------------------- | ------- |
 | *Picking attributes*                            |
-| [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md)  | `[]`    |
+| [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)  | `[]`    |
 | [`priority`](#attribute-priority)               | No        | `number`                                                              | `1000`  |
 | *Content Modifiers*                             |
 | [`specification`](#attribute-specification)     | Yes       | [`PropertyCategorySpecification`](./PropertyCategorySpecification.md) |         |
@@ -20,7 +20,7 @@ The default property category is a category that gets assigned to properties tha
 
 > **Default value:** `[]`
 
-Lists schema requirements that need to be met for the rule to take effect. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+Lists [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to take effect.
 
 ```ts
 [[include:Presentation.Content.Customization.DefaultPropertyCategoryOverride.RequiredSchemas.Ruleset]]

@@ -78,7 +78,7 @@ See [property categorization page](./PropertyCategorization.md) for more details
 
 > **Default value:** `undefined`
 
-This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the ECShcema. The allowed settings are:
+This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the ECSchema. The allowed settings are:
 
 - Omitted or `undefined`: property visibility is controlled by the ECSchema.
 - `true`: property is made visible. **Warning:** this will automatically hide all other properties of the same class. If this behavior is not desirable, set [`doNotHideOtherPropertiesOnDisplayOverride` attribute](#attribute-donothideotherpropertiesondisplayoverride) to `true`.

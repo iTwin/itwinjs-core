@@ -11,7 +11,7 @@ CheckBox rules provide a way to create a checkbox for specific types of ECInstan
 | Name                                                              | Required? | Type                                                                 | Default     |
 | ----------------------------------------------------------------- | --------- | -------------------------------------------------------------------- | ----------- |
 | *Filtering*                                                       |
-| [`requiredSchemas`](#attribute-requiredschemas)                   | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`        |
+| [`requiredSchemas`](#attribute-requiredschemas)                   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`        |
 | [`priority`](#attribute-priority)                                 | No        | `number`                                                             | `1000`      |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled)                 | No        | `boolean`                                                            | `false`     |
 | [`condition`](#attribute-condition)                               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`        |
@@ -25,7 +25,7 @@ CheckBox rules provide a way to create a checkbox for specific types of ECInstan
 
 > **Default value:** `[]`
 
-Specifications that define schema requirements for the rule to take effect.
+Specifications that define [ECSchema requirements](../RequiredSchemaSpecification.md) for the rule to take effect.
 
 ### Attribute: `priority`
 

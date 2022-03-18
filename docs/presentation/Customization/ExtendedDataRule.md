@@ -24,7 +24,7 @@ flag can then be accessed on the frontend and used to determine how the row shou
 | Name                                            | Required? | Type                                                                 | Default |
 | ----------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
 | *Filtering*                                     |
-| [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`condition`](#attribute-condition)             | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
 | *Extended Data*                                 |
 | [`items`](#attribute-items)                     | No        | `{ [key: string]: ECExpression }`                                    |         |
@@ -33,7 +33,7 @@ flag can then be accessed on the frontend and used to determine how the row shou
 
 > **Default value:** `[]`
 
-A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
 
 ```ts
 [[include:Presentation.ExtendedDataRule.RequiredSchemas.Ruleset]]

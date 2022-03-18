@@ -6,26 +6,26 @@ Returns nodes for instances of specific ECClasses.
 
 ## Attributes
 
-| Name                                                                        | Required? | Type                                                                   | Default     |
-| --------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------- | ----------- |
+| Name                                                                        | Required? | Type                                                                                                            | Default     |
+| --------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------- | ----------- |
 | *Filtering*                                                                 |
-| [`classes`](#attribute-classes)                                             | Yes       | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]` |             |
-| [`excludedClasses`](#attribute-excludedclasses)                             | No        | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]` | `[]`        |
-| [`instanceFilter`](#attribute-instancefilter)                               | No        | [ECExpression](./ECExpressions.md#instance-filter)                     | `""`        |
-| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy)                   | No        | `boolean`                                                              | `false`     |
-| [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                                              | `false`     |
-| [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                       | `""`        |
-| [`suppressSimilarAncestorsCheck`](#attribute-suppresssimilarancestorscheck) | No        | `boolean`                                                              | `false`     |
+| [`classes`](#attribute-classes)                                             | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) |             |
+| [`excludedClasses`](#attribute-excludedclasses)                             | No        | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) | `[]`        |
+| [`instanceFilter`](#attribute-instancefilter)                               | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                              | `""`        |
+| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy)                   | No        | `boolean`                                                                                                       | `false`     |
+| [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                                                                                       | `false`     |
+| [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                                                                | `""`        |
+| [`suppressSimilarAncestorsCheck`](#attribute-suppresssimilarancestorscheck) | No        | `boolean`                                                                                                       | `false`     |
 | *Ordering*                                                                  |
-| [`priority`](#attribute-priority)                                           | No        | `number`                                                               | `1000`      |
-| [`doNotSort`](#attribute-donotsort)                                         | No        | `boolean`                                                              | `false`     |
+| [`priority`](#attribute-priority)                                           | No        | `number`                                                                                                        | `1000`      |
+| [`doNotSort`](#attribute-donotsort)                                         | No        | `boolean`                                                                                                       | `false`     |
 | *Grouping*                                                                  |
-| [`groupByClass`](#attribute-groupbyclass)                                   | No        | `boolean`                                                              | `true`      |
-| [`groupByLabel`](#attribute-groupbylabel)                                   | No        | `boolean`                                                              | `true`      |
+| [`groupByClass`](#attribute-groupbyclass)                                   | No        | `boolean`                                                                                                       | `true`      |
+| [`groupByLabel`](#attribute-groupbylabel)                                   | No        | `boolean`                                                                                                       | `true`      |
 | *Misc.*                                                                     |
-| [`hasChildren`](#attribute-haschildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                     | `"Unknown"` |
-| [`relatedInstances`](#attribute-relatedinstances)                           | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md) | `[]`        |
-| [`nestedRules`](#attribute-nestedrules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                | `[]`        |
+| [`hasChildren`](#attribute-haschildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                                                              | `"Unknown"` |
+| [`relatedInstances`](#attribute-relatedinstances)                           | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md)                                          | `[]`        |
+| [`nestedRules`](#attribute-nestedrules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                                                         | `[]`        |
 
 ### Attribute: `classes`
 

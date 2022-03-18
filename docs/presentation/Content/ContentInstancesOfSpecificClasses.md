@@ -17,10 +17,10 @@ This specification creates content for all instances of specific ECClasses.
 | *Ordering*                                                                      |
 | [`priority`](#attribute-priority)                                               | No        | `number`                                                                                                        | `1000`  |
 | *Content Modifiers*                                                             |
-| [`relatedProperties`](#attribute-relatedproperties)                             | No        | `RelatedPropertiesSpecification[]`                                                                              | `[]`    |
-| [`calculatedProperties`](#attribute-calculatedproperties)                       | No        | `CalculatedPropertiesSpecification[]`                                                                           | `[]`    |
-| [`propertyCategories`](#attribute-propertycategories)                           | No        | `PropertyCategorySpecification[]`                                                                               | `[]`    |
-| [`propertyOverrides`](#attribute-propertyoverrides)                             | No        | `PropertySpecification[]`                                                                                       | `[]`    |
+| [`relatedProperties`](#attribute-relatedproperties)                             | No        | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md)                                       | `[]`    |
+| [`calculatedProperties`](#attribute-calculatedproperties)                       | No        | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md)                                 | `[]`    |
+| [`propertyCategories`](#attribute-propertycategories)                           | No        | [`PropertyCategorySpecification[]`](./PropertyCategorySpecification.md)                                         | `[]`    |
+| [`propertyOverrides`](#attribute-propertyoverrides)                             | No        | [`PropertySpecification[]`](./PropertySpecification.md)                                                         | `[]`    |
 | *Misc.*                                                                         |
 | [`relatedInstances`](#attribute-relatedinstances)                               | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md)                                          | `[]`    |
 

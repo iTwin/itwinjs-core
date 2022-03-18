@@ -10,12 +10,12 @@ multi-step path, target of the current step is used as the source of the next st
 
 ## Attributes
 
-| Name                                      | Required? | Type                             | Default                       |
-| ----------------------------------------- | --------- | -------------------------------- | ----------------------------- |
-| [`relationship`](#attribute-relationship) | Yes       | `SingleSchemaClassSpecification` |                               |
-| [`direction`](#attribute-direction)       | Yes       | `"Forward" \| "Backward"`        |                               |
-| [`targetClass`](#attribute-targetclass)   | No        | `SingleSchemaClassSpecification` | Other end of the relationship |
-| [`count`](#attribute-count)               | No        | `number \| "*"`                  | `1`                           |
+| Name                                      | Required? | Type                                                                    | Default                       |
+| ----------------------------------------- | --------- | ----------------------------------------------------------------------- | ----------------------------- |
+| [`relationship`](#attribute-relationship) | Yes       | [`SingleSchemaClassSpecification`](./SingleSchemaClassSpecification.md) |                               |
+| [`direction`](#attribute-direction)       | Yes       | `"Forward" \| "Backward"`                                               |                               |
+| [`targetClass`](#attribute-targetclass)   | No        | [`SingleSchemaClassSpecification`](./SingleSchemaClassSpecification.md) | Other end of the relationship |
+| [`count`](#attribute-count)               | No        | `number \| "*"`                                                         | `1`                           |
 
 ### Attribute: `relationship`
 

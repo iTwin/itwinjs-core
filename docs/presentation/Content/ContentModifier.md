@@ -6,17 +6,17 @@ Content modifiers are used to modify how instances of specified ECClasses are di
 
 ## Attributes
 
-| Name                                                      | Required? | Type                                  | Default |
-| --------------------------------------------------------- | --------- | ------------------------------------- | ------- |
+| Name                                                      | Required? | Type                                                                            | Default |
+| --------------------------------------------------------- | --------- | ------------------------------------------------------------------------------- | ------- |
 | *Picking attributes*                                      |
-| [`requiredSchemas`](#attribute-requiredschemas)           | No        | `RequiredSchemaSpecification[]`       | `[]`    |
-| [`class`](#attribute-class)                               | No        | `SingleSchemaClassSpecification`      | ``      |
-| [`priority`](#attribute-priority)                         | No        | `number`                              | `1000`  |
+| [`requiredSchemas`](#attribute-requiredschemas)           | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)            | `[]`    |
+| [`class`](#attribute-class)                               | No        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md)        | ``      |
+| [`priority`](#attribute-priority)                         | No        | `number`                                                                        | `1000`  |
 | *Content Modifiers*                                       |
-| [`relatedProperties`](#attribute-relatedproperties)       | No        | `RelatedPropertiesSpecification[]`    | `[]`    |
-| [`calculatedProperties`](#attribute-calculatedproperties) | No        | `CalculatedPropertiesSpecification[]` | `[]`    |
-| [`propertyCategories`](#attribute-propertycategories)     | No        | `PropertyCategorySpecification[]`     | `[]`    |
-| [`propertyOverrides`](#attribute-propertyoverrides)       | No        | `PropertySpecification[]`             | `[]`    |
+| [`relatedProperties`](#attribute-relatedproperties)       | No        | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md)       | `[]`    |
+| [`calculatedProperties`](#attribute-calculatedproperties) | No        | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md) | `[]`    |
+| [`propertyCategories`](#attribute-propertycategories)     | No        | [`PropertyCategorySpecification[]`](./PropertyCategorySpecification.md)         | `[]`    |
+| [`propertyOverrides`](#attribute-propertyoverrides)       | No        | [`PropertySpecification[]`](./PropertySpecification.md)                         | `[]`    |
 
 ### Attribute: `class`
 
@@ -30,7 +30,7 @@ Specification of ECClass whose content should be modified. The modifier is appli
 
 ### Attribute: `requiredSchemas`
 
-A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
 
 ```ts
 [[include:Presentation.ContentModifier.RequiredSchemas.Ruleset]]

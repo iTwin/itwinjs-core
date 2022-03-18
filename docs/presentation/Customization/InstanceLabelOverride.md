@@ -6,21 +6,21 @@ Instance label override rule provides a way to set instance label to one of its 
 
 ## Attributes
 
-| Name                                              | Required? | Type                                                                 | Default |
-| ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
+| Name                                              | Required? | Type                                                                     | Default |
+| ------------------------------------------------- | --------- | ------------------------------------------------------------------------ | ------- |
 | *Filtering*                                       |
-| [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
-| [`priority`](#attribute-priority)                 | No        | `number`                                                             | `1000`  |
-| [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                            | `false` |
-| [`class`](#attribute-class)                       | Yes       | `SingleSchemaClassSpecification`                                     |         |
+| [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)     | `[]`    |
+| [`priority`](#attribute-priority)                 | No        | `number`                                                                 | `1000`  |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                                | `false` |
+| [`class`](#attribute-class)                       | Yes       | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) |         |
 | *Overrides*                                       |
-| [`values`](#attribute-values)                     | Yes       | `InstanceLabelOverrideValueSpecification[]`                          |         |
+| [`values`](#attribute-values)                     | Yes       | `InstanceLabelOverrideValueSpecification[]`                              |         |
 
 ### Attribute: `requiredSchemas`
 
 > **Default value:** `[]`
->
-A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+
+A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
 
 ```ts
 [[include:Presentation.InstanceLabelOverride.RequiredSchemas.Ruleset]]
@@ -64,14 +64,21 @@ Specifies the ECClass to apply this rule to.
 
 Specifications of values used to override label. The first non-empty value is used as the actual label. There are 8 types of supported value specifications:
 
-- [Composite value specification](#composite-value-specification)
-- [Property value specification](#property-value-specification)
-- [String value specification](#string-value-specification)
-- [Class name value specification](#class-name-value-specification)
-- [Class label value specification](#class-label-value-specification)
-- [BriefcaseId value specification](#briefcaseid-value-specification)
-- [LocalId value specification](#localid-value-specification)
-- [Related instance label value specification](#related-instance-label-value-specification)
+- [InstanceLabelOverride Customization Rule](#instancelabeloverride-customization-rule)
+  - [Attributes](#attributes)
+    - [Attribute: `requiredSchemas`](#attribute-requiredschemas)
+    - [Attribute: `priority`](#attribute-priority)
+    - [Attribute: `onlyIfNotHandled`](#attribute-onlyifnothandled)
+    - [Attribute: `class`](#attribute-class)
+    - [Attribute: `values`](#attribute-values)
+      - [Composite value specification](#composite-value-specification)
+      - [Property value specification](#property-value-specification)
+      - [String value specification](#string-value-specification)
+      - [Class name value specification](#class-name-value-specification)
+      - [Class label value specification](#class-label-value-specification)
+      - [BriefcaseId value specification](#briefcaseid-value-specification)
+      - [LocalId value specification](#localid-value-specification)
+      - [Related instance label value specification](#related-instance-label-value-specification)
 
 #### Composite value specification
 

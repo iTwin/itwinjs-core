@@ -15,23 +15,23 @@ instances are first sorted by the highest priority rule and then the lower prior
 
 ### Attributes
 
-| Name                                            | Required? | Type                                                                 | Default                        |
-| ----------------------------------------------- | --------- | -------------------------------------------------------------------- | ------------------------------ |
+| Name                                            | Required? | Type                                                                     | Default                        |
+| ----------------------------------------------- | --------- | ------------------------------------------------------------------------ | ------------------------------ |
 | *Filtering*                                     |
-| [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`                           |
-| [`priority`](#attribute-priority)               | No        | `number`                                                             | `1000`                         |
-| [`condition`](#attribute-condition)             | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)       | `""`                           |
-| [`class`](#attribute-class)                     | No        | `SingleSchemaClassSpecification`                                     | All classes in current context |
-| [`isPolymorphic`](#attribute-ispolymorphic)     | No        | `boolean`                                                            | `false`                        |
+| [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)     | `[]`                           |
+| [`priority`](#attribute-priority)               | No        | `number`                                                                 | `1000`                         |
+| [`condition`](#attribute-condition)             | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)           | `""`                           |
+| [`class`](#attribute-class)                     | No        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) | All classes in current context |
+| [`isPolymorphic`](#attribute-ispolymorphic)     | No        | `boolean`                                                                | `false`                        |
 | *Sorting*                                       |
-| [`propertyName`](#attribute-propertyname)       | Yes       | `string`                                                             |                                |
-| [`sortAscending`](#attribute-sortascending)     | No        | `boolean`                                                            | `true`                         |
+| [`propertyName`](#attribute-propertyname)       | Yes       | `string`                                                                 |                                |
+| [`sortAscending`](#attribute-sortascending)     | No        | `boolean`                                                                | `true`                         |
 
 ### Attribute: `requiredSchemas`
 
 > **Default value:** `[]`
 
-A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
 
 ```ts
 [[include:Presentation.Sorting.RequiredSchemas.Ruleset]]
@@ -130,7 +130,7 @@ Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
 | Name                                              | Required? | Type                                                                 | Default                        |
 | ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------------------------------ |
 | *Filtering*                                       |
-| [`requiredSchemas`](#attribute-requiredschemas-1) | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`                           |
+| [`requiredSchemas`](#attribute-requiredschemas-1) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`                           |
 | [`priority`](#attribute-priority-1)               | No        | `number`                                                             | `1000`                         |
 | [`condition`](#attribute-condition-1)             | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)       | `""`                           |
 | [`class`](#attribute-class-1)                     | No        | `SingleSchemaClassSpecification`                                     | All classes in current context |
@@ -140,7 +140,7 @@ Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
 
 > **Default value:** `[]`
 
-A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
+A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
 
 ```ts
 [[include:Presentation.Sorting.RequiredSchemas.Ruleset]]
