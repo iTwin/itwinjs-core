@@ -626,20 +626,13 @@ export class CameraPathsMenu extends ToolBarDropDown {
     const target = this._viewport.npcToWorld(new Point3d(0.5, 0.5, 0.0));
 
     // Location and target are the same, the keyframe will be invalid
-    if (target.distance(location) <= Number.EPSILON) {
+    if (target.distance(location) <= Number.EPSILON)
       return;
-    }
 
-    let up = view.getUpVector(location).clone();
-
-    // Up vector should not be too close to target vector (orientation lost)
-    const direction = location.unitVectorTo(target)!;
-    if (Math.abs(up.dotProduct(direction)) > 0.9) {
-      const topScreen = this._viewport.npcToWorld(new Point3d(0.5, 1.0, 0.0));
-      const fixedUp = location.unitVectorTo(topScreen);
-
-      up = fixedUp || up;
-    }
+    const topScreen = this._viewport.npcToWorld(new Point3d(0.5, 1.0, 0.0));
+    const up = location.unitVectorTo(topScreen);
+    if (up === undefined)
+      return;
 
     const lensAngle = view.isCameraOn ? view.camera.getLensAngle().clone() : undefined;
     const extents = view.isCameraOn ? undefined : view.getExtents().clone();
