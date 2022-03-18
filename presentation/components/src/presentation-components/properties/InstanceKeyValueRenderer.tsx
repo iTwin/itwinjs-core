@@ -8,7 +8,7 @@
  */
 
 import * as React from "react";
-import { Primitives, PrimitiveValue, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
+import { Primitives, PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 import { IPropertyValueRenderer, PropertyValueRendererContext, TypeConverterManager, useAsyncValue } from "@itwin/components-react";
 import { UnderlinedButton } from "@itwin/core-react";
 import { translate } from "../common/Utils";
@@ -23,7 +23,6 @@ import { useUnifiedSelectionContext } from "../unified-selection/UnifiedSelectio
 export class InstanceKeyValueRenderer implements IPropertyValueRenderer {
   public canRender(record: PropertyRecord) {
     return record.value.valueFormat === PropertyValueFormat.Primitive
-      && record.property.typename === StandardTypeNames.Navigation
       && (record.value.value === undefined || isInstanceKey(record.value.value));
   }
 
