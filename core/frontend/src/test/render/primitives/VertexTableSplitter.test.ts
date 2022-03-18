@@ -5,15 +5,15 @@
 import { expect } from "chai";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
-  QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable, PolylineData, PolylineFlags,
+  QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import {
   MockRender,
 } from "../../../core-frontend";
 import {
-  EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, PolylineParams, splitMeshParams, splitPointStringParams, SegmentEdgeParams,
-  SurfaceType, TesselatedPolyline, VertexTable,
+  EdgeParams, IndexBuffer, MeshArgs, MeshParams, PointStringParams, PolylineArgs, PolylineParams, splitMeshParams, splitPolylineParams,
+  splitPointStringParams, SegmentEdgeParams, SurfaceType, TesselatedPolyline, VertexTable,
 } from "../../../render-primitives";
 
 interface Point {
@@ -285,6 +285,47 @@ function makePolyline(verts: PolylineIndices[]): TesselatedPolyline {
   };
 }
 
+function makeVertexTable(pts: Point[], colors: ColorDef | ColorDef[]): VertexTable {
+  const nPts = pts.length;
+  const nColors = colors instanceof ColorDef ? 0 : colors.length;
+  const data = new Uint32Array(nPts * 3 + nColors);
+
+  for (let i = 0; i < nPts; i++) {
+    const pt = pts[i];
+    const idx = i * 3;
+    const y = (pt.x + 1) << 16;
+    data[idx + 0] = (pt.x | y) >>> 0;
+    const ci = (pt.color) << 16;
+    data[idx + 1] = (pt.x + 5 | ci) >>> 0;
+    data[idx + 2] = pt.feature;
+  }
+
+  if (Array.isArray(colors)) {
+    const colorTableOffset = nPts * 3;
+    for (let i = 0; i < nColors; i++)
+      data[colorTableOffset + i] = colors[i].tbgr;
+  }
+
+  return new VertexTable({
+    data: new Uint8Array(data.buffer),
+    qparams: QParams3d.fromNormalizedRange(),
+    width: data.length,
+    height: 1,
+    hasTranslucency: false,
+    uniformColor: colors instanceof ColorDef ? colors : undefined,
+    numVertices: nPts,
+    numRgbaPerVertex: 3,
+    featureIndexType: FeatureIndexType.NonUniform,
+  });
+}
+
+function makePolylineParams(pts: Point[], indices: PolylineIndices[], colors: ColorDef | ColorDef[]): PolylineParams {
+  return new PolylineParams(
+    makeVertexTable(pts, colors),
+    makePolyline(indices),
+    12, LinePixels.Invisible, false);
+}
+
 function expectPolyline(polyline: TesselatedPolyline, expected: PolylineIndices[]): void {
   expect(polyline.indices.length).to.equal(expected.length);
   expect(polyline.prevIndices.length).to.equal(expected.length);
@@ -546,6 +587,36 @@ describe.only("VertexTableSplitter", () => {
   });
 
   it("splits polyline params based on node Id", () => {
+    const params = makePolylineParams([
+      { x: 20, color: 1, feature: 2 }, // 0
+      { x: 0, color: 0, feature: 0 },
+      { x: 11, color: 0, feature: 1 }, // 2
+      { x: 1, color: 0, feature: 0 },
+      { x: 4, color: 0, feature: 0 }, // 4
+      { x: 10, color: 0, feature: 1 },
+      { x: 12, color: 2, feature: 1 }, // 6
+      { x: 13, color: 2, feature: 1 },
+      { x: 14, color: 2, feature: 1 }, // 8
+      { x: 3, color: 0, feature: 0 },
+      { x: 2, color: 0, feature: 0 }, // 10
+      { x: 21, color: 1, feature: 2 },
+    ], [
+      // feature 1
+      [1, 1, 3, 0],
+      [1, 1, 3, 1],
+      [3, 1, 2, 3],
+      [3, 1, 2, 4],
+      [3, 1, 2, 255],
+      [2, 3, 2, 128],
+      [2, 3, 2, 127],
+
+      // feature 0
+
+      // feature 2
+
+      // feature 1
+    ], [
+    ]);
   });
 
   function makeSurface(adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): { params: MeshParams, colors: ColorDef | ColorDef[], featureTable: PackedFeatureTable, mesh: TriMesh } {
