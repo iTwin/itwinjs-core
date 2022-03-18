@@ -76,17 +76,17 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description Models
- * Subclasses of [Models]($docs/BIS/intro/model-fundamentals.md).
+ * Subclasses of [Models]($docs/BIS/fundamentals/foundation/model-fundamentals.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Elements
- * Subclasses of [Elements]($docs/BIS/intro/element-fundamentals.md).
+ * Subclasses of [Elements]($docs/BIS/fundamentals/foundation/element-fundamentals.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Codes
- * Classes for working with [Codes]($docs/BIS/intro/codes.md).
+ * Classes for working with [Codes]($docs/BIS/fundamentals/foundation/codes.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
@@ -96,16 +96,16 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description Relationships
- * Classes that describe the [relationships]($docs/bis/intro/relationship-fundamentals.md) between elements.
+ * Classes that describe the [relationships]($docs/bis/fundamentals/foundation/relationship-fundamentals.md) between elements.
  */
 /**
  * @docs-group-description ElementAspects
- * Subclasses of [ElementAspects]($docs/bis/intro/elementaspect-fundamentals.md).
+ * Subclasses of [ElementAspects]($docs/bis/fundamentals/foundation/elementaspect-fundamentals.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Categories
- * Classes for [Categories]($docs/bis/intro/categories.md).
+ * Classes for [Categories]($docs/bis/fundamentals/foundation/categories.md).
  */
 /**
  * @docs-group-description Symbology

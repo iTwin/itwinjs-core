@@ -98,7 +98,7 @@ export interface OnSubModelIdArg extends OnElementArg {
  * uniqueness of id, code, and federationGuid.
  *
  * See:
- * * [Element Fundamentals]($docs/bis/intro/element-fundamentals.md)
+ * * [Element Fundamentals]($docs/bis/fundamentals/foundation/element-fundamentals.md)
  * * [Working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  * * [Creating elements]($docs/learning/backend/CreateElements.md)
  * @public
@@ -109,17 +109,17 @@ export class Element extends Entity {
   /** @internal */
   public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
 
-  /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
+  /** The ModelId of the [Model]($docs/bis/fundamentals/foundation/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
-  /** The [Code]($docs/bis/intro/codes.md) for this element */
+  /** The [Code]($docs/bis/fundamentals/foundation/codes.md) for this element */
   public code: Code;
   /** The parent element, if present, of this element. */
   public parent?: RelatedElement;
-  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
+  /** A [FederationGuid]($docs/bis/fundamentals/foundation/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
   public federationGuid?: GuidString;
-  /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
+  /** A [user-assigned label]($docs/bis/fundamentals/foundation/element-fundamentals.md#userlabel) for this element. */
   public userLabel?: string;
-  /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
+  /** Optional [json properties]($docs/bis/fundamentals/foundation/element-fundamentals.md#jsonproperties) of this element. */
   public readonly jsonProperties: { [key: string]: any };
 
   /** constructor for Element.
@@ -1248,7 +1248,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 
 /** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.
  * Instances are always sub-modeled by a specialization of Model of the appropriate modeling perspective.
- * @see [iModel Information Hierarchy]($docs/bis/intro/top-of-the-world), [[Subject]], [[Model]]
+ * @see [iModel Information Hierarchy]($docs/bis/fundamentals/data-organization/top-of-the-world), [[Subject]], [[Model]]
  * @public
  */
 export abstract class InformationPartitionElement extends InformationContentElement {
