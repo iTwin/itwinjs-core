@@ -68,7 +68,6 @@ describe("IModelTileRequestChannels", () => {
     }
 
     it("is configured by default", async () => {
-      debugger;
       expect(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage).not.to.be.undefined;
       const tile = await getTile();
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
@@ -323,7 +322,6 @@ describe("RPC channels", () => {
   });
 });
 
-
 describe("CloudStorageTileCache", () => {
   let imodel: IModelConnection;
   let cache: TestCloudStorageTileCache;
@@ -348,7 +346,7 @@ describe("CloudStorageTileCache", () => {
       tokenProps: imodel.getRpcProps(),
       treeId: "treeId",
       contentId: "contentId",
-      guid: undefined
+      guid: undefined,
     };
   });
 
