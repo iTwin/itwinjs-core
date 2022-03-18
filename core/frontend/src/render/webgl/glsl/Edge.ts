@@ -30,20 +30,8 @@ const computeOtherPos = `
   vec4 enc0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  if (g_usesQuantizedPosition) {
-    vec3 qpos = vec3(decodeUInt16(enc0.xy), decodeUInt16(enc0.zw), decodeUInt16(enc1.xy));
-    g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
-  } else {
-    uvec3 vux = uvec3(enc0.xyz);
-    uvec3 vuy = uvec3(enc1.xyz);
-    tc.x += g_vert_stepX;
-    uvec3 vuz = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-    tc.x += g_vert_stepX;
-    uvec3 vuw = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-    uvec3 u = (vuw << 24) | (vuz << 16) | (vuy << 8) | vux;
-    g_otherPos.xyz = uintBitsToFloat(u);
-    g_otherPos.w = 1.0;
-  }
+  vec3 qpos = vec3(decodeUInt16(enc0.xy), decodeUInt16(enc0.zw), decodeUInt16(enc1.xy));
+  g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
 `;
 
 const decodeEndPointAndQuadIndices = `

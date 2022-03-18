@@ -211,19 +211,8 @@ vec4 decodePosition(vec3 baseIndex) {
   vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
   vec4 e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  if (g_usesQuantizedPosition) {
-    vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
-    return unquantizePosition(qpos, u_qOrigin, u_qScale);
-  } else {
-    uvec3 vux = uvec3(e0.xyz);
-    uvec3 vuy = uvec3(e1.xyz);
-    tc.x += g_vert_stepX;
-    uvec3 vuz = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-    tc.x += g_vert_stepX;
-    uvec3 vuw = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
-    uvec3 u = (vuw << 24) | (vuz << 16) | (vuy << 8) | vux;
-    return vec4(uintBitsToFloat(u), 1.0);
-  }
+  vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
+  return unquantizePosition(qpos, u_qOrigin, u_qScale);
 }
 `;
 
