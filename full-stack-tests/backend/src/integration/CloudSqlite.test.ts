@@ -75,7 +75,7 @@ export namespace CloudSqliteTest {
   }
 }
 
-describe.only("CloudSqlite", () => {
+describe("CloudSqlite", () => {
   let caches: IModelJsNative.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
@@ -139,7 +139,9 @@ describe.only("CloudSqlite", () => {
     const db = new SQLiteDb();
     db.openDb("c0-db1:0", OpenMode.Readonly, contain1);
     expect(db.isOpen);
+    expect(db.nativeDb.cloudContainer).equals(contain1);
     db.closeDb();
+    expect(db.nativeDb.cloudContainer).undefined;
 
     dbProps = contain1.queryDatabase(dbs[0]);
     assert(dbProps !== undefined);
@@ -163,12 +165,13 @@ describe.only("CloudSqlite", () => {
       const briefcase = await BriefcaseDb.open({ fileName: "testBim2", container: contain1 });
       expect(briefcase.getBriefcaseId()).equals(0);
       expect(briefcase.iModelId).equals(testBimGuid);
+      expect(briefcase.nativeDb.cloudContainer).equals(contain1);
       briefcase.close();
     });
 
     await CloudSqlite.withWriteLock(user, contain1, async () => {
       IModelHost.platform.DgnDb.vacuum("testBim2", contain1);
-      expect(contain1.hasLocalChanges);
+      expect(contain1.hasLocalChanges).true;
       dbProps = contain1.queryDatabase("testBim2");
       assert(dbProps !== undefined);
       expect(dbProps.dirtyBlocks).greaterThan(0);
@@ -181,8 +184,8 @@ describe.only("CloudSqlite", () => {
     await CloudSqlite.withWriteLock(user, contain1, async () => {
       await expect(contain1.deleteDatabase("badName")).eventually.rejectedWith("no such database");
       await contain1.deleteDatabase("testBim2");
-      expect(contain1.hasLocalChanges);
     });
+
     expect(contain1.queryDatabase("testBim2")).undefined;
     expect(contain1.garbageBlocks).greaterThan(0);
     expect(contain1.queryDatabases().length).equals(2);

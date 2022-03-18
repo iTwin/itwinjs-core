@@ -9,7 +9,7 @@ import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, ITwinWorksp
 import { assert } from "@itwin/core-bentley";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
-describe.only("Cloud workspace containers", () => {
+describe("Cloud workspace containers", () => {
 
   async function initializeContainer(containerId: string) {
     const cloudCont1 = CloudSqliteTest.makeCloudSqliteContainer(containerId, false);

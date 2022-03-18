@@ -47,6 +47,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { V2CheckpointAccessProps } from "./BackendHubAccess";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -328,7 +329,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async reattachDaemon(_accessToken: AccessToken): Promise<void> { }
+  public async refreshContainerSas(_userAccessToken: AccessToken): Promise<void> { }
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -2262,7 +2263,7 @@ export class BriefcaseDb extends IModelDb {
 /** Used to reattach Daemon from a user's accessToken for V2 checkpoints.
  * @note Reattach only happens if the previous access token either has expired or is about to expire within an application-supplied safety duration.
  */
-class DaemonReattach {
+class RefreshV2CheckpointSas {
   /** the time at which the current token should be refreshed (its expiry minus safetySeconds) */
   private _timestamp = 0;
   /** while a refresh is happening, all callers get this promise. */
@@ -2270,38 +2271,50 @@ class DaemonReattach {
   /** Time, in seconds, before the current token expires to obtain a new token. Default is 1 hour. */
   private _safetySeconds: number;
 
-  constructor(expiry: number, safetySeconds?: number) {
+  constructor(sasToken: string, safetySeconds?: number) {
     this._safetySeconds = safetySeconds ?? 60 * 60; // default to 1 hour
-    this.setTimestamp(expiry);
+    this.setTimestamp(sasToken);
   }
-  private async performReattach(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
+
+  private async performRefresh(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
     this._timestamp = 0; // everyone needs to wait until token is valid
 
     // we're going to request that the checkpoint manager use this user's accessToken to obtain a new access token for this checkpoint's storage account.
-    Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
+    Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to refresh sasToken for checkpoint");
     try {
       // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
+      const container = iModel.nativeDb.cloudContainer;
+      if (!container)
+        throw new Error("checkpoint is not from a cloud container");
+
       assert(undefined !== iModel.iTwinId);
-      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
-      Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
-      this.setTimestamp(response.expiryTimestamp);
+      const props = await IModelHost.hubAccess.queryV2Checkpoint({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
+      if (!props)
+        throw new Error("can't reset checkpoint sas token");
+
+      container.sasToken = props.sasToken;
+      this.setTimestamp(props.sasToken);
+
+      Logger.logInfo(BackendLoggerCategory.Authorization, "refreshed checkpoint sasToken successfully");
     } finally {
       this._promise = undefined;
     }
   }
 
-  private setTimestamp(expiryTimestamp: number) {
-    this._timestamp = expiryTimestamp - (this._safetySeconds * 1000);
+  private setTimestamp(sasToken: string) {
+    const exp = new URLSearchParams(sasToken).get("se");
+    const sasTokenExpiry = exp ? Date.parse(exp) : 0;
+    this._timestamp = sasTokenExpiry - (this._safetySeconds * 1000);
     if (this._timestamp < Date.now())
       Logger.logError(BackendLoggerCategory.Authorization, "attached with timestamp that expires before safety interval");
   }
 
-  public async reattach(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
+  public async refreshSas(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
     if (this._timestamp > Date.now())
       return; // current token is fine
 
     if (undefined === this._promise) // has reattach already begun?
-      this._promise = this.performReattach(accessToken, iModel); // no, start it
+      this._promise = this.performRefresh(accessToken, iModel); // no, start it
 
     return this._promise;
   }
@@ -2314,7 +2327,7 @@ class DaemonReattach {
  */
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
-  private _daemonReattach: DaemonReattach | undefined;
+  private _refreshSas: RefreshV2CheckpointSas | undefined;
   private _createClassViewsOnClose?: boolean;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
@@ -2427,10 +2440,10 @@ export class SnapshotDb extends IModelDb {
    * @internal
    */
   public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
-    const { filePath, expiryTimestamp } = await V2CheckpointManager.attach(checkpoint);
+    const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
     const key = CheckpointManager.getKey(checkpoint);
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
-    const snapshot = SnapshotDb.openFile(filePath, { key, tempFileBase });
+    const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
     snapshot._iTwinId = checkpoint.iTwinId;
 
     try {
@@ -2440,15 +2453,15 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
-    snapshot._daemonReattach = new DaemonReattach(expiryTimestamp, checkpoint.reattachSafetySeconds);
+    snapshot._refreshSas = new RefreshV2CheckpointSas(container.sasToken, checkpoint.reattachSafetySeconds);
     return snapshot;
   }
 
-  /** Used to refresh the daemon's accessToken if this is a V2 checkpoint.
+  /** Used to refresh the container sasToken using the current user's accessToken
    * @internal
    */
-  public override async reattachDaemon(accessToken: AccessToken): Promise<void> {
-    return this._daemonReattach?.reattach(accessToken, this);
+  public override async refreshContainerSas(userAccessToken: AccessToken): Promise<void> {
+    return this._refreshSas?.refreshSas(userAccessToken, this);
   }
 
   /** @internal */

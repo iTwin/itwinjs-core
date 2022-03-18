@@ -11,7 +11,7 @@ import * as sinon from "sinon";
 import { CloudSqlite } from "@bentley/imodeljs-native";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, using } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType,
   GeoCoordinatesRequestProps, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
   IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
@@ -2037,16 +2037,20 @@ describe("iModel", () => {
   });
 
   it("should be able to open checkpoints", async () => {
-    // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
-    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
-    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = snapshot.iModelId;
-    const iTwinId = Guid.createValue();
-    const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.setITwinId(iTwinId);
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changesetId!
-    snapshot.saveChanges();
-    snapshot.close();
+    const changeset: ChangesetIdWithIndex = { id: "fakeChangeSetId", index: 10 };
+    const iTwinId = "fakeIModelId";
+    const iModelId = "fakeIModelId";
+    const cloudContainer = { sasToken: "sas" };
+    const fakeSnapshotDb: any = {
+      cloudContainer,
+      isReadonly: () => true,
+      isOpen: () => false,
+      getIModelId: () => iModelId,
+      getITwinId: () => iTwinId,
+      getCurrentChangeset: () => changeset,
+      setIModelDb: () => { },
+      closeIModel: () => { },
+    };
 
     const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
     const infoLogStub = sinon.stub(Logger, "logInfo").callsFake(() => { });
@@ -2054,83 +2058,48 @@ describe("iModel", () => {
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
       accountName: "testAccount",
-      containerId: `imodelblocks-${iModelId}`,
+      containerId: "imodelblocks-123",
       sasToken: "testSAS",
       dbName: "testDb",
       storageType: "azure?sas=1",
     };
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
+    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => { return { dbName: "fakeDb", container: { sasToken: "sas" } as any }; });
+    const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
-    // Mock BlobDaemon
-    sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
-    // const commandStub = sinon.stub(CloudSqlite.Daemon, "start").callsFake(async () => { });
+    const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
+    sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
 
-    process.env.BLOCKCACHE_DIR = "/foo/";
     const accessToken = "token";
     const checkpoint = await SnapshotDb.openCheckpointV2({ accessToken, iTwinId, iModelId, changeset });
+
+    expect(openDgnDbStub.calledOnce).to.be.true;
+    expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
+
     const props = checkpoint.getRpcProps();
     assert.equal(props.iModelId, iModelId);
     assert.equal(props.iTwinId, iTwinId);
     assert.equal(props.changeset?.id, changeset.id);
-    // assert.equal(commandStub.callCount, 1);
-    // assert.equal(commandStub.firstCall.firstArg, "attach");
     assert.equal(errorLogStub.callCount, 1);
     assert.include(errorLogStub.args[0][1], "attached with timestamp that expires before");
 
     errorLogStub.resetHistory();
-    await checkpoint.reattachDaemon(accessToken);
-    // assert.equal(commandStub.callCount, 2);
-    // assert.equal(commandStub.secondCall.firstArg, "attach");
+    expect(cloudContainer.sasToken).equal("sas");
+    await checkpoint.refreshContainerSas(accessToken);
+    expect(cloudContainer.sasToken).equal("testSAS");
+
     assert.equal(errorLogStub.callCount, 1);
     assert.include(errorLogStub.args[0][1], "attached with timestamp that expires before");
     assert.equal(infoLogStub.callCount, 2);
-    assert.include(infoLogStub.args[0][1], "attempting to reattach");
-    assert.include(infoLogStub.args[1][1], "reattached checkpoint");
+    assert.include(infoLogStub.args[0][1], "attempting to refresh");
+    assert.include(infoLogStub.args[1][1], "refreshed checkpoint");
 
     errorLogStub.resetHistory();
-    // commandStub.callsFake(async () => { throw new Error("attach failed"); });
-    await expect(checkpoint.reattachDaemon(accessToken)).to.eventually.be.rejectedWith("attach failed");
+    queryStub.callsFake(async () => { throw new Error("no checkpoint"); });
+    await expect(checkpoint.refreshContainerSas(accessToken)).to.eventually.be.rejectedWith("no checkpoint");
 
     checkpoint.close();
-  });
-
-  it("should throw for invalid v2 checkpoints", async () => {
-    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
-    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
-    const iTwinId = Guid.createValue();
-    const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.setITwinId(iTwinId);
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
-    snapshot.saveChanges();
-    snapshot.close();
-
-    // Mock iModelHub
-    const mockCheckpointV2: V2CheckpointAccessProps = {
-      accountName: "testAccount",
-      containerId: `imodelblocks-${iModelId}`,
-      sasToken: "testSAS",
-      dbName: "testDb",
-      storageType: "azure?sas=1",
-    };
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
-
-    // Mock blockcacheVFS daemon
-    sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
-    // sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => { });
-
-    const accessToken = "token";
-
-    process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
-    expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
-
-    process.env.BLOCKCACHE_DIR = "/foo/";
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId, iModelId, changeset }));
-    expectIModelError(IModelStatus.ValidationFailed, error);
   });
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
@@ -2139,19 +2108,14 @@ describe("iModel", () => {
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
 
     const accessToken = "token";
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
-    expectIModelError(IModelStatus.NotFound, error);
-
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    const error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
   });
 
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
     const accessToken = "token";
-    const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
-    await imodel1.reattachDaemon(accessToken);
-    assert.isTrue(attachMock.notCalled);
+    await imodel1.refreshContainerSas(accessToken);
   });
 
   function hasClassView(db: IModelDb, name: string): boolean {

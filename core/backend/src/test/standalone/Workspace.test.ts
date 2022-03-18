@@ -157,7 +157,7 @@ describe("WorkspaceFile", () => {
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
-    const fontsDb = makeEditableDb({ containerId: "public-data", dbName: "fonts" });
+    const fontsDb = makeEditableDb({ containerId: "public-data-1", dbName: "fonts" });
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();

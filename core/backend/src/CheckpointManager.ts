@@ -17,6 +17,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { V2CheckpointAccessProps } from "./BackendHubAccess";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -107,25 +108,43 @@ export class Downloads {
  * @internal
 */
 export class V2CheckpointManager {
-  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: LocalFileName, expiryTimestamp: number }> {
-    if (!process.env.BLOCKCACHE_DIR)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
+  private static _daemonCache?: IModelJsNative.CloudCache;
+  private static containers = new Map<string, IModelJsNative.CloudContainer>();
 
-    let args: CloudSqlite.DaemonCommandArg;
+  private static get daemonCache(): IModelJsNative.CloudCache {
+    if (!this._daemonCache) {
+      const rootDir = process.env.BLOCKCACHE_DIR;
+      if (!rootDir)
+        throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
+      this._daemonCache = new IModelHost.platform.CloudCache({ name: "v2Checkpoints", rootDir });
+      if (!this._daemonCache.isDaemon)
+        throw new IModelError(IModelStatus.BadRequest, "iTwinDaemon is not running");
+    }
+    return this.daemonCache;
+  }
+  private static getContainer(props: CloudSqlite.ContainerAccessProps) {
+    let container = this.containers.get(props.containerId);
+    if (!container) {
+      container = new IModelHost.platform.CloudContainer(props);
+      this.containers.set(props.containerId, container);
+    }
+    return container;
+  }
+  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: IModelJsNative.CloudContainer }> {
+
+    let v2props: V2CheckpointAccessProps | undefined;
     try {
-      const v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
+      v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
       if (!v2props)
         throw new Error("no checkpoint");
-
-      args = { ...v2props, rootDir: process.env.BLOCKCACHE_DIR, name: "daemon", writeable: false };
     } catch (err: any) {
       throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
 
-    // We can assume that a Daemon process is already started if BLOCKCACHE_DIR was set, so we need to just tell the daemon to attach to the Storage Container
     try {
-      // TODO: Attach container
-      // await CloudSqlite.Daemon.command("attach", args);
+      const container = this.getContainer(v2props);
+      container.attach(this.daemonCache);
+      return { dbName: v2props.dbName, container };
     } catch (e: any) {
       const error = `Daemon attach failed: ${e.message}`;
       if (checkpoint.expectV2)
@@ -133,8 +152,6 @@ export class V2CheckpointManager {
 
       throw new IModelError(e.errorNumber, error);
     }
-    const sasTokenExpiry = new URLSearchParams(args.sasToken).get("se");
-    return { filePath: CloudSqlite.Daemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 };
   }
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {

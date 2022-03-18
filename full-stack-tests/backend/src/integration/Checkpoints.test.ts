@@ -83,7 +83,7 @@ describe.skip("Checkpoints", () => {
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 
-    await iModel.reattachDaemon(accessToken);
+    await iModel.refreshContainerSas(accessToken);
     numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 
