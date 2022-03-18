@@ -31,7 +31,7 @@ export namespace CloudSqliteTest {
       } catch (e) {
       }
       await blobService.createContainer(container.containerId, container.isPublic ? { access: "blob" } : undefined);
-      container.initializeContainer();
+      container.initializeContainer({ checksumBlockNames: true });
     }
   }
   export function makeEmptyDir(name: LocalDirName) {

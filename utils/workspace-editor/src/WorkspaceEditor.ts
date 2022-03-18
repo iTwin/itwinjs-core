@@ -9,8 +9,8 @@ import { join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceDb, WorkspaceContainerProps, WorkspaceDbName,
-  WorkspaceResourceName,
+  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb, WorkspaceContainerProps,
+  WorkspaceDbName, WorkspaceResourceName,
 } from "@itwin/core-backend";
 import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
@@ -32,6 +32,8 @@ interface EditorOpts extends WorkspaceContainerProps {
 /** options for performing an operation on a WorkspaceDb */
 interface WorkspaceDbOpt extends EditorOpts {
   dbName: WorkspaceDbName;
+  dbFileName: string;
+  version?: string;
   like?: string;
 }
 /** options for copying a workspaceDb */
@@ -87,7 +89,7 @@ const askQuestion = async (query: string) => {
 
 /** Create a new empty WorkspaceDb  */
 async function createWorkspaceDb(args: WorkspaceDbOpt) {
-  const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer(args));
+  const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer({ ...args, writeable: true }));
   await wsFile.createDb();
   console.log(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
 }
@@ -117,13 +119,22 @@ async function loadCloudContainer(args: EditorOpts): Promise<IModelJsNative.Clou
   return cloudContainer;
 }
 
+function fixVersionArg(args: WorkspaceDbOpt) {
+  const dbParts = ITwinWorkspaceContainer.parseDbFileName(args.dbName);
+  args.dbName = dbParts.dbName;
+  args.version = args.version ?? dbParts.version;
+  args.dbFileName = ITwinWorkspaceContainer.makeDbFileName(dbParts.dbName, dbParts.version);
+}
+
 /** Open for write, call a function to process, then close a WorkspaceDb */
 async function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: EditableWorkspaceDb, args: T) => void) {
+  fixVersionArg(args);
   processWorkspace(args, new EditableWorkspaceDb(args, await loadContainer(args)), fn);
 }
 
 /** Open for read, call a function to process, then close a WorkspaceDb */
 async function readWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: ITwinWorkspaceDb, args: T) => void) {
+  fixVersionArg(args);
   processWorkspace(args, new ITwinWorkspaceDb(args, await loadContainer(args)), fn);
 }
 
@@ -226,6 +237,7 @@ async function removeResource(args: RemoveResourceOpts) {
 /** Vacuum a WorkspaceDb. */
 async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
   const container = await loadContainer(args);
+  fixVersionArg(args);
   const localFile = new ITwinWorkspaceDb(args, container).dbFileName;
   IModelHost.platform.DgnDb.vacuum(localFile, container.cloudContainer);
   console.log(`${localFile} vacuumed`);
@@ -233,8 +245,9 @@ async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
 
 /** Either upload or download a WorkspaceDb to/from a WorkspaceContainer. Shows progress % during transfer */
 async function performTransfer(container: IModelJsNative.CloudContainer, direction: CloudSqlite.TransferDirection, args: TransferOptions) {
+  fixVersionArg(args);
   const localFileName = args.localFileName;
-  const info = `${direction === "download" ? "export" : "import"} ${localFileName}, container=${args.containerId}, dbName=${args.dbName} : `;
+  const info = `${direction === "download" ? "export" : "import"} ${localFileName}, container=${args.containerId}, dbName=${args.dbFileName} : `;
 
   let last = 0;
   const onProgress = (loaded: number, total: number) => {
@@ -248,6 +261,7 @@ async function performTransfer(container: IModelJsNative.CloudContainer, directi
   };
   process.stdout.write(info);
   const timer = new StopWatch(direction, true);
+  args.dbName = args.dbFileName;
   await CloudSqlite.transferDb(direction, container, { ...args, localFileName, onProgress });
   readline.cursorTo(process.stdout, info.length);
   process.stdout.write(`complete, ${timer.elapsedSeconds.toString()} seconds`);
@@ -273,17 +287,17 @@ async function deleteWorkspaceDb(args: WorkspaceDbOpt) {
     return container.deleteDatabase(args.dbName);
   });
 
-  console.log(`deleted WorkspaceDb [${args.dbName}], container=${args.containerId}`);
+  console.log(`deleted WorkspaceDb [${args.dbName}] from container=${args.containerId}`);
 }
 
 /** initialize (empty if it exists) a WorkspaceContainer. */
-async function initializeContainer(args: EditorOpts) {
-  const container = IModelHost.appWorkspace.getContainer(args);
-  if (undefined === container.cloudContainer)
+async function initializeWorkspace(args: EditorOpts) {
+  if (undefined === args.storageType || !args.accountName)
     throw new Error("No cloud container supplied");
   const yesNo = await askQuestion(`Are you sure you want to initialize container "${args.containerId}"? [y/n]: `);
   if (yesNo.toUpperCase()[0] === "Y") {
-    container.cloudContainer?.initializeContainer();
+    const container = new IModelHost.platform.CloudContainer(args as CloudSqlite.ContainerAccessProps);
+    container.initializeContainer({ checksumBlockNames: true });
     console.log(`container "${args.containerId} initialized`);
   }
 }
@@ -317,16 +331,18 @@ async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
 
 /** pin a WorkspaceDb from a WorkspaceContainer. */
 async function pinWorkspaceDb(args: WorkspaceDbOpt) {
+  fixVersionArg(args);
   const container = await loadCloudContainer(args);
-  await container.pinDatabase(args.dbName, true);
-  console.log(`pinned WorkspaceDb [${args.dbName}], container=${args.containerId}`);
+  await container.pinDatabase(args.dbFileName, true);
+  console.log(`pinned WorkspaceDb [${args.dbFileName}], container=${args.containerId}`);
 }
 
 /** pin a WorkspaceDb from a WorkspaceContainer. */
 async function unPinWorkspaceDb(args: WorkspaceDbOpt) {
+  fixVersionArg(args);
   const container = await loadCloudContainer(args);
-  await container.pinDatabase(args.dbName, false);
-  console.log(`un-pinned WorkspaceDb [${args.dbName}], container=${args.containerId}`);
+  await container.pinDatabase(args.dbFileName, false);
+  console.log(`un-pinned WorkspaceDb [${args.dbFileName}], container=${args.containerId}`);
 }
 
 /** acquire the write lock for a WorkspaceContainer. */
@@ -534,7 +550,7 @@ async function main() {
   Yargs.command({
     command: "initializeWorkspace",
     describe: "initialize (empty if already exists) a WorkspaceContainer",
-    handler: runCommand(initializeContainer),
+    handler: runCommand(initializeWorkspace),
   });
   Yargs.demandCommand();
   Yargs.argv;

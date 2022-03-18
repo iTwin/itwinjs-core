@@ -324,6 +324,28 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.cloudContainer?.attach(this.workspace.cloudCache);
   }
 
+  public static validateVersion(version?: string) {
+    version = version ?? "1.0.0";
+    if (version) {
+      const opts = { loose: true, includePrerelease: true };
+      // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
+      const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
+      if (!semVersion)
+        throw new Error("invalid version specification");
+      version = semVersion;
+    }
+    return version;
+  }
+
+  public static parseDbFileName(dbFileName: string) {
+    const parts = dbFileName.split(":");
+    return { dbName: parts[0], version: parts[1] };
+  }
+
+  public static makeDbFileName(dbName: string, version?: string) {
+    return `${dbName}:${this.validateVersion(version)}`;
+  }
+
   public resolveFileName(props: WorkspaceDbProps): string {
     const cloudContainer = this.cloudContainer;
     const dbName = props.dbName;
@@ -336,9 +358,9 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
 
     const versions = [];
     for (const db of dbs) {
-      const parts = db.split(":");
-      if (parts[0] === dbName && "string" === typeof parts[1] && parts[1].length > 0) {
-        versions.push(parts[1]);
+      const thisDb = ITwinWorkspaceContainer.parseDbFileName(db);
+      if (thisDb.dbName === dbName && "string" === typeof thisDb.version && thisDb.version.length > 0) {
+        versions.push(thisDb.version);
       }
     }
 
@@ -544,19 +566,6 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     this.sqliteDb.saveChanges();
   }
 
-  private validateVersion(version?: string) {
-    version = version ?? "1.0.0";
-    if (version) {
-      const opts = { loose: true, includePrerelease: true };
-      // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
-      const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
-      if (!semVersion)
-        throw new Error("invalid version specification");
-      version = semVersion;
-    }
-    return version;
-  }
-
   public async createDb(version?: string) {
     if (!this.container.cloudContainer) {
       EditableWorkspaceDb.createEmpty(this.dbFileName);
@@ -566,9 +575,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
       if (existsSync(tempDbFile))
         rmSync(tempDbFile);
       EditableWorkspaceDb.createEmpty(tempDbFile);
-      version = this.validateVersion(version);
-      if (version)
-        this.dbFileName = `${this.dbName}:${version}`;
+      this.dbFileName = ITwinWorkspaceContainer.makeDbFileName(this.dbName, version);
       await CloudSqlite.uploadDb(this.container.cloudContainer, { localFileName: tempDbFile, dbName: this.dbFileName });
       rmSync(tempDbFile);
     }
@@ -589,7 +596,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   public async cloneVersion(dbName: WorkspaceDbName, oldVersion: string | undefined, newVersion: WorkspaceDbVersion) {
     if (!this.container.cloudContainer)
       throw new Error("no cloud container");
-    const newVer = this.validateVersion(newVersion);
+    const newVer = ITwinWorkspaceContainer.validateVersion(newVersion);
     if (!newVer)
       throw Error("invalid version number");
     let oldDb = dbName;

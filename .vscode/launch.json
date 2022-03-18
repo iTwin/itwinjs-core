@@ -775,8 +775,8 @@
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
         "--config=d:/temp/workspaceEditor.json",
-        "queryDbs",
-        "Aust*"
+        "createDb",
+        "test10"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",
