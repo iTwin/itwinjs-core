@@ -21,8 +21,7 @@ import { useRenderedStringValue } from "./PrimitivePropertyValueRenderer";
 /** @internal */
 export class MultilineTextPropertyValueRenderer implements IPropertyValueRenderer {
   public canRender(record: PropertyRecord): boolean {
-    return record.value.valueFormat === PropertyValueFormat.Primitive
-      && record.property.renderer?.name === "multiline";
+    return record.value.valueFormat === PropertyValueFormat.Primitive;
   }
 
   public render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode {
