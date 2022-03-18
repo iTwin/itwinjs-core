@@ -53,7 +53,8 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           isFloatingStateSupported: true,
         }
       );
-    } else if (section === StagePanelSection.Middle) {
+    // eslint-disable-next-line deprecation/deprecation
+    } else if (section === StagePanelSection.Middle) { // used to ensure deprecated panel section is properly shown in End section
       widgets.push(
         {
           id: "LeftMiddle1",
@@ -124,7 +125,8 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           isFloatingStateSupported: true,
         }
       );
-    } else if (section === StagePanelSection.Middle) {
+    // eslint-disable-next-line deprecation/deprecation
+    } else if (section === StagePanelSection.Middle) { // used to ensure deprecated panel section is properly shown in End section
       widgets.push(
         {
           id: "RightMiddle1",

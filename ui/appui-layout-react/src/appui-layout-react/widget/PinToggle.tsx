@@ -8,6 +8,7 @@
 
 import "./PinToggle.scss";
 import * as React from "react";
+import classnames from "classnames";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { PanelStateContext } from "../widget-panels/Panel";
 import { assert } from "@itwin/core-bentley";
@@ -37,9 +38,14 @@ export const PinToggle = React.memo(function PinToggle() { // eslint-disable-lin
   const pinPanelTitle = useLabel("pinPanelTitle");
   const unpinPanelTitle = useLabel("unpinPanelTitle");
 
+  const className = classnames(
+    "nz-widget-pinToggle",
+    panelState.pinned ? "nz-is-pinned" : "nz-is-unpinned",
+  );
+
   return (
     <button
-      className="nz-widget-pinToggle"
+      className={className}
       onClick={() => {
         dispatch({
           side: panelState.side,

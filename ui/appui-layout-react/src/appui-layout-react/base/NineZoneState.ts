@@ -583,7 +583,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         homeWidget.tabs.push(...widget.tabs);
         removeWidget(state, widget.id);
       } else {
-        const destinationWidgetContainerName = home.widgetId ?? widget.id;
+        const destinationWidgetContainerName = home.widgetId ?? getWidgetPanelSectionId(panel.side, home.widgetIndex);
         // if widget container was remove because it was empty insert it
         state.widgets[destinationWidgetContainerName] = {
           activeTabId: widget.tabs[0],
@@ -591,7 +591,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           minimized: false,
           tabs: [...widget.tabs],
         };
-        panel.widgets.splice(home.widgetIndex, 0, destinationWidgetContainerName);
+
+        let insertIndex = destinationWidgetContainerName.endsWith("End") ? 1 : 0;
+        if (0 === panel.widgets.length)
+          insertIndex = 0;
+        panel.widgets.splice(insertIndex, 0, destinationWidgetContainerName);
         widget.minimized = false;
         if (home.widgetId)
           removeWidget(state, widget.id);
@@ -605,32 +609,34 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const widget = state.widgets[action.id];
       const home = popoutWidget.home;
       const panel = state.panels[home.side];
-      let homeWidget;
-      if (home.widgetId) {
-        homeWidget = state.widgets[home.widgetId];
-      } else if (panel.widgets.length === panel.maxWidgetCount) {
-        const id = panel.widgets[home.widgetIndex];
-        homeWidget = state.widgets[id];
+      let widgetPanelSectionId = home.widgetId;
+      let homeWidgetPanelSection;
+      if (widgetPanelSectionId) {
+        homeWidgetPanelSection = state.widgets[widgetPanelSectionId];
+      } else {
+        widgetPanelSectionId = getWidgetPanelSectionId(panel.side, home.widgetIndex);
+        homeWidgetPanelSection = state.widgets[widgetPanelSectionId];
       }
 
-      if (homeWidget) {
-        homeWidget.tabs.push(...widget.tabs);
-        removeWidget(state, widget.id);
+      if (homeWidgetPanelSection) {
+        homeWidgetPanelSection.tabs.push(...widget.tabs);
+        removeWidget(state, popoutWidget.id);
       } else {
-        const destinationWidgetContainerName = home.widgetId ?? widget.id;
-        // if widget container was remove because it was empty insert it
-        state.widgets[destinationWidgetContainerName] = {
+        // if widget panel section was removed because it was empty insert it
+        state.widgets[widgetPanelSectionId] = {
           activeTabId: widget.tabs[0],
-          id: destinationWidgetContainerName,
+          id: widgetPanelSectionId,
           minimized: false,
           tabs: [...widget.tabs],
         };
-        panel.widgets.splice(home.widgetIndex, 0, destinationWidgetContainerName);
+
+        let insertIndex = widgetPanelSectionId.endsWith("End") ? 1 : 0;
+        if (0 === panel.widgets.length)
+          insertIndex = 0;
+        panel.widgets.splice(insertIndex, 0, widgetPanelSectionId);
         widget.minimized = false;
-        if (home.widgetId)
-          removeWidget(state, widget.id);
-        else
-          removePopoutWidget(state, widget.id);
+        removeWidget(state, popoutWidget.id);
+        removePopoutWidget(state, popoutWidget.id);
       }
       return;
     }
@@ -661,10 +667,17 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       // }
       return;
     }
+
     case "WIDGET_TAB_DOUBLE_CLICK": {
       const widget = state.widgets[action.widgetId];
-      if (action.floatingWidgetId !== undefined)
+      if (action.floatingWidgetId !== undefined) {
+        const active = action.id === widget.activeTabId;
+        if (!active) {
+          setWidgetActiveTabId(state, widget.id, action.id);
+          return;
+        }
         widget.minimized = !widget.minimized;
+      }
       return;
     }
     case "WIDGET_TAB_DRAG_START": {
@@ -784,6 +797,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     }
   }
 });
+
+/** @internal */
+export function getWidgetPanelSectionId(side: PanelSide, panelSectionIndex: number) {
+  return 0 === panelSectionIndex ? `${side}Start` : `${side}End`;
+}
 
 function isToolSettingsFloatingWidget(state: Draft<NineZoneState>, id: WidgetState["id"]) {
   const widget = state.widgets[id];
@@ -1543,6 +1561,31 @@ export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingW
     });
   }
   return state;
+}
+
+/** Add a new Floating Panel with a single widget tab
+ * @internal
+ */
+export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string) {
+  return produce(state, (draft) => {
+    const panel = draft.panels[side];
+    const widgetPanelSection = draft.widgets[panelSectionWidgetId];
+    if (widgetPanelSection) {
+      widgetPanelSection.tabs.push(widgetTabId);
+    } else {
+      draft.widgets[panelSectionWidgetId] = {
+        activeTabId: widgetTabId,
+        id: panelSectionWidgetId,
+        minimized: false,
+        tabs: [widgetTabId],
+      };
+
+      let insertIndex = panelSectionWidgetId.endsWith("Start") ? 0 : 1;
+      if (0 === panel.widgets.length)
+        insertIndex = 0;
+      panel.widgets.splice(insertIndex, 0, panelSectionWidgetId);
+    }
+  });
 }
 
 /** Add a new Floating Panel with a single widget tab

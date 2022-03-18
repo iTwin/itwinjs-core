@@ -176,25 +176,6 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           isFloatingStateSupported: true,
         }
       );
-    } else if (section === StagePanelSection.Middle) {
-      widgets.push(
-        {
-          id: "LeftMiddle1",
-          label: "Middle1",
-          canPopout: false,
-          getWidgetContent: () => <h2>Left Middle1 widget</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "LeftMiddle2",
-          label: "Middle2",
-          defaultState: WidgetState.Open,
-          canPopout: true,
-          getWidgetContent: () => <h2>Left Middle2 widget</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
     } else if (section === StagePanelSection.End) {
       widgets.push(
         {
@@ -238,25 +219,6 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           canPopout: true,
           defaultState: WidgetState.Hidden,
           getWidgetContent: () => <h2>Right Start2 widget</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
-    } else if (section === StagePanelSection.Middle) {
-      widgets.push(
-        {
-          id: "RightMiddle1",
-          label: "Middle1",
-          canPopout: false,
-          getWidgetContent: () => <h2>Right Middle1 widget</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "RightMiddle2",
-          label: "Middle2",
-          defaultState: WidgetState.Open,
-          canPopout: true,
-          getWidgetContent: () => <h2>Right Middle2 widget</h2>,
           isFloatingStateSupported: true,
         }
       );

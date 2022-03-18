@@ -18,8 +18,8 @@ import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-ab
 import { Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
-  addPanelWidget, addTab, addWidgetTabToFloatingPanel, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
-  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, isFloatingLocation,
+  addPanelWidget, addTab, addWidgetTabToFloatingPanel, addWidgetTabToPanelSection, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
+  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, isFloatingLocation,
   isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, PanelState, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
@@ -296,8 +296,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
   if (widgetDefs.length === 0)
     return state;
 
-  // Add new tabs.
-  const tabs = new Array<string>();
+  // Add missing widget tabs.
   for (const widgetDef of widgetDefs) {
     const label = getWidgetLabel(widgetDef.label);
     const saveTab = state.tabs[widgetDef.id];
@@ -324,30 +323,8 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       const preferredPosition = widgetDef.defaultFloatingPosition;
       state = addWidgetTabToFloatingPanel(state, floatingContainerId, widgetDef.id, homePanelInfo, preferredFloatingWidgetSize, preferredPosition, userSized, widgetDef.isFloatingStateWindowResizable);
     } else {
-      tabs.push(widgetDef.id);
-    }
-  }
-
-  if (tabs.length) {
-    const panel = state.panels[side];
-    preferredWidgetIndex = preferredWidgetIndex >= panel.maxWidgetCount ? panel.maxWidgetCount - 1 : preferredWidgetIndex;
-
-    if (preferredWidgetIndex < panel.widgets.length) {
-      // Append tabs to existing widget.
-      const widgetId = panel.widgets[preferredWidgetIndex];
-      state = produce(state, (draft) => {
-        const widget = draft.widgets[widgetId];
-        for (const tab of tabs) {
-          widget.tabs.push(tab);
-        }
-      });
-    } else {
-      const newWidgetId = getNextAvailablePanelWidgetId(panel);
-      const widget = createWidgetState(newWidgetId, tabs);
-      state = produce(state, (draft) => {
-        draft.panels[side].widgets.push(widget.id);
-        draft.widgets[widget.id] = castDraft(widget);
-      });
+      const widgetPanelSectionId = getWidgetPanelSectionId (side, preferredWidgetIndex);
+      state = addWidgetTabToPanelSection(state, side, widgetPanelSectionId, widgetDef.id);
     }
   }
 

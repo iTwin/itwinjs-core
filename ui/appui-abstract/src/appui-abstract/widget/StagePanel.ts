@@ -33,6 +33,7 @@ export enum StagePanelLocation {
  */
 export enum StagePanelSection {
   Start,
+  /** @deprecated - all widgets that a targeted for Middle will be placed in `End` section */
   Middle,
   End,
 }
