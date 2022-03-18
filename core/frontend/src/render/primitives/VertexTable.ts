@@ -551,14 +551,46 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
     public get qparams() { return this._qparams3d; }
 
     public appendVertex(vertIndex: number): void {
-      this.appendPosition(vertIndex);
-      this.appendFeatureIndex(vertIndex);
+      // this.appendPosition(vertIndex);
+      // this.appendFeatureIndex(vertIndex);
+      this.appendTransPosAndFeatureNdx(vertIndex);
       this.appendColorIndex(vertIndex);
     }
 
     private appendFloat32(val: number) {
       f32Array[0] = val;
       this.append32(u32Array[0]);
+    }
+
+    private convertFloat32(val: number): number {
+      f32Array[0] = val;
+      return u32Array[0];
+    }
+
+    protected appendTransPosAndFeatureNdx(vertIndex: number) {
+      // transpose position xyz vals into [0].xyz - [3].xyz, and add feature index at .w
+      // this is to order things to let shader code access much more efficiently
+      const pt = this._points[vertIndex];
+      const x = this.convertFloat32 (pt.x);
+      const y = this.convertFloat32 (pt.y);
+      const z = this.convertFloat32 (pt.z);
+      const featID = (this.args.features.featureIDs) ? this.args.features.featureIDs[vertIndex] : 0;
+      this.append8(x & 0x000000ff);
+      this.append8(y & 0x000000ff);
+      this.append8(z & 0x000000ff);
+      this.append8(featID & 0x000000ff);
+      this.append8((x >>> 8) & 0x000000ff);
+      this.append8((y >>> 8) & 0x000000ff);
+      this.append8((z >>> 8) & 0x000000ff);
+      this.append8((featID >>> 8) & 0x000000ff);
+      this.append8((x >>> 16) & 0x000000ff);
+      this.append8((y >>> 16) & 0x000000ff);
+      this.append8((z >>> 16) & 0x000000ff);
+      this.append8((featID >>> 16) & 0x000000ff);
+      this.append8(x >>> 24);
+      this.append8(y >>> 24);
+      this.append8(z >>> 24);
+      this.append8(featID >>> 24);
     }
 
     protected appendPosition(vertIndex: number) {
