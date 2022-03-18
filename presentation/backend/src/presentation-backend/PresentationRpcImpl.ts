@@ -58,8 +58,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       // attempt to clean up every second
       cleanupInterval: 1000,
 
-      cleanupHandler: (id) => {
-        Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
+      cleanupHandler: (id, _, reason) => {
+        if (reason !== "request")
+          Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
       },
     });
   }
@@ -107,7 +108,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   }
 
   private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string, diagnostics?: DiagnosticsOptions, rulesetVariables?: RulesetVariableJSON[] }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
-    const requestKey = JSON.stringify(requestOptions);
+    const requestKey = JSON.stringify({ iModelKey: token.key, requestId, requestOptions });
 
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${requestKey}`);
 

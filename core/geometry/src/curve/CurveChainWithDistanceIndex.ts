@@ -21,6 +21,7 @@ import { CurveChain } from "./CurveCollection";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
+import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
 
@@ -197,15 +198,15 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     super();
     this._path = path;
     this._fragments = fragments;
-    this._totalLength = fragments[fragments.length - 1].chainDistance1;
+    this._totalLength = fragments.length > 0 ? fragments[fragments.length - 1].chainDistance1 : 0;
   }
   /**
    * Create a clone, transformed and with its own distance index.
    * @param transform transform to apply in the clone.
    */
-  public cloneTransformed(transform: Transform): CurvePrimitive | undefined {
+  public cloneTransformed(transform: Transform): CurveChainWithDistanceIndex | undefined {
     const c = this._path.clone();
-    if (c !== undefined && c instanceof CurveChain && c.tryTransformInPlace(transform))
+    if (c instanceof CurveChain && c.tryTransformInPlace(transform))
       return CurveChainWithDistanceIndex.createCapture(c);
     return undefined;
   }
@@ -215,11 +216,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   public get path(): CurveChain { return this._path; }
 
   /** Return a deep clone */
-  public clone(): CurvePrimitive | undefined {
-    const c = this._path.clone();
-    if (c !== undefined && c instanceof CurveChain)
-      return CurveChainWithDistanceIndex.createCapture(c);
-    return undefined;
+  public clone(): CurveChainWithDistanceIndex {
+    const c = this._path.clone() as CurveChain;
+    return CurveChainWithDistanceIndex.createCapture(c);
   }
   /** Ask if the curve is within tolerance of a plane.
    * @returns Returns true if the curve is completely within tolerance of the plane.
@@ -278,10 +277,10 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
    * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
    */
-  public override collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives: boolean) {
+  public override collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLineStrings: boolean = false) {
     if (smallestPossiblePrimitives) {
       for (const c of this._path.children) {
-        c.collectCurvePrimitivesGo(collectorArray, smallestPossiblePrimitives);
+        c.collectCurvePrimitivesGo(collectorArray, smallestPossiblePrimitives, explodeLineStrings);
       }
     } else {
       collectorArray.push(this);
@@ -324,9 +323,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * Capture (not clone) a path into a new `CurveChainWithDistanceIndex`
    * @param primitives primitive array to be CAPTURED (not cloned)
    */
-  public static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined {
-    if (path.children.length === 0)
-      return undefined;
+  public static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex {
     const fragments = DistanceIndexConstructionContext.createPathFragmentIndex(path, options);
     const result = new CurveChainWithDistanceIndex(path, fragments);
     return result;
@@ -558,5 +555,25 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       return chainDetail;
     }
     return undefined;
+  }
+
+  /**
+   * Construct an offset of each child as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offset children. Use RegionOps.constructCurveXYOffset() to return a fully joined offset.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const offsets: CurvePrimitive[] = [];
+    for (const prim of this.collectCurvePrimitives(undefined, true, true)) {
+      const offset = prim.constructOffsetXY(options);
+      if (offset !== undefined) {
+        if (offset instanceof CurvePrimitive)
+          offsets.push(offset);
+        else if (Array.isArray(offset))
+          offset.forEach((cp) => offsets.push(cp));
+      }
+    }
+    return offsets;
   }
 }

@@ -6,7 +6,6 @@
  * @module RpcInterface
  */
 
-import "@ungap/url-search-params/index";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";

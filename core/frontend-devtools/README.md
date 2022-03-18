@@ -128,6 +128,7 @@ This package provides several keyins to control the display of background maps, 
 * `fdt toggle terrain` - Toggle terrain display for background maps.
 * `fdt attach maplayer <name>` - Attach a background map layer from name within the map layer source list.  Partial names may be used.
 * `fdt attach mapoverlay <name>` - Attach an overlay map layer from name within the map layer source list.  Partial names may be used.
+* `fdt attach model maplayer <name>` - Attach a model map layer for each unique model of the currently selected elements.
 * `fdt set map base <name>` - Set the background base map from name within the map layer source list.  Partial names may be used.
 * `fdt set map base color <red, green, blue>` - Set map base color by red, green and blue values [0..255].
 * `fdt set map base transparency <transparency>` - Set map base transparency [0..1].
@@ -261,6 +262,7 @@ These keysins control the planar masking of reality models.
   * "refs=0|1" where `1` indicates that if the element is a geometry part, the output should include a list of all geometric elements which reference that geometry part. This is **extremely** inefficient and may take a very long time to process in iModels containing many geometric elements.
   * "modal=0|1" where `1` indicates the output should be displayed in a modal dialog.
   * "copy=0|1" where `1` indicates the output should be copied to the system clipboard.
+  * "explodeparts=0|1" where `1` indicates that a summary of the geometry of each geometry part reference should also be output.
 * `fdt select elements` - given a list of element Ids separated by whitespace, replace the contents of the selection set with those Ids.
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
 * `fdt sky sphere` - set the image used for the skybox as a Url or texture Id.

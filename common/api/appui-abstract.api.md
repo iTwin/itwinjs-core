@@ -253,11 +253,11 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
 
 // @public
 export class BaseUiItemsProvider implements UiItemsProvider {
-    constructor(_providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    constructor(_providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any, provider?: UiItemsProvider | undefined) => boolean) | undefined);
     // (undocumented)
     get id(): string;
     // (undocumented)
-    isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined;
+    isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any, provider?: UiItemsProvider | undefined) => boolean) | undefined;
     // (undocumented)
     onUnregister(): void;
     provideBackstageItems(): BackstageItem[];
@@ -1200,9 +1200,15 @@ export interface IconListEditorParams extends BasePropertyEditorParams {
 
 // @public
 export class IconSpecUtilities {
+    // @deprecated
     static createSvgIconSpec(svgSrc: string): string;
+    static createWebComponentIconSpec(srcString: string): string;
+    // @deprecated
     static getSvgSource(iconSpec: string): string | undefined;
+    static getWebComponentSource(iconSpec: string): string | undefined;
     static readonly SVG_PREFIX = "svg:";
+    // (undocumented)
+    static readonly WEB_COMPONENT_PREFIX = "webSvg:";
 }
 
 // @internal
@@ -2099,6 +2105,8 @@ export enum UiItemsApplicationAction {
 
 // @public
 export class UiItemsManager {
+    // @internal
+    static clearAllProviders(): void;
     static getBackstageItems(): BackstageItem[];
     static getStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
     static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];

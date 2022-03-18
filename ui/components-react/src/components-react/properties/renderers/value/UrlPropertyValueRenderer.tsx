@@ -22,7 +22,7 @@ export class UrlPropertyValueRenderer implements IPropertyValueRenderer {
   /** Checks if the renderer can handle given property */
   public canRender(record: PropertyRecord) {
     return record.value.valueFormat === PropertyValueFormat.Primitive
-      && record.property.typename === StandardTypeNames.URL;
+      && [StandardTypeNames.URL, StandardTypeNames.String, StandardTypeNames.Text].includes(record.property.typename as StandardTypeNames);
   }
 
   /** Method that returns a JSX representation of PropertyRecord */

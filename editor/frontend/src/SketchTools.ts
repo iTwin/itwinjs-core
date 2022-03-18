@@ -612,7 +612,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     if (undefined === continuePath)
       return;
 
-    const current = this.current.clone() as CurvePrimitive;
+    const current = this.current.clone();
     if (undefined === current)
       return;
 
@@ -753,7 +753,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
   }
 }
 
-/** @alpha Creates a line string or shape. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates a line string or shape. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateLineStringTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateLineString";
   public static override iconSpec = "icon-snaps"; // Need better icon...
@@ -835,7 +835,7 @@ export enum ArcMethod {
   StartEndMid = 3,
 }
 
-/** @alpha Creates an arc. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates an arc. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateArcTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateArc";
   public static override iconSpec = "icon-three-points-circular-arc";
@@ -1333,7 +1333,7 @@ export enum CircleMethod {
   Edge = 1,
 }
 
-/** @alpha Creates a circle. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates a circle. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateCircleTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateCircle";
   public static override iconSpec = "icon-circle";
@@ -1594,7 +1594,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
   }
 }
 
-/** @alpha Creates an ellipse. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates an ellipse. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateEllipseTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateEllipse";
   public static override iconSpec = "icon-ellipse";
@@ -1682,7 +1682,7 @@ export class CreateEllipseTool extends CreateOrContinuePathTool {
   }
 }
 
-/** @alpha Creates a rectangle by corner points. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates a rectangle by corner points. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateRectangleTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateRectangle";
   public static override iconSpec = "icon-rectangle";
@@ -1860,7 +1860,7 @@ export enum BCurveMethod {
   ThroughPoints = 1,
 }
 
-/** @alpha Creates a bspline curve by poles or through points. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates a bspline curve by poles or through points. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateBCurveTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateBCurve";
   public static override iconSpec = "icon-snaps-nearest"; // Need better icon...

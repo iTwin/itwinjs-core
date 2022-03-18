@@ -14,7 +14,7 @@ import { Pass, TextureUnit } from "../RenderFlags";
 import { IsInstanced } from "../TechniqueFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
-import { decodeUint16, decodeUint24 } from "./Decode";
+import { decodeFloat32, decodeUint16, decodeUint24 } from "./Decode";
 import { addInstanceOverrides } from "./Instancing";
 import { addLookupTable } from "./LookupTable";
 
@@ -34,13 +34,14 @@ vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquan
 // Need to read 2 rgba values to obtain 6 16-bit integers for position
 const unquantizeVertexPositionFromLUT = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
-  vec2 tc = g_vertexBaseCoords;
-  vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  tc.x += g_vert_stepX;
-  vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-  g_vertexData2 = enc2.zw;
-  return unquantizePosition(qpos, origin, scale);
+  if (g_usesQuantizedPosition) {
+    vec4 enc1 = g_vertLutData[0];
+    vec4 enc2 = g_vertLutData[1];
+    vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
+    return unquantizePosition(qpos, origin, scale);
+  }
+
+  return vec4(decodeFloat32(g_vertLutData[0]), decodeFloat32(g_vertLutData[1]), decodeFloat32(g_vertLutData[2]), 1.0);
 }
 `;
 
@@ -160,10 +161,10 @@ const scratchLutParams = new Float32Array(4);
 function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexLUTIndex", VariableType.Float);
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
-  vert.addGlobal("g_vertexData2", VariableType.Vec2);
 
   vert.addFunction(decodeUint24);
   vert.addFunction(decodeUint16);
+  vert.addFunction(decodeFloat32);
   vert.addFunction(unquantizeVertexPositionFromLUT);
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
@@ -187,7 +188,26 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   addLookupTable(vert, "vert", "u_vertParams.z");
   vert.addInitializer(initializeVertLUTCoords);
+
+  assert(undefined !== vert.maxRgbaPerVertex);
+  const maxRgbaPerVertex = vert.maxRgbaPerVertex.toString();
+  vert.addGlobal(`g_vertLutData[${maxRgbaPerVertex}]`, VariableType.Vec4);
+  vert.addGlobal("g_usesQuantizedPosition", VariableType.Boolean);
+
+  // Read the vertex data from the vertex table up front. If using WebGL 2, only read the number of RGBA values we actually need for this vertex table.
+  const loopStart = `for (int i = 0; i < ${System.instance.capabilities.isWebGL2 ? "int(u_vertParams.z)" : maxRgbaPerVertex}; i++)`;
+  vert.addInitializer(`
+    g_usesQuantizedPosition = u_qScale.x >= 0.0;
+    vec2 tc = g_vertexBaseCoords;
+    ${loopStart} {
+      g_vertLutData[i] = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+      tc.x += g_vert_stepX;
+    }
+  `);
 }
+
+// Shader tests u_qScale.x < 0 to determine that positions are not quantized.
+const unquantizedScale = new Float32Array([-1, -1, -1]);
 
 /** @internal */
 export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
@@ -195,12 +215,14 @@ export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
 
   vert.addUniform("u_qScale", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_qScale", (uniform, params) => {
-      uniform.setUniform3fv(params.geometry.qScale);
+      uniform.setUniform3fv(params.geometry.usesQuantizedPositions ? params.geometry.qScale : unquantizedScale);
     });
   });
   vert.addUniform("u_qOrigin", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_qOrigin", (uniform, params) => {
-      uniform.setUniform3fv(params.geometry.qOrigin);
+      // If positions aren't quantized, the shader doesn't use the origin - don't bother updating it.
+      if (params.geometry.usesQuantizedPositions)
+        uniform.setUniform3fv(params.geometry.qOrigin);
     });
   });
 
@@ -274,10 +296,8 @@ export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
     return;
 
   const computeFeatureAndMaterialIndex = `
-  vec2 tc = g_vertexBaseCoords;
-  tc.x += g_vert_stepX * 2.0;
-  g_featureAndMaterialIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-`;
+    g_featureAndMaterialIndex = g_usesQuantizedPosition ? g_vertLutData[2] : g_vertLutData[3];
+  `;
 
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
   if (!vert.usesInstancedGeometry) {

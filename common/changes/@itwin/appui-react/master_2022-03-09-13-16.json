@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Allow initial UI version to be set when UIFramework is initialized.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

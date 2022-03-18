@@ -708,10 +708,9 @@ describe("Learning Snippets", () => {
 
         expect(content!.contentSet.length).to.eq(4);
         expect(content!.descriptor.fields).to.containSubset([{
-          label: "3D Display Style",
+          label: "Display Style",
           nestedFields: [{ label: "Model" }, { label: "Code" }, { label: "User Label" }, { label: "Is Private" }],
-        }]
-        ).and.to.have.lengthOf(18);
+        }]).and.to.have.lengthOf(18);
       });
 
       it("uses `calculatedProperties` attribute", async () => {
@@ -1075,39 +1074,6 @@ describe("Learning Snippets", () => {
       afterEach(async () => {
         await imodel.close();
         await terminate();
-      });
-
-      it("uses `MultiSchemaClassesSpecification`", async () => {
-        const ruleset: Ruleset = {
-          id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.MultiSchemaClasses.Ruleset
-              // This specification selects instances of `bis.PhysicalModel` and `bis.SpatialViewDefinition` classes. Classes that derive from this list will not be included.
-              classes: {
-                schemaName: "BisCore",
-                classNames: ["PhysicalModel", "SpatialViewDefinition"],
-                arePolymorphic: false,
-              },
-              // __PUBLISH_EXTRACT_END__
-            }],
-          }],
-        };
-
-        // Ensure that `bis.PhysicalModel` and `bis.SpatialViewDefinition` instances are selected.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
-
-        expect(content!.contentSet.length).to.eq(5);
-        content!.contentSet.forEach((record) => {
-          expect(record.primaryKeys[0].className).to.be.oneOf(["BisCore:PhysicalModel", "BisCore:SpatialViewDefinition"]);
-        });
       });
 
       it("uses `classes` attribute", async () => {

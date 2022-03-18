@@ -23,6 +23,16 @@ function clearElement(element: HTMLElement): void {
 
 const NO_MODEL_ID = "-1";
 
+enum RealityDataType {
+  REALITYMESH3DTILES  = "REALITYMESH3DTILES",
+  OSMBUILDINGS = "OSMBUILDINGS",
+  OPC = "OPC",
+  TERRAIN3DTILES = "TERRAIN3DTILES", // Terrain3DTiles
+  OMR = "OMR", // Mapping Resource, this type is supported from Context Share but can only be displayed by Orbit Photo Navigation (not publicly available)
+  CESIUM3DTILES = "CESIUM3DTILES",
+  UNKNOWN = "UNKNOWN",
+}
+
 export class ClassificationsPanel extends ToolBarDropDown {
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
@@ -97,6 +107,41 @@ export class ClassificationsPanel extends ToolBarDropDown {
     return undefined !== style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
   }
 
+  private isSupportedType(type: string | undefined): boolean {
+    if (type === undefined)
+      return false;
+
+    switch (type.toUpperCase()) {
+      case RealityDataType.REALITYMESH3DTILES:
+        return true;
+      case RealityDataType.CESIUM3DTILES:
+        return true;
+      case RealityDataType.OPC:
+        return true;
+      case RealityDataType.OSMBUILDINGS:
+        return true;
+      case RealityDataType.TERRAIN3DTILES:
+        return true;
+      case RealityDataType.OMR:
+        return true;
+    }
+    return false;
+  }
+
+  private isSupportedDisplayType(type: string | undefined): boolean {
+    if (type === undefined)
+      return false;
+    if (this.isSupportedType(type)) {
+      switch (type.toUpperCase()) {
+        case RealityDataType.OMR:
+          return false; // this type is supported from Context Share but can only be displayed by Orbit Photo Navigation (not publicly available)
+        default:
+          return true;
+      }
+    }
+    return false;
+  }
+
   private async populateRealityModelsPicker(): Promise<void> {
     this._realityModelPickerMenu.div.style.display = "none";
     clearElement(this._realityModelPickerMenu.body);
@@ -134,7 +179,8 @@ export class ClassificationsPanel extends ToolBarDropDown {
       const name = undefined !== rdEntry.displayName ? rdEntry.displayName : rdEntry.id;
       const rdSourceKey = this.createRealityDataSourceKeyFromITwinRealityData(rdEntry);
       const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(this._iTwinId,rdSourceKey.id);
-      if (tilesetUrl) {
+      const isDisplaySupported = this.isSupportedDisplayType(rdEntry.type);
+      if (tilesetUrl && isDisplaySupported) {
         const entry: ContextRealityModelProps = {
           rdSourceKey,
           tilesetUrl,

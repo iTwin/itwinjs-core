@@ -10,7 +10,7 @@ import {
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { CustomFrontstage } from "../frontstages/CustomContent";
-import visibilityIcon from "../icons/visibility-semi-transparent.svg?sprite";
+import visibilitySemiTransparentSvg from "../icons/visibility-semi-transparent.svg";
 
 /**
  * Test UiItemsProvider that provide buttons, widgets, and backstage item to NetworkTracing stage.
@@ -38,11 +38,12 @@ export class CustomContentUiProvider implements UiItemsProvider {
       toolbarUsage === ToolbarUsage.ContentManipulation &&
       toolbarOrientation === ToolbarOrientation.Horizontal
     ) {
+      const iconData = IconSpecUtilities.createWebComponentIconSpec(visibilitySemiTransparentSvg);
 
       const getSvgTestButton = ToolbarItemUtilities.createActionButton(
         "custom-visibility-tool",
         -1,
-        IconSpecUtilities.createSvgIconSpec(visibilityIcon),
+        iconData,
         "Custom Visibility Tool",
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "custom-visibility-tool activated", undefined, OutputMessageType.Toast));

@@ -11,6 +11,7 @@ export * from "./BentleyLoggerCategory";
 export * from "./ErrorCategory";
 export * from "./BeSQLite";
 export * from "./ByteStream";
+export * from "./ClassUtils";
 export * from "./Compare";
 export * from "./CompressedId64Set";
 export * from "./Dictionary";
@@ -33,6 +34,7 @@ export * from "./StringUtils";
 export * from "./Time";
 export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
+export * from "./YieldManager";
 
 /** @docs-package-description
  * The core-bentley package contains classes to solve problems that are common for both client and server use cases.
