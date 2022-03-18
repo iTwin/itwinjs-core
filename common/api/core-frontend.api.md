@@ -5073,11 +5073,10 @@ export class IModelTileRequestChannels {
         concurrency: number;
         usesHttp: boolean;
         cacheMetadata: boolean;
+        cacheConcurrency: number;
     });
     // (undocumented)
-    get cloudStorage(): TileRequestChannel | undefined;
-    // (undocumented)
-    enableCloudStorageCache(concurrency: number): TileRequestChannel;
+    get cloudStorage(): TileRequestChannel;
     getCachedContent(tile: IModelTile): IModelTileContent | undefined;
     // (undocumented)
     getChannelForTile(tile: IModelTile): TileRequestChannel;

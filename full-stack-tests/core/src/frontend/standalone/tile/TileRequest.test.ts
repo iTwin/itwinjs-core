@@ -17,7 +17,7 @@ describe("IModelTileRequestChannels", () => {
   function getCloudStorageChannel(): TileRequestChannel {
     const channels = IModelApp.tileAdmin.channels;
     expect(channels.iModelChannels.cloudStorage).not.to.be.undefined;
-    return channels.iModelChannels.cloudStorage!;
+    return channels.iModelChannels.cloudStorage;
   }
 
   async function getTileForIModel(imodel: SnapshotConnection): Promise<IModelTile> {
@@ -182,7 +182,7 @@ describe("IModelTileRequestChannels", () => {
     });
 
     it("falls back to cloud storage, then to RPC, if content is not found", async () => {
-      const cloud = IModelApp.tileAdmin.channels.iModelChannels.cloudStorage!;
+      const cloud = IModelApp.tileAdmin.channels.iModelChannels.cloudStorage;
       expect(cloud).not.to.be.undefined;
 
       const tile = await getTile();

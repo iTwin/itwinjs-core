@@ -75,12 +75,11 @@ export class TileRequestChannels {
       concurrency: this.rpcConcurrency,
       usesHttp: undefined === rpcConcurrency,
       cacheMetadata,
+      cacheConcurrency: this.httpConcurrency,
     });
 
     for (const channel of this.iModelChannels)
       this.add(channel);
-
-    this.add(this.iModelChannels.enableCloudStorageCache(this.httpConcurrency));
   }
 
   /** The number of registered channels. */
