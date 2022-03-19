@@ -262,38 +262,73 @@ describe("Ids", () => {
     });
 
     expect(iterated.size).to.equal(set.size);
+  });
 
-    const iteratedValues = new Set<string>();
-    for (const [lo, hi] of set.values()) {
-      expect(set.has(lo, hi)).to.be.true;
+  it("should map IDs in a Id64.Uint32Map", () => {
+    const ids: Uint64Id[] = [
+      // (highBytes, lowBytes, localId, briefCaseId, Id64String)
+      new Uint64Id(0, 0, 0, 0, "0"),
+      new Uint64Id(0, 1, 1, 0, "0x1"),
+      new Uint64Id(0, 2, 2, 0, "0x2"),
+      new Uint64Id(0, 0x0000123456, 0x123456, 0, "0x123456"),
+      new Uint64Id(0, 0x01234567, 0x01234567, 0, "0x1234567"),
+      new Uint64Id(0, 0xffffffff, 0xffffffff, 0, "0xffffffff"),
+      new Uint64Id(0x01234567, 0x89abcdef, 0x6789abcdef, 0x00012345, "0x123456789abcdef"),
+      new Uint64Id(0xfedcba98, 0x76543210, 0x9876543210, 0x00fedcba, "0xfedcba9876543210"),
+      new Uint64Id(0x100, 1, 1, 1, "0x10000000001"),
+      new Uint64Id(0x100, 0xabc, 0xabc, 1, "0x10000000abc"),
+      new Uint64Id(1, 1, 0x0100000001, 0, "0x100000001"),
+      new Uint64Id(1, 2, 0x0100000002, 0, "0x100000002"),
+      new Uint64Id(0x00ba0000, 0x6543000, 0x6543000, 0xba00, "0xba000006543000"),
+    ];
+
+    class MyMap<T> extends Id64.Uint32Map<T> {
+      public get map() { return this._map; }
+    }
+
+    const strings = new MyMap<string>();
+    for (const id of ids)
+      strings.set(id.low, id.high, id.str);
+
+    expect(strings.size).to.equal(ids.length);
+    expect(strings.map.size).to.equal(6);
+
+    for (const id of ids) {
+      let value = strings.get(id.low, id.high);
+      expect(value).not.to.be.undefined;
+      expect(value).to.equal(id.str);
+
+      value = strings.getById(id.str);
+      expect(value).not.to.be.undefined;
+      expect(value).to.equal(id.str);
+    }
+
+    const iterated = new Set<string>();
+    strings.forEach((lo: number, hi: number, value: string) => {
+      expect(strings.get(lo, hi)).to.equal(value);
       const str = lo.toString() + hi.toString();
-      expect(iteratedValues.has(str)).to.be.false;
-      iteratedValues.add(str);
+      expect(iterated.has(str)).to.be.false;
+      iterated.add(str);
+    });
+
+    expect(iterated.size).to.equal(strings.size);
+
+    const numbers = new MyMap<number>();
+    for (const id of ids)
+      numbers.setById(id.str, id.low);
+
+    expect(numbers.size).to.equal(ids.length);
+    expect(numbers.map.size).to.equal(6);
+
+    for (const id of ids) {
+      let value = numbers.get(id.low, id.high);
+      expect(value).not.to.be.undefined;
+      expect(value).to.equal(id.low);
+
+      value = numbers.getById(id.str);
+      expect(value).not.to.be.undefined;
+      expect(value).to.equal(id.low);
     }
-
-    expect(iteratedValues.size).to.equal(set.size);
-
-    const iteratedIterator = new Set<string>();
-    for (const [lo, hi] of set) {
-      expect(set.has(lo, hi)).to.be.true;
-      const str = lo.toString() + hi.toString();
-      expect(iteratedIterator.has(str)).to.be.false;
-      iteratedIterator.add(str);
-    }
-
-    expect(iteratedIterator.size).to.equal(set.size);
-
-    const iteratedValuesById = new Set<string>();
-    for (const str of set.valuesById()) {
-      expect(set.hasId(str)).to.be.true;
-      const lo = Id64.getLowerUint32(str);
-      const hi = Id64.getUpperUint32(str);
-      expect(set.has(lo, hi)).to.be.true;
-      expect(iteratedValuesById.has(str)).to.be.false;
-      iteratedValuesById.add(str);
-    }
-
-    expect(iteratedValuesById.size).to.equal(set.size);
   });
 
   it("Guids", () => {
@@ -572,201 +607,6 @@ describe("MutableCompressedId64Set", () => {
       mutate(set);
       expect(set.equals(test[2])).to.be.true;
       expect(set.equals(expected)).to.be.true;
-    }
-  });
-});
-
-describe("Id64.Uint32Map", () => {
-  const ids: Uint64Id[] = [
-    // (highBytes, lowBytes, localId, briefCaseId, Id64String)
-    new Uint64Id(0, 0, 0, 0, "0"),
-    new Uint64Id(0, 1, 1, 0, "0x1"),
-    new Uint64Id(0, 2, 2, 0, "0x2"),
-    new Uint64Id(0, 0x0000123456, 0x123456, 0, "0x123456"),
-    new Uint64Id(0, 0x01234567, 0x01234567, 0, "0x1234567"),
-    new Uint64Id(0, 0xffffffff, 0xffffffff, 0, "0xffffffff"),
-    new Uint64Id(0x01234567, 0x89abcdef, 0x6789abcdef, 0x00012345, "0x123456789abcdef"),
-    new Uint64Id(0xfedcba98, 0x76543210, 0x9876543210, 0x00fedcba, "0xfedcba9876543210"),
-    new Uint64Id(0x100, 1, 1, 1, "0x10000000001"),
-    new Uint64Id(0x100, 0xabc, 0xabc, 1, "0x10000000abc"),
-    new Uint64Id(1, 1, 0x0100000001, 0, "0x100000001"),
-    new Uint64Id(1, 2, 0x0100000002, 0, "0x100000002"),
-    new Uint64Id(0x00ba0000, 0x6543000, 0x6543000, 0xba00, "0xba000006543000"),
-  ];
-
-  class MyMap<T> extends Id64.Uint32Map<T> {
-    public get map() { return this._map; }
-  }
-
-  it("should map IDs in a Id64.Uint32Map", () => {
-    const strings = new MyMap<string>();
-    for (const id of ids)
-      strings.set(id.low, id.high, id.str);
-
-    expect(strings.size).to.equal(ids.length);
-    expect(strings.map.size).to.equal(6);
-
-    for (const id of ids) {
-      let value = strings.get(id.low, id.high);
-      expect(value).not.to.be.undefined;
-      expect(value).to.equal(id.str);
-
-      value = strings.getById(id.str);
-      expect(value).not.to.be.undefined;
-      expect(value).to.equal(id.str);
-    }
-
-    const iterated = new Set<string>();
-    strings.forEach((lo: number, hi: number, value: string) => {
-      expect(strings.get(lo, hi)).to.equal(value);
-      const str = lo.toString() + hi.toString();
-      expect(iterated.has(str)).to.be.false;
-      iterated.add(str);
-    });
-
-    expect(iterated.size).to.equal(strings.size);
-
-    const numbers = new MyMap<number>();
-    for (const id of ids)
-      numbers.setById(id.str, id.low);
-
-    expect(numbers.size).to.equal(ids.length);
-    expect(numbers.map.size).to.equal(6);
-
-    for (const id of ids) {
-      let value = numbers.get(id.low, id.high);
-      expect(value).not.to.be.undefined;
-      expect(value).to.equal(id.low);
-
-      value = numbers.getById(id.str);
-      expect(value).not.to.be.undefined;
-      expect(value).to.equal(id.low);
-    }
-  });
-
-  it("should delete and check if has IDs in a Id64.Uint32Map", () => {
-    const strings = new MyMap<string>();
-    for (const id of ids)
-      strings.set(id.low, id.high, id.str);
-
-    for (const id of ids)
-      expect(strings.has(id.low, id.high)).to.be.true;
-
-    expect(strings.size).to.equal(ids.length);
-    expect(strings.map.size).to.equal(6);
-
-    for (const id of [ids[10], ids[11]]) {
-      expect(strings.has(id.low, id.high)).to.be.true;
-      expect(strings.delete(id.low, id.high)).to.be.true;
-      expect(strings.has(id.low, id.high)).to.be.false;
-    }
-
-    expect(strings.size).to.equal(ids.length - 2);
-    expect(strings.map.size).to.equal(6);
-
-    const notInEmptySubmap = new Uint64Id(1, 3, 0x0100000003, 0, "0x100000003");
-    expect(strings.has(notInEmptySubmap.low, notInEmptySubmap.high)).to.be.false;
-    expect(strings.delete(notInEmptySubmap.low, notInEmptySubmap.high)).to.be.false;
-
-    expect(strings.size).to.equal(ids.length - 2);
-    expect(strings.map.size).to.equal(6);
-
-    const notInMap  = new Uint64Id(2, 3, 0x0200000003, 0, "0x200000003");
-    expect(strings.has(notInMap.low, notInMap.high)).to.be.false;
-    expect(strings.delete(notInMap.low, notInMap.high)).to.be.false;
-
-    expect(strings.size).to.equal(ids.length - 2);
-    expect(strings.map.size).to.equal(6);
-
-    expect(strings.has(ids[0].low, ids[0].high)).to.be.true;
-    strings.deleteById(ids[0].str);
-    expect(strings.has(ids[0].low, ids[0].high)).to.be.false;
-
-    expect(strings.size).to.equal(ids.length - 3);
-    expect(strings.map.size).to.equal(6);
-  });
-
-  it("should iterate keys, values, and entries in Id64.Uint32Map", () => {
-    const idMap = new MyMap<Uint64Id>();
-    for (const id of ids)
-      idMap.set(id.low, id.high, id);
-
-    // NOTE: these tests depend on the `ids` array not containing any out-of-order high bytes
-
-    {
-      let i = 0;
-      for (const [low, high, id] of idMap) {
-        expect(low).to.equal(id.low);
-        expect(high).to.equal(id.high);
-        expect(ids[i].low).to.equal(low);
-        expect(ids[i].high).to.equal(high);
-        expect(Id64.fromUint32Pair(low, high)).to.equal(id.str);
-        expect(Id64.fromUint32Pair(low, high)).to.equal(ids[i].str);
-        i++;
-      }
-    }
-
-    {
-      let i = 0;
-      for (const [low, high, id] of idMap.entries()) {
-        expect(low).to.equal(id.low);
-        expect(high).to.equal(id.high);
-        expect(low).to.equal(ids[i].low);
-        expect(high).to.equal(ids[i].high);
-        expect(Id64.fromUint32Pair(low, high)).to.equal(id.str);
-        expect(Id64.fromUint32Pair(low, high)).to.equal(ids[i].str);
-        i++;
-      }
-    }
-
-    {
-      let i = 0;
-      for (const [str, id] of idMap.entriesById()) {
-        expect(id.str).to.equal(ids[i].str);
-        expect(Id64.getLowerUint32(str)).to.equal(id.low);
-        expect(Id64.getLowerUint32(str)).to.equal(ids[i].low);
-        expect(Id64.getUpperUint32(str)).to.equal(id.high);
-        expect(Id64.getUpperUint32(str)).to.equal(ids[i].high);
-        i++;
-      }
-    }
-
-    const keys = idMap.keys();
-    const keysById = idMap.keysById();
-    const values = idMap.values();
-    const valuesById = idMap.valuesById();
-    const entries = idMap.entries();
-    const entriesById = idMap.entriesById();
-    const iterator = idMap[Symbol.iterator]();
-
-    for (const id of ids) {
-      const keysVal = keys.next();
-      const keysByIdVal = keysById.next();
-      const valuesVal = values.next();
-      const valuesByIdVal = valuesById.next();
-      const entriesVal = entries.next();
-      const entriesByIdVal = entriesById.next();
-      const iteratorVal = iterator.next();
-      const only1ValueForDone =
-        new Set(
-          [
-            keysVal,
-            keysByIdVal,
-            valuesVal,
-            valuesByIdVal,
-            entriesVal,
-            entriesByIdVal,
-            iteratorVal,
-          ].map((r) => r.done)
-        ).size === 1;
-      expect(only1ValueForDone).to.be.true;
-      expect(keysVal.value).to.deep.equal([id.low, id.high]);
-      expect(keysByIdVal.value).to.deep.equal(id.str);
-      expect(valuesVal.value).to.deep.equal(id);
-      expect(valuesByIdVal.value).to.deep.equal(id);
-      expect(entriesVal.value).to.deep.equal([id.low, id.high, id]);
-      expect(entriesByIdVal.value).to.deep.equal([id.str, id]);
-      expect(iteratorVal.value).to.deep.equal([id.low, id.high, id]);
     }
   });
 });

@@ -226,7 +226,7 @@ export class IModelTransformer extends IModelExportHandler {
   protected _pendingReferences = new PendingReferenceMap<PartiallyCommittedElement>();
 
   /** map of partially committed element ids to their partial commit progress */
-  protected _partiallyCommittedElements = new Id64.Uint32Map<PartiallyCommittedElement>();
+  protected _partiallyCommittedElements = new Map<Id64String, PartiallyCommittedElement>();
 
   /** the options that were used to initialize this transformer */
   private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingPredecessorsBehavior">;
@@ -510,7 +510,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** callback to perform when a partial element says it's ready to be completed
    * transforms the source element with all references now valid, then updates the partial element with the results
    */
-  private makePartialElementOnCompleteCallback(sourceElem: Element) {
+  private makePartialElementCompleter(sourceElem: Element) {
     return () => {
       const sourceElemId = sourceElem.id;
       const targetElemId = this.context.findTargetElementId(sourceElem.id);
@@ -518,7 +518,7 @@ export class IModelTransformer extends IModelExportHandler {
         throw Error(`${sourceElemId} has not been inserted into the target, a completer cannot be made for it. This is a bug.`);
       const targetElemProps = this.onTransformElement(sourceElem);
       this.targetDb.elements.updateElement({...targetElemProps, id: targetElemId});
-      this._partiallyCommittedElements.deleteById(sourceElemId);
+      this._partiallyCommittedElements.delete(sourceElemId);
     };
   }
 
@@ -556,9 +556,9 @@ export class IModelTransformer extends IModelExportHandler {
         }
       }
       if (thisPartialElem === undefined) {
-        thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementOnCompleteCallback(element));
-        if (!this._partiallyCommittedElements.hasById(element.id))
-          this._partiallyCommittedElements.setById(element.id, thisPartialElem);
+        thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
+        if (!this._partiallyCommittedElements.has(element.id))
+          this._partiallyCommittedElements.set(element.id, thisPartialElem);
       }
       if (predecessorState.needsModelImport) {
         missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
@@ -814,12 +814,12 @@ export class IModelTransformer extends IModelExportHandler {
         loggerCategory,
         [
           "The following elements were never fully resolved:",
-          [...this._partiallyCommittedElements.keysById()].join(","),
+          [...this._partiallyCommittedElements.keys()].join(","),
           "This indicates that either some predecessors were excluded from the transformation",
           "or the source has dangling predecessors.",
         ].join("\n")
       );
-      for (const partiallyCommittedElem of this._partiallyCommittedElements.valuesById()) {
+      for (const partiallyCommittedElem of this._partiallyCommittedElements.values()) {
         partiallyCommittedElem.forceComplete();
       }
     }
