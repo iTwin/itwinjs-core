@@ -15,7 +15,6 @@ import { ElementProps } from '@itwin/core-common';
 import { ElementUniqueAspect } from '@itwin/core-backend';
 import { Entity } from '@itwin/core-backend';
 import { FontProps } from '@itwin/core-common';
-import { Id64 } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelCloneContext } from '@itwin/core-backend';
 import { IModelDb } from '@itwin/core-backend';
@@ -161,7 +160,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
-    protected _partiallyCommittedElements: Id64.Uint32Map<PartiallyCommittedElement>;
+    protected _partiallyCommittedElements: Map<string, PartiallyCommittedElement>;
     protected _pendingReferences: PendingReferenceMap<PartiallyCommittedElement>;
     // @internal
     preExportElement(sourceElement: Element): Promise<void>;
