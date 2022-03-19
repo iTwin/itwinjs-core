@@ -8,36 +8,32 @@
 
 import { Id64String } from "@itwin/core-bentley";
 
-interface PendingReferenceProps {
+/**
+ * A reference relationships from an element, "referencer", to an element or its submodel, "referenced"
+ * @internal
+ */
+interface PendingReference {
   referencer: Id64String;
   referenced: Id64String;
   isModelRef: boolean;
 }
 
-/**
- * A reference relationships from an element, "referencer", to an element or its submodel, "referenced"
- * @internal
- */
-export class PendingReference implements PendingReferenceProps {
-  public referencer!: Id64String;
-  public referenced!: Id64String;
-  public isModelRef!: boolean;
-  constructor(props: PendingReferenceProps) {
-    Object.assign(this, props);
+namespace PendingReference {
+  export function toKey(props: PendingReference): string {
+    return `${props.isModelRef ? "1" : "0"}${props.referencer}\x00${props.referenced}`;
   }
-  public toKey(): string {
-    return `${this.isModelRef ? "1" : "0"}${this.referencer}\x00${this.referenced}`;
-  }
-  private static keyPattern = /(?<isModelRef>0|1)(?<referencer>0x[0-9a-f])\x00(?<referenced>0x[0-9a-f])/;
-  public static fromKey(key: string): PendingReference {
-    const match = this.keyPattern.exec(key);
+
+  const keyPattern = /(?<isModelRef>0|1)(?<referencer>0x[0-9a-f])\x00(?<referenced>0x[0-9a-f])/;
+
+  export function fromKey(key: string): PendingReference {
+    const match = keyPattern.exec(key);
     if (match === null || match.groups === undefined)
       throw Error("invalid key passed");
-    return new PendingReference({
+    return {
       isModelRef: match.groups.isModelRef === "1",
       referencer: match.groups.referencer,
       referenced: match.groups.referenced,
-    });
+    };
   }
 }
 
@@ -45,7 +41,7 @@ export class PendingReference implements PendingReferenceProps {
  * a map that supports using PendingReferences objects as structural keys,
  * as well as getting a list of referencers from a referencee (called referenced)
  */
-export class PendingReferenceMap<T> implements Map<PendingReferenceProps, T> {
+export class PendingReferenceMap<T> implements Map<PendingReference, T> {
   private _map = new Map<string, T>();
   private _referencedToReferencers = new Map<Id64String, Set<Id64String>>();
 
@@ -59,39 +55,28 @@ export class PendingReferenceMap<T> implements Map<PendingReferenceProps, T> {
     return referencers;
   }
 
-  /** if you have just the props of a pending reference, initialize a new class instance from it so we can use its convenience methods */
-  private static promoteRef(ref: PendingReferenceProps | PendingReference): PendingReference {
-    if (ref instanceof PendingReference)
-      return ref;
-    return new PendingReference(ref);
-  }
-
   /// Map implementation
 
   public clear(): void { this._map.clear(); }
-  public delete(ref: PendingReferenceProps): boolean {
-    const promotedRef = PendingReferenceMap.promoteRef(ref);
-    const deleteResult = this._map.delete(promotedRef.toKey());
+  public delete(ref: PendingReference): boolean {
+    const deleteResult = this._map.delete(PendingReference.toKey(ref));
     const referencers = this._referencedToReferencers.get(ref.referenced);
     if (referencers !== undefined)
       referencers.delete(ref.referencer);
     return deleteResult;
   }
-  public forEach(callbackfn: (value: T, key: PendingReferenceProps, map: Map<PendingReferenceProps, T>) => void, thisArg?: any): void {
+  public forEach(callbackfn: (value: T, key: PendingReference, map: Map<PendingReference, T>) => void, thisArg?: any): void {
     for (const [key, val] of this._map)
       callbackfn.call(thisArg, val, PendingReference.fromKey(key), this);
   }
-  public get(ref: PendingReferenceProps): T | undefined {
-    const promotedRef = PendingReferenceMap.promoteRef(ref);
-    return this._map.get(promotedRef.toKey());
+  public get(ref: PendingReference): T | undefined {
+    return this._map.get(PendingReference.toKey(ref));
   }
-  public has(ref: PendingReferenceProps): boolean {
-    const promotedRef = PendingReferenceMap.promoteRef(ref);
-    return this._map.has(promotedRef.toKey());
+  public has(ref: PendingReference): boolean {
+    return this._map.has(PendingReference.toKey(ref));
   }
-  public set(ref: PendingReferenceProps, value: T): this {
-    const promotedRef = PendingReferenceMap.promoteRef(ref);
-    this._map.set(promotedRef.toKey(), value);
+  public set(ref: PendingReference, value: T): this {
+    this._map.set(PendingReference.toKey(ref), value);
     let referencers = this._referencedToReferencers.get(ref.referenced);
     if (referencers === undefined) {
       referencers = new Set();
@@ -101,17 +86,17 @@ export class PendingReferenceMap<T> implements Map<PendingReferenceProps, T> {
     return this;
   }
   public get size(): number { return this._map.size; }
-  public entries(): IterableIterator<[PendingReferenceProps, T]> {
+  public entries(): IterableIterator<[PendingReference, T]> {
     return this[Symbol.iterator]();
   }
-  public *keys(): IterableIterator<PendingReferenceProps> {
+  public *keys(): IterableIterator<PendingReference> {
     for (const key of this._map.keys())
       yield PendingReference.fromKey(key);
   }
   public values(): IterableIterator<T> {
     return this._map.values();
   }
-  public *[Symbol.iterator](): IterableIterator<[PendingReferenceProps, T]> {
+  public *[Symbol.iterator](): IterableIterator<[PendingReference, T]> {
     for (const [key, val] of this._map)
       yield [PendingReference.fromKey(key), val];
   }
