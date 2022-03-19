@@ -169,10 +169,7 @@ class ElementProcessState {
  * @internal
  */
 function mapId64<R>(
-  idContainer:
-  | Id64String
-  | { id: Id64String }
-  | undefined,
+  idContainer: Id64String | { id: Id64String } | undefined,
   func: (id: Id64String) => R
 ): R[] {
   // a more prudent check would be Id64.isValidId64, but the performance isn't great and we're relying on non-programmer error
