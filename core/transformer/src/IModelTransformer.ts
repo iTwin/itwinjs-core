@@ -7,7 +7,7 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, YieldManager } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
@@ -172,8 +172,7 @@ function mapId64<R>(
   idContainer: Id64String | { id: Id64String } | undefined,
   func: (id: Id64String) => R
 ): R[] {
-  // a more prudent check would be Id64.isValidId64, but the performance isn't great and we're relying on non-programmer error
-  const isId64String = (arg: any): arg is Id64String => typeof arg === "string";
+  const isId64String = (arg: any): arg is Id64String => { assert(Id64.isValidId64(arg)); return typeof arg === "string"; };
   const isRelatedElem = (arg: any): arg is RelatedElement =>
     arg && typeof arg === "object" && "id" in arg;
 
