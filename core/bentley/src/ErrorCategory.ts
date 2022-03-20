@@ -77,582 +77,255 @@ namespace HTTP {
   }
 }
 
-class Success extends ErrorCategory { public name = "Success"; public code = HTTP.Successful.OK; }
-
-class BadRequest extends ErrorCategory { public name = "BadRequest"; public code = HTTP.ClientError.BadRequest; }
-class Forbidden extends ErrorCategory { public name = "Forbidden"; public code = HTTP.ClientError.Forbidden; }
-class Conflict extends ErrorCategory { public name = "Conflict"; public code = HTTP.ClientError.Conflict; }
-class PreconditionFailed extends ErrorCategory { public name = "PreconditionFailed"; public code = HTTP.ClientError.PreconditionFailed; }
-class UnprocessableEntity extends ErrorCategory { public name = "UnprocessableEntity"; public code = HTTP.ClientError.UnprocessableEntity; }
-
-class Failed extends ErrorCategory { public name = "Failed"; public code = HTTP.ServerError.InternalServerError; }
-class Unknown extends ErrorCategory { public name = "Unknown"; public code = HTTP.ServerError.NotImplemented; }
+class Already extends ErrorCategory { }
+class Bad extends ErrorCategory { }
+class Invalid extends ErrorCategory { }
+class Cannot extends ErrorCategory { }
+class NotReserved extends ErrorCategory { }
+class Prohibited extends ErrorCategory { }
+class Duplicate extends ErrorCategory { }
+class Blocked extends ErrorCategory { }
+class NotFound extends ErrorCategory { }
+class Constraint extends ErrorCategory { }
+class Exists extends ErrorCategory { }
+class FileSystem extends ErrorCategory { }
+class State extends ErrorCategory { }
+class Mismatch extends ErrorCategory { }
+class Missing extends ErrorCategory { }
+class Nothing extends ErrorCategory { }
+class NotEnabled extends ErrorCategory { }
+class NotRegistered extends ErrorCategory { }
+class No extends ErrorCategory { }
+class Blocked extends ErrorCategory { }
+class ReadOnly extends ErrorCategory { }
+class Unknown extends ErrorCategory { }
+class Failed extends ErrorCategory { }
+class Version extends ErrorCategory { }
+class Wrong extends ErrorCategory { }
+class Timeout extends ErrorCategory { }
+class NoContent extends ErrorCategory { }
+class Cancelled extends ErrorCategory { }
+class Corruption extends ErrorCategory { }
+class CouldNot extends ErrorCategory { }
+class Directive extends ErrorCategory { }
+class Unavailable extends ErrorCategory { }
+class Expired extends ErrorCategory { }
+class Required extends ErrorCategory { }
+class Locked extends ErrorCategory { }
+class Permissions extends ErrorCategory { }
+class Throttled extends ErrorCategory { }
+class Conflict extends ErrorCategory { }
+class Argument extends ErrorCategory { }
+class NotSupported extends ErrorCategory { }
+class Error extends ErrorCategory { }
+class Pending extends ErrorCategory { }
+class Conversions extends ErrorCategory { }
+class Systems extends ErrorCategory { }
+class Internal extends ErrorCategory { }
+class InputOutput extends ErrorCategory { }
+class Success extends ErrorCategory { }
 
 function lookupCategory(error: BentleyError) {
   switch (error.errorNumber) {
-    case IModelStatus.AlreadyLoaded:
-    case IModelStatus.AlreadyOpen:
-      return new UnprocessableEntity();
-
-    case IModelStatus.BadArg:
-    case IModelStatus.BadElement:
-    case IModelStatus.BadModel:
-    case IModelStatus.BadRequest:
-    case IModelStatus.BadSchema:
-      return new BadRequest();
-
-    case IModelStatus.CannotUndo:
-      return new Conflict();
-
-    case IModelStatus.CodeNotReserved:
-      return new PreconditionFailed();
-
-    case IModelStatus.DeletionProhibited:
-      return new Forbidden();
-
-    case IModelStatus.DuplicateCode:
-      return new error()
-
-    case IModelStatus.DuplicateName:
-      return new error()
-
-    case IModelStatus.ElementBlockedChange:
-      return new error()
-
-    case IModelStatus.FileAlreadyExists:
-      return new error()
-
-    case IModelStatus.FileNotFound:
-      return new error()
-
-    case IModelStatus.FileNotLoaded:
-      return new error()
-
-    case IModelStatus.ForeignKeyConstraint:
-      return new error()
-
-    case IModelStatus.IdExists:
-      return new error()
-
-    case IModelStatus.InDynamicTransaction:
-      return new error()
-
-    case IModelStatus.InvalidCategory:
-      return new error()
-
-    case IModelStatus.InvalidCode:
-      return new error()
-
-    case IModelStatus.InvalidCodeSpec:
-      return new error()
-
-    case IModelStatus.InvalidId:
-      return new error()
-
-    case IModelStatus.InvalidName:
-      return new error()
-
-    case IModelStatus.InvalidParent:
-      return new error()
-
-    case IModelStatus.InvalidProfileVersion:
-      return new error()
-
-    case IModelStatus.IsCreatingChangeSet:
-      return new error()
-
-    case IModelStatus.LockNotHeld:
-      return new error()
-
-    case IModelStatus.Mismatch2d3d:
-      return new error()
-
-    case IModelStatus.MismatchGcs:
-      return new error()
-
-    case IModelStatus.MissingDomain:
-      return new error()
-
-    case IModelStatus.MissingHandler:
-      return new error()
-
-    case IModelStatus.MissingId:
-      return new error()
-
-    case IModelStatus.NoGeometry:
-      return new error()
-
-    case IModelStatus.NoMultiTxnOperation:
-      return new error()
-
-    case IModelStatus.NotEnabled:
-      return new error()
-
-    case IModelStatus.NotFound:
-      return new error()
-
-    case IModelStatus.NotOpen:
-      return new error()
-
-    case IModelStatus.NotOpenForWrite:
-      return new error()
-
-    case IModelStatus.NotSameUnitBase:
-      return new error()
-
-    case IModelStatus.NothingToRedo:
-      return new error()
-
-    case IModelStatus.NothingToUndo:
-      return new error()
-
-    case IModelStatus.ParentBlockedChange:
-      return new error()
-
-    case IModelStatus.ReadError:
-      return new error()
-
-    case IModelStatus.ReadOnly:
-      return new error()
-
-    case IModelStatus.ReadOnlyDomain:
-      return new error()
-
-    case IModelStatus.RepositoryManagerError:
-      return new error()
-
-    case IModelStatus.SQLiteError:
-      return new error()
-
-    case IModelStatus.TransactionActive:
-      return new error()
-
-    case IModelStatus.UnitsMissing:
-      return new error()
-
-    case IModelStatus.UnknownFormat:
-      return new error()
-
-    case IModelStatus.UpgradeFailed:
-      return new error()
-
-    case IModelStatus.ValidationFailed:
-      return new error()
-
-    case IModelStatus.VersionTooNew:
-      return new error()
-
-    case IModelStatus.VersionTooOld:
-      return new error()
-
-    case IModelStatus.ViewNotFound:
-      return new error()
-
-    case IModelStatus.WriteError:
-      return new error()
-
-    case IModelStatus.WrongClass:
-      return new error()
-
-    case IModelStatus.WrongIModel:
-      return new error()
-
-    case IModelStatus.WrongDomain:
-      return new error()
-
-    case IModelStatus.WrongElement:
-      return new error()
-
-    case IModelStatus.WrongHandler:
-      return new error()
-
-    case IModelStatus.WrongModel:
-      return new error()
-
-    case IModelStatus.ConstraintNotUnique:
-      return new error()
-
-    case IModelStatus.NoGeoLocation:
-      return new error()
-
-    case IModelStatus.ServerTimeout:
-      return new error()
-
-    case IModelStatus.NoContent:
-      return new error()
-
-    case IModelStatus.NotRegistered:
-      return new error()
-
-    case IModelStatus.FunctionNotFound:
-      return new error()
-
-    case IModelStatus.NoActiveCommand:
-      return new error()
-
-    case BriefcaseStatus.CannotAcquire:
-      return new error();
-
-    case BriefcaseStatus.CannotDownload:
-      return new error();
-
-    case BriefcaseStatus.CannotUpload:
-      return new error();
-
-    case BriefcaseStatus.CannotCopy:
-      return new error();
-
-    case BriefcaseStatus.CannotDelete:
-      return new error();
-
-    case BriefcaseStatus.VersionNotFound:
-      return new error();
-
-    case BriefcaseStatus.CannotApplyChanges:
-      return new error();
-
-    case BriefcaseStatus.DownloadCancelled:
-      return new error();
-
-    case BriefcaseStatus.ContainsDeletedChangeSets:
-      return new error();
-
-    case RpcInterfaceStatus.IncompatibleVersion:
-      return new error();
-
-    case ChangeSetStatus.ApplyError:
-      return new error();
-
-    case ChangeSetStatus.ChangeTrackingNotEnabled:
-      return new error();
-
-    case ChangeSetStatus.CorruptedChangeStream:
-      return new error();
-
-    case ChangeSetStatus.FileNotFound:
-      return new error();
-
-    case ChangeSetStatus.FileWriteError:
-      return new error();
-
-    case ChangeSetStatus.HasLocalChanges:
-      return new error();
-
-    case ChangeSetStatus.HasUncommittedChanges:
-      return new error();
-
-    case ChangeSetStatus.InvalidId:
-      return new error();
-
-    case ChangeSetStatus.InvalidVersion:
-      return new error();
-
-    case ChangeSetStatus.InDynamicTransaction:
-      return new error();
-
-    case ChangeSetStatus.IsCreatingChangeSet:
-      return new error();
-
-    case ChangeSetStatus.IsNotCreatingChangeSet:
-      return new error();
-
-    case ChangeSetStatus.MergePropagationError:
-      return new error();
-
-    case ChangeSetStatus.NothingToMerge:
-      return new error();
-
-    case ChangeSetStatus.NoTransactions:
-      return new error();
-
-    case ChangeSetStatus.ParentMismatch:
-      return new error();
-
-    case ChangeSetStatus.SQLiteError:
-      return new error();
-
-    case ChangeSetStatus.WrongDgnDb:
-      return new error();
-
-    case ChangeSetStatus.CouldNotOpenDgnDb:
-      return new error();
-
-    case ChangeSetStatus.MergeSchemaChangesOnOpen:
-      return new error();
-
-    case ChangeSetStatus.ReverseOrReinstateSchemaChanges:
-      return new error();
-
-    case ChangeSetStatus.ProcessSchemaChangesOnOpen:
-      return new error();
-
-    case ChangeSetStatus.CannotMergeIntoReadonly:
-      return new error();
-
-    case ChangeSetStatus.CannotMergeIntoMaster:
-      return new error();
-
-    case ChangeSetStatus.CannotMergeIntoReversed:
-      return new error();
-
-    case RepositoryStatus.ServerUnavailable:
-      return new error();
-
-    case RepositoryStatus.LockAlreadyHeld:
-      return new error();
-
-    case RepositoryStatus.SyncError:
-      return new error();
-
-    case RepositoryStatus.InvalidResponse:
-      return new error();
-
-    case RepositoryStatus.PendingTransactions:
-      return new error();
-
-    case RepositoryStatus.LockUsed:
-      return new error();
-
-    case RepositoryStatus.CannotCreateChangeSet:
-      return new error();
-
-    case RepositoryStatus.InvalidRequest:
-      return new error();
-
-    case RepositoryStatus.ChangeSetRequired:
-      return new error();
-
-    case RepositoryStatus.CodeUnavailable:
-      return new error();
-
-    case RepositoryStatus.CodeNotReserved:
-      return new error();
-
-    case RepositoryStatus.CodeUsed:
-      return new error();
-
-    case RepositoryStatus.LockNotHeld:
-      return new error();
-
-    case RepositoryStatus.RepositoryIsLocked:
-      return new error();
-
-    case RepositoryStatus.ChannelConstraintViolation:
-      return new error();
-
-    case IModelHubStatus.Unknown:
-      return new error();
-
-    case IModelHubStatus.MissingRequiredProperties:
-      return new error();
-
-    case IModelHubStatus.InvalidPropertiesValues:
-      return new error();
-
-    case IModelHubStatus.UserDoesNotHavePermission:
-      return new error();
-
-    case IModelHubStatus.UserDoesNotHaveAccess:
-      return new error();
-
-    case IModelHubStatus.InvalidBriefcase:
-      return new error();
-
-    case IModelHubStatus.BriefcaseDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.BriefcaseDoesNotBelongToUser:
-      return new error();
-
-    case IModelHubStatus.AnotherUserPushing:
-      return new error();
-
-    case IModelHubStatus.ChangeSetAlreadyExists:
-      return new error();
-
-    case IModelHubStatus.ChangeSetDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.FileIsNotUploaded:
-      return new error();
-
-    case IModelHubStatus.iModelIsNotInitialized:
-      return new error();
-
-    case IModelHubStatus.ChangeSetPointsToBadSeed:
-      return new error();
-
-    case IModelHubStatus.OperationFailed:
-      return new error();
-
-    case IModelHubStatus.PullIsRequired:
-      return new error();
-
-    case IModelHubStatus.MaximumNumberOfBriefcasesPerUser:
-      return new error();
-
-    case IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute:
-      return new error();
-
-    case IModelHubStatus.DatabaseTemporarilyLocked:
-      return new error();
-
-    case IModelHubStatus.iModelIsLocked:
-      return new error();
-
-    case IModelHubStatus.CodesExist:
-      return new error();
-
-    case IModelHubStatus.LocksExist:
-      return new error();
-
-    case IModelHubStatus.iModelAlreadyExists:
-      return new error();
-
-    case IModelHubStatus.iModelDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.FileDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.FileAlreadyExists:
-      return new error();
-
-    case IModelHubStatus.LockDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.LockOwnedByAnotherBriefcase:
-      return new error();
-
-    case IModelHubStatus.CodeStateInvalid:
-      return new error();
-
-    case IModelHubStatus.CodeReservedByAnotherBriefcase:
-      return new error();
-
-    case IModelHubStatus.CodeDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.EventTypeDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.EventSubscriptionDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.EventSubscriptionAlreadyExists:
-      return new error();
-
-    case IModelHubStatus.ITwinIdIsNotSpecified:
-      return new error();
-
-    case IModelHubStatus.FailedToGetITwinPermissions:
-      return new error();
-
-    case IModelHubStatus.FailedToGetITwinMembers:
-      return new error();
-
-    case IModelHubStatus.ChangeSetAlreadyHasVersion:
-      return new error();
-
-    case IModelHubStatus.VersionAlreadyExists:
-      return new error();
-
-    case IModelHubStatus.JobSchedulingFailed:
-      return new error();
-
-    case IModelHubStatus.ConflictsAggregate:
-      return new error();
-
-    case IModelHubStatus.FailedToGetITwinById:
-      return new error();
-
-    case IModelHubStatus.DatabaseOperationFailed:
-      return new error();
-
-    case IModelHubStatus.SeedFileInitializationFailed:
-      return new error();
-
-    case IModelHubStatus.FailedToGetAssetPermissions:
-      return new error();
-
-    case IModelHubStatus.FailedToGetAssetMembers:
-      return new error();
-
-    case IModelHubStatus.ITwinDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.LockChunkDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.CheckpointAlreadyExists:
-      return new error();
-
-    case IModelHubStatus.CheckpointDoesNotExist:
-      return new error();
-
-    case IModelHubStatus.UndefinedArgumentError:
-      return new error();
-
-    case IModelHubStatus.InvalidArgumentError:
-      return new error();
-
-    case IModelHubStatus.MissingDownloadUrlError:
-      return new error();
-
-    case IModelHubStatus.NotSupportedInBrowser:
-      return new error();
-
-    case IModelHubStatus.FileHandlerNotSet:
-      return new error();
-
-    case IModelHubStatus.FileNotFound:
-      return new error();
-
-    case IModelHubStatus.InitializationTimeout:
-      return new error();
-
-    case AuthStatus.Error:
-      return new error();
-
-    case GeoServiceStatus.NoGeoLocation:
-      return new error();
-
-    case GeoServiceStatus.OutOfUsefulRange:
-      return new error();
-
-    case GeoServiceStatus.OutOfMathematicalDomain:
-      return new error();
-
-    case GeoServiceStatus.NoDatumConverter:
-      return new error();
-
-    case GeoServiceStatus.VerticalDatumConvertError:
-      return new error();
-
-    case GeoServiceStatus.CSMapError:
-      return new error();
-
-    case GeoServiceStatus.Pending:
-      return new error();
-
-    case RealityDataStatus.InvalidData:
-      return new error();
-
-    case BentleyStatus.SUCCESS:
-    case IModelStatus.Success:
-    case RpcInterfaceStatus.Success:
-    case ChangeSetStatus.Success:
-    case RepositoryStatus.Success:
-    case HttpStatus.Success:
-    case IModelHubStatus.Success:
-    case AuthStatus.Success:
-    case GeoServiceStatus.Success:
-      return new Success();
-
-    case BentleyStatus.ERROR:
-      return new Failed();
-
-    default:
-      return new Unknown();
+    case IModelStatus.AlreadyLoaded: return new Already();
+    case IModelStatus.AlreadyOpen: return new Already();
+    case IModelStatus.BadArg: return new Bad();
+    case IModelStatus.BadElement: return new Bad();
+    case IModelStatus.BadModel: return new Bad();
+    case IModelStatus.BadRequest: return new Bad();
+    case IModelStatus.BadSchema: return new Bad();
+    case IModelStatus.CannotUndo: return new Cannot();
+    case IModelStatus.CodeNotReserved: return new NotReserved();
+    case IModelStatus.DeletionProhibited: return new Prohibited();
+    case IModelStatus.DuplicateCode: return new Duplicate();
+    case IModelStatus.DuplicateName: return new Duplicate();
+    case IModelStatus.ElementBlockedChange: return new Blocked();
+    case IModelStatus.FileAlreadyExists: return new Already();
+    case IModelStatus.FileNotFound: return new NotFound();
+    case IModelStatus.FileNotLoaded: return new FileSystem();
+    case IModelStatus.ForeignKeyConstraint: return new Constraint();
+    case IModelStatus.IdExists: return new Already();
+    case IModelStatus.InDynamicTransaction: return new State();
+    case IModelStatus.InvalidCategory: return new Invalid();
+    case IModelStatus.InvalidCode: return new Invalid();
+    case IModelStatus.InvalidCodeSpec: return new Invalid();
+    case IModelStatus.InvalidId: return new Invalid();
+    case IModelStatus.InvalidName: return new Invalid();
+    case IModelStatus.InvalidParent: return new Invalid();
+    case IModelStatus.InvalidProfileVersion: return new Invalid();
+    case IModelStatus.IsCreatingChangeSet: return new State();
+    case IModelStatus.LockNotHeld: return new NotReserved();
+    case IModelStatus.Mismatch2d3d: return new Mismatch();
+    case IModelStatus.MismatchGcs: return new Mismatch();
+    case IModelStatus.MissingDomain: return new Missing();
+    case IModelStatus.MissingHandler: return new Missing();
+    case IModelStatus.MissingId: return new Missing();
+    case IModelStatus.NoGeometry: return new No();
+    case IModelStatus.NoMultiTxnOperation: return new No();
+    case IModelStatus.NotEnabled: return new NotEnabled();
+    case IModelStatus.NotFound: return new NotFound();
+    case IModelStatus.NotOpen: return new State();
+    case IModelStatus.NotOpenForWrite: return new State();
+    case IModelStatus.NotSameUnitBase: return new Mismatch();
+    case IModelStatus.NothingToRedo: return new Nothing();
+    case IModelStatus.NothingToUndo: return new Nothing();
+    case IModelStatus.ParentBlockedChange: return new Blocked();
+    case IModelStatus.ReadError: return new FileSystem();
+    case IModelStatus.ReadOnly: return new ReadOnly();
+    case IModelStatus.ReadOnlyDomain: return new ReadOnly();
+    case IModelStatus.RepositoryManagerError: return new Systems();
+    case IModelStatus.SQLiteError: return new Systems();
+    case IModelStatus.TransactionActive: return new State();
+    case IModelStatus.UnitsMissing: return new Missing();
+    case IModelStatus.UnknownFormat: return new Unknown();
+    case IModelStatus.UpgradeFailed: return new Failed();
+    case IModelStatus.ValidationFailed: return new Failed();
+    case IModelStatus.VersionTooNew: return new Version();
+    case IModelStatus.VersionTooOld: return new Version();
+    case IModelStatus.ViewNotFound: return new NotFound();
+    case IModelStatus.WriteError: return new FileSystem();
+    case IModelStatus.WrongClass: return new Wrong();
+    case IModelStatus.WrongIModel: return new Wrong();
+    case IModelStatus.WrongDomain: return new Wrong();
+    case IModelStatus.WrongElement: return new Wrong();
+    case IModelStatus.WrongHandler: return new Wrong();
+    case IModelStatus.WrongModel: return new Wrong();
+    case IModelStatus.ConstraintNotUnique: return new Constraint();
+    case IModelStatus.NoGeoLocation: return new No();
+    case IModelStatus.ServerTimeout: return new Timeout();
+    case IModelStatus.NoContent: return new NoContent();
+    case IModelStatus.NotRegistered: return new NotRegistered();
+    case IModelStatus.FunctionNotFound: return new NotFound();
+    case IModelStatus.NoActiveCommand: return new State();
+    case BriefcaseStatus.CannotAcquire: return new Cannot();
+    case BriefcaseStatus.CannotDownload: return new Cannot();
+    case BriefcaseStatus.CannotUpload: return new Cannot();
+    case BriefcaseStatus.CannotCopy: return new Cannot();
+    case BriefcaseStatus.CannotDelete: return new Cannot();
+    case BriefcaseStatus.VersionNotFound: return new NotFound();
+    case BriefcaseStatus.CannotApplyChanges: return new Cannot();
+    case BriefcaseStatus.DownloadCancelled: return new Cancelled();
+    case BriefcaseStatus.ContainsDeletedChangeSets: return new error();
+    case RpcInterfaceStatus.IncompatibleVersion: return new Version();
+    case ChangeSetStatus.ApplyError: return new error();
+    case ChangeSetStatus.ChangeTrackingNotEnabled: return new NotEnabled();
+    case ChangeSetStatus.CorruptedChangeStream: return new Corruption();
+    case ChangeSetStatus.FileNotFound: return new NotFound();
+    case ChangeSetStatus.FileWriteError: return new FileSystem();
+    case ChangeSetStatus.HasLocalChanges: return new State();
+    case ChangeSetStatus.HasUncommittedChanges: return new State();
+    case ChangeSetStatus.InvalidId: return new Invalid();
+    case ChangeSetStatus.InvalidVersion: return new Invalid();
+    case ChangeSetStatus.InDynamicTransaction: return new State();
+    case ChangeSetStatus.IsCreatingChangeSet: return new State();
+    case ChangeSetStatus.IsNotCreatingChangeSet: return new State();
+    case ChangeSetStatus.MergePropagationError: return new error();
+    case ChangeSetStatus.NothingToMerge: return new Nothing();
+    case ChangeSetStatus.NoTransactions: return new No();
+    case ChangeSetStatus.ParentMismatch: return new Mismatch();
+    case ChangeSetStatus.SQLiteError: return new Systems();
+    case ChangeSetStatus.WrongDgnDb: return new Wrong();
+    case ChangeSetStatus.CouldNotOpenDgnDb: return new CouldNot();
+    case ChangeSetStatus.MergeSchemaChangesOnOpen: return new Directive();
+    case ChangeSetStatus.ReverseOrReinstateSchemaChanges: return new Directive();
+    case ChangeSetStatus.ProcessSchemaChangesOnOpen: return new Directive();
+    case ChangeSetStatus.CannotMergeIntoReadonly: return new Cannot();
+    case ChangeSetStatus.CannotMergeIntoMaster: return new Cannot();
+    case ChangeSetStatus.CannotMergeIntoReversed: return new Cannot();
+    case RepositoryStatus.ServerUnavailable: return new Unavailable();
+    case RepositoryStatus.LockAlreadyHeld: return new Already();
+    case RepositoryStatus.SyncError: return new error();
+    case RepositoryStatus.InvalidResponse: return new Invalid();
+    case RepositoryStatus.PendingTransactions: return new State();
+    case RepositoryStatus.LockUsed: return new Conflict();
+    case RepositoryStatus.CannotCreateChangeSet: return new Cannot();
+    case RepositoryStatus.InvalidRequest: return new Invalid();
+    case RepositoryStatus.ChangeSetRequired: return new Required();
+    case RepositoryStatus.CodeUnavailable: return new Unavailable();
+    case RepositoryStatus.CodeNotReserved: return new NotReserved();
+    case RepositoryStatus.CodeUsed: return new Conflict();
+    case RepositoryStatus.LockNotHeld: return new State();
+    case RepositoryStatus.RepositoryIsLocked: return new Locked();
+    case RepositoryStatus.ChannelConstraintViolation: return new Constraint();
+    case IModelHubStatus.Unknown: return new Unknown();
+    case IModelHubStatus.MissingRequiredProperties: return new Missing();
+    case IModelHubStatus.InvalidPropertiesValues: return new Invalid();
+    case IModelHubStatus.UserDoesNotHavePermission: return new Permissions();
+    case IModelHubStatus.UserDoesNotHaveAccess: return new Permissions();
+    case IModelHubStatus.InvalidBriefcase: return new Invalid();
+    case IModelHubStatus.BriefcaseDoesNotExist: return new Unknown();
+    case IModelHubStatus.BriefcaseDoesNotBelongToUser: return new Permissions();
+    case IModelHubStatus.AnotherUserPushing: return new State();
+    case IModelHubStatus.ChangeSetAlreadyExists: return new Already();
+    case IModelHubStatus.ChangeSetDoesNotExist: return new Unknown();
+    case IModelHubStatus.FileIsNotUploaded: return new State();
+    case IModelHubStatus.iModelIsNotInitialized: return new State();
+    case IModelHubStatus.ChangeSetPointsToBadSeed: return new Bad();
+    case IModelHubStatus.OperationFailed: return new Failed();
+    case IModelHubStatus.PullIsRequired: return new State();
+    case IModelHubStatus.MaximumNumberOfBriefcasesPerUser: return new Throttled();
+    case IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute: return new Throttled();
+    case IModelHubStatus.DatabaseTemporarilyLocked: return new Throttled();
+    case IModelHubStatus.iModelIsLocked: return new Locked();
+    case IModelHubStatus.CodesExist: return new Already();
+    case IModelHubStatus.LocksExist: return new Already();
+    case IModelHubStatus.iModelAlreadyExists: return new Already();
+    case IModelHubStatus.iModelDoesNotExist: return new Unknown();
+    case IModelHubStatus.FileDoesNotExist: return new Unknown();
+    case IModelHubStatus.FileAlreadyExists: return new Already();
+    case IModelHubStatus.LockDoesNotExist: return new Unknown();
+    case IModelHubStatus.LockOwnedByAnotherBriefcase: return new Conflict();
+    case IModelHubStatus.CodeStateInvalid: return new Invalid();
+    case IModelHubStatus.CodeReservedByAnotherBriefcase: return new Conflict();
+    case IModelHubStatus.CodeDoesNotExist: return new Unknown();
+    case IModelHubStatus.EventTypeDoesNotExist: return new Unknown();
+    case IModelHubStatus.EventSubscriptionDoesNotExist: return new Unknown();
+    case IModelHubStatus.EventSubscriptionAlreadyExists: return new Already();
+    case IModelHubStatus.ITwinIdIsNotSpecified: return new Argument();
+    case IModelHubStatus.FailedToGetITwinPermissions: return new Failed();
+    case IModelHubStatus.FailedToGetITwinMembers: return new Failed();
+    case IModelHubStatus.ChangeSetAlreadyHasVersion: return new Already();
+    case IModelHubStatus.VersionAlreadyExists: return new Already();
+    case IModelHubStatus.JobSchedulingFailed: return new Internal();
+    case IModelHubStatus.ConflictsAggregate: return new Conflict();
+    case IModelHubStatus.FailedToGetITwinById: return new Failed();
+    case IModelHubStatus.DatabaseOperationFailed: return new Failed();
+    case IModelHubStatus.SeedFileInitializationFailed: return new Failed();
+    case IModelHubStatus.FailedToGetAssetPermissions: return new Failed();
+    case IModelHubStatus.FailedToGetAssetMembers: return new Failed();
+    case IModelHubStatus.ITwinDoesNotExist: return new Unknown();
+    case IModelHubStatus.LockChunkDoesNotExist: return new Unknown();
+    case IModelHubStatus.CheckpointAlreadyExists: return new Already();
+    case IModelHubStatus.CheckpointDoesNotExist: return new Unknown();
+    case IModelHubStatus.UndefinedArgumentError: return new Argument();
+    case IModelHubStatus.InvalidArgumentError: return new Argument();
+    case IModelHubStatus.MissingDownloadUrlError: return new Argument();
+    case IModelHubStatus.NotSupportedInBrowser: return new NotSupported();
+    case IModelHubStatus.FileHandlerNotSet: return new Internal();
+    case IModelHubStatus.FileNotFound: return new NotFound();
+    case IModelHubStatus.InitializationTimeout: return new Timeout();
+    case AuthStatus.Error: return new Error();
+    case GeoServiceStatus.NoGeoLocation: return new No();
+    case GeoServiceStatus.OutOfUsefulRange: return new InputOutput();
+    case GeoServiceStatus.OutOfMathematicalDomain: return new InputOutput();
+    case GeoServiceStatus.NoDatumConverter: return new No();
+    case GeoServiceStatus.VerticalDatumConvertError: return new Conversions();
+    case GeoServiceStatus.CSMapError: return new Systems();
+    case GeoServiceStatus.Pending: return new Pending();
+    case RealityDataStatus.InvalidData: return new Invalid();
+
+    case BentleyStatus.SUCCESS: return new Success();
+    case IModelStatus.Success: return new Success();
+    case RpcInterfaceStatus.Success: return new Success();
+    case ChangeSetStatus.Success: return new Success();
+    case RepositoryStatus.Success: return new Success();
+    case HttpStatus.Success: return new Success();
+    case IModelHubStatus.Success: return new Success();
+    case AuthStatus.Success: return new Success();
+    case GeoServiceStatus.Success: return new Success();
+
+    case BentleyStatus.ERROR: return new error();
+
+    default: return new error();
   }
 }
