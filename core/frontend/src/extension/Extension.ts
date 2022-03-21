@@ -9,9 +9,7 @@
 /**
  * @alpha
  */
-export enum ActivationEvent {
-  onStartup = "onStartup",
-}
+export type ActivationEvent = "onStartup";
 
 /**
  * @alpha

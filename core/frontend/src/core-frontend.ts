@@ -127,6 +127,8 @@ export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
 export * from "./LocalhostIpcApp";
 export * from "./RealityDataSource";
+// TODO/FIX: "./extension/ExtensionRuntime" import has to be last to avoid circular dependency errors.
+import "./extension/ExtensionRuntime";
 
 /** @docs-package-description
  * The core-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
