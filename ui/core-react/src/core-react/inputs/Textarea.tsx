@@ -30,7 +30,7 @@ const ForwardRefTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   function ForwardRefTextarea(props, ref) {
     const { className, style, rows, setFocus, ...otherProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const textRows = undefined !== rows ? rows : 3;
-    const textAreaElementRef = React.useRef<HTMLTextAreaElement>();
+    const textAreaElementRef = React.useRef<HTMLTextAreaElement>(null);
     const refs = useRefs(textAreaElementRef, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
 
     React.useEffect(() => {
