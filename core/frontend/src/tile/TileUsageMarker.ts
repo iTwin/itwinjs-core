@@ -11,13 +11,13 @@ import { IModelApp } from "../IModelApp";
 import { TileUser } from "./internal";
 
 /** A marker associated with a [[Tile]] to track usage of that tile by any number of [[TileUser]]s.
- * The marker tracks:
- *  - the set of [[TileUser]]s by which the tile is in use for some purpose (displayed, preloaded, requested, selected for shadow map, etc); and
- *  - the most recent time at which any tile user declared its use of the tile.
- * The marker is used to allow tiles to be discarded after they become disused by any tile user, via [[Tile.prune]].
- * @see [[Tile.usageMarker]].
- * @public
- */
+  * The marker tracks:
+  *  - the set of [[TileUser]]s by which the tile is in use for some purpose (displayed, preloaded, requested, selected for shadow map, etc); and
+  *  - the most recent time at which any tile user declared its use of the tile.
+  * The marker is used to allow tiles to be discarded after they become disused by any tile user, via [[Tile.prune]].
+  * @see [[Tile.usageMarker]].
+  * @public
+  */
 export class TileUsageMarker {
   private _timePoint = BeTimePoint.now();
 
@@ -27,7 +27,17 @@ export class TileUsageMarker {
 
   /** Returns true if this tile is currently in use by no [[TileUser]]s and its timestamp pre-dates `expirationTime`. */
   public isExpired(expirationTime: BeTimePoint): boolean {
-    return this._timePoint.before(expirationTime) && !IModelApp.tileAdmin.isTileInUse(this);
+    return this.isTimestampExpired(expirationTime) && !this.getIsTileInUse();
+  }
+
+  /** Returns true if this tile is currently in use by a [[TileUser]]s. */
+  public getIsTileInUse(): boolean {
+    return IModelApp.tileAdmin.isTileInUse(this);
+  }
+
+  /** Returns true if this tile's timestamp pre-dates `expirationTime`, without checking if it is in use. */
+  public isTimestampExpired(expirationTime: BeTimePoint): boolean {
+    return this._timePoint.before(expirationTime);
   }
 
   /** Updates the timestamp to the specified time and marks the tile as being in use by the specified [[TileUser]]. */

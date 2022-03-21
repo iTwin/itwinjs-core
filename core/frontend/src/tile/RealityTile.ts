@@ -180,6 +180,37 @@ export class RealityTile extends Tile {
     }
   }
 
+  // Preload tiles that are protected:
+  // * used tiles (where "used" may mean: selected/preloaded for display or content requested);
+  // * parents and siblings of other protected tiles.
+  public preloadProtectedTiles(args: TileDrawArgs, context: TraversalSelectionContext): boolean {
+    const children = this.realityChildren;
+    let hasProtectedChildren = false;
+
+    if (children) {
+      for (const child of children) {
+        hasProtectedChildren = child.preloadProtectedTiles(args, context) || hasProtectedChildren;
+      }
+    }
+
+    if (children && hasProtectedChildren) {
+      for (const child of children) {
+        if (child.isDisplayable && !child.isLoaded)
+          context.preload(child, args);
+      }
+
+      return true; // Parents of protected tiles are protected
+    }
+
+    // Special case of the root tile
+    if (this === this.realityRoot.rootTile) {
+      context.preload(this, args);
+      return true;
+    }
+
+    return context.selected.find((tile) => tile === this) !== undefined;
+  }
+
   protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
@@ -275,16 +306,49 @@ export class RealityTile extends Tile {
     }
   }
 
-  public purgeContents(olderThan: BeTimePoint): void {
-    // Discard contents of tiles that have not been "used" recently, where "used" may mean: selected/preloaded for display or content requested.
-    // Note we do not discard the child Tile objects themselves.
-    if (this.usageMarker.isExpired(olderThan))
-      this.disposeContents();
+  public purgeContents(olderThan: BeTimePoint): void{
+    const tilesToPurge = new Set<RealityTile>();
 
+    // Get the list of tiles to purge
+    this.getTilesToPurge(olderThan, tilesToPurge);
+
+    // Discard contents of tiles that have been marked.
+    // Note we do not discard the child Tile objects themselves.
+    for (const tile of tilesToPurge)
+      tile.disposeContents();
+  }
+
+  // Populate a set with tiles that should be disposed. Prevent some tile to be disposed to avoid holes when moving.
+  // Return true if the current tile is "protected".
+  private getTilesToPurge(olderThan: BeTimePoint, tilesToPurge: Set<RealityTile>): boolean {
     const children = this.realityChildren;
-    if (children)
-      for (const child of children)
-        child.purgeContents(olderThan);
+
+    // Protected tiles cannot be purged. They are:
+    // * used tiles (where "used" may mean: selected/preloaded for display or content requested);
+    // * parents and siblings of other protected tiles.
+    let hasProtectedChildren = false;
+
+    if (children) {
+      for (const child of children) {
+        hasProtectedChildren = child.getTilesToPurge(olderThan, tilesToPurge) || hasProtectedChildren;
+      }
+    }
+
+    if (children && hasProtectedChildren) {
+      // Siblings of protected tiles are protected too. We need to remove them from it
+      for (const child of children) {
+        tilesToPurge.delete(child);
+      }
+
+      return true; // Parents of protected tiles are protected
+    }
+
+    const isInUse = this.usageMarker.getIsTileInUse();
+    if (!isInUse && this.usageMarker.isTimestampExpired(olderThan)) {
+      tilesToPurge.add(this);
+    }
+
+    return isInUse;
   }
 
   public computeVisibilityFactor(args: TileDrawArgs): number {
@@ -307,25 +371,6 @@ export class RealityTile extends Tile {
       return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
 
     return this.maximumSize / args.getPixelSize(this);
-  }
-
-  public preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number) {
-    const visibility = this.computeVisibilityFactor(args);
-    if (visibility < 0)
-      return;
-
-    if (visibility * preloadSizeModifier > 1) {
-      if (this.isDisplayable)
-        context.preload(this, args);
-    } else {
-      const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
-      if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-        args.markChildrenLoading();
-      } else if (undefined !== this.realityChildren) {
-        for (const child of this.realityChildren)
-          child.preloadTilesInFrustum(args, context, preloadSizeModifier);
-      }
-    }
   }
 
   protected get _anyChildNotFound(): boolean {
