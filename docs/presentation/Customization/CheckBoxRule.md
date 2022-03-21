@@ -1,6 +1,6 @@
 # CheckBox Customization Rule
 
-> **Note** This rule is deprecated. Use [extended data](./ExtendedDataUsage.md#customize-tree-node-item-checkbox) instead.
+> **Note:** This rule is deprecated. Use [extended data](./ExtendedDataUsage.md#customize-tree-node-item-checkbox) instead.
 
 > TypeScript type: [CheckBoxRule]($presentation-common).
 
@@ -23,51 +23,83 @@ CheckBox rules provide a way to create a checkbox for specific types of ECInstan
 
 ### Attribute: `requiredSchemas`
 
-> **Default value:** `[]`
-
 Specifications that define [ECSchema requirements](../RequiredSchemaSpecification.md) for the rule to take effect.
+
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Defines the order in which presentation rules are evaluated.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ### Attribute: `onlyIfNotHandled`
 
-> **Default value:** `false`
-
 Should this rule be ignored if there is already an existing rule with a higher priority.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ### Attribute: `condition`
 
-> **Default value:** `""`
-
 Defines a condition for the rule, which needs to be met in order to execute it.
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
 
 ### Attribute: `propertyName`
 
-> **Default value:** `undefined`
-
 Name of boolean type ECProperty which is bound with the check box state. When set, property value gets bound to checkbox state.
+
+|                   |             |
+| ----------------- | ----------- |
+| **Type**          | `string`    |
+| **Is Required**   | No          |
+| **Default Value** | `undefined` |
 
 ### Attribute: `useInversedPropertyValue`
 
-> **Default value:** `false`
-
 Should property value be inversed for the check box state. **Note:** Only makes sense when bound to an ECProperty.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ### Attribute: `defaultValue`
 
-> **Default value:** `false`
-
 Default value to use for the check box state. **Note:** Only makes sense when *not* bound to an ECProperty.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ### Attribute: `isEnabled`
 
-> **Default value:** `true`
-
 Indicates whether check box is enabled or disabled.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `true`    |
 
 ## Example
 

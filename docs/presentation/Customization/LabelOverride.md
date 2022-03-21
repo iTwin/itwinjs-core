@@ -1,6 +1,6 @@
 # LabelOverride Customization Rule
 
-> **Note** This rule is deprecated. Use [InstanceLabelOverride](./InstanceLabelOverride.md) rule instead.
+> **Note:** This rule is deprecated. Use [InstanceLabelOverride](./InstanceLabelOverride.md) rule instead.
 
 > TypeScript type: [LabelOverride]($presentation-common).
 
@@ -18,43 +18,67 @@ exchange of some performance penalty.
 | [`condition`](#attribute-condition)               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
 | *Overrides*                                       |
 | [`label`](#attribute-label)                       | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`    |
-| [`description`](#attribute-description)           | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+| [`description`](#attribute-description)           | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`    |
 
 ### Attribute: `requiredSchemas`
 
-> **Default value:** `[]`
-
 Specifications that define [ECSchema requirements](../RequiredSchemaSpecification.md) for the rule to take effect.
+
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Defines the order in which presentation rules are evaluated.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ### Attribute: `onlyIfNotHandled`
 
-> **Default value:** `false`
-
 Should this rule be ignored if there is already an existing rule with a higher priority.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ### Attribute: `condition`
 
-> **Default value:** `""`
-
 Defines a condition for the rule, which needs to be met in order to execute it.
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
 
 ### Attribute: `label`
 
-> **Default value:** `""`
-
 An expression whose result becomes the label.
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#override-value) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
 
 ### Attribute: `description`
 
-> **Default value:** `""`
-
 An expression whose result becomes the description.
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#override-value) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
 
 ## Example
 

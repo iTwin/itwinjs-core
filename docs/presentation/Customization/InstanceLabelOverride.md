@@ -18,9 +18,13 @@ Instance label override rule provides a way to set instance label to one of its 
 
 ### Attribute: `requiredSchemas`
 
-> **Default value:** `[]`
-
 A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
+
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
 
 ```ts
 [[include:Presentation.InstanceLabelOverride.RequiredSchemas.Ruleset]]
@@ -28,9 +32,13 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.InstanceLabelOverride.Priority.Ruleset]]
@@ -40,9 +48,13 @@ Defines the order in which rules are handled - higher priority means the rule is
 
 ### Attribute: `onlyIfNotHandled`
 
-> **Default value:** `false`
-
 Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.InstanceLabelOverride.OnlyIfNotHandled.Ruleset]]
@@ -54,6 +66,11 @@ Tells the library that the rule should only be handled if no other rule of the s
 
 Specifies the ECClass to apply this rule to.
 
+|                 |                                                                          |
+| --------------- | ------------------------------------------------------------------------ |
+| **Type**        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) |
+| **Is Required** | Yes                                                                      |
+
 ```ts
 [[include:Presentation.InstanceLabelOverride.Class.Ruleset]]
 ```
@@ -64,21 +81,19 @@ Specifies the ECClass to apply this rule to.
 
 Specifications of values used to override label. The first non-empty value is used as the actual label. There are 8 types of supported value specifications:
 
-- [InstanceLabelOverride Customization Rule](#instancelabeloverride-customization-rule)
-  - [Attributes](#attributes)
-    - [Attribute: `requiredSchemas`](#attribute-requiredschemas)
-    - [Attribute: `priority`](#attribute-priority)
-    - [Attribute: `onlyIfNotHandled`](#attribute-onlyifnothandled)
-    - [Attribute: `class`](#attribute-class)
-    - [Attribute: `values`](#attribute-values)
-      - [Composite value specification](#composite-value-specification)
-      - [Property value specification](#property-value-specification)
-      - [String value specification](#string-value-specification)
-      - [Class name value specification](#class-name-value-specification)
-      - [Class label value specification](#class-label-value-specification)
-      - [BriefcaseId value specification](#briefcaseid-value-specification)
-      - [LocalId value specification](#localid-value-specification)
-      - [Related instance label value specification](#related-instance-label-value-specification)
+- [Composite value specification](#composite-value-specification)
+- [Property value specification](#property-value-specification)
+- [String value specification](#string-value-specification)
+- [Class name value specification](#class-name-value-specification)
+- [Class label value specification](#class-label-value-specification)
+- [BriefcaseId value specification](#briefcaseid-value-specification)
+- [LocalId value specification](#localid-value-specification)
+- [Related instance label value specification](#related-instance-label-value-specification)
+
+|                 |                                             |
+| --------------- | ------------------------------------------- |
+| **Type**        | `InstanceLabelOverrideValueSpecification[]` |
+| **Is Required** | Yes                                         |
 
 #### Composite value specification
 

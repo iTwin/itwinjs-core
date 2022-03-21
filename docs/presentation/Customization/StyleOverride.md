@@ -1,6 +1,6 @@
 # StyleOverride Customization Rule
 
-> **Note** This rule is deprecated. Use [extended data](./ExtendedDataUsage.md#customize-tree-node-item-style) instead.
+> **Note:** This rule is deprecated. Use [extended data](./ExtendedDataUsage.md#customize-tree-node-item-style) instead.
 
 > TypeScript type: [StyleOverride]($presentation-common).
 
@@ -22,45 +22,73 @@ Style override rules allow customizing display style of specific types of ECInst
 
 ### Attribute: `requiredSchemas`
 
-> **Default value:** `[]`
-
 Specifications that define [ECSchema requirements](../RequiredSchemaSpecification.md) for the rule to take effect.
+
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Defines the order in which presentation rules are evaluated.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ### Attribute: `onlyIfNotHandled`
 
-> **Default value:** `false`
-
 Should this rule be ignored if there is already an existing rule with a higher priority.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ### Attribute: `condition`
 
-> **Default value:** `""`
-
 Defines a condition for the rule, which needs to be met in order to execute it.
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
 
 ### Attribute: `foreColor`
 
-> **Default value:** `""`
-
 An expression whose result evaluates to a [color value](#color-value-formats).
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#override-value) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
 
 ### Attribute: `backColor`
 
-> **Default value:** `""`
-
 An expression whose result evaluates to a [color value](#color-value-formats).
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#override-value) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
 
 ### Attribute: `fontStyle`
 
-> **Default value:** `"Regular"`
-
 An expression whose result evaluates to a [font style value](#font-styles).
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#override-value) |
+| **Is Required**   | No                                                |
+| **Default Value** | `"Regular"`                                       |
 
 #### Font Styles
 

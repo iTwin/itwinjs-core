@@ -16,6 +16,11 @@ This content modifier allows including additional calculated properties into the
 
 Specifies label of the calculated property. Supports [localization](../Advanced/Localization.md).
 
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
+
 ```ts
 [[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Label.Ruleset]]
 ```
@@ -27,6 +32,11 @@ Specifies label of the calculated property. Supports [localization](../Advanced/
 Defines an expression to calculate the value. The expression can use [ECInstance](../Advanced/ECExpressions.md#ecinstance)
 and [Ruleset Variables](../Advanced/ECExpressions.md#ruleset-variables-user-settings) symbol contexts.
 
+|                 |                                              |
+| --------------- | -------------------------------------------- |
+| **Type**        | [ECExpression](../Advanced/ECExpressions.md) |
+| **Is Required** | Yes                                          |
+
 ```ts
 [[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Value.Ruleset]]
 ```
@@ -35,10 +45,14 @@ and [Ruleset Variables](../Advanced/ECExpressions.md#ruleset-variables-user-sett
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Assign a custom [Field.priority]($presentation-common) to the property. It's up to the UI component to make sure that priority
 is respected - properties with higher priority should appear before or above properties with lower priority.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Priority.Ruleset]]

@@ -25,6 +25,12 @@ The rules have two types of attributes: for defining *placement* and for definin
 
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
 
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
+
 The most commonly used symbols are:
 
 - `ParentNode` — refers to the parent node. This is often used to create child nodes under specific parents.
@@ -51,6 +57,12 @@ The most commonly used symbols are:
 
 A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
 
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
+
 ```ts
 [[include:Presentation.Hierarchies.RequiredSchemas.Ruleset]]
 ```
@@ -58,6 +70,12 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 ### Attribute: `priority`
 
 Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Priority.Ruleset]]
@@ -68,6 +86,12 @@ Defines the order in which rules are handled, higher number means the rule is ha
 ### Attribute: `onlyIfNotHandled`
 
 Tells the library that the rule should only be handled if no other rule of the same `ruleType` was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.OnlyIfNotHandled.Ruleset]]
@@ -80,6 +104,12 @@ Tells the library that the rule should only be handled if no other rule of the s
 Stop processing rules that have lower priority. Used in cases when recursion suppression is needed.
 
 > **Note:** If this flag is set, `specifications` and `subConditions` are not processed.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ### Attribute: `specifications`
 
@@ -94,9 +124,21 @@ Multiple specifications can contribute to the same branch by specifying multiple
 
 > **Note:** grouping and sorting is done at specification level which means nodes generated from different specifications do not get grouped and sorted together.
 
+|                   |                            |
+| ----------------- | -------------------------- |
+| **Type**          | `ChildNodeSpecification[]` |
+| **Is Required**   | No                         |
+| **Default Value** | `[]`                       |
+
 ### Attribute: `customizationRules`
 
 A list of [customization rules](./index.md#hierarchy-customization) that apply only to nodes produced by this rule. Specifying customization rules at this level (as opposed to specifying them at ruleset root level) helps them isolate from other rules, which is useful when same type of nodes need to be customized differently based on what rule creates them.
+
+|                   |                       |
+| ----------------- | --------------------- |
+| **Type**          | `CustomizationRule[]` |
+| **Is Required**   | No                    |
+| **Default Value** | `[]`                  |
 
 ```ts
 [[include:Presentation.Hierarchies.CustomizationRules.Ruleset]]
@@ -107,6 +149,12 @@ A list of [customization rules](./index.md#hierarchy-customization) that apply o
 ### Attribute: `subConditions`
 
 A list of sub-rules which share [placement attributes](#placement-attributes) and [nested customization rules](#attribute-customizationrules) of the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules can add additional condition of their own.
+
+|                   |                  |
+| ----------------- | ---------------- |
+| **Type**          | `SubCondition[]` |
+| **Is Required**   | No               |
+| **Default Value** | `[]`             |
 
 ```ts
 [[include:Presentation.Hierarchies.SubConditions.Ruleset]]

@@ -27,8 +27,6 @@ Returns nodes for instances returned by a provided ECSQL query.
 
 ### Attribute: `queries`
 
-> **Default value:** `[]`
-
 Specifications of queries used to create the content. Query specifications define the actual results of the specification. There
 are 2 types of supported query specifications:
 
@@ -42,6 +40,12 @@ SELECT e.ECClassId, e.ECInstanceId FROM bis.Element e WHERE e.Parent.Id = 0x123
 ```
 
 > **Note:** sorting and grouping happens **after** results of multiple query specifications are aggregated.
+
+|                   |                                                       |
+| ----------------- | ----------------------------------------------------- |
+| **Type**          | [`QuerySpecification[]`](#string-query-specification) |
+| **Is Required**   | No                                                    |
+| **Default Value** | `[]`                                                  |
 
 #### String Query Specification
 
@@ -76,9 +80,13 @@ The specification specifies the name of the parent node instance property whose 
 
 ### Attribute: `hideNodesInHierarchy`
 
-> **Default value:** `false`
-
 When `true`, instances nodes produced by this specification are omitted and their children appear one hierarchy level higher. **Note:** only instance nodes are hidden - grouping nodes are not affected by this attribute.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.HideNodesInHierarchy.Ruleset]]
@@ -90,9 +98,13 @@ When `true`, instances nodes produced by this specification are omitted and thei
 
 ### Attribute: `hideIfNoChildren`
 
-> **Default value:** `false`
-
 Specifies whether nodes created through this specification should be hidden if they have no child nodes.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.HideIfNoChildren.Ruleset]]
@@ -104,9 +116,13 @@ Specifies whether nodes created through this specification should be hidden if t
 
 ### Attribute: `hideExpression`
 
-> **Default value:** `""`
-
 When specified [ECExpression](./ECExpressions.md#specification) evaluates to `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
+
+|                   |                                                  |
+| ----------------- | ------------------------------------------------ |
+| **Type**          | [ECExpression](./ECExpressions.md#specification) |
+| **Is Required**   | No                                               |
+| **Default Value** | `""`                                             |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.HideExpression.Ruleset]]
@@ -118,9 +134,13 @@ When specified [ECExpression](./ECExpressions.md#specification) evaluates to `tr
 
 ### Attribute: `suppressSimilarAncestorsCheck`
 
-> **Default value:** `false`
-
 Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this specification. See more in [Infinite Hierarchies Prevention page](./InfiniteHierarchiesPrevention.md).
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.SuppressSimilarAncestorsCheck.Ruleset]]
@@ -130,9 +150,13 @@ Specifies whether similar ancestor nodes' checking should be suppressed when cre
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.Priority.Ruleset]]
@@ -142,11 +166,14 @@ Controls the order in which specifications are handled — specification with hi
 
 ### Attribute: `doNotSort`
 
-> **Default value:** `false`
-
-> **Performance note:** Setting the attribute may substantially improve performance when creating large numbers of nodes.
-
 Suppress sorting of nodes returned by this specification. With this attribute set to `true`, the order of returned nodes is undefined.
+
+|                      |                                                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Type**             | `boolean`                                                                                                  |
+| **Is Required**      | No                                                                                                         |
+| **Default Value**    | `false`                                                                                                    |
+| **Performance note** | Setting the attribute to `true` may substantially improve performance when creating large numbers of nodes |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.DoNotSort.Ruleset]]
@@ -156,9 +183,13 @@ Suppress sorting of nodes returned by this specification. With this attribute se
 
 ### Attribute: `groupByClass`
 
-> **Default value:** `true`
-
 Controls whether returned instances should be grouped by ECClass.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `true`    |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.GroupByClass.Ruleset]]
@@ -170,14 +201,18 @@ Controls whether returned instances should be grouped by ECClass.
 
 ### Attribute: `groupByLabel`
 
-> **Default value:** `true`
-
 Controls whether returned instances should be grouped by label.
 
 Label grouping node is created only if all of these conditions match:
 
 - There are at least two nodes with the same label.
 - There's at least one sibling node with a different label.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `true`    |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.GroupByLabel.Ruleset]]
@@ -188,11 +223,6 @@ Label grouping node is created only if all of these conditions match:
 | ![Example of using "group by label" attribute set to "false"](./media/hierarchy-with-specification-groupbylabel-attribute.png) | ![Example of using "group by label" attribute set to "true"](./media/hierarchy-with-specification-groupbylabel-attribute-grouped.png) |
 
 ### Attribute: `hasChildren`
-
-> **Default value:** `"Unknown"`
-
-> **Performance note:** Setting the attribute to `Always` or `Never` may substantially improve performance of creating nodes in cases when
-> getting child nodes is expensive.
 
 Generally, when a node is created, the rules engine has to determine whether it has children before returning it. This requires
 evaluating child node rules and, usually, executing additional queries. This attribute allows telling the engine that nodes created
@@ -206,6 +236,13 @@ empty list. It's up to the UI component to handle the case of parent node saying
 - When set to `Never`, the returned nodes always have `hasChildren` set to `false`. Requesting children for such nodes returns empty
 list even if there are child node rules that define children for it.
 
+|                      |                                                                                                                                                      |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Type**             | `"Always" \| "Never" \| "Unknown"`                                                                                                                   |
+| **Is Required**      | No                                                                                                                                                   |
+| **Default Value**    | `"Unknown"`                                                                                                                                          |
+| **Performance note** | Setting the attribute to `Always` or `Never` may substantially improve performance of creating nodes in cases when  getting child nodes is expensive |
+
 ```ts
 [[include:Presentation.Hierarchies.Specification.HasChildren.Ruleset]]
 ```
@@ -215,8 +252,6 @@ list even if there are child node rules that define children for it.
 | ![Example of using "has children" attribute set to "always"](./media/hierarchy-with-specification-haschildren-attribute-always.png) | ![Example of using "has children" attribute set to "never"](./media/hierarchy-with-specification-haschildren-attribute-never.png) |
 
 ### Attribute: `relatedInstances`
-
-> **Default value:** `[]`
 
 Specifications of [related instances](../RelatedInstanceSpecification.md) that can be used when creating the nodes. There
 are several use cases when this is useful:
@@ -234,6 +269,12 @@ are several use cases when this is useful:
   which allows referencing related instances and their properties in [customization rule ECExpressions](../Customization/ECExpressions.md#override-value) by their
   [alias](../RelatedInstanceSpecification.md#attribute-alias).
 
+|                   |                                                                        |
+| ----------------- | ---------------------------------------------------------------------- |
+| **Type**          | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md) |
+| **Is Required**   | No                                                                     |
+| **Default Value** | `[]`                                                                   |
+
 ```ts
 [[include:Presentation.Hierarchies.Specification.RelatedInstances.Ruleset]]
 ```
@@ -242,8 +283,6 @@ are several use cases when this is useful:
 
 ### Attribute: `nestedRules`
 
-> **Default value:** `[]`
-
 Specifications of [nested child node rules](./Terminology.md#nested-rule) that allow creating child nodes without the need of supplying a condition to
 match the parent node.
 
@@ -251,6 +290,12 @@ This is useful when the same instance node at different hierarchy levels needs t
 at the root level with condition to match the instance ECClass makes the rule create children for all nodes of that ECClass. When that's not desired, different
 [child node rules](./ChildNodeRule.md) may be specified as nested rules for specifications that return instance nodes of the same ECClass - that makes them have
 different children.
+
+|                   |                                         |
+| ----------------- | --------------------------------------- |
+| **Type**          | [`ChildNodeRule[]`](./ChildNodeRule.md) |
+| **Is Required**   | No                                      |
+| **Default Value** | `[]`                                    |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.NestedRules.Ruleset]]

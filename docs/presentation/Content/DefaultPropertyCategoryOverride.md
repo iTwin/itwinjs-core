@@ -18,9 +18,13 @@ The default property category is a category that gets assigned to properties tha
 
 ### Attribute: `requiredSchemas`
 
-> **Default value:** `[]`
-
 Lists [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to take effect.
+
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
 
 ```ts
 [[include:Presentation.Content.Customization.DefaultPropertyCategoryOverride.RequiredSchemas.Ruleset]]
@@ -30,9 +34,13 @@ Lists [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Controls rule priority. Because there can only be one default category, default category override with the highest priority value will override all other rules of the same type.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.Content.Customization.DefaultPropertyCategoryOverride.Priority.Ruleset]]
@@ -43,6 +51,11 @@ Controls rule priority. Because there can only be one default category, default 
 ### Attribute: `specification`
 
 Specification for the custom property category.
+
+|                 |                                                                       |
+| --------------- | --------------------------------------------------------------------- |
+| **Type**        | [`PropertyCategorySpecification`](./PropertyCategorySpecification.md) |
+| **Is Required** | Yes                                                                   |
 
 ```ts
 [[include:Presentation.Content.Customization.DefaultPropertyCategoryOverride.Specification.Ruleset]]

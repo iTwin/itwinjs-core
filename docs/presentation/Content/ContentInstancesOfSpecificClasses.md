@@ -9,7 +9,7 @@ This specification creates content for all instances of specific ECClasses.
 | Name                                                                            | Required? | Type                                                                                                            | Default |
 | ------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------- | ------- |
 | *Filtering*                                                                     |
-| [`classes`](#attribute-classes)                                                 | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) | `[]`    |
+| [`classes`](#attribute-classes)                                                 | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) |         |
 | [`excludedClasses`](#attribute-excludedclasses)                                 | No        | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) | `[]`    |
 | [`handlePropertiesPolymorphically`](#attribute-handlepropertiespolymorphically) | No        | `boolean`                                                                                                       | `false` |
 | [`instanceFilter`](#attribute-instancefilter)                                   | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                              | `""`    |
@@ -28,6 +28,11 @@ This specification creates content for all instances of specific ECClasses.
 
 Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) that specify which ECClasses need to be selected to form the result.
 
+|                 |                                                                                                                 |
+| --------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Type**        | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) |
+| **Is Required** | Yes                                                                                                             |
+
 ```ts
 [[include:Presentation.ContentInstancesOfSpecificClasses.Classes.Ruleset]]
 ```
@@ -38,63 +43,87 @@ Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) t
 
 Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) that prevents specified ECClasses and subclasses from being selected by [`classes` attribute](#attribute-classes).
 
+|                   |                                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Type**          | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../MultiSchemaClassesSpecification.md) |
+| **Is Required**   | No                                                                                                              |
+| **Default Value** | `[]`                                                                                                            |
+
 ```ts
 [[include:Presentation.ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset]]
 ```
 
-  |                                       | Result                                                                                                                               |
-  | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-  | without excluded classes              | ![Example when doing normal class based instance select](./media/contentinstancesofspecificclasses-with-excludedclasses-1.png)       |
-  | with `PhysicalModel` classes excluded | ![Example when selecting instances with some classes excluded](./media/contentinstancesofspecificclasses-with-excludedclasses-2.png) |
+|                                       | Result                                                                                                                               |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| without excluded classes              | ![Example when doing normal class based instance select](./media/contentinstancesofspecificclasses-with-excludedclasses-1.png)       |
+| with `PhysicalModel` classes excluded | ![Example when selecting instances with some classes excluded](./media/contentinstancesofspecificclasses-with-excludedclasses-2.png) |
 
 ### Attribute: `handlePropertiesPolymorphically`
 
-> **Default value:** `false`
-
 Specifies whether properties of derived `classes` should be included in the content.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.ContentInstancesOfSpecificClasses.HandlePropertiesPolymorphically.Ruleset]]
 ```
 
-  | handlePropertiesPolymorphically | Result                                                                                                                                            |
-  | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `false`                         | ![Example when only selecting class specified properties](./media/contentinstancesofspecificclasses-with-handlepropertiespolymorphically-1.png)   |
-  | `true`                          | ![Example when selecting parent and child class properties](./media/contentinstancesofspecificclasses-with-handlepropertiespolymorphically-2.png) |
+| handlePropertiesPolymorphically | Result                                                                                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `false`                         | ![Example when only selecting class specified properties](./media/contentinstancesofspecificclasses-with-handlepropertiespolymorphically-1.png)   |
+| `true`                          | ![Example when selecting parent and child class properties](./media/contentinstancesofspecificclasses-with-handlepropertiespolymorphically-2.png) |
 
 ### Attribute: `instanceFilter`
 
 Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering instances of ECClasses specified through the [`classes` attribute](#attribute-classes).
 
+|                   |                                                    |
+| ----------------- | -------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#instance-filter) |
+| **Is Required**   | No                                                 |
+| **Default Value** | `""`                                               |
+
 ```ts
 [[include:Presentation.ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset]]
 ```
 
-  |                | Result                                                                                      |
-  | -------------- | ------------------------------------------------------------------------------------------- |
-  | without filter | ![Example when selecting all instances](./media/sharedattributes-with-instancefilter-1.png) |
-  | with filter    | ![Example when filtering instances](./media/sharedattributes-with-instancefilter-2.png)     |
+|                | Result                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------- |
+| without filter | ![Example when selecting all instances](./media/sharedattributes-with-instancefilter-1.png) |
+| with filter    | ![Example when filtering instances](./media/sharedattributes-with-instancefilter-2.png)     |
 
 ### Attribute: `onlyIfNotHandled`
 
-> **Default value:** `false`
-
 Specifies whether this specification should be ignored if another specification was handled before as determined by rule and specification priorities. This provides a mechanism for defining a fallback specification.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
-  | onlyIfNotHandled | Result                                                                                                     |
-  | ---------------- | ---------------------------------------------------------------------------------------------------------- |
-  | `true`           | ![Example using both specifications](./media/sharedattributes-with-onlyifnothandled-1.png)                 |
-  | `false`          | ![Example with "only if not handled" specifications](./media/sharedattributes-with-onlyifnothandled-2.png) |
+| onlyIfNotHandled | Result                                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| `true`           | ![Example using both specifications](./media/sharedattributes-with-onlyifnothandled-1.png)                 |
+| `false`          | ![Example with "only if not handled" specifications](./media/sharedattributes-with-onlyifnothandled-2.png) |
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.SharedAttributes.Priority.Ruleset]]
@@ -106,17 +135,29 @@ Controls the order in which specifications are handled — specification with hi
 
 Specifications of [related properties](./RelatedPropertiesSpecification.md) which are included in the generated content.
 
+|                   |                                                                           |
+| ----------------- | ------------------------------------------------------------------------- |
+| **Type**          | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md) |
+| **Is Required**   | No                                                                        |
+| **Default Value** | `[]`                                                                      |
+
 ```ts
 [[include:Presentation.SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
-  | without related properties                                                                          | with related properties                                                                                    |
-  | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-  | ![Example when doing normal property select](./media/sharedattributes-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/sharedattributes-with-relatedproperties-2.png) |
+| without related properties                                                                          | with related properties                                                                                    |
+| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| ![Example when doing normal property select](./media/sharedattributes-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/sharedattributes-with-relatedproperties-2.png) |
 
 ### Attribute: `calculatedProperties`
 
 Specifications of [calculated properties](./CalculatedPropertiesSpecification.md) whose values are generated using provided [ECExpressions](../Advanced/ECExpressions.md#ecinstance).
+
+|                   |                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------- |
+| **Type**          | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md) |
+| **Is Required**   | No                                                                              |
+| **Default Value** | `[]`                                                                            |
 
 ```ts
 [[include:Presentation.SharedAttributes.CalculatedProperties.Ruleset]]
@@ -130,6 +171,12 @@ Defines a list of [custom categories](PropertyCategorySpecification.md).
 
 Custom categories are not present in the result unless they contain at least one property. To assign a property to the category, reference its `id` in [`PropertySpecification.categoryId`](./PropertySpecification.md) when defining [`propertyOverrides`](#attribute-propertyoverrides).
 
+|                   |                                                                         |
+| ----------------- | ----------------------------------------------------------------------- |
+| **Type**          | [`PropertyCategorySpecification[]`](./PropertyCategorySpecification.md) |
+| **Is Required**   | No                                                                      |
+| **Default Value** | `[]`                                                                    |
+
 ```ts
 [[include:Presentation.SharedAttributes.PropertyCategories.Ruleset]]
 ```
@@ -140,14 +187,20 @@ Custom categories are not present in the result unless they contain at least one
 
 Specifications of various [property overrides](./PropertySpecification.md) that allow customizing individual properties display.
 
+|                   |                                                         |
+| ----------------- | ------------------------------------------------------- |
+| **Type**          | [`PropertySpecification[]`](./PropertySpecification.md) |
+| **Is Required**   | No                                                      |
+| **Default Value** | `[]`                                                    |
+
 ```ts
 [[include:Presentation.SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
-  |        | Result                                                                                                     |
-  | ------ | ---------------------------------------------------------------------------------------------------------- |
-  | before | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
-  | after  | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
+|        | Result                                                                                                     |
+| ------ | ---------------------------------------------------------------------------------------------------------- |
+| before | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
+| after  | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
 
 ### Attribute: `relatedInstances`
 
@@ -163,33 +216,45 @@ Specifications of [related instances](../RelatedInstanceSpecification.md) that c
   which allows referencing related instances and their properties in [customization rule ECExpressions](../Customization/ECExpressions.md#override-value) by their
   [alias](../RelatedInstanceSpecification.md#attribute-alias).
 
+|                   |                                                                        |
+| ----------------- | ---------------------------------------------------------------------- |
+| **Type**          | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md) |
+| **Is Required**   | No                                                                     |
+| **Default Value** | `[]`                                                                   |
+
 ```ts
 [[include:Presentation.SharedAttributes.RelatedInstances.Ruleset]]
 ```
 
-  |                                                                   | Result                                                                                                                                |
-  | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-  | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/sharedattributes-with-relatedinstances-3.png)                                           |
-  | `ModelSelector` instances                                         | ![A list of model selectors](./media/sharedattributes-with-relatedinstances-2.png)                                                    |
-  | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/sharedattributes-with-relatedinstances-1.png) |
+|                                                                   | Result                                                                                                                                |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/sharedattributes-with-relatedinstances-3.png)                                           |
+| `ModelSelector` instances                                         | ![A list of model selectors](./media/sharedattributes-with-relatedinstances-2.png)                                                    |
+| `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/sharedattributes-with-relatedinstances-1.png) |
 
 ## Deprecated Attributes
 
 ### Attribute: `handleInstancesPolymorphically`
-
-> **Default value:** `false`
 
 Tells whether selecting instances from ECClasses specified in [`classes`](#attribute-classes) and [`excludedClasses`](#attribute-excludedclasses) attributes should be polymorphic or not.
 
 The attribute was replaced by [MultiSchemaClasses.arePolymorphic](../MultiSchemaClassesSpecification.md#attribute-arepolymorphic) attribute specified individually for each class definition under [`classes`](#attribute-classes)
 and [`excludedClasses`](#attribute-excludedclasses) attributes. At the moment, to keep backwards compatibility, this attribute acts as a fallback value in case the flag is not specified individually for a class definition.
 
-## Deprecated attributes
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ### Attribute: `showImages`
-
-> **Default value:** `false`
 
 Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
 
 [ExtendedDataRule](../customization/ExtendedDataRule.md) should be used instead to provide image data to content items created by this specification. See [extended data usage page](../customization/ExtendedDataUsage.md) for more details
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |

@@ -38,11 +38,20 @@ The rule itself works in a similar way as hierarchy rules - *rule* identifies *w
 
 Specification of ECClass which should be grouped using this rule.
 
+|                 |                                                                          |
+| --------------- | ------------------------------------------------------------------------ |
+| **Type**        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) |
+| **Is Required** | Yes                                                                      |
+
 ### Attribute: `condition`
 
-> **Default value:** `""`
-
 An ECExpression that results in a boolean value. If specified, the grouping rule applies only to instance nodes that cause the condition to evaluate to `true`.
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
 
 ```ts
 [[include:Presentation.Hierarchies.Grouping.Condition.Ruleset]]
@@ -52,9 +61,13 @@ An ECExpression that results in a boolean value. If specified, the grouping rule
 
 ### Attribute: `requiredSchemas`
 
-> **Default value:** `[]`
-
 A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
+
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
 
 ```ts
 [[include:Presentation.Hierarchies.RequiredSchemas.Ruleset]]
@@ -62,9 +75,13 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Priority.Ruleset]]
@@ -74,9 +91,13 @@ Controls the order in which specifications are handled — specification with hi
 
 ### Attribute: `onlyIfNotHandled`
 
-> **Default value:** `false`
-
 Specifies whether this rule should be ignored if another rule was handled before as determined by rule priorities. This provides a mechanism for defining a fallback rule.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.OnlyIfNotHandled.Ruleset]]
@@ -92,6 +113,11 @@ Specifies a list of [grouping specifications](#grouping-specifications) which de
 - [Property grouping](#property-grouping)
 - [Same label instance grouping](#same-label-instance-grouping)
 
+|                 |                                                       |
+| --------------- | ----------------------------------------------------- |
+| **Type**        | [`GroupingSpecification[]`](#grouping-specifications) |
+| **Is Required** | Yes                                                   |
+
 ## Grouping Specifications
 
 ### Base Class Grouping
@@ -103,16 +129,20 @@ Multiple levels of base class grouping may be constructed by specifying multiple
 the order of the rules has to match the order of the class hierarchy - from the most base class to the most derived one. If the rules can't be
 defined in required order, the actual order may be adjusted using the [`priority` attribute](#attribute-priority).
 
-| Name                                                              | Required? | Type                             | Default        |
-| ----------------------------------------------------------------- | --------- | -------------------------------- | -------------- |
-| [`baseClass`](#attribute-baseclass)                               | No        | `SingleSchemaClassSpecification` | Rule's `class` |
-| [`createGroupForSingleItem`](#attribute-creategroupforsingleitem) | No        | `boolean`                        | `false`        |
+| Name                                                              | Required? | Type                                                                     | Default                                               |
+| ----------------------------------------------------------------- | --------- | ------------------------------------------------------------------------ | ----------------------------------------------------- |
+| [`baseClass`](#attribute-baseclass)                               | No        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) | Value of [rule's `class` attribute](#attribute-class) |
+| [`createGroupForSingleItem`](#attribute-creategroupforsingleitem) | No        | `boolean`                                                                | `false`                                               |
 
 #### Attribute: `baseClass`
 
-> **Default value:** Value of [rule's `class` attribute](#attribute-class).
-
 Specification of the base ECClass to group by. If specified, allows grouping by a subclass of the class specified by [rule's `class` attribute](#attribute-class).
+
+|                   |                                                                          |
+| ----------------- | ------------------------------------------------------------------------ |
+| **Type**          | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) |
+| **Is Required**   | No                                                                       |
+| **Default Value** | Value of [rule's `class` attribute](#attribute-class)                    |
 
 ```ts
 [[include:Presentation.Hierarchies.Grouping.ClassGroup.BaseClass.Ruleset]]
@@ -122,9 +152,13 @@ Specification of the base ECClass to group by. If specified, allows grouping by 
 
 #### Attribute: `createGroupForSingleItem`
 
-> **Default value:** `false`
-
 Specifies whether a grouping node should be created if there is only one item in that group.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset]]
@@ -141,26 +175,33 @@ Property grouping nodes always appear under class grouping nodes (if any).
 Multiple levels of property grouping may be constructed by specifying multiple rules. The order of grouping matches the order of grouping rules.
 If the rules can't be defined in required order, the actual order may be adjusted using the [`priority` attribute](#attribute-priority).
 
-| Name                                                                            | Required? | Type                                                                               | Default          |
-| ------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------- | ---------------- |
-| [`propertyName`](#attribute-propertyname)                                       | Yes       | `string`                                                                           |                  |
-| [`createGroupForSingleItem`](#attribute-creategroupforsingleitem)               | No        | `boolean`                                                                          | `false`          |
-| [`createGroupForUnspecifiedValues`](#attribute-creategroupforunspecifiedvalues) | No        | `boolean`                                                                          | `true`           |
-| [`imageId`](#attribute-imageid)                                                 | No        | `string`                                                                           | `""`             |
-| [`groupingValue`](#deprecated-attribute-groupingvalue)                          | No        | `"PropertyValue" \| "DisplayLabel"`                                                | `"DisplayLabel"` |
-| [`sortingValue`](#deprecated-attribute-sortingvalue)                            | No        | `"PropertyValue" \| "DisplayLabel"`                                                | `"DisplayLabel"` |
-| [`ranges`](#attribute-ranges)                                                   | No        | [`PropertyRangeGroupSpecification[]`](#propertyrangegroupspecification-attributes) | `[]`             |
+| Name                                                                            | Required? | Type                                | Default |
+| ------------------------------------------------------------------------------- | --------- | ----------------------------------- | ------- |
+| [`propertyName`](#attribute-propertyname)                                       | Yes       | `string`                            |         |
+| [`createGroupForSingleItem`](#attribute-creategroupforsingleitem)               | No        | `boolean`                           | `false` |
+| [`createGroupForUnspecifiedValues`](#attribute-creategroupforunspecifiedvalues) | No        | `boolean`                           | `true`  |
+| [`imageId`](#attribute-imageid)                                                 | No        | `string`                            | `""`    |
+| [`ranges`](#attribute-ranges)                                                   | No        | `PropertyRangeGroupSpecification[]` | `[]`    |
 
 #### Attribute: `propertyName`
 
 Name of the ECProperty which is used for grouping. The property must exist on the ECClass specified by the [rule's `class` attribute](#attribute-class) and it must be
 of either a primitive or a navigation type.
 
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
+
 #### Attribute: `createGroupForSingleItem`
 
-> **Default value:** `false`
-
 Specifies whether a grouping node should be created if there is only one item in that group.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset]]
@@ -170,9 +211,13 @@ Specifies whether a grouping node should be created if there is only one item in
 
 #### Attribute: `createGroupForUnspecifiedValues`
 
-> **Default value:** `true`
-
 Should a separate grouping node be created for nodes whose grouping value is not set or is set to an empty string.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `true`    |
 
 ```ts
 [[include:Presentation.Hierarchies.Grouping.PropertyGroup.CreateGroupForUnspecifiedValues.Ruleset]]
@@ -184,10 +229,14 @@ Should a separate grouping node be created for nodes whose grouping value is not
 
 #### Attribute: `imageId`
 
-> **Default value:** `""`
-
 Specifies grouping node's image ID. If set, the ID is assigned to [Node.imageId]($presentation-common) and it's up to the UI component
 to decide what to do with it.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `string` |
+| **Is Required**   | No       |
+| **Default Value** | `""`     |
 
 ```ts
 [[include:Presentation.Hierarchies.Grouping.PropertyGroup.ImageId.Ruleset]]
@@ -199,9 +248,13 @@ to decide what to do with it.
 
 #### Attribute: `ranges`
 
-> **Default value:** `[]`
-
 Ranges into which the grouping values are divided. Instances are grouped by value if no ranges are specified.
+
+|                   |                                     |
+| ----------------- | ----------------------------------- |
+| **Type**          | `PropertyRangeGroupSpecification[]` |
+| **Is Required**   | No                                  |
+| **Default Value** | `[]`                                |
 
 | Name        | Required? | Type     | Default                                                             | Meaning                                                                 |
 | ----------- | --------- | -------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -220,8 +273,6 @@ Range [`fromValue`, `toValue`] is inclusive on both sides. If a value falls into
 
 #### Deprecated Attribute: `groupingValue`
 
-> **Default value:** `"DisplayLabel"`
-
 Specifies whether instances should be grouped using property's display or raw value.
 
 > **Note:** Grouping by property value is required if the display label is overridden to display grouped instances count.
@@ -231,9 +282,13 @@ Specifies whether instances should be grouped using property's display or raw va
 Display value should always be used for grouping. In cases when there's a need to show grouped instances count suffix, that
 can be achieved at the UI component layer by composing UI node's label from node's display label and [GroupingNodeKey.groupedInstancesCount]($presentation-common).
 
-#### Deprecated Attribute: `sortingValue`
+|                   |                                     |
+| ----------------- | ----------------------------------- |
+| **Type**          | `"PropertyValue" \| "DisplayLabel"` |
+| **Is Required**   | No                                  |
+| **Default Value** | `"DisplayLabel"`                    |
 
-> **Default value:** `"DisplayLabel"`
+#### Deprecated Attribute: `sortingValue`
 
 Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result is the same,
 unless a [label override rule](../Customization/LabelOverride.md) is used to change node's display label.
@@ -241,6 +296,12 @@ unless a [label override rule](../Customization/LabelOverride.md) is used to cha
 > **Note:** Sorting by property value only makes sense when instances are grouped by property value as well.
 >
 > **Warning:** Grouping by label and sorting by property value is not possible.
+
+|                   |                                     |
+| ----------------- | ----------------------------------- |
+| **Type**          | `"PropertyValue" \| "DisplayLabel"` |
+| **Is Required**   | No                                  |
+| **Default Value** | `"DisplayLabel"`                    |
 
 ### Same Label Instance Grouping
 
@@ -253,12 +314,16 @@ node with multiple grouped ECInstance nodes, it shows a single ECInstances node 
 
 #### Attribute: `applicationStage`
 
-> **Default value:** `"Query"`
-
 Grouping nodes by label is an expensive operation because it requires the whole hierarchy level to be created before even the first grouped node can be produced. To alleviate the performance impact when this specification is used, two `applicationStage` settings have been introduced:
 
 - `"Query"` groups instances during ECSql query, which can often make use of database indices and is generally fairly quick. It is chosen as the default option, however, it fails to produce grouping nodes when certain ruleset specifications are involved.
 - `"PostProcess"` groups instances after the whole hierarchy level is built. It incurs a large performance penalty, but it will produce the expected result in all cases.
+
+|                   |                            |
+| ----------------- | -------------------------- |
+| **Type**          | `"Query" \| "PostProcess"` |
+| **Is Required**   | No                         |
+| **Default Value** | `"Query"`                  |
 
 #### Choosing between `"Query"` and `"PostProcess"`
 

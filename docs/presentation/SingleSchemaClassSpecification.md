@@ -15,6 +15,16 @@ This specification is used to point to specific ECClass.
 
 Specifies name of the schema which contains the target class.
 
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
+
 ### Attribute: `className`
 
 Specifies name of the target class.
+
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |

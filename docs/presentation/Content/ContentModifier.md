@@ -6,21 +6,27 @@ Content modifiers are used to modify how instances of specified ECClasses are di
 
 ## Attributes
 
-| Name                                                      | Required? | Type                                                                            | Default |
-| --------------------------------------------------------- | --------- | ------------------------------------------------------------------------------- | ------- |
+| Name                                                      | Required? | Type                                                                            | Default   |
+| --------------------------------------------------------- | --------- | ------------------------------------------------------------------------------- | --------- |
 | *Picking attributes*                                      |
-| [`requiredSchemas`](#attribute-requiredschemas)           | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)            | `[]`    |
-| [`class`](#attribute-class)                               | No        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md)        | ``      |
-| [`priority`](#attribute-priority)                         | No        | `number`                                                                        | `1000`  |
+| [`class`](#attribute-class)                               | No        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md)        | Any class |
+| [`requiredSchemas`](#attribute-requiredschemas)           | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)            | `[]`      |
+| [`priority`](#attribute-priority)                         | No        | `number`                                                                        | `1000`    |
 | *Content Modifiers*                                       |
-| [`relatedProperties`](#attribute-relatedproperties)       | No        | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md)       | `[]`    |
-| [`calculatedProperties`](#attribute-calculatedproperties) | No        | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md) | `[]`    |
-| [`propertyCategories`](#attribute-propertycategories)     | No        | [`PropertyCategorySpecification[]`](./PropertyCategorySpecification.md)         | `[]`    |
-| [`propertyOverrides`](#attribute-propertyoverrides)       | No        | [`PropertySpecification[]`](./PropertySpecification.md)                         | `[]`    |
+| [`relatedProperties`](#attribute-relatedproperties)       | No        | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md)       | `[]`      |
+| [`calculatedProperties`](#attribute-calculatedproperties) | No        | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md) | `[]`      |
+| [`propertyCategories`](#attribute-propertycategories)     | No        | [`PropertyCategorySpecification[]`](./PropertyCategorySpecification.md)         | `[]`      |
+| [`propertyOverrides`](#attribute-propertyoverrides)       | No        | [`PropertySpecification[]`](./PropertySpecification.md)                         | `[]`      |
 
 ### Attribute: `class`
 
 Specification of ECClass whose content should be modified. The modifier is applied to all content if this attribute is not specified.
+
+|                   |                                                                          |
+| ----------------- | ------------------------------------------------------------------------ |
+| **Type**          | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) |
+| **Is Required**   | No                                                                       |
+| **Default Value** | Any class                                                                |
 
 ```ts
 [[include:Presentation.ContentModifier.Class.Ruleset]]
@@ -32,6 +38,12 @@ Specification of ECClass whose content should be modified. The modifier is appli
 
 A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
 
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
+
 ```ts
 [[include:Presentation.ContentModifier.RequiredSchemas.Ruleset]]
 ```
@@ -39,6 +51,12 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 ### Attribute: `priority`
 
 Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.ContentModifier.Priority.Ruleset]]
@@ -50,6 +68,12 @@ Defines the order in which rules are handled, higher number means the rule is ha
 
 Specifications of [related properties](./RelatedPropertiesSpecification.md) which are included in the generated content.
 
+|                   |                                                                           |
+| ----------------- | ------------------------------------------------------------------------- |
+| **Type**          | [`RelatedPropertiesSpecification[]`](./RelatedPropertiesSpecification.md) |
+| **Is Required**   | No                                                                        |
+| **Default Value** | `[]`                                                                      |
+
 ```ts
 [[include:Presentation.ContentModifier.RelatedProperties.Ruleset]]
 ```
@@ -59,6 +83,12 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 ### Attribute: `calculatedProperties`
 
 Specifications of [calculated properties](./CalculatedPropertiesSpecification.md) whose values are generated using provided ECExpressions.
+
+|                   |                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------- |
+| **Type**          | [`CalculatedPropertiesSpecification[]`](./CalculatedPropertiesSpecification.md) |
+| **Is Required**   | No                                                                              |
+| **Default Value** | `[]`                                                                            |
 
 ```ts
 [[include:Presentation.ContentModifier.CalculatedProperties.Ruleset]]
@@ -70,6 +100,12 @@ Specifications of [calculated properties](./CalculatedPropertiesSpecification.md
 
 Specifications for [custom categories](./PropertyCategorySpecification.md). Simply defining the categories does nothing - they have to be referenced from [PropertySpecification]($presentation-common) defined in [propertyOverrides](#attribute-propertyoverrides) by `id`.
 
+|                   |                                                                         |
+| ----------------- | ----------------------------------------------------------------------- |
+| **Type**          | [`PropertyCategorySpecification[]`](./PropertyCategorySpecification.md) |
+| **Is Required**   | No                                                                      |
+| **Default Value** | `[]`                                                                    |
+
 ```ts
 [[include:Presentation.ContentModifier.PropertyCategories.Ruleset]]
 ```
@@ -79,6 +115,12 @@ Specifications for [custom categories](./PropertyCategorySpecification.md). Simp
 ### Attribute: `propertyOverrides`
 
 Specifications for various [property overrides](./PropertySpecification.md) that allow customizing property display.
+
+|                   |                                                         |
+| ----------------- | ------------------------------------------------------- |
+| **Type**          | [`PropertySpecification[]`](./PropertySpecification.md) |
+| **Is Required**   | No                                                      |
+| **Default Value** | `[]`                                                    |
 
 ```ts
 [[include:Presentation.ContentModifier.PropertyOverrides.Ruleset]]

@@ -16,6 +16,11 @@ Name of the renderer that's going to be used in UI components. Value of this att
 to [RendererDescription.name]($presentation-common) attribute that gets assigned to whatever the renderer
 is set on.
 
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
+
 ```ts
 [[include:Presentation.Content.Customization.PropertySpecification.Renderer.Ruleset]]
 ```

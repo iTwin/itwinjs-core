@@ -10,12 +10,12 @@ This specification allows overriding some attributes of specific ECProperty or d
 | --------------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------- | ----------- |
 | [`name`](#attribute-name)                                                                           | Yes       | `string`                                                          |             |
 | [`overridesPriority`](#attribute-overridespriority)                                                 | No        | `number`                                                          | `1000`      |
-| [`labelOverride`](#attribute-labeloverride)                                                         | No        | `string`                                                          | `undefined` |
-| [`categoryId`](#attribute-categoryid)                                                               | No        | `string \| CategoryIdentifier`                                    | `undefined` |
-| [`isDisplayed`](#attribute-isdisplayed)                                                             | No        | `boolean`                                                         | `undefined` |
+| [`labelOverride`](#attribute-labeloverride)                                                         | No        | `string`                                                          | No override |
+| [`categoryId`](#attribute-categoryid)                                                               | No        | `string \| CategoryIdentifier`                                    | No override |
+| [`isDisplayed`](#attribute-isdisplayed)                                                             | No        | `boolean`                                                         | No override |
 | [`doNotHideOtherPropertiesOnDisplayOverride`](#attribute-donothideotherpropertiesondisplayoverride) | No        | `boolean`                                                         | `false`     |
-| [`renderer`](#attribute-renderer)                                                                   | No        | [`RendererSpecification`](./RendererSpecification.md)             | `undefined` |
-| [`editor`](#attribute-editor)                                                                       | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md) | `undefined` |
+| [`renderer`](#attribute-renderer)                                                                   | No        | [`RendererSpecification`](./RendererSpecification.md)             | No override |
+| [`editor`](#attribute-editor)                                                                       | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md) | No override |
 
 ### Attribute: `name`
 
@@ -24,13 +24,22 @@ Name of the ECProperty to apply overrides to. A `"*"` may be specified to match 
 - When used in a [content modifier](./ContentModifier.md#attribute-propertyoverrides), the properties of the ECClass specified by the [`class` attribute](./ContentModifier.md#attribute-class) are used.
 - When used in one of the [content specifications](./ContentRule.md#attribute-specifications), properties produced by that specification are used.
 
-### Attribute: `overridesPriority`
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
 
-> **Default value:** `1000`
+### Attribute: `overridesPriority`
 
 There may be multiple property specifications that apply to a single property and there may be conflicts between different attributes. The `overridesPriority` attribute is here to help
 solve the problem - if multiple specifications attempt to override the same attribute, the override of specification with highest `overridesPriority` value is used. The order of overrides
 from specification with the same `overridesPriority` is defined by the order they appear in the overrides list.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.Content.Customization.PropertySpecification.OverridesPriority.Ruleset]]
@@ -40,9 +49,13 @@ from specification with the same `overridesPriority` is defined by the order the
 
 ### Attribute: `labelOverride`
 
-> **Default value:** `undefined`
-
 This is an attribute that allows overriding the property label. May be [localized](../Advanced/Localization.md).
+
+|                   |             |
+| ----------------- | ----------- |
+| **Type**          | `string`    |
+| **Is Required**   | No          |
+| **Default Value** | No override |
 
 ```ts
 [[include:Presentation.Content.Customization.PropertySpecification.LabelOverride.Ruleset]]
@@ -51,8 +64,6 @@ This is an attribute that allows overriding the property label. May be [localize
 ![Example of using a "label override" attribute](./media/propertyspecification-with-labeloverride-attribute.png)
 
 ### Attribute: `categoryId`
-
-> **Default value:** `undefined`
 
 The attribute allows moving the property into a different category. There are several options:
 
@@ -68,6 +79,12 @@ The attribute allows moving the property into a different category. There are se
 
 See [property categorization page](./PropertyCategorization.md) for more details.
 
+|                   |                                |
+| ----------------- | ------------------------------ |
+| **Type**          | `string \| CategoryIdentifier` |
+| **Is Required**   | No                             |
+| **Default Value** | No override                    |
+
 ```ts
 [[include:Presentation.Content.Customization.PropertySpecification.CategoryId.Ruleset]]
 ```
@@ -76,13 +93,17 @@ See [property categorization page](./PropertyCategorization.md) for more details
 
 ### Attribute: `isDisplayed`
 
-> **Default value:** `undefined`
-
 This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the ECSchema. The allowed settings are:
 
 - Omitted or `undefined`: property visibility is controlled by the ECSchema.
 - `true`: property is made visible. **Warning:** this will automatically hide all other properties of the same class. If this behavior is not desirable, set [`doNotHideOtherPropertiesOnDisplayOverride` attribute](#attribute-donothideotherpropertiesondisplayoverride) to `true`.
 - `false`: property is made hidden.
+
+|                   |             |
+| ----------------- | ----------- |
+| **Type**          | `boolean`   |
+| **Is Required**   | No          |
+| **Default Value** | No override |
 
 ```ts
 [[include:Presentation.Content.Customization.PropertySpecification.IsDisplayed.Ruleset]]
@@ -92,9 +113,13 @@ This attribute controls whether the particular property is present in the result
 
 ### Attribute: `doNotHideOtherPropertiesOnDisplayOverride`
 
-> **Default value:** `false`
-
 This attribute controls whether making the property visible using [`isDisplayed`](#attribute-isdisplayed) should automatically hide all other properties of the same class. When `true`, this behavior is disabled.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Content.Customization.PropertySpecification.DoNotHideOtherPropertiesOnDisplayOverride.Ruleset]]
@@ -106,13 +131,17 @@ This attribute controls whether making the property visible using [`isDisplayed`
 
 ### Attribute: `renderer`
 
-> **Default value:** `undefined`
-
 Custom property [renderer specification](./RendererSpecification.md) that allows assigning a custom value renderer to be used in UI. The
 specification is used to set up [Field.renderer]($presentation-common) for this property and it's up to the UI component to make sure
 appropriate renderer is used to render the property.
 
 See [Custom property value renderers](./PropertyValueRenderers.md) page for a list of available renderers or how to register a custom one.
+
+|                   |                                                       |
+| ----------------- | ----------------------------------------------------- |
+| **Type**          | [`RendererSpecification`](./RendererSpecification.md) |
+| **Is Required**   | No                                                    |
+| **Default Value** | No override                                           |
 
 ```ts
 [[include:Presentation.Content.Customization.PropertySpecification.Renderer.Ruleset]]
@@ -124,10 +153,14 @@ See [Custom property value renderers](./PropertyValueRenderers.md) page for a li
 
 ### Attribute: `editor`
 
-> **Default value:** `undefined`
-
 Custom [property editor specification](./PropertyEditorSpecification) that allows assigning a custom value editor
 to be used in UI.
+
+|                   |                                                                   |
+| ----------------- | ----------------------------------------------------------------- |
+| **Type**          | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md) |
+| **Is Required**   | No                                                                |
+| **Default Value** | No override                                                       |
 
 ```ts
 [[include:Presentation.Content.Customization.PropertySpecification.Editor.Ruleset]]

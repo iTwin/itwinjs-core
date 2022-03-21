@@ -9,8 +9,8 @@ Content rules are used to define content that is displayed for specific type of 
 | Name                                              | Required? | Type                                                                 | Default |
 | ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
 | *Picking attributes*                              |
-| [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`condition`](#attribute-condition)               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+| [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`priority`](#attribute-priority)                 | No        | `number`                                                             | `1000`  |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                            | `false` |
 | *Content attributes*                              |
@@ -19,6 +19,12 @@ Content rules are used to define content that is displayed for specific type of 
 ### Attribute: `condition`
 
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
 
 The most commonly used symbols are:
 
@@ -49,6 +55,12 @@ The most commonly used symbols are:
 
 A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
 
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
+
 ```ts
 [[include:Presentation.ContentRule.RequiredSchemas.Ruleset]]
 ```
@@ -56,6 +68,12 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 ### Attribute: `priority`
 
 Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.ContentRule.Priority.Ruleset]]
@@ -66,6 +84,12 @@ Defines the order in which rules are handled - higher priority means the rule is
 ### Attribute: `onlyIfNotHandled`
 
 Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.ContentRule.OnlyIfNotHandled.Ruleset]]
@@ -82,3 +106,8 @@ A list of content specifications that define what content is going to be returne
 - [Content related instances](./ContentRelatedInstances.md) specification returns properties of instances that are related to [input instances](./Terminology.md#input-instance) through given relationship(s).
 
 Multiple specifications can contribute to the resulting content by specifying multiple specifications in a single [content rule](./ContentRule.md) or specifying multiple rules that match the same input.
+
+|                 |                          |
+| --------------- | ------------------------ |
+| **Type**        | `ContentSpecification[]` |
+| **Is Required** | Yes                      |

@@ -29,9 +29,13 @@ instances are first sorted by the highest priority rule and then the lower prior
 
 ### Attribute: `requiredSchemas`
 
-> **Default value:** `[]`
-
 A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
+
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
 
 ```ts
 [[include:Presentation.Sorting.RequiredSchemas.Ruleset]]
@@ -44,9 +48,13 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.PropertySortingRule.Priority.Ruleset]]
@@ -56,9 +64,13 @@ Defines the order in which rules are handled - higher priority means the rule is
 
 ### Attribute: `condition`
 
-> **Default value:** `""`
-
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
+
+|                   |                                                                |
+| ----------------- | -------------------------------------------------------------- |
+| **Type**          | [ECExpression](../hierarchies/ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                             |
+| **Default Value** | `""`                                                           |
 
 ```ts
 [[include:Presentation.PropertySortingRule.Condition.Ruleset]]
@@ -73,6 +85,12 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 
 Specifies ECClass whose ECInstances should be sorted.
 
+|                   |                                                                          |
+| ----------------- | ------------------------------------------------------------------------ |
+| **Type**          | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) |
+| **Is Required**   | No                                                                       |
+| **Default value** | All classes in current context                                           |
+
 ```ts
 [[include:Presentation.PropertySortingRule.Class.Ruleset]]
 ```
@@ -81,9 +99,13 @@ Specifies ECClass whose ECInstances should be sorted.
 
 ### Attribute: `isPolymorphic`
 
-> **Default value:** `false`
-
 Specifies that `class` attribute defined in this rule should be handled polymorphically.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.PropertySortingRule.IsPolymorphic.Ruleset]]
@@ -98,6 +120,11 @@ Specifies that `class` attribute defined in this rule should be handled polymorp
 
 Specifies name of the property which should be used for sorting.
 
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
+
 ```ts
 [[include:Presentation.PropertySortingRule.PropertyName.Ruleset]]
 ```
@@ -106,9 +133,13 @@ Specifies name of the property which should be used for sorting.
 
 ### Attribute: `sortAscending`
 
-> **Default value:** `true`
-
 Specifies whether instances should be sorted in ascending order or descending.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `true`    |
 
 ```ts
 [[include:Presentation.PropertySortingRule.SortAscending.Ruleset]]
@@ -127,20 +158,24 @@ Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
 
 ### Attributes
 
-| Name                                              | Required? | Type                                                                 | Default                        |
-| ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------------------------------ |
+| Name                                              | Required? | Type                                                                     | Default                        |
+| ------------------------------------------------- | --------- | ------------------------------------------------------------------------ | ------------------------------ |
 | *Filtering*                                       |
-| [`requiredSchemas`](#attribute-requiredschemas-1) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`                           |
-| [`priority`](#attribute-priority-1)               | No        | `number`                                                             | `1000`                         |
-| [`condition`](#attribute-condition-1)             | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)       | `""`                           |
-| [`class`](#attribute-class-1)                     | No        | `SingleSchemaClassSpecification`                                     | All classes in current context |
-| [`isPolymorphic`](#attribute-ispolymorphic-1)     | No        | `boolean`                                                            | false                          |
+| [`requiredSchemas`](#attribute-requiredschemas-1) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md)     | `[]`                           |
+| [`priority`](#attribute-priority-1)               | No        | `number`                                                                 | `1000`                         |
+| [`condition`](#attribute-condition-1)             | No        | [ECExpression](../hierarchies/ECExpressions.md#rule-condition)           | `""`                           |
+| [`class`](#attribute-class-1)                     | No        | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) | All classes in current context |
+| [`isPolymorphic`](#attribute-ispolymorphic-1)     | No        | `boolean`                                                                | `false`                        |
 
 ### Attribute: `requiredSchemas`
 
-> **Default value:** `[]`
-
 A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
+
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
 
 ```ts
 [[include:Presentation.Sorting.RequiredSchemas.Ruleset]]
@@ -153,9 +188,13 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.DisabledSortingRule.Priority.Ruleset]]
@@ -165,9 +204,13 @@ Defines the order in which rules are handled - higher priority means the rule is
 
 ### Attribute: `condition`
 
-> **Default value:** `""`
-
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
+
+|                   |                                                                |
+| ----------------- | -------------------------------------------------------------- |
+| **Type**          | [ECExpression](../hierarchies/ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                             |
+| **Default Value** | `""`                                                           |
 
 ```ts
 [[include:Presentation.DisabledSortingRule.Condition.Ruleset]]
@@ -182,6 +225,12 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 
 Specifies ECClass whose instances should not be sorted.
 
+|                   |                                                                          |
+| ----------------- | ------------------------------------------------------------------------ |
+| **Type**          | [`SingleSchemaClassSpecification`](../SingleSchemaClassSpecification.md) |
+| **Is Required**   | No                                                                       |
+| **Default value** | All classes in current context                                           |
+
 ```ts
 [[include:Presentation.DisabledSortingRule.Class.Ruleset]]
 ```
@@ -190,9 +239,13 @@ Specifies ECClass whose instances should not be sorted.
 
 ### Attribute: `isPolymorphic`
 
-> **Default value:** `false`
-
 Specifies that `class` attribute defined in this rule should be handled polymorphically.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.DisabledSortingRule.IsPolymorphic.Ruleset]]

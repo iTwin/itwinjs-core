@@ -22,6 +22,11 @@ with its related instance and allow using the related instance for:
 
 Specifies a chain of [relationship path specifications](./RelationshipPathSpecification.md) that forms a path from the primary instance to the related instances.
 
+|                 |                                                                       |
+| --------------- | --------------------------------------------------------------------- |
+| **Type**        | [`RelationshipPathSpecification`](./RelationshipPathSpecification.md) |
+| **Is Required** | Yes                                                                   |
+
 ### Attribute: `alias`
 
 Specifies an an alias that given to the related instance. The alias can be used to reference the instance in instance filter and customization rules.
@@ -29,11 +34,20 @@ Specifies an an alias that given to the related instance. The alias can be used 
 > **Note:** The value must be unique per hierarchy specification. If there are multiple related instance specifications using the same alias, the
 > library uses the first one and ignores the rest of them.
 
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
+
 ### Attribute: `isRequired`
 
-> **Default value:** `false`
-
 Specifies whether to omit the primary instance from the result if the other end of [`relationshipPath`](#attribute-relationshipath) does not yield any related instances.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ## Examples
 

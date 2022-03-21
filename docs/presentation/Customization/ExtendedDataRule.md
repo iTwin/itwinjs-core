@@ -27,13 +27,17 @@ flag can then be accessed on the frontend and used to determine how the row shou
 | [`requiredSchemas`](#attribute-requiredschemas) | No        | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) | `[]`    |
 | [`condition`](#attribute-condition)             | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
 | *Extended Data*                                 |
-| [`items`](#attribute-items)                     | No        | `{ [key: string]: ECExpression }`                                    |         |
+| [`items`](#attribute-items)                     | Yes       | `{ [key: string]: ECExpression }`                                    |         |
 
 ### Attribute: `requiredSchemas`
 
-> **Default value:** `[]`
-
 A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
+
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
 
 ```ts
 [[include:Presentation.ExtendedDataRule.RequiredSchemas.Ruleset]]
@@ -41,9 +45,13 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 
 ### Attribute: `condition`
 
-> **Default value:** `""`
-
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
+
+|                   |                                                   |
+| ----------------- | ------------------------------------------------- |
+| **Type**          | [ECExpression](./ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                |
+| **Default Value** | `""`                                              |
 
 ```ts
 [[include:Presentation.ExtendedDataRule.Condition.Ruleset]]
@@ -56,6 +64,11 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 ### Attribute: `items`
 
 A map of ECExpressions whose evaluation results are used as extended data values.
+
+|                 |                                   |
+| --------------- | --------------------------------- |
+| **Type**        | `{ [key: string]: ECExpression }` |
+| **Is Required** | Yes                               |
 
 ```ts
 [[include:Presentation.ExtendedDataRule.Items.Ruleset]]

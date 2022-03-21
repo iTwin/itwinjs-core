@@ -16,15 +16,29 @@ This specification lists ECClasses which should be targeted when creating conten
 
 Specifies the schema which contains the target classes.
 
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
+
 ### Attribute: `classNames`
 
 An array of target ECClass names.
 
+|                 |            |
+| --------------- | ---------- |
+| **Type**        | `string[]` |
+| **Is Required** | Yes        |
+
 ### Attribute: `arePolymorphic`
 
-> **Default value:** `false`
-
 Defines whether the derived ECClasses should be included in the result.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ## Example
 

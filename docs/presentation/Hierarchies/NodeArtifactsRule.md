@@ -34,9 +34,13 @@ Use `NodeArtifacts` on the *ModelB* nodes and a `hideExpression` on *Subject* no
 
 ### Attribute: `condition`
 
-> **Default value:** `""`
-
 Specifies an ECExpression that allows applying node artifacts based on evaluation result, e.g. by some property of the parent node.
+
+|                   |                                                                  |
+| ----------------- | ---------------------------------------------------------------- |
+| **Type**          | [ECExpression](../Customization/ECExpressions.md#rule-condition) |
+| **Is Required**   | No                                                               |
+| **Default Value** | `""`                                                             |
 
 ```ts
 [[include:Presentation.Hierarchies.NodeArtifacts.Condition.Ruleset]]
@@ -48,9 +52,13 @@ Specifies an ECExpression that allows applying node artifacts based on evaluatio
 
 ### Attribute: `requiredSchemas`
 
-> **Default value:** `[]`
-
 A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need to be met for the rule to be used.
+
+|                   |                                                                      |
+| ----------------- | -------------------------------------------------------------------- |
+| **Type**          | [`RequiredSchemaSpecification[]`](../RequiredSchemaSpecification.md) |
+| **Is Required**   | No                                                                   |
+| **Default Value** | `[]`                                                                 |
 
 ```ts
 [[include:Presentation.Hierarchies.RequiredSchemas.Ruleset]]
@@ -58,9 +66,13 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Priority.Ruleset]]
@@ -70,9 +82,13 @@ Defines the order in which rules are handled, higher number means the rule is ha
 
 ### Attribute: `onlyIfNotHandled`
 
-> **Default value:** `false`
-
 Tells the library that the rule should only be handled if no other node artifacts rule was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.OnlyIfNotHandled.Ruleset]]
@@ -82,9 +98,12 @@ Tells the library that the rule should only be handled if no other node artifact
 
 ### Attribute: `items`
 
-> **Default value:** `{}`
-
 A map of [ECExpressions](./ECExpressions.md#specification) whose evaluation results are used as artifact values.
+
+|                 |                                   |
+| --------------- | --------------------------------- |
+| **Type**        | `{ [key: string]: ECExpression }` |
+| **Is Required** | Yes                               |
 
 ```ts
 [[include:Presentation.Hierarchies.NodeArtifacts.Items.Ruleset]]

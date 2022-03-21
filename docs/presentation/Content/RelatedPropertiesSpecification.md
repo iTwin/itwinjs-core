@@ -22,6 +22,11 @@ Specifies a chain of [relationship path specifications](../RelationshipPathSpeci
 
 The path may point to more than one related instance, so the result always stores related properties in a form of a struct-array, where each struct represents a single related instance. However, often there's only one related instance and in that case a UI component displaying the result may choose to "destructure" the struct-array. An example of such component is the Property Grid:
 
+|                 |                                                                        |
+| --------------- | ---------------------------------------------------------------------- |
+| **Type**        | [`RelationshipPathSpecification`](../RelationshipPathSpecification.md) |
+| **Is Required** | Yes                                                                    |
+
 ```ts
 [[include:Presentation.Content.Customization.RelatedPropertiesSpecification.PropertiesSource.Ruleset]]
 ```
@@ -34,10 +39,14 @@ Here's how the result looks like if there's more than one related instance:
 
 ### Attribute: `handleTargetClassPolymorphically`
 
-> **Default value:** `false`
-
 The attribute tells whether the target class specified through [`propertiesSource` attribute](#attribute-propertiessource) should be handled
 polymorphically. This means properties of the concrete class are loaded in addition to properties of the target class itself.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Content.Customization.RelatedPropertiesSpecification.HandleTargetClassPolymorphically.Ruleset]]
@@ -48,8 +57,6 @@ polymorphically. This means properties of the concrete class are loaded in addit
 | ![Example of using "handle target class polymorphically" attribute set to "false"](./media/relatedpropertiesspecification-with-handletargetclasspolymorphically-attribute-false.png) | ![Example of using "handle target class polymorphically" attribute set to "true"](./media/relatedpropertiesspecification-with-handletargetclasspolymorphically-attribute-true.png) |
 
 ### Attribute: `relationshipMeaning`
-
-> **Default value:** `"RelatedInstance"`
 
 The attribute describes what the related properties mean to the [primary instance](./Terminology.md#primary-instance) whose properties are
 displayed. There are two possible options:
@@ -62,6 +69,12 @@ displayed. There are two possible options:
 
 See [property categorization page](./PropertyCategorization.md) page for more details.
 
+|                   |                                       |
+| ----------------- | ------------------------------------- |
+| **Type**          | `"SameInstance" \| "RelatedInstance"` |
+| **Is Required**   | No                                    |
+| **Default Value** | `"RelatedInstance"`                   |
+
 ```ts
 [[include:Presentation.Content.Customization.RelatedPropertiesSpecification.RelationshipMeaning.Ruleset]]
 ```
@@ -72,12 +85,16 @@ See [property categorization page](./PropertyCategorization.md) page for more de
 
 ### Attribute: `properties`
 
-> **Default value:** `"*"`
-
 List of names or definitions of related class properties that should be included in the content. In addition, a couple of special values are allowed:
 
 - `"_none_"` means none of the properties should be picked up. Generally this is used in combination with the [`nestedRelatedProperties` attribute](#attribute-nestedrelatedproperties).
 - `"*"` means all properties should be picked up.
+
+|                   |                                                             |
+| ----------------- | ----------------------------------------------------------- |
+| **Type**          | `Array<string \| PropertySpecification> \| "_none_" \| "*"` |
+| **Is Required**   | No                                                          |
+| **Default Value** | `"*"`                                                       |
 
 ```ts
 [[include:Presentation.Content.Customization.RelatedPropertiesSpecification.Properties.Ruleset]]
@@ -87,10 +104,14 @@ List of names or definitions of related class properties that should be included
 
 ### Attribute: `autoExpand`
 
-> **Default value:** `false`
-
 The attribute specifies whether the field containing related properties should be assigned the [NestedContentField.autoExpand]($presentation-common)
 attribute. The attribute tells UI components showing the properties that they should be initially displayed in the expanded state.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Content.Customization.RelatedPropertiesSpecification.AutoExpand.Ruleset]]
@@ -102,9 +123,13 @@ attribute. The attribute tells UI components showing the properties that they sh
 
 ### Attribute: `skipIfDuplicate`
 
-> **Default value:** `false`
-
 Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Content.Customization.RelatedPropertiesSpecification.SkipIfDuplicate.Ruleset]]
@@ -116,9 +141,13 @@ Specifies whether the specification should be ignored if another higher priority
 
 ### Attribute: `nestedRelatedProperties`
 
-> **Default value:** `[]`
-
 The attribute allows loading additional related properties that are related to the target instance of this specification.
+
+|                   |                                                                         |
+| ----------------- | ----------------------------------------------------------------------- |
+| **Type**          | [`RelatedPropertiesSpecification[]`](#related-properties-specification) |
+| **Is Required**   | No                                                                      |
+| **Default Value** | `[]`                                                                    |
 
 ```ts
 [[include:Presentation.Content.Customization.RelatedPropertiesSpecification.NestedRelatedProperties.Ruleset]]

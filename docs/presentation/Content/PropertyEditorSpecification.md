@@ -16,6 +16,11 @@ Name of the property editor that's going to be used in UI components. This name 
 [Field.editor]($presentation-common) and it's up to the UI component to make sure appropriate editor
 is used to edit the property.
 
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
+
 ```ts
 [[include:Presentation.Content.Customization.PropertySpecification.Editor.Ruleset]]
 ```

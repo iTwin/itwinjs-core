@@ -32,6 +32,11 @@ Specifies node type, which is assigned to node's key. The type can be used:
 
 The given value is often used in [a condition of another child node rule](./ChildNodeRule.md#attribute-condition) to assign children to this node.
 
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
+
 ```ts
 [[include:Presentation.Hierarchies.CustomNodeSpecification.Type.Ruleset]]
 ```
@@ -42,6 +47,11 @@ The given value is often used in [a condition of another child node rule](./Chil
 
 Specifies node label. This is a string value that may be [localized](../Advanced/Localization.md).
 
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
+
 ```ts
 [[include:Presentation.Hierarchies.CustomNodeSpecification.Label.Ruleset]]
 ```
@@ -50,9 +60,13 @@ Specifies node label. This is a string value that may be [localized](../Advanced
 
 ### Attribute: `description`
 
-> **Default value:** `""`
-
 Specifies the value of [Node.description]($presentation-common) property, which is a string that [may be localized](../Advanced/Localization.md). UI component displaying the node may choose whether and how to surface this information to users.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `string` |
+| **Is Required**   | No       |
+| **Default Value** | `""`     |
 
 ```ts
 [[include:Presentation.Hierarchies.CustomNodeSpecification.Description.Ruleset]]
@@ -62,10 +76,14 @@ Specifies the value of [Node.description]($presentation-common) property, which 
 
 ### Attribute: `imageId`
 
-> **Default value:** `""`
-
 Specifies node's image ID. If set, the ID is assigned to [Node.imageId]($presentation-common) and it's up to the UI component
 to decide what to do with it.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `string` |
+| **Is Required**   | No       |
+| **Default Value** | `""`     |
 
 ```ts
 [[include:Presentation.Hierarchies.CustomNodeSpecification.ImageId.Ruleset]]
@@ -77,9 +95,13 @@ to decide what to do with it.
 
 ### Attribute: `hideNodesInHierarchy`
 
-> **Default value:** `false`
-
 When `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.CustomNodeSpecification.HideNodesInHierarchy.Ruleset]]
@@ -91,9 +113,13 @@ When `true`, nodes produced by this specification are omitted and their children
 
 ### Attribute: `hideIfNoChildren`
 
-> **Default value:** `false`
-
 Specifies whether the node created through this specification should be hidden if it has no child nodes.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.HideIfNoChildren.Ruleset]]
@@ -105,9 +131,13 @@ Specifies whether the node created through this specification should be hidden i
 
 ### Attribute: `hideExpression`
 
-> **Default value:** `""`
-
 When specified [ECExpression](./ECExpressions.md#specification) evaluates to `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
+
+|                   |                                                  |
+| ----------------- | ------------------------------------------------ |
+| **Type**          | [ECExpression](./ECExpressions.md#specification) |
+| **Is Required**   | No                                               |
+| **Default Value** | `""`                                             |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.HideExpression.Ruleset]]
@@ -119,9 +149,13 @@ When specified [ECExpression](./ECExpressions.md#specification) evaluates to `tr
 
 ### Attribute: `priority`
 
-> **Default value:** `1000`
-
 Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
+
+|                   |          |
+| ----------------- | -------- |
+| **Type**          | `number` |
+| **Is Required**   | No       |
+| **Default Value** | `1000`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.Priority.Ruleset]]
@@ -130,11 +164,6 @@ Controls the order in which specifications are handled — specification with hi
 ![Example of using "priority" attribute](./media/hierarchy-with-specification-priority-attribute.png)
 
 ### Attribute: `hasChildren`
-
-> **Default value:** `"Unknown"`
-
-> **Performance note:** Setting the attribute to `Always` or `Never` may substantially improve performance of creating nodes in cases when
-> getting child nodes is expensive.
 
 Generally, when a node is created, the rules engine has to determine whether it has children before returning it. This requires
 evaluating child node rules and, usually, executing additional queries. This attribute allows telling the engine that nodes created
@@ -148,6 +177,13 @@ empty list. It's up to the UI component to handle the case of parent node saying
 - When set to `Never`, the returned nodes always have [Node.hasChildren]($presentation-common) set to `false`. Requesting children for such nodes returns empty
 list even if there are child node rules that define children for it.
 
+|                      |                                                                                                                                                      |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Type**             | `"Always" \| "Never" \| "Unknown"`                                                                                                                   |
+| **Is Required**      | No                                                                                                                                                   |
+| **Default Value**    | `"Unknown"`                                                                                                                                          |
+| **Performance note** | Setting the attribute to `Always` or `Never` may substantially improve performance of creating nodes in cases when  getting child nodes is expensive |
+
 ```ts
 [[include:Presentation.Hierarchies.Specification.HasChildren.Ruleset]]
 ```
@@ -158,8 +194,6 @@ list even if there are child node rules that define children for it.
 
 ### Attribute: `nestedRules`
 
-> **Default value:** `[]`
-
 Specifications of [nested child node rules](./Terminology.md#nested-rule) that allow creating child nodes without the need of supplying a condition to
 match the parent node.
 
@@ -167,6 +201,12 @@ This is useful when the same instance node at different hierarchy levels needs t
 at the root level with condition to match the instance ECClass makes the rule create children for all nodes of that ECClass. When that's not desired, different
 [child node rules](./ChildNodeRule.md) may be specified as nested rules for specifications that return instance nodes of the same ECClass - that makes them have
 different children.
+
+|                   |                                         |
+| ----------------- | --------------------------------------- |
+| **Type**          | [`ChildNodeRule[]`](./ChildNodeRule.md) |
+| **Is Required**   | No                                      |
+| **Default Value** | `[]`                                    |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.NestedRules.Ruleset]]

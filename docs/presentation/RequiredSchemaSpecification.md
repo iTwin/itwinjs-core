@@ -23,17 +23,30 @@ This specification is designed specifically for that purpose. It accepts a list 
 
 Specifies the schema to whom the requirement is being set.
 
-### Attribute: `minVersion`
+|                 |          |
+| --------------- | -------- |
+| **Type**        | `string` |
+| **Is Required** | Yes      |
 
-> **Default value:** `undefined`
+### Attribute: `minVersion`
 
 Minimum required schema version (inclusive). Format: `{read version}.{write version}.{minor version}`, e.g. `2.1.15`.
 
+|                   |             |
+| ----------------- | ----------- |
+| **Type**          | `string`    |
+| **Is Required**   | No          |
+| **Default Value** | `undefined` |
+
 ### Attribute: `maxVersion`
 
-> **Default value:** `undefined`
-
 Maximum allowed schema version (exclusive). Format: `{read version}.{write version}.{minor version}`, e.g. `2.1.15`.
+
+|                   |             |
+| ----------------- | ----------- |
+| **Type**          | `string`    |
+| **Is Required**   | No          |
+| **Default Value** | `undefined` |
 
 ## Examples
 
