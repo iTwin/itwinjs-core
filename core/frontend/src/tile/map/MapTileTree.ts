@@ -423,7 +423,8 @@ class MapTreeSupplier implements TileTreeSupplier {
       cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
       if (0 === cmp) {
         cmp = compareBooleans(lhs.isOverlay, rhs.isOverlay);
-        if (0 === cmp && !lhs.isOverlay) {
+        //  if (0 === cmp && !lhs.isOverlay) {
+        if (0 === cmp) {
           cmp = compareBooleans(lhs.wantSkirts, rhs.wantSkirts);
           if (0 === cmp) {
             cmp = compareBooleans(lhs.wantNormals, rhs.wantNormals);
@@ -666,7 +667,8 @@ export class MapTileTreeReference extends TileTreeReference {
 
     const id: MapTreeId = {
       tileUserId: this._tileUserId,
-      applyTerrain: this.settings.applyTerrain && !this.isOverlay && !this._isDrape,
+      // applyTerrain: this.settings.applyTerrain && !this.isOverlay && !this._isDrape,
+      applyTerrain: this.settings.applyTerrain && !this._isDrape,
       terrainProviderName: this.settings.terrainSettings.providerName,
       terrainHeightOrigin: this.settings.terrainSettings.heightOrigin,
       terrainHeightOriginMode: this.settings.terrainSettings.heightOriginMode,
