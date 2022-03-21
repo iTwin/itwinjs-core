@@ -321,6 +321,7 @@ export class IModelHost {
 
   /** Provides access to the IModelHub for this IModelHost
    * @beta
+   * @note If [[IModelHostConfiguration.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
    */
   public static get hubAccess(): BackendHubAccess {
     // Strictly speaking, _hubAccess should be marked as possibly undefined since it's not needed for Snapshot iModels.
