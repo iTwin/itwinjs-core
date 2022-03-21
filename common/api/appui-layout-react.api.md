@@ -40,6 +40,9 @@ export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Parti
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState;
 
 // @internal
+export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string): NineZoneState;
+
+// @internal
 export class AppButton extends React.PureComponent<AppButtonProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -809,6 +812,9 @@ export const getToolbarItemProps: <TProps extends {}>(props: TProps) => ToolbarI
 
 // @internal (undocumented)
 export function getUniqueId(): string;
+
+// @internal (undocumented)
+export function getWidgetPanelSectionId(side: PanelSide, panelSectionIndex: number): string;
 
 // @internal (undocumented)
 export const getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings;

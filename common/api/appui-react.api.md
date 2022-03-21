@@ -7064,6 +7064,9 @@ export function useScheduleAnimationDataProvider(viewport: ScreenViewport | unde
 // @beta
 export function useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined;
 
+// @public
+export function useSpecificWidgetDef(widgetId: string): WidgetDef | undefined;
+
 // @internal (undocumented)
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 

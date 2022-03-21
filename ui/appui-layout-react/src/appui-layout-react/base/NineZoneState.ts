@@ -657,14 +657,6 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         return;
       }
 
-      // const panel = action.side ? state.panels[action.side] : undefined;
-      // if (isActive && panel) {
-      //   for (const wId of panel.widgets) {
-      //     const w = state.widgets[wId];
-      //     w.minimized = true;
-      //   }
-      //   widget.minimized = false;
-      // }
       return;
     }
 

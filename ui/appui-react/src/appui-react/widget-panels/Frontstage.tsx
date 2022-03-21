@@ -855,6 +855,20 @@ export const setWidgetState = produce((
         panel.size = panel.minSize ?? 200;
       }
     }
+  } else if (state === WidgetState.Closed) {
+    const id = widgetDef.id;
+    let location = findTab(nineZone, id);
+    if (!location) {
+      addRemovedTab(nineZone, widgetDef);
+      location = findTab(nineZone, id);
+      assert(!!location);
+    }
+    if (isFloatingLocation(location)) {
+      const widget = nineZone.widgets[location.widgetId];
+      if (id !== widget.activeTabId)
+        return;
+      widget.minimized = true;
+    }
   }  else if (state === WidgetState.Hidden) {
     hideWidget(nineZone, widgetDef);
   }

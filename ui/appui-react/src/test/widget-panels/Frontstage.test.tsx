@@ -1484,15 +1484,15 @@ describe("Frontstage local storage wrapper", () => {
           nineZone = addPanelWidget(nineZone, "left", "leftEnd", ["t2"]);
           nineZone = addTab(nineZone, "t1");
           const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Closed);
-          sut.widgets.w1.minimized.should.false;
+          sut.widgets.leftStart.minimized.should.false;
         });
 
         it("should not minimize single panel widget", () => {
           let nineZone = createNineZoneState();
-          nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+          nineZone = addPanelWidget(nineZone, "left", "leftStart", ["t1"]);
           nineZone = addTab(nineZone, "t1");
           const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Closed);
-          sut.widgets.w1.minimized.should.false;
+          sut.widgets.leftStart.minimized.should.false;
         });
 
         it("should add removed tab", () => {
@@ -1784,15 +1784,14 @@ describe("Frontstage local storage wrapper", () => {
         }, StagePanelLocation.Left);
         sinon.stub(frontstageDef, "leftPanel").get(() => panelDef);
         const newState = addMissingWidgets(frontstageDef, state);
-        newState.widgets.start.tabs.should.eql(["start1", "ws1"]);
-        newState.widgets.end.tabs.should.eql(["wm1","end1", "w1", "we1"]);
+        newState.widgets.leftStart.tabs.should.eql(["start1", "ws1"]);
+        newState.widgets.leftEnd.tabs.should.eql(["end1", "w1", "wm1", "we1"]);
       });
 
       it("should add rightPanel widgets", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, "right", "start", ["start1"]);
-        state = addPanelWidget(state, "right", "middle", ["middle1"]);
-        state = addPanelWidget(state, "right", "end", ["end1"]);
+        state = addPanelWidget(state, "right", "rightStart", ["start1"]);
+        state = addPanelWidget(state, "right", "rightEnd", ["end1"]);
         state = addTab(state, "start1");
         state = addTab(state, "middle1");
         state = addTab(state, "end1");
@@ -1835,15 +1834,14 @@ describe("Frontstage local storage wrapper", () => {
         }, StagePanelLocation.Right);
         sinon.stub(frontstageDef, "rightPanel").get(() => panelDef);
         const newState = addMissingWidgets(frontstageDef, state);
-        newState.widgets.start.tabs.should.eql(["start1", "ws1"]);
-        newState.widgets.middle.tabs.should.eql(["middle1", "wm1"]);
-        newState.widgets.end.tabs.should.eql(["end1", "w1", "we1"]);
+        newState.widgets.rightStart.tabs.should.eql(["start1", "ws1"]);
+        newState.widgets.rightEnd.tabs.should.eql(["end1", "w1", "wm1", "we1"]);
       });
 
       it("should add topPanel widgets", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, "top", "start", ["start1"]);
-        state = addPanelWidget(state, "top", "end", ["end1"]);
+        state = addPanelWidget(state, "top", "topStart", ["start1"]);
+        state = addPanelWidget(state, "top", "topEnd", ["end1"]);
         state = addTab(state, "start1");
         state = addTab(state, "end1");
         const frontstageDef = new FrontstageDef();
@@ -1888,14 +1886,14 @@ describe("Frontstage local storage wrapper", () => {
         sinon.stub(frontstageDef, "topPanel").get(() => panelDef);
         sinon.stub(frontstageDef, "topMostPanel").get(() => panelDef1);
         const newState = addMissingWidgets(frontstageDef, state);
-        newState.widgets.start.tabs.should.eql(["start1", "w1", "ws1"]);
-        newState.widgets.end.tabs.should.eql(["end1", "w2", "we1"]);
+        newState.widgets.topStart.tabs.should.eql(["start1", "w1", "ws1"]);
+        newState.widgets.topEnd.tabs.should.eql(["end1", "w2", "we1"]);
       });
 
       it("should add bottomPanel widgets", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, "bottom", "start", ["start1"]);
-        state = addPanelWidget(state, "bottom", "end", ["end1"]);
+        state = addPanelWidget(state, "bottom", "bottomStart", ["start1"]);
+        state = addPanelWidget(state, "bottom", "bottomEnd", ["end1"]);
         state = addTab(state, "start1");
         state = addTab(state, "end1");
         const frontstageDef = new FrontstageDef();
@@ -1940,8 +1938,8 @@ describe("Frontstage local storage wrapper", () => {
         sinon.stub(frontstageDef, "bottomPanel").get(() => panelDef);
         sinon.stub(frontstageDef, "bottomMostPanel").get(() => panelDef1);
         const newState = addMissingWidgets(frontstageDef, state);
-        newState.widgets.start.tabs.should.eql(["start1", "w1", "ws1"]);
-        newState.widgets.end.tabs.should.eql(["end1", "w2", "we1"]);
+        newState.widgets.bottomStart.tabs.should.eql(["start1", "w1", "ws1"]);
+        newState.widgets.bottomEnd.tabs.should.eql(["end1", "w2", "we1"]);
       });
     });
 
