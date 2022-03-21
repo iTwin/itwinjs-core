@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus } from "@itwin/core-bentley";
+import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus, StatusCategory } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -17,7 +17,7 @@ import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
-import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import { RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
 /** The properties of an RpcActivity.
@@ -242,7 +242,24 @@ export class RpcInvocation {
       return false;
     }
 
-    return RpcProtocol.protocolVersion >= 1 && this.request.protocolVersion >= 1;
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedNoContent && this.request.protocolVersion >= RpcProtocolVersion.IntroducedNoContent;
+  }
+
+  private supportsStatusCategory() {
+    if (!this.request.protocolVersion) {
+      return false;
+    }
+
+    const supports = RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.request.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
+    if (!supports) {
+      return false;
+    }
+
+    if (StatusCategory.WIRE_FORMAT_VERSION !== 1) {
+      throw new IModelError(RpcInterfaceStatus.IncompatibleVersion, `StatusCategory.WIRE_FORMAT_VERSION = ${StatusCategory.WIRE_FORMAT_VERSION} is not supported.`);
+    }
+
+    return true;
   }
 
   private fulfill(result: RpcSerializedValue, rawResult: any): RpcRequestFulfillment {
@@ -253,6 +270,10 @@ export class RpcInvocation {
       id: this.request.id,
       interfaceName: (typeof (this.operation) === "undefined") ? "" : this.operation.interfaceDefinition.interfaceName,
     };
+
+    if (this.supportsStatusCategory() && this._threw && (rawResult instanceof BentleyError)) {
+      fulfillment.status = StatusCategory.for(rawResult).code;
+    }
 
     try {
       const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition) as any;

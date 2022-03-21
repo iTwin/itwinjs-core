@@ -43,6 +43,11 @@ export abstract class StatusCategory {
     return lookupCategory(error);
   }
 
+  /** Tracks the error category ABI (for web application usage).
+   * @note This version code must be incremented when a category code is changed or a status is assigned to a different category.
+   */
+  public static WIRE_FORMAT_VERSION = 1;
+
   public abstract name: string;
   public abstract code: number;
   public abstract error: boolean;
@@ -63,6 +68,9 @@ export abstract class SuccessCategory extends StatusCategory {
 export abstract class ErrorCategory extends StatusCategory {
   public error = true;
 }
+
+// IMPORTANT!
+// You must increment StatusCategory.WIRE_FORMAT_VERSION for any category or code changes below.
 
 namespace HTTP {
   export class OK extends SuccessCategory { public name = "OK"; public code = 200; }

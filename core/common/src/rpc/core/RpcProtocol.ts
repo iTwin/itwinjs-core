@@ -82,6 +82,15 @@ export namespace RpcRequestFulfillment {
  */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
+/** Documents changes to the RPC protocol version.
+ * @internal
+ */
+export enum RpcProtocolVersion {
+  None = 0,
+  IntroducedNoContent = 1,
+  IntroducedStatusCategory = 2
+}
+
 /** An application protocol for an RPC interface.
  * @internal
  */
@@ -90,7 +99,7 @@ export abstract class RpcProtocol {
   public static readonly events: BeEvent<RpcProtocolEventHandler> = new BeEvent();
 
   /** A version code that identifies the RPC protocol capabilties of this endpoint. */
-  public static readonly protocolVersion = 1;
+  public static readonly protocolVersion: number = RpcProtocolVersion.IntroducedStatusCategory;
 
   /** The name of the RPC protocol version header. */
   public protocolVersionHeaderName = "";
