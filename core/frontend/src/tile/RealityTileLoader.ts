@@ -12,11 +12,12 @@ import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
-import { Viewport } from "../Viewport";
+import { ScreenViewport, Viewport } from "../Viewport";
 import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, I3dmReader, readPointCloudTileContent, RealityTile, RealityTileContent, Tile, TileContent,
   TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "./internal";
+import { ViewManip } from "../tools/ViewTool";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
 
@@ -157,9 +158,25 @@ export abstract class RealityTileLoader {
     for (const viewport of viewports) {
       const npc = viewport.worldToNpc(center, scratchTileCenterView);
 
+      let focusPoint = new Point2d(0.5, 0.5);
+
+      if (viewport instanceof ScreenViewport) {
+        // Try to get a better target point from user interactions
+        const targetCenter = IModelApp.toolAdmin.currentInputState.lastWheelEvent?.point // Last zoom target
+          ?? viewport.viewCmdTargetCenter // Last tool command target (if shared between tools)
+          ?? (IModelApp.toolAdmin.viewTool as ViewManip)?.targetCenterWorld; // Last tool command target
+
+        if (targetCenter !== undefined) {
+          const focusPointCandidate = Point2d.fromJSON(viewport.worldToNpc(targetCenter));
+
+          if (focusPointCandidate.x > 0 && focusPointCandidate.x < 1 && focusPointCandidate.y > 0 && focusPointCandidate.y < 1)
+            focusPoint = focusPointCandidate;
+        }
+      }
+
       // NB: In NPC coords, 0 = far plane, 1 = near plane.
       const distanceToEye = 1.0 - npc.z;
-      const distanceToCenter = npc.distanceXY(new Point2d(0.5, 0.5)) / 0.707; // Math.sqrt(0.5) = 0.707
+      const distanceToCenter = Math.min(npc.distanceXY(focusPoint) / 0.707, 1.0); // Math.sqrt(0.5) = 0.707
 
       // Distance is a mix of the two previously computed values, still in range [0; 1]
       // We use this factor to determine how much the distance to the center of the screen is important compared to distance to the eye
