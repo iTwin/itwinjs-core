@@ -282,7 +282,7 @@ public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolea
 public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
-public;imageElementFromUrl(url: string): Promise
+public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 internal;ImageryMapLayerFormat 
 internal;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
@@ -663,7 +663,7 @@ internal;TouchCursor
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
-public;tryImageElementFromUrl(url: string): Promise
+public;tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
 public;Uniform

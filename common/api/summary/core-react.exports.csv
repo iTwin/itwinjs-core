@@ -306,7 +306,9 @@ deprecated;Subheading2(props: TextProps): JSX.Element
 public;SvgPath 
 public;SvgPathProps 
 public;SvgSprite 
+deprecated;SvgSprite 
 public;SvgSpriteProps 
+deprecated;SvgSpriteProps 
 public;TabLabel
 public;Tabs 
 public;TabsProps 

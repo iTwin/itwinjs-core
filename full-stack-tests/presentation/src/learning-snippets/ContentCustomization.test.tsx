@@ -3,9 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import * as React from "react";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import {
+  IPropertyDataProvider, PrimitivePropertyValueRenderer, PropertyDataChangeEvent, PropertyValueRendererContext, PropertyValueRendererManager,
+  UiComponents,
+  VirtualizedPropertyGridWithDataProvider,
+} from "@itwin/components-react";
+import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ContentSpecificationTypes, Field, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
+import { render } from "@testing-library/react";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
 
@@ -18,9 +27,11 @@ describe("Learning Snippets", () => {
     beforeEach(async () => {
       await initialize();
       imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      await UiComponents.initialize(IModelApp.localization);
     });
 
     afterEach(async () => {
+      UiComponents.terminate();
       await imodel.close();
       await terminate();
     });
@@ -662,7 +673,7 @@ describe("Learning Snippets", () => {
         it("uses `renderer` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Renderer.Ruleset
           // There's a content rule for returning content of given `bis.Subject` instance. In addition,
-          // it assigns the `UserLabel` property a custom "my-renderer" renderer.
+          // it assigns the `CodeValue` property a custom "my-renderer" renderer.
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
@@ -670,7 +681,7 @@ describe("Learning Snippets", () => {
               specifications: [{
                 specType: ContentSpecificationTypes.SelectedNodeInstances,
                 propertyOverrides: [{
-                  name: "UserLabel",
+                  name: "CodeValue",
                   renderer: {
                     rendererName: "my-renderer",
                   },
@@ -682,7 +693,7 @@ describe("Learning Snippets", () => {
           printRuleset(ruleset);
 
           // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Renderer.Result
-          // Ensure the `UserLabel` field is assigned the "my-renderer" renderer
+          // Ensure the `CodeValue` field is assigned the "my-renderer" renderer
           const content = (await Presentation.presentation.getContent({
             imodel,
             rulesetOrId: ruleset,
@@ -690,12 +701,47 @@ describe("Learning Snippets", () => {
             descriptor: {},
           }))!;
           expect(content.descriptor.fields).to.containSubset([{
-            label: "User Label",
+            label: "Code",
             renderer: {
               name: "my-renderer",
             },
           }]);
           // __PUBLISH_EXTRACT_END__
+
+          try {
+            // __PUBLISH_EXTRACT_START__ Content.Customization.PropertySpecification.Renderer.Register
+            // The custom renderer renders the property value in red
+            PropertyValueRendererManager.defaultManager.registerRenderer("my-renderer", {
+              canRender: () => true,
+              render: function myRenderer(record: PropertyRecord, ctx?: PropertyValueRendererContext) {
+                const defaultRenderer = new PrimitivePropertyValueRenderer();
+                return defaultRenderer.render(record, { ...ctx, style: { ...ctx?.style, color: "red" } });
+              },
+            });
+            // __PUBLISH_EXTRACT_END__
+
+            const dataProvider = new PresentationPropertyDataProvider({ imodel, ruleset });
+            dataProvider.keys = new KeySet([{ className: "BisCore:Subject", id: "0x1" }]);
+            const expandedDataProvider: IPropertyDataProvider = {
+              onDataChanged: new PropertyDataChangeEvent(),
+              getData: async () => {
+                const data = await dataProvider.getData();
+                data.categories.forEach((c) => c.expand = true);
+                return data;
+              },
+            };
+            const { findByText } = render(
+              <VirtualizedPropertyGridWithDataProvider
+                dataProvider={expandedDataProvider}
+                width={500}
+                height={1200}
+              />,
+            );
+            const renderedElement = await findByText("DgnV8Bridge");
+            expect(renderedElement.style.color).to.eq("red");
+          } finally {
+            PropertyValueRendererManager.defaultManager.unregisterRenderer("my-renderer");
+          }
         });
 
         it("uses `editor` attribute", async () => {

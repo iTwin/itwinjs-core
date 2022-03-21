@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add skipCrossOriginCheck parameter (default false) to imageElementFromUrl and tryImageElementFromUrl.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
