@@ -41,6 +41,10 @@ interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
   newDbName: WorkspaceDbName;
 }
 
+interface MakeVersionOpt extends WorkspaceDbOpt {
+  versionType: "major" | "minor" | "patch";
+}
+
 /** Resource type names */
 type RscType = "blob" | "string" | "file";
 
@@ -322,11 +326,21 @@ async function purgeWorkspace(args: EditorOpts) {
 /** Make a copy of a WorkspaceDb with a new name. */
 async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
   const container = await loadCloudContainer(args);
-  await CloudSqlite.withWriteLock(args.user, container, async () => {
-    return container.copyDatabase(args.dbName, args.newDbName);
-  });
+  const oldName = ITwinWorkspaceContainer.resolveCloudFileName(container, args);
+  const newVersion = ITwinWorkspaceContainer.parseDbFileName(args.newDbName);
+  ITwinWorkspaceContainer.validateDbName(newVersion.dbName);
+  const newName = ITwinWorkspaceContainer.makeDbFileName(newVersion.dbName, ITwinWorkspaceContainer.validateVersion(newVersion.version));
 
-  console.log(`copied WorkspaceDb [${args.dbName}] to [${args.newDbName}], container=${args.containerId}`);
+  await CloudSqlite.withWriteLock(args.user, container, async () => container.copyDatabase(oldName, newName));
+  console.log(`copied WorkspaceDb [${oldName}] to [${newName}] in container=${args.containerId}`);
+}
+
+/** Make a copy of a WorkspaceDb with a new name. */
+async function versionWorkspaceDb(args: MakeVersionOpt) {
+  fixVersionArg(args);
+  const container = await loadCloudContainer(args);
+  const result = await ITwinWorkspaceContainer.makeNewVersion(container, args, args.versionType);
+  console.log(`created new version: [${result.newName}] from [${result.oldName}] in container=${args.containerId}`);
 }
 
 /** pin a WorkspaceDb from a WorkspaceContainer. */
@@ -496,6 +510,14 @@ async function main() {
     command: "copyDb <dbName> <newDbName>",
     describe: "make a copy of a WorkspaceDb in a cloud container with a new name",
     handler: runCommand(copyWorkspaceDb),
+  });
+  Yargs.command({
+    command: "versionDb <dbName>",
+    describe: "make a new version of a WorkspaceDb",
+    builder: {
+      versionType: { describe: "the type of version to create", default: "patch", string: true, choices: ["major", "minor", "patch"] },
+    },
+    handler: runCommand(versionWorkspaceDb),
   });
   Yargs.command({
     command: "pinDb <dbName>",

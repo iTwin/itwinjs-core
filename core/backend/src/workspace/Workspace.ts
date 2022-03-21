@@ -301,6 +301,11 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   private _wsDbs = new Map<WorkspaceDbName, ITwinWorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
+  public static noLeadingOrTrailingSpaces(name: string, msg: string) {
+    if (name.trim() !== name)
+      throw new Error(`${msg} [${name}] may not have leading or tailing spaces`);
+  }
+
   /** rules for ContainerIds (from Azure, see https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata)
    *  - may only contain lower case letters, numbers or dashes
    *  - may not start or end with with a dash nor have more than one dash in a row
@@ -309,6 +314,12 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   private static validateContainerId(id: WorkspaceContainerId) {
     if (!/^(?=.{3,63}$)[a-z0-9]+(-[a-z0-9]+)*$/g.test(id))
       throw new Error(`invalid containerId: [${id}]`);
+  }
+
+  public static validateDbName(dbName: WorkspaceDbName) {
+    if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
+      throw new Error(`invalid dbName: [${dbName}]`);
+    this.noLeadingOrTrailingSpaces(dbName, "dbName");
   }
 
   public constructor(workspace: ITwinWorkspace, props: WorkspaceContainerProps) {
@@ -337,35 +348,28 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     return version;
   }
 
-  public static parseDbFileName(dbFileName: string) {
+  public static parseDbFileName(dbFileName: string): { dbName: string, version: string } {
     const parts = dbFileName.split(":");
     return { dbName: parts[0], version: parts[1] };
   }
 
-  public static makeDbFileName(dbName: string, version?: string) {
+  public static makeDbFileName(dbName: string, version?: string): string {
     return `${dbName}:${this.validateVersion(version)}`;
   }
 
-  public resolveFileName(props: WorkspaceDbProps): string {
-    const cloudContainer = this.cloudContainer;
+  public static resolveCloudFileName(cloudContainer: IModelJsNative.CloudContainer, props: WorkspaceDbProps) {
     const dbName = props.dbName;
-    if (undefined === cloudContainer)
-      return join(this.dirName, `${dbName}.${workspaceDbFileExt}`); // local file, versions not allowed
-
     const dbs = cloudContainer.queryDatabases(`${dbName}%`); // get all databases that start with dbName
-    if (dbs.length === 0)
-      return dbName;
 
     const versions = [];
     for (const db of dbs) {
       const thisDb = ITwinWorkspaceContainer.parseDbFileName(db);
-      if (thisDb.dbName === dbName && "string" === typeof thisDb.version && thisDb.version.length > 0) {
+      if (thisDb.dbName === dbName && "string" === typeof thisDb.version && thisDb.version.length > 0)
         versions.push(thisDb.version);
-      }
     }
 
     if (versions.length === 0)
-      return dbName;
+      throw new Error(`WorkspaceDb ${dbName} not found`);
 
     const range = props.version ?? "*";
     try {
@@ -375,6 +379,26 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     } catch (e: unknown) {
     }
     throw new Error(`No version of [${dbName}] available for "${range}"`);
+  }
+
+  public static async makeNewVersion(cloudContainer: IModelJsNative.CloudContainer, fromProps: WorkspaceDbProps, versionType: "major" | "minor" | "patch") {
+    const oldName = this.resolveCloudFileName(cloudContainer, fromProps);
+    const oldVersion = this.parseDbFileName(oldName);
+    const newVersion = semver.inc(oldVersion.version, versionType);
+    if (!newVersion)
+      throw new Error("invalid version");
+
+    const newName = this.makeDbFileName(oldVersion.dbName, newVersion);
+    await cloudContainer.copyDatabase(oldName, newName);
+    return { oldName, newName };
+  }
+
+  public resolveFileName(props: WorkspaceDbProps): string {
+    const cloudContainer = this.cloudContainer;
+    if (undefined === cloudContainer)
+      return join(this.dirName, `${props.dbName}.${workspaceDbFileExt}`); // local file, versions not allowed
+
+    return ITwinWorkspaceContainer.resolveCloudFileName(cloudContainer, props);
   }
 
   public addWorkspaceDb(toAdd: ITwinWorkspaceDb) {
@@ -421,17 +445,6 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   public readonly onClosed = new BeEvent<() => void>();
   public dbFileName: string; // either a local file name or the name of a file in a cloud container
 
-  protected static noLeadingOrTrailingSpaces(name: string, msg: string) {
-    if (name.trim() !== name)
-      throw new Error(`${msg} [${name}] may not have leading or tailing spaces`);
-  }
-
-  private static validateDbName(dbName: WorkspaceDbName) {
-    if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
-      throw new Error(`invalid dbName: [${dbName}]`);
-    this.noLeadingOrTrailingSpaces(dbName, "dbName");
-  }
-
   public get isOpen() { return this.sqliteDb.isOpen; }
   public queryFileResource(rscName: WorkspaceResourceName) {
     const info = this.sqliteDb.nativeDb.queryEmbeddedFile(rscName);
@@ -446,7 +459,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   }
 
   public constructor(props: WorkspaceDbProps, container: WorkspaceContainer) {
-    ITwinWorkspaceDb.validateDbName(props.dbName);
+    ITwinWorkspaceContainer.validateDbName(props.dbName);
     this.dbName = props.dbName;
     this.container = container;
     this.dbFileName = container.resolveFileName(props);
@@ -532,7 +545,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
  */
 export class EditableWorkspaceDb extends ITwinWorkspaceDb {
   private static validateResourceName(name: WorkspaceResourceName) {
-    ITwinWorkspaceDb.noLeadingOrTrailingSpaces(name, "resource name");
+    ITwinWorkspaceContainer.noLeadingOrTrailingSpaces(name, "resource name");
     if (name.length > 1024)
       throw new Error("resource name too long");
   }
