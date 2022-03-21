@@ -211,23 +211,6 @@ export class RealityTile extends Tile {
     return context.selected.find((tile) => tile === this) !== undefined;
   }
 
-  protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
-    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
-    if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-      args.markChildrenLoading();
-      traversalDetails.childrenLoading = true;
-      return;
-    }
-
-    if (undefined !== this.realityChildren) {
-      const traversalChildren = this.realityRoot.getTraversalChildren(this.depth);
-      traversalChildren.initialize();
-      for (let i = 0; i < this.children!.length; i++)
-        this.realityChildren[i].selectRealityTiles(context, args, traversalChildren.getChildDetail(i));
-
-      traversalChildren.combine(traversalDetails);
-    }
-  }
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
     let corners = this.rangeCorners ? this.rangeCorners : this.range.corners();
@@ -262,47 +245,102 @@ export class RealityTile extends Tile {
     for (const child of this.realityChildren) {
       if (child.isReady && child.computeVisibilityFactor(args) > 0) {
         scratchLoadedChildren.push(child);
-      } else if (!child.getLoadedRealityChildren(args))
+      } else if (!child.getLoadedRealityChildren(args)) {
         return false;
+      }
     }
     return true;
   }
-  public forceSelectRealityTile(): boolean { return false; }
+
+  protected forceSelectRealityTile(): boolean { return false; }
+  protected minimumVisibleFactor(): Number { return 0; }
 
   public selectRealityTiles(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     const visibility = this.computeVisibilityFactor(args);
-    if (visibility < 0)
+
+    const isNotVisible = visibility < 0;
+
+    if (isNotVisible)
       return;
 
+    // Force loading if loader requires this tile. (cesium terrain visibility).
     if (this.realityRoot.loader.forceTileLoad(this) && !this.isReady) {
-      context.selectOrQueue(this, args, traversalDetails);    // Force loading if loader requires this tile. (cesium terrain visibility).
+      context.selectOrQueue(this, args, traversalDetails);
       return;
     }
 
+    // Force to return early without selecting
     if (visibility >= 1 && this.noContentButTerminateOnSelection)
       return;
 
-    if (this.isDisplayable && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded)) {
-      if (!this.isOccluded(args.viewingSpace)) {
+    const shouldSelectThisTile = visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded;
+    if (shouldSelectThisTile && this.isDisplayable) { // Select this tile
+
+      // Return early if tile is totally occluded
+      if (this.isOccluded(args.viewingSpace))
+        return;
+
+      // Attempt to select this tile. If not ready, queue it
+      context.selectOrQueue(this, args, traversalDetails);
+
+      // This tile is visible but not loaded - Use higher resolution children if present
+      if (!this.isReady)
+        this.selectRealityChildrenAsFallback(context, args, traversalDetails);
+
+    } else { // Select children instead of this tile
+
+      // With additive refinement it is necessary to display this tile along with any displayed children
+      if (this.additiveRefinement && this.isDisplayable && !this.useAdditiveRefinementStepchildren())
         context.selectOrQueue(this, args, traversalDetails);
 
-        if (!this.isReady) {      // This tile is visible but not loaded - Use higher resolution children if present
-          if (this.getLoadedRealityChildren(args))
-            context.select(scratchLoadedChildren, args);
-          scratchLoadedChildren.length = 0;
+      this.selectRealityChildren(context, args, traversalDetails);
+
+      // Children are not ready: use this tile to avoid leaving a hole
+      traversalDetails.shouldSelectParent = traversalDetails.shouldSelectParent || traversalDetails.queuedChildren.length !== 0;
+
+      if (traversalDetails.shouldSelectParent) {
+        // If the tile has not yet been displayed in this viewport -- display only if it is visible enough. Avoid overly tiles popping into view unexpectedly (terrain)
+        if (visibility > this.minimumVisibleFactor() || this._everDisplayed) {
+          context.selectOrQueue(this, args, traversalDetails);
         }
       }
-    } else {
-      if (this.additiveRefinement && this.isDisplayable && !this.useAdditiveRefinementStepchildren())
-        context.selectOrQueue(this, args, traversalDetails);      // With additive refinement it is necessary to display this tile along with any displayed children.
+    }
+  }
 
-      this.selectRealityChildren(context, args, traversalDetails);
-      if (this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
-        const minimumVisibleFactor = .25;     // If the tile has not yet been displayed in this viewport -- display only if it is within 25% of visible. Avoid overly tiles popping into view unexpectedly (terrain)
+  // Attempt to select the children of a tile in case they could be displayed while this tile is loading. This does not take into account visibility.
+  protected selectRealityChildrenAsFallback(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails){
+    const childrenReady = this.getLoadedRealityChildren(args);
 
-        if (visibility > minimumVisibleFactor || this._everDisplayed)
-          context.selectOrQueue(this, args, traversalDetails);
-      }
+    if (childrenReady) {
+      context.select(scratchLoadedChildren, args);
+      traversalDetails.shouldSelectParent = false;
+    }
+
+    scratchLoadedChildren.length = 0;
+  }
+
+  // Recurse through children to select them normally
+  protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
+
+    // Load children if not yet requested
+    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
+
+    // Children are not ready yet
+    if (childrenLoadStatus === TileTreeLoadStatus.Loading) {
+      args.markChildrenLoading();
+      traversalDetails.shouldSelectParent = true;
+      return;
+    }
+
+    if (this.realityChildren !== undefined) {
+      // Attempt to select the children
+      const traversalChildren = this.realityRoot.getTraversalChildren(this.depth);
+      traversalChildren.initialize();
+
+      for (let i = 0; i < this.children!.length; i++)
+        this.realityChildren[i].selectRealityTiles(context, args, traversalChildren.getChildDetail(i));
+
+      traversalChildren.combine(traversalDetails);
     }
   }
 

@@ -25,15 +25,16 @@ import {
 /** @internal */
 export class TraversalDetails {
   public queuedChildren = new Array<Tile>();
-  public childrenLoading = false;
   public childrenSelected = false;
+  public shouldSelectParent = false;
 
   public initialize() {
     this.queuedChildren.length = 0;
-    this.childrenLoading = false;
     this.childrenSelected = false;
+    this.shouldSelectParent = false;
   }
 }
+
 /** @internal */
 export class TraversalChildrenDetails {
   private _childDetails: TraversalDetails[] = [];
@@ -42,6 +43,7 @@ export class TraversalChildrenDetails {
     for (const child of this._childDetails)
       child.initialize();
   }
+
   public getChildDetail(index: number) {
     while (this._childDetails.length <= index)
       this._childDetails.push(new TraversalDetails());
@@ -51,11 +53,13 @@ export class TraversalChildrenDetails {
 
   public combine(parentDetails: TraversalDetails) {
     parentDetails.queuedChildren.length = 0;
-    parentDetails.childrenLoading = false;
     parentDetails.childrenSelected = false;
+    parentDetails.shouldSelectParent = false;
+
     for (const child of this._childDetails) {
-      parentDetails.childrenLoading = parentDetails.childrenLoading || child.childrenLoading;
       parentDetails.childrenSelected = parentDetails.childrenSelected || child.childrenSelected;
+      parentDetails.shouldSelectParent = parentDetails.shouldSelectParent || child.shouldSelectParent;
+
       for (const queuedChild of child.queuedChildren)
         parentDetails.queuedChildren.push(queuedChild);
     }
@@ -72,14 +76,16 @@ export class TraversalSelectionContext {
   public selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     tile.selectSecondaryTiles(args, this);
     tile.markUsed(args);
+    traversalDetails.shouldSelectParent = true;
+
     if (tile.isReady) {
       args.markReady(tile);
       this.selected.push(tile);
       tile.markDisplayed();
       this.displayedDescendants.push((traversalDetails.childrenSelected) ? traversalDetails.queuedChildren.slice() : []);
       traversalDetails.queuedChildren.length = 0;
-      traversalDetails.childrenLoading = false;
       traversalDetails.childrenSelected = true;
+      traversalDetails.shouldSelectParent = false;
     } else if (!tile.isNotFound) {
       traversalDetails.queuedChildren.push(tile);
       if (!tile.isLoaded)
