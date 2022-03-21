@@ -240,4 +240,32 @@ describe("Render Compatibility", () => {
       expect(compatibility.usingIntegratedGraphics).to.equal(renderer[1]);
     }
   });
+
+  it("detects MRT shader compile bug", () => {
+    const renderers = [
+      [ "ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", false ],
+      [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
+      [ "Adreno (TM) 530", true ],
+    ];
+
+    for (const renderer of renderers) {
+      overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number) => {
+        const ext = ctx.getExtension("WEBGL_debug_renderer_info");
+        if (ext && pname === ext.UNMASKED_RENDERER_WEBGL)
+          return renderer[0];
+
+        return undefined;
+      });
+
+      const context = makeTestContext(true);
+      const caps = new Capabilities();
+      const compatibility = caps.init(context);
+
+      const expected = renderer[1] ? true : undefined;
+      expect(compatibility.status).to.equal(expected ? WebGLRenderCompatibilityStatus.MissingOptionalFeatures : WebGLRenderCompatibilityStatus.AllOkay);
+
+      expect(compatibility.driverBugs.mrtCanFail).to.equal(expected);
+      expect(caps.driverBugs.mrtCanFail).to.equal(expected);
+    }
+  });
 });
