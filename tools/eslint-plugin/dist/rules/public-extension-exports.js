@@ -11,23 +11,17 @@ const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
 const fs = require("fs");
 
-const syntaxKindFriendlyNames = {
-  [ts.SyntaxKind.ClassDeclaration]: "class",
-  [ts.SyntaxKind.EnumDeclaration]: "enum",
-  [ts.SyntaxKind.InterfaceDeclaration]: "interface",
-  [ts.SyntaxKind.ModuleDeclaration]: "module",
-  [ts.SyntaxKind.MethodDeclaration]: "method",
-  [ts.SyntaxKind.MethodSignature]: "method",
-  [ts.SyntaxKind.FunctionDeclaration]: "function",
-  [ts.SyntaxKind.PropertyDeclaration]: "property",
-  [ts.SyntaxKind.PropertySignature]: "property",
-  [ts.SyntaxKind.Constructor]: "constructor",
-  [ts.SyntaxKind.EnumMember]: "enum member",
-  [ts.SyntaxKind.TypeAliasDeclaration]: "type alias",
-  [ts.SyntaxKind.ExportDeclaration]: "export",
-  [ts.SyntaxKind.NamespaceExportDeclaration]: "namespace export",
-  [ts.SyntaxKind.VariableStatement]: "variable statement"
+/** converts the numeric typescript enum value for ts.SyntaxKind to a string. Defaults to "real". */
+const getSyntaxKindFriendlyName = (syntaxKind) => {
+  const syntaxKindFriendlyNames = {
+    [ts.SyntaxKind.ClassDeclaration]: "real",
+    [ts.SyntaxKind.EnumDeclaration]: "enum",
+    [ts.SyntaxKind.InterfaceDeclaration]: "interface",
+    [ts.SyntaxKind.TypeAliasDeclaration]: "type",
+  }
+  return syntaxKindFriendlyNames[syntaxKind] || "real";
 }
+
 
 let firstRun = true;
 
@@ -88,26 +82,14 @@ module.exports = {
         return;
       }
 
-      // Separate interfaces, items marked as real, enums, and others (treated as types)
-      let kind = "real";
-      if (declaration.kind === ts.SyntaxKind.EnumDeclaration) {
-        kind = "enum";
-      }
-      else if (declaration.kind === ts.SyntaxKind.InterfaceDeclaration) {
-        kind = "interface";
-      }
-      else if (declaration.kind === ts.SyntaxKind.TypeAliasDeclaration) {
-        kind = "type";
-      }
+      const createCsvString = (name, kind) => `${name},${kind},${isPreview ? 'preview' : 'public'}\n`;
 
-      const trailer = `,${kind},${isPreview ? 'preview' : 'public'}\n`;
-
-      if (declaration.kind === ts.SyntaxKind.VariableStatement) {
-        fs.writeFileSync(apiFilePath, declaration.declarationList.declarations[0].symbol.escapedName + trailer, { flag: "a" });
-        return;
-      }
-
-      fs.writeFileSync(apiFilePath, declaration.symbol.escapedName + trailer, { flag: "a" });
+      const name = declaration.kind === ts.SyntaxKind.VariableStatement ?
+        declaration.declarationList.declarations[0].symbol.escapedName :
+        declaration.symbol.escapedName;
+      const kind = getSyntaxKindFriendlyName(declaration.kind);
+      const csvString = createCsvString(name, kind);
+      fs.writeFileSync(apiFilePath, csvString, { flag: "a" });
     }
 
     function getFileName(parent) {
@@ -163,7 +145,7 @@ module.exports = {
                 node,
                 messageId: "forbidden",
                 data: {
-                  kind: syntaxKindFriendlyNames.hasOwnProperty(declaration.kind) ? syntaxKindFriendlyNames[declaration.kind] : "unknown object type " + declaration.kind,
+                  kind: getSyntaxKindFriendlyName(declaration.kind),
                   name,
                   releaseTags: releaseTags,
                 }
