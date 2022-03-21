@@ -196,15 +196,18 @@ export async function imageElementFromImageSource(source: ImageSource): Promise<
 
 /** Create an html Image element from a URL.
  * @param url The URL pointing to the image data.
+ * @param skipCrossOriginCheck Set this to true to allow an image from a different origin than the web app to load. Default is false.
  * @returns A Promise resolving to an HTMLImageElement when the image data has been loaded from the URL.
  * @see tryImageElementFromUrl.
  * @public
  */
-export async function imageElementFromUrl(url: string): Promise<HTMLImageElement> {
+export async function imageElementFromUrl(url: string, skipCrossOriginCheck = false): Promise<HTMLImageElement> {
   // We must set crossorigin property so that images loaded from same origin can be used with texImage2d.
   // We must do that outside of the promise constructor or it won't work, for reasons.
   const image = new Image();
-  image.crossOrigin = "anonymous";
+  if (!skipCrossOriginCheck) {
+    image.crossOrigin = "anonymous";
+  }
   return new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
     image.onload = () => resolve(image);
 
@@ -216,13 +219,14 @@ export async function imageElementFromUrl(url: string): Promise<HTMLImageElement
 
 /** Try to create an html Image element from a URL.
  * @param url The URL pointing to the image data.
+ * @param skipCrossOriginCheck Set this to true to allow an image from a different origin than the web app to load. Default is false.
  * @returns A Promise resolving to an HTMLImageElement when the image data has been loaded from the URL, or to `undefined` if an exception occurred.
  * @see imageElementFromUrl
  * @public
  */
-export async function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined> {
+export async function tryImageElementFromUrl(url: string, skipCrossOriginCheck = false): Promise<HTMLImageElement | undefined> {
   try {
-    return await imageElementFromUrl(url);
+    return await imageElementFromUrl(url, skipCrossOriginCheck);
   } catch {
     return undefined;
   }
