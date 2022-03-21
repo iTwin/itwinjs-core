@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Improved error message for undefined IModelHost.hubAccess",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
