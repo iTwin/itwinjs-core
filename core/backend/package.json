@@ -22,9 +22,8 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "ios:webpack:tests": "webpack --config ios.webpack.config.js",
-    "ios:install-imodeljs-native": "node ./ios/scripts/installIosNativeLib.js",
     "ios:copy:assets": "cpx \"./src/assets/**/*\" ./lib/ios/assets/assets && cpx \"./src/test/assets/**/*\" ./lib/ios/assets/assets",
-    "ios:build:tests": "npm run -s build && npm run -s ios:install-imodeljs-native && npm run -s ios:webpack:tests && npm run -s ios:copy:assets"
+    "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets"
   },
   "repository": {
     "type": "git",

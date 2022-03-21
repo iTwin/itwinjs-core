@@ -11,12 +11,11 @@
 		D398E01A27D82FB800575F47 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D398E01927D82FB800575F47 /* ContentView.swift */; };
 		D398E01C27D82FB900575F47 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D398E01B27D82FB900575F47 /* Assets.xcassets */; };
 		D398E01F27D82FB900575F47 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D398E01E27D82FB900575F47 /* Preview Assets.xcassets */; };
+		D398E07227D8368C00575F47 /* ITwinMobile in Frameworks */ = {isa = PBXBuildFile; productRef = D398E07127D8368C00575F47 /* ITwinMobile */; };
 		D398E07427D836D300575F47 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D398E07327D836D300575F47 /* ViewController.swift */; };
 		D398E07E27D83BAA00575F47 /* CoreTestRunnerXCUITest.swift in Sources */ = {isa = PBXBuildFile; fileRef = D398E07D27D83BAA00575F47 /* CoreTestRunnerXCUITest.swift */; };
 		D398E08627D8444B00575F47 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D398E08527D8444B00575F47 /* XCTest.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		D398E08727D8479100575F47 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D398E08527D8444B00575F47 /* XCTest.framework */; };
-		D3FA021827E8DE3E00CC69C7 /* IModelJsNative.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D3FA021727E8DE3E00CC69C7 /* IModelJsNative.framework */; platformFilter = ios; };
-		D3FA021927E8DE3E00CC69C7 /* IModelJsNative.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D3FA021727E8DE3E00CC69C7 /* IModelJsNative.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,20 +28,6 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		D3FA021A27E8DE3E00CC69C7 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				D3FA021927E8DE3E00CC69C7 /* IModelJsNative.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		D398E01427D82FB800575F47 /* core-test-runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "core-test-runner.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D398E01727D82FB800575F47 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
@@ -54,7 +39,6 @@
 		D398E07927D83BAA00575F47 /* core-test-runner-xcuitest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "core-test-runner-xcuitest.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D398E07D27D83BAA00575F47 /* CoreTestRunnerXCUITest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTestRunnerXCUITest.swift; sourceTree = "<group>"; };
 		D398E08527D8444B00575F47 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		D3FA021727E8DE3E00CC69C7 /* IModelJsNative.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IModelJsNative.framework; path = "../../../../common/temp/node_modules/.pnpm/@bentley+imodeljs-native@3.1.6/node_modules/@bentley/imodeljs-native/imodeljs-ios-arm64/IModelJsNative.framework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,8 +46,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3FA021827E8DE3E00CC69C7 /* IModelJsNative.framework in Frameworks */,
 				D398E08727D8479100575F47 /* XCTest.framework in Frameworks */,
+				D398E07227D8368C00575F47 /* ITwinMobile in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -129,7 +113,6 @@
 		D398E08427D8444A00575F47 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D3FA021727E8DE3E00CC69C7 /* IModelJsNative.framework */,
 				D398E08527D8444B00575F47 /* XCTest.framework */,
 			);
 			name = Frameworks;
@@ -146,7 +129,6 @@
 				D398E01127D82FB800575F47 /* Frameworks */,
 				D398E01227D82FB800575F47 /* Resources */,
 				D398E06927D830A600575F47 /* ShellScript */,
-				D3FA021A27E8DE3E00CC69C7 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -154,6 +136,7 @@
 			);
 			name = "core-test-runner";
 			packageProductDependencies = (
+				D398E07127D8368C00575F47 /* ITwinMobile */,
 			);
 			productName = "core-test-runner";
 			productReference = D398E01427D82FB800575F47 /* core-test-runner.app */;
@@ -206,6 +189,7 @@
 			);
 			mainGroup = D398E00B27D82FB800575F47;
 			packageReferences = (
+				D398E07027D8368C00575F47 /* XCRemoteSwiftPackageReference "mobile-sdk-ios" */,
 			);
 			productRefGroup = D398E01527D82FB800575F47 /* Products */;
 			projectDirPath = "";
@@ -557,6 +541,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D398E07027D8368C00575F47 /* XCRemoteSwiftPackageReference "mobile-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/iTwin/mobile-sdk-ios.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D398E07127D8368C00575F47 /* ITwinMobile */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D398E07027D8368C00575F47 /* XCRemoteSwiftPackageReference "mobile-sdk-ios" */;
+			productName = ITwinMobile;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D398E00C27D82FB800575F47 /* Project object */;
 }
