@@ -322,7 +322,15 @@ export class IModelHost {
   /** Provides access to the IModelHub for this IModelHost
    * @beta
    */
-  public static get hubAccess(): BackendHubAccess { return this._hubAccess; }
+  public static get hubAccess(): BackendHubAccess {
+    // Strictly speaking, _hubAccess should be marked as possibly undefined since it's not needed for Snapshot iModels.
+    // However, a decision was made to not provide that type annotation so callers aren't forced to constantly check for
+    // something that's required in all other workflows.
+    // This check is here to provide a better error message when hubAccess is inadvertently undefined.
+    if (this._hubAccess === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "IModelHost.hubAccess is undefined. Specify an implementation in your IModelHostConfiguration");
+    return this._hubAccess;
+  }
 
   private static _isValid = false;
   /** Returns true if IModelHost is started.  */
