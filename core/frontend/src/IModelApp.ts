@@ -726,7 +726,6 @@ export class IModelApp {
     return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
   }
 
-  
   /**
    * Creates an instance of the ExtensionAdmin
    * and registers an event to execute after startup is complete
