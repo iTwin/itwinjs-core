@@ -5,7 +5,6 @@
   "main": "lib/cjs/components-react.js",
   "module": "lib/esm/components-react.js",
   "typings": "lib/cjs/components-react",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",

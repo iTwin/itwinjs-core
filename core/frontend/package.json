@@ -5,7 +5,6 @@
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
   "typings": "lib/cjs/core-frontend",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs",
