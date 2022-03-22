@@ -86,7 +86,6 @@ jobs:
 
       - task: PublishTestResults@2
         displayName: "Publish Test Results"
-        failOnStderr: true
         inputs:
           testResultsFiles: "ios/junit_results.xml"
           testRunTitle: "Core - Backend Tests - iOS"
