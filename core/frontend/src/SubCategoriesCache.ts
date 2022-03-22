@@ -74,6 +74,10 @@ export class SubCategoriesCache {
     };
   }
 
+  /**
+   * Populates the notLoadedCategoryIds property of the HydrateViewStateRequestProps.
+   * notLoadedCategoryIds is a subset of categoryIds, filtering out any ids which already have an entry in the cache.
+   */
   public preload(options: HydrateViewStateRequestProps, categoryIds: Id64Arg): void {
     let missing: Id64Set | undefined;
     for (const catId of Id64.iterable(categoryIds)) {
@@ -90,9 +94,11 @@ export class SubCategoriesCache {
     options.notLoadedCategoryIds = CompressedId64Set.sortAndCompress(missing);
   }
 
+  /**
+   * Populates the SubCategoriesCache using the categoryIdsResult of the HydrateViewStateResponseProps
+   */
   public postload(options: HydrateViewStateResponseProps, categoryIds: Id64Arg): void {
     // TODO: need missing here how wdo we get it without calculating again?
-    // need missing here.. we could calcualte it again.. but i'd probably prefer to not do that and somehow persist it. not sure what to do here..
     if (options.categoryIdsResult === undefined) return;
     let missing: Id64Set | undefined;
     for (const catId of Id64.iterable(categoryIds)) {

@@ -88,6 +88,7 @@ class SectionAttachmentInfo {
     if (!Id64.isValidId64(this._spatialView))
       return;
     options.spatialViewId = this._spatialView;
+    // TODO: is this necessary?
     options.spatialViewViewStateLoadProps = {
       displayStyle: {
         omitScheduleScriptElementIds: true,

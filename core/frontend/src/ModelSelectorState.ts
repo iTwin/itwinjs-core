@@ -88,6 +88,9 @@ export class ModelSelectorState extends ElementState {
   /** Determine whether this ModelSelectorState includes the specified modelId */
   public containsModel(modelId: Id64String): boolean { return this.has(modelId.toString()); }
 
+  /**
+   * populates notLoadedModelSelectorStateModels of the HydrateViewStateRequestProps using the modelselectorstate's models.
+   */
   public preload(options: HydrateViewStateRequestProps) {
     const notLoaded = this.iModel.models.filterLoaded(this.models);
     if (undefined === notLoaded)

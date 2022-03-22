@@ -150,6 +150,7 @@ export class SpatialViewState extends ViewState3d {
     val.modelSelectorId = this.modelSelector.id;
     return val;
   }
+
   protected override preload(): void {
     super.preload();
     this.modelSelector.preload(this._hydrateRequest);

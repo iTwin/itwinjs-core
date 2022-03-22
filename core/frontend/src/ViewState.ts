@@ -332,7 +332,11 @@ export abstract class ViewState extends ElementState {
       } catch { }
     }
   }
-
+  /**
+   * Populates the hydrateRequest object stored on the ViewState with:
+   *  not loaded categoryIds based off of the ViewStates categorySelector.
+   *  Auxiliary coordinate system id if valid.
+   */
   protected preload(): void {
     const acsId = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValid(acsId)) this._hydrateRequest.acsId = acsId;
@@ -354,7 +358,6 @@ export abstract class ViewState extends ElementState {
     ];
     const result = await Promise.all<any>(promises);
     this._hydrateResponse = result[0];
-    // hmm, probably don't need to save off hydrateResponse anymore.
     await this.postload();
     this._hydrateRequest = {}; // Clear the hydrateRequest for future calls to preload.
   }
