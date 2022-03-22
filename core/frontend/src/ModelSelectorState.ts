@@ -98,6 +98,7 @@ export class ModelSelectorState extends ElementState {
     // No sense in putting all this in the request if they're all already loaded.
     options.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
   }
+
   public async postload(response: HydrateViewStateResponseProps) {
     if (response.modelSelectorStateModels) await this.iModel.models.updateLoadedWithModelProps(response.modelSelectorStateModels);
   }

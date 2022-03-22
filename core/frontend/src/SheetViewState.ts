@@ -177,6 +177,7 @@ class ViewAttachmentsInfo {
       },
     };
   }
+
   public async postload(options: HydrateViewStateResponseProps, iModel: IModelConnection) {
     if (options.sheetViewViews === undefined) return;
     if (options.sheetViewAttachmentProps === undefined) return;
@@ -186,7 +187,8 @@ class ViewAttachmentsInfo {
     for (const viewProps of viewStateProps) {
       const loadView = async () => {
         try {
-          if (viewProps === undefined) return undefined;
+          if (viewProps === undefined)
+            return undefined;
           const view = await iModel.views.convertViewStatePropsToViewState(viewProps);
           return view;
         } catch {

@@ -28,19 +28,23 @@ export interface SectionDrawingViewProps {
   /** Transform from drawing coordinates to spatial coordinates. If undefined, use identity transform. */
   drawingToSpatialTransform?: TransformProps;
 }
+
 export interface DefaultViewState3dProps {
   modelIds: CompressedId64Set;
   modelExtents: Range3dProps;
   categoryIds: CompressedId64Set;
 }
+
 export interface DefaultViewState3dCreatorOptions {
   modelIds?: CompressedId64Set;
 }
+
 export interface SubCategoryResultRow {
   parentId: Id64String;
   id: Id64String;
   appearance: SubCategoryAppearance.Props;
 }
+
 export interface HydrateViewStateRequestProps {
   acsId?: string;
   notLoadedModelSelectorStateModels?: CompressedId64Set;
@@ -62,6 +66,7 @@ export interface HydrateViewStateResponseProps {
   spatialViewProps?: ViewStateProps;
   categoryIdsResult?: SubCategoryResultRow[];
 }
+
 /** Returned from [IModelDb.Views.getViewStateData]($backend).
  * @public
  */

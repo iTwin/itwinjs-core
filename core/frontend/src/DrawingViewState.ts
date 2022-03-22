@@ -87,6 +87,7 @@ class SectionAttachmentInfo {
 
     if (!Id64.isValidId64(this._spatialView))
       return;
+
     options.spatialViewId = this._spatialView;
     // TODO: is this necessary?
     options.spatialViewViewStateLoadProps = {
@@ -96,6 +97,7 @@ class SectionAttachmentInfo {
       },
     };
   }
+
   public async load(iModel: IModelConnection): Promise<void> {
     if (!this.wantDisplayed)
       return;
@@ -110,11 +112,13 @@ class SectionAttachmentInfo {
     if (spatialView instanceof ViewState3d)
       this._spatialView = spatialView;
   }
+
   public async postload(options: HydrateViewStateResponseProps, iModel: IModelConnection): Promise<void> {
     let spatialView;
     if (options.spatialViewProps) {
       spatialView = await iModel.views.convertViewStatePropsToViewState(options.spatialViewProps);
     }
+
     if (spatialView instanceof ViewState3d)
       this._spatialView = spatialView;
   }

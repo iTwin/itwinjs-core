@@ -722,6 +722,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
         // ignore error, we had nothing to do.
       }
     }
+
     /** Given an array of modelProps, find the class for each model and construct it. save it in the iModelConnection's loaded set. */
     public async updateLoadedWithModelProps(modelProps: ModelProps[]): Promise<void> {
       try {
@@ -735,7 +736,6 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       } catch (err) {
         // ignore error, we had nothing to do.
       }
-
     }
 
     /** Remove a model from the set of loaded models. Used internally by BriefcaseConnection in response to txn events.
