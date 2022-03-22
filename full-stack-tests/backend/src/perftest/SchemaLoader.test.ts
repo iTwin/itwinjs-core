@@ -7,9 +7,11 @@ import { Reporter } from "@itwin/perf-tools";
 import { IModelJsFs, IModelJsNative, KnownLocations, StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import * as fs from "fs";
+import { OpenMode } from "@itwin/core-bentley";
 
 describe("SchemaLoaderPerformance", () => {
   let iModelDb: StandaloneDb;
+  let iModelFilepath: string;
   const outDir: string = path.join(KnownTestLocations.outputDir, "SchemaLoaderPerformance");
   const assetDir: string = path.join(__dirname, "..", "..", "..", "assets");
   const reporter = new Reporter();
@@ -28,6 +30,7 @@ describe("SchemaLoaderPerformance", () => {
     const rootSubject = { name: "Performance tests", description: "Performance tests" };
     const snapshotFile: string = IModelTestUtils.prepareOutputFile("Performance", "Performance.bim");
     iModelDb = StandaloneDb.createEmpty(snapshotFile, { rootSubject });
+    iModelFilepath = iModelDb.pathName;
 
     const bisSchemaPaths = getBisSchemaPaths();
 
@@ -38,7 +41,7 @@ describe("SchemaLoaderPerformance", () => {
     }
 
     iModelDb.saveChanges();
-    iModelDb.clearCaches();
+    iModelDb.close();
   });
 
   after(() => {
@@ -114,8 +117,10 @@ describe("SchemaLoaderPerformance", () => {
   }
 
   function timeBisSchemasLoading(schemaName: string) {
+    const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
+
     const startTime: number = new Date().getTime();
-    const schemaResult: IModelJsNative.ErrorStatusOrResult<any, any> = iModelDb.nativeDb.getSchema(schemaName);
+    const schemaResult: IModelJsNative.ErrorStatusOrResult<any, string> = imodel.nativeDb.getSchema(schemaName);
     const endTime: number = new Date().getTime();
 
     if (schemaResult.error !== undefined) {
@@ -128,12 +133,14 @@ describe("SchemaLoaderPerformance", () => {
 
     const elapsedTime = endTime - startTime;
     reporter.addEntry("SchemaLoaderPerfTest", `Get schema from imodel: ${schemaName}`, "Execution time(ms)", elapsedTime, {});
-    iModelDb.clearCaches();
+    imodel.close();
   }
 
   function memoryBisSchemasLoading(schemaName: string) {
+    const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
+
     const beforeMemory: NodeJS.MemoryUsage = process.memoryUsage();
-    const schemaResult: IModelJsNative.ErrorStatusOrResult<any, any> = iModelDb.nativeDb.getSchema(schemaName);
+    const schemaResult: IModelJsNative.ErrorStatusOrResult<any, any> = imodel.nativeDb.getSchema(schemaName);
     const afterMemory: NodeJS.MemoryUsage = process.memoryUsage();
 
     if (schemaResult.error !== undefined) {
@@ -146,7 +153,7 @@ describe("SchemaLoaderPerformance", () => {
 
     const memoryUsed = afterMemory.heapUsed - beforeMemory.heapUsed;
     reporter.addEntry("SchemaLoaderPerfTest", `Get schema from imodel: ${schemaName}`, "Memory used(bytes)", memoryUsed, {});
-    iModelDb.clearCaches();
+    imodel.close();
   }
 
   it("Time BisSchemas data read from imodel", async () => {
