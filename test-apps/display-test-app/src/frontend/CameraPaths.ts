@@ -622,6 +622,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
     if (!view.is3d() || !view.supportsCamera())
       throw new Error("Invalid view for camera path");
 
+    // TODO: Handle global coordinates
     const location = this._viewport.npcToWorld(new Point3d(0.5, 0.5, 1.0));
     const target = this._viewport.npcToWorld(new Point3d(0.5, 0.5, 0.0));
 
@@ -649,9 +650,11 @@ export class CameraPathsMenu extends ToolBarDropDown {
     if (!view.is3d() || !view.supportsCamera())
       throw new Error("Invalid view for camera path");
 
+    // TODO: Handle global coordinates
     if (keyframe.lensAngle !== undefined) {
       const lensAngle = keyframe.lensAngle.clone();
       Camera.validateLensAngle(lensAngle);
+
       // Perspective
       view.lookAt(
         {
