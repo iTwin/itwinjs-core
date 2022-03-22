@@ -32,9 +32,10 @@ const getFrontendConfig = () => {
 
   Object.assign(configuration, getConfig());
 
-  // Overriding the configuration used to require setting environment variables, rebuilding the app, and restarting the app from scratch -
+  // Overriding the configuration generally requires setting environment variables, rebuilding the app, and restarting the app from scratch -
   // and sometimes that doesn't even work.
-  // If you want to quickly adjust aspects of the configuration, add your overrides below and just hot-reload the app in the browser/electron.
+  // If you want to quickly adjust aspects of the configuration on the frontend, you can instead add your overrides below and just hot-reload the app in the browser/electron.
+  // Obviously, don't commit such changes.
   const configurationOverrides: DtaConfiguration = {
     /* For example:
     iModelName: "d:\\bim\\Constructions.bim",
