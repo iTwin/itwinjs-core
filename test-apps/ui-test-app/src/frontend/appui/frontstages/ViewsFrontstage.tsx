@@ -26,8 +26,6 @@ import {
 } from "@itwin/appui-react";
 import { Button, Slider } from "@itwin/itwinui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
-// SVG Support - SvgPath or SvgSprite
-// import { SvgPath } from "@itwin/core-react";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";

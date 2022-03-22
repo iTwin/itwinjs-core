@@ -288,7 +288,7 @@
     },
     {
       "name": "@testing-library/react",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@testing-library/react-hooks",

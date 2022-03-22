@@ -110,7 +110,7 @@ Custom category [renderer specification](./RendererSpecification.md) that allows
 in UI. This specification is used to set up [CategoryDescription.renderer]($presentation-common) for this category and it's up to
 the UI component to make sure appropriate renderer is used to render the category.
 
-See [Custom property category renderers](../Customization/PropertyCategoryRenderers.md) page for information on how custom categories
+See [Custom property category renderers](./PropertyCategoryRenderers.md) page for information on how custom categories
 are handled in our UI components.
 
 ```ts
