@@ -62,7 +62,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
    * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
    * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
    */
-  constructor(protected _providerId: string, public isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
+  constructor(protected _providerId: string, public isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any, provider?: UiItemsProvider) => boolean) { }
 
   public get id(): string { return this._providerId; }
   public onUnregister(): void { }
@@ -83,7 +83,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     let provideToStage = false;
 
     if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
       provideToStage = (stageUsage === StageUsage.General);
     }
@@ -98,7 +98,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     let provideToStage = false;
 
     if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
       provideToStage = (stageUsage === StageUsage.General);
     }
@@ -115,7 +115,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     let provideToStage = false;
 
     if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
       provideToStage = (stageUsage === StageUsage.General);
     }

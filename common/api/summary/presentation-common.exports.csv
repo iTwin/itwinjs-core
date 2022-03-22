@@ -130,7 +130,6 @@ public;FilterByTextHierarchyRequestOptions
 public;FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
-internal;getLocalesDirectory: (assetsDirectory: string) => string
 public;GroupingNodeKey 
 public;GroupingNodeKeyJSON 
 public;GroupingRule 
