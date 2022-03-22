@@ -428,15 +428,15 @@ export class SheetViewState extends ViewState2d {
     return this._viewedExtents;
   }
 
-  protected override preload(): void {
-    super.preload();
-    this._attachmentsInfo.preload(this._hydrateRequest);
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    super.preload(hydrateRequest);
+    this._attachmentsInfo.preload(hydrateRequest);
   }
 
-  protected override async postload(): Promise<void> {
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     const promises = [];
-    promises.push(super.postload());
-    promises.push(this._attachmentsInfo.postload(this._hydrateResponse, this.iModel));
+    promises.push(super.postload(hydrateResponse));
+    promises.push(this._attachmentsInfo.postload(hydrateResponse, this.iModel));
     await Promise.all(promises);
   }
 

@@ -8,7 +8,7 @@
 
 import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
-import { AxisAlignedBox3d, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
+import { AxisAlignedBox3d, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -151,15 +151,15 @@ export class SpatialViewState extends ViewState3d {
     return val;
   }
 
-  protected override preload(): void {
-    super.preload();
-    this.modelSelector.preload(this._hydrateRequest);
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    super.preload(hydrateRequest);
+    this.modelSelector.preload(hydrateRequest);
   }
 
-  protected override async postload(): Promise<void> {
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     const promises = [];
-    promises.push(super.postload());
-    promises.push(this.modelSelector.postload(this._hydrateResponse));
+    promises.push(super.postload(hydrateResponse));
+    promises.push(this.modelSelector.postload(hydrateResponse));
     await Promise.all(promises);
   }
 

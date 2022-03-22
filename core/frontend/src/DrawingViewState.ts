@@ -398,16 +398,16 @@ export class DrawingViewState extends ViewState2d {
     return { spatialView, displaySpatialView, drawingToSpatialTransform };
   }
 
-  protected override preload(): void {
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     assert(!this.isAttachedToViewport);
-    super.preload();
-    this._attachmentInfo.preload(this._hydrateRequest);
+    super.preload(hydrateRequest);
+    this._attachmentInfo.preload(hydrateRequest);
   }
 
-  protected override async postload(): Promise<void> {
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     const promises = [];
-    promises.push(super.postload());
-    promises.push(this._attachmentInfo.postload(this._hydrateResponse, this.iModel));
+    promises.push(super.postload(hydrateResponse));
+    promises.push(this._attachmentInfo.postload(hydrateResponse, this.iModel));
     await Promise.all(promises);
   }
 
