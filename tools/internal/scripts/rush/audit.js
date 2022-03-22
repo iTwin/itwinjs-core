@@ -48,6 +48,7 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
     "GHSA-rqff-837h-mm52", // https://github.com/advisories/GHSA-rqff-837h-mm52.
     "GHSA-x4jg-mjrx-434g", // https://github.com/advisories/GHSA-x4jg-mjrx-434g.
     "GHSA-cfm4-qjh2-4765", // https://github.com/advisories/GHSA-cfm4-qjh2-4765.
+    "GHSA-5w9c-rv96-fr7g", // https://github.com/advisories/GHSA-5w9c-rv96-fr7g.
   ];
 
   let shouldFailBuild = false;
