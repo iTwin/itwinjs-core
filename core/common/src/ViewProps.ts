@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { CompressedId64Set, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps } from "./DisplayStyleSettings";

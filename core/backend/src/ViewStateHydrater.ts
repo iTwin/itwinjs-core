@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CompressedId64Set, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelError, IModelStatus, ModelProps, QueryRowFormat, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
-import { Range3d } from "@itwin/core-geometry";
+import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, QueryRowFormat, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 
 export class ViewStateHydrater {
@@ -94,7 +93,7 @@ export class ViewStateHydrater {
     for (const attachment of attachmentProps) {
       const loadView = async () => {
         try {
-          const view = await this._imodel.views.getViewStateData(attachment.view.id, viewStateLoadProps);
+          const view = this._imodel.views.getViewStateData(attachment.view.id, viewStateLoadProps);
           return view;
         } catch {
           return undefined;

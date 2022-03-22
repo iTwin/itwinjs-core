@@ -43,7 +43,6 @@ import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
-import { options } from "superagent";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -332,6 +331,7 @@ export abstract class ViewState extends ElementState {
       } catch { }
     }
   }
+
   /**
    * Populates the hydrateRequest object stored on the ViewState with:
    *  not loaded categoryIds based off of the ViewStates categorySelector.
