@@ -41,10 +41,19 @@ function getConfig(env) {
     },
     target: "node",
     devtool: "source-map",
+    resolve: { mainFields: ["main", "module"] },
     module: {
       rules: [
         {
           test: /AzCopyFileHandler\.js/g,
+          use: 'null-loader'
+        },
+        {
+          test: /keytar/g,
+          use: 'null-loader'
+        },
+        {
+          test: /electron/g,
           use: 'null-loader'
         }
       ]
@@ -52,13 +61,9 @@ function getConfig(env) {
     stats: {
       warnings: false
     },
-    externals: {
-      "electron": "electron",
-    },
     plugins: [
       new plugins.CopyAppAssetsPlugin("./assets/"),
       new plugins.CopyBentleyStaticResourcesPlugin(["assets"]),
-      new webpack.DefinePlugin({ "global.GENTLY": false, "process.version": "'v10.9.0'" })
     ],
   };
 

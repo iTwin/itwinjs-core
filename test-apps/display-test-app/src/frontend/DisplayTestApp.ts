@@ -22,14 +22,11 @@ const getFrontendConfig = () => {
       const urlParams = new URLSearchParams(window.location.hash);
       urlParams.forEach((val, key) => {
         (configuration as any)[key] = val;
-        Object.assign(configuration, { iModelName: urlParams.get("iModelName") });
       });
     }
-    const newConfigurationInfo = JSON.parse(window.localStorage.getItem("imodeljs:env")!);
-    Object.assign(configuration, newConfigurationInfo);
+  } else {
+    Object.assign(configuration, getConfig());
   }
-
-  Object.assign(configuration, getConfig());
   console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
 };
 
