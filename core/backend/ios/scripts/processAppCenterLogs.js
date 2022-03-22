@@ -14,7 +14,7 @@ const owner_name = process.argv[2]; // app_center_owner;
 const app_name = process.argv[3];   // app_center_app;
 const api_token = process.argv[4];  // app_center_token;
 
-const test_id = require("../run_output.json")[0].testRunId; // TODO: Pass path to test results.
+const test_id = require("../run_output.json")[0].testRunId; // TODO: Pass test results path
 
 const xmlFilter = "[Mocha_Result_XML]: ";
 const deviceLogsPath = "ios/device_logs.txt"
@@ -87,6 +87,7 @@ function extractXML(xmlFilter, inputLogFile, outputXmlFile) {
     if (line.includes(xmlFilter)) {
       let xmlLine = line.substring(line.indexOf(xmlFilter) + xmlFilter.length);
       outputStream.write(xmlLine + "\n", "utf-8");
+      console.log(xmlLine)
     }
   });
 }

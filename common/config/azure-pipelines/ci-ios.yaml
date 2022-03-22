@@ -76,7 +76,7 @@ jobs:
         workingDirectory: core/backend/ios/core-test-runner
         failOnStderr: true
         displayName: 'Run App Center tests'
-        condition: succeededOrFailed()
+        condition: succeeded()
 
       - script: node ./ios/scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)"
         workingDirectory: core/backend
