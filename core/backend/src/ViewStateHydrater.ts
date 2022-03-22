@@ -11,6 +11,7 @@ export class ViewStateHydrater {
   public constructor(iModel: IModelDb) {
     this._imodel = iModel;
   }
+
   public async getHydrateResponseProps(options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
     const response: HydrateViewStateResponseProps = {};
     const promises = [];
@@ -29,6 +30,7 @@ export class ViewStateHydrater {
     await Promise.all(promises);
     return response;
   }
+
   private async handleBaseModelId(response: HydrateViewStateResponseProps, baseModelId: Id64String) {
     let modelProps;
     try {
@@ -38,6 +40,7 @@ export class ViewStateHydrater {
     response.baseModelProps = modelProps;
 
   }
+
   private async handleModelSelectorStateModels(response: HydrateViewStateResponseProps, models: CompressedId64Set) {
     const decompressedModelIds = CompressedId64Set.decompressSet(models);
 
@@ -53,9 +56,11 @@ export class ViewStateHydrater {
     }
     response.modelSelectorStateModels = modelJsonArray;
   }
+
   private async handleSpatialViewId(response: HydrateViewStateResponseProps, spatialViewId: Id64String, viewStateLoadProps?: ViewStateLoadProps) {
     response.spatialViewProps = this._imodel.views.getViewStateData(spatialViewId, viewStateLoadProps);
   }
+
   private async handleCategoryIds(response: HydrateViewStateResponseProps, categoryIds: CompressedId64Set) {
     // consider splitting up categoryIds, as queries get slow with many many categoryids in them.
     const maxCategoriesPerQuery = 200;
@@ -77,12 +82,14 @@ export class ViewStateHydrater {
     }
     response.categoryIdsResult = result;
   }
+
   private async handleAcsId(response: HydrateViewStateResponseProps, acsId: string) {
     try {
       const props = this._imodel.elements.getElementProps(acsId);
       response.acsElementProps = props;
     } catch { }
   }
+
   private async handleSheetViewAttachmentIds(response: HydrateViewStateResponseProps, sheetViewAttachmentIds: CompressedId64Set, viewStateLoadProps?: ViewStateLoadProps) {
     const decompressedIds = CompressedId64Set.decompressSet(sheetViewAttachmentIds);
     const attachmentProps: ViewAttachmentProps[] = [];
@@ -114,4 +121,5 @@ export class ViewStateHydrater {
 
     return;
   }
+
 }
