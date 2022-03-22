@@ -733,7 +733,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
           }
         }
       } catch (err) {
-        // ignore error, we had nothing to do?
+        // ignore error, we had nothing to do.
       }
 
     }

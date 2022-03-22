@@ -349,8 +349,8 @@ export abstract class ViewState extends ElementState {
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
-    // Clear the hydrateResponse if there was one already.
     this.preload();
+    // Clear the hydrateResponse if there was one already so it does not clash with the upcoming call to hydrate.
     this._hydrateResponse = {};
     const promises = [
       IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), this._hydrateRequest),

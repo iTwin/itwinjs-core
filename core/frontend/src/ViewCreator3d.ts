@@ -73,9 +73,7 @@ export class ViewCreator3d {
 
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
-      // await viewstate.preload()?
-      await viewState.load(); // maybe only the superclass has a .load which fires off the rpc call?
-      // await viewState.postload()?
+      await viewState.load();
     } catch {
     }
 
