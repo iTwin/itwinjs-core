@@ -15,7 +15,9 @@ class CoreTestRunnerXCUITest: XCTestCase {
         app.launch()
 
         let finishedText = app.staticTexts["Tests finished."]
+        let noTestsFailed = app.staticTexts["0 tests failed."]
         XCTAssert(finishedText.waitForExistence(timeout: 60 * 20)) // 20 minutes
+        XCTAssert(noTestsFailed.exists)
 
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = "Tests Finished Screen"
