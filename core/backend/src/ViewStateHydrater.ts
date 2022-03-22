@@ -36,9 +36,9 @@ export class ViewStateHydrater {
     try {
       modelProps = this._imodel.models.getModelJson({ id: baseModelId });
     } catch (err) {
+
     }
     response.baseModelProps = modelProps;
-
   }
 
   private async handleModelSelectorStateModels(response: HydrateViewStateResponseProps, models: CompressedId64Set) {
@@ -54,6 +54,7 @@ export class ViewStateHydrater {
           throw error; // if they're asking for more than one model, don't throw on error.
       }
     }
+
     response.modelSelectorStateModels = modelJsonArray;
   }
 
