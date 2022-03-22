@@ -1,0 +1,110 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import { CompressedId64Set, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelError, IModelStatus, ModelProps, QueryRowFormat, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
+import { IModelDb } from "./IModelDb";
+
+export class ViewStateHydrater {
+  private _imodel: IModelDb;
+  public constructor(iModel: IModelDb) {
+    this._imodel = iModel;
+  }
+  public getHydrateResponseProps(options: HydrateViewStateRequestProps) {
+    const response: HydrateViewStateResponseProps = {};
+    if (options.acsId) this.handleAcsId(response, options.acsId);
+    if (options.sheetViewAttachmentIds) this.handleSheetViewAttachmentIds(response, options.sheetViewAttachmentIds, options.sheetViewViewStateLoadProps);
+    if (options.notLoadedCategoryIds) this.handleCategoryIds(response, options.notLoadedCategoryIds);
+    if (options.spatialViewId) this.handleSpatialViewId(response, options.spatialViewId, options.spatialViewViewStateLoadProps);
+    if (options.notLoadedModelSelectorStateModels) this.handleModelSelectorStateModels(response, options.notLoadedModelSelectorStateModels);
+    if (options.baseModelId) this.handleBaseModelId(response, options.baseModelId);
+    return response;
+  }
+  private async handleBaseModelId(response: HydrateViewStateResponseProps, baseModelId: Id64String) {
+    let modelProps;
+    try {
+      modelProps = this._imodel.models.getModelJson({ id: baseModelId });
+    } catch (err) {
+    }
+    response.baseModelProps = modelProps;
+
+  }
+  private async handleModelSelectorStateModels(response: HydrateViewStateResponseProps, models: CompressedId64Set) {
+    const decompressedModelIds = CompressedId64Set.decompressSet(models);
+
+    const modelJsonArray: ModelProps[] = [];
+    for (const id of decompressedModelIds) {
+      try {
+        const modelProps = this._imodel.models.getModelJson({ id });
+        modelJsonArray.push(modelProps);
+      } catch (error) {
+        if (decompressedModelIds.size === 1)
+          throw error; // if they're asking for more than one model, don't throw on error.
+      }
+    }
+    response.modelSelectorStateModels = modelJsonArray;
+  }
+  private async handleSpatialViewId(response: HydrateViewStateResponseProps, spatialViewId: Id64String, viewStateLoadProps?: ViewStateLoadProps) {
+    response.spatialViewProps = await this._imodel.views.getViewStateData(spatialViewId, viewStateLoadProps);
+  }
+  private async handleCategoryIds(response: HydrateViewStateResponseProps, categoryIds: CompressedId64Set) {
+    // consider splitting up categoryIds, as queries get slow with many many categoryids in them.
+    const maxCategoriesPerQuery = 200;
+    const decompressedIds = CompressedId64Set.decompressArray(categoryIds);
+    const result = [];
+    while (decompressedIds.length !== 0) {
+      const end = (decompressedIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : decompressedIds.length;
+      const where = decompressedIds.splice(0, end).join(",");
+      const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
+      try {
+        for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+          result.push(row as SubCategoryResultRow);
+        }
+      } catch {
+        // ###TODO: detect cases in which retry is warranted
+        // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
+        // incomplete results. Since we're not retrying, that's the best we can do.
+      }
+    }
+    response.categoryIdsResult = result;
+  }
+  private async handleAcsId(response: HydrateViewStateResponseProps, acsId: string) {
+      try {
+        const props = this._imodel.elements.getElementProps(acsId);
+        response.acsElementProps = props;
+      } catch { }
+  }
+  private async handleSheetViewAttachmentIds(response: HydrateViewStateResponseProps, sheetViewAttachmentIds: CompressedId64Set, viewStateLoadProps?: ViewStateLoadProps) {
+    const decompressedIds = CompressedId64Set.decompressSet(sheetViewAttachmentIds);
+    const attachmentProps: ViewAttachmentProps[] = [];
+    for (const id of decompressedIds) {
+      try {
+        attachmentProps.push(this._imodel.elements.getElementJson({ id }) as ViewAttachmentProps);
+      } catch (error) { // TODO: should we really throw an error? or just let it be empty?
+        if (decompressedIds.size === 1)
+          throw error; // if they're asking for more than one element, don't throw on error.
+      }
+    }
+
+    const promises = [];
+    for (const attachment of attachmentProps) {
+      const loadView = async () => {
+        try {
+          const view = await this._imodel.views.getViewStateData(attachment.view.id, viewStateLoadProps);
+          return view;
+        } catch {
+          return undefined;
+        }
+      };
+
+      promises.push(loadView());
+    }
+    const views = await Promise.all(promises);
+    response.sheetViewViews = views;
+    response.sheetViewAttachmentProps = attachmentProps;
+
+    return;
+  }
+}

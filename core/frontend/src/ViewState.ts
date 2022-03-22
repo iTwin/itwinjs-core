@@ -14,6 +14,7 @@ import {
 } from "@itwin/core-geometry";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
+  HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelReadRpcInterface,
   ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
   ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
@@ -42,6 +43,7 @@ import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
+import { options } from "superagent";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -189,6 +191,8 @@ export abstract class ViewState extends ElementState {
   private _categorySelector: CategorySelectorState;
   private _displayStyle: DisplayStyleState;
   private readonly _unregisterCategorySelectorListeners: VoidFunction[] = [];
+  protected _hydrateRequest: HydrateViewStateRequestProps = {};
+  protected _hydrateResponse: HydrateViewStateResponseProps = {};
 
   /** An event raised when the set of categories viewed by this view changes, *only* if the view is attached to a [[Viewport]]. */
   public readonly onViewedCategoriesChanged = new BeEvent<() => void>();
@@ -329,21 +333,36 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  protected preload(): void {
+    const acsId = this.getAuxiliaryCoordinateSystemId();
+    if (Id64.isValid(acsId)) this._hydrateRequest.acsId = acsId;
+    this.iModel.subcategories.preload(this._hydrateRequest, this.categorySelector.categories);
+  }
+
   /** Asynchronously load any required data for this ViewState from the backend.
+   * FINAL, No subclass should override load. If additional load behavior is needed, see preload and postload.
    * @note callers should await the Promise returned by this method before using this ViewState.
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
+    // Clear the hydrateResponse if there was one already.
+    this.preload();
+    this._hydrateResponse = {};
     const promises = [
-      this.loadAcs(),
+      IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), this._hydrateRequest),
       this.displayStyle.load(),
     ];
+    const result = await Promise.all<any>(promises);
+    this._hydrateResponse = result[0];
+    // hmm, probably don't need to save off hydrateResponse anymore.
+    await this.postload();
+    this._hydrateRequest = {}; // Clear the hydrateRequest for future calls to preload.
+  }
 
-    const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
-    if (undefined !== subcategories)
-      promises.push(subcategories.promise.then((_) => { }));
-
-    await Promise.all(promises);
+  protected async postload(): Promise<void> {
+    this.iModel.subcategories.postload(this._hydrateResponse, this.categorySelector.categories);
+    if (this._hydrateResponse.acsElementProps)
+      this._auxCoordSystem = AuxCoordSystemState.fromProps(this._hydrateResponse.acsElementProps, this.iModel);
   }
 
   /** Returns true if all [[TileTree]]s required by this view have been loaded.
@@ -2243,11 +2262,26 @@ export abstract class ViewState2d extends ViewState {
   public computeFitRange(): Range3d {
     return this.getViewedExtents();
   }
-
-  public override async load(): Promise<void> {
-    await super.load();
-    return this.iModel.models.load(this.baseModelId);
+  protected override preload(): void {
+    super.preload();
+    const notLoaded = this.iModel.models.filterLoaded(this.baseModelId);
+    if (undefined === notLoaded)
+      return; // all requested models are already loaded
+    this._hydrateRequest.baseModelId = this.baseModelId;
   }
+  protected override async postload(): Promise<void> {
+    if (this._hydrateResponse.baseModelProps === undefined) return;
+    await this.iModel.models.updateLoadedWithModelProps([this._hydrateResponse.baseModelProps]);
+  }
+
+  // Don't think this load is necessary
+  // public override async load(): Promise<void> {
+  //   // this.preload();
+  //   await super.load();
+  //   return this.postload();
+  //   // return this.iModel.models.load(this.baseModelId);
+  //   // Is this load function even necessary?
+  // }
 
   /** Provides access to optional detail settings for this view. */
   public get details(): ViewDetails {

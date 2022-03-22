@@ -8,7 +8,7 @@
 
 import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Frustum, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+  AxisAlignedBox3d, Frustum, HydrateViewStateRequestProps, HydrateViewStateResponseProps, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@itwin/core-common";
 import { Constant, Range3d, Transform, TransformProps, Vector3d } from "@itwin/core-geometry";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -78,6 +78,23 @@ class SectionAttachmentInfo {
     return new SectionAttachmentInfo(this._spatialView, this._drawingToSpatialTransform, this._displaySpatialView);
   }
 
+  public preload(options: HydrateViewStateRequestProps): void {
+    if (!this.wantDisplayed)
+      return;
+
+    if (this._spatialView instanceof ViewState3d)
+      return;
+
+    if (!Id64.isValidId64(this._spatialView))
+      return;
+    options.spatialViewId = this._spatialView;
+    options.spatialViewViewStateLoadProps = {
+      displayStyle: {
+        omitScheduleScriptElementIds: true,
+        compressExcludedElementIds: true,
+      },
+    };
+  }
   public async load(iModel: IModelConnection): Promise<void> {
     if (!this.wantDisplayed)
       return;
@@ -89,6 +106,14 @@ class SectionAttachmentInfo {
       return;
 
     const spatialView = await iModel.views.load(this._spatialView);
+    if (spatialView instanceof ViewState3d)
+      this._spatialView = spatialView;
+  }
+  public async postload(options: HydrateViewStateResponseProps, iModel: IModelConnection): Promise<void> {
+    let spatialView;
+    if (options.spatialViewProps) {
+      spatialView = await iModel.views.convertViewStatePropsToViewState(options.spatialViewProps);
+    }
     if (spatialView instanceof ViewState3d)
       this._spatialView = spatialView;
   }
@@ -372,12 +397,17 @@ export class DrawingViewState extends ViewState2d {
     return { spatialView, displaySpatialView, drawingToSpatialTransform };
   }
 
-  /** @internal */
-  public override async load(): Promise<void> {
+  protected override preload(): void {
     assert(!this.isAttachedToViewport);
+    super.preload();
+    this._attachmentInfo.preload(this._hydrateRequest);
+  }
 
-    await super.load();
-    await this._attachmentInfo.load(this.iModel);
+  protected override async postload(): Promise<void> {
+    const promises = [];
+    promises.push(super.postload());
+    promises.push(this._attachmentInfo.postload(this._hydrateResponse, this.iModel));
+    await Promise.all(promises);
   }
 
   public static override createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {

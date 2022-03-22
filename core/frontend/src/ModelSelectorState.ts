@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
-import { ModelSelectorProps } from "@itwin/core-common";
+import { CompressedId64Set, Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
+import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelSelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 
@@ -87,6 +87,17 @@ export class ModelSelectorState extends ElementState {
 
   /** Determine whether this ModelSelectorState includes the specified modelId */
   public containsModel(modelId: Id64String): boolean { return this.has(modelId.toString()); }
+
+  public preload(options: HydrateViewStateRequestProps) {
+    const notLoaded = this.iModel.models.filterLoaded(this.models);
+    if (undefined === notLoaded)
+      return; // all requested models are already loaded
+    // No sense in putting all this in the request if they're all already loaded.
+    options.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
+  }
+  public async postload(response: HydrateViewStateResponseProps) {
+    if (response.modelSelectorStateModels) await this.iModel.models.updateLoadedWithModelProps(response.modelSelectorStateModels);
+  }
 
   /** Make sure all models referenced by this ModelSelectorState are loaded. */
   public async load(): Promise<void> {

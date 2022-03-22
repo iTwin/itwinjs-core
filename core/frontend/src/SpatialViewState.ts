@@ -150,10 +150,18 @@ export class SpatialViewState extends ViewState3d {
     val.modelSelectorId = this.modelSelector.id;
     return val;
   }
-  public override async load(): Promise<void> {
-    await super.load();
-    return this.modelSelector.load();
+  protected override preload(): void {
+    super.preload();
+    this.modelSelector.preload(this._hydrateRequest);
   }
+
+  protected override async postload(): Promise<void> {
+    const promises = [];
+    promises.push(super.postload());
+    promises.push(this.modelSelector.postload(this._hydrateResponse));
+    await Promise.all(promises);
+  }
+
   public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
   public clearViewedModels() { this.modelSelector.models.clear(); }
   public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }

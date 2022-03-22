@@ -9,8 +9,8 @@
 import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, DefaultViewState3dCreatorOptions, DefaultViewState3dProps, ElementLoadOptions, ElementLoadProps,
-  ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps,
-  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel,
+  ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  GeometryContainmentResponseProps, GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel,
   IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps,
   IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps,
   SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
@@ -24,6 +24,7 @@ import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { DefaultViewState3dCreator } from "../DefaultViewState3dCreator";
+import { ViewStateHydrater } from "../ViewStateHydrater";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -40,6 +41,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const viewCreator = new DefaultViewState3dCreator(iModelDb);
     return viewCreator.getDefaultViewState3dData(options);
+  }
+
+  public async hydrateViewState(tokenProps: IModelRpcProps, options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    const viewHydrater = new ViewStateHydrater(iModelDb);
+    return viewHydrater.getHydrateResponseProps(options);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {

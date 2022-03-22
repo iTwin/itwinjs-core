@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
-import { QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
+import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
+import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, QueryRowFormat, SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
@@ -74,6 +74,39 @@ export class SubCategoriesCache {
     };
   }
 
+  public preload(options: HydrateViewStateRequestProps, categoryIds: Id64Arg): void {
+    let missing: Id64Set | undefined;
+    for (const catId of Id64.iterable(categoryIds)) {
+      if (undefined === this._byCategoryId.get(catId)) {
+        if (undefined === missing)
+          missing = new Set<string>();
+
+        missing.add(catId);
+      }
+    }
+
+    if (undefined === missing)
+      return;
+    options.notLoadedCategoryIds = CompressedId64Set.sortAndCompress(missing);
+  }
+
+  public postload(options: HydrateViewStateResponseProps, categoryIds: Id64Arg): void {
+    // TODO: need missing here how wdo we get it without calculating again?
+    // need missing here.. we could calcualte it again.. but i'd probably prefer to not do that and somehow persist it. not sure what to do here..
+    if (options.categoryIdsResult === undefined) return;
+    let missing: Id64Set | undefined;
+    for (const catId of Id64.iterable(categoryIds)) {
+      if (undefined === this._byCategoryId.get(catId)) {
+        if (undefined === missing)
+          missing = new Set<string>();
+
+        missing.add(catId);
+      }
+    }
+    // Missing shouldn't be undefined here since we had categoryIdsResult. But we should still use the old missing..?
+    this.processResults(options.categoryIdsResult, missing!);
+  }
+
   public clear(): void {
     this._byCategoryId.clear();
     this._appearances.clear();
@@ -115,13 +148,8 @@ export class SubCategoriesCache {
  * @internal
  */
 export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
-  export interface ResultRow {
-    parentId: Id64String;
-    id: Id64String;
-    appearance: SubCategoryAppearance.Props;
-  }
 
-  export type Result = ResultRow[];
+  export type Result = SubCategoryResultRow[];
 
   export class Request {
     private readonly _imodel: IModelConnection;
@@ -152,7 +180,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
       try {
         const ecsql = this._ecsql[this._curECSqlIndex];
         for await (const row of this._imodel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-          this._result.push(row as ResultRow);
+          this._result.push(row as SubCategoryResultRow);
           if (this.wasCanceled)
             return undefined;
         }

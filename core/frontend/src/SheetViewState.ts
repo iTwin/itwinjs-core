@@ -6,10 +6,10 @@
  * @module Views
  */
 
-import { assert, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, SheetProps,
+  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, HydrateViewStateRequestProps, HydrateViewStateResponseProps, PackedFeatureTable, Placement2d, SheetProps,
   TextureTransparency, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@itwin/core-common";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -165,6 +165,51 @@ class ViewAttachmentsInfo {
   public clone(): ViewAttachmentsInfo {
     // No reason to clone the array.
     return new ViewAttachmentsInfo(this._attachments);
+  }
+
+  public preload(options: HydrateViewStateRequestProps) {
+    if (this.isLoaded) return;
+    options.sheetViewAttachmentIds = CompressedId64Set.sortAndCompress(this._ids);
+    options.sheetViewViewStateLoadProps = {
+      displayStyle: {
+        omitScheduleScriptElementIds: true,
+        compressExcludedElementIds: true,
+      },
+    };
+  }
+  public async postload(options: HydrateViewStateResponseProps, iModel: IModelConnection) {
+    if (options.sheetViewViews === undefined) return;
+    if (options.sheetViewAttachmentProps === undefined) return;
+
+    const viewStateProps = options.sheetViewViews; // This is viewstateProps, need to turn this into ViewState
+    const promises = [];
+    for (const viewProps of viewStateProps) {
+      const loadView = async () => {
+        try {
+          if (viewProps === undefined) return undefined;
+          const view = await iModel.views.convertViewStatePropsToViewState(viewProps);
+          return view;
+        } catch {
+          return undefined;
+        }
+      };
+      promises.push(loadView());
+    }
+    const views = await Promise.all(promises);
+
+    const attachmentProps = options.sheetViewAttachmentProps as ViewAttachmentInfo[];
+    assert (views.length === attachmentProps.length);
+    const attachments = [];
+    for (let i = 0; i < views.length; i++) {
+      const view = views[i];
+      if (view && !(view instanceof SheetViewState)) {
+        const props = attachmentProps[i];
+        props.attachedView = view;
+        attachments.push(props);
+      }
+    }
+
+    this._attachments = attachments;
   }
 
   public async load(iModel: IModelConnection): Promise<void> {
@@ -383,12 +428,16 @@ export class SheetViewState extends ViewState2d {
     return this._viewedExtents;
   }
 
-  /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics.
-   * @internal override
-   */
-  public override async load(): Promise<void> {
-    await super.load();
-    await this._attachmentsInfo.load(this.iModel);
+  protected override preload(): void {
+    super.preload();
+    this._attachmentsInfo.preload(this._hydrateRequest);
+  }
+
+  protected override async postload(): Promise<void> {
+    const promises = [];
+    promises.push(super.postload());
+    promises.push(this._attachmentsInfo.postload(this._hydrateResponse, this.iModel));
+    await Promise.all(promises);
   }
 
   /** @internal */
