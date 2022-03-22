@@ -159,8 +159,9 @@ export class WidgetDef {
       return this._state;
 
     const frontstageDef = FrontstageManager.activeFrontstageDef;
-    if (frontstageDef?.findWidgetDef(this.id)) {
+    if (frontstageDef && frontstageDef.findWidgetDef(this.id)) {
       const currentState = frontstageDef.getWidgetCurrentState(this);
+      // istanbul ignore else
       if (undefined !== currentState)
         return currentState;
     }
@@ -240,6 +241,7 @@ export class WidgetDef {
 
     if (widgetProps.defaultState !== undefined) {
       me._defaultState = widgetProps.defaultState;
+      // istanbul ignore next
       if ("1" === UiFramework.uiVersion)
         me._state = widgetProps.defaultState === WidgetState.Floating ? WidgetState.Open : widgetProps.defaultState;
     }

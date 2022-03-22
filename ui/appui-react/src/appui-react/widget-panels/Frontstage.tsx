@@ -472,17 +472,12 @@ export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): Widget
 }
 
 /** @internal */
-function getNextAvailablePanelWidgetId(panel: PanelState) {
-  const index = panel.widgets.length;
-  return getWidgetId(panel.side, panelZoneKeys[index]);
-}
-
-/** @internal */
 export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[] {
   switch (panelZone) {
     case "leftStart": {
       const outArray = [...frontstageDef.centerLeft?.widgetDefs || []];
       frontstageDef.leftPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
@@ -491,10 +486,12 @@ export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: Wid
     case "leftEnd": {
       const outArray = [...frontstageDef.bottomLeft?.widgetDefs || []];
       frontstageDef.leftPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
-        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+                // istanbul ignore else
+if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       frontstageDef.leftPanel?.panelWidgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
@@ -503,6 +500,7 @@ export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: Wid
     case "rightStart": {
       const outArray = [...frontstageDef.centerRight?.widgetDefs || []];
       frontstageDef.rightPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
@@ -511,10 +509,12 @@ export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: Wid
     case "rightEnd": {
       const outArray = [...frontstageDef.bottomRight?.widgetDefs || []];
       frontstageDef.rightPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+          // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       frontstageDef.rightPanel?.panelWidgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
@@ -523,6 +523,7 @@ export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: Wid
     case "topStart": {
       const outArray = [...frontstageDef.topPanel?.panelWidgetDefs || []];
       frontstageDef.topPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
@@ -531,6 +532,7 @@ export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: Wid
     case "topEnd": {
       const outArray = [...frontstageDef.topMostPanel?.panelWidgetDefs || []]; // eslint-disable-line deprecation/deprecation
       frontstageDef.topPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+          // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
@@ -539,6 +541,7 @@ export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: Wid
     case "bottomStart": {
       const outArray = [...frontstageDef.bottomPanel?.panelWidgetDefs || []];
       frontstageDef.bottomPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
@@ -547,6 +550,7 @@ export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: Wid
     case "bottomEnd": {
       const outArray = [...frontstageDef.bottomMostPanel?.panelWidgetDefs || []]; // eslint-disable-line deprecation/deprecation
       frontstageDef.bottomPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
@@ -699,9 +703,9 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
 
     // remove center panel section if one is found in left or right panels
     const oldLeftMiddleIndex = saved.panels.left.widgets.findIndex((value) => value === "leftMiddle");
+    // istanbul ignore next
     if (-1 !== oldLeftMiddleIndex) {
       draft.panels.left.widgets = saved.panels.left.widgets.filter((value) => value !== "leftMiddle");
-
       if ("leftEnd" in draft.widgets) {
         draft.widgets.leftMiddle.tabs.forEach((tab)=>draft.widgets.leftEnd.tabs.push(tab));
       } else {
@@ -711,9 +715,9 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
     }
 
     const oldRightMiddleIndex = saved.panels.right.widgets.findIndex((value) => value === "rightMiddle");
+    // istanbul ignore next
     if (-1 !== oldRightMiddleIndex) {
       draft.panels.right.widgets = saved.panels.right.widgets.filter((value) => value !== "rightMiddle");
-
       if ("rightEnd" in draft.widgets) {
         draft.widgets.rightMiddle.tabs.forEach((tab)=>draft.widgets.rightEnd.tabs.push(tab));
       } else {

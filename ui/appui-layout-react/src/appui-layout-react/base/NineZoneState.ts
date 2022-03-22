@@ -593,6 +593,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         };
 
         let insertIndex = destinationWidgetContainerName.endsWith("End") ? 1 : 0;
+        // istanbul ignore next
         if (0 === panel.widgets.length)
           insertIndex = 0;
         panel.widgets.splice(insertIndex, 0, destinationWidgetContainerName);
@@ -631,6 +632,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         };
 
         let insertIndex = widgetPanelSectionId.endsWith("End") ? 1 : 0;
+        // istanbul ignore next
         if (0 === panel.widgets.length)
           insertIndex = 0;
         panel.widgets.splice(insertIndex, 0, widgetPanelSectionId);
@@ -656,12 +658,12 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         widget.minimized = false;
         return;
       }
-
       return;
     }
 
     case "WIDGET_TAB_DOUBLE_CLICK": {
       const widget = state.widgets[action.widgetId];
+      // istanbul ignore else
       if (action.floatingWidgetId !== undefined) {
         const active = action.id === widget.activeTabId;
         if (!active) {
@@ -723,19 +725,27 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         };
       } else if (isTabTargetWidgetState(target)) {
         const newWidgetPanelId = `${target.side}${0 === target.widgetIndex ? "Start" : "End"}`;
-        state.panels[target.side].widgets.splice(target.widgetIndex, 0, newWidgetPanelId);
-        state.widgets[newWidgetPanelId] = {
-          activeTabId: action.id,
-          id: newWidgetPanelId,
-          minimized: false,
-          tabs: [action.id],
-        };
+        const section = state.panels[target.side].widgets.find((sectionId) => sectionId === newWidgetPanelId);
+        // Add WidgetTab to existing  WidgetSection
+        if (section) {
+          state.widgets[newWidgetPanelId].tabs.push(action.id)
+        } else {
+          // insert new panel section and add widget tab
+          const index = !state.panels[target.side].widgets.length ? /* istanbul ignore next */ 0 : target.widgetIndex;
+          state.panels[target.side].widgets.splice(index, 0, newWidgetPanelId);
+          state.widgets[newWidgetPanelId] = {
+            activeTabId: action.id,
+            id: newWidgetPanelId,
+            minimized: false,
+            tabs: [action.id],
+          };
+        }
       } else {
         const tab = state.tabs[state.draggedTab.tabId];
         const nzBounds = Rectangle.createFromSize(state.size);
         const bounds = Rectangle.createFromSize(tab.preferredFloatingWidgetSize || target.size).offset(state.draggedTab.position);
         const containedBounds = bounds.containIn(nzBounds);
-        const userSized = tab?.userSized || (tab?.isFloatingStateWindowResizable && !!tab.preferredFloatingWidgetSize);
+        const userSized = tab.userSized || (tab.isFloatingStateWindowResizable && /* istanbul ignore next */ !!tab.preferredFloatingWidgetSize);
 
         state.floatingWidgets.byId[target.newFloatingWidgetId] = {
           bounds: containedBounds.toProps(),
@@ -1555,7 +1565,7 @@ export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingW
   return state;
 }
 
-/** Add a new Floating Panel with a single widget tab
+/** Add a widget tab to specified panel section and create section if necessary
  * @internal
  */
 export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string) {

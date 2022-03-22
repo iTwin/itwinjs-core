@@ -13,6 +13,7 @@ import {
   removeTab, setFloatingWidgetContainerBounds, toolSettingsTabId,
 } from "../../appui-layout-react";
 import {
+  addWidgetTabToPanelSection,
   convertAllPopupWidgetContainersToFloating, convertFloatingWidgetContainerToPopout, convertPopoutWidgetContainerToFloating,
   NineZoneState,
 } from "../../appui-layout-react/base/NineZoneState";
@@ -104,6 +105,18 @@ describe("NineZoneStateReducer", () => {
         size: 400,
       });
       Number(400).should.eq(newState.panels.left.size);
+    });
+  });
+
+  describe("PANEL_SET_SPLITTER_VALUE", () => {
+    it("should set panel split percent", () => {
+      const state = createNineZoneState();
+      const newState = NineZoneStateReducer(state, {
+        type: "PANEL_SET_SPLITTER_VALUE",
+        side: "left",
+        percent: 40,
+      });
+      Number(40).should.eq(newState.panels.left.splitterPercent);
     });
   });
 
@@ -906,9 +919,9 @@ describe("NineZoneStateReducer", () => {
 
   describe("WIDGET_TAB_DRAG_END", () => {
     describe("tab target", () => {
-      it("should add tab", () => {
+      it("should add tab to leftStart", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, "left", "w1", ["t1", "t2"]);
+        state = addPanelWidget(state, "left", "leftStart", ["t1", "t2"]);
         state = addTab(state, "t1");
         state = addTab(state, "t2");
         state = produce(state, (draft) => {
@@ -922,11 +935,34 @@ describe("NineZoneStateReducer", () => {
           target: {
             type: "tab",
             tabIndex: 1,
-            widgetId: "w1",
+            widgetId: "leftStart",
           },
         });
-        newState.widgets.w1.tabs.length.should.eq(3);
-        newState.widgets.w1.tabs[1].should.eq("dt");
+        newState.widgets.leftStart.tabs.length.should.eq(3);
+        newState.widgets.leftStart.tabs[1].should.eq("dt");
+      });
+
+      it("should add tab to leftEnd", () => {
+        let state = createNineZoneState();
+        state = addPanelWidget(state, "left", "leftEnd", ["t1", "t2"]);
+        state = addTab(state, "t1");
+        state = addTab(state, "t2");
+        state = produce(state, (draft) => {
+          draft.draggedTab = createDraggedTabState("dt", {
+            position: new Point(100, 200).toProps(),
+          });
+        });
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_TAB_DRAG_END",
+          id: "dt",
+          target: {
+            type: "tab",
+            tabIndex: 1,
+            widgetId: "leftEnd",
+          },
+        });
+        newState.widgets.leftEnd.tabs.length.should.eq(3);
+        newState.widgets.leftEnd.tabs[1].should.eq("dt");
       });
 
       it("should update home of tool settings floating widget", () => {
@@ -977,6 +1013,96 @@ describe("NineZoneStateReducer", () => {
             newWidgetId: "leftEnd",
             side: "left",
             widgetIndex: 1,
+          },
+        });
+        newState.panels.left.widgets.length.should.eq(2);
+        newState.panels.left.widgets[0].should.eq("leftStart");
+        newState.panels.left.widgets[1].should.eq("leftEnd");
+      });
+
+      it("should add widget to new end panel section", () => {
+        let state = createNineZoneState();
+        state = addPanelWidget(state, "left", "leftStart", ["t1"]);
+        state = produce(state, (draft) => {
+          draft.draggedTab = createDraggedTabState("dt", {
+            position: new Point(100, 200).toProps(),
+          });
+        });
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_TAB_DRAG_END",
+          id: "dt",
+          target: {
+            type: "widget",
+            newWidgetId: "",
+            side: "left",
+            widgetIndex: 1,
+          },
+        });
+        newState.panels.left.widgets.length.should.eq(2);
+        newState.panels.left.widgets[0].should.eq("leftStart");
+        newState.panels.left.widgets[1].should.eq("leftEnd");
+      });
+
+      it("should add widget to existing end panel section", () => {
+        let state = createNineZoneState();
+        state = addPanelWidget(state, "left", "leftEnd", ["t1"]);
+        state = produce(state, (draft) => {
+          draft.draggedTab = createDraggedTabState("dt", {
+            position: new Point(100, 200).toProps(),
+          });
+        });
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_TAB_DRAG_END",
+          id: "dt",
+          target: {
+            type: "widget",
+            newWidgetId: "",
+            side: "left",
+            widgetIndex: 1,
+          },
+        });
+        newState.panels.left.widgets.length.should.eq(1);
+        newState.panels.left.widgets[0].should.eq("leftEnd");
+      });
+
+      it("should add widget to existing panel start section", () => {
+        let state = createNineZoneState();
+        state = addPanelWidget(state, "left", "leftStart", ["t1"]);
+        state = produce(state, (draft) => {
+          draft.draggedTab = createDraggedTabState("dt", {
+            position: new Point(100, 200).toProps(),
+          });
+        });
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_TAB_DRAG_END",
+          id: "dt",
+          target: {
+            type: "widget",
+            newWidgetId: "",
+            side: "left",
+            widgetIndex: 0,
+          },
+        });
+        newState.panels.left.widgets.length.should.eq(1);
+        newState.panels.left.widgets[0].should.eq("leftStart");
+      });
+
+      it("should add widget to new panel start section", () => {
+        let state = createNineZoneState();
+        state = addPanelWidget(state, "left", "leftEnd", ["t1"]);
+        state = produce(state, (draft) => {
+          draft.draggedTab = createDraggedTabState("dt", {
+            position: new Point(100, 200).toProps(),
+          });
+        });
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_TAB_DRAG_END",
+          id: "dt",
+          target: {
+            type: "widget",
+            newWidgetId: "",
+            side: "left",
+            widgetIndex: 0,
           },
         });
         newState.panels.left.widgets.length.should.eq(2);
@@ -1749,5 +1875,44 @@ describe("float widget tab", () => {
     const newState = addWidgetTabToFloatingPanel(state, "fw1", "t1", home, { height: 200, width: 300 }, { x: 10, y: 20 }, true, false);
     (newState.widgets.fw1.tabs.length).should.eql(2);
   });
+
+  it("should create panel section for widget tab", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    const newState = addWidgetTabToPanelSection(state, "right", "rightStart", "t1");
+    (newState.widgets.rightStart.tabs.length).should.eql(1);
+  });
+
+  it("should create panel section for widget tab", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    const newState = addWidgetTabToPanelSection(state, "right", "rightEnd", "t1");
+    (newState.widgets.rightEnd.tabs.length).should.eql(1);
+  });
+
+
+  it("should add tab to existing start panel section", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPanelWidget(state, "right", "rightStart", ["t1"]);
+    state = addTab(state, "t1");
+    const newState = addWidgetTabToPanelSection(state, "right", "rightStart", "t2");
+    (newState.widgets.rightStart.tabs.length).should.eql(2);
+  });
+
+  it("should add tab to existing end panel section", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPanelWidget(state, "right", "rightEnd", ["t1"]);
+    state = addTab(state, "t1");
+    const newState = addWidgetTabToPanelSection(state, "right", "rightEnd", "t2");
+    (newState.widgets.rightEnd.tabs.length).should.eql(2);
+  });
+
+  it("should add tab to existing end panel section", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addPanelWidget(state, "right", "rightStart", ["t1"]);
+    state = addTab(state, "t1");
+    const newState = addWidgetTabToPanelSection(state, "right", "rightEnd", "t2");
+    (newState.widgets.rightStart.tabs.length).should.eql(1);
+    (newState.widgets.rightEnd.tabs.length).should.eql(1);
+  });
+
 
 });

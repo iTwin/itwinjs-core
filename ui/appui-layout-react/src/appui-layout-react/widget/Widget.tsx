@@ -74,6 +74,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
           bounds = bounds.setSize(activeTab.preferredFloatingWidgetSize);
         }
 
+        /* istanbul ignore next */
         const userSized = activeTab?.userSized || (activeTab?.isFloatingStateWindowResizable && !!activeTab.preferredFloatingWidgetSize);
 
         // Pointer is outside of tab area. Need to re-adjust widget bounds so that tab is behind pointer

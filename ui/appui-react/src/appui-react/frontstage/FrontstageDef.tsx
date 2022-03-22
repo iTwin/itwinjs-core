@@ -295,6 +295,7 @@ export class FrontstageDef {
     // istanbul ignore else
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
+    // istanbul ignore next
     if (this.contentGroupProvider)
       await this.contentGroupProvider.onFrontstageDeactivated();
 
@@ -708,6 +709,7 @@ export class FrontstageDef {
         return WidgetState.Floating;
 
       let collapsedPanel = false;
+      // istanbul ignore else
       if ("side" in location) {
         const panel = this.nineZoneState.panels[location.side];
         collapsedPanel = panel.collapsed || undefined === panel.size || 0 === panel.size;
@@ -794,13 +796,15 @@ export class FrontstageDef {
    */
   public isWidgetDisplayed(widgetId: string) {
     let widgetIsVisible = false;
-
+    // istanbul ignore else
     if (this.nineZoneState) {
       const tabLocation = findTab(this.nineZoneState, widgetId);
+      // istanbul ignore else
       if (tabLocation) {
         if (isFloatingLocation(tabLocation) || isPopoutLocation(tabLocation)) {
           widgetIsVisible = true;
         } else {
+          // istanbul ignore else
           if (isPanelLocation(tabLocation)) {
             const panel = this.nineZoneState.panels[tabLocation.side];
             const widgetDef = this.findWidgetDef(widgetId);

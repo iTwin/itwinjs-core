@@ -42,6 +42,7 @@ export type VerticalPanelSide = LeftPanelSide | RightPanelSide;
 /** @internal future */
 export type PanelSide = VerticalPanelSide | HorizontalPanelSide;
 
+// istanbul ignore next
 function PanelSplitter({isHorizontal}: {isHorizontal: boolean}) {
   const dispatch = React.useContext(NineZoneDispatchContext);
   const panel = React.useContext(PanelStateContext);
@@ -325,8 +326,10 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
   );
 
   const splitterControlledPanelStyle = React.useMemo (()=>{
+    // istanbul ignore next
     const splitterPercent = panel.splitterPercent??50;
     const styleToApply: React.CSSProperties = {};
+    // istanbul ignore else
     if (splitterPercent) {
       if (horizontal)
         styleToApply.width = `${splitterPercent}%`;
@@ -336,6 +339,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     return styleToApply;
   }, [horizontal, panel.splitterPercent]);
 
+  /* istanbul ignore next */
   return (
     <WidgetPanelContext.Provider value={widgetPanel}>
       <div

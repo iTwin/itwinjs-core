@@ -690,7 +690,7 @@ describe("Frontstage local storage wrapper", () => {
         frontstageDef.nineZoneState = nineZoneState;
         const widgetDef = new WidgetDef({
           id: "t1",
-          defaultState: WidgetState.Open,
+          defaultState: WidgetState.Closed,
         });
 
         const leftPanel = new StagePanelDef();
@@ -711,7 +711,7 @@ describe("Frontstage local storage wrapper", () => {
 
         sinon.stub(frontstageDef, "getStagePanelDef").withArgs(StagePanelLocation.Left).returns(leftPanel);
         sinon.stub(frontstageDef, "findWidgetDef").withArgs("t1").returns(widgetDef);
-        const spy = sinon.stub(widgetDef, "onWidgetStateChanged");
+        // const spy = sinon.stub(widgetDef, "onWidgetStateChanged");
 
         const newState = setWidgetState(frontstageDef.nineZoneState, widgetDef, WidgetState.Hidden);
         frontstageDef.nineZoneState = newState;
@@ -1132,6 +1132,7 @@ describe("Frontstage local storage wrapper", () => {
         const widgetDef = new WidgetDef({
           id: "w1",
           preferredPanelSize: "fit-content",
+          defaultFloatingSize: {width: 33, height: 33},
         });
         sinon.stub(frontstageDef, "topCenter").get(() => zoneDef);
         sinon.stub(zoneDef, "getSingleWidgetDef").returns(widgetDef);
