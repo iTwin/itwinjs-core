@@ -217,7 +217,6 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** map of (unprocessed element, referencing processed element) pairs to the partially committed element that needs the reference resolved
-   * @note instead of using [Dictionary]($bentley) which doesn't support Id64.Uint32Map, * we just use a nested map to implement a map of pair objects,
    * and have some helper methods below for now */
   protected _pendingReferences = new PendingReferenceMap<PartiallyCommittedElement>();
 
@@ -799,8 +798,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Import elements that were deferred in a prior pass.
-   * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
-   * @deprecated
+   * @deprecated This method is no longer necessary since the transformer no longer needs to defer elements
    */
   public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
 
