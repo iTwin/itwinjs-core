@@ -12965,7 +12965,7 @@ packages:
       glob: 7.2.0
       is-glob: 4.0.3
       resolve: 1.19.0
-      tsconfig-paths: 3.14.0
+      tsconfig-paths: 3.14.1
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -13024,7 +13024,7 @@ packages:
       pkg-up: 2.0.0
       read-pkg-up: 3.0.0
       resolve: 1.22.0
-      tsconfig-paths: 3.14.0
+      tsconfig-paths: 3.14.1
 
   /eslint-plugin-jam3/0.2.3:
     resolution: {integrity: sha512-aW1L8C96fsRji0c8ZAgqtJVIu5p2IaNbeT2kuHNS6p5tontAVK1yP1W4ECjq3BHOv/GgAWvBVIx7kQI0kG2Rew==}
@@ -21639,8 +21639,8 @@ packages:
       typescript: 4.4.4
     dev: true
 
-  /tsconfig-paths/3.14.0:
-    resolution: {integrity: sha512-cg/1jAZoL57R39+wiw4u/SCC6Ic9Q5NqjBOb+9xISedOYurfog9ZNmKJSxAnb2m/5Bq4lE9lhUcau33Ml8DM0g==}
+  /tsconfig-paths/3.14.1:
+    resolution: {integrity: sha512-fxDhWnFSLt3VuTwtvJt5fpwxBHg5AdKWMsgcPOOIilyjymcYVZoCQF8fvFRezCNfblEXmi+PcM1eYHeOAgXCOQ==}
     dependencies:
       '@types/json5': 0.0.29
       json5: 1.0.1
