@@ -5,7 +5,6 @@
   "main": "lib/cjs/core-markup.js",
   "module": "lib/esm/core-markup.js",
   "typings": "lib/cjs/core-markup",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs",
