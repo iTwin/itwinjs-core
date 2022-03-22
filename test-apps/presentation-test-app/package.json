@@ -62,7 +62,7 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@types/bunyan": "^1.8.4",
-    "@types/react": "^17.0.37",
+    "@types/react": "17.0.40",
     "@types/react-dom": "^17.0.0",
     "@types/react-select": "3.0.26",
     "autoprefixer": "^8.6.5",

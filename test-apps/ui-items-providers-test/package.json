@@ -30,7 +30,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/react": "^17.0.37",
+    "@types/react": "17.0.40",
     "@types/react-select": "3.0.26",
     "@bentley/react-scripts": "4.0.3",
     "cpx2": "^3.0.0",
