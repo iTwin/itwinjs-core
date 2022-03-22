@@ -11,7 +11,7 @@ import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
-import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, ITwinWorkspaceDb, WorkspaceContainerProps, WorkspaceDbProps } from "../../workspace/Workspace";
+import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, ITwinWorkspaceDb, WorkspaceContainer, WorkspaceDb } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -19,7 +19,7 @@ describe("WorkspaceFile", () => {
 
   const workspace = new ITwinWorkspace(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
-  function makeEditableDb(props: WorkspaceDbProps & WorkspaceContainerProps) {
+  function makeEditableDb(props: WorkspaceDb.Props & WorkspaceContainer.Props) {
     const container = workspace.getContainer(props);
     const wsFile = new EditableWorkspaceDb(props, container);
 

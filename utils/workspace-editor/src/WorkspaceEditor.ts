@@ -9,8 +9,8 @@ import { join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb, WorkspaceContainerProps,
-  WorkspaceDbName, WorkspaceResourceName,
+  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb,
+  WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
 import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
@@ -18,7 +18,7 @@ import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 // cspell:ignore nodir
 /* eslint-disable id-blacklist,no-console */
 
-interface EditorOpts extends WorkspaceContainerProps {
+interface EditorOpts extends WorkspaceContainer.Props {
   /** Allows overriding the location of WorkspaceDbs. If not present, defaults to `${homedir}/iTwin/Workspace` */
   directory?: LocalDirName;
   /** number of simultaneous http requests */
@@ -31,18 +31,18 @@ interface EditorOpts extends WorkspaceContainerProps {
 
 /** options for performing an operation on a WorkspaceDb */
 interface WorkspaceDbOpt extends EditorOpts {
-  dbName: WorkspaceDbName;
+  dbName: WorkspaceDb.Name;
   dbFileName: string;
   version?: string;
   like?: string;
 }
 /** options for copying a workspaceDb */
 interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
-  newDbName: WorkspaceDbName;
+  newDbName: WorkspaceDb.Name;
 }
 
 interface MakeVersionOpt extends WorkspaceDbOpt {
-  versionType: "major" | "minor" | "patch";
+  versionType: WorkspaceDb.VersionIncrement;
 }
 
 /** Resource type names */
@@ -50,19 +50,19 @@ type RscType = "blob" | "string" | "file";
 
 /** Options for adding, updating, extracting, or deleting resources from a WorkspaceDb */
 interface ResourceOption extends WorkspaceDbOpt {
-  rscName?: WorkspaceResourceName;
+  rscName?: WorkspaceResource.Name;
   update: boolean;
   type: RscType;
 }
 
 /** Options for deleting resources from a WorkspaceDb */
 interface RemoveResourceOpts extends ResourceOption {
-  rscName: WorkspaceResourceName;
+  rscName: WorkspaceResource.Name;
 }
 
 /** Options for extracting resources from a WorkspaceDb */
 interface ExtractResourceOpts extends ResourceOption {
-  rscName: WorkspaceResourceName;
+  rscName: WorkspaceResource.Name;
   fileName: LocalFileName;
 }
 
@@ -315,10 +315,7 @@ async function purgeWorkspace(args: EditorOpts) {
     return;
   }
 
-  await CloudSqlite.withWriteLock(args.user, container, async () => {
-    await container.cleanDeletedBlocks();
-  });
-
+  await CloudSqlite.withWriteLock(args.user, container, async () => container.cleanDeletedBlocks());
   await container.checkForChanges(); // re-read manifest to get current garbage count
   console.log(`purged ${nGarbage - container.garbageBlocks} blocks from container "${args.containerId}"`);
 }
