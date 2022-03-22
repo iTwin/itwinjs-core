@@ -12,14 +12,16 @@ export class ViewStateHydrater {
   public constructor(iModel: IModelDb) {
     this._imodel = iModel;
   }
-  public getHydrateResponseProps(options: HydrateViewStateRequestProps) {
+  public async getHydrateResponseProps(options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
     const response: HydrateViewStateResponseProps = {};
-    if (options.acsId) this.handleAcsId(response, options.acsId);
-    if (options.sheetViewAttachmentIds) this.handleSheetViewAttachmentIds(response, options.sheetViewAttachmentIds, options.sheetViewViewStateLoadProps);
-    if (options.notLoadedCategoryIds) this.handleCategoryIds(response, options.notLoadedCategoryIds);
-    if (options.spatialViewId) this.handleSpatialViewId(response, options.spatialViewId, options.spatialViewViewStateLoadProps);
-    if (options.notLoadedModelSelectorStateModels) this.handleModelSelectorStateModels(response, options.notLoadedModelSelectorStateModels);
-    if (options.baseModelId) this.handleBaseModelId(response, options.baseModelId);
+    const promises = [];
+    if (options.acsId) promises.push(this.handleAcsId(response, options.acsId));
+    if (options.sheetViewAttachmentIds) promises.push(this.handleSheetViewAttachmentIds(response, options.sheetViewAttachmentIds, options.sheetViewViewStateLoadProps));
+    if (options.notLoadedCategoryIds) promises.push(this.handleCategoryIds(response, options.notLoadedCategoryIds));
+    if (options.spatialViewId) promises.push(this.handleSpatialViewId(response, options.spatialViewId, options.spatialViewViewStateLoadProps));
+    if (options.notLoadedModelSelectorStateModels) promises.push(this.handleModelSelectorStateModels(response, options.notLoadedModelSelectorStateModels));
+    if (options.baseModelId) promises.push(this.handleBaseModelId(response, options.baseModelId));
+    await Promise.all(promises);
     return response;
   }
   private async handleBaseModelId(response: HydrateViewStateResponseProps, baseModelId: Id64String) {
@@ -47,7 +49,7 @@ export class ViewStateHydrater {
     response.modelSelectorStateModels = modelJsonArray;
   }
   private async handleSpatialViewId(response: HydrateViewStateResponseProps, spatialViewId: Id64String, viewStateLoadProps?: ViewStateLoadProps) {
-    response.spatialViewProps = await this._imodel.views.getViewStateData(spatialViewId, viewStateLoadProps);
+    response.spatialViewProps = this._imodel.views.getViewStateData(spatialViewId, viewStateLoadProps);
   }
   private async handleCategoryIds(response: HydrateViewStateResponseProps, categoryIds: CompressedId64Set) {
     // consider splitting up categoryIds, as queries get slow with many many categoryids in them.
@@ -71,17 +73,17 @@ export class ViewStateHydrater {
     response.categoryIdsResult = result;
   }
   private async handleAcsId(response: HydrateViewStateResponseProps, acsId: string) {
-      try {
-        const props = this._imodel.elements.getElementProps(acsId);
-        response.acsElementProps = props;
-      } catch { }
+    try {
+      const props = this._imodel.elements.getElementProps(acsId);
+      response.acsElementProps = props;
+    } catch { }
   }
   private async handleSheetViewAttachmentIds(response: HydrateViewStateResponseProps, sheetViewAttachmentIds: CompressedId64Set, viewStateLoadProps?: ViewStateLoadProps) {
     const decompressedIds = CompressedId64Set.decompressSet(sheetViewAttachmentIds);
     const attachmentProps: ViewAttachmentProps[] = [];
     for (const id of decompressedIds) {
       try {
-        attachmentProps.push(this._imodel.elements.getElementJson({ id }) as ViewAttachmentProps);
+        attachmentProps.push(this._imodel.elements.getElementJson({ id }) );
       } catch (error) { // TODO: should we really throw an error? or just let it be empty?
         if (decompressedIds.size === 1)
           throw error; // if they're asking for more than one element, don't throw on error.
