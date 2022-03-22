@@ -1292,7 +1292,7 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Basic Listbox", undefined,
           <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
-            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            onKeyDown={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
             {
               listItems?.map((cityName) =>
                 <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>
@@ -1302,7 +1302,7 @@ export class ComponentExamplesProvider {
           </Listbox>),
         createComponentExample("Listbox with disabled entries", undefined,
           <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
-            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            onKeyDown={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
             {
               listItems?.map((cityName, index) =>
                 <ListboxItem key={cityName} className="map-source-list-entry" value={cityName} disabled={0 === index % 2}>
