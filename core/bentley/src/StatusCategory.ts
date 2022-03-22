@@ -94,6 +94,8 @@ namespace HTTP {
 
 class Success extends HTTP.OK { }
 
+class Pending extends HTTP.Accepted { }
+
 class NoContent extends HTTP.NoContent { }
 class NothingToDo extends HTTP.NoContent { }
 
@@ -117,14 +119,16 @@ class StateViolation extends HTTP.Conflict { }
 
 class Cancelled extends HTTP.Gone { }
 
-class ConstraintViolation extends HTTP.PreconditionFailed { }
-class VersioningViolation extends HTTP.PreconditionFailed { }
+class ConstraintViolation extends HTTP.ExpectationFailed { }
+class VersioningViolation extends HTTP.ExpectationFailed { }
 
-class Directive extends HTTP.ExpectationFailed { }
+class Directive extends HTTP.PreconditionRequired { }
 
 class Corruption extends HTTP.UnprocessableEntity { }
 class InvalidData extends HTTP.UnprocessableEntity { }
 class OperationFailed extends HTTP.UnprocessableEntity { }
+
+class Locked extends HTTP.Locked { }
 
 class NetworkError extends HTTP.FailedDependency { }
 
@@ -267,7 +271,7 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case RepositoryStatus.CodeNotReserved: return new StateViolation();
     case RepositoryStatus.CodeUsed: return new StateViolation();
     case RepositoryStatus.LockNotHeld: return new Forbidden();
-    case RepositoryStatus.RepositoryIsLocked: return new Forbidden();
+    case RepositoryStatus.RepositoryIsLocked: return new Locked();
     case RepositoryStatus.ChannelConstraintViolation: return new ConstraintViolation();
 
     case HttpStatus.Success: return new Success();
@@ -291,8 +295,8 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelHubStatus.PullIsRequired: return new StateViolation();
     case IModelHubStatus.MaximumNumberOfBriefcasesPerUser: return new Throttled();
     case IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute: return new Throttled();
-    case IModelHubStatus.DatabaseTemporarilyLocked: return new Throttled();
-    case IModelHubStatus.iModelIsLocked: return new Forbidden();
+    case IModelHubStatus.DatabaseTemporarilyLocked: return new Locked();
+    case IModelHubStatus.iModelIsLocked: return new Locked();
     case IModelHubStatus.CodesExist: return new Conflict();
     case IModelHubStatus.LocksExist: return new Conflict();
     case IModelHubStatus.iModelAlreadyExists: return new Conflict();
@@ -327,7 +331,7 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelHubStatus.InvalidArgumentError: return new ValidationError();
     case IModelHubStatus.MissingDownloadUrlError: return new ValidationError();
     case IModelHubStatus.NotSupportedInBrowser: return new NotSupported();
-    case IModelHubStatus.FileHandlerNotSet: return new InternalError();
+    case IModelHubStatus.FileHandlerNotSet: return new NotImplemented();
     case IModelHubStatus.FileNotFound: return new NotFound();
     case IModelHubStatus.InitializationTimeout: return new Timeout();
 
@@ -341,7 +345,7 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case GeoServiceStatus.NoDatumConverter: return new OperationFailed();
     case GeoServiceStatus.VerticalDatumConvertError: return new OperationFailed();
     case GeoServiceStatus.CSMapError: return new InternalError();
-    case GeoServiceStatus.Pending: return new Directive();
+    case GeoServiceStatus.Pending: return new Pending();
 
     case RealityDataStatus.Success: return new Success();
     case RealityDataStatus.InvalidData: return new InvalidData();
