@@ -551,9 +551,7 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
     public get qparams() { return this._qparams3d; }
 
     public appendVertex(vertIndex: number): void {
-      // this.appendPosition(vertIndex);
-      // this.appendFeatureIndex(vertIndex);
-      this.appendTransPosAndFeatureNdx(vertIndex);
+      this.appendTransposePosAndFeatureNdx(vertIndex);
       this.appendColorIndex(vertIndex);
     }
 
@@ -567,7 +565,7 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
       return u32Array[0];
     }
 
-    protected appendTransPosAndFeatureNdx(vertIndex: number) {
+    protected appendTransposePosAndFeatureNdx(vertIndex: number) {
       // transpose position xyz vals into [0].xyz - [3].xyz, and add feature index at .w
       // this is to order things to let shader code access much more efficiently
       const pt = this._points[vertIndex];

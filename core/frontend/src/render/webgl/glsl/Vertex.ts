@@ -14,7 +14,7 @@ import { Pass, TextureUnit } from "../RenderFlags";
 import { IsInstanced } from "../TechniqueFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
-import { decodeFloat32, decodeUint16, decodeUint24 } from "./Decode";
+import { decodeUint16, decodeUint24 } from "./Decode";
 import { addInstanceOverrides } from "./Instancing";
 import { addLookupTable } from "./LookupTable";
 
@@ -31,7 +31,7 @@ export const unquantizeVertexPosition = `
 vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquantizePosition(pos, origin, scale); }
 `;
 
-// Need to read 2 rgba values to obtain 6 16-bit integers for unquantize position
+// Need to read 2 rgba values to obtain 6 16-bit integers for position
 const unquantizeVertexPositionFromLUT = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
   vec3 qpos = vec3(decodeUInt16(g_vertLutData0.xy), decodeUInt16(g_vertLutData0.zw), decodeUInt16(g_vertLutData1.xy));
@@ -159,7 +159,6 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   vert.addFunction(decodeUint24);
   vert.addFunction(decodeUint16);
-  // vert.addFunction(decodeFloat32);
   vert.addFunction(unquantizeVertexPositionFromLUT);
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
@@ -184,20 +183,13 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   addLookupTable(vert, "vert", "u_vertParams.z");
   vert.addInitializer(initializeVertLUTCoords);
 
-  // assert(undefined !== vert.maxRgbaPerVertex);
-  // const maxRgbaPerVertex = vert.maxRgbaPerVertex.toString();
-  // vert.addGlobal(`g_vertLutData[${maxRgbaPerVertex}]`, VariableType.Vec4);
   vert.addGlobal(`g_vertLutData0`, VariableType.Vec4);
   vert.addGlobal(`g_vertLutData1`, VariableType.Vec4);
   vert.addGlobal(`g_vertLutData2`, VariableType.Vec4);
   vert.addGlobal(`g_vertLutData3`, VariableType.Vec4);
-  // vert.addGlobal(`g_vertLutData4`, VariableType.Vec4);
-  // vert.addGlobal(`g_vertLutData5`, VariableType.Vec4);
-  // vert.addGlobal("g_usesQuantizedPosition", VariableType.Boolean);
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
 
-  // Read the vertex data from the vertex table up front. If using WebGL 2, only read the number of RGBA values we actually need for this vertex table.
-  // const loopStart = `for (int i = 0; i < ${System.instance.capabilities.isWebGL2 ? "int(u_vertParams.z)" : maxRgbaPerVertex}; i++)`;
+  // Read the vertex data from the vertex table up front.  Yields a consistent (if unexplainable) small performance boost.
   vert.addInitializer(`
     // g_usesQuantizedPosition = u_qScale.x >= 0.0;
     vec2 tc = g_vertexBaseCoords;
@@ -210,14 +202,6 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
       tc.x += g_vert_stepX;
       g_vertLutData3 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
     }
-    // if (4.0 < u_vertParams.z) {
-    //   tc.x += g_vert_stepX;
-    //   g_vertLutData4 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    // }
-    // if (5.0 < u_vertParams.z) {
-    //   tc.x += g_vert_stepX;
-    //   g_vertLutData5 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    // }
   `);
 }
 
@@ -303,21 +287,6 @@ export function addLineCode(vert: VertexShaderBuilder): void {
 /** @internal */
 export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
   vert.replaceFunction(computeLineCode, func);
-}
-
-/** @internal */
-export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
-  // if (undefined !== vert.find("g_featureAndMaterialIndex"))
-  //   return;
-
-  const computeFeatureAndMaterialIndex = `
-  `;
-
-  vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
-  if (!vert.usesInstancedGeometry) {
-    // Only needed for material atlas, and instanced geometry never uses material atlas.
-    vert.addInitializer(computeFeatureAndMaterialIndex);
-  }
 }
 
 // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
