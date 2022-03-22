@@ -1711,7 +1711,7 @@ importers:
       '@itwin/imodels-access-frontend': 1.0.1
       '@itwin/imodels-client-authoring': 1.0.1
       '@itwin/imodels-client-management': 1.0.1
-      '@itwin/reality-data-client': 0.7.0
+      '@itwin/reality-data-client': 0.7.2
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
       electron: 14.2.7
@@ -1910,7 +1910,7 @@ importers:
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/presentation-testing': link:../../presentation/testing
-      '@testing-library/react': 12.1.3_react-dom@17.0.2+react@17.0.2
+      '@testing-library/react': 12.1.4_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
       '@types/chai': 4.3.0
       '@types/chai-as-promised': 7.1.5
@@ -2587,7 +2587,7 @@ importers:
       '@itwin/imodels-access-backend': 1.0.1
       '@itwin/imodels-access-frontend': 1.0.1
       '@itwin/imodels-client-authoring': 1.0.1
-      '@itwin/reality-data-client': 0.7.0
+      '@itwin/reality-data-client': 0.7.2
       body-parser: 1.19.2
     devDependencies:
       '@bentley/react-scripts': 4.0.3_typescript@4.4.4
@@ -2690,7 +2690,7 @@ importers:
       '@itwin/imodels-access-backend': 1.0.1
       '@itwin/imodels-access-frontend': 1.0.1
       '@itwin/imodels-client-authoring': 1.0.1
-      '@itwin/reality-data-client': 0.7.0
+      '@itwin/reality-data-client': 0.7.2
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.19.2
     devDependencies:
@@ -3233,7 +3233,7 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
-      '@itwin/reality-data-client': 0.7.0
+      '@itwin/reality-data-client': 0.7.2
       '@itwin/ui-items-providers-test': link:../ui-items-providers-test
       classnames: 2.3.1
       lorem-ipsum: 2.0.4
@@ -7572,9 +7572,10 @@ packages:
     transitivePeerDependencies:
       - debug
 
-  /@itwin/reality-data-client/0.7.0:
-    resolution: {integrity: sha512-fUbS3953g3zXNagcgwmJ7n2DHvL15KlBQZ5NlpWpGdotRgtOKAxeJqybPJBnoM10dErmJVC+Cbv3JVc2Nar/Mw==}
+  /@itwin/reality-data-client/0.7.2:
+    resolution: {integrity: sha512-lMDd6it30rxdmxYsfg7Bpy3KAyoUUoN7Ic/kxiCPnEay0wYEMuYV7dFrHb1oZFNoAcTMU3u3h5q2tziiWpejTw==}
     dependencies:
+      '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       axios: 0.25.0
