@@ -29,6 +29,6 @@ Using the sprite loader for SVG icons is deprecated. This includes [SvgSprite]($
 
 ## Deprecations in @itwin/core-transformer package
 
-[IModelTransformer.skipElement]($transformer) and [IModelTransformer.processDeferredElements]($transformer) have been deprecated, as
-the transformer no longer "defers" elements until all of its references have been transformed. These now have no effect, since no
-elements will be deferred, and elements will always be transformed, so skipping them to transform them later is not necessary.
+The beta transformer API functions [IModelTransformer.skipElement]($transformer) and [IModelTransformer.processDeferredElements]($transformer)
+have been deprecated, as the transformer no longer "defers" elements until all of its references have been transformed. These now have no effect,
+since no elements will be deferred, and elements will always be transformed, so skipping them to transform them later is not necessary.
