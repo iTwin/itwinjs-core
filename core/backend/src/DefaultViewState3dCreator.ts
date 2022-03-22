@@ -8,6 +8,10 @@ import { DefaultViewState3dCreatorOptions, DefaultViewState3dProps, IModelError,
 import { Range3d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 
+/**
+ * Class which helps to generate a Default ViewState3d.
+ * @internal
+ */
 export class DefaultViewState3dCreator {
   private _imodel: IModelDb;
   public constructor(iModel: IModelDb) {
