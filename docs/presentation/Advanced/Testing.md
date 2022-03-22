@@ -5,7 +5,7 @@ purely for that reason.
 
 The package delivers an API that allows creating hierarchies for supplied iModels and rulesets. Consumers can then verify the result using tools of their liking. Our recommendation is to use snapshot testing for 2 reasons:
 
-1. Resulting hierarchies get rather large - testing the them in code might be difficult.
+1. Resulting hierarchies get rather large — testing them in code might be difficult.
 2. Snapshots protect against regressions.
 
 ## Example
