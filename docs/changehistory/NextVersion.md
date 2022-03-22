@@ -26,3 +26,17 @@ Enums in TypeScript have some shortcomings, one of which resulted in a bug that 
 ## Deprecations in @itwin/core-react package
 
 Using the sprite loader for SVG icons is deprecated. This includes [SvgSprite]($core-react) and the methods getSvgIconSpec() and getSvgIconSource() methods on [IconSpecUtilities]($appui-abstract). The sprite loader has been replaced with a web component [IconWebComponent]($core-react) used by [Icon]($core-react) to load SVGs onto icons.
+
+## Widget Panel Changes
+
+Based on usability testing, the following changes to widget panels have been implemented.
+
+1. Only two widget panel sections will be shown in any widget panel.
+2. A splitter is now provided that allows user to set the size of the widget panel sections.
+3. There is no special processing of double clicks on widget tabs when the widget tab is shown in a widget panel.
+4. The Widget Panel Unpin icon has been updated to make it more clear the action to be performed when the toggle is clicked.
+
+The API impact of these updates are listed below.
+
+1. The [UiItemsManager]($appui-abstract) will still query the [UiItemsProviders]($appui-abstract) for widgets for the [StagePanelSection.Center]($appui-abstract) but the returned widgets will be shown in the bottom panel sections. The StagePanelSection.Center enum entry has been deprecated and UiItemProviders should start using only `StagePanelSection.Start` and `StagePanelSection.End`.
+2. Widgets in panels only support the [WidgetState]($appui-abstract)s WidgetState.Open of WidgetState.Hidden.
