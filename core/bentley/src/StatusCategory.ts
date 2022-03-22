@@ -43,11 +43,6 @@ export abstract class StatusCategory {
     return lookupCategory(error);
   }
 
-  /** Tracks the error category ABI (for web application usage).
-   * @note This version code must be incremented when a category code is changed or a status is assigned to a different category.
-   */
-  public static WIRE_FORMAT_VERSION = 1;
-
   public abstract name: string;
   public abstract code: number;
   public abstract error: boolean;
@@ -68,9 +63,6 @@ export abstract class SuccessCategory extends StatusCategory {
 export abstract class ErrorCategory extends StatusCategory {
   public error = true;
 }
-
-// IMPORTANT!
-// You must increment StatusCategory.WIRE_FORMAT_VERSION for any category or code changes below.
 
 namespace HTTP {
   export class OK extends SuccessCategory { public name = "OK"; public code = 200; }
@@ -100,35 +92,48 @@ namespace HTTP {
   export class NotImplemented extends ErrorCategory { public name = "NotImplemented"; public code = 501; }
 }
 
+class Success extends HTTP.OK { }
+
+class NoContent extends HTTP.NoContent { }
+class NothingToDo extends HTTP.NoContent { }
+
+class BadRequest extends HTTP.BadRequest { }
+
+class Forbidden extends HTTP.Forbidden { }
+class PermissionsViolation extends HTTP.Forbidden { }
+class ReadOnly extends HTTP.Forbidden { }
+
+class NotFound extends HTTP.NotFound { }
+
+class NotEnabled extends HTTP.MethodNotAllowed { }
+class NotSupported extends HTTP.MethodNotAllowed { }
+
+class ValidationError extends HTTP.NotAcceptable { }
+
+class Timeout extends HTTP.RequestTimeout { }
+
+class Conflict extends HTTP.Conflict { }
+class StateViolation extends HTTP.Conflict { }
+
+class Cancelled extends HTTP.Gone { }
+
+class ConstraintViolation extends HTTP.PreconditionFailed { }
+class VersioningViolation extends HTTP.PreconditionFailed { }
+
+class Directive extends HTTP.ExpectationFailed { }
+
+class Corruption extends HTTP.UnprocessableEntity { }
 class InvalidData extends HTTP.UnprocessableEntity { }
 class OperationFailed extends HTTP.UnprocessableEntity { }
-class OperationProhibited extends HTTP.Forbidden { }
-class DuplicatedData extends HTTP.PreconditionFailed { }
-class NotFound extends HTTP.NotFound { }
-class ConstraintViolation extends HTTP.PreconditionFailed { }
-class FileSystemError extends HTTP.InternalServerError { }
-class StateViolation extends HTTP.Conflict { }
-class NothingToDo extends HTTP.ExpectationFailed { }
-class NotEnabled extends HTTP.MethodNotAllowed { }
-class ReadOnly extends HTTP.Forbidden { }
-class VersioningViolation extends HTTP.PreconditionFailed { }
-class Timeout extends HTTP.RequestTimeout { }
-class NoContent extends HTTP.NoContent { }
-class Cancelled extends HTTP.Gone { }
-class Corruption extends HTTP.UnprocessableEntity { }
-class Directive extends HTTP.ExpectationFailed { }
-class PermissionsViolation extends HTTP.Forbidden { }
-class Throttled extends HTTP.TooManyRequests { }
-class Conflict extends HTTP.Conflict { }
-class BadRequest extends HTTP.BadRequest { }
-class NotSupported extends HTTP.MethodNotAllowed { }
-class UnknownError extends HTTP.InternalServerError { }
-class Pending extends HTTP.Accepted { }
-class InternalError extends HTTP.InternalServerError { }
-class MathematicalViolation extends HTTP.NotAcceptable { }
-class Success extends HTTP.OK { }
+
 class NetworkError extends HTTP.FailedDependency { }
-class ValidationError extends HTTP.NotAcceptable { }
+
+class Throttled extends HTTP.TooManyRequests { }
+
+class FileSystemError extends HTTP.InternalServerError { }
+class InternalError extends HTTP.InternalServerError { }
+class UnknownError extends HTTP.InternalServerError { }
+
 class NotImplemented extends HTTP.NotImplemented { }
 
 function lookupCategory(error: BentleyError): StatusCategory {
@@ -146,9 +151,9 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelStatus.BadSchema: return new ValidationError();
     case IModelStatus.CannotUndo: return new OperationFailed();
     case IModelStatus.CodeNotReserved: return new StateViolation();
-    case IModelStatus.DeletionProhibited: return new OperationProhibited();
-    case IModelStatus.DuplicateCode: return new DuplicatedData();
-    case IModelStatus.DuplicateName: return new DuplicatedData();
+    case IModelStatus.DeletionProhibited: return new Forbidden();
+    case IModelStatus.DuplicateCode: return new Conflict();
+    case IModelStatus.DuplicateName: return new Conflict();
     case IModelStatus.ElementBlockedChange: return new ConstraintViolation();
     case IModelStatus.FileAlreadyExists: return new Conflict();
     case IModelStatus.FileNotFound: return new NotFound();
@@ -164,7 +169,7 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelStatus.InvalidParent: return new Conflict();
     case IModelStatus.InvalidProfileVersion: return new InvalidData();
     case IModelStatus.IsCreatingChangeSet: return new StateViolation();
-    case IModelStatus.LockNotHeld: return new OperationProhibited();
+    case IModelStatus.LockNotHeld: return new Forbidden();
     case IModelStatus.Mismatch2d3d: return new ValidationError();
     case IModelStatus.MismatchGcs: return new ValidationError();
     case IModelStatus.MissingDomain: return new ValidationError();
@@ -175,11 +180,11 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelStatus.NotEnabled: return new NotEnabled();
     case IModelStatus.NotFound: return new NotFound();
     case IModelStatus.NotOpen: return new StateViolation();
-    case IModelStatus.NotOpenForWrite: return new OperationProhibited();
+    case IModelStatus.NotOpenForWrite: return new Forbidden();
     case IModelStatus.NotSameUnitBase: return new ValidationError();
     case IModelStatus.NothingToRedo: return new NothingToDo();
     case IModelStatus.NothingToUndo: return new NothingToDo();
-    case IModelStatus.ParentBlockedChange: return new OperationProhibited();
+    case IModelStatus.ParentBlockedChange: return new Forbidden();
     case IModelStatus.ReadError: return new FileSystemError();
     case IModelStatus.ReadOnly: return new ReadOnly();
     case IModelStatus.ReadOnlyDomain: return new ReadOnly();
@@ -222,7 +227,7 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case RpcInterfaceStatus.IncompatibleVersion: return new VersioningViolation();
 
     case ChangeSetStatus.Success: return new Success();
-    case ChangeSetStatus.ApplyError: return new StateViolation();
+    case ChangeSetStatus.ApplyError: return new OperationFailed();
     case ChangeSetStatus.ChangeTrackingNotEnabled: return new NotEnabled();
     case ChangeSetStatus.CorruptedChangeStream: return new Corruption();
     case ChangeSetStatus.FileNotFound: return new NotFound();
@@ -234,7 +239,7 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case ChangeSetStatus.InDynamicTransaction: return new StateViolation();
     case ChangeSetStatus.IsCreatingChangeSet: return new StateViolation();
     case ChangeSetStatus.IsNotCreatingChangeSet: return new StateViolation();
-    case ChangeSetStatus.MergePropagationError: return new InternalError();
+    case ChangeSetStatus.MergePropagationError: return new OperationFailed();
     case ChangeSetStatus.NothingToMerge: return new NothingToDo();
     case ChangeSetStatus.NoTransactions: return new OperationFailed();
     case ChangeSetStatus.ParentMismatch: return new ValidationError();
@@ -244,9 +249,9 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case ChangeSetStatus.MergeSchemaChangesOnOpen: return new Directive();
     case ChangeSetStatus.ReverseOrReinstateSchemaChanges: return new Directive();
     case ChangeSetStatus.ProcessSchemaChangesOnOpen: return new Directive();
-    case ChangeSetStatus.CannotMergeIntoReadonly: return new OperationFailed();
-    case ChangeSetStatus.CannotMergeIntoMaster: return new OperationFailed();
-    case ChangeSetStatus.CannotMergeIntoReversed: return new OperationFailed();
+    case ChangeSetStatus.CannotMergeIntoReadonly: return new ValidationError();
+    case ChangeSetStatus.CannotMergeIntoMaster: return new ValidationError();
+    case ChangeSetStatus.CannotMergeIntoReversed: return new ValidationError();
 
     case RepositoryStatus.Success: return new Success();
     case RepositoryStatus.ServerUnavailable: return new NetworkError();
@@ -261,8 +266,8 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case RepositoryStatus.CodeUnavailable: return new Conflict();
     case RepositoryStatus.CodeNotReserved: return new StateViolation();
     case RepositoryStatus.CodeUsed: return new StateViolation();
-    case RepositoryStatus.LockNotHeld: return new OperationProhibited();
-    case RepositoryStatus.RepositoryIsLocked: return new OperationProhibited();
+    case RepositoryStatus.LockNotHeld: return new Forbidden();
+    case RepositoryStatus.RepositoryIsLocked: return new Forbidden();
     case RepositoryStatus.ChannelConstraintViolation: return new ConstraintViolation();
 
     case HttpStatus.Success: return new Success();
@@ -287,16 +292,16 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case IModelHubStatus.MaximumNumberOfBriefcasesPerUser: return new Throttled();
     case IModelHubStatus.MaximumNumberOfBriefcasesPerUserPerMinute: return new Throttled();
     case IModelHubStatus.DatabaseTemporarilyLocked: return new Throttled();
-    case IModelHubStatus.iModelIsLocked: return new OperationProhibited();
-    case IModelHubStatus.CodesExist: return new ValidationError();
-    case IModelHubStatus.LocksExist: return new ValidationError();
+    case IModelHubStatus.iModelIsLocked: return new Forbidden();
+    case IModelHubStatus.CodesExist: return new Conflict();
+    case IModelHubStatus.LocksExist: return new Conflict();
     case IModelHubStatus.iModelAlreadyExists: return new Conflict();
     case IModelHubStatus.iModelDoesNotExist: return new NotFound();
     case IModelHubStatus.FileDoesNotExist: return new NotFound();
     case IModelHubStatus.FileAlreadyExists: return new Conflict();
     case IModelHubStatus.LockDoesNotExist: return new NotFound();
     case IModelHubStatus.LockOwnedByAnotherBriefcase: return new Conflict();
-    case IModelHubStatus.CodeStateInvalid: return new Conflict();
+    case IModelHubStatus.CodeStateInvalid: return new StateViolation();
     case IModelHubStatus.CodeReservedByAnotherBriefcase: return new Conflict();
     case IModelHubStatus.CodeDoesNotExist: return new NotFound();
     case IModelHubStatus.EventTypeDoesNotExist: return new NotFound();
@@ -331,12 +336,12 @@ function lookupCategory(error: BentleyError): StatusCategory {
 
     case GeoServiceStatus.Success: return new Success();
     case GeoServiceStatus.NoGeoLocation: return new ValidationError();
-    case GeoServiceStatus.OutOfUsefulRange: return new MathematicalViolation();
-    case GeoServiceStatus.OutOfMathematicalDomain: return new MathematicalViolation();
-    case GeoServiceStatus.NoDatumConverter: return new InternalError();
+    case GeoServiceStatus.OutOfUsefulRange: return new ValidationError();
+    case GeoServiceStatus.OutOfMathematicalDomain: return new ValidationError();
+    case GeoServiceStatus.NoDatumConverter: return new OperationFailed();
     case GeoServiceStatus.VerticalDatumConvertError: return new OperationFailed();
     case GeoServiceStatus.CSMapError: return new InternalError();
-    case GeoServiceStatus.Pending: return new Pending();
+    case GeoServiceStatus.Pending: return new Directive();
 
     case RealityDataStatus.Success: return new Success();
     case RealityDataStatus.InvalidData: return new InvalidData();

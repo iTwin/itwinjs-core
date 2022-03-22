@@ -91,6 +91,16 @@ export enum RpcProtocolVersion {
   IntroducedStatusCategory = 2
 }
 
+/**
+ * A backend response that is handled internally by the RPC system.
+ * @internal
+ */
+export interface RpcManagedStatus {
+  iTwinRpcCoreResponse: true;
+  managedStatus: "pending" | "notFound";
+  responseValue: string;
+}
+
 /** An application protocol for an RPC interface.
  * @internal
  */

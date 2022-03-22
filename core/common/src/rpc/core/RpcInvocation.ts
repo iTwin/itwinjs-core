@@ -17,7 +17,7 @@ import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
-import { RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
+import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
 /** The properties of an RpcActivity.
@@ -250,16 +250,7 @@ export class RpcInvocation {
       return false;
     }
 
-    const supports = RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.request.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
-    if (!supports) {
-      return false;
-    }
-
-    if (StatusCategory.WIRE_FORMAT_VERSION !== 1) {
-      throw new IModelError(RpcInterfaceStatus.IncompatibleVersion, `StatusCategory.WIRE_FORMAT_VERSION = ${StatusCategory.WIRE_FORMAT_VERSION} is not supported.`);
-    }
-
-    return true;
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.request.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
   }
 
   private fulfill(result: RpcSerializedValue, rawResult: any): RpcRequestFulfillment {
@@ -271,9 +262,7 @@ export class RpcInvocation {
       interfaceName: (typeof (this.operation) === "undefined") ? "" : this.operation.interfaceDefinition.interfaceName,
     };
 
-    if (this.supportsStatusCategory() && this._threw && (rawResult instanceof BentleyError)) {
-      fulfillment.status = StatusCategory.for(rawResult).code;
-    }
+    this.transformResponseStatus(fulfillment, rawResult);
 
     try {
       const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition) as any;
@@ -291,5 +280,28 @@ export class RpcInvocation {
       throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`);
 
     return func;
+  }
+
+  private transformResponseStatus(fulfillment: RpcRequestFulfillment, rawResult: any) {
+    if (!this.supportsStatusCategory()) {
+      return;
+    }
+
+    let managedStatus: "notFound" | "pending" | undefined;
+    if (this._pending) {
+      managedStatus = "pending";
+    } else if (this._notFound) {
+      managedStatus = "notFound";
+    }
+
+    if (managedStatus) {
+      const responseValue = fulfillment.result.objects;
+      const status: RpcManagedStatus = { iTwinRpcCoreResponse: true, managedStatus, responseValue };
+      fulfillment.result.objects = JSON.stringify(status);
+    }
+
+    if (rawResult instanceof BentleyError) {
+      fulfillment.status = StatusCategory.for(rawResult).code;
+    }
   }
 }
