@@ -38,7 +38,7 @@ An example of setting up snapshot tests with the **@itwin/presentation-testing**
     [[include:Presentation.Testing.Rulesets.Terminate]]
     ```
 
-**Note:** The above example uses [mocha](https://www.npmjs.com/package/mocha) and [chai-jest-snapshot](https://www.npmjs.com/package/chai-jest-snapshot) packages to perform snapshot testing. The path returned by `createSnapshotPath` function used in the tests should match the project structure and is outside the scope of this example.
+**Note:** The above example uses [mocha](https://www.npmjs.com/package/mocha) and [chai-jest-snapshot](https://www.npmjs.com/package/chai-jest-snapshot) packages to perform snapshot testing. `createSnapshotPath` function retrieves a path to the snapshot for the current test.
 
 ## Things to keep in mind
 
