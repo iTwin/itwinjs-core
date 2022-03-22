@@ -14,12 +14,18 @@ export class ViewStateHydrater {
   public async getHydrateResponseProps(options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
     const response: HydrateViewStateResponseProps = {};
     const promises = [];
-    if (options.acsId) promises.push(this.handleAcsId(response, options.acsId));
-    if (options.sheetViewAttachmentIds) promises.push(this.handleSheetViewAttachmentIds(response, options.sheetViewAttachmentIds, options.sheetViewViewStateLoadProps));
-    if (options.notLoadedCategoryIds) promises.push(this.handleCategoryIds(response, options.notLoadedCategoryIds));
-    if (options.spatialViewId) promises.push(this.handleSpatialViewId(response, options.spatialViewId, options.spatialViewViewStateLoadProps));
-    if (options.notLoadedModelSelectorStateModels) promises.push(this.handleModelSelectorStateModels(response, options.notLoadedModelSelectorStateModels));
-    if (options.baseModelId) promises.push(this.handleBaseModelId(response, options.baseModelId));
+    if (options.acsId)
+      promises.push(this.handleAcsId(response, options.acsId));
+    if (options.sheetViewAttachmentIds)
+      promises.push(this.handleSheetViewAttachmentIds(response, options.sheetViewAttachmentIds, options.sheetViewViewStateLoadProps));
+    if (options.notLoadedCategoryIds)
+      promises.push(this.handleCategoryIds(response, options.notLoadedCategoryIds));
+    if (options.spatialViewId)
+      promises.push(this.handleSpatialViewId(response, options.spatialViewId, options.spatialViewViewStateLoadProps));
+    if (options.notLoadedModelSelectorStateModels)
+      promises.push(this.handleModelSelectorStateModels(response, options.notLoadedModelSelectorStateModels));
+    if (options.baseModelId)
+      promises.push(this.handleBaseModelId(response, options.baseModelId));
     await Promise.all(promises);
     return response;
   }
