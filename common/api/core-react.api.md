@@ -2017,13 +2017,13 @@ export interface SvgPathProps extends CommonProps {
     viewBoxWidth: number;
 }
 
-// @public
+// @public @deprecated
 export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
@@ -2474,7 +2474,7 @@ export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T |
 export function useRefState<T>(): [React.Ref<T>, T | undefined];
 
 // @internal
-export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: Element | null) => void;
+export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
 
 // @public
 export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void;

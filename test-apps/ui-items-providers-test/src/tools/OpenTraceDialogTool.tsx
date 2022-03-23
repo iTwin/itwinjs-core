@@ -12,10 +12,7 @@ import { ModalDialogManager } from "@itwin/appui-react";
 import { SampleModalDialog } from "../ui/dialogs/SampleModalDialog";
 import { IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { UiItemsProvidersTest } from "../ui-items-providers-test";
-
-/** the following will import svgs into DOM and generate SymbolId that is used to locate the svg image. This
- * processing is done via the 'magic' webpack plugin and requires the use or the Bentley build scripts. */
-import connectedIcon from "../ui/icons/connected-query.svg?sprite";
+import connectedQuerySvg from "../ui/icons/connected-query.svg";
 
 /**
  * Immediate tool that will open an example modal dialog.The tool is created and register to allow the user
@@ -24,7 +21,7 @@ import connectedIcon from "../ui/icons/connected-query.svg?sprite";
  */
 export class OpenTraceDialogTool extends Tool {
   public static override toolId = "uiItemsProvidersTest-OpenTraceDialogTool";
-  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(connectedIcon);
+  public static override iconSpec = connectedQuerySvg;
 
   // istanbul ignore next
   public static override get minArgs() { return 0; }
@@ -53,7 +50,8 @@ export class OpenTraceDialogTool extends Tool {
     const overrides = {
       groupPriority,
     };
-    return ToolbarItemUtilities.createActionButton(OpenTraceDialogTool.toolId, itemPriority, OpenTraceDialogTool.iconSpec, OpenTraceDialogTool.flyover,
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(`${this.iconSpec}`);
+    return ToolbarItemUtilities.createActionButton(OpenTraceDialogTool.toolId, itemPriority, iconSpec, OpenTraceDialogTool.flyover,
       async () => { await IModelApp.tools.run(OpenTraceDialogTool.toolId); },
       overrides);
   }

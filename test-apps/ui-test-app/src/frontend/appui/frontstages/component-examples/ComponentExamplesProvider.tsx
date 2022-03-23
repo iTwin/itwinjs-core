@@ -8,6 +8,8 @@ import * as React from "react";
 import { BeDuration, Logger } from "@itwin/core-bentley";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
+import moreWebSvg from "@bentley/icons-generic/icons/more-circular.svg";
+import moreVerticalWebSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
@@ -812,7 +814,8 @@ export class ComponentExamplesProvider {
         createComponentExample("Labeled Textarea", "Labeled Textarea component", <LabeledTextarea label="Labeled Textarea" placeholder="Labeled Textarea" className="uicore-full-width" />),
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
-        createComponentExample("Image Checkbox", "ImageCheckbox with SVG fonts", <SampleImageCheckBox imageOn={IconSpecUtilities.createSvgIconSpec(moreSvg)} imageOff={IconSpecUtilities.createSvgIconSpec(moreVerticalSvg)} />),
+        createComponentExample("Image Checkbox", "ImageCheckbox with SVG (deprecate sprite)", <SampleImageCheckBox imageOn={IconSpecUtilities.createSvgIconSpec(moreSvg)} imageOff={IconSpecUtilities.createSvgIconSpec(moreVerticalSvg)} />),
+        createComponentExample("Image Checkbox", "ImageCheckbox with SVG using web component", <SampleImageCheckBox imageOn={IconSpecUtilities.createWebComponentIconSpec(moreWebSvg)} imageOff={IconSpecUtilities.createWebComponentIconSpec(moreVerticalWebSvg)} />),
 
         createComponentExample("Input Described By", "Input with aria-describedby",
           <div>
@@ -1286,7 +1289,7 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Basic Listbox", undefined,
           <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
-            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            onKeyDown={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
             {
               listItems?.map((cityName) =>
                 <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>
@@ -1296,7 +1299,7 @@ export class ComponentExamplesProvider {
           </Listbox>),
         createComponentExample("Listbox with disabled entries", undefined,
           <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
-            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            onKeyDown={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
             {
               listItems?.map((cityName, index) =>
                 <ListboxItem key={cityName} className="map-source-list-entry" value={cityName} disabled={0 === index % 2}>

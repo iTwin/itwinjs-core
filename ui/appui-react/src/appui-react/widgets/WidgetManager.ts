@@ -156,7 +156,7 @@ export class WidgetManager {
 
     // Consult the UiItemsManager to get any Abstract widgets
     if (location in StagePanelLocation) {
-      const widgets = UiItemsManager.getWidgets(stageId, stageUsage, location as StagePanelLocation, definedSection, frontstageApplicationData);
+      const widgets = UiItemsManager.getWidgets(stageId, stageUsage, location as StagePanelLocation, definedSection, undefined, frontstageApplicationData);
       widgets.forEach((abstractProps: AbstractWidgetProps, index: number) => {
         const props = WidgetDef.createWidgetPropsFromAbstractProps(abstractProps);
         const stableId = getAddonStableWidgetId(stageUsage, location as StagePanelLocation, definedSection, index);

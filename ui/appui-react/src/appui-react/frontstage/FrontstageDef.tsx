@@ -35,7 +35,6 @@ import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
-import { setImmediate } from "timers";
 import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { ContentDialogManager } from "../dialog/ContentDialogManager";
@@ -797,7 +796,7 @@ export class FrontstageDef {
     let widgetIsVisible = false;
 
     if (this.nineZoneState) {
-      const tabLocation = findTab (this.nineZoneState, widgetId);
+      const tabLocation = findTab(this.nineZoneState, widgetId);
       if (tabLocation) {
         if (isFloatingLocation(tabLocation) || isPopoutLocation(tabLocation)) {
           widgetIsVisible = true;
@@ -868,7 +867,7 @@ export class FrontstageDef {
               const widgetContainerId = location.widgetId;
               const tab = state.tabs[widgetId];
               this.nineZoneState = state;
-              setImmediate(() => {
+              setTimeout(() => {
                 const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
                 const position: ChildWindowLocationProps = {
                   width: tab.preferredPopoutWidgetSize!.width,  // preferredPopoutWidgetSize set in popoutWidgetToChildWindow method above

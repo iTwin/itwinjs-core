@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, assert, BeEvent, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AbandonedError, assert, BeEvent, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
@@ -315,11 +315,6 @@ export class ToolAdmin {
   private _saveLocateCircle = false;
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
-  /**
-   * The active settings that placement tools will use.
-   * @alpha
-   */
-  public readonly activeSettings: ToolAdmin.ActiveSettings = { };
 
   /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select", referring to [[SelectionTool]].
    * @see [[startDefaultTool]] to activate the default tool.
@@ -1888,21 +1883,5 @@ export class WheelEventProcessor {
     // if we scrolled out, we may have invalidated the current AccuSnap path
     await IModelApp.accuSnap.reEvaluate();
     return status;
-  }
-}
-
-/**
- * @public
- */
-export namespace ToolAdmin { // eslint-disable-line no-redeclare
-  /** Active settings that placement tools will use.
-   * @alpha
-   */
-  export interface ActiveSettings {
-    /** The category to which newly created elements will be assigned. */
-    category?: Id64String;
-
-    /** The model that will contain newly created elements. */
-    model?: Id64String;
   }
 }

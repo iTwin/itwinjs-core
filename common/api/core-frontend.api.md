@@ -1672,6 +1672,8 @@ export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps, openMode: OpenMode);
     close(): Promise<void>;
     get editingScope(): GraphicalEditingScope | undefined;
+    // @alpha
+    readonly editorToolSettings: BriefcaseEditorToolSettings;
     enterEditingScope(): Promise<GraphicalEditingScope>;
     hasPendingTxns(): Promise<boolean>;
     get iModelId(): GuidString;
@@ -1690,6 +1692,16 @@ export class BriefcaseConnection extends IModelConnection {
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;
+}
+
+// @alpha
+export class BriefcaseEditorToolSettings {
+    get category(): Id64String | undefined;
+    set category(category: Id64String | undefined);
+    get model(): Id64String | undefined;
+    set model(model: Id64String | undefined);
+    readonly onCategoryChanged: BeEvent<(previousCategory: Id64String | undefined) => void>;
+    readonly onModelChanged: BeEvent<(previousModel: Id64String | undefined) => void>;
 }
 
 // @public
@@ -4548,7 +4560,7 @@ export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boo
 export function imageElementFromImageSource(source: ImageSource): Promise<HTMLImageElement>;
 
 // @public
-export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
+export function imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise<HTMLImageElement>;
 
 // @internal
 export class ImageryMapLayerFormat extends MapLayerFormat {
@@ -5332,6 +5344,9 @@ export interface ITwinIdArg {
     // (undocumented)
     readonly iTwinId?: GuidString;
 }
+
+// @public (undocumented)
+export const ITWINJS_CORE_VERSION: string;
 
 // @public
 export enum KeyinParseError {
@@ -7756,6 +7771,7 @@ export interface PreferenceKeyArg {
 // @public
 export abstract class PrimitiveTool extends InteractiveTool {
     autoLockTarget(): void;
+    get briefcase(): BriefcaseConnection | undefined;
     // (undocumented)
     exitTool(): Promise<void>;
     getPrompt(): string;
@@ -11501,8 +11517,6 @@ export class Tool {
 export class ToolAdmin {
     acsContextLock: boolean;
     acsPlaneSnapLock: boolean;
-    // @alpha
-    readonly activeSettings: ToolAdmin.ActiveSettings;
     get activeTool(): InteractiveTool | undefined;
     readonly activeToolChanged: BeEvent<(tool: Tool, start: StartOrResume) => void>;
     // @internal
@@ -11647,15 +11661,6 @@ export class ToolAdmin {
     // (undocumented)
     get viewTool(): ViewTool | undefined;
     }
-
-// @public (undocumented)
-export namespace ToolAdmin {
-    // @alpha
-    export interface ActiveSettings {
-        category?: Id64String;
-        model?: Id64String;
-    }
-}
 
 // @public
 export class ToolAssistance {
@@ -11939,7 +11944,7 @@ export class TraversalSelectionContext {
 }
 
 // @public
-export function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined>;
+export function tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise<HTMLImageElement | undefined>;
 
 // @public
 export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
