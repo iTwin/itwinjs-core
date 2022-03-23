@@ -56,7 +56,7 @@ Based on usability testing, the following changes to widget panels have been imp
 The API impact of these updates are listed below.
 
 1. The [UiItemsManager]($appui-abstract) will still query the [UiItemsProvider]($appui-abstract)s for widgets for the [StagePanelSection]($appui-abstract).Center but the returned widgets will be shown in the bottom panel sections. The StagePanelSection.Center enum entry has been deprecated and UiItemProviders should start using only `StagePanelSection.Start` and `StagePanelSection.End`.
-2. Widgets in panels only support the [WidgetState]($appui-abstract)s WidgetState.Open of WidgetState.Hidden.
+2. Widgets in panels only support the [WidgetState]($appui-abstract)s WidgetState.Open or WidgetState.Hidden.
 
 ## Deprecations in @itwin/components-react package
 
