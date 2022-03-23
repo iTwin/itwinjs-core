@@ -171,7 +171,7 @@ describe("RulesetTesting", () => {
 
   // __PUBLISH_EXTRACT_START__ Presentation.Testing.Rulesets.Content
   it("generates correct content", async function () {
-    const builder = new ContentBuilder({ imodel: iModel });
+    const builder = new ContentBuilder({ imodel: iModel, decimalPrecision: 8 });
 
     // generate content using our custom ruleset
     const instances = await builder.createContentForInstancePerClass(MY_CONTENT_RULESET);

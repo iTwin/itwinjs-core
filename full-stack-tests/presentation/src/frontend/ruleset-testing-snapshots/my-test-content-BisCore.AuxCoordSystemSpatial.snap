@@ -92,8 +92,8 @@ Array [
     "value": Object {
       "displayValue": "X: 0.30 Y: 1.41 Z: 0.00",
       "value": Object {
-        "x": 0.304967765785052,
-        "y": 1.40940976543874,
+        "x": 0.30496777,
+        "y": 1.40940977,
         "z": 0,
       },
       "valueFormat": 0,
@@ -108,7 +108,7 @@ Array [
     },
     "value": Object {
       "displayValue": "-5.84",
-      "value": -5.836131458448762,
+      "value": -5.83613146,
       "valueFormat": 0,
     },
   },
@@ -121,7 +121,7 @@ Array [
     },
     "value": Object {
       "displayValue": "-160.99",
-      "value": -160.98686924400624,
+      "value": -160.98686924,
       "valueFormat": 0,
     },
   },
@@ -134,7 +134,7 @@ Array [
     },
     "value": Object {
       "displayValue": "-107.42",
-      "value": -107.4190033527506,
+      "value": -107.41900335,
       "valueFormat": 0,
     },
   },

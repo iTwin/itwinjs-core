@@ -12,7 +12,7 @@ Array [
     },
     "value": Object {
       "displayValue": "-2.80",
-      "value": -2.801103115081787,
+      "value": -2.80110312,
       "valueFormat": 0,
     },
   },
@@ -26,7 +26,7 @@ Array [
     },
     "value": Object {
       "displayValue": "-1.74",
-      "value": -1.739182472229004,
+      "value": -1.73918247,
       "valueFormat": 0,
     },
   },
@@ -40,7 +40,7 @@ Array [
     },
     "value": Object {
       "displayValue": "1.38",
-      "value": 1.383675217628479,
+      "value": 1.38367522,
       "valueFormat": 0,
     },
   },
@@ -54,7 +54,7 @@ Array [
     },
     "value": Object {
       "displayValue": "2.45",
-      "value": 2.4455959796905518,
+      "value": 2.44559598,
       "valueFormat": 0,
     },
   },
@@ -68,7 +68,7 @@ Array [
     },
     "value": Object {
       "displayValue": "-0.53",
-      "value": -0.530960202217102,
+      "value": -0.5309602,
       "valueFormat": 0,
     },
   },
@@ -82,7 +82,7 @@ Array [
     },
     "value": Object {
       "displayValue": "0.53",
-      "value": 0.530960202217102,
+      "value": 0.5309602,
       "valueFormat": 0,
     },
   },
