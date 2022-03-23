@@ -1877,17 +1877,16 @@ describe("float widget tab", () => {
   });
 
   it("should create panel section for widget tab", () => {
-    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    const state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     const newState = addWidgetTabToPanelSection(state, "right", "rightStart", "t1");
     (newState.widgets.rightStart.tabs.length).should.eql(1);
   });
 
   it("should create panel section for widget tab", () => {
-    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    const state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     const newState = addWidgetTabToPanelSection(state, "right", "rightEnd", "t1");
     (newState.widgets.rightEnd.tabs.length).should.eql(1);
   });
-
 
   it("should add tab to existing start panel section", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
@@ -1913,6 +1912,4 @@ describe("float widget tab", () => {
     (newState.widgets.rightStart.tabs.length).should.eql(1);
     (newState.widgets.rightEnd.tabs.length).should.eql(1);
   });
-
-
 });

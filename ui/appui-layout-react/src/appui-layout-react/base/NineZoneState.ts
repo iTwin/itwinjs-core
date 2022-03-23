@@ -728,7 +728,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         const section = state.panels[target.side].widgets.find((sectionId) => sectionId === newWidgetPanelId);
         // Add WidgetTab to existing  WidgetSection
         if (section) {
-          state.widgets[newWidgetPanelId].tabs.push(action.id)
+          state.widgets[newWidgetPanelId].tabs.push(action.id);
         } else {
           // insert new panel section and add widget tab
           const index = !state.panels[target.side].widgets.length ? /* istanbul ignore next */ 0 : target.widgetIndex;
