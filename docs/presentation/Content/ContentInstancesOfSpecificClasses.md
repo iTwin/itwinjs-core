@@ -53,10 +53,10 @@ Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) t
 [[include:Presentation.ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset]]
 ```
 
-|                                       | Result                                                                                                                               |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| without excluded classes              | ![Example when doing normal class based instance select](./media/contentinstancesofspecificclasses-with-excludedclasses-1.png)       |
-| with `PhysicalModel` classes excluded | ![Example when selecting instances with some classes excluded](./media/contentinstancesofspecificclasses-with-excludedclasses-2.png) |
+|                                                   | Result                                                                                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `excludedClasses: []`                             | ![Example when doing normal class based instance select](./media/contentinstancesofspecificclasses-with-excludedclasses-1.png)       |
+| `excludedClasses` as defined in the above ruleset | ![Example when selecting instances with some classes excluded](./media/contentinstancesofspecificclasses-with-excludedclasses-2.png) |
 
 ### Attribute: `handlePropertiesPolymorphically`
 
@@ -72,10 +72,10 @@ Specifies whether properties of derived `classes` should be included in the cont
 [[include:Presentation.ContentInstancesOfSpecificClasses.HandlePropertiesPolymorphically.Ruleset]]
 ```
 
-| handlePropertiesPolymorphically | Result                                                                                                                                            |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `false`                         | ![Example when only selecting class specified properties](./media/contentinstancesofspecificclasses-with-handlepropertiespolymorphically-1.png)   |
-| `true`                          | ![Example when selecting parent and child class properties](./media/contentinstancesofspecificclasses-with-handlepropertiespolymorphically-2.png) |
+|                                          | Result                                                                                                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `handlePropertiesPolymorphically: false` | ![Example when only selecting class specified properties](./media/contentinstancesofspecificclasses-with-handlepropertiespolymorphically-1.png)   |
+| `handlePropertiesPolymorphically: true`  | ![Example when selecting parent and child class properties](./media/contentinstancesofspecificclasses-with-handlepropertiespolymorphically-2.png) |
 
 ### Attribute: `instanceFilter`
 
@@ -91,10 +91,10 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 [[include:Presentation.ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset]]
 ```
 
-|                | Result                                                                                      |
-| -------------- | ------------------------------------------------------------------------------------------- |
-| without filter | ![Example when selecting all instances](./media/sharedattributes-with-instancefilter-1.png) |
-| with filter    | ![Example when filtering instances](./media/sharedattributes-with-instancefilter-2.png)     |
+|                                                  | Result                                                                                      |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `instanceFilter: ""`                             | ![Example when selecting all instances](./media/sharedattributes-with-instancefilter-1.png) |
+| `instanceFilter` as defined in the above ruleset | ![Example when filtering instances](./media/sharedattributes-with-instancefilter-2.png)     |
 
 ### Attribute: `onlyIfNotHandled`
 
@@ -110,10 +110,10 @@ Specifies whether this specification should be ignored if another specification 
 [[include:Presentation.SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
-| onlyIfNotHandled | Result                                                                                                     |
-| ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| `true`           | ![Example using both specifications](./media/sharedattributes-with-onlyifnothandled-1.png)                 |
-| `false`          | ![Example with "only if not handled" specifications](./media/sharedattributes-with-onlyifnothandled-2.png) |
+|                           | Result                                                                                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `onlyIfNotHandled: true`  | ![Example using both specifications](./media/sharedattributes-with-onlyifnothandled-1.png)                 |
+| `onlyIfNotHandled: false` | ![Example with "only if not handled" specifications](./media/sharedattributes-with-onlyifnothandled-2.png) |
 
 ### Attribute: `priority`
 
@@ -145,7 +145,7 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:Presentation.SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
-| without related properties                                                                          | with related properties                                                                                    |
+| `relatedProperties: []`                                                                             | `relatedProperties` as defined in the above ruleset                                                        |
 | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | ![Example when doing normal property select](./media/sharedattributes-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/sharedattributes-with-relatedproperties-2.png) |
 
@@ -197,10 +197,10 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 [[include:Presentation.SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
-|        | Result                                                                                                     |
-| ------ | ---------------------------------------------------------------------------------------------------------- |
-| before | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
-| after  | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
+|                                                     | Result                                                                                                     |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `propertyOverrides: []`                             | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
+| `propertyOverrides` as defined in the above ruleset | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
 
 ### Attribute: `relatedInstances`
 

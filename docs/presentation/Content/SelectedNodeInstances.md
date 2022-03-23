@@ -75,10 +75,10 @@ Specifies whether derived classes of `acceptableClassNames` should be included i
 [[include:Presentation.SelectedNodeInstances.AcceptablePolymorphically.Ruleset]]
 ```
 
-| Selecting `BisCore.ViewDefinition` input with `acceptablePolymorphically` set to | Result                                                                                                                           |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `true`                                                                           | ![Example of "acceptable polymorphically" attribute set to "true"](./media/selectednodeinstances-with-spatialviewdefinition.png) |
-| `false`                                                                          | ![Example of "acceptable polymorphically" attribute set to "false"](./media/content-empty-table.png)                             |
+|                                    | Result                                                                                                                           |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `acceptablePolymorphically: true`  | ![Example of "acceptable polymorphically" attribute set to "true"](./media/selectednodeinstances-with-spatialviewdefinition.png) |
+| `acceptablePolymorphically: false` | ![Example of "acceptable polymorphically" attribute set to "false"](./media/content-empty-table.png)                             |
 
 ### Attribute: `onlyIfNotHandled`
 
@@ -94,10 +94,10 @@ Specifies whether this specification should be ignored if another specification 
 [[include:Presentation.SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
-| onlyIfNotHandled | Result                                                                                                     |
-| ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| `true`           | ![Example using both specifications](./media/sharedattributes-with-onlyifnothandled-1.png)                 |
-| `false`          | ![Example with "only if not handled" specifications](./media/sharedattributes-with-onlyifnothandled-2.png) |
+|                           | Result                                                                                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `onlyIfNotHandled: true`  | ![Example using both specifications](./media/sharedattributes-with-onlyifnothandled-1.png)                 |
+| `onlyIfNotHandled: false` | ![Example with "only if not handled" specifications](./media/sharedattributes-with-onlyifnothandled-2.png) |
 
 ### Attribute: `priority`
 
@@ -129,7 +129,7 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:Presentation.SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
-| without related properties                                                                          | with related properties                                                                                    |
+| `relatedProperties: []`                                                                             | `relatedProperties` as defined in the above ruleset                                                        |
 | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | ![Example when doing normal property select](./media/sharedattributes-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/sharedattributes-with-relatedproperties-2.png) |
 
@@ -181,10 +181,10 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 [[include:Presentation.SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
-|        | Result                                                                                                     |
-| ------ | ---------------------------------------------------------------------------------------------------------- |
-| before | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
-| after  | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
+|                                                     | Result                                                                                                     |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `propertyOverrides: []`                             | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
+| `propertyOverrides` as defined in the above ruleset | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
 
 ### Attribute: `relatedInstances`
 

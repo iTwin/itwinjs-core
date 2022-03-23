@@ -41,10 +41,10 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 [[include:Presentation.Sorting.RequiredSchemas.Ruleset]]
 ```
 
-| `minVersion` value   | Result                                                                             |
-| -------------------- | ---------------------------------------------------------------------------------- |
-| `minVersion = 1.0.2` | ![Example of using required schemas condition](./media/sortingrule-sorted-asc.png) |
-| `minVersion = 2.0.2` | ![Example of using required schemas condition](./media/sortingrule-unsorted.png)   |
+|                     | Result                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| `minVersion: 1.0.2` | ![Example of using required schemas condition](./media/sortingrule-sorted-asc.png) |
+| `minVersion: 2.0.2` | ![Example of using required schemas condition](./media/sortingrule-unsorted.png)   |
 
 ### Attribute: `priority`
 
@@ -78,8 +78,8 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 
 | Condition evaluation result | Result                                                                 |
 | --------------------------- | ---------------------------------------------------------------------- |
-| `TRUE`                      | ![Example of using rule condition](./media/sortingrule-sorted-asc.png) |
-| `FALSE`                     | ![Example of using rule condition](./media/sortingrule-unsorted.png)   |
+| `true`                      | ![Example of using rule condition](./media/sortingrule-sorted-asc.png) |
+| `false`                     | ![Example of using rule condition](./media/sortingrule-unsorted.png)   |
 
 ### Attribute: `class`
 
@@ -111,10 +111,10 @@ Specifies that `class` attribute defined in this rule should be handled polymorp
 [[include:Presentation.PropertySortingRule.IsPolymorphic.Ruleset]]
 ```
 
-| `isPolymorphic` values  | Result                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------- |
-| `isPolymorphic = true`  | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png) |
-| `isPolymorphic = false` | ![Example of using isPolymorphic attribute](./media/sortingrule-unsorted.png)   |
+|                        | Result                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| `isPolymorphic: true`  | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png) |
+| `isPolymorphic: false` | ![Example of using isPolymorphic attribute](./media/sortingrule-unsorted.png)   |
 
 ### Attribute: `propertyName`
 
@@ -145,10 +145,10 @@ Specifies whether instances should be sorted in ascending order or descending.
 [[include:Presentation.PropertySortingRule.SortAscending.Ruleset]]
 ```
 
-| `sortAscending` values  | Result                                                                           |
-| ----------------------- | -------------------------------------------------------------------------------- |
-| `sortAscending = true`  | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png)  |
-| `sortAscending = false` | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-desc.png) |
+|                        | Result                                                                           |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `sortAscending: true`  | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png)  |
+| `sortAscending: false` | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-desc.png) |
 
 ## Disabled sorting rule
 
@@ -181,10 +181,10 @@ A list of [ECSchema requirements](../RequiredSchemaSpecification.md) that need t
 [[include:Presentation.Sorting.RequiredSchemas.Ruleset]]
 ```
 
-| `minVersion` value   | Result                                                                             |
-| -------------------- | ---------------------------------------------------------------------------------- |
-| `minVersion = 1.0.2` | ![Example of using required schemas condition](./media/sortingrule-sorted-asc.png) |
-| `minVersion = 2.0.2` | ![Example of using required schemas condition](./media/sortingrule-unsorted.png)   |
+|                     | Result                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| `minVersion: 1.0.2` | ![Example of using required schemas condition](./media/sortingrule-sorted-asc.png) |
+| `minVersion: 2.0.2` | ![Example of using required schemas condition](./media/sortingrule-unsorted.png)   |
 
 ### Attribute: `priority`
 
@@ -218,8 +218,8 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 
 | Condition evaluation result | Result                                                                                    |
 | --------------------------- | ----------------------------------------------------------------------------------------- |
-| `TRUE`                      | ![Example of using rule condition](./media/disabledSorting-condition-attribute-true.png)  |
-| `FALSE`                     | ![Example of using rule condition](./media/disabledSorting-condition-attribute-false.png) |
+| `true`                      | ![Example of using rule condition](./media/disabledSorting-condition-attribute-true.png)  |
+| `false`                     | ![Example of using rule condition](./media/disabledSorting-condition-attribute-false.png) |
 
 ### Attribute: `class`
 
@@ -251,7 +251,7 @@ Specifies that `class` attribute defined in this rule should be handled polymorp
 [[include:Presentation.DisabledSortingRule.IsPolymorphic.Ruleset]]
 ```
 
-| `isPolymorphic` values  | Result                                                                                                 |
-| ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| `isPolymorphic = true`  | ![Example of using isPolymorphic attribute](./media/disabledSorting-isPolymorphic-attribute-true.png)  |
-| `isPolymorphic = false` | ![Example of using isPolymorphic attribute](./media/disabledSorting-isPolymorphic-attribute-false.png) |
+|                        | Result                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `isPolymorphic: true`  | ![Example of using isPolymorphic attribute](./media/disabledSorting-isPolymorphic-attribute-true.png)  |
+| `isPolymorphic: false` | ![Example of using isPolymorphic attribute](./media/disabledSorting-isPolymorphic-attribute-false.png) |

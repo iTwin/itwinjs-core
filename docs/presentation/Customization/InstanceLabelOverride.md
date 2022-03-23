@@ -163,10 +163,10 @@ Specification uses ECClass name as the label content.
 [[include:Presentation.InstanceLabelOverride.ClassNameValueSpecification.Ruleset]]
 ```
 
-| `full` values  | Result                                                                                                     |
-| -------------- | ---------------------------------------------------------------------------------------------------------- |
-| `full = true`  | ![Example of using class name value specification](./media/instancelabeloverride-classname-full-value.png) |
-| `full = false` | ![Example of using class name value specification](./media/instancelabeloverride-classname-value.png)      |
+|               | Result                                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------------------------- |
+| `full: true`  | ![Example of using class name value specification](./media/instancelabeloverride-classname-full-value.png) |
+| `full: false` | ![Example of using class name value specification](./media/instancelabeloverride-classname-value.png)      |
 
 #### Class label value specification
 

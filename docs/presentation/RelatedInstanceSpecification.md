@@ -59,8 +59,8 @@ Specifies whether to omit the primary instance from the result if the other end 
 
 |                         | Result                                                                                                 |
 | ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| without instance filter | ![Example without instance filter](./media/relatedinstancespecification-usage-in-instancefilter-1.png) |
-| with instance filter    | ![Example with instance filter](./media/relatedinstancespecification-usage-in-instancefilter-2.png)    |
+| Without instance filter | ![Example without instance filter](./media/relatedinstancespecification-usage-in-instancefilter-1.png) |
+| With instance filter    | ![Example with instance filter](./media/relatedinstancespecification-usage-in-instancefilter-2.png)    |
 
 ### Using related instances for customization
 
@@ -80,5 +80,5 @@ Specifies whether to omit the primary instance from the result if the other end 
 
 |                                        | Result                                                                                                           |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| without related instance specification | ![Example without related instance specification](./media/relatedinstancespecification-usage-for-grouping-1.png) |
-| with related instance specification    | ![Example with related instance specification](./media/relatedinstancespecification-usage-for-grouping-2.png)    |
+| Without related instance specification | ![Example without related instance specification](./media/relatedinstancespecification-usage-for-grouping-1.png) |
+| With related instance specification    | ![Example with related instance specification](./media/relatedinstancespecification-usage-for-grouping-2.png)    |
