@@ -21,7 +21,7 @@ import {
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
-import { IModelImporter } from "./IModelImporter";
+import { IModelImporter, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
@@ -100,6 +100,12 @@ export interface IModelTransformOptions {
    * @beta
    */
   danglingPredecessorsBehavior?: "reject" | "ignore";
+
+  /** If defined, options to be supplied to [[IModelImporter.optimizeGeometry]] by [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]]
+   * as a post-processing step to optimize the geometry in the iModel.
+   * @beta
+   */
+  optimizeGeometry?: OptimizeGeometryOptions;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -919,6 +925,10 @@ export class IModelTransformer extends IModelExportHandler {
       await this.detectElementDeletes();
       await this.detectRelationshipDeletes();
     }
+
+    if (this._options.optimizeGeometry)
+      this.importer.optimizeGeometry(this._options.optimizeGeometry);
+
     this.importer.computeProjectExtents();
   }
 
@@ -936,6 +946,10 @@ export class IModelTransformer extends IModelExportHandler {
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements();
+
+    if (this._options.optimizeGeometry)
+      this.importer.optimizeGeometry(this._options.optimizeGeometry);
+
     this.importer.computeProjectExtents();
   }
 }
