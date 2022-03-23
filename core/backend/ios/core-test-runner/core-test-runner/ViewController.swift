@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
 import Foundation
 import os
 
@@ -6,13 +11,13 @@ import IModelJsNative
 class ViewController: ObservableObject {
     @Published var testStatus = "Tests not started."
     @Published var numFailed = -1
-    
+
     func runTests() {
         testStatus = "Starting tests..."
         // Environment variable is read in configureMocha.js and passed to BentleyMochaReporter.
         let testResultsUrl = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("mocha_test_results.xml")
         setenv("TEST_RESULTS_PATH", testResultsUrl.path, 1)
-        
+
         let host = IModelJsHost.sharedInstance()
         let bundlePath = Bundle.main.bundlePath
         let mainPath = bundlePath.appending("/Assets/main.js")
@@ -27,7 +32,7 @@ class ViewController: ObservableObject {
             } catch {
                 NSLog("(ios): Failed to read mocha test results.")
             }
-            
+
             // Indicate via UI that the tests have finished.
             self.testStatus = "Tests finished."
             self.numFailed = Int(numFailed)
