@@ -1844,6 +1844,22 @@ export interface CustomAttribute {
     };
 }
 
+// @internal
+export interface CustomViewState3dCreatorOptions {
+    // (undocumented)
+    modelIds?: CompressedId64Set;
+}
+
+// @internal
+export interface CustomViewState3dProps {
+    // (undocumented)
+    categoryIds: CompressedId64Set;
+    // (undocumented)
+    modelExtents: Range3dProps;
+    // (undocumented)
+    modelIds: CompressedId64Set;
+}
+
 // @public
 export class CutStyle {
     readonly appearance?: FeatureAppearance;
@@ -4285,6 +4301,44 @@ export interface HttpServerResponse extends Writable {
 }
 
 // @internal
+export interface HydrateViewStateRequestProps {
+    // (undocumented)
+    acsId?: string;
+    // (undocumented)
+    baseModelId?: Id64String;
+    // (undocumented)
+    notLoadedCategoryIds?: CompressedId64Set;
+    // (undocumented)
+    notLoadedModelSelectorStateModels?: CompressedId64Set;
+    // (undocumented)
+    sheetViewAttachmentIds?: CompressedId64Set;
+    // (undocumented)
+    sheetViewViewStateLoadProps?: ViewStateLoadProps;
+    // (undocumented)
+    spatialViewId?: Id64String;
+    // (undocumented)
+    spatialViewViewStateLoadProps?: ViewStateLoadProps;
+}
+
+// @internal
+export interface HydrateViewStateResponseProps {
+    // (undocumented)
+    acsElementProps?: ElementProps;
+    // (undocumented)
+    baseModelProps?: ModelProps;
+    // (undocumented)
+    categoryIdsResult?: SubCategoryResultRow[];
+    // (undocumented)
+    modelSelectorStateModels?: ModelProps[];
+    // (undocumented)
+    sheetViewAttachmentProps?: ViewAttachmentProps[];
+    // (undocumented)
+    sheetViewViews?: (ViewStateProps | undefined)[];
+    // (undocumented)
+    spatialViewProps?: ViewStateProps;
+}
+
+// @internal
 export class I3dmHeader extends TileHeader {
     constructor(stream: ByteStream);
     // (undocumented)
@@ -4596,6 +4650,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getConnectionProps(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
     // (undocumented)
+    getCustomViewState3dData(_iModelToken: IModelRpcProps, _options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps>;
+    // (undocumented)
     getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String>;
     // (undocumented)
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
@@ -4617,6 +4673,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
     // @deprecated (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
+    // (undocumented)
+    hydrateViewState(_iModelToken: IModelRpcProps, _options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps>;
     static readonly interfaceName = "IModelReadRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
@@ -8533,6 +8591,16 @@ export interface SubCategoryProps extends DefinitionElementProps {
     appearance?: SubCategoryAppearance.Props;
     // (undocumented)
     description?: string;
+}
+
+// @internal
+export interface SubCategoryResultRow {
+    // (undocumented)
+    appearance: SubCategoryAppearance.Props;
+    // (undocumented)
+    id: Id64String;
+    // (undocumented)
+    parentId: Id64String;
 }
 
 // @public

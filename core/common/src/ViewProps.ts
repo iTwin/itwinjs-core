@@ -29,22 +29,37 @@ export interface SectionDrawingViewProps {
   drawingToSpatialTransform?: TransformProps;
 }
 
+/** The response props from the getCustomViewState3dData RPC endpoint
+ * @internal
+ */
 export interface CustomViewState3dProps {
   modelIds: CompressedId64Set;
   modelExtents: Range3dProps;
   categoryIds: CompressedId64Set;
 }
 
+/**
+ * The options passed to the getCustomViewState3dData RPC endpoint.
+ * @internal
+ */
 export interface CustomViewState3dCreatorOptions {
   modelIds?: CompressedId64Set;
 }
 
+/**
+ * A result row from querying for subcategories during hydrateViewState
+ * @internal
+ */
 export interface SubCategoryResultRow {
   parentId: Id64String;
   id: Id64String;
   appearance: SubCategoryAppearance.Props;
 }
 
+/**
+ * Request props for the hydrateViewState RPC endpoint.
+ * @internal
+ */
 export interface HydrateViewStateRequestProps {
   acsId?: string;
   notLoadedModelSelectorStateModels?: CompressedId64Set;
@@ -56,6 +71,9 @@ export interface HydrateViewStateRequestProps {
   spatialViewViewStateLoadProps?: ViewStateLoadProps;
 }
 
+/** Response props from the hydrateViewState RPC endpoint.
+ * @internal
+ */
 export interface HydrateViewStateResponseProps {
   acsElementProps?: ElementProps;
   modelSelectorStateModels?: ModelProps[];

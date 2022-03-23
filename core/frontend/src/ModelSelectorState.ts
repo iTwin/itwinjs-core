@@ -90,6 +90,7 @@ export class ModelSelectorState extends ElementState {
 
   /**
    * populates notLoadedModelSelectorStateModels of the HydrateViewStateRequestProps using the modelselectorstate's models.
+   * @internal
    */
   public preload(options: HydrateViewStateRequestProps) {
     const notLoaded = this.iModel.models.filterLoaded(this.models);
@@ -99,6 +100,7 @@ export class ModelSelectorState extends ElementState {
     options.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
   }
 
+  /** @internal */
   public async postload(response: HydrateViewStateResponseProps) {
     if (response.modelSelectorStateModels) await this.iModel.models.updateLoadedWithModelProps(response.modelSelectorStateModels);
   }

@@ -1045,6 +1045,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       return viewState;
     }
 
+    /** Return the [[ViewState]] object associated with the [[ViewStateProps]] passed in. */
     public async convertViewStatePropsToViewState(viewProps: ViewStateProps): Promise<ViewState> {
       const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;

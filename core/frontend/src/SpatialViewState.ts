@@ -151,11 +151,13 @@ export class SpatialViewState extends ViewState3d {
     return val;
   }
 
+  /** @internal */
   protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     super.preload(hydrateRequest);
     this.modelSelector.preload(hydrateRequest);
   }
 
+  /** @internal */
   protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     const promises = [];
     promises.push(super.postload(hydrateResponse));

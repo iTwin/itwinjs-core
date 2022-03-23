@@ -128,6 +128,8 @@ import { HiddenLine } from '@itwin/core-common';
 import { Hilite } from '@itwin/core-common';
 import * as https from 'https';
 import { HttpStatus } from '@itwin/core-bentley';
+import { HydrateViewStateRequestProps } from '@itwin/core-common';
+import { HydrateViewStateResponseProps } from '@itwin/core-common';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
@@ -277,6 +279,7 @@ import { StringifiedClipVector } from '@itwin/core-geometry';
 import { StrokeOptions } from '@itwin/core-geometry';
 import { SubCategoryAppearance } from '@itwin/core-common';
 import { SubCategoryOverride } from '@itwin/core-common';
+import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubLayerId } from '@itwin/core-common';
 import { SyncMode } from '@itwin/core-common';
 import { TelemetryManager } from '@itwin/core-telemetry';
@@ -2666,7 +2669,9 @@ export class DrawingViewState extends ViewState2d {
     // @internal (undocumented)
     isDrawingView(): this is DrawingViewState;
     // @internal (undocumented)
-    load(): Promise<void>;
+    protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
+    // @internal (undocumented)
+    protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
     // @internal (undocumented)
     get secondaryViewports(): Iterable<import("./Viewport").Viewport>;
     // @internal
@@ -4948,10 +4953,12 @@ export namespace IModelConnection {
         get repositoryModelId(): string;
         // @internal
         unload(modelId: Id64String): void;
+        updateLoadedWithModelProps(modelProps: ModelProps[]): Promise<void>;
     }
     export class Views {
         // @internal
         constructor(_iModel: IModelConnection);
+        convertViewStatePropsToViewState(viewProps: ViewStateProps): Promise<ViewState>;
         // @deprecated
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
@@ -7008,6 +7015,10 @@ export class ModelSelectorState extends ElementState {
     get name(): string;
     // @internal (undocumented)
     get observableModels(): ObservableSet<string>;
+    // @internal (undocumented)
+    postload(response: HydrateViewStateResponseProps): Promise<void>;
+    // @internal
+    preload(options: HydrateViewStateRequestProps): void;
     // (undocumented)
     toJSON(): ModelSelectorProps;
 }
@@ -9744,8 +9755,10 @@ export class SheetViewState extends ViewState2d {
     isDrawingView(): this is DrawingViewState;
     // @internal (undocumented)
     isSheetView(): this is SheetViewState;
-    // @internal
-    load(): Promise<void>;
+    // @internal (undocumented)
+    protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
+    // @internal (undocumented)
+    protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
     // @internal (undocumented)
     get secondaryViewports(): Iterable<Viewport>;
     readonly sheetSize: Point2d;
@@ -9942,14 +9955,16 @@ export class SpatialViewState extends ViewState3d {
     getViewedExtents(): AxisAlignedBox3d;
     // @internal (undocumented)
     isSpatialView(): this is SpatialViewState;
-    // (undocumented)
-    load(): Promise<void>;
     // @internal (undocumented)
     markModelSelectorChanged(): void;
     // (undocumented)
     get modelSelector(): ModelSelectorState;
     set modelSelector(selector: ModelSelectorState);
     readonly onViewedModelsChanged: BeEvent<() => void>;
+    // @internal (undocumented)
+    protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
+    // @internal (undocumented)
+    protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
     // (undocumented)
     removeViewedModel(id: Id64String): void;
     // @internal
@@ -10068,6 +10083,8 @@ export class SubCategoriesCache {
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
+    postload(options: HydrateViewStateResponseProps, categoryIds: Id64Arg): void;
+    preload(options: HydrateViewStateRequestProps, categoryIds: Id64Arg): void;
     }
 
 // @internal
@@ -10107,16 +10124,7 @@ export namespace SubCategoriesCache {
         get wasCanceled(): boolean;
     }
     // (undocumented)
-    export type Result = ResultRow[];
-    // (undocumented)
-    export interface ResultRow {
-        // (undocumented)
-        appearance: SubCategoryAppearance.Props;
-        // (undocumented)
-        id: Id64String;
-        // (undocumented)
-        parentId: Id64String;
-    }
+    export type Result = SubCategoryResultRow[];
 }
 
 // @internal
@@ -13562,6 +13570,9 @@ export abstract class ViewState extends ElementState {
     readonly onViewedCategoriesChanged: BeEvent<() => void>;
     // @internal (undocumented)
     outputStatusMessage(status: ViewStatus): ViewStatus;
+    // (undocumented)
+    protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
+    protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
     resetExtentLimits(): void;
@@ -13640,9 +13651,11 @@ export abstract class ViewState2d extends ViewState {
     // @internal (undocumented)
     isSpatialView(): this is SpatialViewState;
     // (undocumented)
-    load(): Promise<void>;
-    // (undocumented)
     readonly origin: Point2d;
+    // @internal (undocumented)
+    protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
+    // @internal (undocumented)
+    protected preload(hydrateRequest: HydrateViewStateRequestProps): void;
     // @internal (undocumented)
     savePose(): ViewPose;
     // (undocumented)
