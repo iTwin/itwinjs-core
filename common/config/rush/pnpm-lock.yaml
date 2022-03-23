@@ -2557,7 +2557,7 @@ importers:
       '@types/node': 14.14.31
       body-parser: ^1.18.2
       child_process: ^1.0.2
-      chrome-launcher: ^0.10.5
+      chrome-launcher: ^0.15.0
       cpx2: ^3.0.0
       cross-env: ^5.1.4
       dotenv: ^10.0.0
@@ -2598,7 +2598,7 @@ importers:
       '@types/express': 4.17.13
       '@types/node': 14.14.31
       child_process: 1.0.2
-      chrome-launcher: 0.10.7
+      chrome-launcher: 0.15.0
       cpx2: 3.0.2
       cross-env: 5.2.1
       dotenv: 10.0.0
@@ -9749,8 +9749,8 @@ packages:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
 
-  /ajv/8.10.0:
-    resolution: {integrity: sha512-bzqAEZOjkrUMl2afH8dknrq5KEk2SrwdBROR+vH1EKVQTqaUbJVPdc/gEdggTMM0Se+s+Ja4ju4TlNcStKl2Hw==}
+  /ajv/8.11.0:
+    resolution: {integrity: sha512-wGgprdCvMalC0BztXvitD2hC04YffAvtsUn93JbGXYLAtCUO4xd17mCCZQxUOItiBwZvJScWo8NIvQMQ71rdpg==}
     dependencies:
       fast-deep-equal: 3.1.3
       json-schema-traverse: 1.0.0
@@ -10238,7 +10238,7 @@ packages:
       '@babel/core': 7.12.3
       find-cache-dir: 2.1.0
       loader-utils: 1.4.0
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       pify: 4.0.1
       schema-utils: 2.7.1
       webpack: 4.44.2
@@ -10895,7 +10895,7 @@ packages:
       infer-owner: 1.0.4
       lru-cache: 5.1.1
       mississippi: 3.0.0
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       move-concurrently: 1.0.1
       promise-inflight: 1.0.1
       rimraf: 2.7.1
@@ -11256,14 +11256,15 @@ packages:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
     engines: {node: '>=10'}
 
-  /chrome-launcher/0.10.7:
-    resolution: {integrity: sha512-IoQLp64s2n8OQuvKZwt77CscVj3UlV2Dj7yZtd1EBMld9mSdGcsGy9fN5hd/r4vJuWZR09it78n1+A17gB+AIQ==}
+  /chrome-launcher/0.15.0:
+    resolution: {integrity: sha512-ZQqX5kb9H0+jy1OqLnWampfocrtSZaGl7Ny3F9GRha85o4odbL8x55paUzh51UC7cEmZ5obp3H2Mm70uC2PpRA==}
+    engines: {node: '>=12.13.0'}
+    hasBin: true
     dependencies:
       '@types/node': 14.14.31
-      is-wsl: 1.1.0
+      escape-string-regexp: 4.0.0
+      is-wsl: 2.2.0
       lighthouse-logger: 1.3.0
-      mkdirp: 0.5.1
-      rimraf: 2.7.1
     dev: true
 
   /chrome-trace-event/1.0.3:
@@ -11607,7 +11608,7 @@ packages:
       aproba: 1.2.0
       fs-write-stream-atomic: 1.0.10
       iferr: 0.1.5
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       rimraf: 2.7.1
       run-queue: 1.0.3
 
@@ -13592,7 +13593,7 @@ packages:
     dependencies:
       concat-stream: 1.6.2
       debug: 2.6.9
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       yauzl: 2.10.0
 
   /extract-zip/2.0.1:
@@ -15894,7 +15895,7 @@ packages:
       chalk: 2.4.2
       jest-diff: 21.2.1
       jest-matcher-utils: 21.2.1
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       natural-compare: 1.4.0
       pretty-format: 21.2.1
 
@@ -17043,10 +17044,6 @@ packages:
       brace-expansion: 2.0.1
     dev: false
 
-  /minimist/0.0.8:
-    resolution: {integrity: sha1-hX/Kv8M5fSYluCKCYuhqp6ARsF0=}
-    dev: true
-
   /minimist/1.2.6:
     resolution: {integrity: sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==}
 
@@ -17110,16 +17107,8 @@ packages:
   /mkdirp-classic/0.5.3:
     resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
 
-  /mkdirp/0.5.1:
-    resolution: {integrity: sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=}
-    deprecated: Legacy versions of mkdirp are no longer supported. Please update to mkdirp 1.x. (Note that the API surface has changed to use Promises in 1.x.)
-    hasBin: true
-    dependencies:
-      minimist: 0.0.8
-    dev: true
-
-  /mkdirp/0.5.5:
-    resolution: {integrity: sha512-NKmAlESf6jMGym1++R0Ra7wvhV+wFW63FaSOFPwRahvea0gMUcGUhVeAg/0BC0wiv9ih5NYPB1Wn1UEI1/L+xQ==}
+  /mkdirp/0.5.6:
+    resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
     hasBin: true
     dependencies:
       minimist: 1.2.6
@@ -17136,7 +17125,7 @@ packages:
     dependencies:
       debug: 2.6.9
       md5: 2.3.0
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       mocha: 8.4.0
       strip-ansi: 4.0.0
       xml: 1.0.1
@@ -17204,7 +17193,7 @@ packages:
       aproba: 1.2.0
       copy-concurrently: 1.0.5
       fs-write-stream-atomic: 1.0.10
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       rimraf: 2.7.1
       run-queue: 1.0.3
 
@@ -18262,7 +18251,7 @@ packages:
     dependencies:
       async: 2.6.3
       debug: 3.2.7
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
     dev: true
 
   /posix-character-classes/0.1.1:
@@ -21348,7 +21337,7 @@ packages:
       css-tree: 1.0.0-alpha.37
       csso: 4.2.0
       js-yaml: 3.14.1
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       object.values: 1.1.5
       sax: 1.2.4
       stable: 0.1.8
@@ -21374,7 +21363,7 @@ packages:
     resolution: {integrity: sha512-s/fitrbVeEyHKFa7mFdkuQMWlH1Wgw/yEXMt5xACT4ZpzWFluehAxRtUUQKPuWhaLAWhFcVx6w3oC8VKaUfPGA==}
     engines: {node: '>=10.0.0'}
     dependencies:
-      ajv: 8.10.0
+      ajv: 8.11.0
       lodash.truncate: 4.4.2
       slice-ansi: 4.0.0
       string-width: 4.2.3
@@ -21742,7 +21731,7 @@ packages:
       diff: 3.5.0
       make-error: 1.3.6
       minimist: 1.2.6
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       source-map-support: 0.5.21
       yn: 2.0.0
     dev: true
@@ -22356,7 +22345,7 @@ packages:
     dependencies:
       memory-fs: 0.4.1
       mime: 2.6.0
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       range-parser: 1.2.1
       webpack: 4.44.2
       webpack-log: 2.0.0
@@ -22474,7 +22463,7 @@ packages:
       loader-utils: 1.4.0
       memory-fs: 0.4.1
       micromatch: 3.1.10
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       neo-async: 2.6.2
       node-libs-browser: 2.2.1
       schema-utils: 1.0.0
@@ -22511,7 +22500,7 @@ packages:
       loader-utils: 1.4.0
       memory-fs: 0.4.1
       micromatch: 3.1.10
-      mkdirp: 0.5.5
+      mkdirp: 0.5.6
       neo-async: 2.6.2
       node-libs-browser: 2.2.1
       schema-utils: 1.0.0
