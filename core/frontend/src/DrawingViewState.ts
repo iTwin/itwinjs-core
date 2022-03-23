@@ -89,8 +89,7 @@ class SectionAttachmentInfo {
       return;
 
     options.spatialViewId = this._spatialView;
-    // TODO: is this necessary?
-    options.spatialViewViewStateLoadProps = {
+    options.viewStateLoadProps = {
       displayStyle: {
         omitScheduleScriptElementIds: true,
         compressExcludedElementIds: true,

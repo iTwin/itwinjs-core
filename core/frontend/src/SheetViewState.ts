@@ -170,7 +170,7 @@ class ViewAttachmentsInfo {
   public preload(options: HydrateViewStateRequestProps) {
     if (this.isLoaded) return;
     options.sheetViewAttachmentIds = CompressedId64Set.sortAndCompress(this._ids);
-    options.sheetViewViewStateLoadProps = {
+    options.viewStateLoadProps = {
       displayStyle: {
         omitScheduleScriptElementIds: true,
         compressExcludedElementIds: true,

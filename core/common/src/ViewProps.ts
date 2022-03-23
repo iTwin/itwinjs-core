@@ -65,10 +65,9 @@ export interface HydrateViewStateRequestProps {
   notLoadedModelSelectorStateModels?: CompressedId64Set;
   notLoadedCategoryIds?: CompressedId64Set;
   sheetViewAttachmentIds?: CompressedId64Set;
-  sheetViewViewStateLoadProps?: ViewStateLoadProps;
+  viewStateLoadProps?: ViewStateLoadProps;
   baseModelId?: Id64String;
   spatialViewId?: Id64String;
-  spatialViewViewStateLoadProps?: ViewStateLoadProps;
 }
 
 /** Response props from the hydrateViewState RPC endpoint.
