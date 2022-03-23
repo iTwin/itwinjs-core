@@ -83,6 +83,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/core-extension",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/core-frontend",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -199,6 +203,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@itwin/itwinui-icons-react",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/itwinui-react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
@@ -284,7 +292,7 @@
     },
     {
       "name": "@testing-library/react",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@testing-library/react-hooks",
@@ -305,10 +313,6 @@
     {
       "name": "@typescript-eslint/typescript-estree",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "@ungap/url-search-params",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "@wojtekmaj/enzyme-adapter-react-17",
@@ -341,6 +345,10 @@
     {
       "name": "body-parser",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "buffer",
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "cache-require-paths",
@@ -457,6 +465,10 @@
     {
       "name": "enzyme-to-json",
       "allowedCategories": [ "extensions", "frontend" ]
+    },
+    {
+      "name": "esbuild",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "eslint",
@@ -780,7 +792,7 @@
     },
     {
       "name": "react-resize-detector",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-select",
@@ -863,6 +875,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "string_decoder",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "superagent",
       "allowedCategories": [ "backend", "common", "frontend" ]
     },
@@ -905,6 +921,10 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "url",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "username",

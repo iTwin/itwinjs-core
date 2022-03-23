@@ -12,7 +12,7 @@ import {
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
-  GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
+  GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
   mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
   QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
   TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
@@ -1045,11 +1045,21 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       return viewState;
     }
 
-    /** @deprecated
-     * @throws This function is deprecated and will always throw a "no content" error.
+    /** Get a thumbnail for a view.
+     * @param viewId The id of the view of the thumbnail.
+     * @returns A Promise of the ThumbnailProps.
+     * @throws "No content" error if invalid thumbnail.
+     * @deprecated
      */
     public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
-      throw new NoContentError();
+      // eslint-disable-next-line deprecation/deprecation
+      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), _viewId.toString());
+      const intValues = new Uint32Array(val.buffer, 0, 4);
+
+      if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
+        throw new NoContentError();
+
+      return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
     }
   }
 }

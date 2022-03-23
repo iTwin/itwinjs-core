@@ -16,11 +16,11 @@ import { ModalDialogManager } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayerSettingsMenu } from "./MapLayerSettingsMenu";
 import { MapUrlDialog } from "./MapUrlDialog";
 import "./MapLayerManager.scss";
+import { MapLayersUI } from "../../mapLayers";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 
 /** @internal */
@@ -40,11 +40,11 @@ interface MapLayerDroppableProps {
 export function MapLayerDroppable(props: MapLayerDroppableProps) {
   const containsLayer = props.layersList && props.layersList.length > 0;
   const droppableId = props.isOverlay ? "overlayMapLayers" : "backgroundMapLayers";
-  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.ToggleVisibility"));
-  const [requireAuthTooltip] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.RequireAuthTooltip"));
-  const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.NoBackgroundLayers"));
-  const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.NoOverlayLayers"));
-  const [dropLayerLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.DropLayerLabel"));
+  const [toggleVisibility] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.ToggleVisibility"));
+  const [requireAuthTooltip] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.RequireAuthTooltip"));
+  const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.NoBackgroundLayers"));
+  const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.NoOverlayLayers"));
+  const [dropLayerLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.DropLayerLabel"));
 
   const renderItem: DraggableChildrenFn = (dragProvided, _, rubric) => {
     assert(props.layersList !== undefined);

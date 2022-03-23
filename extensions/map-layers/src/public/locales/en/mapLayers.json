@@ -77,6 +77,10 @@
     "ToggleVisibility": "Toggle Visibility",
     "SettingsButtonTooltip": "Settings"
   },
+  "FeatureInfoWidget": {
+    "Label": "Map Layers Info",
+    "NoRecords": "No Results"
+  },
   "LayerMenu": {
     "Detach": "Detach",
     "ZoomToLayer": "Zoom to layer"

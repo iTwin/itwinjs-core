@@ -88,6 +88,24 @@ export class TestFrontstageUi2 extends FrontstageProvider {
 }
 
 /** @internal */
+export class TestFrontstageWithHiddenWidget extends FrontstageProvider {
+  public static stageId = "TestFrontstageWithHiddenWidget";
+  public get id(): string {
+    return TestFrontstageWithHiddenWidget.stageId;
+  }
+
+  public get frontstage() {
+    return (
+      <Frontstage
+        id={this.id}
+        defaultTool={CoreTools.selectElementCommand}
+        contentGroup={TestUtils.TestContentGroup1}
+      />
+    );
+  }
+}
+
+/** @internal */
 export class TestFrontstageUi1 extends FrontstageProvider {
   public static stageId = "TestFrontstageUi1";
   public get id(): string {
@@ -373,6 +391,25 @@ class TestDuplicateWidgetProvider implements UiItemsProvider {
       getWidgetContent: () => "Provider LeftStart1",
     });
 
+    return widgets;
+  }
+}
+
+class TestHiddenWidgetProvider implements UiItemsProvider {
+  public static stageId = "TestFrontstageWithHiddenWidget";
+  public get id(): string {
+    return TestHiddenWidgetProvider.stageId;
+  }
+
+  public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) {
+    const widgets: Array<AbstractWidgetProps> = [];
+    if (location === StagePanelLocation.Left && section === StagePanelSection.Middle)
+      widgets.push({
+        id: "TestHiddenWidgetProviderLM1",
+        label: "TestHiddenWidgetProvider Hidden LM1",
+        getWidgetContent: () => "TestHiddenWidgetProvider LM1 widget",
+        defaultState: WidgetState.Hidden,
+      });
     return widgets;
   }
 }
@@ -681,6 +718,91 @@ describe("Frontstage local storage wrapper", () => {
         frontstageDef.nineZoneState = newState;
 
         spy.called.should.true;
+      });
+
+      it("should show WidgetState as closed in panel size is undefined", () => {
+        const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
+
+        let nineZoneState = createNineZoneState();
+        nineZoneState = addPanelWidget(nineZoneState, "left", "start", ["t1", "t2"], { activeTabId: "t1" });
+        nineZoneState = addTab(nineZoneState, "t1");
+        frontstageDef.nineZoneState = nineZoneState;
+        const widgetDef = new WidgetDef({
+          id: "t1",
+          defaultState: WidgetState.Hidden,
+        });
+
+        const leftPanel = new StagePanelDef();
+        leftPanel.initializeFromProps({
+          resizable: true,
+          widgets: [
+            <Widget
+              key="start"
+              id="start"
+            />,
+          ],
+        }, StagePanelLocation.Left);
+        sinon.stub(frontstageDef, "leftPanel").get(() => leftPanel);
+
+        sinon.stub(frontstageDef, "getStagePanelDef").withArgs(StagePanelLocation.Left).returns(leftPanel);
+        sinon.stub(frontstageDef, "findWidgetDef").withArgs("t1").returns(widgetDef);
+
+        // const panel = frontstageDef.nineZoneState.panels.left;
+        expect(frontstageDef.getWidgetCurrentState(widgetDef)).to.be.eql(WidgetState.Closed);
+      });
+
+      it("should show WidgetState as closed in panel size is 0", () => {
+        const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
+
+        let nineZoneState = createNineZoneState();
+        nineZoneState = addPanelWidget(nineZoneState, "left", "start", ["t1", "t2"], { activeTabId: "t1" });
+        nineZoneState = addTab(nineZoneState, "t1");
+        frontstageDef.nineZoneState = nineZoneState;
+        const widgetDef = new WidgetDef({
+          id: "t1",
+          defaultState: WidgetState.Hidden,
+        });
+
+        const leftPanel = new StagePanelDef();
+        leftPanel.initializeFromProps({
+          resizable: true,
+          size: 0,
+          widgets: [
+            <Widget
+              key="start"
+              id="start"
+            />,
+          ],
+        }, StagePanelLocation.Left);
+        sinon.stub(frontstageDef, "leftPanel").get(() => leftPanel);
+
+        sinon.stub(frontstageDef, "getStagePanelDef").withArgs(StagePanelLocation.Left).returns(leftPanel);
+        sinon.stub(frontstageDef, "findWidgetDef").withArgs("t1").returns(widgetDef);
+
+        // const panel = frontstageDef.nineZoneState.panels.left;
+        expect(frontstageDef.getWidgetCurrentState(widgetDef)).to.be.eql(WidgetState.Closed);
+      });
+
+      it("should show WidgetState as closed in panel is collapsed", () => {
+        const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
+
+        let nineZoneState = createNineZoneState();
+        nineZoneState = addPanelWidget(nineZoneState, "left", "start", ["t1", "t2"], { activeTabId: "t1" });
+        nineZoneState = addTab(nineZoneState, "t1");
+        nineZoneState = produce(nineZoneState, (draft) => {
+          draft.panels.left.collapsed = true;
+        });
+        frontstageDef.nineZoneState = nineZoneState;
+        const widgetDef = new WidgetDef({
+          id: "t1",
+          defaultState: WidgetState.Open,
+        });
+
+        sinon.stub(frontstageDef, "findWidgetDef").withArgs("t1").returns(widgetDef);
+        expect(frontstageDef.getWidgetCurrentState(widgetDef)).to.be.eql(WidgetState.Closed);
       });
 
       it("should ignore nineZoneState changes of other frontstages", () => {
@@ -1837,13 +1959,10 @@ describe("Frontstage local storage wrapper", () => {
       });
 
       afterEach(() => {
-        UiItemsManager.unregister("TestUi2Provider");
+        UiItemsManager.clearAllProviders();
         FrontstageManager.clearFrontstageProviders();
         FrontstageManager.setActiveFrontstageDef(undefined);
         FrontstageManager.nineZoneSize = undefined;
-      });
-
-      afterEach(() => {
         TestUtils.terminateUiFramework();
         IModelApp.shutdown();
       });
@@ -1875,6 +1994,62 @@ describe("Frontstage local storage wrapper", () => {
         await wrapper.findByText("TestUi2Provider W1");
         expect(wrapper.queryAllByText("Left Start 1").length).to.equal(1);
         expect(wrapper.queryAllByText("TestUi2Provider RM1").length).to.equal(1);
+
+      });
+
+      it("should support widgets with default state of hidden", async () => {
+        UiItemsManager.register(new TestHiddenWidgetProvider());
+
+        const frontstageProvider = new TestFrontstageWithHiddenWidget();
+        FrontstageManager.addFrontstageProvider(frontstageProvider);
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        if (frontstageDef)
+          frontstageDef.nineZoneState = createNineZoneState();
+
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        const widgetDef = frontstageDef?.findWidgetDef("TestHiddenWidgetProviderLM1");
+        expect (widgetDef).to.not.be.undefined;
+
+        const wrapper = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
+        // should be hidden initially
+        expect(wrapper.queryAllByText("TestHiddenWidgetProvider LM1 widget").length).to.equal(0);
+
+        act(() => {
+          widgetDef?.setWidgetState(WidgetState.Open);
+        });
+
+        // should be present after setting state to Open
+        expect(wrapper.queryAllByText("TestHiddenWidgetProvider LM1 widget").length).to.equal(1);
+      });
+
+      it("should open collapsed panel when widget is opened", async () => {
+        UiItemsManager.register(new TestHiddenWidgetProvider());
+
+        const frontstageProvider = new TestFrontstageWithHiddenWidget();
+        FrontstageManager.addFrontstageProvider(frontstageProvider);
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        if (frontstageDef) {
+          let state = createNineZoneState();
+          state = produce(state, (draft) => {
+            draft.panels.left.collapsed = true;
+          });
+          frontstageDef.nineZoneState = state;
+        }
+
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        const widgetDef = frontstageDef?.findWidgetDef("TestHiddenWidgetProviderLM1");
+        expect (widgetDef).to.not.be.undefined;
+
+        const wrapper = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
+        // should be hidden initially
+        expect(wrapper.queryAllByText("TestHiddenWidgetProvider LM1 widget").length).to.equal(0);
+
+        act(() => {
+          widgetDef?.setWidgetState(WidgetState.Open);
+        });
+
+        // should be present after setting state to Open
+        expect(wrapper.queryAllByText("TestHiddenWidgetProvider LM1 widget").length).to.equal(1);
       });
 
       it("should listen for window close event", async () => {

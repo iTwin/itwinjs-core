@@ -6,7 +6,6 @@
  * @module RpcInterface
  */
 
-import { URL } from "url";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";

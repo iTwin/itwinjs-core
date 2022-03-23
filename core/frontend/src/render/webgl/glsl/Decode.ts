@@ -85,3 +85,21 @@ export function addUnpackAndNormalize2Bytes(builder: ShaderBuilder): void {
   builder.addFunction(unpack2Bytes);
   builder.addFunction(unpackAndNormalize2Bytes);
 }
+
+/** Given an IEEE 32-bit float stuffed into a RGBA unsigned byte texture, extract the float.
+ * The input vec4 components are in the integer range [0..255].
+ * From https://github.com/CesiumGS/cesium/blob/main/Source/Shaders/Builtin/Functions/unpackFloat.glsl
+ * @internal
+ */
+export const decodeFloat32 = `
+float decodeFloat32(vec4 packedFloat) {
+  float sign = 1.0 - step(128.0, packedFloat[3]) * 2.0;
+  float exponent = 2.0 * mod(packedFloat[3], 128.0) + step(128.0, packedFloat[2]) - 127.0;    
+  if (exponent == -127.0)
+    return 0.0;
+
+  float mantissa = mod(packedFloat[2], 128.0) * 65536.0 + packedFloat[1] * 256.0 + packedFloat[0] + float(0x800000);
+  float result = sign * exp2(exponent - 23.0) * mantissa;
+  return result;
+}
+`;

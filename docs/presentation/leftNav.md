@@ -36,8 +36,6 @@
 ### [Customization](./Customization/index.md)
 
 - [Rules](./Customization/index.md#rules)
-- [Property value renderers](./Customization/PropertyValueRenderers.md)
-- [Property category renderers](./Customization/PropertyCategoryRenderers.md)
 - [ECExpressions](./Customization/ECExpressions.md)
 
 &nbsp;

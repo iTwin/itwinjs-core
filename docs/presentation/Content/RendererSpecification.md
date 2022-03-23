@@ -17,9 +17,9 @@ to [RendererDescription.name]($presentation-common) attribute that gets assigned
 is set on.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Renderer.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.Renderer.Ruleset]]
 ```
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Renderer.Result]]
+[[include:Presentation.Content.Customization.PropertySpecification.Renderer.Result]]
 ```

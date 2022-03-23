@@ -32,4 +32,4 @@ User that only has Read iModel permission can work with iModel, but they will be
 
 Permissions automatically included: _Read iModel_
 
-Modify iModel permission allows making changes to the iModel. It means that users will be able to manage `Locks` and push `Changeset`s to iModelHub. See [concurrency control]($docs/learning/backend/concurrencycontrol) and [BriefcaseDb.pushChanges]($backend).
+Modify iModel permission allows making changes to the iModel. It means that users will be able to manage `Locks` and push `Changeset`s to iModelHub. See [concurrency control](../backend/concurrencycontrol) and [BriefcaseDb.pushChanges]($backend).

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import "./SampleTimelineComponent.scss";
 import * as React from "react";
 import starSvg from "@bentley/icons-generic/icons/star.svg?sprite";

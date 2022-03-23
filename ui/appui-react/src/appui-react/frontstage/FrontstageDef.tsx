@@ -35,7 +35,6 @@ import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
-import { setImmediate } from "timers";
 import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { ContentDialogManager } from "../dialog/ContentDialogManager";
@@ -366,9 +365,13 @@ export class FrontstageDef {
   public startDefaultTool(): void {
     // Start the default tool
     // istanbul ignore next
-    if (this.defaultTool && IModelApp.toolAdmin && IModelApp.viewManager) {
-      IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
-      this.defaultTool.execute();
+    if (IModelApp.toolAdmin && IModelApp.viewManager) {
+      if (this.defaultTool) {
+        IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
+        this.defaultTool.execute();
+      } else {
+        IModelApp.toolAdmin.startDefaultTool(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      }
     }
   }
 
@@ -708,8 +711,13 @@ export class FrontstageDef {
       if (isFloatingLocation(location))
         return WidgetState.Floating;
 
+      let collapsedPanel = false;
+      if ("side" in location) {
+        const panel = this.nineZoneState.panels[location.side];
+        collapsedPanel = panel.collapsed || undefined === panel.size || 0 === panel.size;
+      }
       const widgetContainer = this.nineZoneState.widgets[location.widgetId];
-      if (widgetDef.id === widgetContainer.activeTabId)
+      if (widgetDef.id === widgetContainer.activeTabId && !collapsedPanel)
         return WidgetState.Open;
       else
         return WidgetState.Closed;
@@ -792,7 +800,7 @@ export class FrontstageDef {
     let widgetIsVisible = false;
 
     if (this.nineZoneState) {
-      const tabLocation = findTab (this.nineZoneState, widgetId);
+      const tabLocation = findTab(this.nineZoneState, widgetId);
       if (tabLocation) {
         if (isFloatingLocation(tabLocation) || isPopoutLocation(tabLocation)) {
           widgetIsVisible = true;
@@ -863,7 +871,7 @@ export class FrontstageDef {
               const widgetContainerId = location.widgetId;
               const tab = state.tabs[widgetId];
               this.nineZoneState = state;
-              setImmediate(() => {
+              setTimeout(() => {
                 const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
                 const position: ChildWindowLocationProps = {
                   width: tab.preferredPopoutWidgetSize!.width,  // preferredPopoutWidgetSize set in popoutWidgetToChildWindow method above
