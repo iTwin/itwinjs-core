@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, Id64String, Logger } from "@itwin/core-bentley";
 import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, QueryRowFormat, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
 
 export class ViewStateHydrater {
@@ -36,7 +37,7 @@ export class ViewStateHydrater {
     try {
       modelProps = this._imodel.models.getModelJson({ id: baseModelId });
     } catch (err) {
-
+      Logger.logError(BackendLoggerCategory.ViewStateHydrater, `Error getting modelProps for baseModelId: ${baseModelId}`, () => ({error: BentleyError.getErrorProps(err)}));
     }
     response.baseModelProps = modelProps;
   }
@@ -50,8 +51,6 @@ export class ViewStateHydrater {
         const modelProps = this._imodel.models.getModelJson({ id });
         modelJsonArray.push(modelProps);
       } catch (error) {
-        if (decompressedModelIds.size === 1)
-          throw error; // if they're asking for more than one model, don't throw on error.
       }
     }
 
@@ -97,9 +96,7 @@ export class ViewStateHydrater {
     for (const id of decompressedIds) {
       try {
         attachmentProps.push(this._imodel.elements.getElementJson({ id }) );
-      } catch (error) { // TODO: should we really throw an error? or just let it be empty?
-        if (decompressedIds.size === 1)
-          throw error; // if they're asking for more than one element, don't throw on error.
+      } catch (error) {
       }
     }
 
