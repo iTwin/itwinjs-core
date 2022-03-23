@@ -100,6 +100,29 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     return 1.0 / curvature;
   }
 
+  /** Return a deep clone. */
+  public abstract override clone(): TransitionSpiral3d;
+
+  /** Recompute strokes */
+  public abstract refreshComputedProperties(): void;
+
+  /** Return (if possible) a spiral which is a portion of this curve. */
+  public override clonePartialCurve(fractionA: number, fractionB: number): TransitionSpiral3d {
+    const spiralB = this.clone();
+    const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
+    const globalFractionB = this._activeFractionInterval.fractionToPoint(fractionB);
+    spiralB._activeFractionInterval.set(globalFractionA, globalFractionB);
+    spiralB.refreshComputedProperties();
+    return spiralB;
+  }
+
+  /** Clone with a transform applied  */
+  public override cloneTransformed(transform: Transform): TransitionSpiral3d {
+    const result = this.clone();
+    result.tryTransformInPlace(transform); // ok, we're confident it will always work.
+    return result;
+  }
+
   /** Return the average of the start and end curvatures. */
   public static averageCurvature(radiusLimits: Segment1d): number {
     return 0.5 * (TransitionSpiral3d.radiusToCurvature(radiusLimits.x0) + TransitionSpiral3d.radiusToCurvature(radiusLimits.x1));

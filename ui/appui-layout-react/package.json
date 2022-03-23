@@ -1,11 +1,10 @@
 {
   "name": "@itwin/appui-layout-react",
-  "version": "3.1.0-dev.33",
+  "version": "3.2.0-dev.21",
   "description": "iTwin.js Nine-zone React UI components",
   "main": "lib/cjs/appui-layout-react.js",
   "module": "lib/esm/appui-layout-react.js",
   "typings": "lib/cjs/appui-layout-react",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -37,9 +36,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.1.0-dev.33",
-    "@itwin/core-bentley": "workspace:^3.1.0-dev.33",
-    "@itwin/core-react": "workspace:^3.1.0-dev.33",
+    "@itwin/appui-abstract": "workspace:^3.2.0-dev.21",
+    "@itwin/core-bentley": "workspace:^3.2.0-dev.21",
+    "@itwin/core-react": "workspace:^3.2.0-dev.21",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -93,8 +92,8 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/itwinui-css": "0.44.1",
-    "@itwin/itwinui-react": "1.29.3",
+    "@itwin/itwinui-css": "0.x",
+    "@itwin/itwinui-react": "^1.32.0",
     "classnames": "^2.3.1",
     "immer": "9.0.6",
     "uuid": "^7.0.3"

@@ -198,15 +198,15 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     super();
     this._path = path;
     this._fragments = fragments;
-    this._totalLength = fragments[fragments.length - 1].chainDistance1;
+    this._totalLength = fragments.length > 0 ? fragments[fragments.length - 1].chainDistance1 : 0;
   }
   /**
    * Create a clone, transformed and with its own distance index.
    * @param transform transform to apply in the clone.
    */
-  public cloneTransformed(transform: Transform): CurvePrimitive | undefined {
+  public cloneTransformed(transform: Transform): CurveChainWithDistanceIndex | undefined {
     const c = this._path.clone();
-    if (c !== undefined && c instanceof CurveChain && c.tryTransformInPlace(transform))
+    if (c instanceof CurveChain && c.tryTransformInPlace(transform))
       return CurveChainWithDistanceIndex.createCapture(c);
     return undefined;
   }
@@ -216,11 +216,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   public get path(): CurveChain { return this._path; }
 
   /** Return a deep clone */
-  public clone(): CurvePrimitive | undefined {
-    const c = this._path.clone();
-    if (c !== undefined && c instanceof CurveChain)
-      return CurveChainWithDistanceIndex.createCapture(c);
-    return undefined;
+  public clone(): CurveChainWithDistanceIndex {
+    const c = this._path.clone() as CurveChain;
+    return CurveChainWithDistanceIndex.createCapture(c);
   }
   /** Ask if the curve is within tolerance of a plane.
    * @returns Returns true if the curve is completely within tolerance of the plane.
@@ -325,9 +323,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * Capture (not clone) a path into a new `CurveChainWithDistanceIndex`
    * @param primitives primitive array to be CAPTURED (not cloned)
    */
-  public static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined {
-    if (path.children.length === 0)
-      return undefined;
+  public static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex {
     const fragments = DistanceIndexConstructionContext.createPathFragmentIndex(path, options);
     const result = new CurveChainWithDistanceIndex(path, fragments);
     return result;

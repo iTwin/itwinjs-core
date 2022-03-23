@@ -1,23 +1,60 @@
 # LabelOverride Customization Rule
 
+> **Note** This rule is deprecated. Use [InstanceLabelOverride](./InstanceLabelOverride.md) rule instead.
+
 > TypeScript type: [LabelOverride]($presentation-common).
 
 Label override rules provide advanced ways to override instance labels and descriptions in
-exchange of some performance penalty. When possible, it's advised to use
-[InstanceLabelOverride](./InstanceLabelOverride.md) rules instead.
+exchange of some performance penalty.
 
 ## Attributes
 
-| Name               | Required? | Type                                                                 | Default | Meaning                                                                                  |
-| ------------------ | --------- | -------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------- |
-| *Filtering*        |
-| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    | Specifications that define schema requirements for the rule to take effect.              |
-| `priority`         | No        | `number`                                                             | `1000`  | Defines the order in which presentation rules are evaluated.                             |
-| `onlyIfNotHandled` | No        | `boolean`                                                            | `false` | Should this rule be ignored if there is already an existing rule with a higher priority. |
-| `condition`        | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    | Defines a condition for the rule, which needs to be met in order to execute it.          |
-| *Overrides*        |
-| `label`            | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`    | An expression whose result becomes the label                                             |
-| `description`      | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    | An expression whose result becomes the description                                       |
+| Name                                              | Required? | Type                                                                 | Default |
+| ------------------------------------------------- | --------- | -------------------------------------------------------------------- | ------- |
+| *Filtering*                                       |
+| [`requiredSchemas`](#attribute-requiredschemas)   | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    |
+| [`priority`](#attribute-priority)                 | No        | `number`                                                             | `1000`  |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled) | No        | `boolean`                                                            | `false` |
+| [`condition`](#attribute-condition)               | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+| *Overrides*                                       |
+| [`label`](#attribute-label)                       | No        | [ECExpression](./ECExpressions.md#override-value)                    | `""`    |
+| [`description`](#attribute-description)           | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    |
+
+### Attribute: `requiredSchemas`
+
+> **Default value:** `[]`
+
+Specifications that define schema requirements for the rule to take effect.
+
+### Attribute: `priority`
+
+> **Default value:** `1000`
+
+Defines the order in which presentation rules are evaluated.
+
+### Attribute: `onlyIfNotHandled`
+
+> **Default value:** `false`
+
+Should this rule be ignored if there is already an existing rule with a higher priority.
+
+### Attribute: `condition`
+
+> **Default value:** `""`
+
+Defines a condition for the rule, which needs to be met in order to execute it.
+
+### Attribute: `label`
+
+> **Default value:** `""`
+
+An expression whose result becomes the label.
+
+### Attribute: `description`
+
+> **Default value:** `""`
+
+An expression whose result becomes the description.
 
 ## Example
 

@@ -62,7 +62,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
    * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
    * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
    */
-  constructor(protected _providerId: string, public isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
+  constructor(protected _providerId: string, public isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any, provider?: UiItemsProvider) => boolean) { }
 
   public get id(): string { return this._providerId; }
   public onUnregister(): void { }
@@ -83,7 +83,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     let provideToStage = false;
 
     if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
       provideToStage = (stageUsage === StageUsage.General);
     }
@@ -98,7 +98,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     let provideToStage = false;
 
     if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
       provideToStage = (stageUsage === StageUsage.General);
     }
@@ -115,7 +115,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     let provideToStage = false;
 
     if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData, this);
     } else {
       provideToStage = (stageUsage === StageUsage.General);
     }
@@ -137,6 +137,12 @@ export interface UiItemProviderRegisteredEventArgs {
  */
 export class UiItemsManager {
   private static _registeredUiItemsProviders: Map<string, UiItemsProvider> = new Map<string, UiItemsProvider>();
+
+  /** For use in unit testing
+   * @internal */
+  public static clearAllProviders() {
+    UiItemsManager._registeredUiItemsProviders.clear();
+  }
 
   /** Event raised any time a UiProvider is registered or unregistered. */
   public static readonly onUiProviderRegisteredEvent = new BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>();

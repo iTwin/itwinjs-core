@@ -24,6 +24,7 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
+alpha;ActivationEvent
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
@@ -71,8 +72,11 @@ internal;BingMapsImageryLayerProvider
 public;BlankConnection 
 public;BlankConnectionProps
 public;BriefcaseConnection 
+alpha;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
+alpha;BuildExtensionManifest 
+alpha;BuiltInExtensionLoaderProps
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -156,6 +160,12 @@ public;EntityState
 internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
+alpha;ExtensionAdmin
+alpha;ExtensionHost
+alpha;ExtensionImpl
+alpha;ExtensionLoader
+alpha;ExtensionLoaderProps
+alpha;ExtensionManifest
 public;ExtentLimits
 internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
@@ -272,7 +282,7 @@ public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolea
 public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
-public;imageElementFromUrl(url: string): Promise
+public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 internal;ImageryMapLayerFormat 
 internal;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
@@ -312,10 +322,12 @@ public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => it
 public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
 beta;ITwinIdArg
+public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
+alpha;LocalExtensionProps
 internal;LocalhostIpcApp
 internal;LocalHostIpcAppOpts
 beta;LocalUnitFormatProvider 
@@ -335,9 +347,12 @@ internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 internal;MapCartoRectangle 
+alpha;MapFeatureInfo
+alpha;MapFeatureInfoRecord 
 internal;MapLayerAuthenticationInfo
 beta;MapLayerAuthType
 internal;MapLayerClassifiers = Map
+alpha;MapLayerFeatureInfo
 internal;MapLayerFormat
 internal;MapLayerFormatRegistry
 internal;MapLayerFormatType = typeof MapLayerFormat
@@ -350,6 +365,7 @@ internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 internal;MapLayerTokenEndpoint
+alpha;MapSubLayerFeatureInfo
 internal;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
@@ -461,6 +477,7 @@ public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
 internal;ReadonlyTileUserSet 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
+alpha;RealityDataError 
 beta;RealityDataSource
 beta;RealityDataSource
 internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey
@@ -506,6 +523,7 @@ internal;RenderTargetDebugControl
 internal;class RenderTerrainGeometry 
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
+alpha;ResolveFunc = () => Promise
 internal;RootIModelTile = Tile &
 public;RotateViewTool 
 alpha;RotationMode
@@ -625,8 +643,6 @@ public;TileVisibility
 beta;TokenArg
 public;Tool
 public;ToolAdmin
-public;ToolAdmin
-alpha;ActiveSettings
 public;ToolAssistance
 public;ToolAssistanceImage
 public;ToolAssistanceInputMethod
@@ -635,6 +651,7 @@ public;ToolAssistanceInstructions
 public;ToolAssistanceKeyboardInfo
 public;ToolAssistanceSection
 public;ToolList = ToolType[]
+alpha;ToolProvider 
 public;ToolRegistry
 public;ToolSettings
 internal;ToolSettingsState
@@ -646,7 +663,7 @@ internal;TouchCursor
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
-public;tryImageElementFromUrl(url: string): Promise
+public;tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
 public;Uniform

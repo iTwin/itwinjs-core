@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
-import { MeshEdge, OctEncodedNormal, OctEncodedNormalPair, PolylineData, QPoint3dList } from "@itwin/core-common";
+import { ColorIndex, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, PolylineData, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
-import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
 import { VertexIndices } from "../../../render/primitives/VertexTable";
 import { EdgeParams, EdgeTable } from "../../../render/primitives/EdgeParams";
 
@@ -21,20 +21,22 @@ function makeNormalPair(n0: number, n1: number): OctEncodedNormalPair {
  * /__\/__\
  * 0   2   4
  */
-function createMeshArgs(opts?: {
-  is2d?: boolean;
-}): MeshArgs {
-  const args = new MeshArgs();
-  args.points = QPoint3dList.fromPoints([new Point3d(0, 0, 0), new Point3d(1, 1, 0), new Point3d(2, 0, 0), new Point3d(3, 1, 0), new Point3d(4, 0, 0)]);
-  args.vertIndices = [0, 1, 2, 2, 1, 3, 2, 3, 4];
+function createMeshArgs(opts?: { is2d?: boolean }): MeshArgs {
+  const edges = new MeshArgsEdges();
+  edges.edges.edges = [new MeshEdge(0, 1), new MeshEdge(1, 3), new MeshEdge(3, 4)];
+  edges.silhouettes.edges = [new MeshEdge(1, 2), new MeshEdge(2, 3)];
+  edges.silhouettes.normals = [makeNormalPair(0, 0xffff), makeNormalPair(0x1234, 0xfedc)];
+  edges.polylines.lines = [new PolylineData([0, 2, 4]), new PolylineData([2, 4, 3, 1]), new PolylineData([1, 0])];
 
-  args.edges.edges.edges = [new MeshEdge(0, 1), new MeshEdge(1, 3), new MeshEdge(3, 4)];
-  args.edges.silhouettes.edges = [new MeshEdge(1, 2), new MeshEdge(2, 3)];
-  args.edges.silhouettes.normals = [makeNormalPair(0, 0xffff), makeNormalPair(0x1234, 0xfedc)];
-  args.edges.polylines.lines = [new PolylineData([0, 2, 4]), new PolylineData([2, 4, 3, 1]), new PolylineData([1, 0])];
-
-  args.is2d = true === opts?.is2d;
-  return args;
+  return {
+    points: QPoint3dList.fromPoints([new Point3d(0, 0, 0), new Point3d(1, 1, 0), new Point3d(2, 0, 0), new Point3d(3, 1, 0), new Point3d(4, 0, 0)]),
+    vertIndices: [0, 1, 2, 2, 1, 3, 2, 3, 4],
+    edges,
+    fillFlags: FillFlags.None,
+    is2d: true === opts?.is2d,
+    colors: new ColorIndex(),
+    features: new FeatureIndex(),
+  };
 }
 
 function expectIndices(indices: VertexIndices, expected: number[]): void {
@@ -121,7 +123,7 @@ describe("IndexedEdgeParams", () => {
 
     it("are not produced if MeshArgs supplies no edges", () => {
       const args = createMeshArgs();
-      args.edges.clear();
+      args.edges?.clear();
       expect(EdgeParams.fromMeshArgs(args)).to.be.undefined;
     });
 
@@ -138,7 +140,8 @@ describe("IndexedEdgeParams", () => {
 
     it("are not produced for polylines if width > 3", () => {
       const args = createMeshArgs();
-      args.edges.width = 4;
+      expect(args.edges).not.to.be.undefined;
+      args.edges!.width = 4;
 
       const edges = EdgeParams.fromMeshArgs(args)!;
       expect(edges).not.to.be.undefined;
@@ -214,18 +217,20 @@ describe("IndexedEdgeParams", () => {
 
       function makeEdgeTable(nSegs: number, nSils: number): EdgeTable {
         const meshargs = createMeshArgs();
-        meshargs.edges.polylines.clear();
-        meshargs.edges.silhouettes.clear();
+        const edgs = meshargs.edges!;
+        expect(edgs).not.to.be.undefined;
+        edgs.polylines.clear();
+        edgs.silhouettes.clear();
 
-        meshargs.edges.edges.edges = [];
+        edgs.edges.edges = [];
         for (let i = 0; i < nSegs; i++)
-          meshargs.edges.edges.edges.push(new MeshEdge(0, 1));
+          edgs.edges.edges.push(new MeshEdge(0, 1));
 
-        meshargs.edges.silhouettes.edges = [];
-        meshargs.edges.silhouettes.normals = [];
+        edgs.silhouettes.edges = [];
+        edgs.silhouettes.normals = [];
         for (let i = 0; i < nSils; i++) {
-          meshargs.edges.silhouettes.edges.push(new MeshEdge(2 + i, 3));
-          meshargs.edges.silhouettes.normals.push(makeNormalPair(4, 5));
+          edgs.silhouettes.edges.push(new MeshEdge(2 + i, 3));
+          edgs.silhouettes.normals.push(makeNormalPair(4, 5));
         }
 
         const edgeParams = EdgeParams.fromMeshArgs(meshargs, 15)!;

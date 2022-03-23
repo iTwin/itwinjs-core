@@ -91,6 +91,11 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   // Returns true if this primitive contains auxillary animation data.
   public get hasAnimation(): boolean { return false; }
 
+  /** If false, the geometry's positions are not quantized.
+   * qOrigin and qScale can still be used to derive the geometry's range, but will not be passed to the shader.
+   * see VertexLUT.usesQuantizedPositions.
+   */
+  public get usesQuantizedPositions(): boolean { return true; }
   /** Returns the origin of this geometry's quantization parameters. */
   public abstract get qOrigin(): Float32Array;
   /** Returns the scale of this geometry's quantization parameters. */
@@ -198,6 +203,7 @@ export abstract class LUTGeometry extends CachedGeometry {
   // Override this if your color varies based on the target
   public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
 
+  public override get usesQuantizedPositions() { return this.lut.usesQuantizedPositions; }
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
   public override get hasAnimation() { return this.lut.hasAnimation; }

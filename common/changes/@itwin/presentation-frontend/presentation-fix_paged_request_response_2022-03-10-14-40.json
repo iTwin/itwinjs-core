@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Fix paged requests result accumulation resulting in infinite loop.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}

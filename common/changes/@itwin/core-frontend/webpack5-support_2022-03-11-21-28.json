@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "use web downlaoder for OrbitGT instead of node downloader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

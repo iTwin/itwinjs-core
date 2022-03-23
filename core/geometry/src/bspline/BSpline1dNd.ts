@@ -15,7 +15,7 @@ import { BSplineWrapMode, KnotVector } from "./KnotVector";
 /** Bspline knots and poles for 1d-to-Nd.
  * * The "pole" (aka control point) of this class is a block of `poleLength` numbers.
  * * Derived classes (not this class) assign meaning such as x,y,z,w.
- * * for instance, an instance of this class with `poleLength===3` does not know if its poles are x,y,z or weighed 2D x,y,w
+ * * for instance, an instance of this class with `poleLength===3` does not know if its poles are x,y,z or weighted 2D x,y,w
  * @public
  */
 export class BSpline1dNd {
@@ -34,7 +34,7 @@ export class BSpline1dNd {
   /** (property accessor)  Return the number of poles*/
   public get numPoles(): number { return this.packedData.length / this.poleLength; }
   /** copy 3 values of pole `i` into a point.
-   * * The calling clas sis responsible for knowing if this is an appropriate access to the blocked data.
+   * * The calling class is responsible for knowing if this is an appropriate access to the blocked data.
    */
   public getPoint3dPole(i: number, result?: Point3d): Point3d | undefined { return Point3d.createFromPacked(this.packedData, i, result); }
   /** preallocated array (length === `order`) used as temporary in evaluations */
@@ -108,14 +108,14 @@ export class BSpline1dNd {
    * * Evaluate the basis functions and one derivative at spanIndex and fraction.
    *   * Evaluations are stored in the preallocated `this.basisBuffer`
    * * Immediately do the summations of the basis values times the respective control points
-   *   * Summations are stored in the preallocated `this.poleBuffer` and `this.poleBuffer`
+   *   * Summations are stored in the preallocated `this.poleBuffer` and `this.poleBuffer1`
    * */
   public evaluateBuffersInSpan1(spanIndex: number, spanFraction: number) {
     this.evaluateBasisFunctionsInSpan(spanIndex, spanFraction, this.basisBuffer, this.basisBuffer1);
     this.sumPoleBufferForSpan(spanIndex);
     this.sumPoleBuffer1ForSpan(spanIndex);
   }
-  /** sum poles at span `spanIndex` by the weights in the `poleBuffer` */
+  /** sum poles in `poleBuffer` at span `spanIndex` by the weights in the `basisBuffer` */
   public sumPoleBufferForSpan(spanIndex: number) {
     this.poleBuffer.fill(0);
     let k = spanIndex * this.poleLength;
@@ -123,7 +123,7 @@ export class BSpline1dNd {
       for (let j = 0; j < this.poleLength; j++) { this.poleBuffer[j] += f * this.packedData[k++]; }
     }
   }
-  /** sum poles at span `spanIndex` by the weights in the `poleBuffer1`, i.e. form first derivatives */
+  /** sum poles in `poleBuffer1` at span `spanIndex` by the weights in the `basisBuffer1`, i.e. form first derivatives */
   public sumPoleBuffer1ForSpan(spanIndex: number) {
     this.poleBuffer1.fill(0);
     let k = spanIndex * this.poleLength;
@@ -133,7 +133,7 @@ export class BSpline1dNd {
       }
     }
   }
-  /** sum poles at span `spanIndex` by the weights in the `poleBuffer2`, i.e. form second derivatives */
+  /** sum poles in `poleBuffer2` at span `spanIndex` by the weights in the `basisBuffer2`, i.e. form second derivatives */
   public sumPoleBuffer2ForSpan(spanIndex: number) {
     this.poleBuffer2.fill(0);
     let k = spanIndex * this.poleLength;
@@ -207,5 +207,69 @@ export class BSpline1dNd {
     }
 
     return false;
+  }
+
+  /** Insert knot and resulting pole into the instance, optionally multiple times.
+   * @param knot the knot to be inserted (may already exist in the KnotVector)
+   * @param totalMultiplicity the total multiplicity of the knot on return
+   */
+  public addKnot(knot: number, totalMultiplicity: number): boolean {
+    if (knot < this.knots.leftKnot || knot > this.knots.rightKnot)
+      return false;   // invalid input
+    let iLeftKnot = this.knots.knotToLeftKnotIndex(knot);
+
+    // snap input if too close to an existing knot
+    if (Math.abs(knot - this.knots.knots[iLeftKnot]) < KnotVector.knotTolerance) {
+      knot = this.knots.knots[iLeftKnot]; // snap to left knot of bracket
+    } else if (Math.abs(knot - this.knots.knots[iLeftKnot + 1]) < KnotVector.knotTolerance) {
+      iLeftKnot += this.knots.getKnotMultiplicityAtIndex(iLeftKnot + 1);
+      if (iLeftKnot > this.knots.rightKnotIndex)
+        return true;  // nothing to do
+      knot = this.knots.knots[iLeftKnot]; // snap to left knot of next bracket
+    }
+    const numKnotsToAdd = Math.min(totalMultiplicity, this.degree) - this.knots.getKnotMultiplicity(knot);
+    if (numKnotsToAdd <= 0)
+      return true;  // nothing to do
+
+    // working arrays and pole buffer
+    let currKnotCount = this.knots.knots.length;
+    const newKnots = new Float64Array(currKnotCount + numKnotsToAdd);
+    for (let i = 0; i < currKnotCount; ++i)
+      newKnots[i] = this.knots.knots[i];
+    let currPoleCount = this.numPoles;
+    const newPackedData = new Float64Array(this.packedData.length + (numKnotsToAdd * this.poleLength));
+    for (let i = 0; i < this.packedData.length; ++i)
+      newPackedData[i] = this.packedData[i];
+    const dataBuf = new Float64Array(this.degree * this.poleLength);  // holds degree poles
+
+    // each iteration adds one knot and one pole to the working arrays (cf. Farin 4e)
+    for (let iter = 0; iter < numKnotsToAdd; ++iter) {
+      // fill the buffer with new poles obtained from control polygon corner cutting
+      let iBuf = 0;
+      const iStart = iLeftKnot - this.degree + 2;
+      for (let i = iStart; i < iStart + this.degree; ++i) {
+        const fraction = (knot - newKnots[i - 1]) / (newKnots[i + this.degree - 1] - newKnots[i - 1]);
+        for (let j = i * this.poleLength; j < (i + 1) * this.poleLength; ++j) {
+          dataBuf[iBuf++] = Geometry.interpolate(newPackedData[j - this.poleLength], fraction, newPackedData[j]);
+        }
+      }
+
+      // overwrite degree-1 poles with degree new poles, shifting tail to the right by one
+      newPackedData.copyWithin((iStart + this.degree) * this.poleLength, (iStart + this.degree - 1) * this.poleLength, currPoleCount * this.poleLength);
+      let iData = iStart * this.poleLength;
+      for (const d of dataBuf)
+        newPackedData[iData++] = d;  // overwrite degree new poles
+
+      // add the knot to newKnots in position, shifting tail to the right by one
+      newKnots.copyWithin(iLeftKnot + 2, iLeftKnot + 1, currKnotCount);
+      newKnots[iLeftKnot + 1] = knot;
+
+      ++iLeftKnot;
+      ++currKnotCount;
+      ++currPoleCount;
+    }
+    this.knots.setKnotsCapture(newKnots);
+    this.packedData = newPackedData;
+    return true;
   }
 }

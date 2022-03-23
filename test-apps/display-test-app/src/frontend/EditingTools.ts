@@ -45,7 +45,7 @@ export class EditingScopeTool extends Tool {
   }
 }
 
-/** Places a line string. Uses model and category from ToolAdmin.ActiveSettings. */
+/** Places a line string. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class PlaceLineStringTool extends CreateElementTool {
   public static override toolId = "PlaceLineString";
   private readonly _points: Point3d[] = [];

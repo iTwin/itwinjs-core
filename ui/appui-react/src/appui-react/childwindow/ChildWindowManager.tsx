@@ -99,7 +99,7 @@ export class ChildWindowManager {
 
       setTimeout(() => {
         copyStyles(childWindow.document);
-        setImmediate(() => {
+        setTimeout(() => {
           ReactDOM.render(
             <Provider store={StateManager.store} >
               <UiStateStorageHandler>

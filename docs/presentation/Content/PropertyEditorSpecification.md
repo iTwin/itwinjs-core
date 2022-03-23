@@ -17,9 +17,9 @@ Name of the property editor that's going to be used in UI components. This name 
 is used to edit the property.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Editor.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.Editor.Ruleset]]
 ```
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Editor.Result]]
+[[include:Presentation.Content.Customization.PropertySpecification.Editor.Result]]
 ```

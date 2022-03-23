@@ -348,20 +348,28 @@ export class Viewer extends Window {
   private updateActiveSettings(): void {
     // NOTE: First category/model is fine for testing purposes...
     const view = this.viewport.view;
+    if (!view.iModel.isBriefcaseConnection())
+      return;
 
-    IModelApp.toolAdmin.activeSettings.category = undefined;
-    for (const catId of view.categorySelector.categories) {
-      IModelApp.toolAdmin.activeSettings.category = catId;
-      break;
+    const settings = view.iModel.editorToolSettings;
+    if (undefined === settings.category || !view.viewsCategory(settings.category)) {
+      settings.category = undefined;
+      for (const catId of view.categorySelector.categories) {
+        settings.category = catId;
+        break;
+      }
     }
 
-    if (view.is2d()) {
-      IModelApp.toolAdmin.activeSettings.model = view.baseModelId;
-    } else if (view.isSpatialView()) {
-      IModelApp.toolAdmin.activeSettings.model = undefined;
-      for (const modId of view.modelSelector.models) {
-        IModelApp.toolAdmin.activeSettings.model = modId;
-        break;
+    if (undefined === settings.model || !view.viewsModel(settings.model)) {
+      settings.model = undefined;
+      if (view.is2d()) {
+        settings.model = view.baseModelId;
+      } else if (view.isSpatialView()) {
+        settings.model = undefined;
+        for (const modId of view.modelSelector.models) {
+          settings.model = modId;
+          break;
+        }
       }
     }
   }

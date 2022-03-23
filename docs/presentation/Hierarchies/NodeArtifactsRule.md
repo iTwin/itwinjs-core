@@ -39,11 +39,11 @@ Use `NodeArtifacts` on the *ModelB* nodes and a `hideExpression` on *Subject* no
 Specifies an ECExpression that allows applying node artifacts based on evaluation result, e.g. by some property of the parent node.
 
 ```ts
-[[include:Hierarchies.NodeArtifacts.Condition.Ruleset]]
+[[include:Presentation.Hierarchies.NodeArtifacts.Condition.Ruleset]]
 ```
 
 ```ts
-[[include:Hierarchies.NodeArtifacts.Condition.Result]]
+[[include:Presentation.Hierarchies.NodeArtifacts.Condition.Result]]
 ```
 
 ### Attribute: `requiredSchemas`
@@ -53,7 +53,7 @@ Specifies an ECExpression that allows applying node artifacts based on evaluatio
 A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
 
 ```ts
-[[include:Hierarchies.RequiredSchemas.Ruleset]]
+[[include:Presentation.Hierarchies.RequiredSchemas.Ruleset]]
 ```
 
 ### Attribute: `priority`
@@ -63,7 +63,7 @@ A list of ECSchema requirements that need to be met for the rule to be used. See
 Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
 
 ```ts
-[[include:Hierarchies.Priority.Ruleset]]
+[[include:Presentation.Hierarchies.Priority.Ruleset]]
 ```
 
 ![Example of using "priority" attribute](./media/hierarchy-with-priority-attribute.png)
@@ -75,7 +75,7 @@ Defines the order in which rules are handled, higher number means the rule is ha
 Tells the library that the rule should only be handled if no other node artifacts rule was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
 
 ```ts
-[[include:Hierarchies.OnlyIfNotHandled.Ruleset]]
+[[include:Presentation.Hierarchies.OnlyIfNotHandled.Ruleset]]
 ```
 
 ![Example of using "onlyIfNotHandled" attribute](./media/hierarchy-with-onlyifnothandled-attribute.png)
@@ -87,9 +87,9 @@ Tells the library that the rule should only be handled if no other node artifact
 A map of [ECExpressions](./ECExpressions.md#specification) whose evaluation results are used as artifact values.
 
 ```ts
-[[include:Hierarchies.NodeArtifacts.Items.Ruleset]]
+[[include:Presentation.Hierarchies.NodeArtifacts.Items.Ruleset]]
 ```
 
 ```ts
-[[include:Hierarchies.NodeArtifacts.Items.Result]]
+[[include:Presentation.Hierarchies.NodeArtifacts.Items.Result]]
 ```

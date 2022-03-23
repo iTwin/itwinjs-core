@@ -85,8 +85,6 @@ export interface TreeNodeProps extends CommonProps {
  * @public
  */
 export class TreeNode extends React.Component<TreeNodeProps> {
-  private checkboxWrapperRef = React.createRef<HTMLDivElement>();
-
   constructor(props: TreeNodeProps) {
     super(props);
   }
@@ -117,13 +115,11 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         checkbox = this.props.renderOverrides.renderCheckbox(props);
       } else {
         checkbox = (
-          <div ref={this.checkboxWrapperRef}>
-            <Checkbox
-              {...props}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => this._onCheckboxChange(e.target.checked)}
-              data-testid={this.createSubComponentTestId("checkbox")}
-            />
-          </div>
+          <Checkbox
+            {...props}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => this._onCheckboxChange(e.target.checked)}
+            data-testid={this.createSubComponentTestId("checkbox")}
+          />
         );
       }
     }
@@ -192,23 +188,6 @@ export class TreeNode extends React.Component<TreeNodeProps> {
 
   private _onClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-
-    // ITwinUI-react has a bug that prevents us from stopping checkbox click event propagation to the parent element
-    if (!this.checkboxWrapperRef.current
-      || (e.target instanceof Element && !isDescendant(this.checkboxWrapperRef.current, e.target))) {
-      this.props.onClick?.(e);
-    }
+    this.props.onClick?.(e);
   };
-}
-
-function isDescendant(ancestor: Element, descendant: Element): boolean {
-  while (descendant.parentElement !== null) {
-    if (descendant === ancestor) {
-      return true;
-    }
-
-    descendant = descendant.parentElement;
-  }
-
-  return false;
 }
