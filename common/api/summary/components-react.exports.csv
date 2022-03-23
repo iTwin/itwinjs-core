@@ -322,11 +322,17 @@ public;SharedTableNonPrimitiveValueRendererProps
 internal;ShortDateTimePropertyEditor 
 public;ShortDateTypeConverter 
 public;ShowHideDialog
+deprecated;ShowHideDialog
 public;ShowHideDialogProps
+deprecated;ShowHideDialogProps
 public;ShowHideID = string | number | symbol
+deprecated;ShowHideID = string | number | symbol
 public;ShowHideItem
+deprecated;ShowHideItem
 public;ShowHideMenu
+deprecated;ShowHideMenu
 public;ShowHideMenuProps
+deprecated;ShowHideMenuProps
 public;SimplePropertyDataProvider 
 public;SimpleTableDataProvider 
 public;SimpleTreeDataProvider 

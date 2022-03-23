@@ -5,7 +5,6 @@
   "main": "lib/cjs/imodel-components-react.js",
   "module": "lib/esm/imodel-components-react.js",
   "typings": "lib/cjs/imodel-components-react",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -114,7 +113,7 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@itwin/itwinui-css": "0.44.2",
+    "@itwin/itwinui-css": "0.x",
     "@itwin/itwinui-react": "^1.32.0",
     "callable-instance2": "1.0.0",
     "classnames": "^2.3.1",
