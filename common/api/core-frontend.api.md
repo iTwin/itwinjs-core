@@ -5073,11 +5073,10 @@ export class IModelTileRequestChannels {
         concurrency: number;
         usesHttp: boolean;
         cacheMetadata: boolean;
+        cacheConcurrency: number;
     });
     // (undocumented)
-    get cloudStorage(): TileRequestChannel | undefined;
-    // (undocumented)
-    enableCloudStorageCache(concurrency: number): TileRequestChannel;
+    get cloudStorage(): TileRequestChannel;
     getCachedContent(tile: IModelTile): IModelTileContent | undefined;
     // (undocumented)
     getChannelForTile(tile: IModelTile): TileRequestChannel;
@@ -11198,8 +11197,6 @@ export class TileRequestChannels {
     constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean);
     add(channel: TileRequestChannel): void;
     readonly elementGraphicsRpc: TileRequestChannel;
-    // @internal
-    enableCloudStorageCache(): void;
     get(name: string): TileRequestChannel | undefined;
     getForHttp(name: string): TileRequestChannel;
     // @internal (undocumented)
