@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { BeEvent, Id64String } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -154,14 +154,17 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     super.preload(hydrateRequest);
-    this.modelSelector.preload(hydrateRequest);
+    const notLoaded = this.iModel.models.filterLoaded(this.models);
+    if (undefined === notLoaded)
+      return; // all requested models are already loaded
+    options.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
   }
 
   /** @internal */
   protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     const promises = [];
     promises.push(super.postload(hydrateResponse));
-    promises.push(this.modelSelector.postload(hydrateResponse));
+    promises.push(this.iModel.models.updateLoadedWithModelProps(response.modelSelectorStateModels));
     await Promise.all(promises);
   }
 
