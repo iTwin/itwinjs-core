@@ -800,6 +800,7 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
   const newTab = createTabState(widgetDef.id, {
     label: getWidgetLabel(widgetDef.label),
     canPopout: widgetDef.canPopout,
+    iconSpec: widgetDef.iconSpec,
     preferredPanelWidgetSize: widgetDef.preferredPanelSize,
     isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
   });

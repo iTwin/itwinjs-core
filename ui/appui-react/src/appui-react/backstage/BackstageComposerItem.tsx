@@ -11,7 +11,7 @@ import { Logger } from "@itwin/core-bentley";
 import {
   BackstageActionItem, BackstageItem, BackstageStageLauncher, ConditionalBooleanValue, ConditionalStringValue, isStageLauncher,
 } from "@itwin/appui-abstract";
-import { BadgeUtilities, Icon } from "@itwin/core-react";
+import { BadgeUtilities, Icon, IconHelper } from "@itwin/core-react";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import { useActiveFrontstageId } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -25,6 +25,7 @@ export interface BackstageComposerActionItemProps {
 /** @internal */
 export function BackstageComposerActionItem({ item }: BackstageComposerActionItemProps) {
   const manager = useBackstageManager();
+  const iconSpec = item.icon === IconHelper.reactIconKey ? IconHelper.getIconReactNode (item.icon, item.internalData) : ConditionalStringValue.getValue(item.icon);
   const handleClick = React.useCallback(() => {
     manager.close();
     item.execute();
@@ -35,7 +36,7 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
       providerId={item.providerId}
       itemPriority={item.itemPriority}
       groupPriority={item.groupPriority}
-      icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
+      icon={<Icon iconSpec={iconSpec} />}
       isActive={ConditionalBooleanValue.getValue(item.isActive)}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
@@ -63,13 +64,14 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
   }, [manager, item.stageId]);
   const activeFrontstageId = useActiveFrontstageId();
   const isActive = ConditionalBooleanValue.getValue(item.isActive ?? item.stageId === activeFrontstageId);
+  const iconSpec = item.internalData ? IconHelper.getIconReactNode (item.icon, item.internalData) : ConditionalStringValue.getValue(item.icon);
   return (
     <NZ_BackstageItem
       itemId={item.id}
       providerId={item.providerId}
       itemPriority={item.itemPriority}
       groupPriority={item.groupPriority}
-      icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
+      icon={<Icon iconSpec={iconSpec} />}
       isActive={isActive}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
