@@ -10,7 +10,6 @@ import * as fs from "fs";
 import { OpenMode } from "@itwin/core-bentley";
 
 describe("SchemaLoaderPerformance", () => {
-  let iModelDb: StandaloneDb;
   let iModelFilepath: string;
   const outDir: string = path.join(KnownTestLocations.outputDir, "SchemaLoaderPerformance");
   const assetDir: string = path.join(__dirname, "..", "..", "..", "assets");
@@ -29,7 +28,7 @@ describe("SchemaLoaderPerformance", () => {
 
     const rootSubject = { name: "Performance tests", description: "Performance tests" };
     const snapshotFile: string = IModelTestUtils.prepareOutputFile("Performance", "Performance.bim");
-    iModelDb = StandaloneDb.createEmpty(snapshotFile, { rootSubject });
+    const iModelDb = StandaloneDb.createEmpty(snapshotFile, { rootSubject });
     iModelFilepath = iModelDb.pathName;
 
     const bisSchemaPaths = getBisSchemaPaths();
@@ -45,8 +44,6 @@ describe("SchemaLoaderPerformance", () => {
   });
 
   after(() => {
-    iModelDb.close();
-
     const csvPath = path.join(outDir, "SchemaLoaderPerfResults.csv");
     reporter.exportCSV(csvPath);
   });
@@ -136,26 +133,6 @@ describe("SchemaLoaderPerformance", () => {
     imodel.close();
   }
 
-  function memoryBisSchemasLoading(schemaName: string) {
-    const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
-
-    const beforeMemory: NodeJS.MemoryUsage = process.memoryUsage();
-    const schemaResult: IModelJsNative.ErrorStatusOrResult<any, any> = imodel.nativeDb.getSchema(schemaName);
-    const afterMemory: NodeJS.MemoryUsage = process.memoryUsage();
-
-    if (schemaResult.error !== undefined) {
-      throw new Error(schemaResult.error.message);
-    }
-
-    if (schemaResult.result === undefined) {
-      throw new Error("Schema does not exists");
-    }
-
-    const memoryUsed = afterMemory.heapUsed - beforeMemory.heapUsed;
-    reporter.addEntry("SchemaLoaderPerfTest", `Get schema from imodel: ${schemaName}`, "Memory used(bytes)", memoryUsed, {});
-    imodel.close();
-  }
-
   it("Time BisSchemas data read from imodel", async () => {
     timeBisSchemasLoading("Units");
     timeBisSchemasLoading("Formats");
@@ -176,27 +153,5 @@ describe("SchemaLoaderPerformance", () => {
     timeBisSchemasLoading("CifSubsurface");
     timeBisSchemasLoading("CifSubsurfaceConflictAnalysis");
     timeBisSchemasLoading("CifUnits");
-  });
-
-  it("Memory used for BisSchemas data read from imodel", async () => {
-    memoryBisSchemasLoading("Units");
-    memoryBisSchemasLoading("Formats");
-
-    memoryBisSchemasLoading("BisCore");
-
-    memoryBisSchemasLoading("ProcessFunctional");
-    memoryBisSchemasLoading("ProcessPhysical");
-
-    memoryBisSchemasLoading("CifBridge");
-    memoryBisSchemasLoading("CifCommon");
-    memoryBisSchemasLoading("CifGeometricRules");
-    memoryBisSchemasLoading("CifHydraulicAnalysis");
-    memoryBisSchemasLoading("CifHydraulicResults");
-    memoryBisSchemasLoading("CifQuantityTakeoffs");
-    memoryBisSchemasLoading("CifRail");
-    memoryBisSchemasLoading("CifRoads");
-    memoryBisSchemasLoading("CifSubsurface");
-    memoryBisSchemasLoading("CifSubsurfaceConflictAnalysis");
-    memoryBisSchemasLoading("CifUnits");
   });
 });
