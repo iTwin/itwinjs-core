@@ -4,9 +4,9 @@
 
 When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an instance of a [Workspace]($backend), in [IModelHost.appWorkspace]($backend).
 
-`IModelHost.appWorkspace` customizes the session according to the choices of the host application(s), including the default values for its settings.
+`IModelHost.appWorkspace` can be used to customize the session according to the choices of the host application, including the default values for its settings.
 
-Whenever an application opens an iModel using the [IModelDb]($backend) class, it creates an instance of a [Workspace]($backend) in [IModelDb.workspace]($backend) to customize the session according to the choices made by administrators for the organization, the iTwin and the iModel.
+Whenever an application opens an iModel using the [IModelDb]($backend) class, it creates an instance of a [Workspace]($backend) in [IModelDb.workspace]($backend) to customize the session according to the choices made by administrators for the iTwin and the iModel.
 
 When combined, the `IModelHost.appWorkspace` and the `IModelDb.workspace` customize the session according to the:
 
@@ -35,13 +35,13 @@ Settings are named parameters, defined by applications but supplied at runtime s
 
 ### SettingSpecs
 
-Applications can define groups of related "settings specifications" in the form of [SettingsGroupSpec]($backend)s, registered at runtime with the [SettingsSpecRegistry]($backend) class. In this way users or administrators can be aware of the list of an application's Settings. Also, each [SettingSpec]($backend) defines the type, purpose, constraints, and default values for a setting. The Settings Editor (future) is used to provide values for Settings using the [SettingSpec]($backend)s.
+Applications can define groups of related "settings specifications" in the form of [SettingsGroupSpec]($backend)s, registered at runtime with the [SettingsSpecRegistry]($backend) class. In this way users or administrators can be aware of the list of each application's Settings. Also, each [SettingSpec]($backend) defines the type, purpose, constraints, and default values for a setting. The Settings Editor (future) is used to provide values for Settings using the [SettingSpec]($backend)s.
 
 `SettingsGroupSpec` are defined according to the rules of [JSON Schema](https://json-schema.org/).
 
 #### SettingNames
 
-A [SettingName]($backend) is defined by an application in a [SettingSpec]($backend). A `SettingName` must be unique across all applications, so it should be formed as a "path", with the parts separated by a "/". The first entry in the path is the "application id", and all Settings for an application should start with the same value. Groups of related settings for an application should have the same path prefix. The settings editor will split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
+A [SettingName]($backend) is defined by an application in a [SettingSpec]($backend). A `SettingName` must be unique across all applications, so it should be formed as a "path", with the parts separated by a "/". By convention, the first entry in the path is the "application id", and all Settings for an application should start with the same value. Groups of related settings for an application should have the same path prefix. The settings editor will split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
 
 For example:
 
@@ -206,20 +206,20 @@ Of course `SettingDictionary`s wouldn't be very useful if you could only define 
 
 ### iModel-based Settings
 
-Every iModel can hold a set of `SettingDictionary`s that are loaded every session. This can be used to supply values that should be present every session, for example a list of required `WorkspaceDb`s.
+Every iModel can hold a set of `SettingDictionary`s that are automatically loaded every time the iModel is opened. This can be used to supply values that should be present every session, for example a list of required `WorkspaceDb`s.
 
 To save a `SettingDictionary` in an iModel, use [IModelDb.saveSettingDictionary]($backend).
 
-## Cloud Workspaces
+## Cloud-based Workspaces
 
-`WorkspaceContainer`s provide a mechanism for storing and retrieving `Workspace` data through a secure, reliable, and highly available cloud api.
+Cloud-based `WorkspaceContainer`s provide a mechanism for storing and retrieving `Workspace` data through a secure, reliable, and highly available cloud api.
 
 Data stored in cloud-based `WorkspaceContainers`:
   - can be versioned
   - can have fine-grained access permissions, or may be publicly accessible
   - can be accessed directly from cloud storage
   - is automatically *cached* locally for fast access
-  - can be downloaded for offline use
+  - can be fully downloaded for offline use
   - is automatically synched when it changes
 
 The `WorkspaceContainer` apis abstract the cloud storage implementation, so the may be configured to use any cloud storage system (e.g. Azure, AWS, Google, etc.)
@@ -247,13 +247,13 @@ However, when deciding how to organize workspace data, keep in mind:
 - For offline access, `WorkspaceDb`s are saved as files on local computers, and must be downloaded before going offline and then re-downloaded whenever they are updated. Large downloads can be time consuming, so breaking large sets of resources into multiple `WorkspaceDb`s can be helpful.
 - `WorkspaceContainers` and `WorkspaceDb`s may be versioned. There is no versioning of individual resources within a `WorkspaceDb`.
 
-### WorkspaceContainerName and WorkspaceContainerId
+### WorkspaceContainer.Name and WorkspaceContainer.Id
 
-Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainerId]($backend). `WorkspaceContainerId`s may be GUIDs or any other identifier scheme that guarantees uniqueness. Since `WorkspaceContainerId`s can therefore be long and hard to recognize, `WorkspaceContainer`s can also be identified with a shorter, human recognizable `WorkspaceContainerName`. This not only provides an easier to recognize and understand scheme for interacting with `WorkspaceContainer`s, but also provides a level of indirection that can be useful for substituting different `WorkspaceContainer`s for the same `WorkspaceContainerName` at runtime, for example for versioning.
+Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainer.Id]($backend). `WorkspaceContainer.Id`s may be GUIDs or any other identifier scheme that guarantees uniqueness. Since `WorkspaceContainer.Id`s can therefore be long and hard to recognize, `WorkspaceContainer`s can also be identified with a shorter, human recognizable `WorkspaceContainer.Name`. This not only provides an easier to recognize and understand scheme for interacting with `WorkspaceContainer`s, but also provides a level of indirection that can be useful for substituting different `WorkspaceContainer`s for the same `WorkspaceContainer.Name` at runtime, for example for versioning.
 
 #### The `workspace/container/alias` Setting
 
-A `WorkspaceContainerId` is *resolved* from a `WorkspaceContainerName` via the [Workspace.resolveContainerId]($backend) method. It does so by looking through all current [Workspace.settings]($backend) of type:
+A `WorkspaceContainer.Id` is *resolved* from a `WorkspaceContainer.Name` via the [Workspace.resolveContainerId]($backend) method. It does so by looking through all current [Workspace.settings]($backend) of type:
 
 ```ts
     "workspace/container/alias": {
@@ -278,7 +278,7 @@ A `WorkspaceContainerId` is *resolved* from a `WorkspaceContainerName` via the [
       },
 ```
 
-with entries whose `name` property matches the `WorkspaceContainerName` value. The highest priority `workspace/container/alias` setting for a `WorkspaceContainerName` becomes its `WorkspaceContainerId`. If no matching `workspace/container/alias` setting is found, the `WorkspaceContainerName` becomes the `WorkspaceContainerId`.
+with entries whose `name` property matches the `WorkspaceContainer.Name` value. The highest priority `workspace/container/alias` setting for a `WorkspaceContainer.Name` becomes its `WorkspaceContainer.Id`. If no matching `workspace/container/alias` setting is found, the `WorkspaceContainer.Name` becomes the `WorkspaceContainer.Id`.
 
 For example:
 
@@ -286,15 +286,22 @@ For example:
 [[include:Settings.containerAlias]]
 ```
 
-> Note: more than one `WorkspaceContainerName` may resolve to the same `WorkspaceContainerId`.
+> Note: more than one `WorkspaceContainer.Name` may resolve to the same `WorkspaceContainer.Id`.
+
+### CloudContainer Shared Access Signature (SAS) Tokens
 
 ### Creating and Editing WorkspaceContainers
 
 `WorkspaceContainers` are always created and modified by administrators rather than users. They are created and edited with the `WorkspaceEditor` utility. See README.md for details.
 
+#### WorkspaceDb Versions
+
+#### WorkspaceContainer Locks
+
+
 ## Workspace Resources
 
-A `WorkspaceDb` holds a set of resources, each with a [WorkspaceResourceName]($backend) and a resource type.
+A `WorkspaceDb` holds a set of resources, each with a [WorkspaceResource.Name]($backend) and a resource type.
 
 Possible resource types are:
 
@@ -304,11 +311,11 @@ Possible resource types are:
 
 > Note: files are zipped as they are stored in `WorkspaceContainer`s.
 
-### WorkspaceResourceNames
+### WorkspaceResource.Names
 
-[WorkspaceResourceName]($backend)s identify resources within a `WorkspaceDb`. There are no restrictions on the format of a `WorkspaceResourceName`, other than they are limited to 1024 characters and may not start or end with a blank character.
+[WorkspaceResource.Name]($backend)s identify resources within a `WorkspaceDb`. There are no restrictions on the format of a `WorkspaceResource.Name`, other than they are limited to 1024 characters and may not start or end with a blank character.
 
-> Note: `WorkspaceResourceName`s must be unique for each resource type. But, it is possible to have a `string`, a `blob`, and a `file` resource in the same `WorkspaceDb` with the same `WorkspaceResourceName`.
+> Note: `WorkspaceResource.Name`s must be unique for each resource type. But, it is possible to have a `string`, a `blob`, and a `file` resource in the same `WorkspaceDb` with the same `WorkspaceResource.Name`.
 
 ### SettingDictionary Resources
 

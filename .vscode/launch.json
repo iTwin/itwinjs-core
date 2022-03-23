@@ -775,8 +775,8 @@
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
         "--config=d:/temp/workspaceEditor.json",
-        "createDb",
-        "test10"
+        "versionDb",
+        "Usa-NSRS2007"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",

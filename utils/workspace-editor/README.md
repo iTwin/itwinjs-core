@@ -1,8 +1,8 @@
 # WorkspaceEditor
 
-**WorkspaceEditor** is a command line utility for creating and editing `WorkspaceResources` in iTwin `WorkspaceDb`s, and for uploading and downloading `WorkspaceDb`s to cloud `WorkspaceContainer`s.
+**WorkspaceEditor** is a command line utility for creating and editing `WorkspaceResources` in iTwin `WorkspaceDb`s, and for uploading, downloading, and editing `WorkspaceDb`s to cloud `WorkspaceContainer`s.
 
-An iTwin `WorkspaceDb` may hold many `WorkSpaceResources`, each with a `WorkspaceResourceName` and `WorkspaceResourceType`. `WorkspaceEditor` adds, updates, deletes, and extracts *local files* into/from a `WorkspaceDb`.
+An iTwin `WorkspaceDb` may hold many `WorkSpaceResources`, each with a `WorkspaceResource.Name` and type. `WorkspaceEditor` adds, updates, deletes, and extracts *local files* into/from a `WorkspaceDb`.
 
 ## Workspace Resource Types
 
@@ -29,7 +29,7 @@ The WorkspaceEditor commands all take a `dbName` option to specify the `Workspac
 Example:
 
 ```sh
-> WorkspaceEdit --config myConfig.json list db1
+> WorkspaceEdit --config myConfig.json listDb db1
 ...
 ```
 
@@ -49,27 +49,27 @@ Example:
 
 The following WorkspaceEditor commands are available:
 
-### Create
+### createDb
 
 Create a new empty `WorkspaceDb`.
 
 Example:
 
 ```sh
-> WorkspaceEdit create proj
+> WorkspaceEdit createDb proj
 created WorkspaceDb C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace
 ```
 
-### Add
+### add
 
 Add one or more local files as resources into a `WorkspaceDb`.
 
 `--type` specifies the type of resource(s) to add. Required
-`--name` specifies the name of the resource. Defaults to the name of the local file.
+`--rscName` specifies the name of the resource. Defaults to the name of the local file.
 `--root` specifies a root directory when adding multiple files. The parts of the path after the root are saved in the resource name (see example below.)
 `--update` indicates that an existing resource should be updated (i.e. replaced.)
 
-> Note: `--name`  is only applicable when adding a single file.
+> Note: `--rscName`  is only applicable when adding a single file.
 
 Examples:
 
@@ -98,7 +98,7 @@ WorkspaceDb [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin
  added "d:\projData\112\Sparks\KDEO5816.dict" as blob resource [Sparks/KDEO5816.dict]
  ```
 
-### List
+### listDb
 
 List the contents of a `WorkspaceDb`. By default it will show all 3 resource types. To limit the output to specific types, supply the `--strings`, `--blobs`, or `--files` options.
 
