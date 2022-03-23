@@ -5,7 +5,6 @@
   "main": "lib/cjs/core-telemetry.js",
   "module": "lib/esm/core-telemetry.js",
   "typings": "lib/cjs/core-telemetry",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
