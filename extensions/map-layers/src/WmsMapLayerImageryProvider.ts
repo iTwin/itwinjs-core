@@ -11,7 +11,7 @@ import { Point2d } from "@itwin/core-geometry";
 import {
   ImageryMapTileTree, MapCartoRectangle, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, WmsCapabilities,
   WmsCapability, WmsUtilities,
-} from "../../internal";
+} from "@itwin/core-frontend";
 
 // eslint-disable-next-line prefer-const
 let doToolTips = true;

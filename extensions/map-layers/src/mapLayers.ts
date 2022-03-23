@@ -8,6 +8,7 @@ import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
 import { MapFeatureInfoOptions, MapLayerOptions } from "./ui/Interfaces";
+import { WmsMapLayerFormat } from "./WmsMapLayerImageryFormats";
 
 export interface MapLayersConfig {
   localization?: Localization;
@@ -58,6 +59,8 @@ export class MapLayersUI {
     MapLayersUI._uiItemsProviders.forEach((uiProvider) => {
       UiItemsManager.register(uiProvider);
     });
+
+    IModelApp.mapLayerFormatRegistry.register(WmsMapLayerFormat);
   }
 
   /** Unregisters internationalization service namespace and UiItemManager  */

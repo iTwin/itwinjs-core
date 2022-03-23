@@ -12,7 +12,6 @@ import {
   MapBoxLayerImageryProvider,
   MapLayerFormatRegistry,
   TileUrlImageryProvider,
-  WmsMapLayerImageryProvider,
   WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
 
@@ -37,9 +36,9 @@ describe("MapLayerImageryFormats", () => {
 
       // Update this switch case if you add a new format.
       switch (imageryFormat.formatId) {
-        case "WMS":
-          expect(provider instanceof WmsMapLayerImageryProvider).to.true;
-          break;
+        // case "WMS":
+        //   expect(provider instanceof WmsMapLayerImageryProvider).to.true;
+        //   break;
 
         case "WMTS":
           expect(provider instanceof WmtsMapLayerImageryProvider).to.true;

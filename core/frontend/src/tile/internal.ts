@@ -65,7 +65,7 @@ export * from "./map/ImageryProviders/AzureMapsLayerImageryProvider";
 export * from "./map/ImageryProviders/BingImageryProvider";
 export * from "./map/ImageryProviders/MapBoxLayerImageryProvider";
 export * from "./map/ImageryProviders/TileUrlImageryProvider";
-export * from "./map/ImageryProviders/WmsMapLayerImageryProvider";
+// export * from "./map/ImageryProviders/WmsMapLayerImageryProvider";
 export * from "./map/ImageryProviders/WmtsMapLayerImageryProvider";
 export * from "./map/MapLayerImageryFormats";
 export * from "./map/MapLayerTileTreeReference";
