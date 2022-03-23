@@ -31,6 +31,7 @@ export class SubCategoriesCache {
   private readonly _byCategoryId = new Map<string, Id64Set>();
   private readonly _appearances = new Map<string, SubCategoryAppearance>();
   private readonly _imodel: IModelConnection;
+  private _missingAtTimeOfPreload: Id64Set | undefined;
 
   public constructor(imodel: IModelConnection) { this._imodel = imodel; }
 
@@ -46,23 +47,14 @@ export class SubCategoriesCache {
    * containing the corresponding promise and the set of categories still to be loaded.
    */
   public load(categoryIds: Id64Arg): SubCategoriesRequest | undefined {
-    let missing: Id64Set | undefined;
-    for (const catId of Id64.iterable(categoryIds)) {
-      if (undefined === this._byCategoryId.get(catId)) {
-        if (undefined === missing)
-          missing = new Set<string>();
-
-        missing.add(catId);
-      }
-    }
-
+    const missing = this.getMissing(categoryIds);
     if (undefined === missing)
       return undefined;
 
     const request = new SubCategoriesCache.Request(missing, this._imodel);
     const promise = request.dispatch().then((result?: SubCategoriesCache.Result) => {
       if (undefined !== result)
-        this.processResults(result, missing!);
+        this.processResults(result, missing);
 
       return !request.wasCanceled;
     });
@@ -79,27 +71,29 @@ export class SubCategoriesCache {
    * notLoadedCategoryIds is a subset of categoryIds, filtering out any ids which already have an entry in the cache.
    */
   public preload(options: HydrateViewStateRequestProps, categoryIds: Id64Arg): void {
-    let missing: Id64Set | undefined;
-    for (const catId of Id64.iterable(categoryIds)) {
-      if (undefined === this._byCategoryId.get(catId)) {
-        if (undefined === missing)
-          missing = new Set<string>();
-
-        missing.add(catId);
-      }
-    }
+    const missing = this.getMissing(categoryIds);
 
     if (undefined === missing)
       return;
+    this.missingAtTimeOfPreload = missing;
     options.notLoadedCategoryIds = CompressedId64Set.sortAndCompress(missing);
   }
 
   /**
    * Populates the SubCategoriesCache using the categoryIdsResult of the HydrateViewStateResponseProps
    */
-  public postload(options: HydrateViewStateResponseProps, categoryIds: Id64Arg): void {
-    // TODO: need missing here how wdo we get it without calculating again?
-    if (options.categoryIdsResult === undefined) return;
+  public postload(options: HydrateViewStateResponseProps): void {
+    if (options.categoryIdsResult === undefined)
+      return;
+    // missingAtTimeOfPreload shouldn't be undefined if options.categoryIdsResult is defined... but just to be safe we'll check
+    const missing = this._missingAtTimeOfPreload === undefined ? new Set<string>() : this.missingAtTimeOfPreload;
+    this.processResults(options.categoryIdsResult, missing);
+    // clear missing
+    this._missingAtTimeOfPreload = undefined;
+  }
+
+  /** Given categoryIds, return which of these are not cached. */
+  private getMissing(categoryIds: Id64Arg): Id64Set | undefined {
     let missing: Id64Set | undefined;
     for (const catId of Id64.iterable(categoryIds)) {
       if (undefined === this._byCategoryId.get(catId)) {
@@ -109,8 +103,7 @@ export class SubCategoriesCache {
         missing.add(catId);
       }
     }
-    // Missing shouldn't be undefined here since we had categoryIdsResult. But we should still use the old missing..?
-    this.processResults(options.categoryIdsResult, missing!);
+    return missing;
   }
 
   public clear(): void {

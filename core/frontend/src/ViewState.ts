@@ -359,7 +359,7 @@ export abstract class ViewState extends ElementState {
   }
 
   protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
-    this.iModel.subcategories.postload(hydrateResponse, this.categorySelector.categories);
+    this.iModel.subcategories.postload(hydrateResponse);
     if (hydrateResponse.acsElementProps)
       this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
   }
