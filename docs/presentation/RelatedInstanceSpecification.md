@@ -40,7 +40,7 @@ Specifies whether to omit the primary instance from the result if the other end 
 ### Using related instances in instance filter
 
 ```ts
-[[include:RelatedInstanceSpecification.UsingInInstanceFilter.Ruleset]]
+[[include:Presentation.RelatedInstanceSpecification.UsingInInstanceFilter.Ruleset]]
 ```
 
 |                         | Result                                                                                                 |
@@ -51,17 +51,17 @@ Specifies whether to omit the primary instance from the result if the other end 
 ### Using related instances for customization
 
 ```ts
-[[include:RelatedInstanceSpecification.UsingForCustomization.Ruleset]]
+[[include:Presentation.RelatedInstanceSpecification.UsingForCustomization.Ruleset]]
 ```
 
 ```ts
-[[include:RelatedInstanceSpecification.UsingForCustomization.Result]]
+[[include:Presentation.RelatedInstanceSpecification.UsingForCustomization.Result]]
 ```
 
 ### Using related instances for grouping
 
 ```ts
-[[include:RelatedInstanceSpecification.UsingForGrouping.Ruleset]]
+[[include:Presentation.RelatedInstanceSpecification.UsingForGrouping.Ruleset]]
 ```
 
 |                                        | Result                                                                                                           |

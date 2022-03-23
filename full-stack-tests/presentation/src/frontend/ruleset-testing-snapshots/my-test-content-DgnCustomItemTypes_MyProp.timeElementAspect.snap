@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DgnCustomItemTypes_MyProp.timeElementAspect`] = `
+Array [
+  PropertyRecord {
+    "description": "1234.56789 days",
+    "property": Object {
+      "displayLabel": "days",
+      "name": "pc_MyProp_timeElementAspect_days",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "1234.56789 days",
+      "value": 1234.56789,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

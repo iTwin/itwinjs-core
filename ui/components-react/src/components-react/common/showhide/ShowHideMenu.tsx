@@ -6,6 +6,8 @@
  * @module Common
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import * as React from "react";
 import { ContextMenuDivider, ContextMenuItem, GlobalContextMenu, GlobalContextMenuProps } from "@itwin/core-react";
 import { UiComponents } from "../../UiComponents";
@@ -14,7 +16,7 @@ import { ShowHideID, ShowHideItem } from "./ShowHideItem";
 import { Checkbox } from "@itwin/itwinui-react";
 
 /** Properties for the [[ShowHideMenu]] component
- * @public
+ * @public @deprecated will be removed when deprecated [[Table]] component is removed.
  */
 export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMenuProps {
   /** key-label pair list for id's to be shown/hidden, and an accompanying label. */
@@ -42,7 +44,7 @@ interface ShowHideMenuState<T extends ShowHideID> {
 /**
  * [ContextMenu]($core-react) Component used to toggle show/hide items, given through items prop, through a list of checkboxes.
  * Component includes a "list" button that displays a dialog with the same checkboxes.
- * @public
+ * @public @deprecated will be removed when deprecated [[Table]] component is removed.
  */
 export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
   /** @internal */
