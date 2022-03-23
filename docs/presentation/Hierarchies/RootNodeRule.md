@@ -1,4 +1,4 @@
-# Root Node Rule
+# Root node rule
 
 > TypeScript type: [RootNodeRule]($presentation-common).
 

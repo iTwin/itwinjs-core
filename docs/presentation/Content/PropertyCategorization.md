@@ -1,4 +1,4 @@
-# Property Categorization
+# Property categorization
 
 When creating content, properties are assigned categories that are shown together in a property grid:
 
@@ -6,7 +6,7 @@ When creating content, properties are assigned categories that are shown togethe
 
 There are multiple sources for a property's category and several ways to override them or control their nesting through presentation rules.
 
-## Direct Property Categories
+## Direct property categories
 
 A property may or may not have a category and there are several sources it may be taken from (by priority):
 
@@ -16,7 +16,7 @@ A property may or may not have a category and there are several sources it may b
 
 If a property has no direct category, it is displayed as if it belonged to the parent category. See the [next section](#category-nesting) for more details on category nesting.
 
-## Category Nesting
+## Category nesting
 
 Categories group properties so they're easier for users to find and manage. However, it's often necessary to group already categorized properties into some other group, for example 'favorites'. This is where nested categorization comes into play.
 
@@ -34,7 +34,7 @@ Additionally, when presentation rules specify [related properties](./RelatedProp
 
 Finally, category nesting can be achieved using [property category overrides](./PropertyCategorySpecification.md) - see the [Controlling Category Nesting Through Property Category Overrides section](#controlling-category-nesting-through-property-category-overrides) for more details.
 
-### Controlling Category Nesting of Related Properties
+### Controlling category nesting of related properties
 
 [RelatedPropertiesSpecification](./RelatedPropertiesSpecification.md) has an attribute `relationshipMeaning` which tells whether the related properties should be displayed as if they belong to the selected instance or a separate (related) instance. In the latter case, a new nested property category group is created based on the related class. Example:
 
@@ -202,7 +202,7 @@ Here is a more complex example with *nested* related properties:
 
 !['Relationship meaning on nested related properties'](./media/property-grid-example-nested-related-properties.png)
 
-### Controlling Category Nesting Through Property Category Overrides
+### Controlling category nesting through property category overrides
 
 [PropertyCategorySpecification](./PropertyCategorySpecification.md) has an attribute `parentId` which can point to another custom category to become nested inside it:
 
@@ -282,9 +282,9 @@ Or, we can also move the properties into the root category by using `Root` categ
 
 Below is a table of how category identifiers work in different situations:
 
-|                      | Direct Property    | Direct Categorized Property                | Related Property (`SameInstance` meaning) | Related Property (`RelatedInstance` meaning) | Nested Related Property (`RelatedInstance` & `SameInstance`) | Nested Related Property (`RelatedInstance` & `RelatedInstance`) | Nested Related Categorized Property (`RelatedInstance` & `SameInstance`)
-| -------------------- | ------------------ | ------------------------------------------ | ----------------------------------------- | -------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------- | -----------------------------------------
-| No category override | `Selected Item(s)` | `Selected Item(s)` -> *ECPropertyCategory* | `Selected Item(s)` -> *Related class*     | *Related class*                              | *First level related class* -> *Second level related class*  | *First level related class* -> *Second level related class*     | *First level related class* -> *ECPropertyCategory*
-| `DefaultParent`      | `Selected Item(s)` | `Selected Item(s)`                         | `Selected Item(s)`                        | *Related class*                              | *First level related class*                                  | *First level related class* -> *Second level related class*     | *First level related class*
-| `Root`               | `Selected Item(s)` | `Selected Item(s)`                         | `Selected Item(s)`                        | *Related class*                              | *First level related class*                                  | *First level related class*                                     | *First level related class*
-| `Id`                 | Custom             | Custom                                     | Custom                                    | Custom                                       | Custom                                                       | Custom                                                          | Custom
+|                      | Direct Property    | Direct Categorized Property                | Related Property (`SameInstance` meaning) | Related Property (`RelatedInstance` meaning) | Nested Related Property (`RelatedInstance` & `SameInstance`) | Nested Related Property (`RelatedInstance` & `RelatedInstance`) | Nested Related Categorized Property (`RelatedInstance` & `SameInstance`) |
+| -------------------- | ------------------ | ------------------------------------------ | ----------------------------------------- | -------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| No category override | `Selected Item(s)` | `Selected Item(s)` -> *ECPropertyCategory* | `Selected Item(s)` -> *Related class*     | *Related class*                              | *First level related class* -> *Second level related class*  | *First level related class* -> *Second level related class*     | *First level related class* -> *ECPropertyCategory*                      |
+| `DefaultParent`      | `Selected Item(s)` | `Selected Item(s)`                         | `Selected Item(s)`                        | *Related class*                              | *First level related class*                                  | *First level related class* -> *Second level related class*     | *First level related class*                                              |
+| `Root`               | `Selected Item(s)` | `Selected Item(s)`                         | `Selected Item(s)`                        | *Related class*                              | *First level related class*                                  | *First level related class*                                     | *First level related class*                                              |
+| `Id`                 | Custom             | Custom                                     | Custom                                    | Custom                                       | Custom                                                       | Custom                                                          | Custom                                                                   |

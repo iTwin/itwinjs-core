@@ -1,4 +1,4 @@
-# CheckBox Customization Rule
+# CheckBox rule
 
 > **Note:** This rule is deprecated. Use [extended data](./ExtendedDataUsage.md#customize-tree-node-item-checkbox) instead.
 

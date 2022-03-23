@@ -1,4 +1,4 @@
-# InstanceLabelOverride Customization Rule
+# Instance label override
 
 > TypeScript type: [InstanceLabelOverride]($presentation-common).
 

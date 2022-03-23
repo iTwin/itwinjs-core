@@ -1,4 +1,4 @@
-# Custom Query Instance Nodes
+# Custom query instance nodes specification
 
 > TypeScript type: [CustomQueryInstanceNodesSpecification]($presentation-common).
 
@@ -47,7 +47,7 @@ SELECT e.ECClassId, e.ECInstanceId FROM bis.Element e WHERE e.Parent.Id = 0x123
 | **Is Required**   | No                                                    |
 | **Default Value** | `[]`                                                  |
 
-#### String Query Specification
+#### String query specification
 
 The specification contains an ECSQL query which is used to query for instances.
 
@@ -62,7 +62,7 @@ The specification contains an ECSQL query which is used to query for instances.
 
 ![Example of using string query specification in "queries" attribute](./media/hierarchy-with-specification-queries-attribute-stringqueryspecification.png)
 
-#### ECProperty Value Query Specification
+#### ECProperty value query specification
 
 The specification specifies the name of the parent node instance property whose value is the ECSQL used to query for instances.
 

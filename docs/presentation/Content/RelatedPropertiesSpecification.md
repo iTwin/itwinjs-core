@@ -1,4 +1,4 @@
-# Related Properties Specification
+# Related properties specification
 
 > TypeScript type: [RelatedPropertiesSpecification]($presentation-common).
 

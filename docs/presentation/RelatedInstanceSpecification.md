@@ -1,4 +1,4 @@
-# Related Instance Specification
+# Related instance specification
 
 > TypeScript type: [RelatedInstanceSpecification]($presentation-common).
 

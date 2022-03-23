@@ -1,4 +1,4 @@
-# Setting Up iTwin.js Presentation Library
+# Setting up iTwin.js Presentation library
 
 Before the Presentation library can be used, it needs to be properly initialized. Because of the nature of [iTwin.js architecture](../../SoftwareArchitecture.md), the library needs to be initialized on the backend and each frontend that is in use — just like the iTwin.js framework itself.
 

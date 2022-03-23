@@ -1,4 +1,4 @@
-# Required Schema Specification
+# Required schema specification
 
 > TypeScript type: [RequiredSchemaSpecification]($presentation-common).
 

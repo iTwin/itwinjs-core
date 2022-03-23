@@ -1,10 +1,10 @@
-# Extended Data Rule
+# Extended data rule
 
 > TypeScript type: [ExtendedDataRule]($presentation-common).
 
 Extended data rule is used to inject some arbitrary data into presentation data objects (nodes, content records). See [Extended data usage](../Customization/ExtendedDataUsage.md) page for information on how to use injected data in our UI components.
 
-## Typical Use Case
+## Typical use case
 
 Table is showing *Models* and *Elements* polymorphically and application wants to handle these two types
 of rows differently.

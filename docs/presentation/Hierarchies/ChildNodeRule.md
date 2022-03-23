@@ -1,4 +1,4 @@
-# Child Node Rule
+# Child node rule
 
 > TypeScript type: [ChildNodeRule]($presentation-common).
 

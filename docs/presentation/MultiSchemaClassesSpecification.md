@@ -1,4 +1,4 @@
-# Multi Schema Classes Specification
+# Multi schema classes specification
 
 > TypeScript type: [MultiSchemaClassesSpecification]($presentation-common).
 

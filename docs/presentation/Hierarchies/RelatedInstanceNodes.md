@@ -1,4 +1,4 @@
-# Related Instance Nodes
+# Related instance nodes specification
 
 > TypeScript type: [RelatedInstanceNodesSpecification]($presentation-common).
 

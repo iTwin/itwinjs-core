@@ -1,4 +1,4 @@
-# Content Instances Of Specific Classes Specification
+# Content instances of specific classes specification
 
 > TypeScript type: [ContentInstancesOfSpecificClassesSpecification]($presentation-common).
 
@@ -232,7 +232,7 @@ Specifications of [related instances](../RelatedInstanceSpecification.md) that c
 | `ModelSelector` instances                                         | ![A list of model selectors](./media/sharedattributes-with-relatedinstances-2.png)                                                    |
 | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/sharedattributes-with-relatedinstances-1.png) |
 
-## Deprecated Attributes
+## Deprecated attributes
 
 ### Attribute: `handleInstancesPolymorphically`
 

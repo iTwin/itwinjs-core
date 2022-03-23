@@ -1,6 +1,6 @@
 # ECExpressions
 
-## Rule Condition
+## Rule condition
 
 Symbols available in Customization rule conditions:
 
@@ -12,7 +12,7 @@ Symbols available in Customization rule conditions:
 
 Additionally, [User Settings symbols](../Advanced/ECExpressions.md#symbols-in-global-context) are available as well.
 
-## Override Value
+## Override value
 
 Symbols available in Customization rule override values:
 

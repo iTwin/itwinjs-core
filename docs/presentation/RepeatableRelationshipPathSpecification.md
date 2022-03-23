@@ -1,4 +1,4 @@
-# Repeatable Relationship Path Specification
+# Repeatable relationship path specification
 
 > TypeScript type: [RepeatableRelationshipPathSpecification]($presentation-common).
 

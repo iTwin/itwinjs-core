@@ -1,4 +1,4 @@
-# Grouping Customization Rule
+# Grouping rule
 
 > TypeScript type: [GroupingRule]($presentation-common).
 
@@ -118,9 +118,9 @@ Specifies a list of [grouping specifications](#grouping-specifications) which de
 | **Type**        | [`GroupingSpecification[]`](#grouping-specifications) |
 | **Is Required** | Yes                                                   |
 
-## Grouping Specifications
+## Grouping specifications
 
-### Base Class Grouping
+### Base class grouping
 
 Base class grouping allows grouping ECInstance nodes by their base class (as opposed to the hierarchy specifications' `groupByClass` attribute, which
 always groups by direct class).
@@ -166,7 +166,7 @@ Specifies whether a grouping node should be created if there is only one item in
 
 ![Example of using "create group for single item" attribute](./media/hierarchy-grouping-with-creategroupforsingleitem-attribute.png)
 
-### Property Grouping
+### Property grouping
 
 Property grouping allows grouping by a property of the instance by value or by given ranges of values.
 
@@ -271,7 +271,7 @@ Range [`fromValue`, `toValue`] is inclusive on both sides. If a value falls into
 
 ![Example of using "ranges" attribute](./media/hierarchy-grouping-with-ranges-attribute.png)
 
-#### Deprecated Attribute: `groupingValue`
+#### Deprecated attribute: `groupingValue`
 
 Specifies whether instances should be grouped using property's display or raw value.
 
@@ -288,7 +288,7 @@ can be achieved at the UI component layer by composing UI node's label from node
 | **Is Required**   | No                                  |
 | **Default Value** | `"DisplayLabel"`                    |
 
-#### Deprecated Attribute: `sortingValue`
+#### Deprecated attribute: `sortingValue`
 
 Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result is the same,
 unless a [label override rule](../Customization/LabelOverride.md) is used to change node's display label.

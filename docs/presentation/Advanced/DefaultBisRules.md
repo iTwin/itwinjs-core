@@ -1,8 +1,8 @@
-# Default BIS Presentation Rules
+# Default BIS presentation rules
 
 iTwin.js delivers a supplemental presentation ruleset that gets automatically merged into all presentation rulesets that support BisCore ECSchema. The ruleset provides default behavior for various BIS types: Elements, Models, etc.
 
-## Label Overrides
+## Label overrides
 
 Label override rules are used when we calculate ECInstance display labels for trees, property grid and other components. Below is the algorithm for calculating the labels.
 
@@ -22,7 +22,7 @@ Label override rules are used when we calculate ECInstance display labels for tr
 - `briefcase id = element id >> 40`
 - `local id = element id & (1 << 40 - 1)`
 
-## Content Modifiers
+## Content modifiers
 
 Content modifier rules are applied when creating content for property grid, table and similar components. Each modifier is applied on specific types of ECInstances.
 

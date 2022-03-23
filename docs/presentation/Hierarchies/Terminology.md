@@ -1,6 +1,6 @@
-# Hierarchies-related Terminology
+# Hierarchies-related terminology
 
-## Nested Rule
+## Nested rule
 
 Nested rules are defined as child elements of rule specification(s).
 

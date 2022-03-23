@@ -1,4 +1,4 @@
-# Content Related Instances Specification
+# Content related instances specification
 
 > TypeScript type: [ContentRelatedInstancesSpecification]($presentation-common).
 

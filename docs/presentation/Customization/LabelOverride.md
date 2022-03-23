@@ -1,4 +1,4 @@
-# LabelOverride Customization Rule
+# Label override
 
 > **Note:** This rule is deprecated. Use [InstanceLabelOverride](./InstanceLabelOverride.md) rule instead.
 
@@ -94,7 +94,7 @@ An expression whose result becomes the description.
 }
 ```
 
-## Known Issues
+## Known issues
 
 The rule should be avoided in favor of [InstanceLabelOverride](./InstanceLabelOverride) due to:
 

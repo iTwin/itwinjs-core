@@ -1,4 +1,4 @@
-# Ruleset Variables
+# Ruleset variables
 
 > Ruleset Variables is a new name for now deprecated *User Settings* concept.
 
@@ -15,7 +15,7 @@ The advantages of using ruleset variables over values hardcoded into the ruleset
 
 - It's much more convenient and effective to pass a large number of IDs through a ruleset variable than it is to hardcode them into a ruleset. Ruleset variables are sent to the backend separately from the ruleset and that allows us to compress them when needed.
 
-## Using Variables in Rule Condition
+## Using variables in rule condition
 
 Using a ruleset variable in rule condition allows enabling and disabling specific rules based on something that can't be determined at the point of creating the ruleset, e.g. a user action.
 
@@ -45,7 +45,7 @@ Setting the ruleset value to `elements` creates an elements' hierarchy:
 
 ![Elements' Hierarchy](./media/ruleset-variables/elements-hierarchy.png)
 
-## Using Variables in Instance Filter
+## Using variables in instance filter
 
 Using a ruleset variable in instance filter allows filtering instances at query time. This is useful when the filtering criteria depends on user actions.
 
@@ -75,7 +75,7 @@ Clearing the ruleset value brings us back to the initial unfiltered view:
 
 ![Elements' Hierarchy](./media/ruleset-variables/elements-hierarchy.png)
 
-## Using Variables in ECExpression-based Value
+## Using variables in ECExpression-based value
 
 Using a ruleset variable in ECExpression-based value makes the value customizable by users.
 

@@ -1,4 +1,4 @@
-# Unified Selection
+# Unified selection
 
 The purpose of unified selection is to act as a single source of truth of what is selected in an iTwin.js application.
 
@@ -13,7 +13,7 @@ The purpose of unified selection is to act as a single source of truth of what i
 > - [Reference](#reference)
 > - [Examples](#examples)
 
-## Selection Levels
+## Selection levels
 
 By default, whenever a component changes unified selection, that happens at 0th (top) selection level. And similarly, whenever a component requests current selection from the storage, by default the top selection level is used. However, there are cases when we want to have multiple levels of selection.
 
@@ -37,7 +37,7 @@ With that in mind, the above components *A*, *B* and *C* can be configured as fo
 - *Component B* reloads its content if the selection changes at the top level. Row selection is handled using lower level, so selecting a row doesn't affect *Component A's* selection or *Component B's* content.
 - *Component C* reloads its content no matter the selection level.
 
-## Selection Handling
+## Selection handling
 
 The `@itwin/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [ControlledTree]($components-react), [Table]($components-react), [Property Grid]($components-react:PropertyGrid) and [ViewportComponent]($imodel-components-react). Each of those components handle unified selection differently and that behavior is explained in the below sections.
 
@@ -64,7 +64,7 @@ The rules for interacting with unified selection are:
 
 In short, this is similar to how *Component B* works in the [selection levels example](#selection-levels).
 
-### Property Grid
+### Property grid
 
 Property grid is a component that can show multiple categorized property label - value pairs. In the context of [EC](../../bis/ec/index.md), it shows properties of one *ECInstance*. It can also show properties of multiple *ECInstances* by merging them into one before displaying.
 
@@ -83,7 +83,7 @@ The rules for interacting with unified selection are:
 
 The two key concepts - hilite set and selection scope are explained next.
 
-#### Hilite Set
+#### Hilite set
 
 This is a set of IDs that we want hilited for a given selection. The IDs are separated by type (model, sub-category and element) which is determined based on the types of *ECInstances* in selection and presentation rules to create the hilite set.
 
@@ -98,7 +98,7 @@ The rules are as follows:
 
 So for example when unified selection contains a subject, the hilite set for it will contain all models under that subject, it's child subjects, their child subjects, etc. Given such hilite set, the viewport component will hilite all elements in those models.
 
-#### Selection Scopes
+#### Selection scopes
 
 Selection scopes allow decoupling of what gets picked and what gets selected. Without selection scopes, whenever a user picks an element in the viewport, its ID goes straight into unified selection storage. With selection scopes we can modify that and add something different. The input to selection scopes' processor is element IDs and scope to apply, and the output is element keys (class name + element ID). We get the input when user picks some elements in the viewport, run that through selection scope processor and put the output into unified selection storage.
 
@@ -148,7 +148,7 @@ Generally, if an application uses unified selection, it should be interacting wi
 - adding a (non-graphical) element to selection doesn't select it in other components
 - etc.
 
-## External Resources
+## External resources
 
 - [Hooking a tree into unified selection](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20Tree)
 - [Hooking a table into unified selection](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20Table)

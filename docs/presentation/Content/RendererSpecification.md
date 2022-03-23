@@ -1,4 +1,4 @@
-# Renderer Specification
+# Renderer specification
 
 > TypeScript type: [RendererDescription]($presentation-common).
 

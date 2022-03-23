@@ -1,4 +1,4 @@
-# Relationship Path Specification
+# Relationship path specification
 
 > TypeScript type: [RelationshipPathSpecification]($presentation-common).
 

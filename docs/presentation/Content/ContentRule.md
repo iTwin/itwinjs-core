@@ -1,4 +1,4 @@
-# Content Rule
+# Content rule
 
 > TypeScript type: [ContentRule]($presentation-common).
 

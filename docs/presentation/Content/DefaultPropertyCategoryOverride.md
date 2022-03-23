@@ -1,4 +1,4 @@
-# Default Property Category Override
+# Default property category override
 
 > TypeScript type: [DefaultPropertyCategoryOverride]($presentation-common).
 

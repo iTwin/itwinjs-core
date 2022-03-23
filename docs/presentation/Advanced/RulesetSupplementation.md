@@ -1,4 +1,4 @@
-# Ruleset Supplementation
+# Ruleset supplementation
 
 Process of creating a single merged ruleset from multiple rulesets is called
 ruleset supplementation.

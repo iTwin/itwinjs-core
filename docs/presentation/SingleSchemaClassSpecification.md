@@ -1,4 +1,4 @@
-# Single Schema Class Specification
+# Single schema class specification
 
 > TypeScript type: [SingleSchemaClassSpecification]($presentation-common).
 

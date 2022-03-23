@@ -1,6 +1,6 @@
-# Motivation of the Presentation Library
+# Motivation of the Presentation library
 
-## The Problems
+## The problems
 
 As explained in the [ECSQL](../../learning/ECSQL.md) overview page, data from iModels can be queried using the language just like querying from any relational database using SQL. That's often the most straightforward way to get raw data from the iModels.
 
@@ -20,7 +20,7 @@ Lastly, having a constantly evolving domains' layer that needs to used as basis 
 
 ![Hierarchy sources](./media/hierarchy-level-sources.png)
 
-## The Solution
+## The solution
 
 All the issues defined in previous topic are solved by the Presentation Library. It's built on top of ECSQL to help developers easily get data from iModels in a format that's ready to be displayed to end users.
 

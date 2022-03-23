@@ -1,8 +1,8 @@
-# Using Extended Data
+# Using extended data
 
 This page explains how to leverage data injected into presentation data objects using [extended data rule](./ExtendedDataRule.md) to customize information shown in our UIComponents.
 
-## Customize Tree Node Item Icon
+## Customize tree node item icon
 
 In order to add icon for [TreeNodeItem]($components-react) based on ECInstance we need to assign node icon with Presentation Rules. This is achievable using [ExtendedDataRule](./ExtendedDataRule.md):
 
@@ -24,7 +24,7 @@ Now [Node]($presentation-common) created using Presentation Rules will have `ext
 [[include:Presentation.TreeDataProvider.Customization.Icon]]
 ```
 
-## Customize Tree Node Item Checkbox
+## Customize tree node item checkbox
 
 In order to add checkbox for [TreeNodeItem]($components-react) based on ECInstance property value we need to define which property should be used with Presentation Rules. This is achievable using [ExtendedDataRule](./ExtendedDataRule.md):
 
@@ -48,7 +48,7 @@ Now [Node]($presentation-common) created using Presentation Rules will have `ext
 [[include:Presentation.TreeDataProvider.Customization.Checkbox]]
 ```
 
-## Customize Tree Node Item Style
+## Customize tree node item style
 
 In order to change [TreeNodeItem]($components-react) style based on ECInstance we need to define style with Presentation Rules. This is achievable using [ExtendedDataRule](./ExtendedDataRule.md):
 

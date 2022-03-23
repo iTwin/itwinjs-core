@@ -1,4 +1,4 @@
-# Advanced Topics
+# Advanced topics
 
 - [ECExpressions](./ECExpressions.md)
 - [Localization](./Localization.md)

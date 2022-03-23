@@ -17,11 +17,11 @@ The only difference between those two rules is that we're looking for root node 
 
 Both kinds of rules have two types of attributes - for defining [placement](#placement-attributes) and for defining [branch content](#branch-content-attributes).
 
-#### Placement Attributes
+#### Placement attributes
 
 Placement attributes define **if** the rule should be used and **where** the nodes appear if it is.
 
-#### Branch Content Attributes
+#### Branch content attributes
 
 Branch content attributes define what nodes are returned if the rule does get used after evaluating [placement attributes](#placement-attributes). The most important branch content attribute is `specifications`, which is an array of 4 possible types of specifications:
 
@@ -30,19 +30,19 @@ Branch content attributes define what nodes are returned if the rule does get us
 - [Custom query instance nodes](./CustomQueryInstanceNodes.md) specification returns nodes for instances based on a given ECSQL query. Generally, this specification is rarely needed as majority of cases can be handled by [Instance nodes of specific classes specification](./InstanceNodesOfSpecificClasses.md) which is more performant and easier to set up.
 - [Custom node](./CustomNode.md) specification returns a single node that's not based on data in the iModel. Instead, the specification itself specifies all the attributes (type, label, description, image, etc.) of the node.
 
-### Hierarchy Customization
+### Hierarchy customization
 
 All [general use customization rules](../Customization/index.md#rules) can be applied to hierarchies. In addition, there are some hierarchy-specific customization rules:
 
 - [Grouping rule](./GroupingRule.md) for advanced grouping.
 - [Node artifacts rule](./NodeArtifactsRule.md) to help customize produced nodes based on child nodes deeper in the hierarchy.
 
-### Related Topics
+### Related topics
 
 - [Infinite hierarchies prevention](./InfiniteHierarchiesPrevention.md)
 - [ECExpressions](./ECExpressions.md)
 - [Terminology](./Terminology.md)
 
-## External Resources
+## External resources
 
 - [A simple Presentation-driven hierarchy](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=presetation-tree-sample)

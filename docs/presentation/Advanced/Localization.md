@@ -11,7 +11,7 @@ interpolation.
 It's important to note that **localization happens on the backend**,
 so localization JSON file must be delivered with the backend.
 
-## Localization in Presentation Rule Sets
+## Localization in presentation rulesets
 
 The strings in presentation rule sets can be localized by using the following
 format: `@LocalizationNamespace:StringId@`. Additionally, you can use multiple

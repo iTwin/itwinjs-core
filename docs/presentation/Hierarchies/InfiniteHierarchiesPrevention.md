@@ -1,4 +1,4 @@
-# Infinite Hierarchies Prevention
+# Infinite hierarchies prevention
 
 When creating hierarchies the presentation rules engine avoids getting into infinite loops by checking if the created node already has a similar ancestor node. If it does, the node is marked as hidden and creating the hierarchy further is stopped at that point.
 

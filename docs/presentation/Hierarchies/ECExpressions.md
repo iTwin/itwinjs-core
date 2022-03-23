@@ -1,6 +1,6 @@
 # Hierarchies-related ECExpressions
 
-## Rule Condition
+## Rule condition
 
 Child node rules have a `condition` ECExpression property which defines which rules should
 be applied for which parent nodes. The following ECExpression symbols are available there:
@@ -13,7 +13,7 @@ Additionally, [Ruleset variable symbols](../Advanced/ECExpressions.md#ruleset-va
 
 See [this topic](./ChildNodeRule.md#attribute-condition) for an example.
 
-## Instance Filter
+## Instance filter
 
 ECExpressions that are specified in `instanceFilter` specification properties
 are converted to ECSQL WHERE clause, so they have some limitations - ony a subset

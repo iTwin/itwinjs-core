@@ -1,10 +1,10 @@
-# Sorting Customization Rule
+# Sorting rule
 
 > TypeScript type: [SortingRule]($presentation-common).
 
 Sorting rules provide a way to either disable sorting or sort instances by specific properties. There are 2 types of sorting rules for both of these scenarios.
 
-## Property Sorting Rule
+## Property sorting rule
 
 Rule to configure sorting for certain ECInstances in the hierarchy and/or content. It is possible to configure different sorting for different types of ECInstances.
 
@@ -150,7 +150,7 @@ Specifies whether instances should be sorted in ascending order or descending.
 | `sortAscending = true`  | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-asc.png)  |
 | `sortAscending = false` | ![Example of using isPolymorphic attribute](./media/sortingrule-sorted-desc.png) |
 
-## Disabled Sorting Rule
+## Disabled sorting rule
 
 Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
 

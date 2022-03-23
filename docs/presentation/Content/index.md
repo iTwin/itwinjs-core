@@ -34,7 +34,7 @@ Content modifiers allow modifying content by hiding or showing properties, inclu
 
 Modifiers can be specified as part of [content specifications](#specifications) or [content modifiers](./ContentModifier.md).
 
-## External Resources
+## External resources
 
 - [Retrieving properties in different ways](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=property-formatting-sample)
 - [Using element properties API to display properties in custom component](https://www.itwinjs.org/sandboxes/grigas/Element%20Properties%20Loader)

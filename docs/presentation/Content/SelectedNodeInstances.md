@@ -1,4 +1,4 @@
-# Selected Node Instances Specification
+# Selected node instances specification
 
 > TypeScript type: [SelectedNodeInstancesSpecification]($presentation-common).
 

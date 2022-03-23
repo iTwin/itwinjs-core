@@ -1,4 +1,4 @@
-# ImageIdOverride Customization Rule
+# Image ID override
 
 > **Note:** This rule is deprecated. Use [extended data](./ExtendedDataUsage.md#customize-tree-node-item-icon) instead.
 

@@ -1,4 +1,4 @@
-# Node Artifacts Rule
+# Node artifacts rule
 
 > TypeScript type: [NodeArtifactsRule]($presentation-common).
 
@@ -8,7 +8,7 @@
 Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be
 accessed when evaluating parent node's `hideExpression` to decide whether it should be hidden or not.
 
-## Typical Use Case
+## Typical use case
 
 The hierarchy consists of *Subject* nodes and each *Subject* may or may not have child *Model* nodes. There are 2 types of *Models*: *A* & *B*, we want *ModelA* nodes to be visible and *ModelB* ones to be hidden. We want *Subject* node to be visible only if it has a *Model* (either *A* or *B*).
 

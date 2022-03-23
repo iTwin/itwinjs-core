@@ -1,14 +1,14 @@
-# Content-related Terminology
+# Content-related terminology
 
-## Input Class
+## Input class
 
 An ECClass of ECInstance we requested content for.
 
-## Input Instance
+## Input instance
 
 An ECInstance we requested content for.
 
-## Primary Instance
+## Primary instance
 
 ECInstance whose properties are loaded at the root level of the content record.
 
@@ -20,19 +20,19 @@ This usually but not necessarily matches [input instance](#input-instance) — i
 
 Content records may also contain properties of [related instances](#related-instance).
 
-## Primary Class
+## Primary class
 
 An ECClass of the [primary instance](#primary-instance).
 
-## Related Instance
+## Related instance
 
 ECInstance that is related to [primary instance](#primary-instance).
 
-## Related Properties
+## Related properties
 
 Properties that belong to a [related instance](#related-instance) rather than [primary instance](#primary-instance).
 
-## Property Merging
+## Property merging
 
 When content is requested for multiple different classes and they all have similar properties, multiple properties may get merged under one field.
 
@@ -48,7 +48,7 @@ Properties are considered similar if:
 - Editors are equal
 - For [related properties](#related-properties) only: related to the same property
 
-## Value Merging
+## Value merging
 
 When content is requested with [ContentFlags.MergeResults]($presentation-common) flag and contains more than 1 result row, its values are merged into 1 record. This is generally used only for property pane use case where we may request content for multiple selected elements.
 
@@ -68,7 +68,7 @@ When content is requested with [ContentFlags.MergeResults]($presentation-common)
 > | **Field 2** | \*\*\*Varies\*\*\* |
 > | **Field 3** | \*\*\*Varies\*\*\* |
 
-## Nested Content
+## Nested content
 
 In most cases property values are primitive, arrays or structs. However, it is possible to set up [related properties](#related-properties) using one-to-many or many-to-many relationship which creates, what we call, the nested content.
 

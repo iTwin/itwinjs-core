@@ -1,4 +1,4 @@
-# Instance Nodes of Specific Classes
+# Instance nodes of specific classes specification
 
 > TypeScript type: [InstanceNodesOfSpecificClassesSpecification]($presentation-common).
 
@@ -299,7 +299,7 @@ different children.
 
 ![Example of using "nested rules" attribute](./media/hierarchy-with-specification-nestedrules-attribute.png)
 
-## Deprecated Attributes
+## Deprecated attributes
 
 ### Attribute: `arePolymorphic`
 

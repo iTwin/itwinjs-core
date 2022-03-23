@@ -1,4 +1,4 @@
-# Calculated Properties Specification
+# Calculated properties specification
 
 > TypeScript type: [CalculatedPropertiesSpecification]($presentation-common).
 

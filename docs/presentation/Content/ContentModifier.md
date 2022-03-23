@@ -1,4 +1,4 @@
-# Content Modifier Rule
+# Content modifier rule
 
 > TypeScript type: [ContentModifier]($presentation-common).
 

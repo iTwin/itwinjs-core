@@ -1,4 +1,4 @@
-# Property Editor Specification
+# Property editor specification
 
 > TypeScript type: [PropertyEditorSpecification]($presentation-common).
 

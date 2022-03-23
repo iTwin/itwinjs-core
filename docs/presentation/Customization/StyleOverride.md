@@ -1,4 +1,4 @@
-# StyleOverride Customization Rule
+# Style override
 
 > **Note:** This rule is deprecated. Use [extended data](./ExtendedDataUsage.md#customize-tree-node-item-style) instead.
 
@@ -90,7 +90,7 @@ An expression whose result evaluates to a [font style value](#font-styles).
 | **Is Required**   | No                                                |
 | **Default Value** | `"Regular"`                                       |
 
-#### Font Styles
+#### Font styles
 
 Font style in `fontStyle` attribute may be evaluated to one of the following values:
 
@@ -99,7 +99,7 @@ Font style in `fontStyle` attribute may be evaluated to one of the following val
 - `Italic,Bold`
 - `Regular`
 
-### Color Value Formats
+### Color value formats
 
 Colors in `foreColor` and `backColor` attributes may be evaluated to one of the following formats:
 

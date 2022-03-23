@@ -1,4 +1,4 @@
-# Property Specification
+# Property specification
 
 > TypeScript type: [PropertySpecification]($presentation-common).
 

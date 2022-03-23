@@ -1,6 +1,6 @@
 # Content-related ECExpressions
 
-## Rule Condition
+## Rule condition
 
 Content rules have a `condition` ECExpression property which defines which rules should
 be applied for which instances. The following ECExpression symbols are available there:
@@ -15,7 +15,7 @@ be applied for which instances. The following ECExpression symbols are available
 Additionally, [Ruleset variable symbols](../Advanced/ECExpressions.md#ruleset-variables-user-settings)
 are available as well.
 
-## Instance Filter
+## Instance filter
 
 ECExpressions that are specified in `instanceFilter` specification properties are
 converted to ECSQL WHERE clause, so they have some limitations - ony a subset of

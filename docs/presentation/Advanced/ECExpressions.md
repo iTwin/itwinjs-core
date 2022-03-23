@@ -15,7 +15,7 @@ symbol `ContextC`. And the property value is a context that contains a
 function symbol `DoSomething()`. The latter function might return some value
 or return nothing, but instead do some action - it all depends on the symbol.
 
-## ECExpression Syntax
+## ECExpression syntax
 
 ### Data types
 
@@ -85,7 +85,7 @@ System.Math.Sin(1.57)
 this.IsOfClass("ClassName", "SchemaName")
 ```
 
-##### Value Lists
+##### Value lists
 
 Value lists in ECExpressions are iterable containers and can be handled with [lambdas](#lambda-operator). Currently presentation rules
 engine supports only a single simple lambda for value lists, `AnyMatches`, which checks if any of the items in the value list passes given condition. Examples:
@@ -154,7 +154,7 @@ False And True OrElse True
 25 Mod 3  ==> 1
 ```
 
-##### Bit Shift operators
+##### Bit shift operators
 
 | Description          | Operator |
 | -------------------- | -------- |
@@ -231,7 +231,7 @@ Checking to see if a `this.MiddleName` is `Null` or empty
 IIf (IsNull (this.MiddleName) or this.MiddleName = "", "Is null or empty", "Has a value")
 ```
 
-## ECExpression Contexts
+## ECExpression contexts
 
 ### NavNode
 
@@ -286,7 +286,7 @@ Deprecated symbols:
 | ----------------------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------- |
 | <code>GetRelatedInstance("RelationshipName:0&#124;1:RelatedClassName")</code> | [ECInstance context](#ecinstance) | Returns related instance context. **Not available when evaluating instance filters.** |
 
-### ECInstance Key
+### ECInstance key
 
 ECInstance key expression context provides access to class and instance IDs. The context has the following symbols:
 
@@ -295,9 +295,9 @@ ECInstance key expression context provides access to class and instance IDs. The
 | `ECClassId`    | number | ID of ECInstance's ECClass |
 | `ECInstanceId` | number | ID of ECInstance           |
 
-## Symbols in Global Context
+## Symbols in global context
 
-### Ruleset Variables (User Settings)
+### Ruleset variables (user settings)
 
 > **Note:** *User Settings* is a deprecated name of *Ruleset Variables* concept.
 

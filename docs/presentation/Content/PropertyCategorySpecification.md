@@ -1,4 +1,4 @@
-# Property Category Specification
+# Property category specification
 
 > TypeScript type: [PropertyCategorySpecification]($presentation-common).
 

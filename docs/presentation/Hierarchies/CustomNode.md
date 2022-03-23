@@ -1,4 +1,4 @@
-# Custom Node
+# Custom node specification
 
 > TypeScript type: [CustomNodeSpecification]($presentation-common).
 
