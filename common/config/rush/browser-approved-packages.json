@@ -409,10 +409,13 @@
       "allowedCategories": ["tools"]
     },
     {
+<<<<<<< HEAD
       "name": "@ungap/url-search-params",
       "allowedCategories": ["common"]
     },
     {
+=======
+>>>>>>> 45621c7f4a (Fix for 3 new vulnerabilities. React to new @types/react version (#3399))
       "name": "@wojtekmaj/enzyme-adapter-react-17",
       "allowedCategories": ["extensions", "frontend"]
     },
@@ -965,7 +968,11 @@
     },
     {
       "name": "react-resize-detector",
+<<<<<<< HEAD
       "allowedCategories": ["extensions", "internal"]
+=======
+      "allowedCategories": [ "internal" ]
+>>>>>>> 45621c7f4a (Fix for 3 new vulnerabilities. React to new @types/react version (#3399))
     },
     {
       "name": "react-select",
