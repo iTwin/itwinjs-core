@@ -200,10 +200,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return (el === undefined) ? [] : el.getToolTipMessage();
   }
 
-  /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header. */
-  public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const thumbnail = iModelDb.views.getThumbnail(viewId);
+  /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header.
+   * @deprecated
+   */
+  public async getViewThumbnail(_tokenProps: IModelRpcProps, _viewId: string): Promise<Uint8Array> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, _tokenProps);
+    const thumbnail = iModelDb.views.getThumbnail(_viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       throw new NoContentError();
 

@@ -14,23 +14,14 @@
 export enum FrontendLoggerCategory {
   Package = "core-frontend",
 
-  /** The logger category used by the [[FrontendRequestContext]] class and other related classes. */
-  FrontendRequestContext = "core-frontend.FrontendRequestContext",
-
   /** The logger category used by the [[IModelConnection]] class and other related classes. */
   IModelConnection = "core-frontend.IModelConnection",
 
-  /** The logger category used by OIDC-related functions on iOS. */
-  MobileAuthorizationClient = "core-frontend.MobileAuthorizationClient",
-
-  /** The logger category used by EventSource */
-  EventSource = "core-frontend.EventSource",
-
-  /** The logger category used for general authorization purposes */
-  Authorization = "core-frontend.Authorization",
-
   /** The logger category used for NativeApp */
   NativeApp = "core-frontend.NativeApp",
+
+  /** The logger category used for making network requests. */
+  Request = "core-frontend.Request",
 
   /**
    * The logger category used by FeatureTrackingManager
@@ -42,4 +33,7 @@ export enum FrontendLoggerCategory {
    * @alpha
    */
   RealityData = "core-frontend.RealityData",
+
+  /** The logger category used for creating and displaying graphics. */
+  Render = "core-frontend.Render",
 }

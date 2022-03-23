@@ -10,10 +10,17 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { RelatedElement } from "./ElementProps";
 
-/** The properties of an [Entity]($backend) as they are read/stored from/to the iModel.
+/** The persistent format of an [Entity]($backend), also used as the "wire format" when transmitting information about entities
+ * between the backend and frontend.
+ * EntityProps and all of its sub-types like [[ElementProps]] are "plain old Javascript objects" - that is, objects containing
+ * no methods and no properties of `class` type.
  * @public
  */
 export interface EntityProps {
+  /** A non-existent property used to discriminate between [[EntityProps]] and [Entity]($backend).
+   * @see [Entity.isInstanceOfEntity]($backend).
+   */
+  readonly isInstanceOfEntity?: never;
   /** The full name of the [ECClass]($docs/bis/intro/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
   classFullName: string;
   /** The Id of the entity. Must be present for SELECT, UPDATE, or DELETE, ignored for INSERT. */

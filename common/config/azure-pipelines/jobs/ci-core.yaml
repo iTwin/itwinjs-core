@@ -30,7 +30,6 @@ jobs:
   steps:
     - checkout: self
       clean: true
-      fetchDepth: 1
     - task: NodeTool@0
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:

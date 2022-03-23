@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-impl",
-  "version": "3.0.0-dev.182",
+  "version": "3.2.0-dev.21",
   "description": "Schema RPC Interface backend implementation",
   "main": "lib/cjs/ecschema-rpc-impl.js",
   "typings": "lib/cjs/ecschema-rpc-impl",
@@ -31,7 +31,6 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -40,7 +39,6 @@
     "@itwin/ecschema-rpcinterface-common": "workspace:*"
   },
   "devDependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",

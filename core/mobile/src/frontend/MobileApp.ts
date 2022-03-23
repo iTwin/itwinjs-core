@@ -6,7 +6,8 @@
 import { AsyncMethodsOf, BeEvent, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import { IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketFrontend } from "@itwin/core-common";
 import { IpcApp, NativeApp, NativeAppOpts, NotificationHandler } from "@itwin/core-frontend";
-import { mobileAppChannel, MobileAppFunctions, mobileAppNotify, MobileNotifications } from "../common/MobileAppProps";
+import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
+import { MobileAppFunctions, MobileNotifications } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 
 /** receive notifications from backend */
@@ -40,7 +41,7 @@ export class MobileApp {
   private static _isValid = false;
   public static get isValid() { return this._isValid; }
   /**
-   * This is called by either ElectronApp.startup or MobileApp.startup - it should not be called directly
+   * This is called by either AndroidApp.startup or IOSApp.startup - it should not be called directly
    * @internal
    */
   public static async startup(opts?: NativeAppOpts) {

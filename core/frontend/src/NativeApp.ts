@@ -12,7 +12,7 @@ import {
   nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
   RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@itwin/core-common";
-import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+import { ProgressCallback, RequestGlobalOptions } from "./request/Request";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";

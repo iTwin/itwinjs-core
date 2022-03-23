@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "3.0.0-dev.182",
+  "version": "3.2.0-dev.21",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -40,7 +40,7 @@
     "recursive-readdir": "^2.2.2",
     "rimraf": "^3.0.2",
     "tree-kill": "^1.2.0",
-    "typedoc": "^0.22.7",
+    "typedoc": "^0.22.11",
     "typedoc-plugin-merge-modules": "^3.0.2",
     "typescript": "~4.4.0",
     "wtfnode": "^0.9.1",

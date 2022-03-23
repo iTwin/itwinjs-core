@@ -17,9 +17,9 @@ import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
-import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import {
-  DisclosedTileTreeSet, IModelTileTree, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
+  DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree,
+  TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
 } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
@@ -103,11 +103,11 @@ export interface GpuMemoryLimits {
 export class TileAdmin {
   private _versionInfo?: TileVersionInfo;
   public readonly channels: TileRequestChannels;
-  private readonly _viewports = new Set<Viewport>();
-  private readonly _requestsPerViewport = new Map<Viewport, Set<Tile>>();
-  private readonly _tileUsagePerViewport = new Map<Viewport, Set<TileUsageMarker>>();
-  private readonly _selectedAndReady = new Map<Viewport, SelectedAndReadyTiles>();
-  private readonly _viewportSetsForRequests = new UniqueViewportSets();
+  private readonly _users = new Set<TileUser>();
+  private readonly _requestsPerUser = new Map<TileUser, Set<Tile>>();
+  private readonly _tileUsagePerUser = new Map<TileUser, Set<TileUsageMarker>>();
+  private readonly _selectedAndReady = new Map<TileUser, SelectedAndReadyTiles>();
+  private readonly _tileUserSetsForRequests = new UniqueTileUserSets();
   private readonly _maxActiveTileTreePropsRequests: number;
   private _defaultTileSizeModifier: number;
   private readonly _retryInterval: number;
@@ -173,7 +173,7 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public get emptyViewportSet(): ReadonlyViewportSet { return UniqueViewportSets.emptySet; }
+  public get emptyTileUserSet(): ReadonlyTileUserSet { return UniqueTileUserSets.emptySet; }
 
   /** Returns basic statistics about the TileAdmin's current state. */
   public get statistics(): TileAdmin.Statistics {
@@ -276,7 +276,10 @@ export class TileAdmin {
     this.contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
 
     this._cleanup = this.addLoadListener(() => {
-      this._viewports.forEach((vp) => vp.invalidateScene());
+      this._users.forEach((user) => {
+        if (user instanceof Viewport)
+          user.invalidateScene();
+      });
     });
   }
 
@@ -375,14 +378,14 @@ export class TileAdmin {
     this.freeMemory();
   }
 
-  /** Iterate over the tiles that have content loaded but are not selected for display in any viewport.
+  /** Iterate over the tiles that have content loaded but are not in use by any [[TileUser]].
    * @alpha
    */
   public get unselectedLoadedTiles(): Iterable<Tile> {
     return this._lruList.unselectedTiles;
   }
 
-  /** Iterate over the tiles that have content loaded and are selected for display in any viewport.
+  /** Iterate over the tiles that have content loaded and are in use by any [[TileUser]].
    * @alpha
    */
   public get selectedLoadedTiles(): Iterable<Tile> {
@@ -391,53 +394,58 @@ export class TileAdmin {
 
   /** Returns the number of pending and active requests associated with the specified viewport. */
   public getNumRequestsForViewport(vp: Viewport): number {
-    const requests = this.getRequestsForViewport(vp);
+    return this.getNumRequestsForUser(vp);
+  }
+
+  /** Returns the number of pending and active requests associated with the specified user. */
+  public getNumRequestsForUser(user: TileUser): number {
+    const requests = this.getRequestsForUser(user);
     let count = requests?.size ?? 0;
-    const tiles = this.getTilesForViewport(vp);
+    const tiles = this.getTilesForUser(user);
     if (tiles)
       count += tiles.external.requested;
 
     return count;
   }
 
-  /** Returns the current set of Tiles requested by the specified Viewport.
+  /** Returns the current set of Tiles requested by the specified TileUser.
    * Do not modify the set or the Tiles.
    * @internal
    */
-  public getRequestsForViewport(vp: Viewport): Set<Tile> | undefined {
-    return this._requestsPerViewport.get(vp);
+  public getRequestsForUser(user: TileUser): Set<Tile> | undefined {
+    return this._requestsPerUser.get(user);
   }
 
-  /** Specifies the set of tiles currently requested for use by a viewport. This set replaces any previously specified for the same viewport.
+  /** Specifies the set of tiles currently requested for use by a TileUser. This set replaces any previously specified for the same user.
    * The requests are not actually processed until the next call to [[TileAdmin.process].
-   * This is typically invoked when the viewport recreates its scene, e.g. in response to camera movement.
+   * This is typically invoked when a viewport recreates its scene, e.g. in response to camera movement.
    * @internal
    */
-  public requestTiles(vp: Viewport, tiles: Set<Tile>): void {
-    this._requestsPerViewport.set(vp, tiles);
+  public requestTiles(user: TileUser, tiles: Set<Tile>): void {
+    this._requestsPerUser.set(user, tiles);
   }
 
-  /** Returns two sets of tiles associated with the specified Viewport's current scene.
+  /** Returns two sets of tiles associated with the specified user - typically, a viewport's current scene.
    * Do not modify the returned sets.
    * @internal
    */
-  public getTilesForViewport(vp: Viewport): SelectedAndReadyTiles | undefined {
-    return this._selectedAndReady.get(vp);
+  public getTilesForUser(user: TileUser): SelectedAndReadyTiles | undefined {
+    return this._selectedAndReady.get(user);
   }
 
-  /** Adds the specified tiles to the sets of selected and ready tiles for the specified Viewport.
+  /** Adds the specified tiles to the sets of selected and ready tiles for the specified TileUser.
    * The TileAdmin takes ownership of the `ready` set - do not modify it after passing it in.
    * @internal
    */
-  public addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void {
+  public addTilesForUser(user: TileUser, selected: Tile[], ready: Set<Tile>): void {
     // "selected" are tiles we are drawing.
-    this._lruList.markSelectedForViewport(vp.viewportId, selected);
+    this._lruList.markUsed(user.tileUserId, selected);
     // "ready" are tiles we want to draw but can't yet because, for example, their siblings are not yet ready to be drawn.
-    this._lruList.markSelectedForViewport(vp.viewportId, ready);
+    this._lruList.markUsed(user.tileUserId, ready);
 
-    const entry = this.getTilesForViewport(vp);
+    const entry = this.getTilesForUser(user);
     if (undefined === entry) {
-      this._selectedAndReady.set(vp, { ready, selected: new Set<Tile>(selected), external: { selected: 0, requested: 0, ready: 0 } });
+      this._selectedAndReady.set(user, { ready, selected: new Set<Tile>(selected), external: { selected: 0, requested: 0, ready: 0 } });
       return;
     }
 
@@ -449,13 +457,13 @@ export class TileAdmin {
   }
 
   /** Disclose statistics about tiles that are handled externally from TileAdmin. At this time, that means OrbitGT point cloud tiles.
-   * These statistics are included in the return value of [[getTilesForViewport]].
+   * These statistics are included in the return value of [[getTilesForUser]].
    * @internal
    */
-  public addExternalTilesForViewport(vp: Viewport, statistics: ExternalTileStatistics): void {
-    const entry = this.getTilesForViewport(vp);
+  public addExternalTilesForUser(user: TileUser, statistics: ExternalTileStatistics): void {
+    const entry = this.getTilesForUser(user);
     if (!entry) {
-      this._selectedAndReady.set(vp, { ready: new Set<Tile>(), selected: new Set<Tile>(), external: { ...statistics } });
+      this._selectedAndReady.set(user, { ready: new Set<Tile>(), selected: new Set<Tile>(), external: { ...statistics } });
       return;
     }
 
@@ -464,42 +472,40 @@ export class TileAdmin {
     entry.external.ready += statistics.ready;
   }
 
-  /** Clears the sets of tiles associated with a viewport's current scene.
-   * @internal
-   */
-  public clearTilesForViewport(vp: Viewport): void {
-    this._selectedAndReady.delete(vp);
-    this._lruList.clearSelectedForViewport(vp.viewportId);
+  /** Clears the sets of tiles associated with a TileUser. */
+  public clearTilesForUser(user: TileUser): void {
+    this._selectedAndReady.delete(user);
+    this._lruList.clearUsed(user.tileUserId);
   }
 
-  /** Indicates that the TileAdmin should cease tracking the specified viewport, e.g. because it is about to be destroyed.
-   * Any requests which are of interest only to the specified viewport will be canceled.
-   * @internal
+  /** Indicates that the TileAdmin should cease tracking the specified TileUser, e.g. because it is about to be destroyed.
+   * Any requests which are of interest only to the specified user will be canceled.
    */
-  public forgetViewport(vp: Viewport): void {
-    this.onViewportIModelClosed(vp);
-    this._viewports.delete(vp);
+  public forgetUser(user: TileUser): void {
+    this.onUserIModelClosed(user);
+    this._users.delete(user);
   }
 
-  /** Indicates that the TileAdmin should track tile requests for the specified viewport.
-   * This is invoked by the Viewport constructor and should not be invoked from elsewhere.
-   * @internal
+  /** Indicates that the TileAdmin should track tile requests for the specified TileUser.
+   * This is invoked by the Viewport constructor and should be invoked manually for any non-Viewport TileUser.
+   * [[forgetUser]] must be later invoked to unregister the user.
    */
-  public registerViewport(vp: Viewport): void {
-    this._viewports.add(vp);
+  public registerUser(user: TileUser): void {
+    this._users.add(user);
   }
 
-  /** Iterable over all viewports registered with TileAdmin. This may include [[OffScreenViewports]].
+  /** Iterable over all TileUsers registered with TileAdmin. This may include [[OffScreenViewports]].
    * @alpha
    */
-  public get viewports(): Iterable<Viewport> {
-    return this._viewports;
+  public get tileUsers(): Iterable<TileUser> {
+    return this._users;
   }
 
   /** @internal */
   public invalidateAllScenes() {
-    for (const vp of this.viewports)
-      vp.invalidateScene();
+    for (const user of this.tileUsers)
+      if (user instanceof Viewport)
+        user.invalidateScene();
   }
 
   /** @internal */
@@ -515,52 +521,52 @@ export class TileAdmin {
     for (const req of this._tileTreePropsRequests)
       req.abandon();
 
-    this._requestsPerViewport.clear();
-    this._viewportSetsForRequests.clear();
-    this._tileUsagePerViewport.clear();
+    this._requestsPerUser.clear();
+    this._tileUserSetsForRequests.clear();
+    this._tileUsagePerUser.clear();
     this._tileTreePropsRequests.length = 0;
     this._lruList.dispose();
   }
 
-  /** Returns the union of the input set and the input viewport, to be associated with a [[TileRequest]].
+  /** Returns the union of the input set and the input TileUser, to be associated with a [[TileRequest]].
    * @internal
    */
-  public getViewportSetForRequest(vp: Viewport, vps?: ReadonlyViewportSet): ReadonlyViewportSet {
-    return this._viewportSetsForRequests.getViewportSet(vp, vps);
+  public getTileUserSetForRequest(user: TileUser, users?: ReadonlyTileUserSet): ReadonlyTileUserSet {
+    return this._tileUserSetsForRequests.getTileUserSet(user, users);
   }
 
-  /** Marks the Tile as "in use" by the specified Viewport, where the tile defines what "in use" means.
-   * A tile will not be discarded while it is in use by any Viewport.
+  /** Marks the Tile as "in use" by the specified TileUser, where the tile defines what "in use" means.
+   * A tile will not be discarded while it is in use by any TileUser.
    * @see [[TileTree.prune]]
    * @internal
    */
-  public markTileUsedByViewport(marker: TileUsageMarker, vp: Viewport): void {
-    let set = this._tileUsagePerViewport.get(vp);
+  public markTileUsed(marker: TileUsageMarker, user: TileUser): void {
+    let set = this._tileUsagePerUser.get(user);
     if (!set)
-      this._tileUsagePerViewport.set(vp, set = new Set<TileUsageMarker>());
+      this._tileUsagePerUser.set(user, set = new Set<TileUsageMarker>());
 
     set.add(marker);
   }
 
-  /** Returns true if the Tile is currently in use by any Viewport.
-   * @see [[markTileUsedByViewport]].
+  /** Returns true if the Tile is currently in use by any TileUser.
+   * @see [[markTileUsed]].
    * @internal
    */
   public isTileInUse(marker: TileUsageMarker): boolean {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    for (const [_viewport, markers] of this._tileUsagePerViewport)
+    for (const [_user, markers] of this._tileUsagePerUser)
       if (markers.has(marker))
         return true;
 
     return false;
   }
 
-  /** Indicates that the TileAdmin should reset usage tracking for the specified viewport, e.g. because the viewport is about
-   * to recreate its scene. Any tiles currently marked as "in use" by this viewport no longer will be.
+  /** Indicates that the TileAdmin should reset usage tracking for the specified TileUser, e.g. because the user is a Viewport about
+   * to recreate its scene. Any tiles currently marked as "in use" by this user no longer will be.
    * @internal
    */
-  public clearUsageForViewport(vp: Viewport): void {
-    this._tileUsagePerViewport.delete(vp);
+  public clearUsageForUser(user: TileUser): void {
+    this._tileUsagePerUser.delete(user);
   }
 
   /** @internal */
@@ -707,14 +713,14 @@ export class TileAdmin {
   }
 
   private processQueue(): void {
-    // Mark all requests as being associated with no Viewports, indicating they are no longer needed.
-    this._viewportSetsForRequests.clearAll();
+    // Mark all requests as being associated with no users, indicating they are no longer needed.
+    this._tileUserSetsForRequests.clearAll();
 
     // Notify channels that we are enqueuing new requests.
     this.channels.swapPending();
 
-    // Repopulate pending requests queue from each viewport. We do NOT sort by priority while doing so.
-    this._requestsPerViewport.forEach((value, key) => this.processRequests(key, value));
+    // Repopulate pending requests queue from each user. We do NOT sort by priority while doing so.
+    this._requestsPerUser.forEach((value, key) => this.processRequests(key, value));
 
     // Ask channels to update their queues and dispatch requests.
     this.channels.process();
@@ -733,19 +739,19 @@ export class TileAdmin {
     if (!needPrune && !needPurge)
       return;
 
-    // Identify all of the TileTrees being displayed by all of the Viewports known to the TileAdmin.
-    // A single viewport can display tiles from more than one IModelConnection.
+    // Identify all of the TileTrees in use by all of the TileUsers known to the TileAdmin.
+    // NOTE: A single viewport can display tiles from more than one IModelConnection.
     // NOTE: A viewport may be displaying no trees - but we need to record its IModel so we can purge those which are NOT being displayed
     //  NOTE: That won't catch external tile trees previously used by that viewport.
     const trees = new DisclosedTileTreeSet();
     const treesByIModel = needPurge ? new Map<IModelConnection, Set<TileTree>>() : undefined;
-    for (const vp of this._viewports) {
-      if (!vp.iModel.isOpen) // case of closing an IModelConnection while keeping the Viewport open, possibly for reuse with a different IModelConnection.
+    for (const user of this._users) {
+      if (!user.iModel.isOpen) // case of closing an IModelConnection while keeping the Viewport open, possibly for reuse with a different IModelConnection.
         continue;
 
-      vp.discloseTileTrees(trees);
-      if (treesByIModel && undefined === treesByIModel.get(vp.iModel))
-        treesByIModel.set(vp.iModel, new Set<TileTree>());
+      user.discloseTileTrees(trees);
+      if (treesByIModel && undefined === treesByIModel.get(user.iModel))
+        treesByIModel.set(user.iModel, new Set<TileTree>());
     }
 
     if (needPrune) {
@@ -765,7 +771,7 @@ export class TileAdmin {
         set.add(tree);
       }
 
-      // Discard any tile trees that are no longer in use by any viewport.
+      // Discard any tile trees that are no longer in use by any user.
       const olderThan = now.minus(this.tileTreeExpirationTime);
       for (const entry of treesByIModel)
         entry[0].tiles.purge(olderThan, entry[1]);
@@ -774,14 +780,14 @@ export class TileAdmin {
     }
   }
 
-  private processRequests(vp: Viewport, tiles: Set<Tile>): void {
+  private processRequests(user: TileUser, tiles: Set<Tile>): void {
     for (const tile of tiles) {
       if (undefined === tile.request) {
         // ###TODO: This assertion triggers for AttachmentViewports used for rendering 3d sheet attachments.
         // Determine why and fix.
         // assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
         if (TileLoadStatus.NotLoaded === tile.loadStatus) {
-          const request = new TileRequest(tile, vp);
+          const request = new TileRequest(tile, user);
           tile.request = request;
           assert(this.channels.has(request.channel));
           request.channel.append(request);
@@ -791,38 +797,38 @@ export class TileAdmin {
         assert(undefined !== req);
         if (undefined !== req) {
           // Request may already be dispatched (in channel's active requests) - if so do not re-enqueue!
-          if (req.isQueued && 0 === req.viewports.length)
+          if (req.isQueued && 0 === req.users.length)
             req.channel.append(req);
 
-          req.addViewport(vp);
-          assert(0 < req.viewports.length);
+          req.addUser(user);
+          assert(0 < req.users.length);
         }
       }
     }
   }
 
-  // NB: This does *not* remove from this._viewports - the viewport could later be reused with a different IModelConnection.
-  private onViewportIModelClosed(vp: Viewport): void {
-    this.clearUsageForViewport(vp);
-    this.clearTilesForViewport(vp);
+  // NB: This does *not* remove from this._users - a viewport could later be reused with a different IModelConnection.
+  private onUserIModelClosed(user: TileUser): void {
+    this.clearUsageForUser(user);
+    this.clearTilesForUser(user);
 
-    // NB: vp will be removed from ViewportSets in process() - but if we can establish that only this vp wants a given tile, cancel its request immediately.
-    const tiles = this._requestsPerViewport.get(vp);
+    // NB: user will be removed from TileUserSets in process() - but if we can establish that only this user wants a given tile, cancel its request immediately.
+    const tiles = this._requestsPerUser.get(user);
     if (undefined !== tiles) {
       for (const tile of tiles) {
         const request = tile.request;
-        if (undefined !== request && 1 === request.viewports.length)
+        if (undefined !== request && 1 === request.users.length)
           request.cancel();
       }
 
-      this._requestsPerViewport.delete(vp);
+      this._requestsPerUser.delete(user);
     }
   }
 
   private onIModelClosed(iModel: IModelConnection): void {
-    this._requestsPerViewport.forEach((_req, vp) => {
-      if (vp.iModel === iModel)
-        this.onViewportIModelClosed(vp);
+    this._requestsPerUser.forEach((_req, user) => {
+      if (user.iModel === iModel)
+        this.onUserIModelClosed(user);
     });
 
     // Remove any TileTreeProps requests associated with this iModel.

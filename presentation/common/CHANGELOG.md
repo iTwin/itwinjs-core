@@ -1,6 +1,118 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+This log was last generated on Thu, 10 Mar 2022 21:18:13 GMT and should not be manually modified.
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+_Version update only_
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Removed deprecated rules for iModel.js 3.0.
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- rename contextId -> iTwinId
+- Added 'BaseNodeKey.version' property and 'NodeKey.equals' function to compare keys taking their versions into account.
+- rename to @itwin/presentation-common
+- Added `excludedClasses` attribute to `ContentInstancesOfSpecificClassesSpecification` and `InstanceNodesOfSpecificClassesSpecification` specifications.
+- Added 'onlyIfNotHandled' property support to all content rule specifications
+- Update `SelectClassInfo.pathFromInputToSelectClass` type definition to match reality - the relationship may not always be set.
+- Clean up deprecated APIs
+- Added API to get properties of all elements.
+- Added `getContentSources` RPC to retrieve information about where content for specific types of elements comes from.
+- Fixed processing of merged content values under nested content field.
+- Remove ability to get multiple element properties over RPC.
+- Add `getContentInstanceKeys` RPC to efficiently get content instance keys.
+- Remove `priority` attribute from presentation request options type.
+- Optimize `KeySetJSON` size by compressing instance IDs.
+- Remove `PresentationRpcInterface.loadHierarchy`.
+- The `condition` attribute should be defined on both `ChildNodeRule` and `RootNodeRule`.
+- Added `ignoreCategories` parameter in `createFieldHierarchies` function for adding all of the nested properties to parent field's child fields without considering categories. 
+- Removed `PresentationUnitSystem`  in favor of `UnitSystemKey` from `@itwin/core-quantity`.
+- remove ClientRequestContext.current
+
+## 2.19.28
+Wed, 12 Jan 2022 14:52:38 GMT
+
+_Version update only_
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+_Version update only_
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:53 GMT
+
+_Version update only_
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+_Version update only_
+
+## 2.19.23
+Mon, 22 Nov 2021 20:41:40 GMT
+
+_Version update only_
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+_Version update only_
+
+## 2.19.21
+Wed, 10 Nov 2021 10:58:24 GMT
+
+_Version update only_
+
+## 2.19.20
+Fri, 29 Oct 2021 16:14:22 GMT
+
+_Version update only_
+
+## 2.19.19
+Mon, 25 Oct 2021 16:16:25 GMT
+
+_Version update only_
+
+## 2.19.18
+Thu, 21 Oct 2021 20:59:44 GMT
+
+_Version update only_
+
+## 2.19.17
+Thu, 14 Oct 2021 21:19:43 GMT
+
+_Version update only_
+
+## 2.19.16
+Mon, 11 Oct 2021 17:37:46 GMT
+
+_Version update only_
+
+## 2.19.15
+Fri, 08 Oct 2021 16:44:23 GMT
+
+_Version update only_
+
+## 2.19.14
+Fri, 01 Oct 2021 13:07:03 GMT
+
+_Version update only_
 
 ## 2.19.13
 Tue, 21 Sep 2021 21:06:40 GMT

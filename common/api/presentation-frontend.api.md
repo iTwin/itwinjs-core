@@ -503,6 +503,8 @@ export class SelectionManager implements ISelectionProvider {
     getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
     getSelectionLevels(imodel: IModelConnection): number[];
+    // @internal (undocumented)
+    getToolSelectionSyncHandler(imodel: IModelConnection): ToolSelectionSyncHandler | undefined;
     removeFromSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     replaceSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;

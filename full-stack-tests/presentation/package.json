@@ -14,7 +14,7 @@
     "build:watch": "tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "npm run -s extract",
-    "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
+    "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "cross-env NODE_ENV=development mocha --no-config --grep \"#with-services|#performance\" --invert",
     "test:integration": "mocha --no-config --grep \"#with-services\"",
@@ -23,7 +23,6 @@
     "cover": "npm run -s test"
   },
   "dependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/components-react": "workspace:*",
     "@itwin/core-backend": "workspace:*",
@@ -34,12 +33,13 @@
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/core-react": "workspace:*",
-    "@itwin/oidc-signin-tool": "3.0.0",
+    "@itwin/oidc-signin-tool": "^3.2.2",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-components": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/presentation-testing": "workspace:*",
+    "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^7.0.2",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -60,6 +60,7 @@
     "cpx2": "^3.0.0",
     "deep-equal": "^1",
     "faker": "^4.1.0",
+    "fast-sort": "^3.0.2",
     "immer": "9.0.6",
     "mocha": "^8.3.2",
     "react": "^17.0.0",
@@ -82,6 +83,7 @@
     "eslint": "^7.11.0",
     "ignore-styles": "^5.0.1",
     "internal-tools": "workspace:*",
+    "jsdom": "^17.0.0",
     "jsdom-global": "3.0.2",
     "typescript": "~4.4.0"
   },
@@ -95,7 +97,6 @@
     "require": [
       "scripts/copy-test-setup.js",
       "source-map-support/register",
-      "jsdom-global/register",
       "ignore-styles"
     ],
     "checkLeaks": true,

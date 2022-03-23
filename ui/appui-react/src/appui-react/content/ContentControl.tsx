@@ -96,3 +96,13 @@ export class ContentControl extends ConfigurableUiControl {
   }
 
 }
+
+/**
+ * @beta
+ */
+export class FloatingContentControl extends ContentControl {
+  constructor(uniqueId: string, name: string, node: React.ReactNode) {
+    super(new ConfigurableCreateInfo(name, uniqueId, name), undefined);
+    this._reactNode = node;
+  }
+}

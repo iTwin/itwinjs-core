@@ -103,6 +103,31 @@
         "CornerRadius": "Corner Radius"
       }
     },
+    "OffsetCurve": {
+      "keyin": "editor offset curve",
+      "flyover": "Offset planar paths and regions",
+      "Label": {
+        "Distance": "Distance",
+        "MakeCopy": "Make Copy"
+      },
+      "Prompts": {
+        "DefineOffset": "Define offset distance"
+      }
+    },
+    "BreakCurve": {
+      "keyin": "editor break curve",
+      "flyover": "Split an open path or open a closed loop",
+      "Prompts": {
+        "IdentifyBreak": "Identify break location"
+      }
+    },
+    "ExtendCurve": {
+      "keyin": "editor extend curve",
+      "flyover": "Extend or shorten a curve",
+      "Prompts": {
+        "IdentifyEnd": "Identify end to modify"
+      }
+    },
     "UniteSolids": {
       "keyin": "editor unite solids",
       "flyover": "Unite selected solids"
@@ -221,6 +246,44 @@
     "DeleteSubEntities": {
       "keyin": "editor delete subentities",
       "flyover": "Delete faces and edges of solids and surfaces"
+    },
+    "LocateSubEntities": {
+      "Identify": {
+        "Face": "Identify face",
+        "Edge": "Identify edge",
+        "Vertex": "Identity vertex",
+        "FaceEdge": "Identify face or edge",
+        "FaceVertex": "Identify face or vertex",
+        "EdgeVertex": "Identify edge or vertex",
+        "FaceEdgeVertex": "Identity face, edge, or vertex"
+      },
+      "IdentifyAdditional": {
+        "Face": "Identify additional faces",
+        "Edge": "Identify additional edges",
+        "Vertex": "Identity additional vertices",
+        "FaceEdge": "Identify additional faces or edges",
+        "FaceVertex": "Identify additional faces or vertices",
+        "EdgeVertex": "Identify additional edges or vertices",
+        "FaceEdgeVertex": "Identity additional faces, edges, or vertices"
+      },
+      "Accept": {
+        "Face": "Accept face",
+        "Edge": "Accept edge",
+        "Vertex": "Accept vertex",
+        "FaceEdge": "Accept face or edge",
+        "FaceVertex": "Accept face or vertex",
+        "EdgeVertex": "Accept edge or vertex",
+        "FaceEdgeVertex": "Accept face, edge, or vertex"
+      },
+      "AcceptNext": {
+        "Face": "Accept next face",
+        "Edge": "Accept next edge",
+        "Vertex": "Accept next vertex",
+        "FaceEdge": "Accept next face or edge",
+        "FaceVertex": "Accept next face or vertex",
+        "EdgeVertex": "Accept next edge or vertex",
+        "FaceEdgeVertex": "Accept next face, edge, or vertex"
+      }
     },
     "UndoAll": {
       "keyin": "editor undo all",

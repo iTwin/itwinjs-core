@@ -11,7 +11,8 @@ import * as http from "http";
 import * as https from "https";
 import * as path from "path";
 import { URL } from "url";
-import { CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
+import { CancelRequest, FileHandler } from "../itwin-client/FileHandler";
+import { ProgressCallback } from "./Request";
 import { downloadFileAtomic } from "./downloadFileAtomic";
 import { AccessToken } from "@itwin/core-bentley";
 

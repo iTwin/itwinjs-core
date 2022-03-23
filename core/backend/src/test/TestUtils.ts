@@ -5,7 +5,6 @@
 
 import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BentleyLoggerCategory, IDisposable, Logger, LogLevel } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostConfiguration } from "../IModelHost";
@@ -76,8 +75,6 @@ export class TestUtils {
     Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
     Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
     Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ITwinClientLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ITwinClientLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
   }

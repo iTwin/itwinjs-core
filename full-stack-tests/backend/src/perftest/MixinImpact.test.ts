@@ -139,7 +139,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
           let elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestMixinSchema:propElement");
           let geomElement = seedIModel.elements.createElement(elementProps);
           setPropVals(geomElement, propCount);
-          let id = seedIModel.elements.insertElement(geomElement);
+          let id = seedIModel.elements.insertElement(geomElement.toJSON());
           assert.isTrue(Id64.isValidId64(id), "insert failed");
           // create elements of base upto required level
           for (let j = 0; j < hCount; ++j) {
@@ -147,7 +147,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
             elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, `TestMixinSchema:${className}`);
             geomElement = seedIModel.elements.createElement(elementProps);
             setPropVal(geomElement, `${className}PrimProp`, "AChild Value");
-            id = seedIModel.elements.insertElement(geomElement);
+            id = seedIModel.elements.insertElement(geomElement.toJSON());
             assert.isTrue(Id64.isValidId64(id), "insert failed");
           }
           for (let j = 0; j < hCount; ++j) {
@@ -156,7 +156,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
             geomElement = seedIModel.elements.createElement(elementProps);
             setPropVal(geomElement, `${className}PrimProp`, "BChild Value");
             setPropVals(geomElement, propCount, "mixinProp", "Mixin Value");
-            id = seedIModel.elements.insertElement(geomElement);
+            id = seedIModel.elements.insertElement(geomElement.toJSON());
             assert.isTrue(Id64.isValidId64(id), "insert failed");
           }
         }

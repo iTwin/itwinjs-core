@@ -15,6 +15,16 @@ import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationshi
 
 const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 
+/** Options provided to [[IModelImporter.optimizeGeometry]] specifying post-processing optimizations to be applied to the iModel's geometry.
+ * @beta
+ */
+export interface OptimizeGeometryOptions {
+  /** If true, identify any [GeometryPart]($backend)s that are referenced exactly once. For each such part,
+   * replace the reference in the element's geometry stream with the part's own geometry stream, then delete the part.
+   */
+  inlineUniqueGeometryParts?: boolean;
+}
+
 /** Options provided to the [[IModelImporter]] constructor.
  * @beta
  */
@@ -65,10 +75,10 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * @see [IModelTransformOptions.preserveElementIdsForFiltering]($transformer)
    * @deprecated Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
    */
-  public get preserveElementIdsForFiltering(): Required<IModelImportOptions>["preserveElementIdsForFiltering"] {
+  public get preserveElementIdsForFiltering(): boolean {
     return this.options.preserveElementIdsForFiltering;
   }
-  public set preserveElementIdsForFiltering(val: Required<IModelImportOptions>["preserveElementIdsForFiltering"]) {
+  public set preserveElementIdsForFiltering(val: boolean) {
     this.options.preserveElementIdsForFiltering = val;
   }
 
@@ -76,11 +86,11 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * @see [[IModelImportOptions.simplifyElementGeometry]]
    * @deprecated Use [[IModelImporter.options.simplifyElementGeometry]] instead
    */
-  public get simplifyElementGeometry(): Required<IModelImportOptions>["simplifyElementGeometry"] {
-    return this.options.preserveElementIdsForFiltering;
+  public get simplifyElementGeometry(): boolean {
+    return this.options.simplifyElementGeometry;
   }
-  public set simplifyElementGeometry(val: Required<IModelImportOptions>["simplifyElementGeometry"]) {
-    this.options.preserveElementIdsForFiltering = val;
+  public set simplifyElementGeometry(val: boolean) {
+    this.options.simplifyElementGeometry = val;
   }
 
   /** The set of elements that should not be updated by this IModelImporter.
@@ -367,7 +377,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 
   /** Format an ElementAspect for the Logger. */
-  private formatElementAspectForLogger(elementAspectProps: ElementAspectProps): string {
+  private formatElementAspectForLogger(elementAspectProps: ElementAspectProps | ElementAspect): string {
     return `${elementAspectProps.classFullName} elementId=[${elementAspectProps.element.id}]`;
   }
 
@@ -485,6 +495,17 @@ export class IModelImporter implements Required<IModelImportOptions> {
       if (computedProjectExtents.outliers && computedProjectExtents.outliers.length > 0) {
         Logger.logInfo(loggerCategory, `${computedProjectExtents.outliers.length} outliers detected within projectExtents`);
       }
+    }
+  }
+
+  /** Examine the geometry streams of every [GeometricElement3d]($backend) in the target iModel and apply the specified optimizations.
+   * @note This method is automatically called from [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]] if
+   * [[IModelTransformOptions.optimizeGeometry]] is defined.
+   */
+  public optimizeGeometry(options: OptimizeGeometryOptions): void {
+    if (options.inlineUniqueGeometryParts) {
+      const result = this.targetDb.nativeDb.inlineGeometryPartReferences();
+      Logger.logInfo(loggerCategory, `Inlined ${result.numRefsInlined} references to ${result.numCandidateParts} geometry parts and deleted ${result.numPartsDeleted} parts.`);
     }
   }
 }

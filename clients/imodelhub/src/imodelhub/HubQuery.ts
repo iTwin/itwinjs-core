@@ -7,7 +7,7 @@
  */
 
 import { GuidString } from "@itwin/core-bentley";
-import { RequestQueryOptions } from "@bentley/itwin-client";
+import { RequestQueryOptions } from "../itwin-client/Request";
 import { WsgQuery } from "../wsg/WsgQuery";
 import { ArgumentCheck } from "./Errors";
 

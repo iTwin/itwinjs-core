@@ -7,4 +7,6 @@ export * from "./ui/Interfaces";
 export * from "./ui/EsriOAuth2Callback";
 export * from "./ui/EsriOAuth2Callback";
 export * from "./ui/MapLayersUiItemsProvider";
+export * from "./ui/FeatureInfoUiItemsProvider";
+export * from "./ui/MapFeatureInfoTool";
 export * from "./ui/widget/MapLayersWidget";

@@ -6,10 +6,9 @@
 import deepAssign from "deep-assign";
 import { once } from "lodash";
 import { AccessToken, GetMetaDataFunction, HttpStatus, Logger } from "@itwin/core-bentley";
-import {
-  Client, DefaultRequestOptionsProvider, request, RequestGlobalOptions, RequestOptions, RequestQueryOptions,
-  RequestTimeoutOptions, Response, ResponseError,
-} from "@bentley/itwin-client";
+import { Client, DefaultRequestOptionsProvider } from "../request/Client";
+import { request, RequestGlobalOptions, RequestOptions, RequestQueryOptions,
+  RequestTimeoutOptions, Response, ResponseError } from "../itwin-client/Request";
 import { ChunkedQueryContext } from "./ChunkedQueryContext";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { WsgClientLoggerCategory } from "./WsgLoggerCategory";

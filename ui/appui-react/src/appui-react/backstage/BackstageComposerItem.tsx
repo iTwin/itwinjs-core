@@ -32,6 +32,9 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
   return (
     <NZ_BackstageItem
       itemId={item.id}
+      providerId={item.providerId}
+      itemPriority={item.itemPriority}
+      groupPriority={item.groupPriority}
       icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
       isActive={ConditionalBooleanValue.getValue(item.isActive)}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
@@ -63,6 +66,9 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
   return (
     <NZ_BackstageItem
       itemId={item.id}
+      providerId={item.providerId}
+      itemPriority={item.itemPriority}
+      groupPriority={item.groupPriority}
       icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
       isActive={isActive}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
@@ -81,6 +87,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
 export interface BackstageComposerItemProps {
   /** Backstage item to render */
   readonly item: BackstageItem;
+  readonly providerId?: string;
 }
 
 /** Item of [[BackstageComposer]].

@@ -381,15 +381,15 @@ describe("ChangeSummary", () => {
     iModel.saveChanges("Added test model");
     const categoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
     iModel.saveChanges("Added test category");
-    const elementId1: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId));
-    const elementId2: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId));
-    const elementId3: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId));
+    const elementId1: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
+    const elementId2: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
+    const elementId3: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId).toJSON());
     iModel.saveChanges("Added test elements");
 
     // Setup the hierarchy as element3 -> element1
     const element3 = iModel.elements.getElement(elementId3);
     element3.parent = new ElementOwnsChildElements(elementId1);
-    iModel.elements.updateElement(element3);
+    iModel.elements.updateElement(element3.toJSON());
     iModel.saveChanges("Updated element1 as the parent of element3");
 
     // Push changes to the hub
@@ -397,7 +397,7 @@ describe("ChangeSummary", () => {
 
     // Modify the hierarchy to element3 -> element2
     element3.parent = new ElementOwnsChildElements(elementId2);
-    iModel.elements.updateElement(element3);
+    iModel.elements.updateElement(element3.toJSON());
     iModel.saveChanges("Updated element2 as the parent of element3");
 
     // Push changes to the hub

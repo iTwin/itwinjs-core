@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BentleyStatus, DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
@@ -14,20 +14,20 @@ import {
 import {
   AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
   ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
-  ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass,
-  GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
+  FillDisplay, GeometricElement3dProps, GeometricElementProps, GeometryClass,
+  GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryPrimitive, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
   GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../core-backend";
+import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils, Timer } from "../";
 
 function assertTrue(expr: boolean): asserts expr {
   assert.isTrue(expr);
 }
 
-function createGeometryPartProps(geom: GeometryStreamProps): GeometryPartProps {
+function createGeometryPartProps(geom?: GeometryStreamProps): GeometryPartProps {
   const partProps: GeometryPartProps = {
     classFullName: GeometryPart.classFullName,
     model: IModel.dictionaryId,
@@ -57,19 +57,13 @@ function createGeometryPart(geom: GeometryStreamProps, imodel: SnapshotDb): Id64
 function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dProps, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
   const elementProps = createPhysicalElementProps(seedElement, placement, geom);
   const el = imodel.elements.createElement<GeometricElement>(elementProps);
-  return imodel.elements.insertElement(el);
+  return imodel.elements.insertElement(el.toJSON());
 }
 
 function createPartElem(partId: Id64String, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement, isRelative = false): Id64String {
   const builder = new GeometryStreamBuilder();
   builder.appendGeometryPart3d(partId, isRelative ? origin : undefined, isRelative ? angles : undefined);
   return createGeometricElem(builder.geometryStream, isRelative ? { origin: Point3d.createZero(), angles: YawPitchRollAngles.createDegrees(0, 0, 0) } : { origin, angles }, imodel, seedElement);
-}
-
-function createPointPart(imodel: SnapshotDb): Id64String {
-  const builder = new GeometryStreamBuilder();
-  builder.appendGeometry(PointString3d.create(Point3d.createZero())); // NOTE: CoordinateXYZ isn't supported...
-  return createGeometryPart(builder.geometryStream, imodel);
 }
 
 function createCirclePart(radius: number, imodel: SnapshotDb): Id64String {
@@ -270,7 +264,7 @@ function validateGeometricElementProps(info: ElementGeometryInfo, expected: Geom
   assert.isFalse(bbox?.isNull);
 }
 
-function doElementGeometryValidate(imodel: SnapshotDb, elementId: Id64String, expected: ExpectedElementGeometryEntry[], isWorld: boolean, elementProps?: GeometricElement3dProps, brepOpt?: number): DbResult {
+function doElementGeometryValidate(imodel: SnapshotDb, elementId: Id64String, expected: ExpectedElementGeometryEntry[], isWorld: boolean, elementProps?: GeometricElement3dProps, brepOpt?: number): IModelStatus {
   const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
     if (undefined !== elementProps)
       validateGeometricElementProps(info, elementProps);
@@ -294,30 +288,18 @@ function doElementGeometryValidate(imodel: SnapshotDb, elementId: Id64String, ex
   return imodel.elementGeometryRequest(requestProps);
 }
 
-function doElementGeometryUpdate(imodel: SnapshotDb, elementId: Id64String, entryArray: ElementGeometryDataEntry[], isWorld: boolean): DbResult {
-  const updateProps: ElementGeometryUpdate = {
-    elementId,
-    entryArray,
-    isWorld,
-  };
-  const status = imodel.elementGeometryUpdate(updateProps);
-  if (DbResult.BE_SQLITE_OK === status)
-    imodel.saveChanges();
-  return status;
-}
-
-function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, entryArray: ElementGeometryDataEntry[], placement?: Placement3dProps, isWorld: boolean = false): { status: DbResult, newId: Id64String } {
+function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, entryArray: ElementGeometryDataEntry[], placement?: Placement3dProps): Id64String {
   const seedElement = imodel.elements.getElement<GeometricElement>(seedId);
   assert.exists(seedElement);
 
   const elementProps = createPhysicalElementProps(seedElement, placement);
-  const testElem = imodel.elements.createElement(elementProps);
-  const newId = imodel.elements.insertElement(testElem);
+  elementProps.elementGeometryBuilderParams = { entryArray };
 
-  const status = imodel.elementGeometryUpdate({ elementId: newId, entryArray, isWorld });
-  if (DbResult.BE_SQLITE_OK === status)
-    imodel.saveChanges();
-  return { status, newId };
+  const newId = imodel.elements.insertElement(elementProps);
+  assert.isTrue(Id64.isValidId64(newId));
+  imodel.saveChanges();
+
+  return newId;
 }
 
 describe("GeometryStream", () => {
@@ -838,26 +820,18 @@ describe("GeometryStream", () => {
     assert.isTrue(usageInfo.usedIds!.includes(partId));
   });
 
-  it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
+  it("create GeometricElement3d from world coordinate text using a newly added font", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
 
-    let fontProps: FontProps = { id: 0, type: FontType.TrueType, name: "Arial" };
-    try {
-      fontProps = imodel.embedFont(fontProps); // throws Error
-      assert.isTrue(fontProps.id !== 0);
-    } catch (error: any) {
-      if ("win32" === Platform.platformName)
-        assert.fail("Font embed failed");
-      return; // failure expected if not windows, skip remainder of test...
-    }
+    const arialId = imodel.addNewFont("Arial");
 
     assert.isTrue(0 !== imodel.fontMap.fonts.size);
     const foundFont = imodel.fontMap.getFont("Arial");
-    assert.isTrue(foundFont && foundFont.id === fontProps.id);
+    assert.isTrue(foundFont && foundFont.id === arialId);
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(45, 0, 0);
@@ -867,7 +841,7 @@ describe("GeometryStream", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: fontProps.id,
+      font: arialId,
       height: 2,
       bold: true,
       origin: testOrigin,
@@ -880,7 +854,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned, text transform should now be identity as it is accounted for by element's placement...
@@ -938,7 +912,7 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = imodel.elements.insertElement(testPart);
+    const partId = imodel.elements.insertElement(testPart.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -983,7 +957,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1017,7 +991,7 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = imodel.elements.insertElement(testPart);
+    const partId = imodel.elements.insertElement(testPart.toJSON());
     imodel.saveChanges();
 
     const builder = new GeometryStreamBuilder();
@@ -1031,7 +1005,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1128,7 +1102,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1206,7 +1180,7 @@ describe("GeometryStream", () => {
 
       const partProps = createGeometryPartProps(builder.geometryStream);
       const part = imodel.elements.createElement(partProps);
-      const partId = imodel.elements.insertElement(part);
+      const partId = imodel.elements.insertElement(part.toJSON());
       imodel.saveChanges();
 
       const json = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
@@ -1288,10 +1262,10 @@ describe("ElementGeometry", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const expected: ExpectedElementGeometryEntry[] = [{ opcode: ElementGeometryOpcode.SolidPrimitive, geometryCategory: "solid", geometrySubCategory: "sphere" }];
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, "0x1d", expected, false));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, "0x1d", expected, false));
   });
 
-  it("create GeometricElement3d from world coordinate point and arc primitive flatbuffer data", async () => {
+  it("create GeometricElement3d from local coordinate point and arc primitive flatbuffer data", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
@@ -1300,9 +1274,6 @@ describe("ElementGeometry", () => {
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    imodel.saveChanges();
 
     const pts: Point3d[] = [];
     pts.push(Point3d.create(5, 10, 0));
@@ -1344,8 +1315,12 @@ describe("ElementGeometry", () => {
     newEntries.push(entryEL!);
     expected.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, true));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, true, elementProps));
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with local coordinate indexed polyface flatbuffer data", async () => {
@@ -1370,19 +1345,16 @@ describe("ElementGeometry", () => {
     builder.appendGeometryQuery(polyface);
 
     // NOTE: For time comparison with GeometryStream: create GeometricElement3d with local coordinate indexed polyface json data
-    let timer = new Timer("elementNoGeometryInsert");
+    let timer = new Timer("elementGeometryInsert");
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    timer.end();
+    elementProps.elementGeometryBuilderParams = { entryArray: builder.entries };
 
-    timer = new Timer("elementGeometryUpdate");
-    let status = imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false });
-    timer.end();
-    assert.isTrue(DbResult.BE_SQLITE_OK === status);
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
+    timer.end();
 
     const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
       assert.isTrue(6 === info.entryArray.length); // 3 pairs of sub-range + polyface...
@@ -1403,9 +1375,9 @@ describe("ElementGeometry", () => {
     };
 
     timer = new Timer("elementGeometryRequest");
-    status = imodel.elementGeometryRequest({ onGeometry, elementId: newId });
+    const status = imodel.elementGeometryRequest({ onGeometry, elementId: newId });
     timer.end();
-    assert.isTrue(DbResult.BE_SQLITE_OK === status);
+    assert.isTrue(IModelStatus.Success === status);
   });
 
   it("create GeometricElement3d from local coordinate brep flatbuffer data", async () => {
@@ -1417,9 +1389,6 @@ describe("ElementGeometry", () => {
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
     const expectedFacet: ExpectedElementGeometryEntry[] = [];
@@ -1440,10 +1409,14 @@ describe("ElementGeometry", () => {
     expectedFacet.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedSkip, false, undefined, 2));
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedSkip, false, undefined, 2));
   });
 
   it("apply world coordinate transform directly to brep flatbuffer data", async () => {
@@ -1455,9 +1428,6 @@ describe("ElementGeometry", () => {
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    imodel.saveChanges();
 
     const brepProps = createBRepDataProps();
     const entry = ElementGeometry.fromBRep(brepProps);
@@ -1484,8 +1454,12 @@ describe("ElementGeometry", () => {
     expectedFacet.push({ opcode: ElementGeometryOpcode.BasicSymbology });
     expectedFacet.push({ opcode: ElementGeometryOpcode.Polyface, geometryCategory: "polyface" });
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, true));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
   });
 
   it("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {
@@ -1495,33 +1469,21 @@ describe("ElementGeometry", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
 
-    let fontProps: FontProps = { id: 0, type: FontType.TrueType, name: "Arial" };
-    try {
-      fontProps = imodel.embedFont(fontProps); // throws Error
-      assert.isTrue(fontProps.id !== 0);
-    } catch (error: any) {
-      if ("win32" === Platform.platformName)
-        assert.fail("Font embed failed");
-      return; // failure expected if not windows, skip remainder of test...
-    }
-
+    const arialId = imodel.addNewFont("Arial");
     assert.isTrue(0 !== imodel.fontMap.fonts.size);
     const foundFont = imodel.fontMap.getFont("Arial");
-    assert.isTrue(foundFont && foundFont.id === fontProps.id);
+    assert.isTrue(foundFont && foundFont.id === arialId);
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
     const newEntries: ElementGeometryDataEntry[] = [];
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: fontProps.id,
+      font: arialId,
       height: 2,
       bold: true,
       origin: testOrigin,
@@ -1533,8 +1495,12 @@ describe("ElementGeometry", () => {
     newEntries.push(entry!);
     expected.push({ opcode: ElementGeometryOpcode.TextString, originalEntry: entry });
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d from local coordinate image flatbuffer data", async () => {
@@ -1546,9 +1512,6 @@ describe("ElementGeometry", () => {
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
     const newEntries: ElementGeometryDataEntry[] = [];
@@ -1564,8 +1527,12 @@ describe("ElementGeometry", () => {
     newEntries.push(entry!);
     expected.push({ opcode: ElementGeometryOpcode.Image, originalEntry: entry });
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with sub-graphic ranges flatbuffer data", async () => {
@@ -1577,9 +1544,6 @@ describe("ElementGeometry", () => {
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
     const newEntries: ElementGeometryDataEntry[] = [];
@@ -1606,8 +1570,12 @@ describe("ElementGeometry", () => {
     newEntries.push(entryL2!);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with part reference flatbuffer data", async () => {
@@ -1616,7 +1584,7 @@ describe("ElementGeometry", () => {
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const partId = createPointPart(imodel); // TODO: Invalid to create a part w/o geometry...
+    const partProps = createGeometryPartProps();
     const expectedPart: ExpectedElementGeometryEntry[] = [];
     const newPartEntries: ElementGeometryDataEntry[] = [];
 
@@ -1625,15 +1593,16 @@ describe("ElementGeometry", () => {
     newPartEntries.push(entryAR!);
     expectedPart.push({ opcode: ElementGeometryOpcode.ArcPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "arc" });
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, partId, newPartEntries, false));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, partId, expectedPart, false));
+    partProps.elementGeometryBuilderParams = { entryArray: newPartEntries };
+    const partId = imodel.elements.insertElement(partProps);
+    assert.isTrue(Id64.isValidId64(partId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, partId, expectedPart, false));
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
     const newEntries: ElementGeometryDataEntry[] = [];
@@ -1658,8 +1627,12 @@ describe("ElementGeometry", () => {
     newEntries.push(entryPS!);
     expected.push({ opcode: ElementGeometryOpcode.PartReference, originalEntry: entryPS });
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with appearance flatbuffer data", async () => {
@@ -1671,9 +1644,6 @@ describe("ElementGeometry", () => {
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    imodel.saveChanges();
 
     const pts: Point3d[] = [];
     pts.push(Point3d.create(5, 10, 0));
@@ -1785,8 +1755,12 @@ describe("ElementGeometry", () => {
     newEntries.push(entryLN!);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curvePrimitive", geometrySubCategory: "lineString" });
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with pattern flatbuffer data", async () => {
@@ -1798,9 +1772,6 @@ describe("ElementGeometry", () => {
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    imodel.saveChanges();
 
     const pts: Point3d[] = [];
     pts.push(Point3d.create(5, 10, 0));
@@ -1898,9 +1869,131 @@ describe("ElementGeometry", () => {
     newEntries.push(entrySH!);
     expected.push({ opcode: ElementGeometryOpcode.PointPrimitive, geometryCategory: "curveCollection", geometrySubCategory: "loop" });
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
+
+  it("should insert elements and parts with binary geometry stream", () => {
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+
+    const pts: Point3d[] = [];
+    pts.push(Point3d.create(5, 10, 0));
+    pts.push(Point3d.create(10, 10, 0));
+
+    const entryLN = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[1]));
+    assert.isTrue(entryLN !== undefined);
+
+    const entryAR = ElementGeometry.fromGeometryQuery(Arc3d.createXY(pts[0], pts[0].distance(pts[1])));
+    assert.exists(entryAR);
+
+    // ------------------
+    // GeometricElement3d
+    // ------------------
+
+    //    Insert
+
+    const elemProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      // geom: geomBuilder.geometryStream,
+      elementGeometryBuilderParams: { entryArray: [entryLN!], viewIndependent: false },
+    };
+
+    const spatialElementId = imodel.elements.insertElement(elemProps);
+
+    let persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
+    assert.isDefined(persistentProps.geom);
+    assert.isTrue(persistentProps.placement !== undefined);
+    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.origin), Point3d.create(0, 0, 0));
+    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.low), Point3d.create(5, 10, 0));
+    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.high), Point3d.create(10, 10, 0));
+
+    for (const entry of new GeometryStreamIterator(persistentProps.geom!, persistentProps.category)) {
+      assert.equal(entry.primitive.type, "geometryQuery");
+      const geometry = (entry.primitive as GeometryPrimitive).geometry;
+      assert.isTrue(geometry instanceof LineString3d);
+      const ls: LineString3d = geometry as LineString3d;
+      assert.deepEqual(ls.points, pts);
+    }
+
+    //    Insert - various failure cases
+    elemProps.elementGeometryBuilderParams = { entryArray: [] };
+    expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
+
+    elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: 9999 } as unknown as ElementGeometryDataEntry] };
+    expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
+
+    elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: ElementGeometryOpcode.ArcPrimitive, data: undefined } as unknown as ElementGeometryDataEntry] };
+    expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
+
+    //    Update
+    persistentProps.elementGeometryBuilderParams = { entryArray: [entryAR!] };
+
+    imodel.elements.updateElement(persistentProps);
+
+    persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
+    assert.isDefined(persistentProps.geom);
+    assert.isTrue(persistentProps.placement !== undefined);
+    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.origin), Point3d.create(0, 0, 0));
+    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.low), Point3d.create(0, 5, 0));
+    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.high), Point3d.create(10, 15, 0));
+
+    for (const entry of new GeometryStreamIterator(persistentProps.geom!, persistentProps.category)) {
+      assert.equal(entry.primitive.type, "geometryQuery");
+      const geometry = (entry.primitive as GeometryPrimitive).geometry;
+      assert.isTrue(geometry instanceof Arc3d);
+      const ar: Arc3d = geometry as Arc3d;
+      assert.deepEqual(ar.center, pts[0]);
+    }
+
+    // ---------------
+    // Geometry part
+    // ---------------
+
+    //    Insert
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      elementGeometryBuilderParams: { entryArray: [entryLN!], is2dPart: false },
+    };
+
+    const partid = imodel.elements.insertElement(partProps);
+
+    let persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partid, wantGeometry: true });
+    assert.isDefined(persistentPartProps.geom);
+
+    for (const entry of new GeometryStreamIterator(persistentPartProps.geom!)) {
+      assert.equal(entry.primitive.type, "geometryQuery");
+      const geometry = (entry.primitive as GeometryPrimitive).geometry;
+      assert.isTrue(geometry instanceof LineString3d);
+      const ls: LineString3d = geometry as LineString3d;
+      assert.deepEqual(ls.points, pts);
+    }
+
+    //    Update
+    persistentPartProps.elementGeometryBuilderParams = { entryArray: [entryAR!] };
+
+    imodel.elements.updateElement(persistentPartProps);
+
+    persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partid, wantGeometry: true });
+    assert.isDefined(persistentPartProps.geom);
+
+    for (const entry of new GeometryStreamIterator(persistentPartProps.geom!)) {
+      assert.equal(entry.primitive.type, "geometryQuery");
+      const geometry = (entry.primitive as GeometryPrimitive).geometry;
+      assert.isTrue(geometry instanceof Arc3d);
+      const ar: Arc3d = geometry as Arc3d;
+      assert.deepEqual(ar.center, pts[0]);
+    }
+  });
+
 });
 
 describe("BRepGeometry", () => {
@@ -1940,7 +2033,7 @@ describe("BRepGeometry", () => {
     };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -1951,7 +2044,7 @@ describe("BRepGeometry", () => {
     createProps.operation = BRepGeometryOperation.Intersect;
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -1961,7 +2054,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: -0.5 };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -1973,7 +2066,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { bothDirections: true };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -1982,10 +2075,10 @@ describe("BRepGeometry", () => {
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    elementProps.elementGeometryBuilderParams = { entryArray: builder.entries };
 
-    assert.isTrue(DbResult.BE_SQLITE_OK === imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false }));
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
   });
 
@@ -2012,7 +2105,7 @@ describe("BRepGeometry", () => {
     };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2022,7 +2115,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: -0.5 };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2034,7 +2127,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = undefined;
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2043,14 +2136,14 @@ describe("BRepGeometry", () => {
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    elementProps.elementGeometryBuilderParams = { entryArray: builder.entries };
 
-    assert.isTrue(DbResult.BE_SQLITE_OK === imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false }));
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
   });
 
-  it("create multiple GeometricElement3d from world coordinate disjoint body result test", async () => {
+  it("create multiple GeometricElement3d from local coordinate disjoint body result test", async () => {
     const builder = new ElementGeometry.Builder();
     let results: ElementGeometryDataEntry[];
 
@@ -2072,7 +2165,7 @@ describe("BRepGeometry", () => {
     };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2084,8 +2177,8 @@ describe("BRepGeometry", () => {
       assert.isDefined(brepData);
       const placement = YawPitchRollAngles.tryFromTransform(Transform.fromJSON(brepData!.transform));
       assert.isDefined(placement.angles);
-      const result = createGeometricElemFromSeed(imodel, "0x1d", [entry], { origin: placement.origin, angles: placement.angles! }, true);
-      assert.isTrue(DbResult.BE_SQLITE_OK === result.status);
+      const newId = createGeometricElemFromSeed(imodel, "0x1d", [entry], { origin: placement.origin, angles: placement.angles! });
+      assert.isTrue(Id64.isValidId64(newId));
     });
   });
 
@@ -2104,21 +2197,21 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.operation = BRepGeometryOperation.Subtract;
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.operation = BRepGeometryOperation.Intersect;
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2140,7 +2233,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2165,7 +2258,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2188,7 +2281,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2197,7 +2290,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { bothDirections: true };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2206,7 +2299,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: 1 };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2215,7 +2308,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: 1, bothDirections: true };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2238,7 +2331,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2249,7 +2342,7 @@ describe("BRepGeometry", () => {
     builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, -1.5), 2)));
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2260,7 +2353,7 @@ describe("BRepGeometry", () => {
     builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, -0.5), 2, AngleSweep.createStartSweepDegrees(0, -360))));
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2281,21 +2374,21 @@ describe("BRepGeometry", () => {
       parameters: { frontDistance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.parameters = { backDistance: 0.25 };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.parameters = { frontDistance: 0.1, backDistance: 0.1 };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2316,7 +2409,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2337,7 +2430,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2358,7 +2451,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2379,7 +2472,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2403,7 +2496,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2424,7 +2517,7 @@ describe("BRepGeometry", () => {
       parameters: { radius: 1 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2443,7 +2536,7 @@ describe("BRepGeometry", () => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
 
       // Create new element to test flatbuffer conversion to brep wire format
-      // NOTE: It is preferable to use IModelDb.elementGeometryUpdate over GeometryStreamBuilder this is just for testing,
+      // NOTE: It is preferable to use ElementGeometry.Builder over GeometryStreamBuilder this is just for testing,
       const gsBuilder = new GeometryStreamBuilder();
       const brep = ElementGeometry.toBRep(info.entryArray[0], true);
       assert.exists(brep);
@@ -2451,7 +2544,7 @@ describe("BRepGeometry", () => {
 
       const elementProps = createPhysicalElementProps(seedElement, { origin: Point3d.create(5, 10, 0), angles: YawPitchRollAngles.createDegrees(45, 0, 0) }, gsBuilder.geometryStream);
       const testElem = imodel.elements.createElement(elementProps);
-      const newId = imodel.elements.insertElement(testElem);
+      const newId = imodel.elements.insertElement(testElem.toJSON());
       imodel.saveChanges();
 
       // Extract and test value returned
@@ -2461,9 +2554,6 @@ describe("BRepGeometry", () => {
       const itLocal = new GeometryStreamIterator(value.geom!, value.category);
       for (const entry of itLocal) {
         assertTrue(entry.primitive.type === "brep");
-        // TODO: Enable fromBRep check below when addon is updated...
-        // const brepEntry = ElementGeometry.fromBRep(entry.primitive.brep);
-        // assert.exists(brepEntry);
       }
     };
 
@@ -2474,7 +2564,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2508,7 +2598,7 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     const requestProps: MassPropertiesRequestProps = {
@@ -2535,7 +2625,7 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     const requestProps: MassPropertiesRequestProps = {
@@ -2932,4 +3022,5 @@ describe("Geometry Containment", () => {
     assert.isTrue(1 === result.numOverlap);
     result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
   });
+
 });

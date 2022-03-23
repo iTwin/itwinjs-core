@@ -8,8 +8,7 @@
  */
 
 import produce, { Draft } from "immer";
-import { StagePanelLocation, StagePanelSection } from "@itwin/appui-abstract";
-import { UiEvent } from "@itwin/core-react";
+import { StagePanelLocation, StagePanelSection, UiEvent } from "@itwin/appui-abstract";
 import { NineZoneState, PanelSide } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetDef } from "../widgets/WidgetDef";
@@ -29,7 +28,7 @@ export enum StagePanelState {
 }
 
 /** Panel State Changed Event Args interface.
- * @public @deprecated
+ * @public
  */
 export interface PanelStateChangedEventArgs {
   panelDef: StagePanelDef;

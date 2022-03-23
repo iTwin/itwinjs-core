@@ -646,6 +646,7 @@ export class ImdlReader {
     if (!materialJson)
       return undefined;
 
+    // eslint-disable-next-line deprecation/deprecation
     const materialParams = new RenderMaterial.Params(key);
     materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
     if (materialJson.diffuse !== undefined)
@@ -672,6 +673,7 @@ export class ImdlReader {
     if (undefined !== materialJson.textureMapping)
       materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
 
+    // eslint-disable-next-line deprecation/deprecation
     return this._system.createMaterial(materialParams, this._iModel);
   }
 

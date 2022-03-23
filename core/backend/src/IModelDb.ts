@@ -15,8 +15,8 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesRequestProps,
+  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps,
+  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
@@ -248,9 +248,28 @@ export abstract class IModelDb extends IModel {
     this.onChangesetApplied.raiseEvent();
   }
 
-  public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
+  public get fontMap(): FontMap {
+    return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap()));
+  }
+
   /** @internal */
-  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return this.nativeDb.embedFont(prop); }
+  public clearFontMap(): void {
+    this._fontMap = undefined;
+  }
+
+  /**
+   * Add a new font name/type to the FontMap for this iModel and return its FontId.
+   * @param name The name of the font to add
+   * @param type The type of the font. Default is TrueType.
+   * @returns The FontId for the newly added font. If a font by that name/type already exists, this method does not fail, it returns the existing Id.
+   * @see [FontId and FontMap]($docs/learning/backend/Fonts.md#fontid-and-fontmap)
+   * @beta
+   */
+  public addNewFont(name: string, type?: FontType): FontId {
+    this.locks.checkExclusiveLock(IModel.repositoryModelId, "schema", "addNewFont");
+    this.clearFontMap();
+    return this.nativeDb.addNewFont({ name, type: type ?? FontType.TrueType });
+  }
 
   /** Check if this iModel has been opened read-only or not. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
@@ -1145,28 +1164,19 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Request geometry stream information from an element in binary format instead of json.
-   * @returns DbResult.BE_SQLITE_OK if successful
+   * @returns IModelStatus.Success if successful
    * @alpha
    */
-  public elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult {
+  public elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus {
     return this.nativeDb.processGeometryStream(requestProps);
   }
 
-  /** Update the geometry stream for the supplied element from binary format data instead of json.
-   * @returns DbResult.BE_SQLITE_OK if successful
-   * @alpha
-   */
-  public elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult {
-    return this.nativeDb.updateGeometryStream(updateProps);
-  }
-
   /** Create brep geometry for inclusion in an element's geometry stream.
-   * @returns DbResult.BE_SQLITE_OK if successful
+   * @returns IModelStatus.Success if successful
    * @throws [[IModelError]] to report issues with input geometry or parameters
-   * @see [IModelDb.elementGeometryUpdate]($core-backend)
    * @alpha
    */
-  public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
+  public createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus {
     return this.nativeDb.createBRepGeometry(createProps);
   }
 
@@ -1298,14 +1308,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getModel
      */
     public tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined {
-      const modelProps = this.tryGetModelProps<T>(modelId);
-      if (undefined === modelProps) {
+      const modelProps = this.tryGetModelProps<ModelProps>(modelId);
+      if (undefined === modelProps)
         return undefined; // no Model with that modelId found
-      }
+
       const model = this._iModel.constructEntity<T>(modelProps);
-      if (undefined === modelClass) {
+      if (undefined === modelClass)
         return model; // modelClass was not specified, cannot call instanceof to validate
-      }
+
       return model instanceof modelClass ? model : undefined;
     }
 
@@ -1380,7 +1390,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public insertModel(props: ModelProps): Id64String {
       try {
-        return props.id = this._iModel.nativeDb.insertModel(props instanceof Model ? props.toJSON() : props);
+        return props.id = this._iModel.nativeDb.insertModel(props);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
       }
@@ -1392,7 +1402,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public updateModel(props: UpdateModelOptions): void {
       try {
-        this._iModel.nativeDb.updateModel(props instanceof Model ? props.toJSON() : props);
+        this._iModel.nativeDb.updateModel(props);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
       }
@@ -1510,19 +1520,19 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getElement
      */
     public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
-      if (typeof elementId === "string") {
+      if (typeof elementId === "string")
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
-      } else if (elementId instanceof Code) {
+      else if (elementId instanceof Code)
         elementId = { code: elementId };
-      }
-      const elementProps = this.tryGetElementJson<T>(elementId);
-      if (undefined === elementProps) {
+
+      const elementProps = this.tryGetElementJson<ElementProps>(elementId);
+      if (undefined === elementProps)
         return undefined; // no Element with that elementId found
-      }
+
       const element = this._iModel.constructEntity<T>(elementProps);
-      if (undefined === elementClass) {
+      if (undefined === elementClass)
         return element; // elementClass was not specified, cannot call instanceof to validate
-      }
+
       return element instanceof elementClass ? element : undefined;
     }
 
@@ -1581,7 +1591,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public insertElement(elProps: ElementProps): Id64String {
       try {
-        return elProps.id = this._iModel.nativeDb.insertElement(elProps instanceof Element ? elProps.toJSON() : elProps);
+        return elProps.id = this._iModel.nativeDb.insertElement(elProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `insertElement with class=${elProps.classFullName}: ${err.message}`,);
       }
@@ -1596,7 +1606,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public updateElement(elProps: ElementProps): void {
       try {
-        this._iModel.nativeDb.updateElement(elProps instanceof Element ? elProps.toJSON() : elProps);
+        this._iModel.nativeDb.updateElement(elProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error updating element [${err.message}], id:${elProps.id}`);
       }
@@ -2017,9 +2027,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         return;
       }
 
-      if (undefined !== ret.error) {
+      if (ret.error) {
         reject(new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`));
-      } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
+      } else if (ret.result && typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
         const res = ret.result;
         const iModelId = this._iModel.iModelId;
 

@@ -27,10 +27,6 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
-      "name": "@bentley/itwin-client",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/react-scripts",
       "allowedCategories": [ "internal" ]
     },
@@ -56,7 +52,7 @@
     },
     {
       "name": "@itwin/browser-authorization",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/build-tools",
@@ -84,6 +80,10 @@
     },
     {
       "name": "@itwin/core-electron",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/core-extension",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -140,7 +140,11 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "integration-testing" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/ecschema-rpcinterface-impl",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -197,6 +201,10 @@
     {
       "name": "@itwin/itwinui-css",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/itwinui-icons-react",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/itwinui-react",
@@ -259,6 +267,14 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "@loaders.gl/core",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@loaders.gl/draco",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
     },
@@ -276,7 +292,7 @@
     },
     {
       "name": "@testing-library/react",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@testing-library/react-hooks",
@@ -297,10 +313,6 @@
     {
       "name": "@typescript-eslint/typescript-estree",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "@ungap/url-search-params",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "@wojtekmaj/enzyme-adapter-react-17",
@@ -333,6 +345,10 @@
     {
       "name": "body-parser",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "buffer",
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "cache-require-paths",
@@ -416,7 +432,7 @@
     },
     {
       "name": "deep-assign",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "deep-equal",
@@ -449,6 +465,10 @@
     {
       "name": "enzyme-to-json",
       "allowedCategories": [ "extensions", "frontend" ]
+    },
+    {
+      "name": "esbuild",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "eslint",
@@ -516,7 +536,7 @@
     },
     {
       "name": "fast-sort",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "file-loader",
@@ -604,7 +624,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "jsdom-global",
@@ -628,7 +648,7 @@
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "lolex",
@@ -716,7 +736,7 @@
     },
     {
       "name": "qs",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "raf",
@@ -772,7 +792,7 @@
     },
     {
       "name": "react-resize-detector",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-router-dom",
@@ -859,8 +879,12 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "superagent",
+      "name": "string_decoder",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "superagent",
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "supertest",
@@ -901,6 +925,10 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "url",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "username",
@@ -949,10 +977,6 @@
     {
       "name": "xmlhttprequest",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "xpath",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "yargonaut",

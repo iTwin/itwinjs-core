@@ -8,7 +8,7 @@
 
 import { CompressedId64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { AngleProps, Matrix3dProps, Range1dProps, Range3dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
-import { ColorDefProps, EcefLocationProps, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
+import { ColorDefProps, EcefLocationProps, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";
 
 /** @alpha */
@@ -16,24 +16,6 @@ export const editorBuiltInCmdIds = {
   cmdBasicManipulation: "basicManipulation",
   cmdSolidModeling: "solidModeling",
 };
-
-/** @alpha */
-export interface FlatBufferGeometricElementData {
-  /** The geometry stream data */
-  entryArray: ElementGeometryDataEntry[];
-  /** Whether entries are supplied local to placement transform or in world coordinates */
-  isWorld?: boolean;
-  /** If true, create geometry that displays oriented to face the camera */
-  viewIndependent?: boolean;
-}
-
-/** @alpha */
-export interface FlatBufferGeometryPartData {
-  /** The geometry stream data */
-  entryArray: ElementGeometryDataEntry[];
-  /** If true, create geometry part with 2d geometry */
-  is2dPart?: boolean;
-}
 
 /** @alpha */
 export interface FlatBufferGeometryFilter {
@@ -59,27 +41,27 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
 
   /** Create and insert a new geometric element.
    * @param props Properties for the new [GeometricElement]($backend)
-   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]].
+   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]] or [[GeometricElementProps.elementGeometryBuilderParams]].
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String>;
+  insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
 
   /** Create and insert a new geometry part element.
    * @param props Properties for the new [GeometryPart]($backend)
-   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometryPartProps.geom]].
+   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometryPartProps.geom]] or [[GeometryPartProps.elementGeometryBuilderParams]].
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to insert the element
    */
-  insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String>;
+  insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
 
   /** Update an existing geometric element.
    * @param propsOrId Properties or element id to update for an existing [GeometricElement]($backend)
-   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]].
+   * @param data Optional binary format GeometryStream representation used in lieu of [[GeometricElementProps.geom]] or [[GeometricElementProps.elementGeometryBuilderParams]].
    * @see [GeometryStream]($docs/learning/common/geometrystream.md), [ElementGeometry]($backend)
    * @throws [[IModelError]] if unable to update the element
    */
-  updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void>;
+  updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: ElementGeometryBuilderParams): Promise<void>;
 
   /** Request geometry from an existing element. Because a GeometryStream can be large and may contain information
    * that is not always useful to frontend code, filter options are provided to restrict what GeometryStreams are returned.

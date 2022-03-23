@@ -8,6 +8,8 @@ import { AngleProps } from '@itwin/core-geometry';
 import { ColorDefProps } from '@itwin/core-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EcefLocationProps } from '@itwin/core-common';
+import { ElementGeometryBuilderParams } from '@itwin/core-common';
+import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryDataEntry } from '@itwin/core-common';
 import { ElementGeometryInfo } from '@itwin/core-common';
 import { ElementGeometryOpcode } from '@itwin/core-common';
@@ -25,15 +27,15 @@ import { XYZProps } from '@itwin/core-geometry';
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
-    insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String>;
-    insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String>;
+    insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String>;
+    insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
     requestElementGeometry(id: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
     rotatePlacement(ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
     // (undocumented)
     transformPlacement(ids: CompressedId64Set, transform: TransformProps): Promise<IModelStatus>;
     updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void>;
-    updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void>;
+    updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: ElementGeometryBuilderParams): Promise<void>;
     updateProjectExtents(extents: Range3dProps): Promise<void>;
 }
 
@@ -230,13 +232,6 @@ export interface FaceParameterRangeProps {
 }
 
 // @alpha (undocumented)
-export interface FlatBufferGeometricElementData {
-    entryArray: ElementGeometryDataEntry[];
-    isWorld?: boolean;
-    viewIndependent?: boolean;
-}
-
-// @alpha (undocumented)
 export interface FlatBufferGeometryFilter {
     accept?: ElementGeometryOpcode[];
     geometry?: {
@@ -246,12 +241,6 @@ export interface FlatBufferGeometryFilter {
     };
     maxDisplayable?: number;
     reject?: ElementGeometryOpcode[];
-}
-
-// @alpha (undocumented)
-export interface FlatBufferGeometryPartData {
-    entryArray: ElementGeometryDataEntry[];
-    is2dPart?: boolean;
 }
 
 // @alpha

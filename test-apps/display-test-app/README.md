@@ -206,9 +206,13 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `win restore` *windowId* - restore (un-dock) the specified or focused window.
 * `win close` *windowId* - close the specified or focused window.
 * `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
-* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport.
+* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files).
 * `dta version compare` - emulate version comparison.
-* `dta save image` - open a new window containing a snapshot of the contents of the selected viewport.
+* `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
+  * `w=width` - the desired width of the image in pixels. e.g. `w=640`.
+  * `h=height` - the desired height of the image in pixels. e.g. `h=480`.
+  * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
+  * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
 * `dta zoom selected` - zoom the selected viewport to the elements in the selection set.
 * `dta incident markers` - toggle incident marker demo in the selected viewport.
@@ -239,6 +243,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `image=`: Display as a raster image, even if view is orthographic. Perspective views always draw as raster images.
   * `background=`: Preserve background color when drawing as a raster image.
 * `dta aspect skew decorator` *apply=0|1* - Toggle a decorator that draws a simple bspline curve based on the project extents, for testing the effect of aspect ratio skew on the curve stroke tolerance. Use in conjunction with `fdt aspect skew` to adjust the skew. If `apply` is 0, then the skew will have no effect on the curve's level of detail; otherwise a higher aspect ratio skew should produce higher-resolution curve graphics.
+* `dta drape terrain` - Start a tool that demonstrates draping a linestring to either a reality mesh model or background map with terrain applied. The model is first selected and subsequent points define the linestring.
 * `dta classifyclip selected` *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
 * `dta grid settings` - Change the grid settings for the selected viewport.
   * `spacing=number` Specify x and y grid reference line spacing in meters.

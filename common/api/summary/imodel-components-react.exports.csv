@@ -19,12 +19,6 @@ beta;ColorPickerProps
 beta;ColorPropertyEditor 
 beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
 beta;ColorSwatchProps 
-internal;ContextMenu 
-deprecated;ContextMenu 
-internal;ContextMenuItem 
-deprecated;ContextMenuItem 
-internal;ContextMenuProps 
-deprecated;ContextMenuProps 
 public;Cube 
 internal;CubeFace 
 internal;CubeFaceProps 
@@ -73,8 +67,6 @@ internal;InlineEdit
 public;LineWeightSwatch 
 public;LineWeightSwatchProps 
 internal;MapMode
-internal;MenuItem
-deprecated;MenuItem
 internal;Milestone
 deprecated;Milestone
 public;MilestoneRange

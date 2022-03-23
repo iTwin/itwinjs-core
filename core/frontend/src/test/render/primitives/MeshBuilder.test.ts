@@ -11,7 +11,7 @@ import { MockRender } from "../../../render/MockRender";
 import { ScreenViewport } from "../../../Viewport";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
-import { Mesh, MeshGraphicArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
 import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
@@ -50,7 +50,7 @@ describe("Mesh Builder Tests", () => {
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    const mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
     expect(mb.currentPolyface).to.be.undefined;
     expect(mb.mesh.displayParams).to.equal(displayParams);
     expect(mb.mesh.type).to.equal(type);
@@ -99,7 +99,7 @@ describe("Mesh Builder Tests", () => {
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    let mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    let mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     // calls addPolyline for each stroke points list in strokes
     expect(mb.mesh.polylines!.length).to.equal(0);
@@ -110,7 +110,7 @@ describe("Mesh Builder Tests", () => {
     expect(lengthA).to.be.lte(lengthB);
     expect(mb.mesh.points.length).to.be.greaterThan(0);
     // calls addPointString for each stroke points list in strokes
-    mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
     expect(mb.mesh.polylines!.length).to.equal(0);
     expect(mb.mesh.points.length).to.equal(0);
     mb.addStrokePointLists(strksPrims, true, fillColor);
@@ -156,7 +156,7 @@ describe("Mesh Builder Tests", () => {
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
     const type = Mesh.PrimitiveType.Mesh;
-    const mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     const includeParams = false;
     const fillColor = ColorDef.white.tbgr;
@@ -204,7 +204,7 @@ describe("Mesh Builder Tests", () => {
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
     const type = Mesh.PrimitiveType.Mesh;
-    const mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     const visitor = pfPrim.indexedPolyface.createVisitor();
     const includeParams = false;
@@ -251,7 +251,7 @@ describe("Mesh Builder Tests", () => {
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
     const type = Mesh.PrimitiveType.Mesh;
-    const mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     const includeParams = false;
     const visitor = pfPrim.indexedPolyface.createVisitor();
@@ -294,7 +294,7 @@ describe("Mesh Builder Tests", () => {
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
     const type = Mesh.PrimitiveType.Mesh;
-    const mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     const includeParams = false;
     const visitor = pfPrim.indexedPolyface.createVisitor();
@@ -316,21 +316,21 @@ describe("Mesh Builder Tests", () => {
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    let mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    let mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     let points = [new Point3d(), new Point3d(100, 100, 100), new Point3d(200, 200, 200)];
     const fillColor = ColorDef.white.tbgr;
 
     points = [new Point3d(), new Point3d(1, 1, 1), new Point3d(2, 2, 2)];
     type = Mesh.PrimitiveType.Polyline;
-    mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     expect(mb.mesh.polylines!.length).to.equal(0);
     mb.addPolyline(points, fillColor);
     expect(mb.mesh.polylines!.length).to.equal(1);
 
     points = [new Point3d()];
-    mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     // if array is less than 1 in length, no polylines added
     expect(mb.mesh.polylines!.length).to.equal(0);
@@ -347,21 +347,21 @@ describe("Mesh Builder Tests", () => {
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    let mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    let mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     let points = [new Point3d(), new Point3d(100, 100, 100), new Point3d(200, 200, 200)];
     const fillColor = ColorDef.white.tbgr;
 
     points = [new Point3d(), new Point3d(1, 1, 1), new Point3d(2, 2, 2)];
     type = Mesh.PrimitiveType.Polyline;
-    mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     expect(mb.mesh.polylines!.length).to.equal(0);
     mb.addPointString(points, fillColor);
     expect(mb.mesh.polylines!.length).to.equal(1);
 
     points = [new Point3d()];
-    mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
 
     // if array is less than 1 in length, no polylines added
     expect(mb.mesh.polylines!.length).to.equal(0);
@@ -381,7 +381,7 @@ describe("Mesh Builder Tests", () => {
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    const mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({ quantizePositions: false, displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
     expect(mb.mesh.triangles!.length).to.equal(0);
     mb.addTriangle(triangle);
     expect(mb.mesh.triangles!.length).to.equal(1);
@@ -391,6 +391,7 @@ describe("Mesh Builder Tests", () => {
     options = options ?? { };
     const tolerance = options.tolerance ?? 0.15;
     return MeshBuilder.create({
+      quantizePositions: false,
       type,
       range,
       tolerance,
@@ -403,9 +404,9 @@ describe("Mesh Builder Tests", () => {
 
   describe("aux data", () => {
     function expectAuxChannelTable(mesh: Mesh, expectedUint16Data: number[]): void {
-      const args = new MeshGraphicArgs();
-      mesh.getGraphics(args, IModelApp.renderSystem);
-      const meshParams = MeshParams.create(args.meshArgs);
+      const args = mesh.toMeshArgs()!;
+      expect(args).not.to.be.undefined;
+      const meshParams = MeshParams.create(args);
       const aux = meshParams.auxChannels!;
       expect(aux).not.to.be.undefined;
       expect(Array.from(new Uint16Array(aux.data.buffer))).to.deep.equal(expectedUint16Data);

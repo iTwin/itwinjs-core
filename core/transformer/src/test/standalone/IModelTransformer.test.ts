@@ -19,11 +19,12 @@ import {
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
-  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
+  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
+  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
+  assertIdentityTransformation,
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
@@ -1013,7 +1014,7 @@ describe("IModelTransformer", () => {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawingId },
     });
-    sourceDb.models.insertModel(model);
+    sourceDb.models.insertModel(model.toJSON());
 
     const myCodeSpecId = sourceDb.codeSpecs.insert(CodeSpec.create(sourceDb, "MyCodeSpec", CodeScopeSpec.Type.RelatedElement));
 
@@ -1070,13 +1071,13 @@ describe("IModelTransformer", () => {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawing1Id },
     });
-    const drawingModel1Id = sourceDb.models.insertModel(drawingModel1);
+    const drawingModel1Id = sourceDb.models.insertModel(drawingModel1.toJSON());
 
     const drawingModel2 = sourceDb.models.createModel({
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawing2Id },
     });
-    const drawingModel2Id = sourceDb.models.insertModel(drawingModel2);
+    const drawingModel2Id = sourceDb.models.insertModel(drawingModel2.toJSON());
 
     const modelCodeSpec = sourceDb.codeSpecs.insert(CodeSpec.create(sourceDb, "ModelCodeSpec", CodeScopeSpec.Type.Model));
     const relatedCodeSpecId = sourceDb.codeSpecs.insert(CodeSpec.create(sourceDb, "RelatedCodeSpec", CodeScopeSpec.Type.RelatedElement));
@@ -1594,6 +1595,281 @@ describe("IModelTransformer", () => {
     expect(targetExternalSourceAspects[0].identifier).to.equal(multiAspectProps.identifier);
 
     sinon.restore();
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("IModelTransformer processes nav property predecessors even in generated classes", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Source.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropPredecessors" } });
+
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestGeneratedClasses" alias="tgc" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestEntity" description="a sample entity for the end of the test relationships">
+          <BaseClass>bis:DefinitionElement</BaseClass>
+          <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
+        </ECEntityClass>
+        <ECRelationshipClass typeName="ElemRel" strength="referencing" description="elem rel 1" modifier="sealed">
+          <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="TestElementWithNavProp"/>
+          </Source>
+          <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestEntity"/>
+          </Target>
+        </ECRelationshipClass>
+        <ECEntityClass typeName="TestElementWithNavProp">
+          <BaseClass>bis:DefinitionElement</BaseClass>
+          <ECNavigationProperty propertyName="navProp" relationshipName="ElemRel" direction="Forward" />
+        </ECEntityClass>
+      </ECSchema>`
+    );
+
+    await sourceDb.importSchemas([testSchema1Path]);
+
+    const navPropTargetId = sourceDb.elements.insertElement({
+      classFullName: "TestGeneratedClasses:TestEntity",
+      prop: "sample-value",
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    const elemWithNavPropId = sourceDb.elements.insertElement({
+      classFullName: "TestGeneratedClasses:TestElementWithNavProp",
+      navProp: {
+        id: navPropTargetId,
+        relClassName: "TestGeneratedClasses:ElemRel",
+      },
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    class ProcessTargetLastTransformer extends IModelTransformer {
+      private _exportedNavPropHolder = false;
+      public override onExportElement(sourceElem: Element) {
+        if (sourceElem.id === elemWithNavPropId) {
+          super.onExportElement(sourceElem);
+          this._exportedNavPropHolder = true;
+        } else if (sourceElem.id === navPropTargetId && !this._exportedNavPropHolder) {
+          this.skipElement(sourceElem);
+        } else {
+          super.onExportElement(sourceElem);
+        }
+      }
+    }
+
+    const transformer = new ProcessTargetLastTransformer(sourceDb, targetDb);
+    await transformer.processSchemas();
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    function getNavPropContent(db: IModelDb) {
+      let results = new Array<{ id: Id64String, navProp: RelatedElement }>();
+      db.withPreparedStatement(
+        "SELECT ECInstanceId, navProp FROM TestGeneratedClasses.TestElementWithNavProp",
+        (stmt) => { results = [...stmt]; }
+      );
+      return results;
+    }
+
+    for (const navPropHolderInSource of getNavPropContent(sourceDb)) {
+      const navPropHolderInTargetId = transformer.context.findTargetElementId(navPropHolderInSource.id);
+      const navPropHolderInTarget = targetDb.elements.getElement(navPropHolderInTargetId);
+      const navPropTargetInTarget = transformer.context.findTargetElementId(navPropHolderInSource.navProp.id);
+      // cast to any to access untyped instance properties
+      expect((navPropHolderInTarget as any)?.navProp?.id).to.equal(navPropTargetInTarget);
+      expect((navPropHolderInTarget as any)?.navProp?.id).not.to.equal(Id64.invalid);
+      expect((navPropHolderInTarget as any)?.navProp?.id).not.to.be.undefined;
+    }
+
+    expect(getNavPropContent(sourceDb)).to.have.length(1);
+    expect(getNavPropContent(targetDb)).to.have.length(1);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("exhaustive identity transform", async () => {
+    const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformSource.bim");
+    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
+
+    // previously there was a bug where json display properties of models would not be transformed. This should expose that
+    const [physicalModelId] = sourceDb.queryEntityIds({ from: "BisCore.PhysicalModel", limit: 1 });
+    const physicalModel = sourceDb.models.getModel(physicalModelId);
+    physicalModel.jsonProperties.formatter.fmtFlags.linPrec = 100;
+    physicalModel.update();
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processSchemas();
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    await assertIdentityTransformation(sourceDb, targetDb, transformer);
+
+    const physicalModelInTargetId = transformer.context.findTargetElementId(physicalModelId);
+    const physicalModelInTarget = targetDb.models.getModel(physicalModelInTargetId);
+    expect(physicalModelInTarget.jsonProperties.formatter.fmtFlags.linPrec).to.equal(100);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("deferred element relationships get exported", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeferredElementWithRelationships-Source.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "deferred-element-with-relationships"} });
+
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    // the only two ElementUniqueAspect's in bis are ignored by the transformer, so we add our own to test their export
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECRelationshipClass typeName="MyElemRefersToElem" strength="referencing" modifier="None">
+          <BaseClass>bis:ElementRefersToElements</BaseClass>
+          <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
+          <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+            <Class class="bis:Element"/>
+          </Source>
+          <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="bis:Element"/>
+          </Target>
+        </ECRelationshipClass>
+      </ECSchema>`
+    );
+
+    await sourceDb.importSchemas([testSchema1Path]);
+
+    const myPhysicalModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, "MyPhysicalModel");
+    const mySpatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
+    const myPhysicalObjId = sourceDb.elements.insertElement({
+      classFullName: PhysicalObject.classFullName,
+      model: myPhysicalModelId,
+      category: mySpatialCategId,
+      code: Code.createEmpty(),
+      userLabel: `MyPhysicalObject`,
+      geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 1 }, angles: {} }),
+    } as PhysicalElementProps);
+    // because they are definition elements, display styles will be transformed first, but deferred until the excludedElements
+    // (which are predecessors) are inserted
+    const myDisplayStyleId = DisplayStyle3d.insert(sourceDb, IModelDb.dictionaryId, "MyDisplayStyle3d", {
+      excludedElements: [myPhysicalObjId],
+    });
+    const relProps = {
+      sourceId: myDisplayStyleId,
+      targetId: myPhysicalObjId,
+      classFullName: "TestSchema1:MyElemRefersToElem",
+      prop: "prop",
+    };
+    const _relInstId = sourceDb.relationships.insertInstance(relProps as RelationshipProps);
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeferredElementWithRelationships-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    class PublicSkipElementTransformer extends IModelTransformer {
+      public override skipElement(...args: Parameters<IModelTransformer["skipElement"]>) {
+        super.skipElement(...args);
+      }
+    }
+
+    const transformer = new PublicSkipElementTransformer(sourceDb, targetDb);
+    const skipElementSpy = sinon.spy(transformer, "skipElement");
+
+    await transformer.processSchemas();
+    await transformer.processAll();
+    assert(skipElementSpy.calledOnceWith(sinon.match.has("id", myDisplayStyleId)));
+
+    targetDb.saveChanges();
+
+    const targetRelationships = new Array<any>();
+    targetDb.withStatement("SELECT * FROM ts1.MyElemRefersToElem", (stmt) => targetRelationships.push(...stmt));
+
+    expect(targetRelationships).to.have.lengthOf(1);
+    expect(targetRelationships[0].prop).to.equal(relProps.prop);
+
+    sinon.restore();
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  // this will throw "Bad Request: Not all deferred elements could be processed"
+  // it is skipped until the entire element deferral mechanism will be replaced with a cycle-handling implementation
+  it.skip("IModelTransformer handles generated class nav property cycle", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "NavPropCycleSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropPredecessors" } });
+
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="A" description="an A">
+          <BaseClass>bis:DefinitionElement</BaseClass>
+          <ECNavigationProperty propertyName="anotherA" relationshipName="AtoA" direction="Forward" displayLabel="Horizontal Alignment" />
+        </ECEntityClass>
+        <ECRelationshipClass typeName="AtoA" strength="referencing" description="a to a" modifier="sealed">
+          <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="A"/>
+          </Source>
+          <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="A"/>
+          </Target>
+        </ECRelationshipClass>
+      </ECSchema>`
+    );
+
+    await sourceDb.importSchemas([testSchema1Path]);
+
+    const a1Id = sourceDb.elements.insertElement({
+      classFullName: "TestSchema:A",
+      // will be updated later to include this
+      // anotherA: { id: a3Id, relClassName: "TestSchema:AtoA", },
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    const a2Id = sourceDb.elements.insertElement({
+      classFullName: "TestSchema:A",
+      anotherA: { id: a1Id, relClassName: "TestSchema:AtoA" },
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    sourceDb.elements.updateElement({id: a1Id, anotherA: {id: a2Id, relClassName: "TestSchema:AtoA"}} as any);
+
+    const a4Id = sourceDb.elements.insertElement({
+      classFullName: "TestSchema:A",
+      // will be updated later to include this
+      // anotherA: { id: a4Id, relClassName: "TestSchema:AtoA", },
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    sourceDb.elements.updateElement({id: a4Id, anotherA: {id: a4Id, relClassName: "TestSchema:AtoA"}} as any);
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "NavPropCycleTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processSchemas();
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    await assertIdentityTransformation(sourceDb, targetDb, transformer);
+
     sourceDb.close();
     targetDb.close();
   });

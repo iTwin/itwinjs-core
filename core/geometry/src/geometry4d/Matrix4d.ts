@@ -567,18 +567,27 @@ export class Matrix4d implements BeJSONFunctions {
    * @returns undefined if dividing by the determinant looks unsafe.
    */
   public createInverse(result?: Matrix4d): Matrix4d | undefined {
-    const maxAbs0 = this.maxAbs();
-    if (maxAbs0 === 0.0)
-      return undefined;
-    const divMaxAbs = 1.0 / maxAbs0;
+    // dividing each column by its maxAbs is more robust than dividing them by this.maxAbs()
+    let maxAbs0 = this.columnX().maxAbs();
+    if (maxAbs0 === 0.0) return undefined;
+    const divMaxAbsA = 1.0 / maxAbs0;
+    maxAbs0 = this.columnY().maxAbs();
+    if (maxAbs0 === 0.0) return undefined;
+    const divMaxAbsB = 1.0 / maxAbs0;
+    maxAbs0 = this.columnZ().maxAbs();
+    if (maxAbs0 === 0.0) return undefined;
+    const divMaxAbsC = 1.0 / maxAbs0;
+    maxAbs0 = this.columnW().maxAbs();
+    if (maxAbs0 === 0.0) return undefined;
+    const divMaxAbsD = 1.0 / maxAbs0;
     const columnA = this.columnX();
     const columnB = this.columnY();
     const columnC = this.columnZ();
     const columnD = this.columnW();
-    columnA.scale(divMaxAbs, columnA);
-    columnB.scale(divMaxAbs, columnB);
-    columnC.scale(divMaxAbs, columnC);
-    columnD.scale(divMaxAbs, columnD);
+    columnA.scale(divMaxAbsA, columnA);
+    columnB.scale(divMaxAbsB, columnB);
+    columnC.scale(divMaxAbsC, columnC);
+    columnD.scale(divMaxAbsD, columnD);
     const rowBCD = Point4d.perpendicularPoint4dPlane(columnB, columnC, columnD);
     const rowCDA = Point4d.perpendicularPoint4dPlane(columnA, columnD, columnC);  // order for negation !
     const rowDAB = Point4d.perpendicularPoint4dPlane(columnD, columnA, columnB);
@@ -601,8 +610,8 @@ export class Matrix4d implements BeJSONFunctions {
       && determinantA * determinantD > 0.0) {
       const divisionTest = Geometry.conditionalDivideCoordinate(maxAbs1, determinantA);
       if (divisionTest !== undefined) {
-        const b = divMaxAbs / determinantA;
-        result.scaleRowsInPlace(b, b, b, b);
+        const divDet = 1.0 / determinantA;
+        result.scaleRowsInPlace(divMaxAbsA * divDet, divMaxAbsB * divDet, divMaxAbsC * divDet, divMaxAbsD * divDet);
         return result;
       }
     } else {

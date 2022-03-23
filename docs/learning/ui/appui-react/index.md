@@ -12,6 +12,7 @@ The following constructs are defined using these components and classes:
   - [Nested Frontstages](./NestedFrontstage.md)
   - [Modal FrontStage](./ModalFrontstage.md)
 - [Content Views and Layouts](./ContentViews.md)
+- [IModelViewportControl](./IModelViewportControl.md)
 - [Widgets](./Widgets.md)
 - [Child Windows](./ChildWindows.md)
 - [Status Bar and Fields](./StatusBar.md)

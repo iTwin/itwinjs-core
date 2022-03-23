@@ -276,7 +276,7 @@ export class WellKnownText {
                 if (Strings.equalsIgnoreCase(parameterName, "false_northing")) parameterList.add(new ParameterValue(8807, parameterValue, METER));
             }
             /* Krovak */
-            if (Strings.equalsIgnoreCase(projectionName, "Krovak")) {
+            if (Strings.equalsIgnoreCase(projectionName, "Krovak") || Strings.equalsIgnoreCase(projectionName, "KrovakEN")) {
                 if (Strings.equalsIgnoreCase(parameterName, "latitude_of_center")) parameterList.add(new ParameterValue(8811, parameterValue, DEG));
                 if (Strings.equalsIgnoreCase(parameterName, "longitude_of_center")) parameterList.add(new ParameterValue(8833, parameterValue, DEG));
                 if (Strings.equalsIgnoreCase(parameterName, "azimuth")) parameterList.add(new ParameterValue(1036, parameterValue, DEG)); // changed from 8813 to 1036 on 31/08/2017

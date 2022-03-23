@@ -12,7 +12,6 @@ import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
   OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@itwin/core-common";
-import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
@@ -202,7 +201,6 @@ export class NativeHost {
   public static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void {
     if (this._reachability !== status) {
       this._reachability = status;
-      RequestGlobalOptions.online = this._reachability === InternetConnectivityStatus.Online;
       this.onInternetConnectivityChanged.raiseEvent(status);
     }
   }

@@ -9,7 +9,7 @@
 import { assert, Id64} from "@itwin/core-bentley";
 import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
 import {
-  ColorDef, Environment, Gradient, GraphicParams, RenderMaterial, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
+  ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
 } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { ViewState3d } from "./ViewState";
@@ -139,17 +139,14 @@ export class EnvironmentDecorations {
       return undefined;
 
     // Create a material using the gradient texture
-    const matParams = new RenderMaterial.Params();
-    matParams.diffuseColor = ColorDef.white;
-    matParams.shadows = false;
-    matParams.ambient = 1;
-    matParams.diffuse = 0;
+    const material = IModelApp.renderSystem.createRenderMaterial({
+      diffuse: { color: ColorDef.white, weight: 0 },
+      textureMapping: {
+        texture,
+        transform: new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0),
+      },
+    });
 
-    const mapParams = new TextureMapping.Params();
-    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
-    mapParams.textureMatrix = transform;
-    matParams.textureMapping = new TextureMapping(texture, mapParams);
-    const material = IModelApp.renderSystem.createMaterial(matParams, this._view.iModel);
     if (!material)
       return undefined;
 

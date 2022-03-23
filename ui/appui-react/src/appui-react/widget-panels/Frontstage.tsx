@@ -16,6 +16,7 @@ import * as React from "react";
 import { assert, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
 import { Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
+import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
   addPanelWidget, addTab, addWidgetTabToFloatingPanel, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
   createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, isFloatingLocation,
@@ -41,24 +42,29 @@ import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
 import { useEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 import { FrameworkRootState } from "../redux/StateManager";
 import { useSelector } from "react-redux";
+import { useUiVisibility } from "../hooks/useUiVisibility";
 
 const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "middle", "end"];
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const activeModalFrontstageInfo = useActiveModalFrontstageInfo();
+  const uiIsVisible = useUiVisibility();
+
   return (
     <>
-      <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
-      <WidgetPanelsToolSettings />
-      <WidgetPanels
-        className="uifw-widgetPanels"
-        centerContent={<WidgetPanelsToolbars />}
-      >
-        <WidgetPanelsFrontstageContent />
-      </WidgetPanels>
-      <WidgetPanelsStatusBar />
-      <FloatingWidgets />
+      <ToolbarPopupAutoHideContext.Provider value={!uiIsVisible}>
+        <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
+        <WidgetPanelsToolSettings />
+        <WidgetPanels
+          className="uifw-widgetPanels"
+          centerContent={<WidgetPanelsToolbars />}
+        >
+          <WidgetPanelsFrontstageContent />
+        </WidgetPanels>
+        <WidgetPanelsStatusBar />
+        <FloatingWidgets />
+      </ToolbarPopupAutoHideContext.Provider>
     </>
   );
 });
@@ -253,7 +259,7 @@ export function useLabels() {
 
 /** @internal */
 export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: PanelSide, widgetId: WidgetIdTypes): NineZoneState {
-  const visibleWidgets = widgets.filter((w) => w.isVisible);
+  const visibleWidgets = widgets.filter((w) => w.isVisible && (w.defaultState !== WidgetState.Floating));
   if (visibleWidgets.length === 0)
     return state;
 
@@ -272,10 +278,13 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
 
   const activeWidget = visibleWidgets.find((widget) => widget.isActive);
   const minimized = !activeWidget;
-  state = addPanelWidget(state, side, widgetId, tabs, {
-    activeTabId: activeWidget ? activeWidget.id : tabs[0],
-    minimized,
-  });
+  // istanbul ignore else
+  if (activeWidget?.defaultState !== WidgetState.Floating) {
+    state = addPanelWidget(state, side, widgetId, tabs, {
+      activeTabId: activeWidget ? activeWidget.id : tabs[0],
+      minimized,
+    });
+  }
 
   return state;
 }
@@ -603,13 +612,15 @@ export function initializePanel(nineZone: NineZoneState, frontstageDef: Frontsta
   const panelDef = frontstageDef.getStagePanelDef(location);
   nineZone = produce(nineZone, (draft) => {
     const panel = draft.panels[panelSide];
-    panel.size = panelDef?.size;
     panel.minSize = panelDef?.minSize ?? panel.minSize;
     panel.pinned = panelDef?.pinned ?? panel.pinned;
     panel.resizable = panelDef?.resizable ?? panel.resizable;
     if (panelDef?.maxSizeSpec) {
       panel.maxSize = getPanelMaxSize(panelDef.maxSizeSpec, panelSide, nineZone.size);
     }
+
+    const size = panelDef?.size;
+    panel.size = size === undefined ? size : Math.min(Math.max(size, panel.minSize), panel.maxSize);
   });
   return nineZone;
 }
@@ -628,6 +639,7 @@ const stateVersion = 11; // this needs to be bumped when NineZoneState is change
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
   let nineZone = defaultNineZone;
   nineZone = produce(nineZone, (stateDraft) => {
+    // istanbul ignore next
     if (!FrontstageManager.nineZoneSize)
       return;
     stateDraft.size = {
@@ -672,6 +684,10 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
       toolSettingsTab.preferredPanelWidgetSize = toolSettingsWidgetDef.preferredPanelSize;
     }
   });
+  nineZone = addMissingWidgets(frontstageDef, nineZone);
+  nineZone = removeHiddenWidgets(nineZone, frontstageDef);
+  nineZone = processPopoutWidgets(nineZone, frontstageDef);
+
   return nineZone;
 }
 
@@ -827,6 +843,16 @@ export const setWidgetState = produce((
     const widget = nineZone.widgets[location.widgetId];
     widget.minimized = false;
     widget.activeTabId = id;
+    // ensure panel containing widget is not collapsed
+    // istanbul ignore else
+    if ("side" in location) {
+      const panel = nineZone.panels[location.side];
+      panel.collapsed && (panel.collapsed = false);
+      // istanbul ignore next
+      if (undefined === panel.size || 0 === panel.size) {
+        panel.size = panel.minSize ?? 200;
+      }
+    }
   } else if (state === WidgetState.Closed) {
     const id = widgetDef.id;
     let location = findTab(nineZone, id);

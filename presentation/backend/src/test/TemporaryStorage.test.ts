@@ -65,9 +65,9 @@ describe("TemporaryStorage", () => {
       storage.dispose();
 
       expect(cleanupHandler.callCount).to.eq(values.length);
-      values.forEach((v, i) => {
-        expect(cleanupHandler.args[i][0]).to.eq(v);
-      });
+      expect(cleanupHandler.getCall(0)).to.be.calledWithExactly("a", "a", "dispose");
+      expect(cleanupHandler.getCall(1)).to.be.calledWithExactly("b", "b", "dispose");
+      expect(cleanupHandler.getCall(2)).to.be.calledWithExactly("c", "c", "dispose");
     });
 
     it("calls `onDisposedAll` callback", () => {
@@ -122,6 +122,20 @@ describe("TemporaryStorage", () => {
       storage.addValue("a", "A");
       const value = storage.getValue("a");
       expect(value).to.eq("A");
+    });
+
+  });
+
+  describe("deleteValue", () => {
+
+    it("calls cleanup handler", () => {
+      const cleanupHandler = sinon.spy();
+      const storage = new TemporaryStorage<string>({
+        cleanupHandler,
+      });
+      storage.addValue("a", "A");
+      storage.deleteValue("a");
+      expect(cleanupHandler).to.be.calledOnceWithExactly("a", "A", "request");
     });
 
   });
@@ -254,7 +268,7 @@ describe("TemporaryStorage", () => {
       expect(storage.values.length).to.eq(1);
       storage.disposeOutdatedValues();
       expect(storage.values.length).to.eq(0);
-      expect(cleanupHandler).to.be.calledOnceWith("a", "A");
+      expect(cleanupHandler).to.be.calledOnceWith("a", "A", "timeout");
     });
 
     it("calls `onDisposedSingle` for disposed values", () => {

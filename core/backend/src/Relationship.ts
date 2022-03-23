@@ -17,7 +17,7 @@ export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; //
 /** Base class for all link table ECRelationships
  * @public
  */
-export class Relationship extends Entity implements RelationshipProps {
+export class Relationship extends Entity {
   /** @internal */
   public static override get className(): string { return "Relationship"; }
   public readonly sourceId: Id64String;
@@ -56,11 +56,11 @@ export class Relationship extends Entity implements RelationshipProps {
   public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
   /** Insert this Relationship into the iModel. */
-  public insert(): Id64String { return this.iModel.relationships.insertInstance(this); }
+  public insert(): Id64String { return this.id = this.iModel.relationships.insertInstance(this.toJSON()); }
   /** Update this Relationship in the iModel. */
-  public update() { this.iModel.relationships.updateInstance(this); }
+  public update() { this.iModel.relationships.updateInstance(this.toJSON()); }
   /** Delete this Relationship from the iModel. */
-  public delete() { this.iModel.relationships.deleteInstance(this); }
+  public delete() { this.iModel.relationships.deleteInstance(this.toJSON()); }
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 }
@@ -88,7 +88,7 @@ export class ElementRefersToElements extends Relationship {
    */
   public static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String {
     const relationship: T = this.create(iModel, sourceId, targetId);
-    return iModel.relationships.insertInstance(relationship);
+    return iModel.relationships.insertInstance(relationship.toJSON());
   }
 }
 
@@ -373,7 +373,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  *
  * @beta
  */
-export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
+export class ElementDrivesElement extends Relationship {
   /** @internal */
   public static override get className(): string { return "ElementDrivesElement"; }
   /** Relationship status
@@ -395,6 +395,13 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
   public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority: number = 0): T {
     const props: ElementDrivesElementProps = { sourceId, targetId, priority, status: 0, classFullName: this.classFullName };
     return iModel.relationships.createInstance(props) as T;
+  }
+
+  public override toJSON(): ElementDrivesElementProps {
+    const props = super.toJSON() as ElementDrivesElementProps;
+    props.status = this.status;
+    props.priority = this.priority;
+    return props;
   }
 }
 
@@ -501,7 +508,7 @@ export class Relationships {
    * @see getInstance
    */
   public tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
-    const relationshipProps = this.tryGetInstanceProps<T>(relClassFullName, criteria);
+    const relationshipProps = this.tryGetInstanceProps<RelationshipProps>(relClassFullName, criteria);
     return undefined !== relationshipProps ? this._iModel.constructEntity<T>(relationshipProps) : undefined;
   }
 }

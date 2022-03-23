@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint, dispose } from "@itwin/core-bentley";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Transform } from "@itwin/core-geometry";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Polyface, Transform } from "@itwin/core-geometry";
 import { ColorDef, Frustum } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
@@ -17,8 +17,8 @@ import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  RealityTileRegion,
-  RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TraversalDetails, TraversalSelectionContext,
+  RealityTileRegion, RealityTileTree, Tile, TileContent, TileDrawArgs, TileGeometryCollector, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel,
+  TileTreeLoadStatus, TileUser, TraversalDetails, TraversalSelectionContext,
 } from "./internal";
 
 /** @internal */
@@ -28,6 +28,18 @@ export interface RealityTileParams extends TileParams {
   readonly noContentButTerminateOnSelection?: boolean;
   readonly rangeCorners?: Point3d[];
   readonly region?: RealityTileRegion;
+}
+
+/** The geometry representing the contents of a reality tile.  Currently only polyfaces are returned
+ * @alpha
+ */
+export interface RealityTileGeometry {
+  polyfaces?: Polyface[];
+}
+
+/** @internal */
+export interface RealityTileContent extends TileContent {
+  geometry?: RealityTileGeometry;
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
@@ -46,6 +58,7 @@ export class RealityTile extends Tile {
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
   public readonly region?: RealityTileRegion;
+  protected _geometry?: RealityTileGeometry;
   private _everDisplayed = false;
   protected _reprojectionTransform?: Transform;
   private _reprojectedGraphic?: RenderGraphic;
@@ -72,6 +85,11 @@ export class RealityTile extends Tile {
       this.transformToRoot.multiplyRange(this._contentRange, this._contentRange);
   }
 
+  public override setContent(content: RealityTileContent): void {
+    super.setContent(content);
+    this._geometry = content.geometry;
+  }
+
   public get realityChildren(): RealityTile[] | undefined { return this.children as RealityTile[] | undefined; }
   public get realityParent(): RealityTile { return this.parent as RealityTile; }
   public get realityRoot(): RealityTileTree { return this.tree as RealityTileTree; }
@@ -79,6 +97,8 @@ export class RealityTile extends Tile {
   public get maxDepth(): number { return this.realityRoot.loader.maxDepth; }
   public get isPointCloud() { return this.realityRoot.loader.containsPointClouds; }
   public get isLoaded() { return this.loadStatus === TileLoadStatus.Ready; }      // Reality tiles may depend on secondary tiles (maps) so can ge loaded but not ready.
+  public get geometry(): RealityTileGeometry | undefined { return this._geometry;  }
+
   public override get isDisplayable(): boolean {
     if (this.noContentButTerminateOnSelection)
       return false;
@@ -132,8 +152,8 @@ export class RealityTile extends Tile {
     return this.realityRoot.loader.loadTileContent(this, data, system, isCanceled);
   }
 
-  public override computeLoadPriority(viewports: Iterable<Viewport>): number {
-    return this.realityRoot.loader.computeTilePriority(this, viewports);
+  public override computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number {
+    return this.realityRoot.loader.computeTilePriority(this, viewports, users);
   }
 
   public getContentClip(): ClipVector | undefined {
@@ -376,6 +396,36 @@ export class RealityTile extends Tile {
   public override disposeContents(): void {
     super.disposeContents();
     this._reprojectedGraphic = dispose(this._reprojectedGraphic);
+  }
+
+  public collectTileGeometry(collector: TileGeometryCollector): void {
+    const status = collector.collectTile(this);
+
+    switch(status) {
+      case "reject":
+        return;
+
+      case "continue":
+        if (!this.isLeaf && !this._anyChildNotFound) {
+          const childrenLoadStatus = this.loadChildren();
+          if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
+            collector.markLoading();
+          } else if (undefined !== this.realityChildren && !this._anyChildNotFound) {
+            for (const child of this.realityChildren)
+              child.collectTileGeometry(collector);
+          }
+
+          break;
+        } // else fall through to "accept"
+      // eslint-disable-next-line no-fallthrough
+      case "accept":
+        if (!this.isReady)
+          collector.addMissingTile(this.loadableTile);
+        else if (this.geometry?.polyfaces)
+          collector.polyfaces.push(...this.geometry.polyfaces);
+
+        break;
+    }
   }
 }
 

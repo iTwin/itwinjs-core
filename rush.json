@@ -35,6 +35,19 @@
   },
   "projects": [
     {
+      "packageName": "@itwin/core-extension",
+      "projectFolder": "core/extension",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "extension-prototype",
+      "projectFolder": "extensions/test-extension",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@itwin/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
@@ -52,13 +65,7 @@
       "packageName": "@bentley/imodelbank-client",
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/itwin-client",
-      "projectFolder": "clients/itwin",
-      "reviewCategory": "common",
-      "shouldPublish": true,
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {

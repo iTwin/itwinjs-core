@@ -6,7 +6,6 @@
  * @module Rendering
  */
 
-import { ProcessDetector } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { ViewRect } from "./ViewRect";
@@ -71,7 +70,7 @@ export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targe
 
 /** Create a canvas element with the same dimensions and contents as an image buffer.
  * @param buffer the source [[ImageBuffer]] object from which the [HTMLCanvasElement](https://developer.mozilla.org/docs/Web/API/HTMLCanvasElement) object will be constructed.
- * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImage]]).
+ * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImageBuffer]]).
  * @returns an [HTMLCanvasElement](https://developer.mozilla.org/docs/Web/API/HTMLCanvasElement) object containing the contents of the source image buffer, or undefined if the conversion fails.
  * @public
  */
@@ -197,15 +196,18 @@ export async function imageElementFromImageSource(source: ImageSource): Promise<
 
 /** Create an html Image element from a URL.
  * @param url The URL pointing to the image data.
+ * @param skipCrossOriginCheck Set this to true to allow an image from a different origin than the web app to load. Default is false.
  * @returns A Promise resolving to an HTMLImageElement when the image data has been loaded from the URL.
  * @see tryImageElementFromUrl.
  * @public
  */
-export async function imageElementFromUrl(url: string): Promise<HTMLImageElement> {
+export async function imageElementFromUrl(url: string, skipCrossOriginCheck = false): Promise<HTMLImageElement> {
   // We must set crossorigin property so that images loaded from same origin can be used with texImage2d.
   // We must do that outside of the promise constructor or it won't work, for reasons.
   const image = new Image();
-  image.crossOrigin = "anonymous";
+  if (!skipCrossOriginCheck) {
+    image.crossOrigin = "anonymous";
+  }
   return new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
     image.onload = () => resolve(image);
 
@@ -217,13 +219,14 @@ export async function imageElementFromUrl(url: string): Promise<HTMLImageElement
 
 /** Try to create an html Image element from a URL.
  * @param url The URL pointing to the image data.
+ * @param skipCrossOriginCheck Set this to true to allow an image from a different origin than the web app to load. Default is false.
  * @returns A Promise resolving to an HTMLImageElement when the image data has been loaded from the URL, or to `undefined` if an exception occurred.
  * @see imageElementFromUrl
  * @public
  */
-export async function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined> {
+export async function tryImageElementFromUrl(url: string, skipCrossOriginCheck = false): Promise<HTMLImageElement | undefined> {
   try {
-    return await imageElementFromUrl(url);
+    return await imageElementFromUrl(url, skipCrossOriginCheck);
   } catch {
     return undefined;
   }
@@ -242,7 +245,7 @@ export async function extractImageSourceDimensions(source: ImageSource): Promise
 /**
  * Produces a data url in "image/png" format from the contents of an ImageBuffer.
  * @param buffer The ImageBuffer, of any format.
- * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImage]]).
+ * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImageBuffer]]).
  * @returns a data url as a string suitable for setting as the `src` property of an HTMLImageElement, or undefined if the url could not be created.
  * @public
  */
@@ -255,7 +258,7 @@ export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha = tru
 /**
  * Converts the contents of an ImageBuffer to PNG format.
  * @param buffer The ImageBuffer, of any format.
- * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImage]]).
+ * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImageBuffer]]).
  * @returns a base64-encoded string representing the image as a PNG, or undefined if the conversion failed.
  * @public
  */
@@ -274,19 +277,15 @@ export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha
  * @beta
  */
 export function openImageDataUrlInNewWindow(url: string, title?: string): void {
-  if (ProcessDetector.isElectronAppFrontend) {
-    window.open(url, title);
-  } else {
-    const win = window.open();
-    if (null === win)
-      return;
+  const win = window.open();
+  if (null === win)
+    return;
 
-    const div = win.document.createElement("div");
-    div.innerHTML = `<img src='${url}'/>`;
-    win.document.body.append(div);
-    if (undefined !== title)
-      win.document.title = title;
-  }
+  const div = win.document.createElement("div");
+  div.innerHTML = `<img src='${url}'/>`;
+  win.document.body.append(div);
+  if (undefined !== title)
+    win.document.title = title;
 }
 
 /** Determine the maximum [[ViewRect]] that can be fitted and centered in specified ViewRect given a required aspect ratio.

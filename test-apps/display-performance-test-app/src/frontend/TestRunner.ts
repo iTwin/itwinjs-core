@@ -520,7 +520,7 @@ export class TestRunner {
             break;
           }
 
-          const tiles = IModelApp.tileAdmin.getTilesForViewport(vp);
+          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
           if (tiles && tiles.external.requested > 0) {
             haveNewTiles = true;
             break;
@@ -761,6 +761,7 @@ export class TestRunner {
     testName += configs.iModelName.replace(/\.[^/.]+$/, "");
     testName += `_${configs.viewName}`;
     testName += configs.displayStyle ? `_${configs.displayStyle.trim()}` : "";
+    testName = testName.replace(/[/\\?%*:|"<>]/g, "-");
 
     const renderMode = getRenderMode(test.viewport);
     if (renderMode)
@@ -929,7 +930,7 @@ export class TestRunner {
     if ((1000.0 / totalTime) > 59) // ie actual fps > 60fps - 1fps tolerance
       boundBy += " (vsync)";
     const totalCpuTime = totalRenderTime > 2 ? totalRenderTime : 2; // add 2ms lower bound to cpu total time for tolerance
-    const effectiveFps = 1000.0 / (totalGpuTime > totalCpuTime ? totalGpuTime : totalCpuTime);
+    const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalCpuTime);
     if (disjointTimerUsed) {
       rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed));
       rowData.delete("GPU-Total");
@@ -1326,7 +1327,7 @@ function getSelectedTileStats(vp: ScreenViewport): SelectedTileStats {
   const mem = new RenderMemory.Statistics();
   const dict = new Dictionary<string, SortedArray<string>>((lhs, rhs) => lhs.localeCompare(rhs));
   for (const viewport of [vp, ...vp.view.secondaryViewports]) {
-    const selected = IModelApp.tileAdmin.getTilesForViewport(viewport)?.selected;
+    const selected = IModelApp.tileAdmin.getTilesForUser(viewport)?.selected;
     if (!selected)
       continue;
 

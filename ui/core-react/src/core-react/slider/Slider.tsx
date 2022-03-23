@@ -134,7 +134,7 @@ export function Slider(props: SliderProps) {
     const content = internalFormatTooltip(val);
     if (!showTooltip)
       return { visible: false };
-    return { placement: tooltipBelow ? "bottom" : "top", content };
+    return { placement: tooltipBelow ? "bottom" : "top", content } as const;
   }, [internalFormatTooltip, showTooltip, tooltipBelow]);
 
   const tickLabels = React.useMemo(() => {

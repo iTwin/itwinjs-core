@@ -2,7 +2,7 @@
 
 ## Setup
 
-- [Install necessary prerequisites]($docs/learning/tutorials/development-prerequisites).
+- [Install necessary prerequisites](./development-prerequisites.md).
 - From a terminal, `npx create-react-app your-app-name --template @itwin/web-viewer --scripts-version @bentley/react-scripts`
   - This will generate a new application based on the iTwin Viewer React component in the `your-app-name` directory.
 - Open the `your-app-name` directory in VS Code.
@@ -42,5 +42,5 @@
 
 ## Next Steps
 
-- [iTwin Viewer - "Hello World"]($docs/learning/tutorials/hello-world-viewer/)
+- [iTwin Viewer - "Hello World"](./hello-world-viewer.md)
 - [Visit the iTwin Sample Showcase](https://www.itwinjs.org/sample-showcase/)

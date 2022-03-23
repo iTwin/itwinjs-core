@@ -209,7 +209,7 @@ export class ViewCreator2d {
     const displayStyleProps: DisplayStyleProps = {
       code: Code.createEmpty(),
       model: dictionaryId,
-      classFullName: "BisCore:DisplayStyle",
+      classFullName: "BisCore:DisplayStyle2d",
       jsonProperties: {
         styles: {
           backgroundColor: bgColor.tbgr,

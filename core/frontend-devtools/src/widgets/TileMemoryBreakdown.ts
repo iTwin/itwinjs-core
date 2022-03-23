@@ -42,7 +42,7 @@ class TileMemoryTracer {
     const selectedTiles = new Set<Tile>();
     for (const vp of IModelApp.viewManager) {
       imodels.add(vp.iModel);
-      const tiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
+      const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
       if (tiles)
         for (const tile of tiles)
           selectedTiles.add(tile);

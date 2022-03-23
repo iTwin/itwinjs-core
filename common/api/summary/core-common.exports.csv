@@ -112,11 +112,12 @@ public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
 public;CodeScopeSpec
 public;CodeSpec
-public;ColorByName
+public;ColorByName:
 public;ColorDef
 public;ColorDefProps = number
 internal;ColorIndex
 public;CommonLoggerCategory
+beta;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
@@ -192,6 +193,8 @@ public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
 alpha;ElementGeometry
+alpha;ElementGeometryBuilderParams
+alpha;ElementGeometryBuilderParamsForPart
 public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 public;ElementGeometryChange
 public;ElementGeometryDataEntry
@@ -199,7 +202,6 @@ alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
 alpha;ElementGeometryInfo
 public;ElementGeometryOpcode
 alpha;ElementGeometryRequest
-alpha;ElementGeometryUpdate
 public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
@@ -239,6 +241,7 @@ public;FilePropertyProps
 public;FillDisplay
 public;FillFlags
 public;FlatBufferGeometryStream
+public;FontId = number
 public;FontMap
 public;FontMapProps
 public;FontProps
@@ -335,6 +338,8 @@ public;ImageGraphic
 public;ImageGraphicCorners
 public;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
 public;ImageGraphicProps
+beta;ImageMapLayerProps 
+beta;ImageMapLayerSettings 
 public;ImagePrimitive
 public;ImageSource
 public;ImageSourceFormat
@@ -400,8 +405,8 @@ public;Localization
 beta;MapImageryProps
 beta;MapImagerySettings
 beta;MapLayerKey
-beta;MapLayerProps
-beta;MapLayerSettings
+beta;MapLayerProps = ImageMapLayerProps | ModelMapLayerProps
+beta;class MapLayerSettings
 beta;MapSubLayerProps
 beta;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
@@ -423,6 +428,8 @@ public;ModelGeometryChanges
 public;ModelGeometryChangesProps
 public;ModelIdAndGeometryGuid
 public;ModelLoadProps
+beta;ModelMapLayerProps 
+beta;ModelMapLayerSettings 
 public;ModelPlanarClipMaskArgs 
 public;ModelProps 
 public;ModelQueryParams 

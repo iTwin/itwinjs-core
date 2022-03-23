@@ -610,6 +610,13 @@ export class OffsetFacesTool extends LocateSubEntityTool {
     if (offsetDir.dotProduct(faceData.normal) < 0.0)
       offset = -offset;
 
+    if (!this.useDistance) {
+      this.distance = offset;
+      this.syncToolSettingPropertyValue(this.distanceProperty);
+      if (isAccept)
+        this.saveToolSettingPropertyValue(this.distanceProperty, this.distanceProperty.dialogItemValue);
+    }
+
     try {
       this._startedCmd = await this.startCommand();
       const id = this.agenda.elements[0];
@@ -1561,6 +1568,13 @@ export class SweepFacesTool extends LocateFaceOrProfileTool {
 
     if (path.magnitude() < Geometry.smallMetricDistance)
       return undefined;
+
+    if (!this.useDistance) {
+      this.distance = path.magnitude();
+      this.syncToolSettingPropertyValue(this.distanceProperty);
+      if (isAccept)
+        this.saveToolSettingPropertyValue(this.distanceProperty, this.distanceProperty.dialogItemValue);
+    }
 
     try {
       this._startedCmd = await this.startCommand();

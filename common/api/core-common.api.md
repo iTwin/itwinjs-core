@@ -405,6 +405,7 @@ export interface BackgroundMapProps {
 
 // @beta
 export class BackgroundMapProvider {
+    clone(changedProps: BackgroundMapProviderProps): BackgroundMapProvider;
     equals(other: BackgroundMapProvider): boolean;
     // @internal (undocumented)
     static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BackgroundMapProvider;
@@ -482,16 +483,16 @@ export namespace BaseLayerSettings {
 }
 
 // @beta
-export interface BaseMapLayerProps extends MapLayerProps {
+export interface BaseMapLayerProps extends ImageMapLayerProps {
     // (undocumented)
     provider?: BackgroundMapProviderProps;
 }
 
 // @beta
-export class BaseMapLayerSettings extends MapLayerSettings {
-    clone(changedProps: Partial<MapLayerProps>): BaseMapLayerSettings;
+export class BaseMapLayerSettings extends ImageMapLayerSettings {
+    clone(changedProps: Partial<BaseMapLayerProps>): BaseMapLayerSettings;
     // @internal (undocumented)
-    cloneProps(changedProps: Partial<MapLayerProps>): BaseMapLayerProps;
+    cloneProps(changedProps: Partial<BaseMapLayerProps>): BaseMapLayerProps;
     // @alpha (undocumented)
     cloneWithProvider(provider: BackgroundMapProvider): BaseMapLayerSettings;
     // @internal (undocumented)
@@ -1255,308 +1256,158 @@ export class CodeSpec {
 }
 
 // @public
-export enum ColorByName {
-    // (undocumented)
-    aliceBlue = 16775408,
-    // (undocumented)
-    amber = 49151,
-    // (undocumented)
-    antiqueWhite = 14150650,
-    // (undocumented)
-    aqua = 16776960,
-    // (undocumented)
-    aquamarine = 13959039,
-    // (undocumented)
-    azure = 16777200,
-    // (undocumented)
-    beige = 14480885,
-    // (undocumented)
-    bisque = 12903679,
-    // (undocumented)
-    black = 0,
-    // (undocumented)
-    blanchedAlmond = 13495295,
-    // (undocumented)
-    blue = 16711680,
-    // (undocumented)
-    blueViolet = 14822282,
-    // (undocumented)
-    brown = 2763429,
-    // (undocumented)
-    burlyWood = 8894686,
-    // (undocumented)
-    cadetBlue = 10526303,
-    // (undocumented)
-    chartreuse = 65407,
-    // (undocumented)
-    chocolate = 1993170,
-    // (undocumented)
-    coral = 5275647,
-    // (undocumented)
-    cornflowerBlue = 15570276,
-    // (undocumented)
-    cornSilk = 14481663,
-    // (undocumented)
-    crimson = 3937500,
-    // (undocumented)
-    cyan = 16776960,
-    // (undocumented)
-    darkBlue = 9109504,
-    // (undocumented)
-    darkBrown = 2179941,
-    // (undocumented)
-    darkCyan = 9145088,
-    // (undocumented)
-    darkGoldenrod = 755384,
-    // (undocumented)
-    darkGray = 11119017,
-    // (undocumented)
-    darkGreen = 25600,
-    // (undocumented)
-    darkGrey = 11119017,
-    // (undocumented)
-    darkKhaki = 7059389,
-    // (undocumented)
-    darkMagenta = 9109643,
-    // (undocumented)
-    darkOliveGreen = 3107669,
-    // (undocumented)
-    darkOrange = 36095,
-    // (undocumented)
-    darkOrchid = 13382297,
-    // (undocumented)
-    darkRed = 139,
-    // (undocumented)
-    darkSalmon = 8034025,
-    // (undocumented)
-    darkSeagreen = 9419919,
-    // (undocumented)
-    darkSlateBlue = 9125192,
-    // (undocumented)
-    darkSlateGray = 5197615,
-    // (undocumented)
-    darkSlateGrey = 5197615,
-    // (undocumented)
-    darkTurquoise = 13749760,
-    // (undocumented)
-    darkViolet = 13828244,
-    // (undocumented)
-    deepPink = 9639167,
-    // (undocumented)
-    deepSkyBlue = 16760576,
-    // (undocumented)
-    dimGray = 6908265,
-    // (undocumented)
-    dimGrey = 6908265,
-    // (undocumented)
-    dodgerBlue = 16748574,
-    // (undocumented)
-    fireBrick = 2237106,
-    // (undocumented)
-    floralWhite = 15792895,
-    // (undocumented)
-    forestGreen = 2263842,
-    // (undocumented)
-    fuchsia = 16711935,
-    // (undocumented)
-    gainsboro = 14474460,
-    // (undocumented)
-    ghostWhite = 16775416,
-    // (undocumented)
-    gold = 55295,
-    // (undocumented)
-    goldenrod = 2139610,
-    // (undocumented)
-    gray = 8421504,
-    // (undocumented)
-    green = 32768,
-    // (undocumented)
-    greenYellow = 3145645,
-    // (undocumented)
-    grey = 8421504,
-    // (undocumented)
-    honeydew = 15794160,
-    // (undocumented)
-    hotPink = 11823615,
-    // (undocumented)
-    indianRed = 6053069,
-    // (undocumented)
-    indigo = 8519755,
-    // (undocumented)
-    ivory = 15794175,
-    // (undocumented)
-    khaki = 9234160,
-    // (undocumented)
-    lavender = 16443110,
-    // (undocumented)
-    lavenderBlush = 16118015,
-    // (undocumented)
-    lawnGreen = 64636,
-    // (undocumented)
-    lemonChiffon = 13499135,
-    // (undocumented)
-    lightBlue = 15128749,
-    // (undocumented)
-    lightCoral = 8421616,
-    // (undocumented)
-    lightCyan = 16777184,
-    // (undocumented)
-    lightGoldenrodYellow = 13826810,
-    // (undocumented)
-    lightGray = 13882323,
-    // (undocumented)
-    lightGreen = 9498256,
-    // (undocumented)
-    lightGrey = 13882323,
-    // (undocumented)
-    lightPink = 12695295,
-    // (undocumented)
-    lightSalmon = 8036607,
-    // (undocumented)
-    lightSeagreen = 11186720,
-    // (undocumented)
-    lightSkyBlue = 16436871,
-    // (undocumented)
-    lightSlateGray = 10061943,
-    // (undocumented)
-    lightSlateGrey = 10061943,
-    // (undocumented)
-    lightSteelBlue = 14599344,
-    // (undocumented)
-    lightyellow = 14745599,
-    // (undocumented)
-    lime = 65280,
-    // (undocumented)
-    limeGreen = 3329330,
-    // (undocumented)
-    linen = 15134970,
-    // (undocumented)
-    magenta = 16711935,
-    // (undocumented)
-    maroon = 128,
-    // (undocumented)
-    mediumAquamarine = 11193702,
-    // (undocumented)
-    mediumBlue = 13434880,
-    // (undocumented)
-    mediumOrchid = 13850042,
-    // (undocumented)
-    mediumPurple = 14381203,
-    // (undocumented)
-    mediumSeaGreen = 7451452,
-    // (undocumented)
-    mediumSlateBlue = 15624315,
-    // (undocumented)
-    mediumSpringGreen = 10156544,
-    // (undocumented)
-    mediumTurquoise = 13422920,
-    // (undocumented)
-    mediumVioletRed = 8721863,
-    // (undocumented)
-    midnightBlue = 7346457,
-    // (undocumented)
-    mintCream = 16449525,
-    // (undocumented)
-    mistyRose = 14804223,
-    // (undocumented)
-    moccasin = 11920639,
-    // (undocumented)
-    navajoWhite = 11394815,
-    // (undocumented)
-    navy = 8388608,
-    // (undocumented)
-    oldLace = 15136253,
-    // (undocumented)
-    olive = 32896,
-    // (undocumented)
-    oliveDrab = 2330219,
-    // (undocumented)
-    orange = 42495,
-    // (undocumented)
-    orangeRed = 17919,
-    // (undocumented)
-    orchid = 14053594,
-    // (undocumented)
-    paleGoldenrod = 11200750,
-    // (undocumented)
-    paleGreen = 10025880,
-    // (undocumented)
-    paleTurquoise = 15658671,
-    // (undocumented)
-    paleVioletRed = 9662683,
-    // (undocumented)
-    papayaWhip = 14020607,
-    // (undocumented)
-    peachPuff = 12180223,
-    // (undocumented)
-    peru = 4163021,
-    // (undocumented)
-    pink = 13353215,
-    // (undocumented)
-    plum = 14524637,
-    // (undocumented)
-    powderBlue = 15130800,
-    // (undocumented)
-    purple = 8388736,
-    // (undocumented)
-    rebeccaPurple = 10040166,
-    // (undocumented)
-    red = 255,
-    // (undocumented)
-    rosyBrown = 9408444,
-    // (undocumented)
-    royalBlue = 14772545,
-    // (undocumented)
-    saddleBrown = 1262987,
-    // (undocumented)
-    salmon = 7504122,
-    // (undocumented)
-    sandyBrown = 6333684,
-    // (undocumented)
-    seaGreen = 5737262,
-    // (undocumented)
-    seaShell = 15660543,
-    // (undocumented)
-    sienna = 2970272,
-    // (undocumented)
-    silver = 12632256,
-    // (undocumented)
-    skyBlue = 15453831,
-    // (undocumented)
-    slateBlue = 13458026,
-    // (undocumented)
-    slateGray = 9470064,
-    // (undocumented)
-    slateGrey = 9470064,
-    // (undocumented)
-    snow = 16448255,
-    // (undocumented)
-    springGreen = 8388352,
-    // (undocumented)
-    steelBlue = 11829830,
-    // (undocumented)
-    tan = 9221330,
-    // (undocumented)
-    teal = 8421376,
-    // (undocumented)
-    thistle = 14204888,
-    // (undocumented)
-    tomato = 4678655,
-    // (undocumented)
-    turquoise = 13688896,
-    // (undocumented)
-    violet = 15631086,
-    // (undocumented)
-    wheat = 11788021,
-    // (undocumented)
-    white = 16777215,
-    // (undocumented)
-    whiteSmoke = 16119285,
-    // (undocumented)
-    yellow = 65535,
-    // (undocumented)
-    yellowGreen = 3329434
-}
+export const ColorByName: {
+    aliceBlue: number;
+    amber: number;
+    antiqueWhite: number;
+    aqua: number;
+    aquamarine: number;
+    azure: number;
+    beige: number;
+    bisque: number;
+    black: number;
+    blanchedAlmond: number;
+    blue: number;
+    blueViolet: number;
+    brown: number;
+    burlyWood: number;
+    cadetBlue: number;
+    chartreuse: number;
+    chocolate: number;
+    coral: number;
+    cornflowerBlue: number;
+    cornSilk: number;
+    crimson: number;
+    cyan: number;
+    darkBlue: number;
+    darkBrown: number;
+    darkCyan: number;
+    darkGoldenrod: number;
+    darkGray: number;
+    darkGreen: number;
+    darkGrey: number;
+    darkKhaki: number;
+    darkMagenta: number;
+    darkOliveGreen: number;
+    darkOrange: number;
+    darkOrchid: number;
+    darkRed: number;
+    darkSalmon: number;
+    darkSeagreen: number;
+    darkSlateBlue: number;
+    darkSlateGray: number;
+    darkSlateGrey: number;
+    darkTurquoise: number;
+    darkViolet: number;
+    deepPink: number;
+    deepSkyBlue: number;
+    dimGray: number;
+    dimGrey: number;
+    dodgerBlue: number;
+    fireBrick: number;
+    floralWhite: number;
+    forestGreen: number;
+    fuchsia: number;
+    gainsboro: number;
+    ghostWhite: number;
+    gold: number;
+    goldenrod: number;
+    gray: number;
+    green: number;
+    greenYellow: number;
+    grey: number;
+    honeydew: number;
+    hotPink: number;
+    indianRed: number;
+    indigo: number;
+    ivory: number;
+    khaki: number;
+    lavender: number;
+    lavenderBlush: number;
+    lawnGreen: number;
+    lemonChiffon: number;
+    lightBlue: number;
+    lightCoral: number;
+    lightCyan: number;
+    lightGoldenrodYellow: number;
+    lightGray: number;
+    lightGreen: number;
+    lightGrey: number;
+    lightPink: number;
+    lightSalmon: number;
+    lightSeagreen: number;
+    lightSkyBlue: number;
+    lightSlateGray: number;
+    lightSlateGrey: number;
+    lightSteelBlue: number;
+    lightyellow: number;
+    lime: number;
+    limeGreen: number;
+    linen: number;
+    magenta: number;
+    maroon: number;
+    mediumAquamarine: number;
+    mediumBlue: number;
+    mediumOrchid: number;
+    mediumPurple: number;
+    mediumSeaGreen: number;
+    mediumSlateBlue: number;
+    mediumSpringGreen: number;
+    mediumTurquoise: number;
+    mediumVioletRed: number;
+    midnightBlue: number;
+    mintCream: number;
+    mistyRose: number;
+    moccasin: number;
+    navajoWhite: number;
+    navy: number;
+    oldLace: number;
+    olive: number;
+    oliveDrab: number;
+    orange: number;
+    orangeRed: number;
+    orchid: number;
+    paleGoldenrod: number;
+    paleGreen: number;
+    paleTurquoise: number;
+    paleVioletRed: number;
+    papayaWhip: number;
+    peachPuff: number;
+    peru: number;
+    pink: number;
+    plum: number;
+    powderBlue: number;
+    purple: number;
+    rebeccaPurple: number;
+    red: number;
+    rosyBrown: number;
+    royalBlue: number;
+    saddleBrown: number;
+    salmon: number;
+    sandyBrown: number;
+    seaGreen: number;
+    seaShell: number;
+    sienna: number;
+    silver: number;
+    skyBlue: number;
+    slateBlue: number;
+    slateGray: number;
+    slateGrey: number;
+    snow: number;
+    springGreen: number;
+    steelBlue: number;
+    tan: number;
+    teal: number;
+    thistle: number;
+    tomato: number;
+    turquoise: number;
+    violet: number;
+    wheat: number;
+    white: number;
+    whiteSmoke: number;
+    yellow: number;
+    yellowGreen: number;
+};
 
 // @public
 export class ColorDef {
@@ -1570,10 +1421,10 @@ export class ColorDef {
         t: number;
     };
     // @internal (undocumented)
-    static computeTbgr(val?: string | ColorDefProps): number;
-    static computeTbgrFromComponents(red: number, green: number, blue: number, transparency?: number): number;
-    static computeTbgrFromHSL(h: number, s: number, l: number, transparency?: number): number;
-    static computeTbgrFromString(val: string): number;
+    static computeTbgr(val?: string | ColorDefProps): ColorDefProps;
+    static computeTbgrFromComponents(red: number, green: number, blue: number, transparency?: number): ColorDefProps;
+    static computeTbgrFromHSL(h: number, s: number, l: number, transparency?: number): ColorDefProps;
+    static computeTbgrFromString(val: string): ColorDefProps;
     static create(val?: string | ColorDefProps): ColorDef;
     equals(other: ColorDef): boolean;
     static from(red: number, green: number, blue: number, transparency?: number): ColorDef;
@@ -1581,46 +1432,48 @@ export class ColorDef {
     static fromHSV(hsv: HSVColor, transparency?: number): ColorDef;
     static fromJSON(json?: ColorDefProps): ColorDef;
     static fromString(val: string): ColorDef;
-    static fromTbgr(tbgr: number): ColorDef;
+    static fromTbgr(tbgr: ColorDefProps): ColorDef;
     getAbgr(): number;
-    static getAbgr(tbgr: number): number;
+    static getAbgr(tbgr: ColorDefProps): number;
     getAlpha(): number;
-    static getAlpha(tbgr: number): number;
-    static getColors(tbgr: number): {
+    static getAlpha(tbgr: ColorDefProps): number;
+    static getColors(tbgr: ColorDefProps): {
         b: number;
         g: number;
         r: number;
         t: number;
     };
-    static getName(tbgr: number): string | undefined;
+    static getName(tbgr: ColorDefProps): string | undefined;
     getRgb(): number;
-    static getRgb(tbgr: number): number;
+    static getRgb(tbgr: ColorDefProps): number;
     getTransparency(): number;
-    static getTransparency(tbgr: number): number;
+    static getTransparency(tbgr: ColorDefProps): number;
     static readonly green: ColorDef;
     inverse(): ColorDef;
-    static inverse(tbgr: number): number;
+    static inverse(tbgr: ColorDefProps): ColorDefProps;
     get isOpaque(): boolean;
-    static isOpaque(tbgr: number): boolean;
+    static isOpaque(tbgr: ColorDefProps): boolean;
+    static isValidColor(val: string | number): boolean;
     lerp(color2: ColorDef, weight: number): ColorDef;
-    static lerp(tbgr1: number, tbgr2: number, weight: number): number;
+    static lerp(tbgr1: ColorDefProps, tbgr2: ColorDefProps, weight: number): ColorDefProps;
     get name(): string | undefined;
     static readonly red: ColorDef;
-    get tbgr(): number;
+    get tbgr(): ColorDefProps;
     toHexString(): string;
-    static toHexString(tbgr: number): string;
+    static toHexString(tbgr: ColorDefProps): string;
     toHSL(): HSLColor;
     toHSV(): HSVColor;
     toJSON(): ColorDefProps;
     toRgbaString(): string;
-    static toRgbaString(tbgr: number): string;
+    static toRgbaString(tbgr: ColorDefProps): string;
     toRgbString(): string;
-    static toRgbString(tbgr: number): string;
+    static toRgbString(tbgr: ColorDefProps): string;
+    static tryComputeTbgrFromString(val: string): ColorDefProps | undefined;
     static readonly white: ColorDef;
     withAlpha(alpha: number): ColorDef;
-    static withAlpha(tbgr: number, alpha: number): number;
+    static withAlpha(tbgr: ColorDefProps, alpha: number): number;
     withTransparency(transparency: number): ColorDef;
-    static withTransparency(tbgr: number, transparency: number): number;
+    static withTransparency(tbgr: ColorDefProps, transparency: number): ColorDefProps;
 }
 
 // @public
@@ -1653,6 +1506,14 @@ export enum CommonLoggerCategory {
     Geometry = "core-common.Geometry",
     RpcInterfaceBackend = "core-backend.RpcInterface",
     RpcInterfaceFrontend = "core-frontend.RpcInterface"
+}
+
+// @beta
+export interface CommonMapLayerProps {
+    name: string;
+    transparency?: number;
+    transparentBackground?: boolean;
+    visible?: boolean;
 }
 
 // @internal
@@ -1823,8 +1684,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1703936,
-    Major = 26,
+    Combined = 1769472,
+    Major = 27,
     Minor = 0
 }
 
@@ -2228,7 +2089,7 @@ export class DisplayStyleSettings {
     readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>;
     readonly onRenderTimelineChanged: BeEvent<(newRenderTimeline: Id64String | undefined) => void>;
     // @internal @deprecated
-    readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>;
+    readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ScriptProps> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
     readonly onSubCategoryOverridesChanged: BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>;
     readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
@@ -2241,8 +2102,8 @@ export class DisplayStyleSettings {
     get renderTimeline(): Id64String | undefined;
     set renderTimeline(id: Id64String | undefined);
     // @internal @deprecated (undocumented)
-    get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
-    set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined);
+    get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined;
+    set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined);
     get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
     // @internal
     synchMapImagery(): void;
@@ -2279,7 +2140,7 @@ export interface DisplayStyleSettingsProps {
     planarClipOvr?: DisplayStylePlanarClipMaskProps[];
     renderTimeline?: Id64String;
     // @internal @deprecated
-    scheduleScript?: RenderSchedule.ModelTimelineProps[];
+    scheduleScript?: RenderSchedule.ScriptProps;
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
     timePoint?: number;
     // (undocumented)
@@ -2628,6 +2489,18 @@ export namespace ElementGeometry {
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
+// @alpha
+export interface ElementGeometryBuilderParams {
+    entryArray: ElementGeometryDataEntry[];
+    viewIndependent?: boolean;
+}
+
+// @alpha
+export interface ElementGeometryBuilderParamsForPart {
+    entryArray: ElementGeometryDataEntry[];
+    is2dPart?: boolean;
+}
+
 // @public (undocumented)
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
@@ -2688,15 +2561,6 @@ export interface ElementGeometryRequest {
     onGeometry: ElementGeometryFunction;
     replaceBReps?: boolean;
     skipBReps?: boolean;
-}
-
-// @alpha
-export interface ElementGeometryUpdate {
-    elementId: Id64String;
-    entryArray: ElementGeometryDataEntry[];
-    is2dPart?: boolean;
-    isWorld?: boolean;
-    viewIndependent?: boolean;
 }
 
 // @public
@@ -2830,6 +2694,7 @@ export interface EntityMetaDataProps {
 export interface EntityProps {
     classFullName: string;
     id?: Id64String;
+    readonly isInstanceOfEntity?: never;
     jsonProperties?: {
         [key: string]: any;
     };
@@ -3214,13 +3079,16 @@ export interface FlatBufferGeometryStream {
 }
 
 // @public
+export type FontId = number;
+
+// @public
 export class FontMap {
     constructor(props?: FontMapProps);
     // (undocumented)
     addFonts(fonts: FontProps[]): void;
     // (undocumented)
     readonly fonts: Map<number, FontProps>;
-    getFont(arg: string | number): FontProps | undefined;
+    getFont(arg: string | FontId): FontProps | undefined;
     // (undocumented)
     toJSON(): FontMapProps;
 }
@@ -3233,11 +3101,8 @@ export interface FontMapProps {
 
 // @public
 export interface FontProps {
-    // (undocumented)
-    id: number;
-    // (undocumented)
+    id: FontId;
     name: string;
-    // (undocumented)
     type: FontType;
 }
 
@@ -3525,6 +3390,8 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 // @public
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
+    // @alpha
+    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     placement?: PlacementProps;
 }
@@ -3632,6 +3499,8 @@ export interface GeometryPartInstanceProps {
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
     bbox?: LowAndHighXYZ;
+    // @alpha
+    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
 }
@@ -3712,9 +3581,9 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     [Symbol.iterator](): IterableIterator<GeometryStreamIteratorEntry>;
     constructor(geometryStream: GeometryStreamProps, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform);
     readonly flags: GeometryStreamFlags;
-    static fromGeometricElement2d(element: GeometricElement2dProps): GeometryStreamIterator;
-    static fromGeometricElement3d(element: GeometricElement3dProps): GeometryStreamIterator;
-    static fromGeometryPart(geomPart: GeometryPartProps, geomParams?: GeometryParams, partTransform?: Transform): GeometryStreamIterator;
+    static fromGeometricElement2d(element: Pick<GeometricElement2dProps, "geom" | "placement" | "category">): GeometryStreamIterator;
+    static fromGeometricElement3d(element: Pick<GeometricElement3dProps, "geom" | "placement" | "category">): GeometryStreamIterator;
+    static fromGeometryPart(geomPart: Pick<GeometryPartProps, "geom">, geomParams?: GeometryParams, partTransform?: Transform): GeometryStreamIterator;
     geometryStream: GeometryStreamProps;
     // @internal (undocumented)
     get isViewIndependent(): boolean;
@@ -4364,6 +4233,52 @@ export interface ImageGraphicProps {
     textureId: Id64String;
 }
 
+// @beta
+export interface ImageMapLayerProps extends CommonMapLayerProps {
+    accessKey?: MapLayerKey;
+    formatId: string;
+    // @internal (undocumented)
+    modelId?: never;
+    subLayers?: MapSubLayerProps[];
+    url: string;
+}
+
+// @beta
+export class ImageMapLayerSettings extends MapLayerSettings {
+    // @internal
+    protected constructor(props: ImageMapLayerProps);
+    // (undocumented)
+    accessKey?: MapLayerKey;
+    get allSubLayersInvisible(): boolean;
+    clone(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerSettings;
+    // @internal (undocumented)
+    protected cloneProps(changedProps: Partial<ImageMapLayerProps>): ImageMapLayerProps;
+    // @internal (undocumented)
+    displayMatches(other: MapLayerSettings): boolean;
+    // (undocumented)
+    readonly formatId: string;
+    // (undocumented)
+    static fromJSON(props: ImageMapLayerProps): ImageMapLayerSettings;
+    getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
+    isSubLayerVisible(subLayer: MapSubLayerSettings): boolean;
+    // @internal (undocumented)
+    protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
+    // (undocumented)
+    password?: string;
+    // (undocumented)
+    setCredentials(userName?: string, password?: string): void;
+    // (undocumented)
+    get source(): string;
+    subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined;
+    // (undocumented)
+    readonly subLayers: MapSubLayerSettings[];
+    toJSON(): ImageMapLayerProps;
+    // (undocumented)
+    readonly url: string;
+    // (undocumented)
+    userName?: string;
+}
+
 // @public
 export interface ImagePrimitive {
     // (undocumented)
@@ -4553,7 +4468,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
     getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
     static readonly interfaceName = "IModelReadRpcInterface";
     static interfaceVersion: string;
@@ -4852,8 +4767,6 @@ export namespace IpcWebSocketMessage {
     // (undocumented)
     export function internal(): IpcWebSocketMessage;
     // (undocumented)
-    export function next(): number;
-    // (undocumented)
     export function skip(message: IpcWebSocketMessage): boolean;
 }
 
@@ -4876,7 +4789,9 @@ export enum IpcWebSocketMessageType {
 // @internal (undocumented)
 export abstract class IpcWebSocketTransport {
     // (undocumented)
-    protected notifyIncoming(data: any): Promise<IpcWebSocketMessage>;
+    protected notifyClose(connection: any): void;
+    // (undocumented)
+    protected notifyIncoming(data: any, connection: any): Promise<IpcWebSocketMessage>;
     // (undocumented)
     abstract send(message: IpcWebSocketMessage): void;
     // (undocumented)
@@ -5122,59 +5037,34 @@ export interface MapLayerKey {
 }
 
 // @beta
-export interface MapLayerProps {
-    accessKey?: MapLayerKey;
-    formatId: string;
-    isBase?: boolean;
-    name: string;
-    subLayers?: MapSubLayerProps[];
-    transparency?: number;
-    transparentBackground?: boolean;
-    url: string;
-    visible?: boolean;
-}
+export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
 
 // @beta
-export class MapLayerSettings {
+export abstract class MapLayerSettings {
     // @internal
-    protected constructor(url: string, name: string, formatId: string, visible?: boolean, jsonSubLayers?: MapSubLayerProps[] | undefined, transparency?: number, transparentBackground?: boolean, isBase?: boolean, userName?: string, password?: string, accessKey?: MapLayerKey);
+    protected constructor(name: string, visible?: boolean, transparency?: number, transparentBackground?: boolean);
     // (undocumented)
-    accessKey?: MapLayerKey;
-    get allSubLayersInvisible(): boolean;
-    clone(changedProps: Partial<MapLayerProps>): MapLayerSettings;
+    abstract get allSubLayersInvisible(): boolean;
+    // (undocumented)
+    abstract clone(changedProps: Partial<MapLayerProps>): MapLayerSettings;
     // @internal (undocumented)
-    protected cloneProps(changedProps: Partial<MapLayerProps>): MapLayerProps;
+    protected cloneProps(changedProps: Partial<MapLayerProps>): CommonMapLayerProps;
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
-    // (undocumented)
-    readonly formatId: string;
-    static fromJSON(json: MapLayerProps): MapLayerSettings;
-    getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
-    // (undocumented)
-    readonly isBase: boolean;
-    isSubLayerVisible(subLayer: MapSubLayerSettings): boolean;
+    static fromJSON(props: MapLayerProps): MapLayerSettings;
     // @internal (undocumented)
-    protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
-    // @internal (undocumented)
-    matchesNameAndUrl(name: string, url: string): boolean;
+    matchesNameAndSource(name: string, source: string): boolean;
     // (undocumented)
     readonly name: string;
+    abstract get source(): string;
     // (undocumented)
-    password?: string;
-    // (undocumented)
-    setCredentials(userName?: string, password?: string): void;
-    subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined;
-    // (undocumented)
-    readonly subLayers: MapSubLayerSettings[];
-    toJSON(): MapLayerProps;
+    abstract toJSON(): MapLayerProps;
+    // @internal (undocumented)
+    protected _toJSON(): CommonMapLayerProps;
     // (undocumented)
     readonly transparency: number;
     // (undocumented)
     readonly transparentBackground: boolean;
-    // (undocumented)
-    readonly url: string;
-    // (undocumented)
-    userName?: string;
     // (undocumented)
     readonly visible: boolean;
 }
@@ -5392,6 +5282,37 @@ export interface ModelLoadProps {
     code?: CodeProps;
     // (undocumented)
     id?: Id64String;
+}
+
+// @beta
+export interface ModelMapLayerProps extends CommonMapLayerProps {
+    // @internal (undocumented)
+    accessKey?: never;
+    // @internal (undocumented)
+    formatId?: never;
+    modelId: Id64String;
+    // @internal (undocumented)
+    subLayers?: never;
+    // @internal (undocumented)
+    url?: never;
+}
+
+// @beta
+export class ModelMapLayerSettings extends MapLayerSettings {
+    // @internal
+    protected constructor(modelId: Id64String, name: string, visible?: boolean, transparency?: number, transparentBackground?: boolean);
+    get allSubLayersInvisible(): boolean;
+    clone(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerSettings;
+    // @internal (undocumented)
+    protected cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps;
+    // @internal (undocumented)
+    displayMatches(other: MapLayerSettings): boolean;
+    static fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings;
+    // (undocumented)
+    readonly modelId: Id64String;
+    // (undocumented)
+    get source(): string;
+    toJSON(): ModelMapLayerProps;
 }
 
 // @public
@@ -6740,20 +6661,27 @@ export abstract class RenderMaterial {
 
 // @public (undocumented)
 export namespace RenderMaterial {
+    // @deprecated (undocumented)
     export class Params {
         constructor(key?: string);
         get alpha(): number | undefined;
         set alpha(alpha: number | undefined);
+        // @alpha
         ambient: number;
         static readonly defaults: Params;
         diffuse: number;
         diffuseColor?: ColorDef;
+        // @alpha
         emissiveColor?: ColorDef;
         static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params;
         key?: string;
+        // @alpha
         reflect: number;
+        // @alpha
         reflectColor?: ColorDef;
+        // @alpha
         refract: number;
+        // @alpha
         shadows: boolean;
         specular: number;
         specularColor?: ColorDef;
@@ -8283,6 +8211,8 @@ export class SpatialClassifier {
     readonly expand: number;
     readonly flags: SpatialClassifierFlags;
     static fromJSON(props: SpatialClassifierProps): SpatialClassifier;
+    // @beta
+    static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier;
     readonly modelId: Id64String;
     readonly name: string;
     toJSON(): SpatialClassifierProps;
@@ -8531,7 +8461,7 @@ export class TestRpcManager {
 export class TextString {
     constructor(props: TextStringProps);
     bold?: boolean;
-    font: number;
+    font: FontId;
     // (undocumented)
     height: number;
     italic?: boolean;
@@ -8560,7 +8490,7 @@ export interface TextStringPrimitive {
 // @public
 export interface TextStringProps {
     bold?: boolean;
-    font: number;
+    font: FontId;
     // (undocumented)
     height: number;
     italic?: boolean;
@@ -8631,7 +8561,7 @@ export namespace TextureMapping {
         worldMapping?: boolean;
     }
     export class Params {
-        constructor(props?: ParamProps);
+        constructor(props?: TextureMapping.ParamProps);
         // @internal
         computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
         mode: TextureMapping.Mode;
@@ -8642,6 +8572,7 @@ export namespace TextureMapping {
     }
     export class Trans2x3 {
         constructor(m00?: number, m01?: number, originX?: number, m10?: number, m11?: number, originY?: number);
+        static readonly identity: Trans2x3;
         readonly transform: Transform;
     }
 }

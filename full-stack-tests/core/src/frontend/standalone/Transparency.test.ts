@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency,
+  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
 import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
@@ -242,13 +242,12 @@ describe("Transparency", async () => {
 
   // Alpha in [0,1].
   function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number, diffuseColor?: ColorDef): RenderMaterial {
-    const params = new RenderMaterial.Params();
-    params.alpha = alpha;
-    params.diffuseColor = diffuseColor;
-    if (texture)
-      params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
+    const material = IModelApp.renderSystem.createRenderMaterial({
+      alpha,
+      diffuse: { color: diffuseColor },
+      textureMapping: texture ? { texture, weight: textureWeight } : undefined,
+    });
 
-    const material = IModelApp.renderSystem.createMaterial(params, imodel);
     expect(material).not.to.be.undefined;
     return material!;
   }

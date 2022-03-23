@@ -7,7 +7,8 @@
  */
 
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
-import { DefaultRequestOptionsProvider, request, RequestOptions } from "@bentley/itwin-client";
+import { request, RequestOptions } from "../itwin-client/Request";
+import { DefaultRequestOptionsProvider } from "../request/Client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 

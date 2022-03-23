@@ -22,15 +22,20 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
     ipcHandlers: [SampleIpcHandler],
   };
   const iModelHost = new IModelHostConfiguration();
-  const authClient = await ElectronMainAuthorization.create({
-    clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-    redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-    scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
 
-  });
-  iModelHost.authorizationClient = authClient;
+  let authClient;
+  if (process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID && process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI && process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES) {
+    authClient = new ElectronMainAuthorization({
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID,
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI,
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES,
+    });
+    iModelHost.authorizationClient = authClient;
+  }
 
   await ElectronHost.startup({ electronHost, iModelHost });
+  if (authClient)
+    await authClient.signInSilent();
   await ElectronHost.openMainWindow();
 
   // __PUBLISH_EXTRACT_END__

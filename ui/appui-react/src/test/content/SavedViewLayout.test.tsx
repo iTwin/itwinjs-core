@@ -188,7 +188,7 @@ describe("StageContentLayout", () => {
   }
 
   beforeEach(async () => {
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
 
     viewportMock.reset();
     viewportMock.setup((x) => x.view).returns(() => viewState);

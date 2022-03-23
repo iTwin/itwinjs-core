@@ -221,13 +221,13 @@ describe("RenderTarget", () => {
   });
 
   it("should read image at expected sizes", async () => {
-    // NOTE: rect is in CSS pixels. ImageBuffer returned by readImage is in device pixels. vp.target.viewRect is in device pixels.
+    // NOTE: rect is in CSS pixels. ImageBuffer returned by readImageBuffer is in device pixels. vp.target.viewRect is in device pixels.
     const cssRect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, cssRect, async (vp) => {
       await vp.waitForAllTilesToRender();
 
       const expectImageDimensions = (readRect: ViewRect | undefined, targetSize: Point2d | undefined, expectedWidth: number, expectedHeight: number) => {
-        const img = vp.readImage(readRect, targetSize)!;
+        const img = vp.readImageBuffer({ rect: readRect, size: targetSize })!;
         expect(img).not.to.be.undefined;
         expect(img.width).to.equal(Math.floor(expectedWidth));
         expect(img.height).to.equal(Math.floor(expectedHeight));
@@ -237,7 +237,6 @@ describe("RenderTarget", () => {
 
       // Read full image, no resize
       expectImageDimensions(undefined, undefined, devRect.width, devRect.height);
-      expectImageDimensions(new ViewRect(0, 0, -1, -1), undefined, devRect.width, devRect.height);
       expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
       // Read sub-image, no resize
@@ -251,7 +250,7 @@ describe("RenderTarget", () => {
 
       // Read full image and resize
       expectImageDimensions(undefined, new Point2d(256, 128), 256, 128);
-      expectImageDimensions(new ViewRect(0, 0, -1, -1), new Point2d(50, 200), 50, 200);
+      expectImageDimensions(undefined, new Point2d(50, 200), 50, 200);
       expectImageDimensions(cssRect, new Point2d(10, 10), 10, 10);
       expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
@@ -376,7 +375,7 @@ describe("RenderTarget", () => {
           expect(c.g).to.equal(0);
           expect(c.b).least(0x70);
           expect(c.b).most(0x90);
-          expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImage()
+          expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImageBuffer()
         }
       }
     });
@@ -525,7 +524,7 @@ describe("RenderTarget", () => {
       IModelApp.viewManager.dropDecorator(decorator);
 
       // expect green blended with black background
-      const testColor = vp.readColor(0, 149); // top left pixel, test vp coords are flipped
+      const testColor = vp.readColor(0, 0); // top left pixel
       expect(testColor.r).equals(0);
       expect(testColor.g).approximately(128, 3);
       expect(testColor.b).equals(0);

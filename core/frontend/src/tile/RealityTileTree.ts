@@ -7,7 +7,9 @@
  */
 
 import { assert, BeTimePoint } from "@itwin/core-bentley";
-import { Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
+import {
+  Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps,
+} from "@itwin/core-geometry";
 import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { GeoConverter } from "../GeoServices";
@@ -15,7 +17,10 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
-import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
+import {
+  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
+  TileGraphicType, TileParams, TileTree, TileTreeParams,
+} from "./internal";
 
 /** @internal */
 export class TraversalDetails {
@@ -169,6 +174,11 @@ export class RealityTileTree extends TileTree {
 
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
 
+  /** Collect tiles from this tile tree based on the criteria implemented by `collector`. */
+  public override collectTileGeometry(collector: TileGeometryCollector): void {
+    this.rootTile.collectTileGeometry(collector);
+  }
+
   public prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
     this.rootTile.purgeContents(olderThan);
@@ -189,9 +199,8 @@ export class RealityTileTree extends TileTree {
       sortIndices.sort((a, b) => selectedTiles[a].depth - selectedTiles[b].depth);
     }
 
-    const classifier = args.context.planarClassifiers.get(this.modelId);
-    if (classifier && !(args instanceof GraphicsCollectorDrawArgs))
-      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
+    if (! (args instanceof GraphicsCollectorDrawArgs))
+      this.collectClassifierGraphics(args, selectedTiles);
 
     assert(selectedTiles.length === displayedTileDescendants.length);
     for (let i = 0; i < selectedTiles.length; i++) {
@@ -258,6 +267,11 @@ export class RealityTileTree extends TileTree {
     for (const graphicTypeBranch of graphicTypeBranches) {
       args.drawGraphicsWithType(graphicTypeBranch[0], graphicTypeBranch[1]);
     }
+  }
+  protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+    const classifier = args.context.planarClassifiers.get(this.modelId);
+    if (classifier)
+      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
   }
 
   public getTraversalChildren(depth: number) {
@@ -402,7 +416,7 @@ export class RealityTileTree extends TileTree {
         this.logTiles("Imagery:", imageryTiles.values());
     }
 
-    IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, selected, args.readyTiles);
+    IModelApp.tileAdmin.addTilesForUser(args.context.viewport, selected, args.readyTiles);
     return selected;
   }
 

@@ -10,7 +10,7 @@ import { MockRender } from "@itwin/core-frontend";
 import { ContentLayoutProps, StandardContentLayouts } from "@itwin/appui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
-  ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, SplitPane,
+  ContentViewManager, CoreTools, FloatingContentControl, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, SplitPane,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
@@ -71,7 +71,7 @@ describe("ContentLayout", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
 
     const frontstageProvider = new TestFrontstage2();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
@@ -249,4 +249,86 @@ describe("ContentLayout", () => {
     expect(threeRightStackedLayoutDef.getUsedContentIndexes()).to.have.members([0, 1, 3]);
     expect(standardContentLayout1.getUsedContentIndexes()).to.have.members([0, 1, 2, 3]);
   });
+});
+
+describe("SingleContentLayout", () => {
+  class TestContentControl extends ContentControl {
+    constructor(info: ConfigurableCreateInfo, options: any) {
+      super(info, options);
+
+      this.reactNode = <div>Test</div>;
+    }
+  }
+
+  const myContentGroup: ContentGroup = new ContentGroup({
+    id: "testGroup",
+    layout: StandardContentLayouts.singleView,
+    contents: [{ id: "myContent", classId: TestContentControl, applicationData: { name: "Test" } }],
+  });
+
+  const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
+    id: "SingleContent",
+    description: "UiFramework:tests.singleContent",
+  });
+
+  class TestFrontstage1 extends FrontstageProvider {
+    public static stageId = "TestFrontstage1";
+    public get id(): string {
+      return TestFrontstage1.stageId;
+    }
+
+    public get frontstage(): React.ReactElement<FrontstageProps> {
+      return (
+        <Frontstage id={this.id} defaultTool={CoreTools.selectElementCommand}
+          contentGroup={myContentGroup} />
+      );
+    }
+  }
+
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+    await MockRender.App.startup();
+    FrontstageManager.clearFrontstageProviders();
+
+    const frontstageProvider = new TestFrontstage1();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(TestFrontstage1.stageId);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+  });
+
+  after(async () => {
+    await MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
+  });
+
+  it("Should set active if floating content exists", () => {
+    const floatingNode = <div key="floating" />;
+    class TestFloatingContentControl extends FloatingContentControl {
+      constructor() {
+        super("ContentTestFloatingContentControl", "ContentTestFloatingContentControl", floatingNode);
+      }
+    }
+
+    const floatingControl = new TestFloatingContentControl();
+    ContentViewManager.addFloatingContentControl(floatingControl);
+
+    const wrapper = mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
+    const layoutWrappers = wrapper.find("div.uifw-contentlayout-wrapper");
+    expect(layoutWrappers.length).to.eq(1);
+    layoutWrappers.at(0).simulate("mouseDown");
+    wrapper.update();
+    // eslint-disable-next-line no-console
+    // console.log(wrapper.debug());
+
+    expect(wrapper.find("div.uifw-contentlayout-overlay-active").length).to.eq(1);
+
+    ContentViewManager.setActiveContent(floatingControl.reactNode);
+    wrapper.update();
+    // eslint-disable-next-line no-console
+    // console.log(wrapper.debug());
+    expect(wrapper.find("div.uifw-contentlayout-overlay-active").length).to.eq(0);
+
+    ContentViewManager.dropFloatingContentControl(floatingControl);
+  });
+
 });

@@ -101,7 +101,7 @@ class TestHelper {
   public updateElement(elid: Id64String, newLabel: string) {
     const ed2 = this.db.elements.getElement({ id: elid });
     ed2.userLabel = newLabel;
-    this.db.elements.updateElement(ed2);
+    this.db.elements.updateElement(ed2.toJSON());
   }
 
   public fmtElem(elId: Id64String) { return this.db.elements.getElement(elId).code.value; }
@@ -193,7 +193,7 @@ describe("ElementDependencyGraph", () => {
     helper.db.saveChanges(); // this will react to EDE inserts only.
     assert.deepEqual(helper.dres.beforeOutputs, []); // only roots get this callback, and only if they have been directly changed.
     assert.deepEqual(helper.dres.allInputsHandled, []); // No input elements have changed
-    assertRels(helper.dres.rootChanged, [ede_1_2, ede_2_3]); // we send out this callback even if only the relationship itself is new or changed.
+    assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_2_3.toJSON()]); // we send out this callback even if only the relationship itself is new or changed.
 
     helper.updateElement(e1id, "change e1");
 
@@ -202,7 +202,7 @@ describe("ElementDependencyGraph", () => {
 
     assert.deepEqual(helper.dres.beforeOutputs, [e1id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, e3id]);
-    assertRels(helper.dres.rootChanged, [ede_1_2, ede_2_3]);
+    assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_2_3.toJSON()]);
 
     helper.terminate();
   });
@@ -274,7 +274,7 @@ describe("ElementDependencyGraph", () => {
     helper.db.saveChanges(); // this will react to EDE inserts only.
     assert.deepEqual(helper.dres.beforeOutputs, []); // only roots get this callback, and only if they have been directly changed.
     assert.deepEqual(helper.dres.allInputsHandled, []); // No input elements have changed
-    assertRels(helper.dres.rootChanged, [ede_1_2, ede_2_3, ede_p2_p3]); // we send out this callback even if only the relationship itself is new or changed.
+    assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_2_3.toJSON(), ede_p2_p3.toJSON()]); // we send out this callback even if only the relationship itself is new or changed.
 
     helper.updateElement(e1id, "change e1");
 
@@ -283,7 +283,7 @@ describe("ElementDependencyGraph", () => {
 
     assert.deepEqual(helper.dres.beforeOutputs, [e1id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, p2id, e3id, p3id]);
-    assertRels(helper.dres.rootChanged, [ede_1_2, ede_2_3, ede_p2_p3]);
+    assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_2_3.toJSON(), ede_p2_p3.toJSON()]);
 
     helper.updateElement(p2id, "change p2");
 
@@ -292,7 +292,7 @@ describe("ElementDependencyGraph", () => {
 
     assert.deepEqual(helper.dres.beforeOutputs, [p2id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [p3id]);
-    assertRels(helper.dres.rootChanged, [ede_p2_p3]);
+    assertRels(helper.dres.rootChanged, [ede_p2_p3.toJSON()]);
 
     helper.updateElement(e2id, "change e2");
 
@@ -301,7 +301,7 @@ describe("ElementDependencyGraph", () => {
 
     assert.deepEqual(helper.dres.beforeOutputs, [e2id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e3id]);
-    assertRels(helper.dres.rootChanged, [ede_2_3]);
+    assertRels(helper.dres.rootChanged, [ede_2_3.toJSON()]);
 
     helper.terminate();
   });
@@ -339,7 +339,7 @@ describe("ElementDependencyGraph", () => {
 
     assert.deepEqual(helper.dres.beforeOutputs, [material]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [materialDepthRange, borehole, boreholeSource, groundGeneration]);
-    assertRels(helper.dres.rootChanged, [ede_material_materialDepthRange, ede_boreholeSource_groundGeneration]);
+    assertRels(helper.dres.rootChanged, [ede_material_materialDepthRange.toJSON(), ede_boreholeSource_groundGeneration.toJSON()]);
 
     helper.terminate();
   });
@@ -381,7 +381,7 @@ describe("ElementDependencyGraph", () => {
     helper.db.saveChanges();
     assert.deepEqual(helper.dres.beforeOutputs, [e1id, e11id, e21id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, e3id, e4id]);
-    assertRels(helper.dres.rootChanged, [ede_1_2, ede_11_2, ede_2_3, ede_21_3, ede_3_4]);
+    assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_11_2.toJSON(), ede_2_3.toJSON(), ede_21_3.toJSON(), ede_3_4.toJSON()]);
 
     // modify e4 directly. That is a leaf. None of its inputs are changed.
     // resulting subgraph:
@@ -413,7 +413,7 @@ describe("ElementDependencyGraph", () => {
 
     assert.deepEqual(helper.dres.beforeOutputs, [e3id]); // only called on directly changed root elements.
     assert.deepEqual(helper.dres.allInputsHandled, [e4id]);
-    assertRels(helper.dres.rootChanged, [ede_3_4]);
+    assertRels(helper.dres.rootChanged, [ede_3_4.toJSON()]);
 
     // modify e2 directly. That is a node in middle of the graph. None of its inputs is modified.
     // resulting subgraph:
@@ -430,7 +430,7 @@ describe("ElementDependencyGraph", () => {
 
     assert.deepEqual(helper.dres.beforeOutputs, [e2id]); // only called on directly changed root elements
     assert.deepEqual(helper.dres.allInputsHandled, [e3id, e4id],);
-    assertRels(helper.dres.rootChanged, [ede_2_3, ede_3_4]);
+    assertRels(helper.dres.rootChanged, [ede_2_3.toJSON(), ede_3_4.toJSON()]);
 
     // Modify e1 directly. That should propagate to the rest of the nodes. Each should get an _onAllInputsHandled callback
     // resulting graph:
@@ -445,7 +445,7 @@ describe("ElementDependencyGraph", () => {
 
     assert.deepEqual(helper.dres.beforeOutputs, [e1id]); // only called on directly changed root elements
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, e3id, e4id]);
-    assertRels(helper.dres.rootChanged, [ede_1_2, ede_2_3, ede_3_4]);
+    assertRels(helper.dres.rootChanged, [ede_1_2.toJSON(), ede_2_3.toJSON(), ede_3_4.toJSON()]);
 
     // Modify e11 directly. That should propagate to the rest of the nodes. Each should get an _onAllInputsHandled callback
     // resulting graph:
@@ -464,7 +464,7 @@ describe("ElementDependencyGraph", () => {
     // assert.deepEqual(helper.dres.directChange, []); // only called on directly changed non-root elements that have no directly changed inputs
     assert.deepEqual(helper.dres.beforeOutputs, [e11id]); // only called on directly changed root elements
     assert.deepEqual(helper.dres.allInputsHandled, [e2id, e3id, e4id]);
-    assertRels(helper.dres.rootChanged, [ede_11_2, ede_2_3, ede_3_4]);
+    assertRels(helper.dres.rootChanged, [ede_11_2.toJSON(), ede_2_3.toJSON(), ede_3_4.toJSON()]);
     // assertRels(helper.dres.validateOutput, [ede_1_2, ede_21_3]); // this callback is made only on rels that not in the graph but share an output with another rel or have an output that was directly changed
 
     helper.terminate();

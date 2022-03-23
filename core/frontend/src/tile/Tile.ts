@@ -18,7 +18,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import {
-  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, ViewportIdSet,
+  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUser, TileUserIdSet,
 } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
@@ -106,7 +106,7 @@ export abstract class Tile {
   /** Exclusively for use by LRUTileList. @internal */
   public bytesUsed = 0;
   /** Exclusively for use by LRUTileList. @internal */
-  public viewportIds?: ViewportIdSet;
+  public tileUserIds?: TileUserIdSet;
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
@@ -232,11 +232,12 @@ export abstract class Tile {
   }
 
   /** Compute the load priority of this tile. This determines which tiles' contents are requested first.
-   * @param _viewports The viewports for which the tile has been requested for display.
+   * @param _viewports The subset of `users` that are [[Viewport]]s - typically, these viewports want to display the tile's content.
+   * @param users The [[TileUser]]s that are currently using the tile for some purpose, such as displaying its content.
    * @returns The priority.
    * @see [[TileLoadPriority]] for suggested priority values.
    */
-  public computeLoadPriority(_viewports: Iterable<Viewport>): number {
+  public computeLoadPriority(_viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
     return this.depth;
   }
 

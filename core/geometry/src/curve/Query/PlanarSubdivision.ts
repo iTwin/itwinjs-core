@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
@@ -83,30 +84,42 @@ export class PlanarSubdivision {
         return fractionA - fractionB;
       });
       let detail0 = getDetailOnCurve(details[0], p)!;
+      this.addHalfEdge(graph, p, p.startPoint (), 0.0, detail0.point, detail0.fraction);
       for (let i = 1; i < details.length; i++) {
         // create (both sides of) a graph edge . . .
         const detail1 = getDetailOnCurve(details[i], p)!;
-        if (detail0.point.isAlmostEqual(detail1.point)) {
-
-        } else {
-          const halfEdge = graph.createEdgeXYAndZ(detail0.point, 0, detail1.point, 0);
-          const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, detail0.fraction, detail1.fraction);
-          const mate = halfEdge.edgeMate;
-          halfEdge.edgeTag = detail01;
-          halfEdge.sortData = 1.0;
-          mate.edgeTag = detail01;
-          mate.sortData = -1.0;
-          halfEdge.sortAngle = sortAngle(detail01.curve!, detail01.fraction, false);
-          mate.sortAngle = sortAngle(detail01.curve!, detail01.fraction1!, true);
-        }
+        this.addHalfEdge(graph, p, detail0.point, detail0.fraction, detail1.point, detail1.fraction);
         detail0 = detail1;
       }
+      this.addHalfEdge(graph, p, detail0.point, detail0.fraction, p.endPoint(), 1.0);
     }
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
     return graph;
   }
-
-  // based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative, or sliver loops.
+/**
+ * Create a pair of mated half edges referencing an interval of a primitive
+ *   * no action if start and end points are identical.
+ * @param graph containing graph.
+ * @param p the curve
+ * @param fraction0 starting fraction
+ * @param point0 start point
+ * @param fraction1 end fraction
+ * @param point1 end point
+ */
+  private static addHalfEdge(graph: HalfEdgeGraph, p: CurvePrimitive, point0: Point3d, fraction0: number, point1: Point3d, fraction1: number) {
+    if (!point0.isAlmostEqual (point1)){
+      const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
+      const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
+      const mate = halfEdge.edgeMate;
+      halfEdge.edgeTag = detail01;
+      halfEdge.sortData = 1.0;
+      mate.edgeTag = detail01;
+      mate.sortData = -1.0;
+      halfEdge.sortAngle = sortAngle(detail01.curve!, detail01.fraction, false);
+      mate.sortAngle = sortAngle(detail01.curve!, detail01.fraction1!, true);
+      }
+    }
+// based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative, or sliver loops.
   // return the area (forced to zero if within tolerance)
   public static collectSignedLoop(loop: Loop, signedAreas: SignedLoops, zeroAreaTolerance: number = 1.0e-10): number{
     let area = RegionOps.computeXYArea(loop);

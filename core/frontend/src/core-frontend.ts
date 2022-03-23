@@ -11,6 +11,7 @@ export * from "./BriefcaseConnection";
 export * from "./BriefcaseTxns";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
+export * from "./CheckpointConnection";
 export * from "./ContextRealityModelState";
 export * from "./CoordSystem";
 export * from "./DecorationsCache";
@@ -21,6 +22,7 @@ export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
 export * from "./EnvironmentDecorations";
+export * from "./extension/extensions";
 export * from "./FeatureOverrideProvider";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
@@ -30,12 +32,12 @@ export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./GlobeAnimator";
+export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./ImageUtil";
 export * from "./IModelApp";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";
-export * from "./GraphicalEditingScope";
 export * from "./IpcApp";
 export * from "./LinePlaneIntersect";
 export * from "./MarginPercent";
@@ -51,8 +53,8 @@ export * from "./PlanarClipMaskState";
 export * from "./quantity-formatting/QuantityFormatter";
 export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
 export * from "./quantity-formatting/LocalUnitFormatProvider";
+export * from "./quantity-formatting/QuantityTypesEditorSpecs";
 export * from "./RenderScheduleState";
-export * from "./CheckpointConnection";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialViewState";
@@ -89,6 +91,7 @@ export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
+export * from "./render/RenderMaterial";
 export * from "./render/RenderMemory";
 export * from "./render/RenderPlan";
 export * from "./render/RenderPlanarClassifier";
@@ -101,8 +104,8 @@ export * from "./render/VisibleFeature";
 export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
 export * from "./render/webgl/IModelFrameLifecycle";
-export * from "./tools/AccuDrawTool";
 export * from "./tile/internal";
+export * from "./tools/AccuDrawTool";
 export * from "./tools/ClipViewTool";
 export * from "./tools/EditManipulator";
 export * from "./tools/ElementSetTool";
@@ -174,7 +177,7 @@ export * from "./RealityDataSource";
  */
 /**
  * @docs-group-description Extensions
- * Classes for creating and managing runtime [Extensions]($docs/learning/frontend/Extensions.md)
+ * Classes for creating and managing Extensions.
  */
 /**
  * @docs-group-description Properties
@@ -222,4 +225,3 @@ export * from "./RealityDataSource";
  * @docs-group-description MapLayers
  * Classes supporting map layers display.
  */
-

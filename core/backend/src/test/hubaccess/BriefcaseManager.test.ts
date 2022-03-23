@@ -143,7 +143,7 @@ describe("BriefcaseManager", async () => {
 
     const rootEl: Element = iModelPullAndPush.elements.getRootSubject();
     rootEl.userLabel = `${rootEl.userLabel}changed`;
-    iModelPullAndPush.elements.updateElement(rootEl);
+    iModelPullAndPush.elements.updateElement(rootEl.toJSON());
 
     assert.isTrue(iModelPullAndPush.nativeDb.hasUnsavedChanges());
     assert.isFalse(iModelPullAndPush.nativeDb.hasPendingTxns());

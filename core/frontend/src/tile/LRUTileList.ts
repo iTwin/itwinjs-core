@@ -10,19 +10,19 @@ import { assert, ReadonlySortedArray, SortedArray } from "@itwin/core-bentley";
 import { RenderMemory } from "../render/RenderMemory";
 import { Tile } from "./internal";
 
-/** Maintains in sorted order a set of Viewport Ids for which a given tile has been selected for display. The number of viewports in a set is expected to be very small - often only 1 for a typical application.
+/** Maintains in sorted order a set of [[TileUser]] Ids for which a given tile has been selected for display. The number of users in a set is expected to be very small - often only 1 for a typical application.
  * Strictly for use by LRUTileList.
- * @see ViewportIdSets.
+ * @see TileUserIdSets.
  * @internal
  */
-export class ViewportIdSet extends ReadonlySortedArray<number> {
-  public constructor(viewportId?: number) {
+export class TileUserIdSet extends ReadonlySortedArray<number> {
+  public constructor(userId?: number) {
     super((lhs, rhs) => lhs - rhs);
-    if (undefined !== viewportId)
-      this._array.push(viewportId);
+    if (undefined !== userId)
+      this._array.push(userId);
   }
 
-  public equals(set: ViewportIdSet): boolean {
+  public equals(set: TileUserIdSet): boolean {
     if (this.length !== set.length)
       return false;
 
@@ -33,39 +33,39 @@ export class ViewportIdSet extends ReadonlySortedArray<number> {
     return true;
   }
 
-  public add(viewportId: number): void {
-    this._insert(viewportId);
+  public add(userId: number): void {
+    this._insert(userId);
   }
 
-  public drop(viewportId: number): void {
-    this._remove(viewportId);
+  public drop(userId: number): void {
+    this._remove(userId);
   }
 
   public clear(): void {
     this._clear();
   }
 
-  public copyFrom(src: ViewportIdSet): void {
+  public copyFrom(src: TileUserIdSet): void {
     this._array.length = src.length;
     let i = 0;
-    for (const viewportId of src)
-      this._array[i++] = viewportId;
+    for (const userId of src)
+      this._array[i++] = userId;
   }
 
-  public clone(): ViewportIdSet {
-    const clone = new ViewportIdSet();
+  public clone(): TileUserIdSet {
+    const clone = new TileUserIdSet();
     clone.copyFrom(this);
     return clone;
   }
 }
 
-/** Maintains a set of ViewportIdSets such that each set represents a unique combination of Viewport ids and each set contains at least one Viewport id.
+/** Maintains a set of TileUserIdSets such that each set represents a unique combination of TileUser ids and each set contains at least one TileUser id.
  * Exported strictly for tests.
  * @see LRUTileList.
  * @internal
  */
-export class ViewportIdSets extends SortedArray<ViewportIdSet> {
-  private readonly _scratch = new ViewportIdSet();
+export class TileUserIdSets extends SortedArray<TileUserIdSet> {
+  private readonly _scratch = new TileUserIdSet();
 
   public constructor() {
     super((lhs, rhs) => {
@@ -88,13 +88,13 @@ export class ViewportIdSets extends SortedArray<ViewportIdSet> {
     });
   }
 
-  /** Remove the specified viewport Id from all sets and remove empty and duplicate sets. */
-  public drop(viewportId: number): void {
+  /** Remove the specified TileUser Id from all sets and remove empty and duplicate sets. */
+  public drop(userId: number): void {
     // Remove from all sets, and delete empty sets.
     let i = 0;
     for (/* */; i < this._array.length; i++) {
       const set = this._array[i];
-      set.drop(viewportId);
+      set.drop(userId);
       if (set.length === 0)
         this._array.splice(i, 1);
     }
@@ -111,31 +111,31 @@ export class ViewportIdSets extends SortedArray<ViewportIdSet> {
     }
   }
 
-  /** Obtain a ViewportIdSet owned by this object containing viewportId and (if specified) viewportIds. */
-  public plus(viewportId: number, viewportIds?: ViewportIdSet): ViewportIdSet {
-    const scratch = this.scratch(viewportIds);
-    scratch.add(viewportId);
+  /** Obtain a TileUserIdSet owned by this object containing userId and (if specified) userIds. */
+  public plus(userId: number, userIds?: TileUserIdSet): TileUserIdSet {
+    const scratch = this.scratch(userIds);
+    scratch.add(userId);
     return this.getEquivalent(scratch);
   }
 
-  /** Obtain a ViewportIdSet owned by this object containing all of viewportIds (if specified) but not viewportId. Returns undefined if the resultant set would be empty. */
-  public minus(viewportId: number, viewportIds?: ViewportIdSet): ViewportIdSet | undefined {
-    const scratch = this.scratch(viewportIds);
-    scratch.drop(viewportId);
+  /** Obtain a TileUserIdSet owned by this object containing all of userIds (if specified) but not userId. Returns undefined if the resultant set would be empty. */
+  public minus(userId: number, userIds?: TileUserIdSet): TileUserIdSet | undefined {
+    const scratch = this.scratch(userIds);
+    scratch.drop(userId);
     return scratch.length > 0 ? this.getEquivalent(scratch) : undefined;
   }
 
-  private scratch(viewportIds?: ViewportIdSet): ViewportIdSet {
+  private scratch(userIds?: TileUserIdSet): TileUserIdSet {
     const scratch = this._scratch;
-    if (viewportIds)
-      scratch.copyFrom(viewportIds);
+    if (userIds)
+      scratch.copyFrom(userIds);
     else
       scratch.clear();
 
     return scratch;
   }
 
-  private getEquivalent(sought: ViewportIdSet): ViewportIdSet {
+  private getEquivalent(sought: TileUserIdSet): TileUserIdSet {
     assert(sought.length > 0);
 
     for (const set of this)
@@ -157,10 +157,10 @@ export interface LRUTileListNode {
   next?: LRUTileListNode;
   /** The number of bytes of GPU memory allocated to the tile's content. The only node in a LRUTileListNode with `bytesUsed` less than 1 is the sentinel node. */
   bytesUsed: number;
-  /** For a tile, the Ids of all of the Viewports for which the tile is currently selected for display. The ViewportIdSet is owned by the LRUTileList's ViewportIdSets member.
-   * Undefined if the tile is not selected for display in any viewport.
+  /** For a tile, the Ids of all of the TileUsers for which the tile is currently in use. The TileUserIdSet is owned by the LRUTileList's TileUserIdSets member.
+   * Undefined if the tile is not in use by any TileUser.
    */
-  viewportIds?: ViewportIdSet | undefined;
+  tileUserIds?: TileUserIdSet | undefined;
 }
 
 function isLinked(node: LRUTileListNode): boolean {
@@ -176,7 +176,7 @@ function* lruListIterator(start: Tile | undefined, end: LRUTileListNode | undefi
   }
 }
 
-/** An intrusive doubly-linked list of LRUTileListNodes, containing Tiles partitioned by a singleton sentinel node into two partitions and ordered from least-recently- to most-recently-selected for display in any Viewport.
+/** An intrusive doubly-linked list of LRUTileListNodes, containing Tiles partitioned by a singleton sentinel node into two partitions and ordered from least-recently- to most-recently-used by any TileUser.
  * Used by TileAdmin to keep track of and impose limits upon the total amount of GPU memory allocated to tile content.
  *
  * Illustration of the structure of the list:
@@ -197,8 +197,8 @@ function* lruListIterator(start: Tile | undefined, end: LRUTileListNode | undefi
  *
  * - When a tile's content is loaded, it is added to the end of the "not selected" partition. Its memory usage is computed and added to the list's total.
  * - When a tile's content is unloaded, it is removed from the list. Its memory usage is deducted from the list's totla.
- * - Just before a Viewport selects tiles for display, it is removed from each tile's set of viewports in which they are selected. If a tile's set of viewports becomes empty as a result, it is moved to the end of the "not selected" partition.
- * - When a tile becomes selected for display in a Viewport, the viewport is added to its viewport set and the tile is moved to the end of the "selected" partition.
+ * - Just before a TileUser selects tiles for use (e.g., Viewport selects tiles for display), it is removed from each tile's set of viewports in which they are selected. If a tile's set of users becomes empty as a result, it is moved to the end of the "not selected" partition.
+ * - When a tile becomes selected for use by a TileUser, the user is added to its user set and the tile is moved to the end of the "selected" partition.
  *
  * When the system determines that GPU memory should be freed up, it can simply pop nodes off the beginning of the "not selected" partition, freeing their content, until the target memory usage is reached or no more non-selected nodes exist.
  *
@@ -208,7 +208,7 @@ function* lruListIterator(start: Tile | undefined, end: LRUTileListNode | undefi
 export class LRUTileList {
   protected readonly _sentinel: LRUTileListNode;
   protected readonly _stats = new RenderMemory.Statistics();
-  protected readonly _viewportIdSets = new ViewportIdSets();
+  protected readonly _userIdSets = new TileUserIdSets();
   protected _head: LRUTileListNode;
   protected _tail: LRUTileListNode;
   protected _totalBytesUsed = 0;
@@ -229,13 +229,13 @@ export class LRUTileList {
       next = node.next;
       node.previous = node.next = undefined;
       node.bytesUsed = 0;
-      node.viewportIds = undefined;
+      node.tileUserIds = undefined;
       node = next;
     }
 
     this._head = this._tail = this._sentinel;
     this._totalBytesUsed = 0;
-    this._viewportIdSets.clear();
+    this._userIdSets.clear();
   }
 
   /** Compute the amount of GPU memory allocated to the tile's content and, if greater than zero, add the tile to the end of the "not selected" partition.
@@ -247,7 +247,7 @@ export class LRUTileList {
       return;
 
     assert(tile.bytesUsed === 0);
-    assert(tile.viewportIds === undefined);
+    assert(tile.tileUserIds === undefined);
 
     this._stats.clear();
     tile.collectStatistics(this._stats, false);
@@ -277,14 +277,14 @@ export class LRUTileList {
     assert(this._totalBytesUsed >= 0);
 
     this.unlink(tile);
-    tile.viewportIds = undefined;
+    tile.tileUserIds = undefined;
     tile.bytesUsed = 0;
 
     this.assertList();
   }
 
-  /** Mark the tiles as selected for display in the specified Viewport. They are moved to the end of the "selected" partition. */
-  public markSelectedForViewport(viewportId: number, tiles: Iterable<Tile>): void {
+  /** Mark the tiles as in use by the specified TileUser. They are moved to the end of the "selected" partition. */
+  public markUsed(userId: number, tiles: Iterable<Tile>): void {
     for (const tile of tiles) {
       if (tile.bytesUsed <= 0)
         continue;
@@ -292,23 +292,23 @@ export class LRUTileList {
       assert(isLinked(tile));
 
       if (isLinked(tile)) {
-        tile.viewportIds = this._viewportIdSets.plus(viewportId, tile.viewportIds);
+        tile.tileUserIds = this._userIdSets.plus(userId, tile.tileUserIds);
         this.moveToEnd(tile);
       }
     }
   }
 
-  /** Mark the tiles as no longer selected for display in the specified Viewport.
-   * If this results in a tile being no longer selected for any viewport, it is moved to the end of the "not selected" partition.
+  /** Mark the tiles as no longer in user by the specified TileUser.
+   * If this results in a tile being no longer selected for any user, it is moved to the end of the "not selected" partition.
    */
-  public clearSelectedForViewport(viewportId: number): void {
-    this._viewportIdSets.drop(viewportId);
+  public clearUsed(userId: number): void {
+    this._userIdSets.drop(userId);
     let prev: LRUTileListNode | undefined = this._sentinel;
     while (prev && prev.next) {
       const tile = prev.next as Tile;
       assert(tile !== this._sentinel);
-      tile.viewportIds = this._viewportIdSets.minus(viewportId, tile.viewportIds);
-      if (undefined === tile.viewportIds)
+      tile.tileUserIds = this._userIdSets.minus(userId, tile.tileUserIds);
+      if (undefined === tile.tileUserIds)
         this.moveBeforeSentinel(tile);
       else
         prev = tile;

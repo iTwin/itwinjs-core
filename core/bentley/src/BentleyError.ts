@@ -124,7 +124,7 @@ export enum RpcInterfaceStatus {
   IncompatibleVersion = RPC_INTERFACE_ERROR_BASE,
 }
 
-/** Error status from various ChangeSet operations
+/** Error status from various Changeset operations
  * @beta Should these be internal?
  */
 export enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSetStatus in DgnPlatform
@@ -331,6 +331,15 @@ export enum GeoServiceStatus {
   VerticalDatumConvertError = GEOSERVICESTATUS_BASE + 4,
   CSMapError = GEOSERVICESTATUS_BASE + 5,
   Pending = GEOSERVICESTATUS_BASE + 6,
+}
+
+/** Error status from various reality data operations
+ * @alpha
+ */
+export enum RealityDataStatus {
+  Success = 0,
+  REALITYDATA_ERROR_BASE = 0x25000,
+  InvalidData = REALITYDATA_ERROR_BASE + 1,
 }
 
 /** When you want to associate an explanatory message with an error status value.
@@ -663,6 +672,7 @@ export class BentleyError extends Error {
       case GeoServiceStatus.VerticalDatumConvertError: return "Vertical datum convert error";
       case GeoServiceStatus.CSMapError: return "CSMap error";
       case GeoServiceStatus.Pending: return "Pending";
+      case RealityDataStatus.InvalidData: return "Invalid or unknown data";
       case IModelStatus.Success:
       case DbResult.BE_SQLITE_OK:
       case DbResult.BE_SQLITE_ROW:

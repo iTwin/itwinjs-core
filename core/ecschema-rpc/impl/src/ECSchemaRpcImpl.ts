@@ -1,5 +1,5 @@
 import * as backend from "@itwin/core-backend";
-import { IModelRpcProps, QueryRowFormat, RpcManager } from "@itwin/core-common";
+import { IModelRpcProps, QueryRowFormat, RpcInterface, RpcManager } from "@itwin/core-common";
 import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
@@ -21,7 +21,7 @@ interface SchemaNameRow {
  * Implementation of the SchemaRpcInterface.
  * @internal
  */
-export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
+export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterface {
   /**
    * Registers the RPC interface with its corresponding implementation class.
    */
@@ -47,7 +47,7 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
    * @returns                 An array of SchemaKeyProps.
    */
-  public override async getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]> {
+  public async getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]> {
 
     const schemaKeyProps: SchemaKeyProps[] = [];
     const iModelDb = await this.getIModelDatabase(tokenProps);
@@ -73,7 +73,7 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
    * @param schemaName        The name of the schema that shall be returned.
    * @returns                 The SchemaProps.
    */
-  public override async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps> {
+  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps> {
     if (schemaName === undefined || schemaName.length < 1) {
       throw new Error(`Schema name must not be undefined or empty.`);
     }

@@ -7,7 +7,7 @@
  */
 
 import { Cartographic } from "@itwin/core-common";
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { request, RequestOptions, Response } from "./request/Request";
 import { IModelApp } from "./IModelApp";
 import { GlobalLocation } from "./ViewGlobalLocation";
 

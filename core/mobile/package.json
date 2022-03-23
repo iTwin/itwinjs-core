@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "3.0.0-dev.182",
+  "version": "3.2.0-dev.21",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
@@ -32,17 +32,21 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.182",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.182",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.182",
-    "@itwin/core-common": "workspace:^3.0.0-dev.182",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.182",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.182",
+    "@itwin/core-backend": "workspace:^3.2.0-dev.21",
+    "@itwin/core-bentley": "workspace:^3.2.0-dev.21",
+    "@itwin/core-common": "workspace:^3.2.0-dev.21",
+    "@itwin/core-frontend": "workspace:^3.2.0-dev.21",
+    "@itwin/presentation-common": "workspace:^3.2.0-dev.21"
+  },
+  "dependencies": {
+    "deep-assign": "^2.0.0",
+    "lodash": "^4.17.10",
     "js-base64": "^3.6.1",
+    "qs": "^6.5.1",
+    "superagent": "^7.0.1",
     "ws": "^7.5.3"
   },
   "devDependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
@@ -51,10 +55,14 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "^4.1.4",
+    "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
+    "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
-    "@types/ws": "^6.0.4",
+    "@types/qs": "^6.5.0",
+    "@types/superagent": "^4.1.14",
+    "@types/ws": "^7.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "dotenv": "^10.0.0",
@@ -63,8 +71,7 @@
     "js-base64": "^3.6.1",
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0",
-    "ws": "^7.5.3"
+    "typescript": "~4.4.0"
   },
   "eslintConfig": {
     "plugins": [

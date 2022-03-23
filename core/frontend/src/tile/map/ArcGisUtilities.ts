@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
+import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import {
   ArcGisBaseToken, ArcGisOAuth2Token, ArcGisTokenClientType, ArcGisTokenManager,EsriOAuth2, EsriOAuth2Endpoint, EsriOAuth2EndpointType,
   MapCartoRectangle, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
@@ -45,10 +45,13 @@ export class ArcGisUtilities {
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
   public static async getEndpoint(url: string): Promise<any | undefined> {
-    const capabilities = await getJson(`${url}?f=pjson`);
-
-    return capabilities;
+    const capabilities = await request(`${url}?f=pjson`, {
+      method: "GET",
+      responseType: "json",
+    });
+    return capabilities.body;
   }
+
   public static async getNationalMapSources(): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
     const services = await getJson("https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList");
@@ -143,6 +146,19 @@ export class ArcGisUtilities {
         return { status: MapLayerSourceStatus.RequireAuth, authInfo: { authMethod, tokenEndpoint } };
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
         return { status: MapLayerSourceStatus.InvalidCredentials, authInfo: { authMethod: MapLayerAuthType.EsriToken } };
+    }
+
+    // Check this service support map queries
+    let hasMapCapability = false;
+    try {
+      if (json.capabilities
+        && typeof json.capabilities === "string"
+        && json.capabilities.toLowerCase().includes("map")) {
+        hasMapCapability = true;
+      }
+    } catch { }
+    if (!hasMapCapability) {
+      return { status: MapLayerSourceStatus.InvalidFormat};
     }
 
     let subLayers;

@@ -7,7 +7,7 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel, MarkRequired } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel, MarkRequired, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
@@ -21,7 +21,7 @@ import {
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
-import { IModelImporter } from "./IModelImporter";
+import { IModelImporter, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
@@ -100,6 +100,12 @@ export interface IModelTransformOptions {
    * @beta
    */
   danglingPredecessorsBehavior?: "reject" | "ignore";
+
+  /** If defined, options to be supplied to [[IModelImporter.optimizeGeometry]] by [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]]
+   * as a post-processing step to optimize the geometry in the iModel.
+   * @beta
+   */
+  optimizeGeometry?: OptimizeGeometryOptions;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -356,7 +362,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Format an Element for the Logger. */
-  private formatElementForLogger(elementProps: ElementProps): string {
+  private formatElementForLogger(elementProps: ElementProps | Element): string {
     const namePiece: string = elementProps.code.value ? `${elementProps.code.value} ` : elementProps.userLabel ? `${elementProps.userLabel} ` : "";
     return `${elementProps.classFullName} ${namePiece}[${elementProps.id!}]`;
   }
@@ -642,6 +648,9 @@ export class IModelTransformer extends IModelExportHandler {
       } else {
         throw new IModelError(IModelStatus.BadRequest, "Not all deferred elements could be processed");
       }
+    } else {
+      // process deferred relationships since if their sources+targets were deferred, they may not have been processed
+      await this.processRelationships(ElementRefersToElements.classFullName);
     }
   }
 
@@ -687,13 +696,15 @@ export class IModelTransformer extends IModelExportHandler {
         if (undefined !== json.targetRelInstanceId) {
           const targetRelationship = this.targetDb.relationships.tryGetInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
           if (targetRelationship) {
-            this.importer.deleteRelationship(targetRelationship);
+            this.importer.deleteRelationship(targetRelationship.toJSON());
           }
           this.targetDb.elements.deleteAspect(statement.getValue(0).getId());
         }
       }
     });
   }
+
+  private _yieldManager = new YieldManager();
 
   /** Detect Relationship deletes using ExternalSourceAspects in the target iModel and a *brute force* comparison against relationships in the source iModel.
    * @see processChanges
@@ -706,7 +717,7 @@ export class IModelTransformer extends IModelExportHandler {
     }
     const aspectDeleteIds: Id64String[] = [];
     const sql = `SELECT ECInstanceId,Identifier,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
-    this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    await this.targetDb.withPreparedStatement(sql, async (statement: ECSqlStatement) => {
       statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -715,10 +726,11 @@ export class IModelTransformer extends IModelExportHandler {
           const json: any = JSON.parse(statement.getValue(2).getString());
           if (undefined !== json.targetRelInstanceId) {
             const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
-            this.importer.deleteRelationship(targetRelationship);
+            this.importer.deleteRelationship(targetRelationship.toJSON());
           }
           aspectDeleteIds.push(statement.getValue(0).getId());
         }
+        await this._yieldManager.allowYield();
       }
     });
     this.targetDb.elements.deleteAspect(aspectDeleteIds);
@@ -913,6 +925,10 @@ export class IModelTransformer extends IModelExportHandler {
       await this.detectElementDeletes();
       await this.detectRelationshipDeletes();
     }
+
+    if (this._options.optimizeGeometry)
+      this.importer.optimizeGeometry(this._options.optimizeGeometry);
+
     this.importer.computeProjectExtents();
   }
 
@@ -930,6 +946,10 @@ export class IModelTransformer extends IModelExportHandler {
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements();
+
+    if (this._options.optimizeGeometry)
+      this.importer.optimizeGeometry(this._options.optimizeGeometry);
+
     this.importer.computeProjectExtents();
   }
 }

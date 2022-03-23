@@ -10,7 +10,7 @@ import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
-import { request, RequestOptions } from "@bentley/itwin-client";
+import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -76,14 +76,14 @@ function notifyTerrainError(detailedDescription?: string): void {
     return;
 
   notifiedTerrainError = true;
-  IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`BackgroundMap.CannotObtainTerrain`), detailedDescription);
+  IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.CannotObtainTerrain`), detailedDescription);
 }
 
 /** @internal */
 export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
   const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
   if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
-    notifyTerrainError(IModelApp.localization.getLocalizedString(`BackgroundMap.MissingCesiumToken`));
+    notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
     return undefined;
   }
 

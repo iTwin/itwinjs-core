@@ -82,7 +82,7 @@ export interface RelatedPropertiesSpecification {
 
   /**
    * Meaning of the relationship which tells how to categorize the related properties. Defaults to [[RelationshipMeaning.RelatedInstance]].
-   * @see [More details]($docs/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
+   * @see [More details]($docs/presentation/Content/RelatedPropertiesSpecification.md#attribute-relationshipmeaning)
    */
   relationshipMeaning?: RelationshipMeaning;
 

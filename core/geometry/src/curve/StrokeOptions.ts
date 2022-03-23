@@ -63,8 +63,30 @@ export class StrokeOptions {
   public needColors?: boolean;
   /** default number of strokes for a circle. */
   public defaultCircleStrokes = 16;
+  /** ask if angleTol is specified */
+  public get hasAngleTol(): boolean { return this.angleTol !== undefined && Math.abs(this.angleTol.radians) > 0.0; }
+  /** ask if chordTol is specified */
+  public get hasChordTol(): boolean { return this.chordTol !== undefined && this.chordTol > 0.0; }
   /** ask if maxEdgeLength is specified */
   public get hasMaxEdgeLength(): boolean { return this.maxEdgeLength !== undefined && this.maxEdgeLength > 0.0; }
+
+  /** Return a deep clone  */
+  public clone(): StrokeOptions {
+    const options = new StrokeOptions();
+    options.chordTol = this.chordTol;
+    options.angleTol = this.angleTol?.clone();
+    options.maxEdgeLength = this.maxEdgeLength;
+    options.needConvexFacets = this.needConvexFacets;
+    options.minStrokesPerPrimitive = this.minStrokesPerPrimitive;
+    options.shouldTriangulate = this.shouldTriangulate;
+    options._needNormals = this._needNormals;
+    options._needTwoSided = this._needTwoSided;
+    options._needParams = this._needParams;
+    options.needColors = this.needColors;
+    options.defaultCircleStrokes = this.defaultCircleStrokes;
+    return options;
+  }
+
   /** return stroke count which is the larger of the minCount or count needed for edge length condition. */
   public applyMaxEdgeLength(minCount: number, totalLength: number): number {
     totalLength = Math.abs(totalLength);

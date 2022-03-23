@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, BeEvent } from "@bentley/bentleyjs-core";
+import { assert, BeEvent } from "@itwin/core-bentley";
 import { ArcGisOAuth2Token, ArcGisTokenManager, ArcGisUtilities, MapLayerTokenEndpoint} from "../internal";
 
 /** @internal */

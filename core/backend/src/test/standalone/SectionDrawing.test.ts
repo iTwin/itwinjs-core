@@ -30,7 +30,7 @@ describe("SectionDrawing", () => {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawingId },
     });
-    const modelId = imodel.models.insertModel(model);
+    const modelId = imodel.models.insertModel(model.toJSON());
     expect(Id64.isValidId64(modelId)).to.be.true;
 
     let drawing = imodel.elements.getElement<SectionDrawing>(drawingId);

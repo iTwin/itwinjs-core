@@ -7,7 +7,8 @@
  */
 
 import { join } from "path";
-import { ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { UserCancelledError } from "./itwin-client/FileHandler";
+import { ProgressCallback, ProgressInfo } from "./itwin-client/Request";
 import {
   AcquireNewBriefcaseIdArg, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, BriefcaseLocalValue, BriefcaseManager, ChangesetArg, ChangesetRangeArg, CheckpointArg,
   CheckpointProps, CreateNewIModelProps, IModelDb, IModelHost, IModelIdArg, IModelJsFs, IModelNameArg, ITwinIdArg, LockMap, LockProps, LockState, SnapshotDb, TokenArg,
@@ -311,7 +312,7 @@ export class IModelHubBackend implements BackendHubAccess {
       throw new IModelError(BriefcaseStatus.VersionNotFound, "no checkpoints not found");
 
     const cancelRequest: any = {};
-    const progressCallback: ProgressCallback = (progress) => {
+    const progressCallback: ProgressCallback = (progress: ProgressInfo) => {
       if (arg.onProgress && arg.onProgress(progress.loaded, progress.total!) !== 0)
         cancelRequest.cancel?.();
     };

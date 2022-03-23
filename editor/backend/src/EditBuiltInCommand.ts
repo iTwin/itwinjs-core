@@ -7,10 +7,10 @@
  */
 
 import { BentleyStatus, CompressedId64Set, DbResult, Id64, Id64Arg, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Matrix3d, Matrix3dProps, Point3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import { GeometricElement, IModelDb } from "@itwin/core-backend";
-import { BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, FilePropertyProps, GeometricElementProps, GeometryPartProps, GeometryStreamBuilder, IModelError, Placement3dProps } from "@itwin/core-common";
-import { BasicManipulationCommandIpc, BlendEdgesProps, BooleanOperationProps, BRepEntityType, ChamferEdgesProps, ConnectedSubEntityProps, CutProps, DeleteSubEntityProps, EdgeParameterRangeProps, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossProps, EvaluatedEdgeProps, EvaluatedFaceProps, EvaluatedVertexProps, FaceParameterRangeProps, FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, HollowFacesProps, ImprintProps, LocateSubEntityProps, LoftProps, OffsetEdgesProps, OffsetFacesProps, PointInsideResultProps, SewSheetProps, SolidModelingCommandIpc, SpinFacesProps, SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, SweepPathProps, ThickenSheetProps, TransformSubEntityProps } from "@itwin/editor-common";
+import { BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, FilePropertyProps, GeometricElementProps, GeometryPartProps, IModelError, Placement3dProps } from "@itwin/core-common";
+import { BasicManipulationCommandIpc, BlendEdgesProps, BooleanOperationProps, BRepEntityType, ChamferEdgesProps, ConnectedSubEntityProps, CutProps, DeleteSubEntityProps, EdgeParameterRangeProps, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossProps, EvaluatedEdgeProps, EvaluatedFaceProps, EvaluatedVertexProps, FaceParameterRangeProps, FlatBufferGeometryFilter, HollowFacesProps, ImprintProps, LocateSubEntityProps, LoftProps, OffsetEdgesProps, OffsetFacesProps, PointInsideResultProps, SewSheetProps, SolidModelingCommandIpc, SpinFacesProps, SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, SweepPathProps, ThickenSheetProps, TransformSubEntityProps } from "@itwin/editor-common";
 import { EditCommand } from "./EditCommand";
 
 /** @alpha */
@@ -42,7 +42,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
         continue; // Ignore assembly parents w/o geometry, etc...
 
       element.placement.multiplyTransform(transform);
-      this.iModel.elements.updateElement(element);
+      this.iModel.elements.updateElement(element.toJSON());
     }
 
     return IModelStatus.Success;
@@ -64,71 +64,36 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
       const transform = Transform.createFixedPointAndMatrix(fixedPoint, matrix);
 
       element.placement.multiplyTransform(transform);
-      this.iModel.elements.updateElement(element);
+      this.iModel.elements.updateElement(element.toJSON());
     }
 
     return IModelStatus.Success;
   }
 
-  public async insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String> {
+  public async insertGeometricElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<Id64String> {
     await this.iModel.locks.acquireLocks({ shared: props.model });
 
-    const newElem = this.iModel.elements.createElement(props);
-    const newId = this.iModel.elements.insertElement(newElem);
-    if (undefined === data)
-      return newId;
+    if (undefined !== data)
+      props.elementGeometryBuilderParams = { entryArray: data.entryArray, viewIndependent: data.viewIndependent };
 
-    const updateProps: ElementGeometryUpdate = {
-      elementId: newId,
-      entryArray: data.entryArray,
-      isWorld: data.isWorld,
-      viewIndependent: data.viewIndependent,
-    };
-
-    const status = this.iModel.elementGeometryUpdate(updateProps);
-    if (DbResult.BE_SQLITE_OK !== status) {
-      this.iModel.elements.deleteElement(newId); // clean up element...
-      throw new IModelError(status, "Error updating element geometry");
-    }
-
-    return newId;
+    return this.iModel.elements.insertElement(props);
   }
 
-  public async insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String> {
+  public async insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String> {
     await this.iModel.locks.acquireLocks({ shared: props.model });
 
-    if (undefined === props.geom && undefined !== data) {
-      const builder = new GeometryStreamBuilder();
-      builder.appendGeometry(PointString3d.create(Point3d.createZero()));
-      props.geom = builder.geometryStream; // can't insert a DgnGeometryPart without geometry...
-    }
+    if (undefined !== data)
+      props.elementGeometryBuilderParams = { entryArray: data.entryArray, is2dPart: data.is2dPart };
 
-    const newElem = this.iModel.elements.createElement(props);
-    const newId = this.iModel.elements.insertElement(newElem);
-    if (undefined === data)
-      return newId;
-
-    const updateProps: ElementGeometryUpdate = {
-      elementId: newId,
-      entryArray: data.entryArray,
-      is2dPart: data.is2dPart,
-    };
-
-    const status = this.iModel.elementGeometryUpdate(updateProps);
-    if (DbResult.BE_SQLITE_OK !== status) {
-      this.iModel.elements.deleteElement(newId); // clean up element...
-      throw new IModelError(status, "Error updating part geometry");
-    }
-
-    return newId;
+    return this.iModel.elements.insertElement(props);
   }
 
-  public async updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void> {
+  public async updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: ElementGeometryBuilderParams): Promise<void> {
     let props: GeometricElementProps;
     if (typeof propsOrId === "string") {
       if (undefined === data)
         throw new IModelError(DbResult.BE_SQLITE_ERROR, "Flatbuffer data required for update by id");
-      props = this.iModel.elements.getElement<GeometricElement>(propsOrId);
+      props = this.iModel.elements.getElementProps<GeometricElementProps>(propsOrId);
     } else {
       props = propsOrId;
     }
@@ -138,21 +103,10 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 
     await this.iModel.locks.acquireLocks({ exclusive: props.id });
 
+    if (undefined !== data)
+      props.elementGeometryBuilderParams = { entryArray: data.entryArray, viewIndependent: data.viewIndependent };
+
     this.iModel.elements.updateElement(props);
-    if (undefined === data)
-      return;
-
-    const updateProps: ElementGeometryUpdate = {
-      elementId: props.id,
-      entryArray: data.entryArray,
-      isWorld: data.isWorld,
-      viewIndependent: data.viewIndependent,
-    };
-
-    const status = this.iModel.elementGeometryUpdate(updateProps);
-    if (DbResult.BE_SQLITE_OK !== status) {
-      throw new IModelError(status, "Error updating element geometry");
-    }
   }
 
   public async requestElementGeometry(elementId: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined> {
@@ -222,7 +176,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
       elementId,
     };
 
-    if (DbResult.BE_SQLITE_OK !== this.iModel.elementGeometryRequest(requestProps))
+    if (IModelStatus.Success !== this.iModel.elementGeometryRequest(requestProps))
       return undefined;
 
     return accepted;
