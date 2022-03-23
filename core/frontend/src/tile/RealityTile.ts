@@ -370,23 +370,42 @@ export class RealityTile extends Tile {
       for (const child of children) {
         hasProtectedChildren = child.getTilesToPurge(olderThan, tilesToPurge) || hasProtectedChildren;
       }
-    }
 
-    if (children && hasProtectedChildren) {
+      if (hasProtectedChildren) {
       // Siblings of protected tiles are protected too. We need to remove them from it
-      for (const child of children) {
-        tilesToPurge.delete(child);
-      }
+        for (const child of children) {
+          // Because the current tile can be invisible, relying on its children to display geometry,
+          // we have to recurse in order to remove the first children that has geometry, otherwise,
+          // some holes might appear
+          child.removeFirstDisplayableChildrenFromSet(tilesToPurge);
+        }
 
-      return true; // Parents of protected tiles are protected
+        return true; // Parents of protected tiles are protected
+      }
     }
 
     const isInUse = this.usageMarker.getIsTileInUse();
+
     if (!isInUse && this.usageMarker.isTimestampExpired(olderThan)) {
       tilesToPurge.add(this);
     }
 
     return isInUse;
+  }
+
+  private removeFirstDisplayableChildrenFromSet(set: Set<RealityTile>): void {
+    if (set.size === 0)
+      return;
+
+    if (this.isDisplayable) {
+      set.delete(this);
+      return;
+    }
+
+    if (this.realityChildren !== undefined) {
+      for (const child of this.realityChildren)
+        child.removeFirstDisplayableChildrenFromSet(set);
+    }
   }
 
   public computeVisibilityFactor(args: TileDrawArgs): number {
