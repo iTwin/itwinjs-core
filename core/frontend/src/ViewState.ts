@@ -2265,10 +2265,8 @@ export abstract class ViewState2d extends ViewState {
   /** @internal */
   protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     super.preload(hydrateRequest);
-    const notLoaded = this.iModel.models.filterLoaded(this.baseModelId);
-    if (undefined === notLoaded)
-      return; // all requested models are already loaded
-    hydrateRequest.baseModelId = this.baseModelId;
+    if (this.iModel.models.getLoaded(this.baseModelId) === undefined)
+      hydrateRequest.baseModelId = this.baseModelId;
   }
 
   /** @internal */
