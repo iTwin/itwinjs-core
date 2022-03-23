@@ -25,7 +25,8 @@ export class CustomViewState3dCreator {
    */
   public async getCustomViewState3dData(options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> {
     let decompressedModelIds;
-    if (options?.modelIds !== undefined) decompressedModelIds = CompressedId64Set.decompressArray(options.modelIds);
+    if (options?.modelIds !== undefined)
+      decompressedModelIds = CompressedId64Set.decompressArray(options.modelIds);
     const models: Id64Array = decompressedModelIds ?? await this._getAllModels();
     const categories: Id64Array = await this._getAllCategories();
     const modelExtents: Range3d = await this._getModelExtents(models);
@@ -51,7 +52,8 @@ export class CustomViewState3dCreator {
    */
   private async _getModelExtents(modelIdsList: Id64String[]): Promise<Range3d> {
     const modelExtents = new Range3d();
-    if (modelIdsList.length === 0) return modelExtents;
+    if (modelIdsList.length === 0)
+      return modelExtents;
     const modelIds = new Set(modelIdsList);
     for (const id of modelIds) {
       try {

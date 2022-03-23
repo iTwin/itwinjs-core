@@ -168,7 +168,8 @@ class ViewAttachmentsInfo {
   }
 
   public preload(options: HydrateViewStateRequestProps) {
-    if (this.isLoaded) return;
+    if (this.isLoaded)
+      return;
     options.sheetViewAttachmentIds = CompressedId64Set.sortAndCompress(this._ids);
     options.viewStateLoadProps = {
       displayStyle: {
@@ -179,8 +180,10 @@ class ViewAttachmentsInfo {
   }
 
   public async postload(options: HydrateViewStateResponseProps, iModel: IModelConnection) {
-    if (options.sheetViewViews === undefined) return;
-    if (options.sheetViewAttachmentProps === undefined) return;
+    if (options.sheetViewViews === undefined)
+      return;
+    if (options.sheetViewAttachmentProps === undefined)
+      return;
 
     const viewStateProps = options.sheetViewViews; // This is viewstateProps, need to turn this into ViewState
     const promises = [];
