@@ -31,6 +31,7 @@ export class ContentBuilder {
 // @public
 export interface ContentBuilderProps {
     dataProvider?: IContentBuilderDataProvider;
+    decimalPrecision?: number;
     imodel: IModelConnection;
 }
 

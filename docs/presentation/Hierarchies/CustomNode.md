@@ -33,7 +33,7 @@ Specifies node type, which is assigned to node's key. The type can be used:
 The given value is often used in [a condition of another child node rule](./ChildNodeRule.md#attribute-condition) to assign children to this node.
 
 ```ts
-[[include:Hierarchies.CustomNodeSpecification.Type.Ruleset]]
+[[include:Presentation.Hierarchies.CustomNodeSpecification.Type.Ruleset]]
 ```
 
 ![Example of using "type" attribute](./media/hierarchy-with-specification-type-attribute.png)
@@ -43,7 +43,7 @@ The given value is often used in [a condition of another child node rule](./Chil
 Specifies node label. This is a string value that may be [localized](../Advanced/Localization.md).
 
 ```ts
-[[include:Hierarchies.CustomNodeSpecification.Label.Ruleset]]
+[[include:Presentation.Hierarchies.CustomNodeSpecification.Label.Ruleset]]
 ```
 
 ![Example of using "label" attribute](./media/hierarchy-with-specification-label-attribute.png)
@@ -55,7 +55,7 @@ Specifies node label. This is a string value that may be [localized](../Advanced
 Specifies the value of [Node.description]($presentation-common) property, which is a string that [may be localized](../Advanced/Localization.md). UI component displaying the node may choose whether and how to surface this information to users.
 
 ```ts
-[[include:Hierarchies.CustomNodeSpecification.Description.Ruleset]]
+[[include:Presentation.Hierarchies.CustomNodeSpecification.Description.Ruleset]]
 ```
 
 ![Example of using "description" attribute](./media/hierarchy-with-specification-description-attribute.png)
@@ -68,11 +68,11 @@ Specifies node's image ID. If set, the ID is assigned to [Node.imageId]($present
 to decide what to do with it.
 
 ```ts
-[[include:Hierarchies.CustomNodeSpecification.ImageId.Ruleset]]
+[[include:Presentation.Hierarchies.CustomNodeSpecification.ImageId.Ruleset]]
 ```
 
 ```ts
-[[include:Hierarchies.CustomNodeSpecification.ImageId.Result]]
+[[include:Presentation.Hierarchies.CustomNodeSpecification.ImageId.Result]]
 ```
 
 ### Attribute: `hideNodesInHierarchy`
@@ -82,7 +82,7 @@ to decide what to do with it.
 When `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
 
 ```ts
-[[include:Hierarchies.CustomNodeSpecification.HideNodesInHierarchy.Ruleset]]
+[[include:Presentation.Hierarchies.CustomNodeSpecification.HideNodesInHierarchy.Ruleset]]
 ```
 
 | `hideNodesInHierarchy: false`                                                                                                                                   | `hideNodesInHierarchy: true`                                                                                                                                  |
@@ -96,7 +96,7 @@ When `true`, nodes produced by this specification are omitted and their children
 Specifies whether the node created through this specification should be hidden if it has no child nodes.
 
 ```ts
-[[include:Hierarchies.Specification.HideIfNoChildren.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.HideIfNoChildren.Ruleset]]
 ```
 
 | `hideIfNoChildren: false`                                                                                                                     | `hideIfNoChildren: true`                                                                                                                    |
@@ -110,7 +110,7 @@ Specifies whether the node created through this specification should be hidden i
 When specified [ECExpression](./ECExpressions.md#specification) evaluates to `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
 
 ```ts
-[[include:Hierarchies.Specification.HideExpression.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.HideExpression.Ruleset]]
 ```
 
 | `hideExpression` evaluates to `false`                                                                                                          | `hideExpression` evaluates to `true`                                                                                                         |
@@ -124,7 +124,7 @@ When specified [ECExpression](./ECExpressions.md#specification) evaluates to `tr
 Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
 
 ```ts
-[[include:Hierarchies.Specification.Priority.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.Priority.Ruleset]]
 ```
 
 ![Example of using "priority" attribute](./media/hierarchy-with-specification-priority-attribute.png)
@@ -149,7 +149,7 @@ empty list. It's up to the UI component to handle the case of parent node saying
 list even if there are child node rules that define children for it.
 
 ```ts
-[[include:Hierarchies.Specification.HasChildren.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.HasChildren.Ruleset]]
 ```
 
 | `hasChildren: "Always"`                                                                                                             | `hasChildren: "Never"`                                                                                                            |
@@ -169,7 +169,7 @@ at the root level with condition to match the instance ECClass makes the rule cr
 different children.
 
 ```ts
-[[include:Hierarchies.Specification.NestedRules.Ruleset]]
+[[include:Presentation.Hierarchies.Specification.NestedRules.Ruleset]]
 ```
 
 ![Example of using "nested rules" attribute](./media/hierarchy-with-specification-nestedrules-attribute.png)

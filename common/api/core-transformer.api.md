@@ -114,14 +114,15 @@ export class IModelImporter implements Required<IModelImportOptions> {
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
     protected onUpdateModel(modelProps: ModelProps): void;
     protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
+    optimizeGeometry(options: OptimizeGeometryOptions): void;
     readonly options: Required<IModelImportOptions>;
     // @deprecated
-    get preserveElementIdsForFiltering(): Required<IModelImportOptions>["preserveElementIdsForFiltering"];
-    set preserveElementIdsForFiltering(val: Required<IModelImportOptions>["preserveElementIdsForFiltering"]);
+    get preserveElementIdsForFiltering(): boolean;
+    set preserveElementIdsForFiltering(val: boolean);
     progressInterval: number;
     // @deprecated
-    get simplifyElementGeometry(): Required<IModelImportOptions>["simplifyElementGeometry"];
-    set simplifyElementGeometry(val: Required<IModelImportOptions>["simplifyElementGeometry"]);
+    get simplifyElementGeometry(): boolean;
+    set simplifyElementGeometry(val: boolean);
     readonly targetDb: IModelDb;
     }
 
@@ -201,9 +202,15 @@ export interface IModelTransformOptions {
     isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
+    optimizeGeometry?: OptimizeGeometryOptions;
     preserveElementIdsForFiltering?: boolean;
     targetScopeElementId?: Id64String;
     wasSourceIModelCopiedToTarget?: boolean;
+}
+
+// @beta
+export interface OptimizeGeometryOptions {
+    inlineUniqueGeometryParts?: boolean;
 }
 
 // @beta

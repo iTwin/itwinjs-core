@@ -36,7 +36,7 @@ flag can then be accessed on the frontend and used to determine how the row shou
 A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
 
 ```ts
-[[include:ExtendedDataRule.RequiredSchemas.Ruleset]]
+[[include:Presentation.ExtendedDataRule.RequiredSchemas.Ruleset]]
 ```
 
 ### Attribute: `condition`
@@ -46,11 +46,11 @@ A list of ECSchema requirements that need to be met for the rule to be used. See
 Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
 
 ```ts
-[[include:ExtendedDataRule.Condition.Ruleset]]
+[[include:Presentation.ExtendedDataRule.Condition.Ruleset]]
 ```
 
 ```ts
-[[include:ExtendedDataRule.Condition.Result]]
+[[include:Presentation.ExtendedDataRule.Condition.Result]]
 ```
 
 ### Attribute: `items`
@@ -58,9 +58,9 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 A map of ECExpressions whose evaluation results are used as extended data values.
 
 ```ts
-[[include:ExtendedDataRule.Items.Ruleset]]
+[[include:Presentation.ExtendedDataRule.Items.Ruleset]]
 ```
 
 ```ts
-[[include:ExtendedDataRule.Items.Result]]
+[[include:Presentation.ExtendedDataRule.Items.Result]]
 ```

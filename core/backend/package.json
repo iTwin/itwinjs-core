@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.2.0-dev.15",
+  "version": "3.2.0-dev.21",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -38,10 +38,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.2.0-dev.15",
-    "@itwin/core-common": "workspace:^3.2.0-dev.15",
-    "@itwin/core-geometry": "workspace:^3.2.0-dev.15",
-    "@itwin/ecschema-metadata": "workspace:^3.2.0-dev.15"
+    "@itwin/core-bentley": "workspace:^3.2.0-dev.21",
+    "@itwin/core-common": "workspace:^3.2.0-dev.21",
+    "@itwin/core-geometry": "workspace:^3.2.0-dev.21",
+    "@itwin/ecschema-metadata": "workspace:^3.2.0-dev.21"
   },
   "peerDependenciesMeta": {
     "@itwin/ecschema-metadata": {
@@ -83,7 +83,7 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
-    "@bentley/imodeljs-native": "3.1.6",
+    "@bentley/imodeljs-native": "3.2.1",
     "@itwin/core-telemetry": "workspace:*",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",

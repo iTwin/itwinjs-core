@@ -203,6 +203,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@itwin/itwinui-icons-react",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/itwinui-react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
@@ -288,7 +292,7 @@
     },
     {
       "name": "@testing-library/react",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@testing-library/react-hooks",
@@ -309,10 +313,6 @@
     {
       "name": "@typescript-eslint/typescript-estree",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "@ungap/url-search-params",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "@wojtekmaj/enzyme-adapter-react-17",
@@ -792,7 +792,7 @@
     },
     {
       "name": "react-resize-detector",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-select",

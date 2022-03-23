@@ -30,7 +30,7 @@ Returns content for selected (input) instances.
 Specifies ECSchema name which the input instances have to match for the specification to be used.
 
 ```ts
-[[include:SelectedNodeInstances.AcceptableSchemaName.Ruleset]]
+[[include:Presentation.SelectedNodeInstances.AcceptableSchemaName.Ruleset]]
 ```
 
   | Selected input                  | Result                                                                                                          |
@@ -45,7 +45,7 @@ Specifies ECSchema name which the input instances have to match for the specific
 Specifies a list of class names which the input instances have to match for the specification to be used.
 
 ```ts
-[[include:SelectedNodeInstances.AcceptableClassNames.Ruleset]]
+[[include:Presentation.SelectedNodeInstances.AcceptableClassNames.Ruleset]]
 ```
 
   | Selected input                  | Result                                                                                                          |
@@ -60,7 +60,7 @@ Specifies a list of class names which the input instances have to match for the 
 Specifies whether derived classes of `acceptableClassNames` should be included in the content.
 
 ```ts
-[[include:SelectedNodeInstances.AcceptablePolymorphically.Ruleset]]
+[[include:Presentation.SelectedNodeInstances.AcceptablePolymorphically.Ruleset]]
 ```
 
   | Selecting `BisCore.ViewDefinition` input with `acceptablePolymorphically` set to | Result                                                                                                                           |
@@ -75,7 +75,7 @@ Specifies whether derived classes of `acceptableClassNames` should be included i
 Specifies whether this specification should be ignored if another specification was handled before as determined by rule and specification priorities. This provides a mechanism for defining a fallback specification.
 
 ```ts
-[[include:SharedAttributes.OnlyIfNotHandled.Ruleset]]
+[[include:Presentation.SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
   | onlyIfNotHandled | Result                                                                                                     |
@@ -90,7 +90,7 @@ Specifies whether this specification should be ignored if another specification 
 Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
 
 ```ts
-[[include:SharedAttributes.Priority.Ruleset]]
+[[include:Presentation.SharedAttributes.Priority.Ruleset]]
 ```
 
 ![Example of using "priority" attribute](./media/sharedattributes-with-priority.png)
@@ -100,7 +100,7 @@ Controls the order in which specifications are handled — specification with hi
 Specifications of [related properties](./RelatedPropertiesSpecification.md) which are included in the generated content.
 
 ```ts
-[[include:SharedAttributes.RelatedProperties.Ruleset]]
+[[include:Presentation.SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
   | without related properties                                                                          | with related properties                                                                                    |
@@ -112,7 +112,7 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 Specifications of [calculated properties](./CalculatedPropertiesSpecification.md) whose values are generated using provided [ECExpressions](../Advanced/ECExpressions.md#ecinstance).
 
 ```ts
-[[include:SharedAttributes.CalculatedProperties.Ruleset]]
+[[include:Presentation.SharedAttributes.CalculatedProperties.Ruleset]]
 ```
 
 ![Example of using "calculated properties" attribute](./media/sharedattributes-with-calculatedproperties.png)
@@ -124,7 +124,7 @@ Defines a list of [custom categories](PropertyCategorySpecification.md).
 Custom categories are not present in the result unless they contain at least one property. To assign a property to the category, reference its `id` in [`PropertySpecification.categoryId`](./PropertySpecification.md) when defining [`propertyOverrides`](#attribute-propertyoverrides).
 
 ```ts
-[[include:SharedAttributes.PropertyCategories.Ruleset]]
+[[include:Presentation.SharedAttributes.PropertyCategories.Ruleset]]
 ```
 
 ![Example of using "property categories" attribute](./media/sharedattributes-with-propertycategories.png)
@@ -134,7 +134,7 @@ Custom categories are not present in the result unless they contain at least one
 Specifications of various [property overrides](./PropertySpecification.md) that allow customizing individual properties display.
 
 ```ts
-[[include:SharedAttributes.PropertyOverrides.Ruleset]]
+[[include:Presentation.SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
   |        | Result                                                                                                     |
@@ -157,7 +157,7 @@ Specifications of [related instances](../RelatedInstanceSpecification.md) that c
   [alias](../RelatedInstanceSpecification.md#attribute-alias).
 
 ```ts
-[[include:SharedAttributes.RelatedInstances.Ruleset]]
+[[include:Presentation.SharedAttributes.RelatedInstances.Ruleset]]
 ```
 
   |                                                                   | Result                                                                                                                                |
