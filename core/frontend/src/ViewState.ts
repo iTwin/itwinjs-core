@@ -2261,6 +2261,8 @@ export abstract class ViewState2d extends ViewState {
   public computeFitRange(): Range3d {
     return this.getViewedExtents();
   }
+
+  /** @internal */
   protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     super.preload(hydrateRequest);
     const notLoaded = this.iModel.models.filterLoaded(this.baseModelId);
@@ -2268,6 +2270,8 @@ export abstract class ViewState2d extends ViewState {
       return; // all requested models are already loaded
     hydrateRequest.baseModelId = this.baseModelId;
   }
+
+  /** @internal */
   protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     if (hydrateResponse.baseModelProps === undefined) return;
     await this.iModel.models.updateLoadedWithModelProps([hydrateResponse.baseModelProps]);
