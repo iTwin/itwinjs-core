@@ -78,5 +78,5 @@ used in it.
 ### Specifying required schema in content modifier
 
 ```ts
-[[include:ContentModifier.RequiredSchemas.Ruleset]]
+[[include:Presentation.ContentModifier.RequiredSchemas.Ruleset]]
 ```
