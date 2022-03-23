@@ -4,7 +4,7 @@ This page explains how to leverage custom category renderers to create fully cus
 
 ## Defining a custom category
 
-To make use of custom category rendering system, we will need to define a custom category and assign it a renderer with Presentation Rules. This is achievable using [PropertyCategorySpecification](../Content/PropertyCategorySpecification.md):
+To make use of custom category rendering system, we will need to define a custom category and assign it a renderer with Presentation Rules. This is achievable using [PropertyCategorySpecification](./PropertyCategorySpecification.md):
 
 ```json
 ...
@@ -20,7 +20,7 @@ To make use of custom category rendering system, we will need to define a custom
 ...
 ```
 
-Now when `my_custom_category` is expanded, `my_custom_renderer` will be invoked to render properties assigned to this category. To learn more on property mapping to categories, visit [Property Categorization](../Content/PropertyCategorization.md) page.
+Now when `my_custom_category` is expanded, `my_custom_renderer` will be invoked to render properties assigned to this category. To learn more on property mapping to categories, visit [Property Categorization](./PropertyCategorization.md) page.
 
 ## Registering a custom renderer
 

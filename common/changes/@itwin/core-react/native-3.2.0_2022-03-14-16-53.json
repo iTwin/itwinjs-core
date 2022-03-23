@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "skip eslint rule for deprecation in Listbox.tsx",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

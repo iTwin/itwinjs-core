@@ -112,7 +112,7 @@ Custom property [renderer specification](./RendererSpecification.md) that allows
 specification is used to set up [Field.renderer]($presentation-common) for this property and it's up to the UI component to make sure
 appropriate renderer is used to render the property.
 
-See [Custom property value renderers](../Customization/PropertyValueRenderers.md) page for a list of available renderers or how to register a custom one.
+See [Custom property value renderers](./PropertyValueRenderers.md) page for a list of available renderers or how to register a custom one.
 
 ```ts
 [[include:Content.Customization.PropertySpecification.Renderer.Ruleset]]
