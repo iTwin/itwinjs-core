@@ -14,7 +14,7 @@ Either takes in a list of modelIds, or displays all 3D models by default.
 
 import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Camera, CategorySelectorProps, Code, DefaultViewState3dProps, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface, ModelSelectorProps,
+  Camera, CategorySelectorProps, Code, CustomViewState3dProps, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface, ModelSelectorProps,
   QueryRowFormat, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
@@ -63,7 +63,7 @@ export class ViewCreator3d {
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
-    const serializedProps: DefaultViewState3dProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getDefaultViewState3dData(this._imodel.getRpcProps(),
+    const serializedProps: CustomViewState3dProps = await IModelReadRpcInterface.getClientForRouting(this._imodel.routingContext.token).getCustomViewState3dData(this._imodel.getRpcProps(),
       modelIds === undefined ? {} : {modelIds: CompressedId64Set.sortAndCompress(modelIds)});
     const props = await this._createViewStateProps(
       CompressedId64Set.decompressArray(serializedProps.modelIds),

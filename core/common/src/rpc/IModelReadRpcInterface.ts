@@ -25,7 +25,7 @@ import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { TextureData, TextureLoadProps } from "../TextureProps";
-import { DefaultViewState3dCreatorOptions, DefaultViewState3dProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ViewStateLoadProps, ViewStateProps } from "../ViewProps";
+import { CustomViewState3dCreatorOptions, CustomViewState3dProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ViewStateLoadProps, ViewStateProps } from "../ViewProps";
 import { RpcNotFoundResponse } from "./core/RpcControl";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
 
@@ -76,7 +76,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   /** @deprecated */
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
   public async getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String> { return this.forward(arguments); }
-  public async getDefaultViewState3dData(_iModelToken: IModelRpcProps, _options: DefaultViewState3dCreatorOptions): Promise<DefaultViewState3dProps> { return this.forward(arguments); }
+  public async getCustomViewState3dData(_iModelToken: IModelRpcProps, _options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> { return this.forward(arguments); }
   public async hydrateViewState(_iModelToken: IModelRpcProps, _options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> { return this.forward(arguments); }
   public async requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
   public async cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void> { return this.forward(arguments); }

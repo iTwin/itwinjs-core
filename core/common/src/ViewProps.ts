@@ -29,13 +29,13 @@ export interface SectionDrawingViewProps {
   drawingToSpatialTransform?: TransformProps;
 }
 
-export interface DefaultViewState3dProps {
+export interface CustomViewState3dProps {
   modelIds: CompressedId64Set;
   modelExtents: Range3dProps;
   categoryIds: CompressedId64Set;
 }
 
-export interface DefaultViewState3dCreatorOptions {
+export interface CustomViewState3dCreatorOptions {
   modelIds?: CompressedId64Set;
 }
 

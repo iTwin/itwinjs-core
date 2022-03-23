@@ -8,7 +8,7 @@
 
 import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
-  Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, DefaultViewState3dCreatorOptions, DefaultViewState3dProps, ElementLoadOptions, ElementLoadProps,
+  Code, CodeProps, CustomViewState3dCreatorOptions, CustomViewState3dProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps,
   ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel,
   IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps,
@@ -23,7 +23,7 @@ import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { DefaultViewState3dCreator } from "../DefaultViewState3dCreator";
+import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
 import { ViewStateHydrater } from "../ViewStateHydrater";
 
 /** The backend implementation of IModelReadRpcInterface.
@@ -37,10 +37,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.expectCurrentActivity, tokenProps, SyncMode.FixedVersion);
   }
 
-  public async getDefaultViewState3dData(tokenProps: IModelRpcProps, options: DefaultViewState3dCreatorOptions): Promise<DefaultViewState3dProps> {
+  public async getCustomViewState3dData(tokenProps: IModelRpcProps, options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const viewCreator = new DefaultViewState3dCreator(iModelDb);
-    return viewCreator.getDefaultViewState3dData(options);
+    const viewCreator = new CustomViewState3dCreator(iModelDb);
+    return viewCreator.getCustomViewState3dData(options);
   }
 
   public async hydrateViewState(tokenProps: IModelRpcProps, options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
