@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`RulesetTesting generates correct hierarchy 1`] = `
+exports[`my-test-hierarchy`] = `
 Array [
   Object {
     "autoExpand": true,

@@ -64,13 +64,13 @@ The renderer renders nothing when property value is `undefined`. When it's defin
 A new custom property value renderer can be added by registering a class implementing [IPropertyValueRenderer]($components-react) to the [PropertyValueRendererManager]($components-react):
 
 ```tsx
-[[include:Content.Customization.PropertySpecification.Renderer.Register]]
+[[include:Presentation.Content.Customization.PropertySpecification.Renderer.Register]]
 ```
 
 The renderer registered above is used whenever a property with that renderer name is being rendered. The below ruleset demonstrates assigning the renderer to a property:
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Renderer.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.Renderer.Ruleset]]
 ```
 
 ![Using a custom property value renderer](./media/property-value-renderers/custom.png)
