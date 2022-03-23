@@ -30,13 +30,15 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
 
-  /** @beta */
+  /** Returns connection information for external tile cache or an empty `CloudStorageContainerUrl` if no external tile cache is configured on the backend.
+   * @beta
+   */
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     return this.forward(arguments);
   }
 
   /** Returns true if an external tile cache is configured on the backend.
-   * @internal
+   * @internal @deprecated
    */
   public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return this.forward(arguments);
