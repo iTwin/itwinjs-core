@@ -486,8 +486,8 @@ export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: Wid
     case "leftEnd": {
       const outArray = [...frontstageDef.bottomLeft?.widgetDefs || []];
       frontstageDef.leftPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
-                // istanbul ignore else
-if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
       frontstageDef.leftPanel?.panelWidgetDefs.forEach((widgetDef)=> {
@@ -509,7 +509,7 @@ if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
     case "rightEnd": {
       const outArray = [...frontstageDef.bottomRight?.widgetDefs || []];
       frontstageDef.rightPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
-          // istanbul ignore else
+        // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
@@ -532,7 +532,7 @@ if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
     case "topEnd": {
       const outArray = [...frontstageDef.topMostPanel?.panelWidgetDefs || []]; // eslint-disable-line deprecation/deprecation
       frontstageDef.topPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
-          // istanbul ignore else
+        // istanbul ignore else
         if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
           outArray.push(widgetDef);
       });
@@ -613,7 +613,7 @@ function getPanelMaxSize(maxSizeSpec: StagePanelMaxSizeSpec, panel: PanelSide, n
   return maxSizeSpec.percentage / 100 * size;
 }
 
-const stateVersion = 11; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 12; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
