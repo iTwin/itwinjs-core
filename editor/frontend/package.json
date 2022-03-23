@@ -5,7 +5,6 @@
   "main": "lib/cjs/editor-frontend.js",
   "module": "lib/esm/editor-frontend.js",
   "typings": "lib/cjs/editor-frontend",
-  "imodeljsSharedLibrary": false,
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:locale && npm run -s build:cjs",

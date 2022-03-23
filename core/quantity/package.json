@@ -5,7 +5,6 @@
   "main": "lib/cjs/core-quantity.js",
   "module": "lib/esm/core-quantity.js",
   "typings": "lib/cjs/core-quantity",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
