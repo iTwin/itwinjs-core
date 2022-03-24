@@ -50,3 +50,9 @@ The interfaces and components [ShowHideMenuProps]($components-react), [ShowHideM
 ## Deprecations in @itwin/core-react package
 
 Using the sprite loader for SVG icons is deprecated. This includes [SvgSprite]($core-react) and the methods getSvgIconSpec() and getSvgIconSource() methods on [IconSpecUtilities]($appui-abstract). The sprite loader has been replaced with a web component [IconWebComponent]($core-react) used by [Icon]($core-react) to load SVGs onto icons.
+
+## Deprecations in @itwin/core-transformer package
+
+The beta transformer API functions [IModelTransformer.skipElement]($transformer) and [IModelTransformer.processDeferredElements]($transformer)
+have been deprecated, as the transformer no longer "defers" elements until all of its references have been transformed. These now have no effect,
+since no elements will be deferred, and elements will always be transformed, so skipping them to transform them later is not necessary.

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add requiredReferenceKeys and default null code references to the empty code when cloning elements",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
