@@ -11,7 +11,7 @@ import {
   WidgetControl, WidgetDef, WidgetProps,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
-import { SvgList } from "@itwin/itwinui-icons-react"
+import { SvgList } from "@itwin/itwinui-icons-react";
 
 // cSpell:ignore widgetstate
 
