@@ -260,7 +260,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
       placeholder={placeholderLabel.current} value={currentKeyin} size="small"
     />
     {(filteredKeyins.length > 0) &&
-      <Listbox id="uifw-command-sources" className="map-manager-source-list" onKeyPress={handleKeypressOnKeyinsList}
+      <Listbox id="uifw-command-sources" className="map-manager-source-list" onKeyDown={handleKeypressOnKeyinsList}
         onListboxValueChange={onListboxValueChange} >
         {
           filteredKeyins.map((entry, index) => {

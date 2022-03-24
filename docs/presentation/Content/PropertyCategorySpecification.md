@@ -24,7 +24,7 @@ Category identifier used to reference the category definition from property over
 within the list of category definitions where this specification is used.
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.Id.Ruleset]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.Id.Ruleset]]
 ```
 
 ![Example of referencing category by "id"](./media/propertycategoryspecification-with-id-attribute.png)
@@ -36,7 +36,7 @@ within the list of category definitions where this specification is used.
 Identifier of a parent category. When specifying the parent category by ID, it has to be available in the scope of this category definition.
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.ParentId.Ruleset]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.ParentId.Ruleset]]
 ```
 
 ![Example of using "parent id" attribute](./media/propertycategoryspecification-with-parentid-attribute.png)
@@ -46,7 +46,7 @@ Identifier of a parent category. When specifying the parent category by ID, it h
 Display label of the category. May be [localized](../Advanced/Localization.md).
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.Label.Ruleset]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.Label.Ruleset]]
 ```
 
 ![Example of using "label" attribute](./media/propertycategoryspecification-with-label-attribute.png)
@@ -59,11 +59,11 @@ Extensive description of the category. The description is assigned to the catego
 it's up to UI component to decide how the description is displayed.
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.Description.Ruleset]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.Description.Ruleset]]
 ```
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.Description.Result]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.Description.Result]]
 ```
 
 ### Attribute: `priority`
@@ -74,11 +74,11 @@ Assign a custom [CategoryDescription.priority]($presentation-common) to the cate
 priority should appear before or above categories with lower priority.
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.Priority.Ruleset]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.Priority.Ruleset]]
 ```
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.Priority.Result]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.Priority.Result]]
 ```
 
 ![Example of using "priority" attribute](./media/propertycategoryspecification-with-priority-attribute.png)
@@ -91,11 +91,11 @@ Controls the value of [CategoryDescription.expand]($presentation-common) which t
 to auto-expand the category.
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.AutoExpand.Ruleset]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.AutoExpand.Ruleset]]
 ```
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.AutoExpand.Result]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.AutoExpand.Result]]
 ```
 
 | `autoExpand: false`                                                                                                                   | `autoExpand: true`                                                                                                                  |
@@ -110,13 +110,13 @@ Custom category [renderer specification](./RendererSpecification.md) that allows
 in UI. This specification is used to set up [CategoryDescription.renderer]($presentation-common) for this category and it's up to
 the UI component to make sure appropriate renderer is used to render the category.
 
-See [Custom property category renderers](../Customization/PropertyCategoryRenderers.md) page for information on how custom categories
+See [Custom property category renderers](./PropertyCategoryRenderers.md) page for information on how custom categories
 are handled in our UI components.
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.Renderer.Ruleset]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.Renderer.Ruleset]]
 ```
 
 ```ts
-[[include:Content.Customization.PropertyCategorySpecification.Renderer.Result]]
+[[include:Presentation.Content.Customization.PropertyCategorySpecification.Renderer.Result]]
 ```

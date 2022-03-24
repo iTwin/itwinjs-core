@@ -24,12 +24,9 @@ import { getTestProviderState, setIsTraceAvailable } from "../../store";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
 import { VisibilityTreeComponent } from "../widgets/VisibilityWidget";
-
-/** the following will import svgs into DOM and generate SymbolId that is used to locate the svg image. This
- * processing is done via the 'magic' webpack plugin and requires the use or the Bentley build scripts. */
-import upstreamIcon from "../icons/upstream-query.svg?sprite";
-import downstreamIcon from "../icons/downstream-query.svg?sprite";
-import traceIcon from "../icons/query-multi.svg?sprite";
+import downstreamQuerySvg from "../icons/downstream-query.svg";
+import queryMultiSvg from "../icons/query-multi.svg";
+import upstreamQuerySvg from "../icons/upstream-query.svg";
 
 /**
  * Test UiItemsProvider that provide buttons, widgets, and backstage item to NetworkTracing stage.
@@ -88,7 +85,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       const getDownstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-downstream",
         15, /* order within group button */
-        IconSpecUtilities.createSvgIconSpec(downstreamIcon),
+        IconSpecUtilities.createWebComponentIconSpec(downstreamQuerySvg),
         UiItemsProvidersTest.translate("trace-tool-downstream"),
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-downstream activated", undefined, OutputMessageType.Toast));
@@ -103,7 +100,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       const getUpstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-upstream",
         20, /* order within group button */
-        IconSpecUtilities.createSvgIconSpec(upstreamIcon),
+        IconSpecUtilities.createWebComponentIconSpec(upstreamQuerySvg),
         UiItemsProvidersTest.translate("trace-tool-upstream"),
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-upstream activated", undefined, OutputMessageType.Toast));
@@ -120,7 +117,8 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
        */
       const groupSpec = ToolbarItemUtilities.createGroupButton(
         "trace-tool-group", 230,
-        IconSpecUtilities.createSvgIconSpec(traceIcon), UiItemsProvidersTest.translate("trace-tool-group"),
+        IconSpecUtilities.createWebComponentIconSpec(queryMultiSvg),
+        UiItemsProvidersTest.translate("trace-tool-group"),
         [getConnectedButton, getDownstreamButton, getUpstreamButton],
         {
           badgeType: BadgeType.TechnicalPreview,
@@ -166,7 +164,8 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
   public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation,
     section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
-    if (stageId === NetworkTracingFrontstage.stageId && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
+    if ((stageId === NetworkTracingFrontstage.stageId || stageId === "ui-test-app:no-widget-frontstage") &&
+      location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       /** This widget when only be displayed when there is an element selected. */
       const widget: AbstractWidgetProps = {
         id: "ui-item-provider-test:elementDataListWidget",

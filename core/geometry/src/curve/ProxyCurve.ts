@@ -27,8 +27,6 @@ import type { StrokeOptions } from "./StrokeOptions";
  *    to the proxy.
  * * These methods presumably require support from the application class and are left abstract:
  *    * clone
- *    * clonePartialCurve
- *    * cloneTransformed
  *    * curvePrimitiveType
  *    * isSameCurvePrimitiveType
  *    * isSameGeometryClass
@@ -61,6 +59,22 @@ export abstract class ProxyCurve extends CurvePrimitive{
   /** Implement by proxyCurve */
   public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void{
     this._proxyCurve.emitStrokableParts(dest, options);
+  }
+
+  /** Return a deep clone. This override removes the undefined variant return. */
+  public abstract override clone(): ProxyCurve;
+
+  /** Return a transformed clone. */
+  public override cloneTransformed(transform: Transform): ProxyCurve | undefined {
+    const myClone = this.clone();
+    if (myClone.tryTransformInPlace(transform))
+      return myClone;
+    return undefined;
+  }
+
+  /** Implement by proxyCurve. Subclasses may eventually override this default implementation. */
+  public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
+    return this._proxyCurve.clonePartialCurve(fractionA, fractionB);
   }
 
   /** Implement by proxyCurve */

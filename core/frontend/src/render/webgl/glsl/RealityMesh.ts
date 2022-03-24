@@ -130,8 +130,7 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
 
   builder.frag.addUniform("u_texturesPresent", VariableType.Boolean, (program) => {
     program.addGraphicUniform("u_texturesPresent", (uniform, params) => {
-      const textureCount = params.geometry.asRealityMesh!.textureParams?.params.length;
-      uniform.setUniform1i(textureCount ? 1 : 0);
+      uniform.setUniform1i(params.geometry.asRealityMesh!.hasTextures ? 1 : 0);
     });
   });
 

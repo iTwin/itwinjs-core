@@ -112,7 +112,7 @@ public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
 public;CodeScopeSpec
 public;CodeSpec
-public;ColorByName
+public;ColorByName:
 public;ColorDef
 public;ColorDefProps = number
 internal;ColorIndex

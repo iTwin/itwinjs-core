@@ -468,7 +468,6 @@ describe("QuantityInput", () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample initialMagnitude={123.45} onFormatChange={spy} />);
     await TestUtils.flushAsyncOperations();
-
     const primaryUnitSelector = renderedComponent.getByTestId("unit-Units.FT");
     // fireEvent.change(primaryUnitSelector, { target: { value: "ADDSUBUNIT:Units.IN:in" } });
     selectChangeValueByText(primaryUnitSelector, "Add sub-unit", handleError);

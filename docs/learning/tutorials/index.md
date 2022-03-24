@@ -34,7 +34,7 @@ Test iModels can be used for local development. There are a few different ways t
 
 ## Support
 
-Please see the [Community Resources]($docs/learning/CommunityResources.md) page for the best places to get more help.
+Please see the [Community Resources](../CommunityResources.md) page for the best places to get more help.
 
 <style>
 article#main h2 {
