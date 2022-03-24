@@ -152,6 +152,9 @@ export abstract class RpcProtocol {
   /** Used by protocols that can transmit IModelRpcProps values natively. */
   public checkToken: boolean = false;
 
+  /** Used by protocols that support user-defined status codes. */
+  public supportsStatusCategory: boolean = false;
+
   /** If checkToken is true, will be called on the backend to inflate the IModelRpcProps for each request. */
   public inflateToken(tokenFromBody: IModelRpcProps, _request: SerializedRpcRequest): IModelRpcProps { return tokenFromBody; }
 

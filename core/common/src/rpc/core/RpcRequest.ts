@@ -285,6 +285,10 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   protected supportsStatusCategory() {
+    if (!this.protocol.supportsStatusCategory) {
+      return false;
+    }
+
     return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.responseProtocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
   }
 
@@ -404,6 +408,8 @@ export abstract class RpcRequest<TResponse = any> {
     if (protocolStatus === RpcRequestStatus.Pending) {
       status = RpcRequestStatus.Rejected;
     } else if (protocolStatus === RpcRequestStatus.NotFound) {
+      status = RpcRequestStatus.Rejected;
+    } else if (protocolStatus === RpcRequestStatus.Unknown) {
       status = RpcRequestStatus.Rejected;
     }
 

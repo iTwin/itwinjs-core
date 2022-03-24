@@ -250,6 +250,10 @@ export class RpcInvocation {
       return false;
     }
 
+    if (!this.protocol.supportsStatusCategory) {
+      return false;
+    }
+
     return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.request.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
   }
 
