@@ -2115,7 +2115,7 @@
           "description": "Specifies a chain of relationship path specifications that\nforms a path from the content instance to the related instance(s) whose properties should additionally be loaded."
         },
         "relationshipMeaning": {
-          "description": "The attribute describes what the related properties mean to the [primary instance](./Terminology.md#primary-instance)\nwhose properties are displayed.",
+          "description": "The attribute describes what the related properties mean to the primary instance\nwhose properties are displayed.",
           "enum": [
             "RelatedInstance",
             "SameInstance"

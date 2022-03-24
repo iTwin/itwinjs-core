@@ -52,7 +52,7 @@ export enum RelatedPropertiesSpecialValues {
  */
 export interface RelatedPropertiesSpecification {
   /**
-   * Specifies a chain of [relationship path specifications]($docs/presentation/content/RelationshipPathSpecification.md) that
+   * Specifies a chain of [relationship path specifications]($docs/presentation/RelationshipPathSpecification.md) that
    * forms a path from the content instance to the related instance(s) whose properties should additionally be loaded.
    */
   propertiesSource: RelationshipPathSpecification;
@@ -80,7 +80,7 @@ export interface RelatedPropertiesSpecification {
   skipIfDuplicate?: boolean;
 
   /**
-   * The attribute describes what the related properties mean to the [primary instance](./Terminology.md#primary-instance)
+   * The attribute describes what the related properties mean to the [primary instance]($docs/presentation/content/Terminology.md#primary-instance)
    * whose properties are displayed.
    */
   relationshipMeaning?: RelationshipMeaning;

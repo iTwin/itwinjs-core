@@ -24,26 +24,26 @@ import { RelatedPropertiesSpecification } from "./RelatedPropertiesSpecification
  */
 export interface ContentModifiersList {
   /**
-   * Specifications of [related properties]($docs/presentation/RelatedPropertiesSpecification.md) which are
+   * Specifications of [related properties]($docs/presentation/content/RelatedPropertiesSpecification.md) which are
    * included in the generated content.
    */
   relatedProperties?: RelatedPropertiesSpecification[];
 
   /**
-   * Specifications of [calculated properties]($docs/presentation/CalculatedPropertiesSpecification.md) whose values are
+   * Specifications of [calculated properties]($docs/presentation/content/CalculatedPropertiesSpecification.md) whose values are
    * generated using provided [ECExpressions]($docs/presentation/advanced/ECExpressions.md).
    */
   calculatedProperties?: CalculatedPropertiesSpecification[];
 
   /**
-   * Specifications for [custom categories]($docs/presentation/PropertyCategorySpecification.md). Simply defining the categories does
-   * nothing - they have to be referenced from [property specification]($docs/presentation/PropertySpecification.md) defined in
+   * Specifications for [custom categories]($docs/presentation/content/PropertyCategorySpecification.md). Simply defining the categories does
+   * nothing - they have to be referenced from [property specification]($docs/presentation/content/PropertySpecification.md) defined in
    * [[propertyOverrides]] by `id`.
    */
   propertyCategories?: PropertyCategorySpecification[];
 
   /**
-   * Specifications for various [property overrides]($docs/presentation/PropertySpecification.md) that allow customizing property display.
+   * Specifications for various [property overrides]($docs/presentation/content/PropertySpecification.md) that allow customizing property display.
    */
   propertyOverrides?: PropertySpecification[];
 }

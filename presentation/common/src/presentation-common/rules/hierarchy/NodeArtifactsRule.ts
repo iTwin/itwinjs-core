@@ -26,7 +26,7 @@ export interface NodeArtifactsRule extends RuleBase {
   condition?: string;
 
   /**
-   * A map of [ECExpressions]($docs/presentation/ECExpressions.md#specification) whose evaluation results
+   * A map of [ECExpressions]($docs/presentation/hierarchies/ECExpressions.md#specification) whose evaluation results
    * are used as artifact values.
    */
   items: { [key: string]: string };
