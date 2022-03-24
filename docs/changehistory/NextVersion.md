@@ -39,6 +39,9 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
   if (compatibility.usingIntegratedGraphics)
     alert("Integrated graphics are in use. If a discrete GPU is available, consider switching your device or browser to use it.");
 ```
+### ECExpressions for property overrides
+
+It is now possible to set property specification [`isDisplayed`](../presentation/Content/PropertySpecification.md#attribute-isdisplayed) attribute value using ECExpressions.
 
 ## ColorDef validation
 

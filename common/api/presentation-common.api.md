@@ -2188,7 +2188,7 @@ export interface PropertyOverrides {
     categoryId?: string | CategoryIdentifier;
     doNotHideOtherPropertiesOnDisplayOverride?: boolean;
     editor?: PropertyEditorSpecification;
-    isDisplayed?: boolean;
+    isDisplayed?: boolean | string;
     labelOverride?: string;
     overridesPriority?: number;
     renderer?: CustomRendererSpecification;

@@ -24,8 +24,11 @@ export interface PropertyOverrides {
   /** Identifier of a category that should be used for the property. */
   categoryId?: string | CategoryIdentifier;
 
-  /** Display override. `true` to force display, `false` to force hide, `undefined` to use default. */
-  isDisplayed?: boolean;
+  /**
+   * Display override. `true` to force display, `false` to force hide, `undefined` to use default.
+   * The value can also be set using an ECExpression.
+   * */
+  isDisplayed?: boolean | string;
 
   /** Custom property renderer specification. */
   renderer?: CustomRendererSpecification;
