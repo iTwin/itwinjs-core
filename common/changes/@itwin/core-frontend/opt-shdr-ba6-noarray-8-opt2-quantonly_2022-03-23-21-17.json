@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Address performance regressions introduced by support for floating point positions in vertex tables.\"",
+      "comment": "",
       "type": "none"
     }
   ],
