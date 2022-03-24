@@ -11,7 +11,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes } from "./Child
 /**
  * Returns a static custom-defined node that's not based on an ECInstance.
  *
- * @see [Custom node specification reference documentation page]($docs/presentation/Hierarchies/CustomNode.md)
+ * @see [Custom node specification reference documentation page]($docs/presentation/hierarchies/CustomNode.md)
  * @public
  */
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
@@ -22,13 +22,13 @@ export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
   type: string;
 
   /**
-   * Specifies node label. This is a string value that may be [localized]($docs/presentation/Advanced/Localization.md).
+   * Specifies node label. This is a string value that may be [localized]($docs/presentation/advanced/Localization.md).
    */
   label: string;
 
   /**
    * Specifies the value of [[Node.description]] property, which is a string that may
-   * be [localized]($docs/presentation/Advanced/Localization.md). UI component displaying the node may choose
+   * be [localized]($docs/presentation/advanced/Localization.md). UI component displaying the node may choose
    * whether and how to surface this information to users.
    */
   description?: string;

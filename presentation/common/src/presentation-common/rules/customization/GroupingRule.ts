@@ -12,7 +12,7 @@ import { RuleBase, RuleTypes } from "../Rule";
 /**
  * Grouping rules provide advanced ways to group instances when creating hierarchies.
  *
- * @see [Grouping rule reference documentation page]($docs/presentation/Hierarchies/GroupingRule.md)
+ * @see [Grouping rule reference documentation page]($docs/presentation/hierarchies/GroupingRule.md)
  * @public
  */
 export interface GroupingRule extends RuleBase {
@@ -20,7 +20,7 @@ export interface GroupingRule extends RuleBase {
   ruleType: RuleTypes.Grouping;
 
   /**
-   * An [ECExpression]($docs/presentation/Hierarchies/ECExpressions.md#rule-condition) that results in
+   * An [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#rule-condition) that results in
    * a boolean value. If specified,  the grouping rule applies only to instance nodes that cause the condition
    * to evaluate to `true`.
    */
@@ -30,7 +30,7 @@ export interface GroupingRule extends RuleBase {
   class: SingleSchemaClassSpecification;
 
   /**
-   * Specifies a list of [grouping specifications]($docs/presentation/Hierarchies/GroupingRule.md#grouping-specifications)
+   * Specifies a list of [grouping specifications]($docs/presentation/hierarchies/GroupingRule.md#grouping-specifications)
    * which describe the kind of grouping that should be applied.
    */
   groups: GroupingSpecification[];
@@ -67,7 +67,7 @@ export interface GroupingSpecificationBase {
  * Base class grouping allows grouping ECInstance nodes by their base class (as opposed to the hierarchy
  * specifications' `groupByClass` attribute, which always groups by direct class).
  *
- * @see [Base class grouping documentation section]($docs/presentation/Hierarchies/GroupingRule.md#base-class-grouping)
+ * @see [Base class grouping documentation section]($docs/presentation/hierarchies/GroupingRule.md#base-class-grouping)
  * @public
  */
 export interface ClassGroup extends GroupingSpecificationBase {
@@ -89,7 +89,7 @@ export interface ClassGroup extends GroupingSpecificationBase {
  * but instead of showing a grouping node with multiple grouped ECInstance nodes, it shows a single ECInstances node which represents
  * multiple ECInstances.
  *
- * @see [Same label instance grouping documentation section]($docs/presentation/Hierarchies/GroupingRule.md#same-label-instance-grouping)
+ * @see [Same label instance grouping documentation section]($docs/presentation/hierarchies/GroupingRule.md#same-label-instance-grouping)
  * @public
  */
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
@@ -130,7 +130,7 @@ export enum SameLabelInstanceGroupApplicationStage {
 /**
  * Property grouping allows grouping by a property of the instance by value or by given ranges of values.
  *
- * @see [Property grouping documentation section]($docs/presentation/Hierarchies/GroupingRule.md#property-grouping)
+ * @see [Property grouping documentation section]($docs/presentation/hierarchies/GroupingRule.md#property-grouping)
  * @public
  */
 export interface PropertyGroup extends GroupingSpecificationBase {
@@ -170,7 +170,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
 
   /**
    * Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result
-   * is the same, unless a [label override rule]($docs/presentation/Customization/LabelOverride.md) is used to change node's display label.
+   * is the same, unless a [label override rule]($docs/presentation/customization/LabelOverride.md) is used to change node's display label.
    *
    * @deprecated Property grouping nodes should always be sorted by display label.
    */
@@ -198,7 +198,7 @@ export enum PropertyGroupingValue {
 /**
  * Describes a grouping range.
  *
- * @see [Property range group specification documentation section]($docs/presentation/Hierarchies/GroupingRule.md#attribute-ranges)
+ * @see [Property range group specification documentation section]($docs/presentation/hierarchies/GroupingRule.md#attribute-ranges)
  * @public
  */
 export interface PropertyRangeGroupSpecification {
@@ -210,7 +210,7 @@ export interface PropertyRangeGroupSpecification {
   imageId?: string;
 
   /**
-   * Grouping node label. May be [localized]($docs/presentation/Advanced/Localization.md).
+   * Grouping node label. May be [localized]($docs/presentation/advanced/Localization.md).
    * Defaults to `{from value} - {to value}`.
    *
    * @minLength 1

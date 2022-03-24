@@ -13,7 +13,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
  * Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined
  * by traversing the hierarchy upwards until an ECInstance node is encountered.
  *
- * @see [Related instance nodes specification reference documentation page]($docs/presentation/Hierarchies/RelatedInstanceNodes.md)
+ * @see [Related instance nodes specification reference documentation page]($docs/presentation/hierarchies/RelatedInstanceNodes.md)
  * @public
  */
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
@@ -28,7 +28,7 @@ export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificatio
   relationshipPaths: RepeatableRelationshipPathSpecification[];
 
   /**
-   * Specifies an [ECExpression]($docs/presentation/Hierarchies/ECExpressions.md#instance-filter) for filtering
+   * Specifies an [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#instance-filter) for filtering
    * instances of ECClasses targeted through the [[relationshipPaths]] attribute.
    */
   instanceFilter?: string;

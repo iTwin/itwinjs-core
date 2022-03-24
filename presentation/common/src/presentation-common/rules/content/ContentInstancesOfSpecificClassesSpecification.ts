@@ -12,7 +12,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
 /**
  * This specification creates content for all instances of specific ECClasses.
  *
- * @see [Content instances of specific classes specification reference documentation page]($docs/presentation/Content/ContentInstancesOfSpecificClasses.md)
+ * @see [Content instances of specific classes specification reference documentation page]($docs/presentation/content/ContentInstancesOfSpecificClasses.md)
  * @public
  */
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
@@ -45,7 +45,7 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
   handlePropertiesPolymorphically?: boolean;
 
   /**
-   * Specifies an [ECExpression]($docs/presentation/Content/ECExpressions.md#instance-filter) for filtering instances
+   * Specifies an [ECExpression]($docs/presentation/content/ECExpressions.md#instance-filter) for filtering instances
    * of ECClasses specified through the [[classes]] attribute.
    */
   instanceFilter?: string;

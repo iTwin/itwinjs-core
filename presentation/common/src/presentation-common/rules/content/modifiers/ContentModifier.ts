@@ -19,7 +19,7 @@ import { RelatedPropertiesSpecification } from "./RelatedPropertiesSpecification
  * This is not expected to be used directly - use through either [[ContentModifier]]
  * or [[ContentSpecification]].
  *
- * @see [Content modifier rule reference documentation page]($docs/presentation/Content/ContentModifier.md)
+ * @see [Content modifier rule reference documentation page]($docs/presentation/content/ContentModifier.md)
  * @public
  */
 export interface ContentModifiersList {
@@ -31,7 +31,7 @@ export interface ContentModifiersList {
 
   /**
    * Specifications of [calculated properties]($docs/presentation/CalculatedPropertiesSpecification.md) whose values are
-   * generated using provided [ECExpressions]($docs/presentation/Advanced/ECExpressions.md).
+   * generated using provided [ECExpressions]($docs/presentation/advanced/ECExpressions.md).
    */
   calculatedProperties?: CalculatedPropertiesSpecification[];
 
@@ -50,10 +50,10 @@ export interface ContentModifiersList {
 
 /**
  * Content modifiers are used to modify how instances of specified ECClasses are displayed in content which is
- * produced using [content rules]($docs/presentation/Content/ContentRule.md). They do not produce any content
+ * produced using [content rules]($docs/presentation/content/ContentRule.md). They do not produce any content
  * by themselves.
  *
- * @see [Content modifier rule reference documentation page]($docs/presentation/Content/ContentModifier.md)
+ * @see [Content modifier rule reference documentation page]($docs/presentation/content/ContentModifier.md)
  * @public
  */
 export interface ContentModifier extends RuleBase, ContentModifiersList {

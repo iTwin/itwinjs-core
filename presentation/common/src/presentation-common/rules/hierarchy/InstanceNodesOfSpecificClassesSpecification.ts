@@ -12,7 +12,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
 /**
  * Returns nodes for instances of specific ECClasses.
  *
- * @see [Instance nodes of specific classes specification reference documentation page]($docs/presentation/Hierarchies/InstanceNodesOfSpecificClasses.md)
+ * @see [Instance nodes of specific classes specification reference documentation page]($docs/presentation/hierarchies/InstanceNodesOfSpecificClasses.md)
  * @public
  */
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
@@ -42,7 +42,7 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
   arePolymorphic?: boolean;
 
   /**
-   * Specifies an [ECExpression]($docs/presentation/Hierarchies/ECExpressions.md#instance-filter) for filtering
+   * Specifies an [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#instance-filter) for filtering
    * instances of ECClasses specified through the [[classes]] attribute.
    */
   instanceFilter?: string;

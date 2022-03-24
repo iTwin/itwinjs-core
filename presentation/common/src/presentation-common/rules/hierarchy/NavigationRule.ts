@@ -16,13 +16,13 @@ import { SubCondition } from "./SubCondition";
 /**
  * Base class for all [[NavigationRule]] implementations.
  *
- * @see [Hierarchies reference documentation page]($docs/presentation/Hierarchies/index.md)
+ * @see [Hierarchies reference documentation page]($docs/presentation/hierarchies/index.md)
  * @public
  */
 export interface NavigationRuleBase extends RuleBase {
   /**
    * Defines a condition which needs to be met in order for the rule to be used. The condition is an
-   * [ECExpression]($docs/presentation/Hierarchies/ECExpressions.md#rule-condition) which has to evaluate
+   * [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#rule-condition) which has to evaluate
    * to a boolean value.
    */
   condition?: string;
@@ -33,14 +33,14 @@ export interface NavigationRuleBase extends RuleBase {
   specifications?: ChildNodeSpecification[];
 
   /**
-   * A list of [customization rules]($docs/presentation/Hierarchies/index.md#hierarchy-customization) that
+   * A list of [customization rules]($docs/presentation/hierarchies/index.md#hierarchy-customization) that
    * apply only to nodes produced by this rule.
    */
   customizationRules?: CustomizationRule[];
 
   /**
    * A list of sub-rules which share *placement attributes* and
-   * [nested customization rules]($docs/presentation/Hierarchies/ChildNodeRule.md#attribute-customizationrules)
+   * [nested customization rules]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-customizationrules)
    * of the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules
    * can add additional condition of their own.
    */
@@ -55,7 +55,7 @@ export interface NavigationRuleBase extends RuleBase {
 /**
  * Navigation rules are used to define hierarchies displayed in tree components.
  *
- * @see [Hierarchies reference documentation page]($docs/presentation/Hierarchies/index.md)
+ * @see [Hierarchies reference documentation page]($docs/presentation/hierarchies/index.md)
  * @public
  */
 export type NavigationRule = RootNodeRule | ChildNodeRule;

@@ -11,7 +11,7 @@ import { RuleBase, RuleTypes } from "../Rule";
 /**
  * Extended data rule is used to inject some arbitrary data into presentation data objects (nodes, content records).
  *
- * @see [Extended data rule reference documentation page]($docs/presentation/Customization/ExtendedDataRule.md)
+ * @see [Extended data rule reference documentation page]($docs/presentation/customization/ExtendedDataRule.md)
  * @public
  */
 export interface ExtendedDataRule extends RuleBase {
@@ -20,13 +20,13 @@ export interface ExtendedDataRule extends RuleBase {
 
   /**
    * Defines a condition which needs to be met in order for the rule to be used. The condition
-   * is an [ECExpression]($docs/presentation/Customization/ECExpressions.md#rule-condition) which has
+   * is an [ECExpression]($docs/presentation/customization/ECExpressions.md#rule-condition) which has
    * to evaluate to a boolean value.
    */
   condition?: string;
 
   /**
-   * A map of [ECExpressions]($docs/presentation/Customization/ECExpressions.md#rule-condition) whose
+   * A map of [ECExpressions]($docs/presentation/customization/ECExpressions.md#rule-condition) whose
    * evaluation results are used as extended data values.
    */
   items: { [key: string]: string };

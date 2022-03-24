@@ -2,13 +2,13 @@
 
 > TypeScript type: [RelatedInstanceSpecification]($presentation-common).
 
-Related instance specification is used in [content](../Content/ContentRule.md#attribute-specifications) and
-[hierarchy](../Hierarchies/ChildNodeRule.md#attribute-specifications) specifications to "join" the primary instance
+Related instance specification is used in [content](../content/contentRule.md#attribute-specifications) and
+[hierarchy](../hierarchies/ChildNodeRule.md#attribute-specifications) specifications to "join" the primary instance
 with its related instance and allow using the related instance for:
 
 - [Filtering](#using-related-instances-in-instance-filter), when used in `instanceFilter`.
-- [Customization](#using-related-instances-for-customizing), when used in [customization rules](../Customization/index.md).
-- [Grouping](#using-related-instances-for-grouping), when used in [grouping rules](../Hierarchies/GroupingRule.md).
+- [Customization](#using-related-instances-for-customizing), when used in [customization rules](../customization/index.md).
+- [Grouping](#using-related-instances-for-grouping), when used in [grouping rules](../hierarchies/GroupingRule.md).
 
 ## Attributes
 

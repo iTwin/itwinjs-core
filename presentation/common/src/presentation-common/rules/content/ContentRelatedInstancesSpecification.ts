@@ -12,7 +12,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
 /**
  * Returns content for instances related to the selected (input) instances.
  *
- * @see [Content related instances specification reference documentation page]($docs/presentation/Content/ContentRelatedInstances.md)
+ * @see [Content related instances specification reference documentation page]($docs/presentation/content/ContentRelatedInstances.md)
  * @public
  */
 export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
@@ -26,7 +26,7 @@ export interface ContentRelatedInstancesSpecification extends ContentSpecificati
   relationshipPaths: RepeatableRelationshipPathSpecification[];
 
   /**
-   * Specifies an [ECExpression]($docs/presentation/Content/ECExpressions.md#instance-filter) for filtering instances
+   * Specifies an [ECExpression]($docs/presentation/content/ECExpressions.md#instance-filter) for filtering instances
    * of ECClasses targeted through the [[relationshipPaths]] attribute.
    */
   instanceFilter?: string;

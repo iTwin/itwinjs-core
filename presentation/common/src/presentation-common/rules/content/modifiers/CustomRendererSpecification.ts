@@ -9,7 +9,7 @@
 /**
  * This specification allows defining a custom renderer, which can be used to render properties or categories.
  *
- * @see [Renderer specification reference documentation page]($docs/presentation/Content/RendererSpecification.md)
+ * @see [Renderer specification reference documentation page]($docs/presentation/content/RendererSpecification.md)
  * @public
  */
 export interface CustomRendererSpecification {

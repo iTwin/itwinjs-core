@@ -11,9 +11,9 @@ import { RuleBase, RuleTypes } from "../Rule";
 /**
  * CheckBox rules provide a way to create a checkbox for specific types of ECInstance's.
  *
- * @see [CheckBox rule reference documentation page]($docs/presentation/Customization/CheckBoxRule.md)
+ * @see [CheckBox rule reference documentation page]($docs/presentation/customization/CheckBoxRule.md)
  * @public
- * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+ * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
  */
 export interface CheckBoxRule extends RuleBase {
   /** Used for serializing to JSON. */
@@ -21,8 +21,8 @@ export interface CheckBoxRule extends RuleBase {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 

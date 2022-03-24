@@ -9,16 +9,16 @@
 /**
  * This content modifier allows including additional calculated properties into the content.
  *
- * @see [Calculated properties specification reference documentation page]($docs/presentation/Content/CalculatedPropertiesSpecification.md)
+ * @see [Calculated properties specification reference documentation page]($docs/presentation/content/CalculatedPropertiesSpecification.md)
  * @public
  */
 export interface CalculatedPropertiesSpecification {
-  /** Specifies label of the calculated property. Supports [localization]($docs/presentation/Advanced/Localization.md). */
+  /** Specifies label of the calculated property. Supports [localization]($docs/presentation/advanced/Localization.md). */
   label: string;
 
   /**
-   * Defines an expression to calculate the value. The expression can use [ECInstance]($docs/presentation/Advanced/ECExpressions.md#ecinstance)
-   * and [Ruleset Variables]($docs/presentation/Advanced/ECExpressions.md#ruleset-variables-user-settings) symbol contexts.
+   * Defines an expression to calculate the value. The expression can use [ECInstance]($docs/presentation/advanced/ECExpressions.md#ecinstance)
+   * and [Ruleset Variables]($docs/presentation/advanced/ECExpressions.md#ruleset-variables-user-settings) symbol contexts.
    */
   value: string;
 

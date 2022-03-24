@@ -12,7 +12,7 @@ import { NavigationRuleBase } from "./NavigationRule";
 /**
  * Root node rules are used to define nodes that are displayed at the root hierarchy level.
  *
- * @see [Root node rule reference documentation page]($docs/presentation/Hierarchies/RootNodeRule.md)
+ * @see [Root node rule reference documentation page]($docs/presentation/hierarchies/RootNodeRule.md)
  * @public
  */
 export interface RootNodeRule extends NavigationRuleBase {

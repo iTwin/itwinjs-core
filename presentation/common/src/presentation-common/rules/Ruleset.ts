@@ -65,7 +65,7 @@ export interface Ruleset {
 
 /**
  * Contains supplementation-related information for
- * [supplemental rulesets]($docs/presentation/Advanced/RulesetSupplementation.md).
+ * [supplemental rulesets]($docs/presentation/advanced/RulesetSupplementation.md).
  *
  * @public
  */

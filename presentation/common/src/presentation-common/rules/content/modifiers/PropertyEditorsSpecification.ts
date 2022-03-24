@@ -9,7 +9,7 @@
 /**
  * This specification allows assigning a custom property editor to specific properties.
  *
- * @see [Property editor specification specification reference documentation page]($docs/presentation/Content/PropertyEditorSpecification.md)
+ * @see [Property editor specification specification reference documentation page]($docs/presentation/content/PropertyEditorSpecification.md)
  * @public
  */
 export interface PropertyEditorSpecification {

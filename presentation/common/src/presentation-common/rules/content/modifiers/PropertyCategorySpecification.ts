@@ -72,9 +72,9 @@ export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifi
 /**
  * Content modifier for defining custom property categories. Custom categories are not present in the result unless
  * they contain at least one property. One way to assign a property to the category is by using
- * [property overrides]($docs/presentation/Content/PropertySpecification.md).
+ * [property overrides]($docs/presentation/content/PropertySpecification.md).
  *
- * @see [Property category specification reference documentation page]($docs/presentation/Content/PropertyCategorySpecification.md)
+ * @see [Property category specification reference documentation page]($docs/presentation/content/PropertyCategorySpecification.md)
  * @public
  */
 export interface PropertyCategorySpecification {
@@ -91,7 +91,7 @@ export interface PropertyCategorySpecification {
    */
   parentId?: string | CategoryIdentifier | NoCategoryIdentifier;
 
-  /** Display label of the category. May be [localized]($docs/presentation/Advanced/Localization.md). */
+  /** Display label of the category. May be [localized]($docs/presentation/advanced/Localization.md). */
   label: string;
 
   /**
@@ -116,7 +116,7 @@ export interface PropertyCategorySpecification {
   autoExpand?: boolean;
 
   /**
-   * Custom category [renderer specification]($docs/presentation/Content/RendererSpecification.md) that allows
+   * Custom category [renderer specification]($docs/presentation/content/RendererSpecification.md) that allows
    * assigning a custom category renderer to be used in UI. This specification is used to set up
    * [[CategoryDescription.renderer]] for this category and it's up to the UI component to
    * make sure appropriate renderer is used to render the category.

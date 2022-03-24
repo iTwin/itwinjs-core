@@ -11,7 +11,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
 /**
  * Returns content for selected (input) instances.
  *
- * @see [Selected node instances specification reference documentation page]($docs/presentation/Content/SelectedNodeInstances.md)
+ * @see [Selected node instances specification reference documentation page]($docs/presentation/content/SelectedNodeInstances.md)
  * @public
  */
 export interface SelectedNodeInstancesSpecification extends ContentSpecificationBase {

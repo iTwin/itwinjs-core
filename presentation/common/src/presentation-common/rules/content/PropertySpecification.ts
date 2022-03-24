@@ -13,7 +13,7 @@ import { PropertyEditorSpecification } from "./modifiers/PropertyEditorsSpecific
 /**
  * A container structure for possible property overrides
  *
- * @see [Property specification reference documentation page]($docs/presentation/Content/PropertySpecification.md)
+ * @see [Property specification reference documentation page]($docs/presentation/content/PropertySpecification.md)
  * @public
  */
 export interface PropertyOverrides {
@@ -26,7 +26,7 @@ export interface PropertyOverrides {
    */
   overridesPriority?: number;
 
-  /** This is an attribute that allows overriding the property label. May be [localized]($docs/presentation/Advanced/Localization.md). */
+  /** This is an attribute that allows overriding the property label. May be [localized]($docs/presentation/advanced/Localization.md). */
   labelOverride?: string;
 
   /** The attribute allows moving the property into a different category. */
@@ -46,14 +46,14 @@ export interface PropertyOverrides {
   isDisplayed?: boolean;
 
   /**
-   * Custom property [renderer specification]($docs/presentation/Content/RendererSpecification.md) that allows assigning a
+   * Custom property [renderer specification]($docs/presentation/content/RendererSpecification.md) that allows assigning a
    * custom value renderer to be used in UI. The specification is used to set up [[Field.renderer]] for
    * this property and it's up to the UI component to make sure appropriate renderer is used to render the property.
    */
   renderer?: CustomRendererSpecification;
 
   /**
-   * Custom [property editor specification]($docs/presentation/Content/PropertyEditorSpecification) that allows assigning
+   * Custom [property editor specification]($docs/presentation/content/PropertyEditorSpecification) that allows assigning
    * a custom value editor to be used in UI.
    */
   editor?: PropertyEditorSpecification;
@@ -68,7 +68,7 @@ export interface PropertyOverrides {
 /**
  * This specification allows overriding some attributes of specific ECProperty or define how it's displayed.
  *
- * @see [Property specification reference documentation page]($docs/presentation/Content/PropertySpecification.md)
+ * @see [Property specification reference documentation page]($docs/presentation/content/PropertySpecification.md)
  * @public
  */
 export interface PropertySpecification extends PropertyOverrides {
@@ -76,10 +76,10 @@ export interface PropertySpecification extends PropertyOverrides {
    * Name of the ECProperty to apply overrides to. A `"*"` may be specified to match all properties in current context.
    * The current context is determined based on where the override is specified:
    *
-   * - When used in a [content modifier]($docs/presentation/Content/ContentModifier.md#attribute-propertyoverrides), the
-   *   properties of the ECClass specified by the [`class` attribute]($docs/presentation/Content/ContentModifier.md#attribute-class) are used.
+   * - When used in a [content modifier]($docs/presentation/content/ContentModifier.md#attribute-propertyoverrides), the
+   *   properties of the ECClass specified by the [`class` attribute]($docs/presentation/content/ContentModifier.md#attribute-class) are used.
    *
-   * - When used in one of the [content specifications]($docs/presentation/Content/ContentRule.md#attribute-specifications),
+   * - When used in one of the [content specifications]($docs/presentation/content/ContentRule.md#attribute-specifications),
    *   properties produced by that specification are used.
    */
   name: string;

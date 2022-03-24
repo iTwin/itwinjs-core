@@ -12,7 +12,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
 /**
  * Returns nodes for instances returned by a provided ECSQL query.
  *
- * @see [Custom query instance nodes specification reference documentation page]($docs/presentation/Hierarchies/CustomQueryInstanceNodes.md)
+ * @see [Custom query instance nodes specification reference documentation page]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md)
  * @public
  */
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
@@ -29,7 +29,7 @@ export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecific
 /**
  * Query specifications used in [[CustomQueryInstanceNodesSpecification]].
  *
- * @see [Custom query specifications reference documentation section]($docs/presentation/Hierarchies/CustomQueryInstanceNodes.md#attribute-queries)
+ * @see [Custom query specifications reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#attribute-queries)
  * @public
  */
 export declare type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
@@ -62,7 +62,7 @@ export interface QuerySpecificationBase {
 /**
  * The specification contains an ECSQL query which is used to query for instances.
  *
- * @see [String query specification reference documentation section]($docs/presentation/Hierarchies/CustomQueryInstanceNodes.md#string-query-specification)
+ * @see [String query specification reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#string-query-specification)
  * @public
  */
 export interface StringQuerySpecification extends QuerySpecificationBase {
@@ -77,7 +77,7 @@ export interface StringQuerySpecification extends QuerySpecificationBase {
  * The specification specifies the name of the parent node instance property whose value is the ECSQL
  * used to query for instances.
  *
- * @see [ECProperty value query specification reference documentation section]($docs/presentation/Hierarchies/CustomQueryInstanceNodes.md#ecproperty-value-query-specification)
+ * @see [ECProperty value query specification reference documentation section]($docs/presentation/hierarchies/CustomQueryInstanceNodes.md#ecproperty-value-query-specification)
  * @public
  */
 export interface ECPropertyValueQuerySpecification extends QuerySpecificationBase {

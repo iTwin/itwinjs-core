@@ -9,8 +9,8 @@
 import { RelationshipPathSpecification } from "./RelationshipPathSpecification";
 
 /**
- * Related instance specification is used in [content]($docs/presentation/Content/ContentRule.md#attribute-specifications)
- * and [hierarchy]($docs/presentation/Hierarchies/ChildNodeRule.md#attribute-specifications) specifications to "join" the
+ * Related instance specification is used in [content]($docs/presentation/content/ContentRule.md#attribute-specifications)
+ * and [hierarchy]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-specifications) specifications to "join" the
  * primary instance with its related instance and allow using the related instance for filtering, customization and grouping.
  *
  * @see [Related instance specification reference documentation page]($docs/presentation/RelatedInstanceSpecification.md)

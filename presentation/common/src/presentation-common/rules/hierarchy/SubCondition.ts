@@ -11,17 +11,17 @@ import { ChildNodeSpecification } from "./ChildNodeSpecification";
 
 /**
  * This is a sub-rule which shares *placement attributes* and
- * [nested customization rules]($docs/presentation/Hierarchies/ChildNodeRule.md#attribute-customizationrules)
+ * [nested customization rules]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-customizationrules)
  * of the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules
  * can add additional condition of their own.
  *
- * @see [Sub-conditions reference documentation section]($docs/presentation/Hierarchies/ChildNodeRule.md#attribute-subconditions)
+ * @see [Sub-conditions reference documentation section]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-subconditions)
  * @public
  */
 export interface SubCondition {
   /**
    * Defines a condition which needs to be met in order for the rule to be used. The condition is an
-   * [ECExpression]($docs/presentation/Hierarchies/ECExpressions.md#rule-condition) which has to evaluate
+   * [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#rule-condition) which has to evaluate
    * to a boolean value.
    */
   condition?: string;

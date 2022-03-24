@@ -12,7 +12,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  * Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be
  * accessed when evaluating parent node's `hideExpression` to decide whether it should be hidden or not.
  *
- * @see [Node artifacts rule reference documentation page]($docs/presentation/Hierarchies/NodeArtifactsRule.md)
+ * @see [Node artifacts rule reference documentation page]($docs/presentation/hierarchies/NodeArtifactsRule.md)
  * @public
  */
 export interface NodeArtifactsRule extends RuleBase {
@@ -20,7 +20,7 @@ export interface NodeArtifactsRule extends RuleBase {
   ruleType: RuleTypes.NodeArtifacts;
 
   /**
-   * Specifies an [ECExpression]($docs/presentation/Customization/ECExpressions.md#rule-condition) that
+   * Specifies an [ECExpression]($docs/presentation/customization/ECExpressions.md#rule-condition) that
    * allows applying node artifacts based on evaluation result, e.g. by some property of the parent node.
    */
   condition?: string;

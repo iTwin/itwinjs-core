@@ -10,12 +10,12 @@ import { RuleBase, RuleTypes } from "../Rule";
 import { ContentSpecification } from "./ContentSpecification";
 
 /**
- * Content rules are used to define content that is displayed for specific type of [input]($docs/presentation/Content/Terminology.md#input-instance).
- * Input consists of either ECInstances or [nodes]($docs/presentation/Hierarchies/Terminology.md#node) and to make things
- * simpler everything is considered a [node]($docs/presentation/Hierarchies/Terminology.md#node) - instances get converted to
- * *ECInstance nodes* (thus the `SelectedNode` symbol in [`condition` ECExpression]($docs/presentation/Content/ECExpressions.md#rule-condition)).
+ * Content rules are used to define content that is displayed for specific type of [input]($docs/presentation/content/Terminology.md#input-instance).
+ * Input consists of either ECInstances or [nodes]($docs/presentation/hierarchies/Terminology.md#node) and to make things
+ * simpler everything is considered a [node]($docs/presentation/hierarchies/Terminology.md#node) - instances get converted to
+ * *ECInstance nodes* (thus the `SelectedNode` symbol in [`condition` ECExpression]($docs/presentation/content/ECExpressions.md#rule-condition)).
  *
- * @see [Content rule reference documentation page]($docs/presentation/Content/ContentRule.md)
+ * @see [Content rule reference documentation page]($docs/presentation/content/ContentRule.md)
  * @public
  */
 export interface ContentRule extends RuleBase {
@@ -24,7 +24,7 @@ export interface ContentRule extends RuleBase {
 
   /**
    * Defines a condition which needs to be met in order for the rule to be used. The condition is an
-   * [ECExpression]($docs/presentation/Content/ECExpressions.md#rule-condition) which has to evaluate to
+   * [ECExpression]($docs/presentation/content/ECExpressions.md#rule-condition) which has to evaluate to
    * a boolean value.
    */
   condition?: string;

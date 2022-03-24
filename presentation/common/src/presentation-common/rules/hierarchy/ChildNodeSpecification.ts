@@ -28,7 +28,7 @@ export enum ChildNodeSpecificationTypes {
 /**
  * Base interface for all [[ChildNodeSpecification]] implementations.
  *
- * @see [Child node specifications reference documentation section]($docs/presentation/Hierarchies/ChildNodeRule.md#attribute-specifications)
+ * @see [Child node specifications reference documentation section]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-specifications)
  * @public
  */
 export interface ChildNodeSpecificationBase {
@@ -61,7 +61,7 @@ export interface ChildNodeSpecificationBase {
   hideIfNoChildren?: boolean;
 
   /**
-   * When specified [ECExpression]($docs/presentation/Hierarchies/ECExpressions.md#specification) evaluates
+   * When specified [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#specification) evaluates
    * to `true`, nodes produced by this specification are omitted and their children appear one hierarchy level
    * higher.
    */
@@ -75,7 +75,7 @@ export interface ChildNodeSpecificationBase {
 
   /**
    * Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this
-   * specification. See more in [infinite hierarchies prevention page]($docs/presentation/Hierarchies/InfiniteHierarchiesPrevention.md).
+   * specification. See more in [infinite hierarchies prevention page]($docs/presentation/hierarchies/InfiniteHierarchiesPrevention.md).
    *
    * @beta
    */
@@ -88,7 +88,7 @@ export interface ChildNodeSpecificationBase {
   relatedInstances?: RelatedInstanceSpecification[];
 
   /**
-   * Specifications of [nested child node rules]($docs/presentation/Hierarchies/Terminology.md#nested-rule) that
+   * Specifications of [nested child node rules]($docs/presentation/hierarchies/Terminology.md#nested-rule) that
    * allow creating child nodes without the need of supplying a condition to match the parent node.
    */
   nestedRules?: ChildNodeRule[];
@@ -111,7 +111,7 @@ export interface DefaultGroupingPropertiesContainer {
 /**
  * Hierarchy rule specifications that define what nodes are going to be returned by the rule.
  *
- * @see [Child node specifications reference documentation section]($docs/presentation/Hierarchies/ChildNodeRule.md#attribute-specifications)
+ * @see [Child node specifications reference documentation section]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-specifications)
  * @public
  */
 export type ChildNodeSpecification =

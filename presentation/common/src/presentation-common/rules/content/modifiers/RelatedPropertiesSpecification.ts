@@ -15,13 +15,13 @@ import { PropertySpecification } from "../PropertySpecification";
  */
 export enum RelationshipMeaning {
   /**
-   * The properties should be displayed as if they belonged to the [primary instance]($docs/presentation/Content/Terminology.md#primary-instance).
+   * The properties should be displayed as if they belonged to the [primary instance]($docs/presentation/content/Terminology.md#primary-instance).
    * Generally that means they assigned a category, that's nested under the default category.
    */
   SameInstance = "SameInstance",
 
   /**
-   * The properties should be distinguished from properties of the [primary instance]($docs/presentation/Content/Terminology.md#primary-instance)
+   * The properties should be distinguished from properties of the [primary instance]($docs/presentation/content/Terminology.md#primary-instance)
    * and shown separately to make it clear they belong to another instance. Generally that means they're assigned a separate root category.
    */
   RelatedInstance = "RelatedInstance",
@@ -47,12 +47,12 @@ export enum RelatedPropertiesSpecialValues {
 /**
  * This specification allows including related instance properties into the content.
  *
- * @see [Related properties specification specification reference documentation page]($docs/presentation/Content/RelatedPropertiesSpecification.md)
+ * @see [Related properties specification specification reference documentation page]($docs/presentation/content/RelatedPropertiesSpecification.md)
  * @public
  */
 export interface RelatedPropertiesSpecification {
   /**
-   * Specifies a chain of [relationship path specifications]($docs/presentation/Content/RelationshipPathSpecification.md) that
+   * Specifies a chain of [relationship path specifications]($docs/presentation/content/RelationshipPathSpecification.md) that
    * forms a path from the content instance to the related instance(s) whose properties should additionally be loaded.
    */
   propertiesSource: RelationshipPathSpecification;

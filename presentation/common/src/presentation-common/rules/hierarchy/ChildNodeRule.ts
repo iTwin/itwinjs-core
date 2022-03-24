@@ -12,7 +12,7 @@ import { NavigationRuleBase } from "./NavigationRule";
 /**
  * Child node rules are used to define child nodes in a hierarchy.
  *
- * @see [Child node rule reference documentation page]($docs/presentation/Hierarchies/ChildNodeRule.md)
+ * @see [Child node rule reference documentation page]($docs/presentation/hierarchies/ChildNodeRule.md)
  * @public
  */
 export interface ChildNodeRule extends NavigationRuleBase {
