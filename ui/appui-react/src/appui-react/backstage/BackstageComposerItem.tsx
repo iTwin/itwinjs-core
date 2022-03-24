@@ -25,7 +25,7 @@ export interface BackstageComposerActionItemProps {
 /** @internal */
 export function BackstageComposerActionItem({ item }: BackstageComposerActionItemProps) {
   const manager = useBackstageManager();
-  const iconSpec = item.icon === IconHelper.reactIconKey ? IconHelper.getIconReactNode (item.icon, item.internalData) : ConditionalStringValue.getValue(item.icon);
+  const iconSpec = IconHelper.getIconReactNode (item.icon, item.internalData);
   const handleClick = React.useCallback(() => {
     manager.close();
     item.execute();
@@ -64,7 +64,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
   }, [manager, item.stageId]);
   const activeFrontstageId = useActiveFrontstageId();
   const isActive = ConditionalBooleanValue.getValue(item.isActive ?? item.stageId === activeFrontstageId);
-  const iconSpec = item.internalData ? IconHelper.getIconReactNode (item.icon, item.internalData) : ConditionalStringValue.getValue(item.icon);
+  const iconSpec = IconHelper.getIconReactNode (item.icon, item.internalData);
   return (
     <NZ_BackstageItem
       itemId={item.id}
