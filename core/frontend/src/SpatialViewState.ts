@@ -154,17 +154,18 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     super.preload(hydrateRequest);
-    const notLoaded = this.iModel.models.filterLoaded(this.models);
+    const notLoaded = this.iModel.models.filterLoaded(this.modelSelector.models);
     if (undefined === notLoaded)
       return; // all requested models are already loaded
-    options.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
+    hydrateRequest.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
   }
 
   /** @internal */
   protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     const promises = [];
     promises.push(super.postload(hydrateResponse));
-    promises.push(this.iModel.models.updateLoadedWithModelProps(response.modelSelectorStateModels));
+    if (hydrateResponse.modelSelectorStateModels !== undefined)
+      promises.push(this.iModel.models.updateLoadedWithModelProps(hydrateResponse.modelSelectorStateModels));
     await Promise.all(promises);
   }
 

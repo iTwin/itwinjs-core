@@ -75,7 +75,7 @@ export class SubCategoriesCache {
 
     if (undefined === missing)
       return;
-    this.missingAtTimeOfPreload = missing;
+    this._missingAtTimeOfPreload = missing;
     options.notLoadedCategoryIds = CompressedId64Set.sortAndCompress(missing);
   }
 
@@ -86,7 +86,7 @@ export class SubCategoriesCache {
     if (options.categoryIdsResult === undefined)
       return;
     // missingAtTimeOfPreload shouldn't be undefined if options.categoryIdsResult is defined... but just to be safe we'll check
-    const missing = this._missingAtTimeOfPreload === undefined ? new Set<string>() : this.missingAtTimeOfPreload;
+    const missing = this._missingAtTimeOfPreload === undefined ? new Set<string>() : this._missingAtTimeOfPreload;
     this.processResults(options.categoryIdsResult, missing);
     // clear missing
     this._missingAtTimeOfPreload = undefined;

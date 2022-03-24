@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { CompressedId64Set, Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
-import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelSelectorProps } from "@itwin/core-common";
+import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
+import { ModelSelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 
