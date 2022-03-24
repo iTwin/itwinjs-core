@@ -197,9 +197,6 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   addLookupTable(vert, "vert", "u_vertParams.z");
   vert.addInitializer(initializeVertLUTCoords);
 
-  // assert(undefined !== vert.maxRgbaPerVertex);
-  // const maxRgbaPerVertex = vert.maxRgbaPerVertex.toString();
-  // vert.addGlobal(`g_vertLutData[${maxRgbaPerVertex}]`, VariableType.Vec4);
   vert.addGlobal(`g_vertLutData0`, VariableType.Vec4);
   vert.addGlobal(`g_vertLutData1`, VariableType.Vec4);
   vert.addGlobal(`g_vertLutData2`, VariableType.Vec4);
@@ -209,8 +206,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_usesQuantizedPosition", VariableType.Boolean);
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
 
-  // Read the vertex data from the vertex table up front. If using WebGL 2, only read the number of RGBA values we actually need for this vertex table.
-  // const loopStart = `for (int i = 0; i < ${System.instance.capabilities.isWebGL2 ? "int(u_vertParams.z)" : maxRgbaPerVertex}; i++)`;
+  // Read the vertex data from the vertex table up front.  Yields a consistent (if unexplainable) small performance boost.
   vert.addInitializer(`
     g_usesQuantizedPosition = u_qScale.x >= 0.0;
     vec2 tc = g_vertexBaseCoords;
@@ -316,21 +312,6 @@ export function addLineCode(vert: VertexShaderBuilder): void {
 /** @internal */
 export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
   vert.replaceFunction(computeLineCode, func);
-}
-
-/** @internal */
-export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
-  // if (undefined !== vert.find("g_featureAndMaterialIndex"))
-  //   return;
-
-  const computeFeatureAndMaterialIndex = `
-  `;
-
-  vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
-  if (!vert.usesInstancedGeometry) {
-    // Only needed for material atlas, and instanced geometry never uses material atlas.
-    vert.addInitializer(computeFeatureAndMaterialIndex);
-  }
 }
 
 // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.

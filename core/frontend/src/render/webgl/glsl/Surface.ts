@@ -35,7 +35,7 @@ import { addRenderPass } from "./RenderPass";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addTranslucency } from "./Translucency";
-import { addFeatureAndMaterialLookup, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 import { wantMaterials } from "../SurfaceGeometry";
 import { addWiremesh } from "./Wiremesh";
 
@@ -182,7 +182,6 @@ function addMaterial(builder: ProgramBuilder, instanced: boolean): void {
 
   if (!instanced) {
     // Material atlas
-    addFeatureAndMaterialLookup(vert);
     vert.addFunction(unpackFloat);
     vert.addFunction(readMaterialAtlas);
     vert.addUniform("u_numColors", VariableType.Float, (prog) => {
