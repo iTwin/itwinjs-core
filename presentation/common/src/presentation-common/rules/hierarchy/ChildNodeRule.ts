@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleTypes } from "../Rule";
+import { RuleTypes } from "../Rule";
 import { NavigationRuleBase } from "./NavigationRule";
 
 /**
@@ -15,7 +15,7 @@ import { NavigationRuleBase } from "./NavigationRule";
  * @see [Child node rule reference documentation page]($docs/presentation/Hierarchies/ChildNodeRule.md)
  * @public
  */
-export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
+export interface ChildNodeRule extends NavigationRuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.ChildNodes;
 }

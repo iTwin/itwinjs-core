@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Label override rules provide advanced ways to override instance labels and descriptions in
@@ -16,7 +16,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * @public
  * @deprecated Use [[InstanceLabelOverride]] rule instead.
  */
-export interface LabelOverride extends RuleBase, ConditionContainer {
+export interface LabelOverride extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.LabelOverride;
 

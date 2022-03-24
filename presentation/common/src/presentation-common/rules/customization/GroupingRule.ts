@@ -7,7 +7,7 @@
  */
 
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Grouping rules provide advanced ways to group instances when creating hierarchies.
@@ -15,7 +15,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * @see [Grouping rule reference documentation page]($docs/presentation/Hierarchies/GroupingRule.md)
  * @public
  */
-export interface GroupingRule extends RuleBase, ConditionContainer {
+export interface GroupingRule extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.Grouping;
 

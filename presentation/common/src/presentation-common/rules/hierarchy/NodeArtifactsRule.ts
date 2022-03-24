@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be
@@ -15,7 +15,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * @see [Node artifacts rule reference documentation page]($docs/presentation/Hierarchies/NodeArtifactsRule.md)
  * @public
  */
-export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
+export interface NodeArtifactsRule extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.NodeArtifacts;
 

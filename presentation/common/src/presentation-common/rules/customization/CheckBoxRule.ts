@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
  * CheckBox rules provide a way to create a checkbox for specific types of ECInstance's.
@@ -15,7 +15,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * @public
  * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
  */
-export interface CheckBoxRule extends RuleBase, ConditionContainer {
+export interface CheckBoxRule extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.CheckBox;
 

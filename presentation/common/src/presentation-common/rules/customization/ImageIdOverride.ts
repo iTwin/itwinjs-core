@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
  * ImageId override rules allow setting an image ID to specific types of ECInstances.
@@ -15,7 +15,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * @public
  * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
  */
-export interface ImageIdOverride extends RuleBase, ConditionContainer {
+export interface ImageIdOverride extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.ImageIdOverride;
 

@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 import { ContentSpecification } from "./ContentSpecification";
 
 /**
@@ -18,7 +18,7 @@ import { ContentSpecification } from "./ContentSpecification";
  * @see [Content rule reference documentation page]($docs/presentation/Content/ContentRule.md)
  * @public
  */
-export interface ContentRule extends RuleBase, ConditionContainer {
+export interface ContentRule extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.Content;
 

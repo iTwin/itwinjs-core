@@ -6,7 +6,6 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer } from "../Rule";
 import { RequiredSchemaSpecification } from "../SchemasSpecification";
 import { ChildNodeSpecification } from "./ChildNodeSpecification";
 
@@ -19,7 +18,7 @@ import { ChildNodeSpecification } from "./ChildNodeSpecification";
  * @see [Sub-conditions reference documentation section]($docs/presentation/Hierarchies/ChildNodeRule.md#attribute-subconditions)
  * @public
  */
-export interface SubCondition extends ConditionContainer {
+export interface SubCondition {
   /**
    * Defines a condition which needs to be met in order for the rule to be used. The condition is an
    * [ECExpression]($docs/presentation/Hierarchies/ECExpressions.md#rule-condition) which has to evaluate

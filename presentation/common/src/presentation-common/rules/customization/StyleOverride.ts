@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Style override rules allow customizing display style of specific types of ECInstances.
@@ -15,7 +15,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * @public
  * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
  */
-export interface StyleOverride extends RuleBase, ConditionContainer {
+export interface StyleOverride extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.StyleOverride;
 
