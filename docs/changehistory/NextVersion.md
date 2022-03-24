@@ -2,6 +2,7 @@
 publish: false
 ---
 # NextVersion
+
 ## Optimization of geometry in IModelImporter
 
 The geometry produced by [connectors](https://www.itwinjs.org/learning/imodel-connectors/) and [transformation workflows](../learning/transformer/index.md) is not always ideal. One common issue is a proliferation of [GeometryPart]($backend)s to which only one reference exists. In most cases, it would be more efficient to embed the part's geometry directly into the referencing element's [geometry stream](https://www.itwinjs.org/learning/common/geometrystream/).
@@ -42,6 +43,21 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
 ## ColorByName is an object, not an enum
 
 Enums in TypeScript have some shortcomings, one of which resulted in a bug that caused [ColorDef.fromString]($common) to return [ColorDef.black]($common) for some valid color strings like "aqua". This is due to several standard color names ("aqua" and "cyan", "magenta" and "fuschia", and several "grey" vs "gray" variations) having the same numeric values. To address this, [ColorByName]($common) has been converted from an `enum` to a `namespace`. Code that accesses `ColorByName` members by name will continue to compile with no change.
+
+## Widget Panel Changes
+
+Based on usability testing, the following changes to widget panels have been implemented.
+
+1. Only two widget panel sections will be shown in any widget panel.
+2. A splitter is now provided that allows user to set the size of the widget panel sections.
+3. There is no special processing of double clicks on widget tabs when the widget tab is shown in a widget panel.
+4. The Widget Panel Unpin icon has been updated to make it more clear the action to be performed when the toggle is clicked.
+
+The API impact of these updates are listed below.
+
+1. The [UiItemsManager]($appui-abstract) will still query the [UiItemsProvider]($appui-abstract)s for widgets for the [StagePanelSection]($appui-abstract).Center but the returned widgets will be shown in the bottom panel sections. The StagePanelSection.Center enum entry has been deprecated and UiItemProviders should start using only `StagePanelSection.Start` and `StagePanelSection.End`.
+2. Widgets in panels only support the [WidgetState]($appui-abstract)s WidgetState.Open or WidgetState.Hidden.
+3. The UiItemProviders `provideWidgets` call can now return [AbstractWidgetProps]($appui-abstract) that specify a `defaultFloatingSize` that can be used for Widgets that use components that do not have an intrinsic size. For more details see [WidgetItem](../learning/ui/AugmentingUI.md).
 
 ## Deprecations in @itwin/components-react package
 

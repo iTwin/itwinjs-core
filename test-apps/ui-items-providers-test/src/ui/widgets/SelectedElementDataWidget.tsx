@@ -3,16 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { useActiveFrontstageDef } from "@itwin/appui-react";
+import { useSpecificWidgetDef } from "@itwin/appui-react";
 import { WidgetState } from "@itwin/appui-abstract";
 import { Centered } from "@itwin/core-react";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 import * as React from "react";
-
-export function useWidgetDef(id: string) {
-  const frontstageDef = useActiveFrontstageDef();
-  return frontstageDef?.findWidgetDef(id);
-}
 
 /** Hook used to return ids from selected element */
 export function useIdOfSelectedElements(className?: string) {
@@ -42,7 +37,7 @@ export function useIdOfSelectedElements(className?: string) {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SelectedElementDataWidgetComponent() {
   const idList = useIdOfSelectedElements();
-  const widgetDef = useWidgetDef("ui-item-provider-test:elementDataListWidget");
+  const widgetDef = useSpecificWidgetDef("ui-item-provider-test:elementDataListWidget");
 
   React.useEffect(() => {
     // using setImmediate to give time for frontstage to load before calling setWidgetState

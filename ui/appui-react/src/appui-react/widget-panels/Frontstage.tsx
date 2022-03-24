@@ -18,10 +18,10 @@ import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-ab
 import { Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
-  addPanelWidget, addTab, addWidgetTabToFloatingPanel, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
-  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, isFloatingLocation,
+  addPanelWidget, addTab, addWidgetTabToFloatingPanel, addWidgetTabToPanelSection, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
+  createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, isFloatingLocation,
   isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
-  NineZoneStateReducer, PanelSide, panelSides, PanelState, removeTab, TabState, toolSettingsTabId, WidgetPanels,
+  NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
@@ -44,7 +44,7 @@ import { FrameworkRootState } from "../redux/StateManager";
 import { useSelector } from "react-redux";
 import { useUiVisibility } from "../hooks/useUiVisibility";
 
-const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "middle", "end"];
+const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "end"];
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -270,6 +270,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
       label,
       iconSpec: widget.iconSpec,
       preferredPanelWidgetSize: widget.preferredPanelSize,
+      preferredFloatingWidgetSize: widget.defaultFloatingSize,
       canPopout: widget.canPopout,
       isFloatingStateWindowResizable: widget.isFloatingStateWindowResizable,
     });
@@ -295,15 +296,16 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
   if (widgetDefs.length === 0)
     return state;
 
-  // Add new tabs.
-  const tabs = new Array<string>();
+  // Add missing widget tabs.
   for (const widgetDef of widgetDefs) {
     const label = getWidgetLabel(widgetDef.label);
     const saveTab = state.tabs[widgetDef.id];
     const preferredPanelWidgetSize = saveTab ? saveTab.preferredPanelWidgetSize : widgetDef.preferredPanelSize;
-    const preferredFloatingWidgetSize = saveTab ? saveTab.preferredFloatingWidgetSize : undefined;
+    const preferredFloatingWidgetSize = saveTab ? saveTab.preferredFloatingWidgetSize : widgetDef.defaultFloatingSize;
     const preferredPopoutWidgetSize = saveTab ? saveTab.preferredPopoutWidgetSize : undefined;
-    const userSized = saveTab ? saveTab.userSized : undefined;
+    // if a defaultFloatingSize is specified then this mean the widget can't determine its intrinsic size and must be explicitly sized
+    const userSized = saveTab ? (saveTab.userSized || !!widgetDef.defaultFloatingSize && !!saveTab.preferredFloatingWidgetSize)
+      : !!widgetDef.defaultFloatingSize;
     state = addTab(state, widgetDef.id, {
       label,
       iconSpec: widgetDef.iconSpec,
@@ -321,30 +323,8 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       const preferredPosition = widgetDef.defaultFloatingPosition;
       state = addWidgetTabToFloatingPanel(state, floatingContainerId, widgetDef.id, homePanelInfo, preferredFloatingWidgetSize, preferredPosition, userSized, widgetDef.isFloatingStateWindowResizable);
     } else {
-      tabs.push(widgetDef.id);
-    }
-  }
-
-  if (tabs.length) {
-    const panel = state.panels[side];
-    preferredWidgetIndex = preferredWidgetIndex >= panel.maxWidgetCount ? panel.maxWidgetCount - 1 : preferredWidgetIndex;
-
-    if (preferredWidgetIndex < panel.widgets.length) {
-      // Append tabs to existing widget.
-      const widgetId = panel.widgets[preferredWidgetIndex];
-      state = produce(state, (draft) => {
-        const widget = draft.widgets[widgetId];
-        for (const tab of tabs) {
-          widget.tabs.push(tab);
-        }
-      });
-    } else {
-      const newWidgetId = getNextAvailablePanelWidgetId(panel);
-      const widget = createWidgetState(newWidgetId, tabs);
-      state = produce(state, (draft) => {
-        draft.panels[side].widgets.push(widget.id);
-        draft.widgets[widget.id] = castDraft(widget);
-      });
+      const widgetPanelSectionId = getWidgetPanelSectionId (side, preferredWidgetIndex);
+      state = addWidgetTabToPanelSection(state, side, widgetPanelSectionId, widgetDef.id);
     }
   }
 
@@ -378,16 +358,14 @@ export function addMissingWidgets(frontstageDef: FrontstageDef, initialState: Ni
   state = appendWidgets(state, determineNewWidgets(frontstageDef.centerLeft?.widgetDefs, initialState), "left", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.start.widgetDefs, initialState), "left", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomLeft?.widgetDefs, initialState), "left", 1);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.middle.widgetDefs, initialState), "left", 1);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelWidgetDefs, initialState), "left", 2);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.end.widgetDefs, initialState), "left", 2);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelWidgetDefs, initialState), "left", 1);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.panelZones.end.widgetDefs, initialState), "left", 1);
 
   state = appendWidgets(state, determineNewWidgets(frontstageDef.centerRight?.widgetDefs, initialState), "right", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.start.widgetDefs, initialState), "right", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomRight?.widgetDefs, initialState), "right", 1);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.middle.widgetDefs, initialState), "right", 1);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelWidgetDefs, initialState), "right", 2);
-  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.end.widgetDefs, initialState), "right", 2);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelWidgetDefs, initialState), "right", 1);
+  state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.panelZones.end.widgetDefs, initialState), "right", 1);
 
   state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.panelWidgetDefs, initialState), "top", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.panelZones.start.widgetDefs, initialState), "top", 0);
@@ -443,10 +421,8 @@ function getWidgetLabel(label: string) {
 
 type WidgetIdTypes =
   "leftStart" |
-  "leftMiddle" |
   "leftEnd" |
   "rightStart" |
-  "rightMiddle" |
   "rightEnd" |
   "topStart" |
   "topEnd" |
@@ -472,16 +448,12 @@ export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): Widget
     case "left": {
       if (key === "start") {
         return "leftStart";
-      } else if (key === "middle") {
-        return "leftMiddle";
       }
       return "leftEnd";
     }
     case "right": {
       if (key === "start") {
         return "rightStart";
-      } else if (key === "middle") {
-        return "rightMiddle";
       }
       return "rightEnd";
     }
@@ -500,75 +472,89 @@ export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): Widget
 }
 
 /** @internal */
-function getNextAvailablePanelWidgetId(panel: PanelState) {
-  const index = panel.widgets.length;
-  return getWidgetId(panel.side, panelZoneKeys[index]);
-}
-
-function isVerticalPanelSide(side: PanelSide) { return !isHorizontalPanelSide(side); }
-
-/** @internal */
 export function getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[] {
   switch (panelZone) {
     case "leftStart": {
-      return [
-        ...frontstageDef.centerLeft?.widgetDefs || [],
-        ...frontstageDef.leftPanel?.panelZones.start.widgetDefs || [],
-      ];
-    }
-    case "leftMiddle": {
-      return [
-        ...frontstageDef.bottomLeft?.widgetDefs || [],
-        ...frontstageDef.leftPanel?.panelZones.middle.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.centerLeft?.widgetDefs || []];
+      frontstageDef.leftPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "leftEnd": {
-      return [
-        ...frontstageDef.leftPanel?.panelWidgetDefs || [],
-        ...frontstageDef.leftPanel?.panelZones.end.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.bottomLeft?.widgetDefs || []];
+      frontstageDef.leftPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      frontstageDef.leftPanel?.panelWidgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "rightStart": {
-      return [
-        ...frontstageDef.centerRight?.widgetDefs || [],
-        ...frontstageDef.rightPanel?.panelZones.start.widgetDefs || [],
-      ];
-    }
-    case "rightMiddle": {
-      return [
-        ...frontstageDef.bottomRight?.widgetDefs || [],
-        ...frontstageDef.rightPanel?.panelZones.middle.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.centerRight?.widgetDefs || []];
+      frontstageDef.rightPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "rightEnd": {
-      return [
-        ...frontstageDef.rightPanel?.panelWidgetDefs || [],
-        ...frontstageDef.rightPanel?.panelZones.end.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.bottomRight?.widgetDefs || []];
+      frontstageDef.rightPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      frontstageDef.rightPanel?.panelWidgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "topStart": {
-      return [
-        ...frontstageDef.topPanel?.panelWidgetDefs || [],
-        ...frontstageDef.topPanel?.panelZones.start.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.topPanel?.panelWidgetDefs || []];
+      frontstageDef.topPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "topEnd": {
-      return [
-        ...frontstageDef.topMostPanel?.panelWidgetDefs || [], // eslint-disable-line deprecation/deprecation
-        ...frontstageDef.topPanel?.panelZones.end.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.topMostPanel?.panelWidgetDefs || []]; // eslint-disable-line deprecation/deprecation
+      frontstageDef.topPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "bottomStart": {
-      return [
-        ...frontstageDef.bottomPanel?.panelWidgetDefs || [],
-        ...frontstageDef.bottomPanel?.panelZones.start.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.bottomPanel?.panelWidgetDefs || []];
+      frontstageDef.bottomPanel?.panelZones.start.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
     case "bottomEnd": {
-      return [
-        ...frontstageDef.bottomMostPanel?.panelWidgetDefs || [], // eslint-disable-line deprecation/deprecation
-        ...frontstageDef.bottomPanel?.panelZones.end.widgetDefs || [],
-      ];
+      const outArray = [...frontstageDef.bottomMostPanel?.panelWidgetDefs || []]; // eslint-disable-line deprecation/deprecation
+      frontstageDef.bottomPanel?.panelZones.end.widgetDefs.forEach((widgetDef)=> {
+        // istanbul ignore else
+        if (undefined === outArray.find((widget)=> widget.id === widgetDef.id))
+          outArray.push(widgetDef);
+      });
+      return outArray;
     }
   }
 }
@@ -582,12 +568,6 @@ export function addPanelWidgets(
   const start = getWidgetId(side, "start");
   const startWidgets = getPanelZoneWidgets(frontstageDef, start);
   state = addWidgets(state, startWidgets, side, start);
-
-  if (isVerticalPanelSide(side)) {
-    const middle = getWidgetId(side, "middle");
-    const middleWidgets = getPanelZoneWidgets(frontstageDef, middle);
-    state = addWidgets(state, middleWidgets, side, middle);
-  }
 
   const end = getWidgetId(side, "end");
   const endWidgets = getPanelZoneWidgets(frontstageDef, end);
@@ -633,7 +613,7 @@ function getPanelMaxSize(maxSizeSpec: StagePanelMaxSizeSpec, panel: PanelSide, n
   return maxSizeSpec.percentage / 100 * size;
 }
 
-const stateVersion = 11; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 12; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
@@ -720,6 +700,32 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
         isFloatingStateWindowResizable: widgetDef?.isFloatingStateWindowResizable,
       };
     }
+
+    // remove center panel section if one is found in left or right panels
+    const oldLeftMiddleIndex = saved.panels.left.widgets.findIndex((value) => value === "leftMiddle");
+    // istanbul ignore next
+    if (-1 !== oldLeftMiddleIndex) {
+      draft.panels.left.widgets = saved.panels.left.widgets.filter((value) => value !== "leftMiddle");
+      if ("leftEnd" in draft.widgets) {
+        draft.widgets.leftMiddle.tabs.forEach((tab)=>draft.widgets.leftEnd.tabs.push(tab));
+      } else {
+        draft.widgets.leftEnd = {...draft.widgets.leftMiddle};
+        delete draft.widgets.leftMiddle;
+      }
+    }
+
+    const oldRightMiddleIndex = saved.panels.right.widgets.findIndex((value) => value === "rightMiddle");
+    // istanbul ignore next
+    if (-1 !== oldRightMiddleIndex) {
+      draft.panels.right.widgets = saved.panels.right.widgets.filter((value) => value !== "rightMiddle");
+      if ("rightEnd" in draft.widgets) {
+        draft.widgets.rightMiddle.tabs.forEach((tab)=>draft.widgets.rightEnd.tabs.push(tab));
+      } else {
+        draft.widgets.rightEnd = {...draft.widgets.rightMiddle};
+        delete draft.widgets.rightMiddle;
+      }
+    }
+
     return;
   });
   if (FrontstageManager.nineZoneSize && (0 !== FrontstageManager.nineZoneSize.height || 0 !== FrontstageManager.nineZoneSize.width)) {
@@ -861,22 +867,13 @@ export const setWidgetState = produce((
       location = findTab(nineZone, id);
       assert(!!location);
     }
-    const widget = nineZone.widgets[location.widgetId];
-    if (id !== widget.activeTabId)
-      return;
-    const minimized = widget.minimized;
-    widget.minimized = true;
-    if ("side" in location) {
-      const panel = nineZone.panels[location.side];
-      const maximized = panel.widgets.find((wId) => {
-        const w = nineZone.widgets[wId];
-        return !w.minimized;
-      });
-      if (maximized === undefined)
-        widget.minimized = minimized;
-      return;
+    if (isFloatingLocation(location)) {
+      const widget = nineZone.widgets[location.widgetId];
+      if (id !== widget.activeTabId)
+        return;
+      widget.minimized = true;
     }
-  } else if (state === WidgetState.Hidden) {
+  }  else if (state === WidgetState.Hidden) {
     hideWidget(nineZone, widgetDef);
   }
 });

@@ -130,6 +130,7 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
       "_canPopout": undefined,
       "_classId": undefined,
       "_defaultFloatingPosition": undefined,
+      "_defaultFloatingSize": undefined,
       "_defaultState": 4,
       "_fillZone": false,
       "_floatingContainerId": undefined,

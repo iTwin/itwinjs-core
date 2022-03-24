@@ -123,6 +123,7 @@ export class WidgetManager {
   }
 
   // Used when WidgetDefs are requested from UiItemProviders when uiVersion="1"
+  // istanbul ignore next
   private getStagePanelLocationFromZoneLocation(location: ZoneLocation): StagePanelLocation | undefined {
     switch (location) {
       case ZoneLocation.BottomCenter:

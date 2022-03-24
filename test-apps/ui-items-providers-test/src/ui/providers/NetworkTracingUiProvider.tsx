@@ -189,6 +189,8 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
         icon: PresentationPropertyGridWidgetControl.iconSpec,
         defaultState: WidgetState.Open,
         isFloatingStateSupported: true,
+        defaultFloatingSize: {width: 400, height: 600 },
+        isFloatingStateWindowResizable: true,
         // eslint-disable-next-line react/display-name
         getWidgetContent: () => {
           return <PresentationPropertyGridWidget />;
