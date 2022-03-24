@@ -51,7 +51,7 @@ exports[`BackstageComposerItem BackstageComposerActionItem should render 1`] = `
   groupPriority={100}
   icon={
     <Icon
-      iconSpec={null}
+      iconSpec={undefined}
     />
   }
   isActive={false}
@@ -115,7 +115,7 @@ exports[`BackstageComposerItem BackstageComposerStageLauncher should render 1`] 
   groupPriority={100}
   icon={
     <Icon
-      iconSpec={null}
+      iconSpec={undefined}
     />
   }
   isActive={false}

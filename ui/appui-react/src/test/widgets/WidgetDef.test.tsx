@@ -11,6 +11,8 @@ import {
   WidgetControl, WidgetDef, WidgetProps,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
+import { SvgList } from "@itwin/itwinui-icons-react"
+import { truncate } from "fs";
 
 // cSpell:ignore widgetstate
 
@@ -74,6 +76,21 @@ describe("WidgetDef", () => {
     expect(widgetDef.badgeType).to.eq(BadgeType.TechnicalPreview);
   });
 
+  it("should work with react icon", () => {
+    const widgetProps: WidgetProps = {
+      defaultState: WidgetState.Open,
+      priority: 200,
+      iconSpec: <SvgList />,
+      label: "label",
+      tooltip: "tooltip",
+      isToolSettings: false,
+      fillZone: true,
+      isFloatingStateSupported: true,
+      isFloatingStateWindowResizable: true,
+    };
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+    expect (React.isValidElement(widgetDef.iconSpec)).to.be.true;
+  });
   it("registerControl & widgetControl using same classId", () => {
     const widgetProps: WidgetProps = {
       classId: "WidgetDefTest",
