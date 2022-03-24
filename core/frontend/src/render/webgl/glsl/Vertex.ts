@@ -191,7 +191,6 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   // Read the vertex data from the vertex table up front.  Yields a consistent (if unexplainable) small performance boost.
   vert.addInitializer(`
-    // g_usesQuantizedPosition = u_qScale.x >= 0.0;
     vec2 tc = g_vertexBaseCoords;
     g_vertLutData0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
     tc.x += g_vert_stepX;

@@ -361,8 +361,7 @@ vec3 octDecodeNormal(vec2 e) {
 const computeNormal = `
   if (!u_surfaceFlags[kSurfaceBitIndex_HasNormals])
     return vec3(0.0);
-  vec2 normal;
-  normal = (u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal]) ? g_vertLutData3.xy : g_vertLutData1.zw;
+  vec2 normal = (u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal]) ? g_vertLutData3.xy : g_vertLutData1.zw;
   return normalize(MAT_NORM * octDecodeNormal(normal));
 `;
 
