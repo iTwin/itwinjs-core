@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Update ns imports for esm",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}
