@@ -295,6 +295,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@ungap/url-search-params",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "@wojtekmaj/enzyme-adapter-react-17",
       "allowedCategories": [ "extensions", "frontend" ]
     },
@@ -764,7 +768,7 @@
     },
     {
       "name": "react-resize-detector",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "react-select",
