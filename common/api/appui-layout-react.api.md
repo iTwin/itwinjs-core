@@ -40,6 +40,9 @@ export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Parti
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState;
 
 // @internal
+export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string): NineZoneState;
+
+// @internal
 export class AppButton extends React.PureComponent<AppButtonProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -248,6 +251,7 @@ export function createPanelState(side: PanelSide): {
     size: undefined;
     widgets: never[];
     maxWidgetCount: number;
+    splitterPercent: number;
 };
 
 // @internal (undocumented)
@@ -810,6 +814,9 @@ export const getToolbarItemProps: <TProps extends {}>(props: TProps) => ToolbarI
 export function getUniqueId(): string;
 
 // @internal (undocumented)
+export function getWidgetPanelSectionId(side: PanelSide, panelSectionIndex: number): string;
+
+// @internal (undocumented)
 export const getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings;
 
 // @internal (undocumented)
@@ -1243,7 +1250,7 @@ export interface NestedStagePanelsManagerProps {
 export function NineZone(props: NineZoneProps): JSX.Element;
 
 // @internal
-export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
+export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelSetSplitterPercentAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
 
 // @internal (undocumented)
 export const NineZoneContext: React.Context<NineZoneState>;
@@ -1575,6 +1582,16 @@ export interface PanelSetSizeAction {
 }
 
 // @internal
+export interface PanelSetSplitterPercentAction {
+    // (undocumented)
+    readonly percent: number;
+    // (undocumented)
+    readonly side: PanelSide;
+    // (undocumented)
+    readonly type: "PANEL_SET_SPLITTER_VALUE";
+}
+
+// @internal
 export type PanelSide = VerticalPanelSide | HorizontalPanelSide;
 
 // @internal (undocumented)
@@ -1636,6 +1653,8 @@ export interface PanelState {
     // (undocumented)
     readonly size: number | undefined;
     // (undocumented)
+    readonly splitterPercent: number | undefined;
+    // (undocumented)
     readonly widgets: ReadonlyArray<WidgetState["id"]>;
 }
 
@@ -1684,6 +1703,8 @@ export interface PanelWidgetDragStartAction {
     readonly side: PanelSide;
     // (undocumented)
     readonly type: "PANEL_WIDGET_DRAG_START";
+    // (undocumented)
+    readonly userSized?: boolean;
 }
 
 // @internal (undocumented)
@@ -3432,6 +3453,8 @@ export interface WidgetTabDragStartAction {
     readonly side: PanelSide | undefined;
     // (undocumented)
     readonly type: "WIDGET_TAB_DRAG_START";
+    // (undocumented)
+    readonly userSized?: boolean;
     // (undocumented)
     readonly widgetId: WidgetState["id"];
 }

@@ -17,7 +17,7 @@ import { loggerCategory } from "./utils/misc";
 import { StageUsage } from "./items/StageUsage";
 
 /** Action taken by the application on item provided by a UiItemsProvider
- * @public
+ * @public @deprecated this was only used by the previously removed UiItemsArbiter.
  */
 export enum UiItemsApplicationAction {
   /** Allow the change to the item */

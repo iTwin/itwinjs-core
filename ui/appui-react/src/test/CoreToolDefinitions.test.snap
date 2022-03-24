@@ -415,6 +415,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "_canPopout": undefined,
       "_classId": undefined,
       "_defaultFloatingPosition": undefined,
+      "_defaultFloatingSize": undefined,
       "_defaultState": 4,
       "_fillZone": false,
       "_floatingContainerId": undefined,
