@@ -4504,6 +4504,8 @@ export const PromptField: import("react-redux").ConnectedComponent<typeof Prompt
 
 // @public
 export class PropsHelper {
+    // (undocumented)
+    static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem>;
     static getIcon(iconSpec: string | ConditionalStringValue | React.ReactNode): JSX.Element | undefined;
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
@@ -7398,7 +7400,8 @@ export class WidgetDef {
     // (undocumented)
     getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined;
     // (undocumented)
-    get iconSpec(): string | ConditionalStringValue | React.ReactNode;
+    get iconSpec(): IconSpec;
+    set iconSpec(spec: IconSpec);
     // (undocumented)
     get id(): string;
     // (undocumented)
