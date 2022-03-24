@@ -26,7 +26,7 @@ export interface PropertyOverrides {
 
   /**
    * Display override. `true` to force display, `false` to force hide, `undefined` to use default.
-   * The value can also be set using ECExpression.
+   * The value can also be set using an ECExpression.
    * */
   isDisplayed?: boolean | string;
 

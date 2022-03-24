@@ -1903,7 +1903,7 @@
           "description": "Custom property editor specification."
         },
         "isDisplayed": {
-          "description": "Display override. `true` to force display, `false` to force hide, `undefined` to use default.\nThe value can also be set using ECExpression.",
+          "description": "Display override. `true` to force display, `false` to force hide, `undefined` to use default.\nThe value can also be set using an ECExpression.",
           "type": [
             "string",
             "boolean"
