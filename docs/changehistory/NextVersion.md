@@ -70,6 +70,7 @@ Using the sprite loader for SVG icons is deprecated. This includes [SvgSprite]($
 ## React icons support
 
 In addition to toolbar buttons, React icons are now supported for use in [Widget]($appui-react) tabs, [Backstage]($appui-react) items, and [StatusBar]($appui-react) items.
+
 ## Deprecations in @itwin/core-transformer package
 
 The beta transformer API functions [IModelTransformer.skipElement]($transformer) and [IModelTransformer.processDeferredElements]($transformer)
