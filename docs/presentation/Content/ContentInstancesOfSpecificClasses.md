@@ -60,7 +60,7 @@ Defines a set of [multi schema classes](../MultiSchemaClassesSpecification.md) t
 
 ### Attribute: `handlePropertiesPolymorphically`
 
-Specifies whether properties of derived `classes` should be included in the content.
+Specifies whether properties of derived [classes](#attribute-classes) should be included in the content.
 
 |                   |           |
 | ----------------- | --------- |

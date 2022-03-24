@@ -9,13 +9,10 @@
 import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 
 /**
- * Rule to override labels and descriptions of nodes which pass rule's
- * condition.
+ * Label override rules provide advanced ways to override instance labels and descriptions in
+ * exchange of some performance penalty.
  *
- * **Important:** Prefer [[InstanceLabelOverride]] over this rule when possible as it
- * has better performance.
- *
- * @see [More details]($docs/presentation/Customization/LabelOverride.md)
+ * @see [Label override reference documentation page]($docs/presentation/Customization/LabelOverride.md)
  * @public
  * @deprecated Use [[InstanceLabelOverride]] rule instead.
  */
@@ -31,7 +28,7 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
   condition?: string;
 
   /**
-   * Defines the label that should be used for node. This is
+   * An expression whose result becomes the label. This is
    * an [ECExpression]($docs/presentation/Customization/ECExpressions.md), so label
    * can be defined/formatted dynamically based on the context - for example
    * ECInstance property value. May be [localized]($docs/presentation/Advanced/Localization.md).
@@ -41,7 +38,7 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
   label?: string;
 
   /**
-   * Defines the description that should be used for node. This is
+   * An expression whose result becomes the description. This is
    * an [ECExpression]($docs/presentation/Customization/ECExpressions.md), so
    * description can be defined/formatted dynamically based on the context - for example
    * ECInstance property value. May be [localized]($docs/presentation/Advanced/Localization.md).

@@ -63,7 +63,7 @@ Specifies a list of class names which the input instances have to match for the 
 
 ### Attribute: `acceptablePolymorphically`
 
-Specifies whether derived classes of `acceptableClassNames` should be included in the content.
+Specifies whether derived classes of [acceptableClassNames](#attribute-acceptableclassnames) should be included in the content.
 
 |                   |           |
 | ----------------- | --------- |

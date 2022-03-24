@@ -148,7 +148,7 @@ A list of [customization rules](./index.md#hierarchy-customization) that apply o
 
 ### Attribute: `subConditions`
 
-A list of sub-rules which share [placement attributes](#placement-attributes) and [nested customization rules](#attribute-customizationrules) of the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules can add additional condition of their own.
+A list of sub-rules which share *placement attributes* and [nested customization rules](#attribute-customizationrules) of the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules can add additional condition of their own.
 
 |                   |                  |
 | ----------------- | ---------------- |

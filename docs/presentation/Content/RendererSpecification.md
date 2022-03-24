@@ -1,6 +1,6 @@
 # Renderer specification
 
-> TypeScript type: [RendererDescription]($presentation-common).
+> TypeScript type: [CustomRendererSpecification]($presentation-common).
 
 This specification allows defining a custom renderer, which can be used to render properties or categories.
 

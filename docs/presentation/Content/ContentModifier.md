@@ -82,7 +82,7 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 
 ### Attribute: `calculatedProperties`
 
-Specifications of [calculated properties](./CalculatedPropertiesSpecification.md) whose values are generated using provided ECExpressions.
+Specifications of [calculated properties](./CalculatedPropertiesSpecification.md) whose values are generated using provided [ECExpressions](../Advanced/ECExpressions.md).
 
 |                   |                                                                                 |
 | ----------------- | ------------------------------------------------------------------------------- |
@@ -98,7 +98,7 @@ Specifications of [calculated properties](./CalculatedPropertiesSpecification.md
 
 ### Attribute: `propertyCategories`
 
-Specifications for [custom categories](./PropertyCategorySpecification.md). Simply defining the categories does nothing - they have to be referenced from [PropertySpecification]($presentation-common) defined in [propertyOverrides](#attribute-propertyoverrides) by `id`.
+Specifications for [custom categories](./PropertyCategorySpecification.md). Simply defining the categories does nothing - they have to be referenced from [property specification](./PropertySpecification.md) defined in [propertyOverrides](#attribute-propertyoverrides) by `id`.
 
 |                   |                                                                         |
 | ----------------- | ----------------------------------------------------------------------- |

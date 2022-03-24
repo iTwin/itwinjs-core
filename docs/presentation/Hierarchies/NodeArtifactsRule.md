@@ -34,7 +34,7 @@ Use `NodeArtifacts` on the *ModelB* nodes and a `hideExpression` on *Subject* no
 
 ### Attribute: `condition`
 
-Specifies an ECExpression that allows applying node artifacts based on evaluation result, e.g. by some property of the parent node.
+Specifies an [ECExpression](../Customization/ECExpressions.md#rule-condition) that allows applying node artifacts based on evaluation result, e.g. by some property of the parent node.
 
 |                   |                                                                  |
 | ----------------- | ---------------------------------------------------------------- |

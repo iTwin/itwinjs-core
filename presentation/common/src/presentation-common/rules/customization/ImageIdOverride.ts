@@ -9,10 +9,9 @@
 import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 
 /**
- * Rule that allows overriding default icon and dynamically define an icon
- * for a particular node based on the context.
+ * ImageId override rules allow setting an image ID to specific types of ECInstances.
  *
- * @see [More details]($docs/presentation/Customization/ImageIdOverride.md)
+ * @see [Image ID override reference documentation page]($docs/presentation/Customization/ImageIdOverride.md)
  * @public
  * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
  */
@@ -28,7 +27,7 @@ export interface ImageIdOverride extends RuleBase, ConditionContainer {
   condition?: string;
 
   /**
-   * Defines an image ID that should be used for nodes that meet rule condition. This is
+   * An expression whose result becomes the image ID. This is
    * an [ECExpression]($docs/presentation/Customization/ECExpressions.md), so ID can be
    * defined/formatted dynamically based on the context - for example ECInstance property value.
    *

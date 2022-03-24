@@ -45,7 +45,7 @@ Specification of ECClass which should be grouped using this rule.
 
 ### Attribute: `condition`
 
-An ECExpression that results in a boolean value. If specified, the grouping rule applies only to instance nodes that cause the condition to evaluate to `true`.
+An [ECExpression](./ECExpressions.md#rule-condition) that results in a boolean value. If specified, the grouping rule applies only to instance nodes that cause the condition to evaluate to `true`.
 
 |                   |                                                   |
 | ----------------- | ------------------------------------------------- |
@@ -303,7 +303,7 @@ unless a [label override rule](../Customization/LabelOverride.md) is used to cha
 | **Is Required**   | No                                  |
 | **Default Value** | `"DisplayLabel"`                    |
 
-### Same Label Instance Grouping
+### Same label instance grouping
 
 Allows grouping multiple instances with the same label into one ECInstances type of node. Similar to display label grouping, but instead of showing a grouping
 node with multiple grouped ECInstance nodes, it shows a single ECInstances node which represents multiple ECInstances.

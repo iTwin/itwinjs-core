@@ -60,7 +60,7 @@ Specifies node label. This is a string value that may be [localized](../Advanced
 
 ### Attribute: `description`
 
-Specifies the value of [Node.description]($presentation-common) property, which is a string that [may be localized](../Advanced/Localization.md). UI component displaying the node may choose whether and how to surface this information to users.
+Specifies the value of [Node.description]($presentation-common) property, which is a string that may be [localized](../Advanced/Localization.md). UI component displaying the node may choose whether and how to surface this information to users.
 
 |                   |          |
 | ----------------- | -------- |

@@ -63,7 +63,7 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 
 ### Attribute: `items`
 
-A map of ECExpressions whose evaluation results are used as extended data values.
+A map of [ECExpressions](./ECExpressions.md#rule-condition) whose evaluation results are used as extended data values.
 
 |                 |                                   |
 | --------------- | --------------------------------- |

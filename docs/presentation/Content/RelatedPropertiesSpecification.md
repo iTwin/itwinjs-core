@@ -20,12 +20,12 @@ This specification allows including related instance properties into the content
 
 Specifies a chain of [relationship path specifications](../RelationshipPathSpecification.md) that forms a path from the content instance to the related instance(s) whose properties should additionally be loaded.
 
-The path may point to more than one related instance, so the result always stores related properties in a form of a struct-array, where each struct represents a single related instance. However, often there's only one related instance and in that case a UI component displaying the result may choose to "destructure" the struct-array. An example of such component is the Property Grid:
-
 |                 |                                                                        |
 | --------------- | ---------------------------------------------------------------------- |
 | **Type**        | [`RelationshipPathSpecification`](../RelationshipPathSpecification.md) |
 | **Is Required** | Yes                                                                    |
+
+The path may point to more than one related instance, so the result always stores related properties in a form of a struct-array, where each struct represents a single related instance. However, often there's only one related instance and in that case a UI component displaying the result may choose to "destructure" the struct-array. An example of such component is the Property Grid:
 
 ```ts
 [[include:Presentation.Content.Customization.RelatedPropertiesSpecification.PropertiesSource.Ruleset]]
@@ -41,6 +41,9 @@ Here's how the result looks like if there's more than one related instance:
 
 The attribute tells whether the target class specified through [`propertiesSource` attribute](#attribute-propertiessource) should be handled
 polymorphically. This means properties of the concrete class are loaded in addition to properties of the target class itself.
+
+**Note:** There's a difference between loading properties and instances polymorphically. This attribute
+only controls polymorphism of properties, while instances are always looked up in a polymorphic fashion.
 
 |                   |           |
 | ----------------- | --------- |

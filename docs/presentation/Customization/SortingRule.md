@@ -99,7 +99,7 @@ Specifies ECClass whose ECInstances should be sorted.
 
 ### Attribute: `isPolymorphic`
 
-Specifies that `class` attribute defined in this rule should be handled polymorphically.
+Specifies that [`class` attribute](#attribute-class) defined in this rule should be handled polymorphically.
 
 |                   |           |
 | ----------------- | --------- |
@@ -239,7 +239,7 @@ Specifies ECClass whose instances should not be sorted.
 
 ### Attribute: `isPolymorphic`
 
-Specifies that `class` attribute defined in this rule should be handled polymorphically.
+Specifies that [`class` attribute](#attribute-class-1) defined in this rule should be handled polymorphically.
 
 |                   |           |
 | ----------------- | --------- |

@@ -9,10 +9,9 @@
 import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 
 /**
- * Rule to override default node style and dynamically define a foreground/background
- * colors and a font style for a particular nodes.
+ * Style override rules allow customizing display style of specific types of ECInstances.
  *
- * @see [More details]($docs/presentation/Customization/StyleOverride.md)
+ * @see [Style override reference documentation page]($docs/presentation/Customization/StyleOverride.md)
  * @public
  * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
  */
@@ -53,7 +52,7 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
    * - `"Italic,Bold"`
    * - `"Regular"`
    *
-   * Defaults to `"FontStyle.Regular"`.
+   * Defaults to `"Regular"`.
    */
   fontStyle?: string;
 }
