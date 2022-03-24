@@ -386,7 +386,9 @@ export enum BackendLoggerCategory {
     NativeApp = "core-backend.NativeApp",
     PromiseMemoizer = "core-backend.PromiseMemoizer",
     Relationship = "core-backend.Relationship",
-    Schemas = "core-backend.Schemas"
+    Schemas = "core-backend.Schemas",
+    // @internal
+    ViewStateHydrater = "core-backend.ViewStateHydrater"
 }
 
 // @internal

@@ -4313,11 +4313,9 @@ export interface HydrateViewStateRequestProps {
     // (undocumented)
     sheetViewAttachmentIds?: CompressedId64Set;
     // (undocumented)
-    sheetViewViewStateLoadProps?: ViewStateLoadProps;
-    // (undocumented)
     spatialViewId?: Id64String;
     // (undocumented)
-    spatialViewViewStateLoadProps?: ViewStateLoadProps;
+    viewStateLoadProps?: ViewStateLoadProps;
 }
 
 // @internal

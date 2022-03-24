@@ -7015,10 +7015,6 @@ export class ModelSelectorState extends ElementState {
     get name(): string;
     // @internal (undocumented)
     get observableModels(): ObservableSet<string>;
-    // @internal (undocumented)
-    postload(response: HydrateViewStateResponseProps): Promise<void>;
-    // @internal
-    preload(options: HydrateViewStateRequestProps): void;
     // (undocumented)
     toJSON(): ModelSelectorProps;
 }
@@ -10083,7 +10079,7 @@ export class SubCategoriesCache {
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
-    postload(options: HydrateViewStateResponseProps, categoryIds: Id64Arg): void;
+    postload(options: HydrateViewStateResponseProps): void;
     preload(options: HydrateViewStateRequestProps, categoryIds: Id64Arg): void;
     }
 
