@@ -23,7 +23,7 @@ Specifies a chain of [relationship path specifications](../RelationshipPathSpeci
 The path may point to more than one related instance, so the result always stores related properties in a form of a struct-array, where each struct represents a single related instance. However, often there's only one related instance and in that case a UI component displaying the result may choose to "destructure" the struct-array. An example of such component is the Property Grid:
 
 ```ts
-[[include:Content.Customization.RelatedPropertiesSpecification.PropertiesSource.Ruleset]]
+[[include:Presentation.Content.Customization.RelatedPropertiesSpecification.PropertiesSource.Ruleset]]
 ```
 
 ![Example of using the "properties source" attribute](./media/relatedpropertiesspecification-with-propertiessource-attribute.png)
@@ -40,7 +40,7 @@ The attribute tells whether the target class specified through [`propertiesSourc
 polymorphically. This means properties of the concrete class are loaded in addition to properties of the target class itself.
 
 ```ts
-[[include:Content.Customization.RelatedPropertiesSpecification.HandleTargetClassPolymorphically.Ruleset]]
+[[include:Presentation.Content.Customization.RelatedPropertiesSpecification.HandleTargetClassPolymorphically.Ruleset]]
 ```
 
 | `handleTargetClassPolymorphically: false`                                                                                                                                            | `handleTargetClassPolymorphically: true`                                                                                                                                           |
@@ -63,7 +63,7 @@ displayed. There are two possible options:
 See [property categorization page](./PropertyCategorization.md) page for more details.
 
 ```ts
-[[include:Content.Customization.RelatedPropertiesSpecification.RelationshipMeaning.Ruleset]]
+[[include:Presentation.Content.Customization.RelatedPropertiesSpecification.RelationshipMeaning.Ruleset]]
 ```
 
 | `relationshipMeaning: "RelatedInstance"`                                                                                                                                      | `relationshipMeaning: "SameInstance"`                                                                                                                                   |
@@ -80,7 +80,7 @@ List of names or definitions of related class properties that should be included
 - `"*"` means all properties should be picked up.
 
 ```ts
-[[include:Content.Customization.RelatedPropertiesSpecification.Properties.Ruleset]]
+[[include:Presentation.Content.Customization.RelatedPropertiesSpecification.Properties.Ruleset]]
 ```
 
 ![Example of using the "properties" attribute](./media/relatedpropertiesspecification-with-properties-attribute.png)
@@ -93,7 +93,7 @@ The attribute specifies whether the field containing related properties should b
 attribute. The attribute tells UI components showing the properties that they should be initially displayed in the expanded state.
 
 ```ts
-[[include:Content.Customization.RelatedPropertiesSpecification.AutoExpand.Ruleset]]
+[[include:Presentation.Content.Customization.RelatedPropertiesSpecification.AutoExpand.Ruleset]]
 ```
 
 | `autoExpand: false`                                                                                                                    | `autoExpand: true`                                                                                                                   |
@@ -107,7 +107,7 @@ attribute. The attribute tells UI components showing the properties that they sh
 Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.
 
 ```ts
-[[include:Content.Customization.RelatedPropertiesSpecification.SkipIfDuplicate.Ruleset]]
+[[include:Presentation.Content.Customization.RelatedPropertiesSpecification.SkipIfDuplicate.Ruleset]]
 ```
 
 | `skipIfDuplicate: false`                                                                                                                          | `skipIfDuplicate: true`                                                                                                                         |
@@ -121,7 +121,7 @@ Specifies whether the specification should be ignored if another higher priority
 The attribute allows loading additional related properties that are related to the target instance of this specification.
 
 ```ts
-[[include:Content.Customization.RelatedPropertiesSpecification.NestedRelatedProperties.Ruleset]]
+[[include:Presentation.Content.Customization.RelatedPropertiesSpecification.NestedRelatedProperties.Ruleset]]
 ```
 
 ![Example of using the "nested related properties" attribute](./media/relatedpropertiesspecification-with-nestedrelatedproperties-attribute.png)

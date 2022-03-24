@@ -17,7 +17,7 @@ This content modifier allows including additional calculated properties into the
 Specifies label of the calculated property. Supports [localization](../Advanced/Localization.md).
 
 ```ts
-[[include:Content.Customization.CalculatedPropertiesSpecification.Label.Ruleset]]
+[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Label.Ruleset]]
 ```
 
 ![Example of using "label" attribute](./media/calculatedpropertiesspecification-with-label-attribute.png)
@@ -28,7 +28,7 @@ Defines an expression to calculate the value. The expression can use [ECInstance
 and [Ruleset Variables](../Advanced/ECExpressions.md#ruleset-variables-user-settings) symbol contexts.
 
 ```ts
-[[include:Content.Customization.CalculatedPropertiesSpecification.Value.Ruleset]]
+[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Value.Ruleset]]
 ```
 
 ![Example of using "value" attribute](./media/calculatedpropertiesspecification-with-value-attribute.png)
@@ -41,7 +41,7 @@ Assign a custom [Field.priority]($presentation-common) to the property. It's up 
 is respected - properties with higher priority should appear before or above properties with lower priority.
 
 ```ts
-[[include:Content.Customization.CalculatedPropertiesSpecification.Priority.Ruleset]]
+[[include:Presentation.Content.Customization.CalculatedPropertiesSpecification.Priority.Ruleset]]
 ```
 
 | `priority: 9999`                                                                                                                 | `priority: -9999`                                                                                                                |

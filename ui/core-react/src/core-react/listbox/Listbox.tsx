@@ -113,8 +113,7 @@ function processKeyboardNavigation(optionValues: ListboxItemProps[], itemIndex: 
  * @alpha
  */
 export function Listbox(props: ListboxProps) {
-  // eslint-disable-next-line deprecation/deprecation
-  const { ariaLabel, ariaLabelledBy, id, children, selectedValue, className, onListboxValueChange, onKeyPress, ...otherProps } = props;
+  const { ariaLabel, ariaLabelledBy, id, children, selectedValue, className, onListboxValueChange, onKeyDown, ...otherProps } = props;
   const listRef = React.useRef<HTMLUListElement>(null);
   const [listId] = React.useState(() => { return id ?? Guid.createValue(); });
   const optionValues = React.useMemo(() => getOptionValueArray(children), [children]);
@@ -188,9 +187,9 @@ export function Listbox(props: ListboxProps) {
     }
 
     // istanbul ignore else
-    if (onKeyPress)
-      onKeyPress(event);
-  }, [focusValue, optionValues, focusOption, onKeyPress, handleValueChange]);
+    if (onKeyDown)
+      onKeyDown(event);
+  }, [focusValue, optionValues, focusOption, onKeyDown, handleValueChange]);
 
   const isInitialMount = React.useRef(true);
 

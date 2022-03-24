@@ -4560,7 +4560,7 @@ export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boo
 export function imageElementFromImageSource(source: ImageSource): Promise<HTMLImageElement>;
 
 // @public
-export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
+export function imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise<HTMLImageElement>;
 
 // @internal
 export class ImageryMapLayerFormat extends MapLayerFormat {
@@ -5073,11 +5073,10 @@ export class IModelTileRequestChannels {
         concurrency: number;
         usesHttp: boolean;
         cacheMetadata: boolean;
+        cacheConcurrency: number;
     });
     // (undocumented)
-    get cloudStorage(): TileRequestChannel | undefined;
-    // (undocumented)
-    enableCloudStorageCache(concurrency: number): TileRequestChannel;
+    get cloudStorage(): TileRequestChannel;
     getCachedContent(tile: IModelTile): IModelTileContent | undefined;
     // (undocumented)
     getChannelForTile(tile: IModelTile): TileRequestChannel;
@@ -11198,8 +11197,6 @@ export class TileRequestChannels {
     constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean);
     add(channel: TileRequestChannel): void;
     readonly elementGraphicsRpc: TileRequestChannel;
-    // @internal
-    enableCloudStorageCache(): void;
     get(name: string): TileRequestChannel | undefined;
     getForHttp(name: string): TileRequestChannel;
     // @internal (undocumented)
@@ -11944,7 +11941,7 @@ export class TraversalSelectionContext {
 }
 
 // @public
-export function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined>;
+export function tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise<HTMLImageElement | undefined>;
 
 // @public
 export class TwoWayViewportFrustumSync extends TwoWayViewportSync {

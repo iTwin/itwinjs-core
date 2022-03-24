@@ -45,7 +45,7 @@ Specification of ECClass which should be grouped using this rule.
 An ECExpression that results in a boolean value. If specified, the grouping rule applies only to instance nodes that cause the condition to evaluate to `true`.
 
 ```ts
-[[include:Hierarchies.Grouping.Condition.Ruleset]]
+[[include:Presentation.Hierarchies.Grouping.Condition.Ruleset]]
 ```
 
 ![Example of using "condition" attribute](./media/hierarchy-grouping-with-condition-attribute.png)
@@ -57,7 +57,7 @@ An ECExpression that results in a boolean value. If specified, the grouping rule
 A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
 
 ```ts
-[[include:Hierarchies.RequiredSchemas.Ruleset]]
+[[include:Presentation.Hierarchies.RequiredSchemas.Ruleset]]
 ```
 
 ### Attribute: `priority`
@@ -67,7 +67,7 @@ A list of ECSchema requirements that need to be met for the rule to be used. See
 Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
 
 ```ts
-[[include:Hierarchies.Priority.Ruleset]]
+[[include:Presentation.Hierarchies.Priority.Ruleset]]
 ```
 
 ![Example of using "priority" attribute](./media/hierarchy-with-priority-attribute.png)
@@ -79,7 +79,7 @@ Controls the order in which specifications are handled — specification with hi
 Specifies whether this rule should be ignored if another rule was handled before as determined by rule priorities. This provides a mechanism for defining a fallback rule.
 
 ```ts
-[[include:Hierarchies.OnlyIfNotHandled.Ruleset]]
+[[include:Presentation.Hierarchies.OnlyIfNotHandled.Ruleset]]
 ```
 
 ![Example of using "onlyIfNotHandled" attribute](./media/hierarchy-with-onlyifnothandled-attribute.png)
@@ -115,7 +115,7 @@ defined in required order, the actual order may be adjusted using the [`priority
 Specification of the base ECClass to group by. If specified, allows grouping by a subclass of the class specified by [rule's `class` attribute](#attribute-class).
 
 ```ts
-[[include:Hierarchies.Grouping.ClassGroup.BaseClass.Ruleset]]
+[[include:Presentation.Hierarchies.Grouping.ClassGroup.BaseClass.Ruleset]]
 ```
 
 ![Example of using "base class" attribute](./media/hierarchy-grouping-with-baseclass-attribute.png)
@@ -127,7 +127,7 @@ Specification of the base ECClass to group by. If specified, allows grouping by 
 Specifies whether a grouping node should be created if there is only one item in that group.
 
 ```ts
-[[include:Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset]]
+[[include:Presentation.Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset]]
 ```
 
 ![Example of using "create group for single item" attribute](./media/hierarchy-grouping-with-creategroupforsingleitem-attribute.png)
@@ -163,7 +163,7 @@ of either a primitive or a navigation type.
 Specifies whether a grouping node should be created if there is only one item in that group.
 
 ```ts
-[[include:Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset]]
+[[include:Presentation.Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset]]
 ```
 
 ![Example of using "create group for single item" attribute](./media/hierarchy-grouping-with-creategroupforsingleitem-attribute.png)
@@ -175,7 +175,7 @@ Specifies whether a grouping node should be created if there is only one item in
 Should a separate grouping node be created for nodes whose grouping value is not set or is set to an empty string.
 
 ```ts
-[[include:Hierarchies.Grouping.PropertyGroup.CreateGroupForUnspecifiedValues.Ruleset]]
+[[include:Presentation.Hierarchies.Grouping.PropertyGroup.CreateGroupForUnspecifiedValues.Ruleset]]
 ```
 
 | `createGroupForUnspecifiedValues: false`                                                                                                                          | `createGroupForUnspecifiedValues: true`                                                                                                                                  |
@@ -190,11 +190,11 @@ Specifies grouping node's image ID. If set, the ID is assigned to [Node.imageId]
 to decide what to do with it.
 
 ```ts
-[[include:Hierarchies.Grouping.PropertyGroup.ImageId.Ruleset]]
+[[include:Presentation.Hierarchies.Grouping.PropertyGroup.ImageId.Ruleset]]
 ```
 
 ```ts
-[[include:Hierarchies.Grouping.PropertyGroup.ImageId.Result]]
+[[include:Presentation.Hierarchies.Grouping.PropertyGroup.ImageId.Result]]
 ```
 
 #### Attribute: `ranges`
@@ -213,7 +213,7 @@ Ranges into which the grouping values are divided. Instances are grouped by valu
 Range [`fromValue`, `toValue`] is inclusive on both sides. If a value falls into more than one range, the first listed range that contains the value is chosen.
 
 ```ts
-[[include:Hierarchies.Grouping.PropertyGroup.Ranges.Ruleset]]
+[[include:Presentation.Hierarchies.Grouping.PropertyGroup.Ranges.Ruleset]]
 ```
 
 ![Example of using "ranges" attribute](./media/hierarchy-grouping-with-ranges-attribute.png)
@@ -273,7 +273,7 @@ On the other hand, `"PostProcess"` can be applied to any hierarchy level, regard
 #### Example
 
 ```ts
-[[include:Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Ruleset]]
+[[include:Presentation.Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Ruleset]]
 ```
 
 | `applicationStage: "Query"`                                                                                                            | `applicationStage: "PostProcess"`                                                                                                                   |

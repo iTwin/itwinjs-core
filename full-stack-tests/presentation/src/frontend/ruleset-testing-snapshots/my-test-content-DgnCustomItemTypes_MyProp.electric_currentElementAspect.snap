@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DgnCustomItemTypes_MyProp.electric_currentElementAspect`] = `
+Array [
+  PropertyRecord {
+    "description": "1475.65 KA",
+    "property": Object {
+      "displayLabel": "KA [kiloampere]",
+      "name": "pc_MyProp_electric__x0020__currentElementAspect_KA__x0020____x005B__kiloampere__x005D__",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "1475.65 KA",
+      "value": 1475.65,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

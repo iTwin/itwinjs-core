@@ -80,7 +80,11 @@ export class HubMock {
     this.mockRoot = join(KnownTestLocations.outputDir, "HubMock", mockName);
     IModelJsFs.recursiveMkDirSync(this.mockRoot);
     IModelJsFs.purgeDirSync(this.mockRoot);
-    this._saveHubAccess = IModelHost.hubAccess;
+    try {
+      this._saveHubAccess = IModelHost.hubAccess;
+    } catch (error) {
+      // See note in IModelHost.hubAccess. hubAccess can in fact be undefined, but that is not annotated in type system.
+    }
     IModelHost.setHubAccess(this);
     HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
   }
