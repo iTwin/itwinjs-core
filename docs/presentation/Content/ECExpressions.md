@@ -31,9 +31,7 @@ The below table lists all of them:
 Additionally, [User Setting symbols](../Advanced/ECExpressions.md#symbols-in-global-context) are
 available as well.
 
-## Property Specification `isDisplayed` Attribute
+## Property overrides
 
-Property specification `isDisplayed` attribute can be an ECExpression which specifies whether particular property should be present in the result.
-
-Only [Ruleset variable symbols](../Advanced/ECExpressions.md#ruleset-variables-user-settings)
-are available for this ECExpression.
+Some [property overrides](./PropertySpecification.md) support ECExpressions to determine the value. Only [Ruleset variable symbols](../Advanced/ECExpressions.md#ruleset-variables-user-settings)
+are available in this ECExpression context.
