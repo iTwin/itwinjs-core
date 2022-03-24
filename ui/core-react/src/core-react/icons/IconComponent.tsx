@@ -55,6 +55,7 @@ export function Icon(props: IconProps) {
       const svgDiv = `<div>${svgLoader}</div>`;
       // the esm build of dompurify has a default import but the cjs build does not
       // if there is a default export, use it (likely esm), otherwise use the namespace
+      // istanbul ignore next
       const sanitizer = DOMPurify ?? DOMPurifyNS;
       const sanitizedIconString = sanitizer.sanitize(svgDiv, {ALLOWED_TAGS: ["svg-loader"]});
       // we can safely disable jam3/no-sanitizer-with-danger as we are sanitizing above
