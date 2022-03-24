@@ -161,6 +161,7 @@ export class WidgetDef {
     const frontstageDef = FrontstageManager.activeFrontstageDef;
     if (frontstageDef?.findWidgetDef(this.id)) {
       const currentState = frontstageDef.getWidgetCurrentState(this);
+      // istanbul ignore else
       if (undefined !== currentState)
         return currentState;
     }

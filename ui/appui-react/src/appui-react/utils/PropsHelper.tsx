@@ -56,9 +56,11 @@ export class PropsHelper {
     return true;
   }
   public static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem> {
+    // istanbul ignore else
     if (!iconSpec || !React.isValidElement(iconSpec))
       return {};
 
+    // istanbul ignore else
     if (!internalData)
       internalData = new Map<string,any>();
 
