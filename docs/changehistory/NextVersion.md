@@ -105,3 +105,7 @@ If you are using [IModelTransformer]($transformer), you can configure automatic 
   const transformer = new IModelTransformer(sourceIModel, targetIModel, options);
   transformer.processAll();
 ```
+
+## ECExpressions for property overrides
+
+It is now possible to set property specification [`isDisplayed`](../presentation/Content/PropertySpecification.md#attribute-isdisplayed) attribute value using ECExpressions.
