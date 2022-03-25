@@ -741,7 +741,7 @@
     },
     "DisabledSortingRule": {
       "additionalProperties": false,
-      "description": "R ule to disable sorting for certain ECInstances in the hierarchy and/or content.",
+      "description": "Rule to disable sorting for certain ECInstances in the hierarchy and/or content.",
       "properties": {
         "class": {
           "$ref": "#/definitions/SingleSchemaClassSpecification",
