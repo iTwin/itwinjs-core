@@ -17,7 +17,6 @@ import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, I3dmReader, readPointCloudTileContent, RealityTile, RealityTileContent, Tile, TileContent,
   TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "./internal";
-import { ViewManip } from "../tools/ViewTool";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
 
@@ -155,19 +154,21 @@ export abstract class RealityTileLoader {
 
     const center = location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
     let minDistance = 1.0;
+
+    const now = Date.now();
+    const wheelEventRelevanceTimeout = 1000; // Wheel events older than this value will not be considered
+
     for (const viewport of viewports) {
       const npc = viewport.worldToNpc(center, scratchTileCenterView);
 
       let focusPoint = new Point2d(0.5, 0.5);
 
       if (viewport instanceof ScreenViewport) {
-        // Try to get a better target point from user interactions
-        const targetCenter = IModelApp.toolAdmin.currentInputState.lastWheelEvent?.point // Last zoom target
-          ?? viewport.viewCmdTargetCenter // Last tool command target (if shared between tools)
-          ?? (IModelApp.toolAdmin.viewTool as ViewManip)?.targetCenterWorld; // Last tool command target
+        // Try to get a better target point from the last zoom target
+        const {lastWheelEvent} = IModelApp.toolAdmin.currentInputState;
 
-        if (targetCenter !== undefined) {
-          const focusPointCandidate = Point2d.fromJSON(viewport.worldToNpc(targetCenter));
+        if (lastWheelEvent !== undefined && now - lastWheelEvent.time < wheelEventRelevanceTimeout) {
+          const focusPointCandidate = Point2d.fromJSON(viewport.worldToNpc(lastWheelEvent.point));
 
           if (focusPointCandidate.x > 0 && focusPointCandidate.x < 1 && focusPointCandidate.y > 0 && focusPointCandidate.y < 1)
             focusPoint = focusPointCandidate;
