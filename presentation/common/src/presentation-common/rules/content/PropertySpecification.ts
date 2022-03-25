@@ -45,7 +45,7 @@ export interface PropertyOverrides {
    *
    * The value can also be set using an ECExpression.
    */
-  isDisplayed?: boolean;
+  isDisplayed?: boolean | undefined;
 
   /**
    * Custom property [renderer specification]($docs/presentation/content/RendererSpecification.md) that allows assigning a

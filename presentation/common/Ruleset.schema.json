@@ -1903,11 +1903,8 @@
           "description": "Custom property editor specification that allows assigning\na custom value editor to be used in UI."
         },
         "isDisplayed": {
-          "description": "This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the\nECSchema. The allowed settings are:\n\n- Omitted or `undefined`: property visibility is controlled by the ECSchema.\n\n- `true`: property is made visible. Warning: this will automatically hide all other properties of the same class.\n   If this behavior is not desirable, set `doNotHideOtherPropertiesOnDisplayOverride` attribute to `true`.\n\n- `false`: property is made hidden.\nThe value can also be set using an ECExpression.",
-          "type": [
-            "string",
-            "boolean"
-          ]
+          "description": "This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the\nECSchema. The allowed settings are:\n\n- Omitted or `undefined`: property visibility is controlled by the ECSchema.\n\n- `true`: property is made visible. Warning: this will automatically hide all other properties of the same class.\n   If this behavior is not desirable, set `doNotHideOtherPropertiesOnDisplayOverride` attribute to `true`.\n\n- `false`: property is made hidden.\n\nThe value can also be set using an ECExpression.",
+          "type": "boolean"
         },
         "labelOverride": {
           "description": "This is an attribute that allows overriding the property label. May be localized.",
