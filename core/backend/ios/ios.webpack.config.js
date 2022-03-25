@@ -9,12 +9,12 @@ const glob = require("glob");
 module.exports = {
   mode: "development",
   entry: [
-    path.resolve(__dirname, "ios/scripts/configureMocha.js"),
+    path.resolve(__dirname, "scripts/configureMocha.js"),
     ...glob.sync(path.resolve(__dirname, "lib/**/*.test.js")),
-    path.resolve(__dirname, "ios/scripts/runMocha.js")
+    path.resolve(__dirname, "scripts/runMocha.js")
   ],
   output: {
-    path: path.resolve(__dirname, "lib/ios/assets"),
+    path: path.resolve(__dirname, "../lib/ios/assets"),
     filename: "main.js",
     devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
     globalObject: "this",
