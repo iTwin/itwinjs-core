@@ -89,7 +89,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.0.33
+      '@bentley/imodeljs-native': 3.0.34
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -127,7 +127,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.8.0
-      '@bentley/imodeljs-native': 3.0.33
+      '@bentley/imodeljs-native': 3.0.34
       '@itwin/core-telemetry': link:../telemetry
       form-data: 2.5.1
       fs-extra: 8.1.0
@@ -1516,7 +1516,7 @@ importers:
   ../../full-stack-tests/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.0.33
+      '@bentley/imodeljs-native': 3.0.34
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -1550,7 +1550,7 @@ importers:
       typescript: ~4.4.0
     dependencies:
       '@azure/storage-blob': 12.8.0
-      '@bentley/imodeljs-native': 3.0.33
+      '@bentley/imodeljs-native': 3.0.34
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -6846,8 +6846,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.0.33:
-    resolution: {integrity: sha512-49Bjhr8oHcWD0drXS6q5R6m56FffVLfJrCgSilVFtbwTKXUZngJgx3G9CCRlrAggTHmIJFL1EmKaKrfC/B5Fzg==}
+  /@bentley/imodeljs-native/3.0.34:
+    resolution: {integrity: sha512-KjCVEs9rb6B0R9k1kiL5pHGqmoOCpH1/idLtDrdsnJV3/jLdq2DReN1geHBsAdUXxycwIjgFgclmwaFxX+yYfQ==}
     requiresBuild: true
     dev: false
 
