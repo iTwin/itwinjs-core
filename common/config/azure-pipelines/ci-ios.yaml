@@ -69,7 +69,7 @@ jobs:
             -scheme core-test-runner \
             -derivedDataPath DerivedData \
             -allowProvisioningUpdates
-        workingDirectory: core/backend/ios/core-test-runner
+        workingDirectory: tools/internal/ios/core-test-runner
         displayName: 'Build Xcode project for testing'
         condition: succeeded()
 
@@ -82,7 +82,7 @@ jobs:
             --build-dir DerivedData/Build/Products/Release-iphoneos/ \
             --token "$(AppCenterToken)" \
             --output json > ../run_output.json
-        workingDirectory: core/backend/ios/core-test-runner
+        workingDirectory: tools/internal/ios/core-test-runner
         failOnStderr: true
         displayName: 'Run App Center tests'
         condition: succeeded()
