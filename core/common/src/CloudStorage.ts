@@ -6,6 +6,8 @@
  * @module CloudStorage
  */
 
+import { UnexpectedErrors } from "@itwin/core-bentley";
+
 /** @beta */
 export enum CloudStorageProvider {
   Azure,
@@ -62,26 +64,21 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
   }
 
   public async retrieve(id: TContentId): Promise<TContentType | undefined> {
-    return new Promise(async (resolve) => {
-      try {
-        const container = await this.getContainer(id);
-        if (!container.url) {
-          resolve(undefined);
-          return;
-        }
+    try {
+      const container = await this.getContainer(id);
+      if (!container.url)
+        return undefined;
 
-        const response = await this.requestResource(container, id);
-        if (response.ok) {
-          const content = await this.instantiateResource(response);
-          resolve(content);
-        } else {
-          resolve(undefined);
-        }
-      } catch (_err) {
-        // todo: log this?
-        resolve(undefined);
+      const response = await this.requestResource(container, id);
+      if (response.ok) {
+        const content = await this.instantiateResource(response);
+        return content;
       }
-    });
+    } catch (err) {
+      UnexpectedErrors.handle(err);
+    }
+
+    return undefined;
   }
 
   protected async requestResource(container: CloudStorageContainerUrl, id: TContentId): Promise<Response> {
