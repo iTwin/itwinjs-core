@@ -156,10 +156,6 @@ Entity classes should not derive from deprecated mixin classes.
 
 ### KindOfQuantities
 
-#### BIS-1000 <a name="BIS-1000"></a>
-
-Kind Of Quantities must not use 'PERCENTAGE' or other unitless ratios.
-
 #### BIS-1001 <a name="BIS-1001"></a>
 
 Kind Of Quantities must use an SI Unit for their persistence unit.
@@ -191,6 +187,7 @@ Properties must use the following supported ExtendedTypes:
 - **BeGuid**
 - **GeometryStream**
 - **Json**
+- **URI**
 
 #### BIS-1303 <a name="BIS-1303"></a>
 
