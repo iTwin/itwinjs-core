@@ -12,7 +12,7 @@ This specification allows overriding some attributes of specific ECProperty or d
 | [`overridesPriority`](#attribute-overridespriority)                                                 | No        | `number`                                                          | `1000`      |
 | [`labelOverride`](#attribute-labeloverride)                                                         | No        | `string`                                                          | No override |
 | [`categoryId`](#attribute-categoryid)                                                               | No        | `string \| CategoryIdentifier`                                    | No override |
-| [`isDisplayed`](#attribute-isdisplayed)                                                             | No        | `boolean`                                                         | No override |
+| [`isDisplayed`](#attribute-isdisplayed)                                                             | No        | `boolean \| string`                                               | No override |
 | [`doNotHideOtherPropertiesOnDisplayOverride`](#attribute-donothideotherpropertiesondisplayoverride) | No        | `boolean`                                                         | `false`     |
 | [`renderer`](#attribute-renderer)                                                                   | No        | [`RendererSpecification`](./RendererSpecification.md)             | No override |
 | [`editor`](#attribute-editor)                                                                       | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md) | No override |
@@ -98,6 +98,7 @@ This attribute controls whether the particular property is present in the result
 - Omitted or `undefined`: property visibility is controlled by the ECSchema.
 - `true`: property is made visible. **Warning:** this will automatically hide all other properties of the same class. If this behavior is not desirable, set [`doNotHideOtherPropertiesOnDisplayOverride` attribute](#attribute-donothideotherpropertiesondisplayoverride) to `true`.
 - `false`: property is made hidden.
+- The value can be set using an [ECExpression](./ECExpressions.md#property-overrides). **Warning:** this will automatically hide all other properties of the same class, no matter what the expression evaluates to. If this behavior is not desirable, set [`doNotHideOtherPropertiesOnDisplayOverride` attribute](#attribute-donothideotherpropertiesondisplayoverride) to `true`.
 
 |                   |             |
 | ----------------- | ----------- |
