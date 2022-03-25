@@ -45,6 +45,7 @@ import {
 export class ExtensionAdmin {
   /** Defines the set of extensions that are currently known and can be invoked during activation events.  */
   private _extensions: Map<string, Extension> = new Map<string, Extension>();
+  private _hosts: string[];
 
   /** Fired when an Extension has been added or removed.
    * @internal
@@ -55,6 +56,7 @@ export class ExtensionAdmin {
 
   public constructor() {
     IModelApp.onAfterStartup.addListener(this.onStartup);
+    this._hosts = [];
   }
 
   /**
@@ -80,6 +82,14 @@ export class ExtensionAdmin {
     return Promise.all(
       providers.map(async (provider) => this.addExtension(provider))
     );
+  }
+
+  /**
+   * Register a url (hostname) for extension hosting (i.e. https://localhost:3000, https://www.yourdomain.com, etc.)
+   * @param hostUrl
+   */
+  public registerHost(hostUrl: string) {
+    this._hosts.push(new URL(hostUrl).hostname.replace("www",""));
   }
 
   /** Loops over all enabled Extensions and triggers each one if the provided event is defined. */
@@ -124,13 +134,19 @@ export class ExtensionAdmin {
   private async execute(extension: Extension): Promise<void> {
     if (extension.main) return extension.main();
     if (extension.jsUrl) {
+      const hostName = new URL(extension.jsUrl).hostname.replace("www","");
+      if (this._hosts.indexOf(hostName)< 0) {
+        throw new Error(
+          `Extension "${extension.manifest.name}" could not be loaded from "${hostName}". Please register the host for extension usage via the registerHost API`
+        );
+      }
       const main = await import(/* webpackIgnore: true */ extension.jsUrl);
       if (typeof main === "function") {
         return main();
       }
       if (!main.default) {
         throw new Error(
-          `No default export was found in remote extension ${extension.manifest.name}`
+          `No default export was found in remote extension "${extension.manifest.name}"`
         );
       }
       return main.default();
