@@ -182,7 +182,32 @@ describe("VertexLUT", () => {
       ],
     ];
 
-    expectMeshParams(args, args.colors, makeExpected());
+    // We changed the layout of the vertex table to transpose the positions, feature index, and material index.
+    // It's easier to read/write the way we have it in these tests though.
+    // So perform the transposition last (on a copy of the input).
+    const transpose = (inputTable: number[][]): number[][] => {
+      const outputTable: number[][] = [];
+      for (const input of inputTable) {
+        const output = [...input];
+        const swap = (i0: number, i1: number) => {
+          output[i0] = input[i1];
+          output[i1] = input[i0];
+        };
+
+        swap(1, 4);
+        swap(2, 8);
+        swap(3, 12);
+        swap(6, 9);
+        swap(7, 13);
+        swap(11, 14);
+
+        outputTable.push(output);
+      }
+
+      return outputTable;
+    };
+
+    expectMeshParams(args, args.colors, transpose(makeExpected()));
 
     // Add uv params
     args.textureMapping = {
@@ -196,7 +221,7 @@ describe("VertexLUT", () => {
     exp[1][16] = 0xff; exp[1][17] = 0xff; exp[1][18] = 0x00; exp[1][19] = 0x80;
     exp[2][16] = 0x00; exp[2][17] = 0x80; exp[2][18] = 0x00; exp[2][19] = 0x00;
 
-    expectMeshParams(args, args.colors, exp, undefined, QParams2d.fromNormalizedRange());
+    expectMeshParams(args, args.colors, transpose(exp), undefined, QParams2d.fromNormalizedRange());
 
     // Add feature IDs
     args.features.type = FeatureIndexType.NonUniform;
@@ -208,7 +233,7 @@ describe("VertexLUT", () => {
     exp[0][12] = 0x0d; exp[0][13] = 0xf0; exp[0][14] = 0xad; exp[0][15] = 0xba;
     exp[1][12] = 0xad; exp[1][13] = 0xbe; exp[1][14] = 0x01; exp[1][15] = 0xc0;
 
-    expectMeshParams(args, args.colors, exp);
+    expectMeshParams(args, args.colors, transpose(exp));
 
     // Remove texture and add non-uniform color
     args.textureMapping = undefined;
@@ -230,6 +255,6 @@ describe("VertexLUT", () => {
       0x00, 0x80, 0x00, 0x80,
     ];
 
-    expectMeshParams(args, args.colors, exp, expectedColors);
+    expectMeshParams(args, args.colors, transpose(exp), expectedColors);
   });
 });

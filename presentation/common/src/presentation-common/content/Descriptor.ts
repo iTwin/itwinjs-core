@@ -28,13 +28,13 @@ export interface SelectClassInfo {
   /** Relationship path from input class to the select class. */
   pathFromInputToSelectClass?: RelatedClassInfoWithOptionalRelationship[];
 
-  /** Relationship paths to [related property]($docs/presentation/Content/Terminology#related-properties) classes */
+  /** Relationship paths to [related property]($docs/presentation/content/Terminology#related-properties) classes */
   relatedPropertyPaths?: RelationshipPath[];
 
   /** Relationship paths to navigation property classes */
   navigationPropertyClasses?: RelatedClassInfo[];
 
-  /** Relationship paths to [related instance]($docs/presentation/Content/Terminology#related-instance) classes. */
+  /** Relationship paths to [related instance]($docs/presentation/content/Terminology#related-instance) classes. */
   relatedInstancePaths?: RelationshipPath[];
 }
 
@@ -102,7 +102,7 @@ export enum ContentFlags {
 
   /**
    * Each content record additionally has an image id
-   * @deprecated use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   ShowImages = 1 << 1,
 
@@ -199,7 +199,7 @@ export interface DescriptorOverrides {
     direction: SortDirection;
   };
 
-  /** [ECExpression]($docs/presentation/Advanced/ECExpressions.md) for filtering content */
+  /** [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content */
   filterExpression?: string;
 }
 
@@ -228,7 +228,7 @@ export interface DescriptorSource {
   readonly sortingField?: Field;
   /** Sorting direction */
   readonly sortDirection?: SortDirection;
-  /** Content filtering [ECExpression]($docs/presentation/Advanced/ECExpressions) */
+  /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
   readonly filterExpression?: string;
 }
 
@@ -261,7 +261,7 @@ export class Descriptor implements DescriptorSource {
   public sortingField?: Field;
   /** Sorting direction */
   public sortDirection?: SortDirection;
-  /** Content filtering [ECExpression]($docs/presentation/Advanced/ECExpressions) */
+  /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
   public filterExpression?: string;
 
   /** Construct a new Descriptor using a [[DescriptorSource]] */

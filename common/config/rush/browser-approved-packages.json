@@ -11,6 +11,54 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "@bentley/aec-units-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-bridge-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-common-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-geometric-rules-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-hydraulic-analysis-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-hydraulic-results-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-quantity-takeoffs-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-rail-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-roads-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-subsurface-conflict-analysis-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-subsurface-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-units-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -27,7 +75,27 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "@bentley/plant-custom-attributes-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/process-functional-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/process-physical-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/quantity-takeoffs-aspects-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/react-scripts",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/road-rail-units-schema",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -204,7 +272,7 @@
     },
     {
       "name": "@itwin/itwinui-icons-react",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/itwinui-react",

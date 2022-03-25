@@ -10,12 +10,10 @@ import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpec
 import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
- * Creates nodes for related instances of specified ECClasses.
+ * Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined
+ * by traversing the hierarchy upwards until an ECInstance node is encountered.
  *
- * **Precondition:** can be used only if parent node is ECInstance
- * node. If there is no immediate parent instance node it will go up until it finds one.
- *
- * @see [More details]($docs/presentation/Hierarchies/RelatedInstanceNodes.md)
+ * @see [Related instance nodes specification reference documentation page]($docs/presentation/hierarchies/RelatedInstanceNodes.md)
  * @public
  */
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
@@ -23,14 +21,15 @@ export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificatio
   specType: ChildNodeSpecificationTypes.RelatedInstanceNodes;
 
   /**
-   * Relationship paths from parent node instance class to child node instances' class.
+   * Specifies a chain of [relationship path specifications]($docs/presentation/RepeatableRelationshipPathSpecification.md)
+   * that forms a path from a source instance to the output instances. When this array is empty, the specification produces
+   * no results.
    */
   relationshipPaths: RepeatableRelationshipPathSpecification[];
 
   /**
-   * Condition for filtering instances targeted by specified relationship paths.
-   *
-   * **See:** [ECExpressions Available in InstanceFilter]($docs/presentation/Hierarchies/ECExpressions.md#instance-filter)
+   * Specifies an [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#instance-filter) for filtering
+   * instances of ECClasses targeted through the [[relationshipPaths]] attribute.
    */
   instanceFilter?: string;
 }

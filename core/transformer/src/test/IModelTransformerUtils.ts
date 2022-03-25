@@ -10,14 +10,14 @@ import { Schema } from "@itwin/ecschema-metadata";
 import { Geometry, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
-  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalSchema,
+  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSourceAspect, FunctionalSchema,
   GeometricElement3d, GeometryPart, IModelDb, IModelJsFs, InformationPartitionElement, InformationRecordModel, Model, ModelSelector,
   OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Relationship, RelationshipProps,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import {
-  Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
+  Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, DisplayStyle3dSettingsProps, ElementAspectProps, ElementProps, FontProps,
   GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, QueryRowFormat, SkyBoxImageProps, SkyBoxImageType,
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@itwin/core-common";
@@ -221,7 +221,16 @@ export async function assertIdentityTransformation(
   sourceDb: IModelDb,
   targetDb: IModelDb,
   transformer: IModelTransformer,
-  { expectedElemsOnlyInSource = [] }: { expectedElemsOnlyInSource?: Partial<ElementProps>[] } = {}
+  {
+    expectedElemsOnlyInSource = [],
+    // by default ignore the classes that the transformer ignores, this default is wrong if the option
+    // [IModelTransformerOptions.includeSourceProvenance]$(transformer) is set to true
+    classesToIgnoreMissingElemsOfInTarget = IModelTransformer.provenanceElementClasses,
+  }: {
+    expectedElemsOnlyInSource?: Partial<ElementProps>[];
+    /** before checking elements that are only in the source are correct, filter out elements of these classes */
+    classesToIgnoreMissingElemsOfInTarget?: (typeof Entity)[];
+  } = {}
 ) {
   const geometryConversionTolerance = 1e-10;
 
@@ -284,17 +293,25 @@ export async function assertIdentityTransformation(
           expectedSourceElemJsonProps.Subject.Job = undefined;
         }
       }
-      if (sourceElem instanceof DisplayStyle3d && expectedSourceElemJsonProps.styles?.environment?.sky) {
-        const sky = expectedSourceElemJsonProps.styles.environment.sky;
-        const image = sky.image;
-        if (sky.image?.texture === Id64.invalid)
-          delete image.texture;
-        if (!sky.image)
-          sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
-        if (!sky.twoColor)
-          expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
-        if (sky.file === "")
-          delete sky.file;
+      if (sourceElem instanceof DisplayStyle3d) {
+        const styles = expectedSourceElemJsonProps.styles as DisplayStyle3dSettingsProps | undefined;
+        if (styles?.environment?.sky) {
+          const sky = styles.environment.sky;
+          const image = sky.image;
+          if (sky.image?.texture === Id64.invalid)
+            delete image?.texture;
+          if (!sky.image)
+            sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
+          if (!sky.twoColor)
+            expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
+          if ((sky as any).file === "")
+            delete (sky as any).file;
+        }
+        for (const ovr of styles?.subCategoryOvr ?? []) {
+          if (ovr.subCategory) {
+            ovr.subCategory = transformer.context.findTargetElementId(ovr.subCategory);
+          }
+        }
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
       const _eq = deepEqualWithFpTolerance( // kept for conditional breakpoints
@@ -324,15 +341,17 @@ export async function assertIdentityTransformation(
   const onlyInTargetElements = new Map([...targetToSourceElemsMap]
     .filter(([_inTarget, inSource]) => inSource === undefined)
     .map(([inTarget]) => [inTarget.id, inTarget]));
-  const elementsOnlyInSourceAsInvariant = [...onlyInSourceElements.values()].map((elem) => {
-    const rawProps = { ...elem } as Partial<Mutable<Element>>;
-    delete rawProps.iModel;
-    delete rawProps.id;
-    delete rawProps.isInstanceOfEntity;
-    return rawProps;
-  });
+  const notIgnoredElementsOnlyInSourceAsInvariant = [...onlyInSourceElements.values()]
+    .filter((elem) => !classesToIgnoreMissingElemsOfInTarget.some((cls) => elem instanceof cls))
+    .map((elem) => {
+      const rawProps = { ...elem } as Partial<Mutable<Element>>;
+      delete rawProps.iModel;
+      delete rawProps.id;
+      delete rawProps.isInstanceOfEntity;
+      return rawProps;
+    });
 
-  expect(elementsOnlyInSourceAsInvariant).to.deep.equal(expectedElemsOnlyInSource);
+  expect(notIgnoredElementsOnlyInSourceAsInvariant).to.deep.equal(expectedElemsOnlyInSource);
   expect(onlyInTargetElements).to.have.length(0);
 
   const sourceToTargetModelsMap = new Map<Model, Model | undefined>();
