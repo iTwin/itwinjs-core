@@ -17,8 +17,8 @@ const api_token = process.argv[4];  // app_center_token;
 const test_id = require("../run_output.json")[0].testRunId; // TODO: Pass test results path
 
 const xmlFilter = "[Mocha_Result_XML]: ";
-const deviceLogsPath = "ios/device_logs.txt"
-const resultsPath = "ios/junit_results.xml"
+const deviceLogsPath = "device_logs.txt"
+const resultsPath = "junit_results.xml"
 
 async function fetchTestReportInfo() {
   return new Promise((resolve, reject) => {
