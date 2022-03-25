@@ -76,6 +76,10 @@ export interface AbstractWidgetProps extends ProvidedItem {
         x: number;
         y: number;
     };
+    defaultFloatingSize?: {
+        width: number;
+        height: number;
+    };
     readonly defaultState?: WidgetState;
     readonly fillZone?: boolean;
     readonly floatingContainerId?: string;
@@ -1729,7 +1733,7 @@ export enum StagePanelLocation {
 export enum StagePanelSection {
     // (undocumented)
     End = 2,
-    // (undocumented)
+    // @deprecated (undocumented)
     Middle = 1,
     // (undocumented)
     Start = 0
@@ -2096,7 +2100,7 @@ export interface UiItemProviderRegisteredEventArgs {
     providerId: string;
 }
 
-// @public
+// @public @deprecated
 export enum UiItemsApplicationAction {
     Allow = 0,
     Disallow = 1,

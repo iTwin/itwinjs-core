@@ -33,7 +33,7 @@ solve the problem - if multiple specifications attempt to override the same attr
 from specification with the same `overridesPriority` is defined by the order they appear in the overrides list.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.OverridesPriority.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.OverridesPriority.Ruleset]]
 ```
 
 ![Example of using a "overrides priority" attribute](./media/propertyspecification-with-overridespriority-attribute.png)
@@ -45,7 +45,7 @@ from specification with the same `overridesPriority` is defined by the order the
 This is an attribute that allows overriding the property label. May be [localized](../Advanced/Localization.md).
 
 ```ts
-[[include:Content.Customization.PropertySpecification.LabelOverride.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.LabelOverride.Ruleset]]
 ```
 
 ![Example of using a "label override" attribute](./media/propertyspecification-with-labeloverride-attribute.png)
@@ -69,7 +69,7 @@ The attribute allows moving the property into a different category. There are se
 See [property categorization page](./PropertyCategorization.md) for more details.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.CategoryId.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.CategoryId.Ruleset]]
 ```
 
 ![Example of using a "category id" attribute](./media/propertyspecification-with-categoryid-attribute.png)
@@ -85,7 +85,7 @@ This attribute controls whether the particular property is present in the result
 - `false`: property is made hidden.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.IsDisplayed.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.IsDisplayed.Ruleset]]
 ```
 
 ![Example of using a "is displayed" attribute](./media/propertyspecification-with-isdisplayed-attribute.png)
@@ -97,7 +97,7 @@ This attribute controls whether the particular property is present in the result
 This attribute controls whether making the property visible using [`isDisplayed`](#attribute-isdisplayed) should automatically hide all other properties of the same class. When `true`, this behavior is disabled.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.DoNotHideOtherPropertiesOnDisplayOverride.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.DoNotHideOtherPropertiesOnDisplayOverride.Ruleset]]
 ```
 
 | `doNotHideOtherPropertiesOnDisplayOverride: false`                                                                                                                                                | `doNotHideOtherPropertiesOnDisplayOverride: true`                                                                                                                                               |
@@ -115,11 +115,11 @@ appropriate renderer is used to render the property.
 See [Custom property value renderers](./PropertyValueRenderers.md) page for a list of available renderers or how to register a custom one.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Renderer.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.Renderer.Ruleset]]
 ```
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Renderer.Result]]
+[[include:Presentation.Content.Customization.PropertySpecification.Renderer.Result]]
 ```
 
 ### Attribute: `editor`
@@ -130,9 +130,9 @@ Custom [property editor specification](./PropertyEditorSpecification) that allow
 to be used in UI.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Editor.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.Editor.Ruleset]]
 ```
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Editor.Result]]
+[[include:Presentation.Content.Customization.PropertySpecification.Editor.Result]]
 ```

@@ -100,6 +100,7 @@ export class BackstageItemUtilities {
   ): BackstageStageLauncher => ({
     groupPriority,
     icon,
+    internalData: overrides?.internalData,
     id: frontstageId,
     itemPriority,
     label,
@@ -116,6 +117,7 @@ export class BackstageItemUtilities {
     execute,
     groupPriority,
     icon,
+    internalData: overrides?.internalData,
     id: itemId,
     itemPriority,
     label,
