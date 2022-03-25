@@ -32,7 +32,7 @@ steps:
         --output json > ../run_output.json
     workingDirectory: ${{ parameters.iosDirectory }}/core-test-runner
     failOnStderr: true
-    displayName: 'Run App Center tests of suite '${{ parameters.testSuiteName }}''
+    displayName: 'Run App Center tests of suite ${{ parameters.testSuiteName }}'
     condition: succeeded()
 
   - script: node scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)"
@@ -45,6 +45,6 @@ steps:
     displayName: "Publish Test Results"
     inputs:
       testResultsFiles: "junit_results.xml"
-      testRunTitle: "Test suite '${{ parameters.testSuiteName }}' on iOS"
+      testRunTitle: "Test suite ${{ parameters.testSuiteName }} on iOS"
       searchFolder: ${{ parameters.iosDirectory }}
     condition: succeededOrFailed()
