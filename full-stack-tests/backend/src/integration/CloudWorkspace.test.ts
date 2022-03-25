@@ -86,10 +86,10 @@ describe("Cloud workspace containers", () => {
     });
 
     await ws2Cloud.checkForChanges();
-    expect(wsCont2.resolveFileName({ dbName: testDbName, version: "~1.1.0" })).contains("1.1.3");
-    expect(wsCont2.resolveFileName({ dbName: testDbName, version: "1.2.0" })).contains("1.2.0");
-    expect(wsCont2.resolveFileName({ dbName: testDbName, version: ">1.0.0 <3.0.0" })).contains("1.2.4");
-    expect(wsCont2.resolveFileName({ dbName: testDbName, version: "1.0.0" })).contains("1.0.0");
+    expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: "~1.1.0" })).contains("1.1.3");
+    expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: "1.2.0" })).contains("1.2.0");
+    expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: ">1.0.0 <3.0.0" })).contains("1.2.4");
+    expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: "1.0.0" })).contains("1.0.0");
 
     ws2 = await wsCont2.getWorkspaceDb({ dbName: testDbName, version: "~1.1.0", includePrerelease: true });
     expect(ws2.dbFileName).contains("1.1.4-beta");

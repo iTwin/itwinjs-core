@@ -37,6 +37,9 @@ interface WorkspaceDbOpt extends EditorOpts {
   like?: string;
 }
 
+interface InitializeOpts extends EditorOpts {
+  noPrompt?: boolean;
+}
 /** options for copying a WorkspaceDb to a new name */
 interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
   newDbName: WorkspaceDb.Name;
@@ -301,30 +304,28 @@ async function deleteWorkspaceDb(args: WorkspaceDbOpt) {
 function sayContainer(args: EditorOpts) {
   return `container [${args.containerId}]`;
 }
+
 /** initialize (empty if it exists) a cloud WorkspaceContainer. */
-async function initializeWorkspace(args: EditorOpts) {
+async function initializeWorkspace(args: InitializeOpts) {
   if (undefined === args.storageType || !args.accountName)
     throw new Error("No cloud container supplied");
-  const yesNo = await askQuestion(`Are you sure you want to initialize ${sayContainer(args)}"? [y/n]: `);
-  if (yesNo.toUpperCase()[0] === "Y") {
-    const container = new IModelHost.platform.CloudContainer(args as CloudSqlite.ContainerAccessProps);
-    container.initializeContainer({ checksumBlockNames: true });
-    console.log(`container "${args.containerId} initialized`);
+  if (!args.noPrompt) {
+    const yesNo = await askQuestion(`Are you sure you want to initialize ${sayContainer(args)}"? [y/n]: `);
+    if (yesNo[0].toUpperCase() !== "Y")
+      return;
   }
+  const container = new IModelHost.platform.CloudContainer(args as CloudSqlite.ContainerAccessProps);
+  container.initializeContainer({ checksumBlockNames: true });
+  console.log(`container "${args.containerId} initialized`);
 }
 
 /** purge unused (garbage) blocks from a WorkspaceContainer. */
 async function purgeWorkspace(args: EditorOpts) {
   const container = await getCloudContainer(args);
   const nGarbage = container.garbageBlocks;
-  if (nGarbage === 0) {
-    console.log(`container "${args.containerId}" has no garbage blocks`);
-    return;
-  }
-
   await CloudSqlite.withWriteLock(args.user, container, async () => container.cleanDeletedBlocks());
   await container.checkForChanges(); // re-read manifest to get current garbage count
-  console.log(`purged ${nGarbage - container.garbageBlocks} blocks from ${sayContainer(args)}`);
+  console.log(`purged ${sayContainer(args)}. ${nGarbage - container.garbageBlocks} garbage blocks cleaned`);
 }
 
 /** Make a copy of a WorkspaceDb with a new name. */
@@ -575,6 +576,9 @@ async function main() {
   Yargs.command({
     command: "initializeWorkspace",
     describe: "initialize (empty if already exists) a WorkspaceContainer",
+    builder: {
+      noPrompt: { describe: "skip prompt", boolean: true, default: false },
+    },
     handler: runCommand(initializeWorkspace),
   });
   Yargs.demandCommand();
