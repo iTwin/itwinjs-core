@@ -22,6 +22,7 @@ export interface LocalHostIpcAppOpts {
 
 class LocalTransport extends IpcWebSocketTransport {
   private _client: WebSocket;
+  private _next: number;
   private _pending?: IpcWebSocketMessage[] = [];
 
   public constructor(opts: LocalHostIpcAppOpts) {
@@ -36,6 +37,7 @@ class LocalTransport extends IpcWebSocketTransport {
     }
 
     this._client = new WebSocket(url);
+    this._next = -1;
 
     this._client.addEventListener("open", () => {
       const pending = this._pending!;
@@ -44,7 +46,7 @@ class LocalTransport extends IpcWebSocketTransport {
     });
 
     this._client.addEventListener("message", async (event) => {
-      const message = await this.notifyIncoming(event.data);
+      const message = await this.notifyIncoming(event.data, this._client);
       if (IpcWebSocketMessage.skip(message)) {
         return;
       }
@@ -60,6 +62,7 @@ class LocalTransport extends IpcWebSocketTransport {
       return;
     }
 
+    message.sequence = ++this._next;
     const parts = this.serialize(message);
     parts.forEach((part) => this._client.send(part));
   }
@@ -70,6 +73,9 @@ class LocalTransport extends IpcWebSocketTransport {
  *  @internal
  */
 export class LocalhostIpcApp {
+  private static _initialized = false;
+  private static _ipc: IpcWebSocketFrontend;
+
   public static buildUrlForSocket(base: URL, path = "ipc"): URL {
     const url = new URL(base);
     url.protocol = "ws";
@@ -78,8 +84,12 @@ export class LocalhostIpcApp {
   }
 
   public static async startup(opts: LocalHostIpcAppOpts) {
-    IpcWebSocket.transport = new LocalTransport(opts);
-    const ipc = new IpcWebSocketFrontend();
-    await IpcApp.startup(ipc, opts);
+    if (!this._initialized) {
+      IpcWebSocket.transport = new LocalTransport(opts);
+      this._ipc = new IpcWebSocketFrontend();
+      this._initialized = true;
+    }
+
+    await IpcApp.startup(this._ipc, opts);
   }
 }

@@ -13,7 +13,7 @@ import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
-  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d,
+  mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
   QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
   TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@itwin/core-common";
@@ -1048,14 +1048,16 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Get a thumbnail for a view.
      * @param viewId The id of the view of the thumbnail.
      * @returns A Promise of the ThumbnailProps.
-     * @throws Error if invalid thumbnail.
+     * @throws "No content" error if invalid thumbnail.
+     * @deprecated
      */
-    public async getThumbnail(viewId: Id64String): Promise<ThumbnailProps> {
-      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), viewId.toString());
+    public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
+      // eslint-disable-next-line deprecation/deprecation
+      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), _viewId.toString());
       const intValues = new Uint32Array(val.buffer, 0, 4);
 
       if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
-        throw new Error("Invalid thumbnail");
+        throw new NoContentError();
 
       return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
     }

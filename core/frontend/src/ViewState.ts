@@ -157,7 +157,15 @@ const scratchRange2dIntersect = Range2d.createNull();
  * @internal
  */
 export interface AttachToViewportArgs {
+  /** A function that can be invoked to notify the viewport that its decorations should be recreated. */
   invalidateDecorations: () => void;
+  /** A bit of a hack to work around our ill-advised decision to always expect a RenderClipVolume to be defined in world coordinates.
+   * When we attach a section drawing to a sheet view, and the section drawing has a spatial view attached to *it*, the spatial view's clip
+   * is transformed into drawing space - but when we display it we need to transform it into world (sheet) coordinates.
+   * Fixing the actual problem (clips should always be defined in the coordinate space of the graphic branch containing them) would be quite error-prone
+   * and likely to break existing code -- so instead the SheetViewState specifies this transform to be consumed by DrawingViewState.attachToViewport.
+   */
+  drawingToSheetTransform?: Transform;
 }
 
 /** The front-end state of a [[ViewDefinition]] element.
@@ -740,7 +748,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public outputStatusMessage(status: ViewStatus): ViewStatus {
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString(`Viewing.${ViewStatus[status]}`)));
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString(`iModelJs:Viewing.${ViewStatus[status]}`)));
     return status;
   }
 

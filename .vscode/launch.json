@@ -65,7 +65,8 @@
       ],
       "outFiles": [
         "${workspaceFolder}/core/transformer/lib/**/*.js"
-      ]
+      ],
+      "console": "integratedTerminal"
     },
     {
       "name": "Transformer Tests (Standalone)",
@@ -82,7 +83,8 @@
       ],
       "outFiles": [
         "${workspaceFolder}/core/transformer/lib/**/*.js"
-      ]
+      ],
+      "console": "integratedTerminal"
     },
     {
       "name": "Bentley Tests",
@@ -612,14 +614,10 @@
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
-        "-r",
-        "jsdom-global/register",
-        "-r",
-        "ignore-styles",
-        "lib/**/*.js"
+        "--no-config"
       ],
       "env": {
-        "NODE_ENV": "development",
+        "NODE_ENV": "development"
       },
       "outFiles": [
         "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js",

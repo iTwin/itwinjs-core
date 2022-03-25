@@ -71,7 +71,7 @@ export class CategorySelectorState extends ElementState {
   public get name(): string { return this.code.value; }
 
   /** Determine whether this CategorySelector includes the specified categoryId string */
-  public has(id: Id64String): boolean { return this.categories.has(id.toString()); }
+  public has(id: Id64String): boolean { return this.categories.has(id); }
 
   /** Determine whether this CategorySelector includes the specified category */
   public isCategoryViewed(categoryId: Id64String): boolean { return this.has(categoryId); }

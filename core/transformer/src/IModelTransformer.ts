@@ -7,22 +7,23 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel, MarkRequired } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
-  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
-  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
-  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement,
+  KnownLocations, Model, RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
-  IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
+  IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
-import { IModelImporter } from "./IModelImporter";
+import { IModelImporter, OptimizeGeometryOptions } from "./IModelImporter";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
+import { PendingReferenceMap } from "./PendingReferenceMap";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
@@ -88,18 +89,115 @@ export interface IModelTransformOptions {
    */
   preserveElementIdsForFiltering?: boolean;
 
-  /** The behavior to use when an element reference (id) is found stored as a predecessor on an element, but the referenced element
-   * does not actually exist
+  /** The behavior to use when an element reference (id) is found stored as a predecessor on an element in the source,
+   * but the referenced element does not actually exist in the source.
    * It is possible to craft an iModel with dangling predecessors/invalidated relationships by, e.g., deleting certain
    * elements without fixing up references.
    *
-   * @note turning this on passes the issue down to consuming applications, iModels that have invalid element references
+   * @note "reject" will throw an error and reject the transformation upon finding this case
+   * @note "ignore" passes the issue down to consuming applications, iModels that have invalid element references
    *       like this can cause errors, and you should consider adding custom logic in your transformer to remove the
    *       reference depending on your use case.
    * @default "reject"
    * @beta
    */
   danglingPredecessorsBehavior?: "reject" | "ignore";
+
+  /** If defined, options to be supplied to [[IModelImporter.optimizeGeometry]] by [[IModelTransformer.processChanges]] and [[IModelTransformer.processAll]]
+   * as a post-processing step to optimize the geometry in the iModel.
+   * @beta
+   */
+  optimizeGeometry?: OptimizeGeometryOptions;
+}
+
+/**
+ * A container for tracking the state of a partially committed element and finalizing it when it's ready to be fully committed
+ * @internal
+ */
+class PartiallyCommittedElement {
+  public constructor(
+    /**
+     * A set of "model|element ++ ID64" pairs, e.g. `model0x11` or `element0x12`.
+     * It is possible for the submodel of an element to be separately resolved from the actual element,
+     * so its resolution must be tracked separately
+     */
+    private _missingPredecessors: Set<string>,
+    private _onComplete: () => void
+  ) {}
+  public resolvePredecessor(id: Id64String, isModelRef: boolean) {
+    const key = PartiallyCommittedElement.makePredecessorKey(id, isModelRef);
+    this._missingPredecessors.delete(key);
+    if (this._missingPredecessors.size === 0) this._onComplete();
+  }
+  public static makePredecessorKey(id: Id64String, isModelRef: boolean) {
+    return `${isModelRef ? "model" : "element"}${id}`;
+  }
+  public forceComplete() {
+    this._onComplete();
+  }
+}
+
+/**
+ * A helper for checking the in-transformation processing state of an element,
+ * whether it has been transformed, and if its submodel has been
+ * @internal
+ */
+class ElementProcessState {
+  public constructor(
+    public elementId: string,
+    /** whether or not this element needs to be processed */
+    public needsElemImport: boolean,
+    /** whether or not this element's submodel needs to be processed */
+    public needsModelImport: boolean,
+  ) {}
+  public static fromElementAndTransformer(elementId: Id64String, transformer: IModelTransformer): ElementProcessState {
+    // we don't need to load all of the props of the model to check if the model exists
+    const dbHasModel = (db: IModelDb, id: Id64String) => db.withPreparedStatement("SELECT 1 FROM bis.Model WHERE ECInstanceId=? LIMIT 1", (stmt) => {
+      stmt.bindId(1, id);
+      const stepResult = stmt.step();
+      if (stepResult === DbResult.BE_SQLITE_DONE) return false;
+      if (stepResult === DbResult.BE_SQLITE_ROW) return true;
+      else throw new IModelError(stepResult, "expected 1 or no rows");
+    });
+    const isSubModeled = dbHasModel(transformer.sourceDb, elementId);
+    const idOfElemInTarget = transformer.context.findTargetElementId(elementId);
+    const isElemInTarget = Id64.invalid !== idOfElemInTarget;
+    const needsModelImport = isSubModeled && (!isElemInTarget || !dbHasModel(transformer.targetDb, idOfElemInTarget));
+    return new ElementProcessState(elementId, !isElemInTarget, needsModelImport);
+  }
+  public get needsImport() { return this.needsElemImport || this.needsModelImport; }
+}
+
+/**
+ * Apply a function to each Id64 in a supported container type of Id64s.
+ * Currently only supports raw Id64String or RelatedElement-like objects containing an `id` property that is a Id64String,
+ * which matches the possible containers of references in [Element.requiredReferenceKeys]($backend).
+ * @internal
+ */
+function mapId64<R>(
+  idContainer: Id64String | { id: Id64String } | undefined,
+  func: (id: Id64String) => R
+): R[] {
+  const isId64String = (arg: any): arg is Id64String => { assert(Id64.isValidId64(arg)); return typeof arg === "string"; };
+  const isRelatedElem = (arg: any): arg is RelatedElement =>
+    arg && typeof arg === "object" && "id" in arg;
+
+  const results = [];
+
+  // is a string if compressed or singular id64, but check for singular just checks if it's a string so do this test first
+  if (idContainer === undefined) {
+    // nothing
+  } else if (isId64String(idContainer)) {
+    results.push(func(idContainer));
+  } else if (isRelatedElem(idContainer)) {
+    results.push(func(idContainer.id));
+  } else {
+    throw Error([
+      `Id64 container '${idContainer}' is unsupported.`,
+      "Currently only singular Id64 strings or prop-like objects containing an 'id' property are supported.",
+    ].join("\n"));
+  }
+  return results;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -124,14 +222,28 @@ export class IModelTransformer extends IModelExportHandler {
     return this._options.targetScopeElementId;
   }
 
-  /** The set of Elements that were deferred during a prior transformation pass. */
-  protected _deferredElementIds = new Set<Id64String>();
+  /** map of (unprocessed element, referencing processed element) pairs to the partially committed element that needs the reference resolved
+   * and have some helper methods below for now */
+  protected _pendingReferences = new PendingReferenceMap<PartiallyCommittedElement>();
+
+  /** map of partially committed element ids to their partial commit progress */
+  protected _partiallyCommittedElements = new Map<Id64String, PartiallyCommittedElement>();
 
   /** the options that were used to initialize this transformer */
   private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingPredecessorsBehavior">;
 
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
+
+  /** The element classes that are considered to define provenance in the iModel */
+  public static get provenanceElementClasses(): (typeof Entity)[] {
+    return [FolderLink, SynchronizationConfigLink, ExternalSource, ExternalSourceAttachment];
+  }
+
+  /** The element aspect classes that are considered to define provenance in the iModel */
+  public static get provenanceElementAspectClasses(): (typeof Entity)[] {
+    return [ExternalSourceAspect];
+  }
 
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
@@ -159,11 +271,8 @@ export class IModelTransformer extends IModelExportHandler {
     this.exporter.registerHandler(this);
     this.exporter.wantGeometry = options?.loadSourceGeometry ?? false; // optimization to not load source GeometryStreams by default
     if (!this._options.includeSourceProvenance) { // clone provenance from the source iModel into the target iModel?
-      this.exporter.excludeElementClass(FolderLink.classFullName);
-      this.exporter.excludeElementClass(SynchronizationConfigLink.classFullName);
-      this.exporter.excludeElementClass(ExternalSource.classFullName);
-      this.exporter.excludeElementClass(ExternalSourceAttachment.classFullName);
-      this.exporter.excludeElementAspectClass(ExternalSourceAspect.classFullName);
+      IModelTransformer.provenanceElementClasses.forEach((cls) => this.exporter.excludeElementClass(cls.classFullName));
+      IModelTransformer.provenanceElementAspectClasses.forEach((cls) => this.exporter.excludeElementAspectClass(cls.classFullName));
     }
     this.exporter.excludeElementAspectClass(ChannelRootAspect.classFullName); // Channel boundaries within the source iModel are not relevant to the target iModel
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
@@ -173,12 +282,14 @@ export class IModelTransformer extends IModelExportHandler {
     } else {
       this.importer = target;
       /* eslint-disable deprecation/deprecation */
-      if (this._options.preserveElementIdsForFiltering !== this.importer.preserveElementIdsForFiltering) {
+      if (Boolean(this._options.preserveElementIdsForFiltering) !== this.importer.preserveElementIdsForFiltering) {
         Logger.logWarning(
           loggerCategory,
-          "A custom importer was passed as a target but its 'preserveElementIdsForFiltering' option is out of sync with the transformer's option."
-          + "\nThe custom importer target's option will be force updated to use the transformer's value."
-          + "\nThis behavior is deprecated and will be removed in a future version, throwing an error if they are out of sync."
+          [
+            "A custom importer was passed as a target but its 'preserveElementIdsForFiltering' option is out of sync with the transformer's option.",
+            "The custom importer target's option will be force updated to use the transformer's value.",
+            "This behavior is deprecated and will be removed in a future version, throwing an error if they are out of sync.",
+          ].join("\n")
         );
         this.importer.preserveElementIdsForFiltering = Boolean(this._options.preserveElementIdsForFiltering);
       }
@@ -355,22 +466,18 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
-  /** Format an Element for the Logger. */
-  private formatElementForLogger(elementProps: ElementProps | Element): string {
-    const namePiece: string = elementProps.code.value ? `${elementProps.code.value} ` : elementProps.userLabel ? `${elementProps.userLabel} ` : "";
-    return `${elementProps.classFullName} ${namePiece}[${elementProps.id!}]`;
-  }
-
-  /** Mark the specified Element so its processing can be deferred. */
-  protected skipElement(sourceElement: Element): void {
-    this._deferredElementIds.add(sourceElement.id);
-    Logger.logInfo(loggerCategory, `Deferred ${this.formatElementForLogger(sourceElement)}`);
+  /** This no longer has any effect except emitting a warning
+   * @deprecated
+   */
+  protected skipElement(_sourceElement: Element): void {
+    Logger.logWarning(loggerCategory, `Tried to defer/skip an element, which is no longer necessary`);
   }
 
   /** Transform the specified sourceElement into ElementProps for the target iModel.
    * @param sourceElement The Element from the source iModel to transform.
    * @returns ElementProps for the target iModel.
    * @note A subclass can override this method to provide custom transform behavior.
+   * @note This can be called more than once for an element in arbitrary order, so it should not have side-effects.
    */
   public onTransformElement(sourceElement: Element): ElementProps {
     Logger.logTrace(loggerCategory, `onTransformElement(${sourceElement.id}) "${sourceElement.getDisplayLabel()}"`);
@@ -401,47 +508,70 @@ export class IModelTransformer extends IModelExportHandler {
     return true;
   }
 
-  /** Determine if any predecessors have not been imported yet.
-   * @param sourceElement The Element from the source iModel
+  /** callback to perform when a partial element says it's ready to be completed
+   * transforms the source element with all references now valid, then updates the partial element with the results
    */
-  private findMissingPredecessors(sourceElement: Element): Id64Set {
-    const sourcePredecessorIds: Id64Set = sourceElement.getPredecessorIds();
-    sourcePredecessorIds.forEach((sourcePredecessorId: Id64String) => {
-      if (Id64.invalid === sourcePredecessorId) {
-        sourcePredecessorIds.delete(sourcePredecessorId);
-      } else {
-        const targetPredecessorId: Id64String = this.context.findTargetElementId(sourcePredecessorId);
-        if (Id64.isValidId64(targetPredecessorId)) {
-          // a valid Id indicates that the predecessor has already been remapped
-          sourcePredecessorIds.delete(sourcePredecessorId);
-        } else {
-          const sourcePredecessor = this.sourceDb.elements.tryGetElement(sourcePredecessorId);
-          if (sourcePredecessor === undefined) {
-            switch (this._options.danglingPredecessorsBehavior) {
-              case "ignore":
-                Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has a missing predecessor (${sourcePredecessorId})`);
-                sourcePredecessorIds.delete(sourcePredecessorId);
-                return;
-              case "reject":
-                throw new IModelError(
-                  IModelStatus.NotFound,
-                  `Found a reference to an element "${sourcePredecessorId}" that doesn't exist while looking for predecessors of "${sourceElement.id}"`
-                  + "\nThis must have been caused by an upstream application that changed the iModel."
-                  + "\nYou can set the IModelTransformerOptions.danglingPredecessorsBehavior option to 'ignore' to ignore this, but this will leave the iModel"
-                  + "\nin a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom"
-                  + "\ntransformer to remove the reference and fix affected elements may be suitable."
-                );
-            }
-          }
-          if (!this.exporter.shouldExportElement(sourcePredecessor)) {
-            // any predecessor that has been explicitly excluded is not considered missing
-            sourcePredecessorIds.delete(sourcePredecessorId);
-            Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has an excluded predecessor (${sourcePredecessorId}) "${sourcePredecessor.getDisplayLabel()}"`);
-          }
+  private makePartialElementCompleter(sourceElem: Element) {
+    return () => {
+      const sourceElemId = sourceElem.id;
+      const targetElemId = this.context.findTargetElementId(sourceElem.id);
+      if (targetElemId === Id64.invalid)
+        throw Error(`${sourceElemId} has not been inserted into the target, a completer cannot be made for it. This is a bug.`);
+      const targetElemProps = this.onTransformElement(sourceElem);
+      this.targetDb.elements.updateElement({...targetElemProps, id: targetElemId});
+      this._partiallyCommittedElements.delete(sourceElemId);
+    };
+  }
+
+  /** collect references this element has that are yet to be mapped, and if necessary create a
+   * PartiallyCommittedElement for it to track resolution of unmapped references
+   * @returns {boolean}
+   */
+  private collectUnmappedReferences(element: Element): boolean {
+
+    const missingPredecessors = new Set<string>();
+    let thisPartialElem: PartiallyCommittedElement | undefined;
+
+    for (const predecessorId of element.getPredecessorIds()) {
+      const predecessorState = ElementProcessState.fromElementAndTransformer(predecessorId, this);
+      if (!predecessorState.needsImport) continue;
+      Logger.logTrace(loggerCategory, `Deferred resolution of predecessor '${predecessorId}' of element '${element.id}'`);
+      // TODO: instead of loading the entire element run a small has query
+      const predecessor = this.sourceDb.elements.tryGetElement(predecessorId);
+      if (predecessor === undefined) {
+        Logger.logWarning(loggerCategory, `Source element (${element.id}) "${element.getDisplayLabel()}" has a dangling predecessor (${predecessorId})`);
+        switch (this._options.danglingPredecessorsBehavior) {
+          case "ignore":
+            continue;
+          case "reject":
+            throw new IModelError(
+              IModelStatus.NotFound,
+              [
+                `Found a reference to an element "${predecessorId}" that doesn't exist while looking for predecessors of "${element.id}".`,
+                "This must have been caused by an upstream application that changed the iModel.",
+                "You can set the IModelTransformerOptions.danglingPredecessorsBehavior option to 'ignore' to ignore this, but this will leave the iModel",
+                "in a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom",
+                "transformer to remove the reference and fix affected elements may be suitable.",
+              ].join("\n")
+            );
         }
       }
-    });
-    return sourcePredecessorIds;
+      if (thisPartialElem === undefined) {
+        thisPartialElem = new PartiallyCommittedElement(missingPredecessors, this.makePartialElementCompleter(element));
+        if (!this._partiallyCommittedElements.has(element.id))
+          this._partiallyCommittedElements.set(element.id, thisPartialElem);
+      }
+      if (predecessorState.needsModelImport) {
+        missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, true));
+        this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: true}, thisPartialElem);
+      }
+      if (predecessorState.needsElemImport) {
+        missingPredecessors.add(PartiallyCommittedElement.makePredecessorKey(predecessorId, false));
+        this._pendingReferences.set({referenced: predecessorId, referencer: element.id, isModelRef: false}, thisPartialElem);
+      }
+    }
+
+    return missingPredecessors.size > 0;
   }
 
   /** Cause the specified Element and its child Elements (if applicable) to be exported from the source iModel and imported into the target iModel.
@@ -467,6 +597,44 @@ export class IModelTransformer extends IModelExportHandler {
    * @note Reaching this point means that the element has passed the standard exclusion checks in IModelExporter.
    */
   public override shouldExportElement(_sourceElement: Element): boolean { return true; }
+
+  /**
+   * If they haven't been already, import all of the required predecessors
+   * @internal do not call, override or implement this, it will be removed
+   */
+  public override async preExportElement(sourceElement: Element): Promise<void> {
+    const elemClass = sourceElement.constructor as typeof Element;
+
+    const unresolvedPredecessorsProcessStates = elemClass.requiredReferenceKeys
+      .map((referenceKey) => {
+        const idContainer = sourceElement[referenceKey as keyof Element];
+        return mapId64(idContainer, (id) => {
+          if (id === Id64.invalid || id === IModel.rootSubjectId) return; // not allowed to directly export the root subject
+          if (!this.context.isBetweenIModels) {
+            // Within the same iModel, can use existing DefinitionElements without remapping
+            // This is relied upon by the TemplateModelCloner
+            // TODO: extract this out to only be in the TemplateModelCloner
+            const asDefinitionElem = this.sourceDb.elements.tryGetElement(id, DefinitionElement);
+            if (asDefinitionElem && !(asDefinitionElem instanceof RecipeDefinitionElement)) {
+              this.context.remapElement(id, id);
+            }
+          }
+          return ElementProcessState.fromElementAndTransformer(id, this);
+        });
+      })
+      .flat()
+      .filter((maybeProcessState): maybeProcessState is ElementProcessState =>
+        maybeProcessState !== undefined && maybeProcessState.needsImport
+      );
+
+    if (unresolvedPredecessorsProcessStates.length > 0) {
+      for (const processState of unresolvedPredecessorsProcessStates) {
+        // must export element first if not done so
+        if (processState.needsElemImport) await this.exporter.exportElement(processState.elementId);
+        if (processState.needsModelImport) await this.exporter.exportModel(processState.elementId);
+      }
+    }
+  }
 
   /** Override of [IModelExportHandler.onExportElement]($transformer) that imports an element into the target iModel when it is exported from the source iModel.
    * This override calls [[onTransformElement]] and then [IModelImporter.importElement]($transformer) to update the target iModel.
@@ -502,26 +670,28 @@ export class IModelTransformer extends IModelExportHandler {
       if (!this.hasElementChanged(sourceElement, targetElementId)) {
         return;
       }
-    } else {
-      const missingPredecessorIds: Id64Set = this.findMissingPredecessors(sourceElement);
-      if (missingPredecessorIds.size > 0) {
-        this.skipElement(sourceElement);
-        if (Logger.isEnabled(loggerCategory, LogLevel.Trace)) {
-          for (const missingPredecessorId of missingPredecessorIds) {
-            const missingPredecessorElement: Element | undefined = this.sourceDb.elements.tryGetElement(missingPredecessorId);
-            if (missingPredecessorElement) {
-              Logger.logTrace(loggerCategory, `Remapping not found for predecessor ${this.formatElementForLogger(missingPredecessorElement)}`);
-            }
-          }
-        }
-        return;
-      }
     }
+
+    this.collectUnmappedReferences(sourceElement);
+
+    // TODO: untangle targetElementId state...
+    if (targetElementId === Id64.invalid)
+      targetElementId = undefined;
+
     targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
     if (!this._options.wasSourceIModelCopiedToTarget) {
       this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
     }
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
+    // now that we've mapped this elem we can fix unmapped references to it
+    for (const referencer of this._pendingReferences.getReferencers(sourceElement.id)) {
+      const isModelRef = false; // we're in onExportElement so no
+      const key = {referencer, referenced: sourceElement.id, isModelRef};
+      const pendingRef = this._pendingReferences.get(key);
+      if (!pendingRef) continue;
+      pendingRef.resolvePredecessor(sourceElement.id, isModelRef);
+      this._pendingReferences.delete(key);
+    }
     if (!this._options.noProvenance) {
       const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
       if (aspectProps.id === undefined) {
@@ -552,6 +722,14 @@ export class IModelTransformer extends IModelExportHandler {
     const targetModeledElementId: Id64String = this.context.findTargetElementId(sourceModel.id);
     const targetModelProps: ModelProps = this.onTransformModel(sourceModel, targetModeledElementId);
     this.importer.importModel(targetModelProps);
+    for (const referencer of this._pendingReferences.getReferencers(sourceModel.id)) {
+      const isModelRef = true; // we're in onExportModel so yes
+      const key = { referencer, referenced: sourceModel.id, isModelRef };
+      const pendingRef = this._pendingReferences.get(key);
+      if (!pendingRef) continue;
+      pendingRef.resolvePredecessor(sourceModel.id, isModelRef);
+      this._pendingReferences.delete(key);
+    }
   }
 
   /** Override of [IModelExportHandler.onDeleteModel]($transformer) that is called when [IModelExporter]($transformer) detects that a [Model]($backend) has been deleted from the source iModel. */
@@ -626,21 +804,23 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Import elements that were deferred in a prior pass.
-   * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
+   * @deprecated This method is no longer necessary since the transformer no longer needs to defer elements
    */
-  public async processDeferredElements(numRetries: number = 3): Promise<void> {
-    Logger.logTrace(loggerCategory, `processDeferredElements(), numDeferred=${this._deferredElementIds.size}`);
-    const copyOfDeferredElementIds: Id64Set = this._deferredElementIds;
-    this._deferredElementIds = new Set<Id64String>();
-    for (const elementId of copyOfDeferredElementIds) {
-      await this.processElement(elementId);
-    }
-    if (this._deferredElementIds.size > 0) {
-      if (--numRetries > 0) {
-        Logger.logTrace(loggerCategory, "Retrying processDeferredElements()");
-        await this.processDeferredElements(numRetries);
-      } else {
-        throw new IModelError(IModelStatus.BadRequest, "Not all deferred elements could be processed");
+  public async processDeferredElements(_numRetries: number = 3): Promise<void> {}
+
+  private finalizeTransformation() {
+    if (this._partiallyCommittedElements.size > 0) {
+      Logger.logWarning(
+        loggerCategory,
+        [
+          "The following elements were never fully resolved:",
+          [...this._partiallyCommittedElements.keys()].join(","),
+          "This indicates that either some predecessors were excluded from the transformation",
+          "or the source has dangling predecessors.",
+        ].join("\n")
+      );
+      for (const partiallyCommittedElem of this._partiallyCommittedElements.values()) {
+        partiallyCommittedElem.forceComplete();
       }
     }
   }
@@ -695,6 +875,8 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
+  private _yieldManager = new YieldManager();
+
   /** Detect Relationship deletes using ExternalSourceAspects in the target iModel and a *brute force* comparison against relationships in the source iModel.
    * @see processChanges
    * @note This method is called from [[processAll]] and is not needed by [[processChanges]], so it only needs to be called directly when processing a subset of an iModel.
@@ -706,7 +888,7 @@ export class IModelTransformer extends IModelExportHandler {
     }
     const aspectDeleteIds: Id64String[] = [];
     const sql = `SELECT ECInstanceId,Identifier,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
-    this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+    await this.targetDb.withPreparedStatement(sql, async (statement: ECSqlStatement) => {
       statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -719,6 +901,7 @@ export class IModelTransformer extends IModelExportHandler {
           }
           aspectDeleteIds.push(statement.getValue(0).getId());
         }
+        await this._yieldManager.allowYield();
       }
     });
     this.targetDb.elements.deleteAspect(aspectDeleteIds);
@@ -739,26 +922,6 @@ export class IModelTransformer extends IModelExportHandler {
       }
     });
     return targetRelationshipProps;
-  }
-
-  /** Override of [IModelExportHandler.shouldExportElementAspect]($transformer) that is called to determine if an ElementAspect should be exported from the source iModel.
-   * @note Reaching this point means that the ElementAspect has passed the standard exclusion checks in [IModelExporter]($transformer).
-   */
-  public override shouldExportElementAspect(sourceAspect: ElementAspect): boolean {
-    // When exporting elements, the transformer may choose to *defer* an element, which is something the exporter doesn't understand,
-    // so it tries to export aspects anyway. As such we need to *not* export aspects for deferred elements.
-    // When we retry processing deferred elements and successfully export them is when we export the aspects again
-    const targetElementId = this.context.findTargetElementId(sourceAspect.element.id);
-    if (targetElementId === Id64.invalid && this._deferredElementIds.has(sourceAspect.element.id)) {
-      Logger.logInfo(
-        loggerCategory,
-        `tried to export an aspect for a deferred element, '${sourceAspect.element.id}', ` +
-          "it will be retried when the deferred element is processed again."
-      );
-      return false;
-    }
-
-    return true;
   }
 
   /** Override of [IModelExportHandler.onExportElementUniqueAspect]($transformer) that imports an ElementUniqueAspect into the target iModel when it is exported from the source iModel.
@@ -890,7 +1053,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.context.remapElement(sourceSubjectId, targetSubjectId);
     await this.processChildElements(sourceSubjectId);
     await this.processSubjectSubModels(sourceSubjectId);
-    return this.processDeferredElements();
+    return this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
   }
 
   /** Export everything from the source iModel and import the transformed entities into the target iModel.
@@ -908,12 +1071,17 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportModelContents(IModel.repositoryModelId, Element.classFullName, true); // after the Subject hierarchy, process the other elements of the RepositoryModel
     await this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
     await this.exporter.exportRelationships(ElementRefersToElements.classFullName);
-    await this.processDeferredElements();
+    await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
     if (this.shouldDetectDeletes()) {
       await this.detectElementDeletes();
       await this.detectRelationshipDeletes();
     }
+
+    if (this._options.optimizeGeometry)
+      this.importer.optimizeGeometry(this._options.optimizeGeometry);
+
     this.importer.computeProjectExtents();
+    this.finalizeTransformation();
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
@@ -929,8 +1097,13 @@ export class IModelTransformer extends IModelExportHandler {
     this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(accessToken, startChangesetId);
-    await this.processDeferredElements();
+    await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
+
+    if (this._options.optimizeGeometry)
+      this.importer.optimizeGeometry(this._options.optimizeGeometry);
+
     this.importer.computeProjectExtents();
+    this.finalizeTransformation();
   }
 }
 

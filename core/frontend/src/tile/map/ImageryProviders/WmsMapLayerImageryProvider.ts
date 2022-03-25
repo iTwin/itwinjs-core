@@ -6,9 +6,8 @@
  * @module Tiles
  */
 import { IModelStatus } from "@itwin/core-bentley";
+import { Cartographic, ImageMapLayerSettings, MapSubLayerSettings, ServerError } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
-import { Cartographic, MapLayerSettings, MapSubLayerSettings, ServerError } from "@itwin/core-common";
-
 import {
   ImageryMapTileTree, MapCartoRectangle, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, WmsCapabilities,
   WmsCapability, WmsUtilities,
@@ -35,7 +34,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _isVersion1_1 = false;
   private _crsSupport: WmsCrsSupport|undefined;
 
-  constructor(settings: MapLayerSettings) {
+  constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
     this._baseUrl = WmsUtilities.getBaseUrl(this._settings.url);
   }

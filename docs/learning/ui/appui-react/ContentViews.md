@@ -110,7 +110,7 @@ const one2dIModelViewport: ContentGroupProps = {
 const contentGroup = new ContentGroup(one2dIModelViewport);
 ```
 
-The following shows a sample with two entries that reference the ViewportContent and TableContent defined above. `applicationData` is defined for each content control, which is provided to the ContentControl constructor via the `options` parameter.
+The following shows a sample with two entries that reference the ViewportContent and TableContent defined above. `applicationData` is defined for each content control, which is provided to the ContentControl constructor via the `options` parameter. In iTwinjs 3.0 and later, the display of default view overlays are required to be an opted-into. The example below shows the featureOptions to set to opt-in.
 
 ```ts
 contentGroup = new ContentGroup({
@@ -118,17 +118,25 @@ contentGroup = new ContentGroup({
   layout: StandardContentLayouts.twoHorizontalSplit,
   contents: [
     {
-      classId: ViewportContent,
+      classId: IModelViewportControl,
       applicationData: {
-        viewId: this.viewIds[0],
-        iModelConnection: NineZoneSampleApp.store.getState().sampleAppState!.currentIModelConnection,
+      viewState: UiFramework.getDefaultViewState,
+      iModelConnection: UiFramework.getIModelConnection,
         rulesetId: this._rulesetId,
+        featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: false,
+              enableSolarTimelineViewOverlay: false,
+            },
+          },
       },
     },
     {
       classId: TableContent,
       applicationData: {
-        iModelConnection: NineZoneSampleApp.store.getState().sampleAppState!.currentIModelConnection,
+        iModelConnection: UiFramework.getIModelConnection,
         rulesetId: this._rulesetId,
       },
     }
@@ -208,6 +216,21 @@ const fourQuadrants: ContentLayoutProps = {
   },
 };
 ```
+
+### Floating content view
+
+In addition to the "fixed" content views that are defined for a Frontstage, via the [ContentGroupProps]($appui-react), one or more "floating" content dialogs can be opened to display an IModel view, as seen below.
+
+![Floating iModel Content Dialog](../appui/images/FloatingViewport.png "Floating iModel Content Dialog")
+
+The code snippet below is from the `ui-test-app` file [ImmediateTools.tsx](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/tools/ImmediateTools.tsx) and shows the API call to open a floating content dialog. The ContentDialogManager manages the z-index of the "active" content dialog and ensures the active dialog appears above other floating content dialogs.
+
+```tsx
+    ContentDialogManager.openDialog(<IModelViewDialog x={x} y={y} id={OpenViewDialogTool.dialogId}
+      title={`IModel View (${OpenViewDialogTool._counter})`} />, OpenViewDialogTool.dialogId);
+```
+
+ The example `IModelViewDialog` component uses the component [PopupTestView](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/tools/PopupTestView.tsx), child component [FloatingViewportContent]($appui-react), the active IModel and the default viewstate to display an IModel view. This example `PopupTestView` also registers a custom right-click menu to show when right-clicking on the view canvas. The z-index of these dialogs are below the z-index of all other UI elements.
 
 ## API Reference
 

@@ -9,28 +9,33 @@
 import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes } from "./ChildNodeSpecification";
 
 /**
- * Creates a custom-defined node.
+ * Returns a static custom-defined node that's not based on an ECInstance.
  *
- * @see [More details]($docs/presentation/Hierarchies/CustomNode.md)
+ * @see [Custom node specification reference documentation page]($docs/presentation/hierarchies/CustomNode.md)
  * @public
  */
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
   /** Used for serializing to JSON. */
   specType: ChildNodeSpecificationTypes.CustomNode;
 
-  /** Type of the node. */
+  /** Specifies node type, which is assigned to node's key. */
   type: string;
 
   /**
-   * Label of the node. May be [localized]($docs/presentation/Advanced/Localization.md).
+   * Specifies node label. This is a string value that may be [localized]($docs/presentation/advanced/Localization.md).
    */
   label: string;
 
   /**
-   * Description of the node. May be [localized]($docs/presentation/Advanced/Localization.md).
+   * Specifies the value of [[Node.description]] property, which is a string that may
+   * be [localized]($docs/presentation/advanced/Localization.md). UI component displaying the node may choose
+   * whether and how to surface this information to users.
    */
   description?: string;
 
-  /** Id of the image to use for this custom node. */
+  /**
+   * Specifies node's image ID. If set, the ID is assigned to [[Node.imageId]] and it's
+   * up to the UI component to decide what to do with it.
+   */
   imageId?: string;
 }

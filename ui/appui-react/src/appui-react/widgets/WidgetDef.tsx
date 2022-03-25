@@ -20,6 +20,7 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
+import { IconHelper, IconSpec, SizeProps } from "@itwin/core-react";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -135,14 +136,17 @@ export class WidgetDef {
   private _widgetType: WidgetType = WidgetType.Rectangular;
   private _applicationData?: any;
   private _iconSpec?: string | ConditionalStringValue | React.ReactNode;
+  private _internalData?: Map<string,any>;
   private _badgeType?: BadgeType;
   private _onWidgetStateChanged?: () => void;
   private _saveTransientState?: () => void;
   private _restoreTransientState?: () => boolean;
   private _preferredPanelSize: "fit-content" | undefined;
+  private _defaultFloatingSize: SizeProps | undefined;
   private _canPopout?: boolean;
   private _floatingContainerId?: string;
   private _defaultFloatingPosition: PointProps | undefined;
+  private _initialProps?: WidgetProps;
 
   private _tabLocation: TabLocation = {
     side: "left",
@@ -156,8 +160,9 @@ export class WidgetDef {
       return this._state;
 
     const frontstageDef = FrontstageManager.activeFrontstageDef;
-    if (frontstageDef?.findWidgetDef(this.id)) {
+    if (frontstageDef && frontstageDef.findWidgetDef(this.id)) {
       const currentState = frontstageDef.getWidgetCurrentState(this);
+      // istanbul ignore else
       if (undefined !== currentState)
         return currentState;
     }
@@ -178,8 +183,10 @@ export class WidgetDef {
   public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; }
   public get applicationData(): any | undefined { return this._applicationData; }
   public get isFloating(): boolean { return this.state === WidgetState.Floating; }
-  public get iconSpec(): string | ConditionalStringValue | React.ReactNode { return this._iconSpec; }
+  public get iconSpec(): IconSpec { return this._iconSpec === IconHelper.reactIconKey ? IconHelper.getIconReactNode(this._iconSpec, this._internalData) : this._iconSpec; }
+  public set iconSpec(spec: IconSpec )  { this._iconSpec = this._internalData ? IconHelper.getIconData(spec, this._internalData) : spec; }
   public get badgeType(): BadgeType | undefined { return this._badgeType; }
+  public get initialProps(): WidgetProps | undefined { return this._initialProps; }
 
   public get widgetType(): WidgetType { return this._widgetType; }
   public set widgetType(type: WidgetType) { this._widgetType = type; }
@@ -191,6 +198,10 @@ export class WidgetDef {
   /** @internal */
   public get defaultFloatingPosition() { return this._defaultFloatingPosition; }
   public set defaultFloatingPosition(position: PointProps | undefined) { this._defaultFloatingPosition = position; }
+
+  /** @internal */
+  public get defaultFloatingSize() { return this._defaultFloatingSize; }
+  public set defaultFloatingSize(size: SizeProps | undefined) { this._defaultFloatingSize = size; }
 
   /** @internal */
   public get defaultState() { return this._defaultState; }
@@ -207,6 +218,7 @@ export class WidgetDef {
   }
 
   public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
+    me._initialProps = widgetProps;
     if (widgetProps.label)
       me.setLabel(widgetProps.label);
     else if (widgetProps.labelKey)
@@ -231,6 +243,7 @@ export class WidgetDef {
 
     if (widgetProps.defaultState !== undefined) {
       me._defaultState = widgetProps.defaultState;
+      // istanbul ignore next
       if ("1" === UiFramework.uiVersion)
         me._state = widgetProps.defaultState === WidgetState.Floating ? WidgetState.Open : widgetProps.defaultState;
     }
@@ -259,14 +272,17 @@ export class WidgetDef {
 
     if (widgetProps.iconSpec !== undefined)
       me._iconSpec = widgetProps.iconSpec;
+    if (widgetProps.internalData)
+      me._internalData = widgetProps.internalData;
     // istanbul ignore if
-    if (widgetProps.icon !== undefined)
+    if (widgetProps.icon !== undefined && me._iconSpec === undefined)
       me._iconSpec = widgetProps.icon;
 
     if (widgetProps.badgeType !== undefined)
       me._badgeType = widgetProps.badgeType;
 
     me._preferredPanelSize = widgetProps.preferredPanelSize;
+    me._defaultFloatingSize = widgetProps.defaultFloatingSize;
     me._onWidgetStateChanged = widgetProps.onWidgetStateChanged;
     me._saveTransientState = widgetProps.saveTransientState;
     me._restoreTransientState = widgetProps.restoreTransientState;

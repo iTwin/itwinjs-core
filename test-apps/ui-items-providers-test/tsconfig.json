@@ -1,8 +1,7 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
+    "allowSyntheticDefaultImports": true,
     "outDir": "./lib",
     "types": [
       "@bentley/react-scripts"

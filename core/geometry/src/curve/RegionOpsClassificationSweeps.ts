@@ -372,7 +372,7 @@ export class RegionGroup {
     // PARITY is true if an odd number of regions are IN
     if (this.groupOpType === RegionGroupOpType.Parity)
       return Geometry.isOdd(this._numIn);
-    // INTERSECTION is true if ALL hte regions are IN
+    // INTERSECTION is true if ALL the regions are IN
     if (this.groupOpType === RegionGroupOpType.Intersection)
       return this._numIn === this.members.length;
     return false;
@@ -454,7 +454,9 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   public addMembers(dataA: AnyRegion | AnyRegion[] | undefined, dataB: AnyRegion | AnyRegion[] | undefined) {
     this.groupA.addMember(dataA);
     this.groupB.addMember(dataB);
-    this.addConnectives();
+    // const doConnectives = 1;
+    // if (doConnectives !== 0)
+      this.addConnectives();
   }
   /**
    * The sweep operations require access to all geometry by edge crossings and face walk.

@@ -1,17 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`TableDataProvider getColumns returns one column descriptor when display type is list 1`] = `
-Array [
-  Object {
-    "editable": false,
-    "filterable": false,
-    "key": "/DisplayLabel/",
-    "label": "Label",
-    "sortable": true,
-  },
-]
-`;
-
 exports[`TableDataProvider getColumns returns valid column descriptions 1`] = `Array []`;
 
 exports[`TableDataProvider getRow returns valid row item 1`] = `

@@ -14,7 +14,7 @@ import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { PointProps, StagePanelLocation, StageUsage, UiError, WidgetState } from "@itwin/appui-abstract";
 import { RectangleProps, SizeProps } from "@itwin/core-react";
 import {
-  dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
+  dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPanelLocation, isPopoutLocation, isPopoutWidgetLocation,
   NineZoneManagerProps, NineZoneState, PanelSide, panelSides, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@itwin/appui-layout-react";
 import { ContentControl } from "../content/ContentControl";
@@ -35,9 +35,9 @@ import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
-import { setImmediate } from "timers";
 import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
 import { BentleyStatus } from "@itwin/core-bentley";
+import { ContentDialogManager } from "../dialog/ContentDialogManager";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -85,6 +85,7 @@ export class FrontstageDef {
   private _timeTracker: TimeTracker = new TimeTracker();
   private _nineZoneState?: NineZoneState;
   private _contentGroupProvider?: ContentGroupProvider;
+  private _floatingContentControls?: ContentControl[];
 
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
@@ -94,6 +95,7 @@ export class FrontstageDef {
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
   public get version(): number { return this._version; }
   public get contentGroupProvider(): ContentGroupProvider | undefined { return this._contentGroupProvider; }
+  public get floatingContentControls() { return this._floatingContentControls; }
 
   public get topLeft(): ZoneDef | undefined { return this._topLeft; }
   public get topCenter(): ZoneDef | undefined { return this._topCenter; }
@@ -293,6 +295,7 @@ export class FrontstageDef {
     // istanbul ignore else
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
+    // istanbul ignore next
     if (this.contentGroupProvider)
       await this.contentGroupProvider.onFrontstageDeactivated();
 
@@ -300,6 +303,11 @@ export class FrontstageDef {
 
     this._isStageClosing = true; // this keeps widgets in child windows from automatically re-docking
     UiFramework.childWindowManager.closeAllChildWindows();
+
+    if (this._floatingContentControls) {
+      ContentDialogManager.closeAll();
+      this._floatingContentControls = undefined;
+    }
 
     await this._onDeactivated();
     this._isStageClosing = false;
@@ -358,9 +366,13 @@ export class FrontstageDef {
   public startDefaultTool(): void {
     // Start the default tool
     // istanbul ignore next
-    if (this.defaultTool && IModelApp.toolAdmin && IModelApp.viewManager) {
-      IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
-      this.defaultTool.execute();
+    if (IModelApp.toolAdmin && IModelApp.viewManager) {
+      if (this.defaultTool) {
+        IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
+        this.defaultTool.execute();
+      } else {
+        IModelApp.toolAdmin.startDefaultTool(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      }
     }
   }
 
@@ -566,14 +578,41 @@ export class FrontstageDef {
     return widgetControls;
   }
 
+  public addFloatingContentControl(contentControl?: ContentControl) {
+    // istanbul ignore next
+    if (!contentControl)
+      return;
+    if (!this._floatingContentControls)
+      this._floatingContentControls = new Array<ContentControl>();
+
+    this._floatingContentControls.push(contentControl);
+    ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
+  }
+
+  public dropFloatingContentControl(contentControl?: ContentControl) {
+    // istanbul ignore next
+    if (!contentControl || !this._floatingContentControls)
+      return;
+
+    const index = this._floatingContentControls.indexOf(contentControl);
+    // istanbul ignore else
+    if (index > -1) {
+      this._floatingContentControls.splice(index, 1);
+      ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
+    }
+  }
+
   /** Gets the list of [[ContentControl]]s */
   public get contentControls(): ContentControl[] {
+    const contentControls = new Array<ContentControl>();
     // istanbul ignore else
     if (this.contentGroup) {
-      return this.contentGroup.getContentControls();
-    } else {
-      return [];
+      contentControls.push(...this.contentGroup.getContentControls());
     }
+    if (this._floatingContentControls) {
+      contentControls.push(...this._floatingContentControls);
+    }
+    return contentControls;
   }
 
   /** Initializes a FrontstageDef from FrontstageProps
@@ -630,15 +669,15 @@ export class FrontstageDef {
   /** @internal */
   public updateWidgetDefs(): void {
     // Tracks provided widgets to prevent duplicates.
-    const widgetDefs: WidgetDef[] = [];
+    const allStageWidgetDefs: WidgetDef[] = [];
 
     // Process panels before zones so in uiVersion="2" extension can explicitly target a widget for a StagePanelSection
-    this.panelDefs.forEach((panelDef: StagePanelDef) => {
-      panelDef.updateDynamicWidgetDefs(this.id, this.usage, panelDef.location, undefined, widgetDefs, this.applicationData);
+    this.panelDefs.forEach((stagePanelDef: StagePanelDef) => {
+      stagePanelDef.updateDynamicWidgetDefs(this.id, this.usage, stagePanelDef.location, undefined, allStageWidgetDefs, this.applicationData);
     });
 
     this.zoneDefs.forEach((zoneDef: ZoneDef) => {
-      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, widgetDefs, this.applicationData);
+      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, allStageWidgetDefs, this.applicationData);
     });
   }
 
@@ -670,8 +709,17 @@ export class FrontstageDef {
       if (!location)
         return WidgetState.Hidden;
 
+      if (isFloatingLocation(location))
+        return WidgetState.Floating;
+
+      let collapsedPanel = false;
+      // istanbul ignore else
+      if ("side" in location) {
+        const panel = this.nineZoneState.panels[location.side];
+        collapsedPanel = panel.collapsed || undefined === panel.size || 0 === panel.size;
+      }
       const widgetContainer = this.nineZoneState.widgets[location.widgetId];
-      if (widgetDef.id === widgetContainer.activeTabId)
+      if (widgetDef.id === widgetContainer.activeTabId && !collapsedPanel)
         return WidgetState.Open;
       else
         return WidgetState.Closed;
@@ -683,13 +731,12 @@ export class FrontstageDef {
    *  @internal
    */
   public getPanelCurrentState(panelDef: StagePanelDef): [StagePanelState, number] {
-    // istanbul ignore else
+    // istanbul ignore next
     if (this.nineZoneState) {
       const side = toPanelSide(panelDef.location);
       const panel = this.nineZoneState.panels[side];
-      if (panel) {
+      if (panel)
         return [panel.collapsed ? StagePanelState.Minimized : StagePanelState.Open, panel.size ?? 0];
-      }
       return [StagePanelState.Off, 0];
     }
     return [panelDef.defaultState, panelDef.defaultSize ?? 0];
@@ -747,6 +794,32 @@ export class FrontstageDef {
       }
     }
   }
+  /** Check widget and panel state to determine whether the widget is currently displayed
+   * @param widgetId case-sensitive Widget Id
+   * @public
+   */
+  public isWidgetDisplayed(widgetId: string) {
+    let widgetIsVisible = false;
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const tabLocation = findTab(this.nineZoneState, widgetId);
+      // istanbul ignore else
+      if (tabLocation) {
+        if (isFloatingLocation(tabLocation) || isPopoutLocation(tabLocation)) {
+          widgetIsVisible = true;
+        } else {
+          // istanbul ignore else
+          if (isPanelLocation(tabLocation)) {
+            const panel = this.nineZoneState.panels[tabLocation.side];
+            const widgetDef = this.findWidgetDef(widgetId);
+            if (widgetDef && widgetDef.state === WidgetState.Open && !panel.collapsed)
+              widgetIsVisible = true;
+          }
+        }
+      }
+    }
+    return widgetIsVisible;
+  }
 
   /** Opens window for specified PopoutWidget container. Used to reopen popout when running in Electron.
    * @internal */
@@ -802,7 +875,7 @@ export class FrontstageDef {
               const widgetContainerId = location.widgetId;
               const tab = state.tabs[widgetId];
               this.nineZoneState = state;
-              setImmediate(() => {
+              setTimeout(() => {
                 const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
                 const position: ChildWindowLocationProps = {
                   width: tab.preferredPopoutWidgetSize!.width,  // preferredPopoutWidgetSize set in popoutWidgetToChildWindow method above

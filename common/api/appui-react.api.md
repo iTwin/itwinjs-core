@@ -573,7 +573,7 @@ export class AppUiSettings implements UserSettingsProvider {
 // @beta
 export function areNoFeatureOverridesActive(): boolean;
 
-// @public @deprecated
+// @public
 export class Backstage extends React.Component<BackstageProps, BackstageState> {
     constructor(props: BackstageProps);
     static get backstageToggleCommand(): import("../shared/CommandItemDef").CommandItemDef;
@@ -630,6 +630,8 @@ export function BackstageComposerItem({ item }: BackstageComposerItemProps): JSX
 // @internal
 export interface BackstageComposerItemProps {
     readonly item: BackstageItem;
+    // (undocumented)
+    readonly providerId?: string;
 }
 
 // @public
@@ -718,7 +720,7 @@ export class BackstageManager {
     toggle(): void;
 }
 
-// @public @deprecated
+// @public
 export interface BackstageProps extends CommonProps {
     // (undocumented)
     header?: React.ReactNode;
@@ -1330,6 +1332,50 @@ export interface ContentControlActivatedEventArgs {
 }
 
 // @public
+export function ContentDialog(props: ContentDialogProps): JSX.Element;
+
+// @public
+export class ContentDialogChangedEvent extends DialogChangedEvent {
+}
+
+// @public
+export class ContentDialogManager {
+    static get activeDialog(): React.ReactNode | undefined;
+    // @internal (undocumented)
+    static closeAll(): void;
+    static closeDialog(id: string): void;
+    static get dialogCount(): number;
+    // @internal (undocumented)
+    static readonly dialogManager: DialogManagerBase;
+    static get dialogs(): import("./DialogManagerBase").DialogInfo[];
+    // (undocumented)
+    static getDialogInfo(id: string): ContentDialogInfo | undefined;
+    static getDialogZIndex(id: string): number;
+    static handlePointerDownEvent(_event: React.PointerEvent, id: string, updateFunc: () => void): void;
+    static initialize(): void;
+    static readonly onContentDialogChangedEvent: ContentDialogChangedEvent;
+    static openDialog(dialog: React.ReactNode, id: string, parentDocument?: Document): void;
+    static update(): void;
+}
+
+// @public
+export interface ContentDialogProps extends DialogProps {
+    // (undocumented)
+    children: React.ReactNode;
+    // (undocumented)
+    dialogId: string;
+    // (undocumented)
+    movable?: boolean;
+}
+
+// @public
+export class ContentDialogRenderer extends React.PureComponent<CommonProps> {
+    constructor(props: CommonProps);
+    // (undocumented)
+    render(): React.ReactNode;
+}
+
+// @public
 export class ContentGroup {
     constructor(contentGroupProps: ContentGroupProps);
     clearContentControls(): void;
@@ -1454,7 +1500,11 @@ export interface ContentToolWidgetComposerProps {
 
 // @public
 export class ContentViewManager {
+    // (undocumented)
+    static addFloatingContentControl(contentControl?: ContentControl): void;
     static contentSupportsCamera(content: ContentControl | undefined): boolean;
+    // (undocumented)
+    static dropFloatingContentControl(contentControl?: ContentControl): void;
     static getActiveContent(): React.ReactNode | undefined;
     static getActiveContentControl(): ContentControl | undefined;
     static isContent3dView(content: ContentControl | undefined): boolean;
@@ -1464,11 +1514,17 @@ export class ContentViewManager {
     static isContentSpatialView(content: ContentControl | undefined): boolean;
     static get isMouseDown(): boolean;
     static readonly onActiveContentChangedEvent: ActiveContentChangedEvent;
+    static readonly onAvailableContentChangedEvent: UiEvent<{
+        contentId: string;
+    }>;
     static readonly onMouseDownChangedEvent: MouseDownChangedEvent;
     static refreshActiveContent(activeContent: React.ReactNode): void;
     static setActiveContent(activeContent?: React.ReactNode, forceEventProcessing?: boolean): void;
     static setMouseDown(mouseDown: boolean): void;
 }
+
+// @internal
+export function ContentWrapper(props: ContentWrapperProps): JSX.Element;
 
 // @public
 export class CoreTools {
@@ -2098,6 +2154,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -2110,6 +2167,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -2122,6 +2180,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -2135,6 +2194,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -2212,6 +2272,28 @@ export interface ExtensibleToolbarProps {
 
 // @beta
 export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>): BaseItemState;
+
+// @beta (undocumented)
+export class FloatingContentControl extends ContentControl {
+    constructor(uniqueId: string, name: string, node: React.ReactNode);
+}
+
+// @beta
+export function FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element;
+
+// @beta (undocumented)
+export class FloatingViewportContentControl extends ViewportContentControl {
+    constructor(uniqueId: string, name: string, node: React_2.ReactNode);
+    get reactNode(): React_2.ReactNode;
+    set reactNode(r: React_2.ReactNode);
+}
+
+// @beta (undocumented)
+export interface FloatingViewportContentProps {
+    contentId: string;
+    initialViewState: ViewState;
+    onContextMenu?: (e: React.MouseEvent) => boolean;
+}
 
 // @alpha
 export class FocusToolSettings extends Tool {
@@ -2573,6 +2655,8 @@ export interface FrontstageDeactivatedEventArgs {
 // @public
 export class FrontstageDef {
     // (undocumented)
+    addFloatingContentControl(contentControl?: ContentControl): void;
+    // (undocumented)
     get applicationData(): any | undefined;
     // (undocumented)
     get bottomCenter(): ZoneDef | undefined;
@@ -2604,7 +2688,11 @@ export class FrontstageDef {
     dockPopoutWidgetContainer(widgetContainerId: string): void;
     // @beta
     dockWidgetContainer(widgetId: string): void;
+    // (undocumented)
+    dropFloatingContentControl(contentControl?: ContentControl): void;
     findWidgetDef(id: string): WidgetDef | undefined;
+    // (undocumented)
+    get floatingContentControls(): ContentControl[] | undefined;
     // @beta
     floatWidget(widgetId: string, point?: PointProps, size?: SizeProps): void;
     // (undocumented)
@@ -2638,6 +2726,7 @@ export class FrontstageDef {
     get isReady(): boolean;
     // (undocumented)
     get isStageClosing(): boolean;
+    isWidgetDisplayed(widgetId: string): boolean;
     // @beta (undocumented)
     get leftPanel(): StagePanelDef | undefined;
     // @internal (undocumented)
@@ -2739,6 +2828,7 @@ export class FrontstageManager {
     static clearFrontstageDefs(): void;
     // @internal (undocumented)
     static clearFrontstageDefsForIModelId(iModelId: string | undefined): void;
+    static clearFrontstageProviders(): void;
     static closeModalFrontstage(): void;
     static closeNestedFrontstage(): Promise<void>;
     static deactivateFrontstageDef(): Promise<void>;
@@ -4181,7 +4271,7 @@ export class OpenMessageCenterEvent extends UiEvent<{}> {
 export function packNineZoneState(state: NineZoneState): SavedNineZoneState;
 
 // @internal (undocumented)
-export class PanelSizeChangedEvent extends UiEvent_2<PanelSizeChangedEventArgs> {
+export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> {
 }
 
 // @internal (undocumented)
@@ -4193,10 +4283,10 @@ export interface PanelSizeChangedEventArgs {
 }
 
 // @beta
-export class PanelStateChangedEvent extends UiEvent_2<PanelStateChangedEventArgs> {
+export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
 
-// @public @deprecated
+// @public
 export interface PanelStateChangedEventArgs {
     // (undocumented)
     panelDef: StagePanelDef;
@@ -4414,6 +4504,8 @@ export const PromptField: import("react-redux").ConnectedComponent<typeof Prompt
 
 // @public
 export class PropsHelper {
+    // (undocumented)
+    static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem>;
     static getIcon(iconSpec: string | ConditionalStringValue | React.ReactNode): JSX.Element | undefined;
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
@@ -4790,6 +4882,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -4802,6 +4895,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -4814,6 +4908,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -4827,6 +4922,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -4978,6 +5074,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -4990,6 +5087,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5002,6 +5100,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -5015,6 +5114,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5147,6 +5247,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5159,6 +5260,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5171,6 +5273,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -5184,6 +5287,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5380,6 +5484,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5392,6 +5497,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5404,6 +5510,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -5417,6 +5524,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5635,7 +5743,7 @@ export class StagePanelDef extends WidgetHost {
     get size(): number | undefined;
     set size(size: number | undefined);
     // @internal (undocumented)
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined, widgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined, allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
 
@@ -5724,7 +5832,7 @@ export class StagePanelZoneDef extends WidgetHost {
 }
 
 // @internal (undocumented)
-export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "middle" | "end">;
+export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "end">;
 
 // @public @deprecated
 export interface StagePanelZoneProps {
@@ -5740,8 +5848,6 @@ export class StagePanelZonesDef {
     get end(): StagePanelZoneDef;
     // (undocumented)
     initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation): void;
-    // (undocumented)
-    get middle(): StagePanelZoneDef;
     // (undocumented)
     get start(): StagePanelZoneDef;
     }
@@ -5895,6 +6001,12 @@ export interface StatusBarItem extends AbstractStatusBarCustomItem {
 // @internal
 export interface StatusBarItemProps extends CommonProps {
     children?: React.ReactNode;
+    // (undocumented)
+    itemPriority?: number;
+    // (undocumented)
+    providerId?: string;
+    // (undocumented)
+    section?: string;
 }
 
 // @beta @deprecated
@@ -6687,10 +6799,10 @@ export class UiFramework {
     static getWidgetOpacity(): number;
     // @alpha (undocumented)
     static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
-    static initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
+    static initialize(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void>;
     static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void>;
     static initializeStateFromUserSettingsProviders(immediateSync?: boolean): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
@@ -6858,6 +6970,9 @@ export interface UnitSystemSelectorProps {
 }
 
 // @internal (undocumented)
+export function useActiveContentControlId(): string | undefined;
+
+// @internal (undocumented)
 export function useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined;
 
 // @public
@@ -6950,6 +7065,9 @@ export function useScheduleAnimationDataProvider(viewport: ScreenViewport | unde
 
 // @beta
 export function useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined;
+
+// @public
+export function useSpecificWidgetDef(widgetId: string): WidgetDef | undefined;
 
 // @internal (undocumented)
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
@@ -7269,6 +7387,9 @@ export class WidgetDef {
     get defaultFloatingPosition(): PointProps | undefined;
     set defaultFloatingPosition(position: PointProps | undefined);
     // @internal (undocumented)
+    get defaultFloatingSize(): SizeProps | undefined;
+    set defaultFloatingSize(size: SizeProps | undefined);
+    // @internal (undocumented)
     get defaultState(): WidgetState;
     // @alpha
     expand(): void;
@@ -7279,11 +7400,14 @@ export class WidgetDef {
     // (undocumented)
     getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined;
     // (undocumented)
-    get iconSpec(): string | ConditionalStringValue | React.ReactNode;
+    get iconSpec(): IconSpec;
+    set iconSpec(spec: IconSpec);
     // (undocumented)
     get id(): string;
     // (undocumented)
     static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef): void;
+    // (undocumented)
+    get initialProps(): WidgetProps | undefined;
     // (undocumented)
     get isActive(): boolean;
     // (undocumented)
@@ -7356,7 +7480,7 @@ export class WidgetHost {
     findWidgetDef(id: string): WidgetDef | undefined;
     getSingleWidgetDef(): WidgetDef | undefined;
     // @internal
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined, widgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined, allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
     get widgetCount(): number;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
     }

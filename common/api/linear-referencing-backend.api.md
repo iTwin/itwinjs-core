@@ -79,7 +79,7 @@ export class LinearElement {
 }
 
 // @beta
-export class LinearLocation extends LinearLocationElement {
+export class LinearLocation extends LinearLocationElement implements LinearlyLocatedBase {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -258,7 +258,7 @@ export class Referent extends ReferentElement {
     }
 
 // @beta
-export abstract class ReferentElement extends SpatialLocationElement {
+export abstract class ReferentElement extends SpatialLocationElement implements LinearlyLocatedBase {
     constructor(props: ReferentElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;

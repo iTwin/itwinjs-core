@@ -6,7 +6,6 @@
 import { Parser, UnitProps } from "@itwin/core-quantity";
 import { assert } from "chai";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
-
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
 
@@ -434,13 +433,13 @@ describe("Quantity formatter", async () => {
     assert.equal(imperialFormattedValue, "1076391.0417 ft²");
   });
 
-  describe("Mimic Native unit conversions", async () => {
+  describe("Test native unit conversions", async () => {
     async function testUnitConversion(magnitude: number, fromUnitName: string, expectedValue: number, toUnitName: string, tolerance?: number) {
       const fromUnit = await quantityFormatter.findUnitByName(fromUnitName);
       const toUnit = await quantityFormatter.findUnitByName(toUnitName);
       const unitConversion = await quantityFormatter.getConversion(fromUnit, toUnit);
       const convertedValue = (magnitude * unitConversion.factor) + unitConversion.offset;
-      assert(withinTolerance(convertedValue, expectedValue, tolerance));
+      assert(withinTolerance(convertedValue, expectedValue, tolerance), `Expected ${expectedValue} ${toUnitName}, got ${convertedValue} ${toUnitName}`);
     }
 
     it("UnitConversionTests, USCustomaryLengths", async () => {

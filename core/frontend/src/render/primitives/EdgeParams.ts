@@ -293,7 +293,10 @@ export interface EdgeParams {
 export namespace EdgeParams {
   export function fromMeshArgs(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined {
     const args = meshArgs.edges;
-    const doJoints = wantJointTriangles(args.width, meshArgs.is2d);
+    if (!args)
+      return undefined;
+
+    const doJoints = wantJointTriangles(args.width, true === meshArgs.is2d);
     const polylines = doJoints ? TesselatedPolyline.fromMesh(meshArgs) : undefined;
 
     let segments: SegmentEdgeParams | undefined;

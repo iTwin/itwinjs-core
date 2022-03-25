@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderBuilder, VertexShaderComponent,
+  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
 import { IsInstanced } from "../TechniqueFlags";
@@ -332,8 +332,11 @@ const computePosition = `
 const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
 /** @internal */
-export function createPolylineBuilder(instanced: IsInstanced): ProgramBuilder {
-  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.Polyline, IsInstanced.Yes === instanced), instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+export function createPolylineBuilder(isInstanced: IsInstanced): ProgramBuilder {
+  const instanced = IsInstanced.Yes === isInstanced;
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
+  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 5, instanced });
+
   addShaderFlags(builder);
 
   addCommon(builder);
@@ -348,8 +351,11 @@ export function createPolylineBuilder(instanced: IsInstanced): ProgramBuilder {
 }
 
 /** @internal */
-export function createPolylineHiliter(instanced: IsInstanced): ProgramBuilder {
-  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.Polyline, IsInstanced.Yes === instanced), instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+export function createPolylineHiliter(isInstanced: IsInstanced): ProgramBuilder {
+  const instanced = IsInstanced.Yes === isInstanced;
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
+  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 5, instanced });
+
   addCommon(builder);
   addFrustum(builder);
   addHiliter(builder, true);

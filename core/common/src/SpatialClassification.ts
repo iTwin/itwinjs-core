@@ -7,6 +7,7 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
+import { ModelMapLayerSettings } from "./MapLayerSettings";
 
 /** Describes how a [[SpatialClassifier]] affects the display of classified geometry - that is, geometry intersecting
  * the classifier.
@@ -180,6 +181,15 @@ export class SpatialClassifier {
       name: this.name,
       isActive: false,
     };
+  }
+
+  /** Construct from Model Map Layer.
+   * @beta
+   */
+  public static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier {
+    const flags =  SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
+
+    return new SpatialClassifier(mapLayer.modelId, mapLayer.name, flags);
   }
 
   /** Create a classifier identical to this one except for any properties explicitly specified by `changedProps`. */

@@ -322,11 +322,17 @@ public;SharedTableNonPrimitiveValueRendererProps
 internal;ShortDateTimePropertyEditor 
 public;ShortDateTypeConverter 
 public;ShowHideDialog
+deprecated;ShowHideDialog
 public;ShowHideDialogProps
+deprecated;ShowHideDialogProps
 public;ShowHideID = string | number | symbol
+deprecated;ShowHideID = string | number | symbol
 public;ShowHideItem
+deprecated;ShowHideItem
 public;ShowHideMenu
+deprecated;ShowHideMenu
 public;ShowHideMenuProps
+deprecated;ShowHideMenuProps
 public;SimplePropertyDataProvider 
 public;SimpleTableDataProvider 
 public;SimpleTreeDataProvider 
@@ -404,6 +410,7 @@ public;ToolbarOpacitySetting
 internal;ToolbarOverflowContextProps
 public;ToolbarPanelAlignment
 internal;ToolbarPanelAlignmentHelpers
+public;ToolbarPopupAutoHideContext: React.Context
 public;ToolbarPopupContext: React.Context
 public;ToolbarPopupContextProps
 public;ToolbarProps 
@@ -466,6 +473,7 @@ beta;usePropertyGridEventHandler(props:
 beta;usePropertyGridModel(props:
 beta;usePropertyGridModelSource(props:
 internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
+public;useToolbarPopupAutoHideContext(): boolean
 public;useToolbarPopupContext(): ToolbarPopupContextProps
 internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
 internal;useToolItemEntryContext(): ToolbarItemContextArgs

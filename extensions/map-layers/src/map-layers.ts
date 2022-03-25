@@ -5,4 +5,6 @@
 export * from "./mapLayers";
 export * from "./ui/Interfaces";
 export * from "./ui/MapLayersUiItemsProvider";
+export * from "./ui/FeatureInfoUiItemsProvider";
+export * from "./ui/MapFeatureInfoTool";
 export * from "./ui/widget/MapLayersWidget";

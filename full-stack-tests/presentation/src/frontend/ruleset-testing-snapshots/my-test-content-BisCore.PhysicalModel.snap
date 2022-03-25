@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BisCore.PhysicalModel`] = `
+Array [
+  PropertyRecord {
+    "description": "Properties_60InstancesWithUrl2",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Modeled Element",
+      "name": "pc_bis_Model_ModeledElement",
+      "typename": "navigation",
+    },
+    "value": Object {
+      "displayValue": "Properties_60InstancesWithUrl2",
+      "value": Object {
+        "className": "BisCore:PhysicalPartition",
+        "id": "0x1c",
+      },
+      "valueFormat": 0,
+    },
+  },
+]
+`;

@@ -38,7 +38,7 @@ vec4 volClassColor(vec4 baseColor, float depth) {
 const applyPlanarClassificationPrelude = `
 const float dimScale = .7;
 
-vec2 classPos = v_pClassPos / v_pClassPosW;
+vec2 classPos = v_pClassPos.xy / v_pClassPosW;
 bool isOutside = classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0;
 if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
   if (u_pClassColorParams.x > kTextureDrape) {

@@ -48,14 +48,15 @@ export class IModelTransformerTestAppHost {
         + "Please see the .env.template file on how to set up environment variables."
       );
       return new Promise<AccessToken>(async (resolve, reject) => {
-        const client = await ElectronMainAuthorization.create({
+        const client = new ElectronMainAuthorization({
           clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
           redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
           scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
         });
+        await client.signInSilent();
         this._authClient = client;
 
-        ElectronMainAuthorization.onUserStateChanged.addOnce((token) => {
+        ElectronMainAuthorization.onUserStateChanged.addOnce((token: AccessToken) => {
           if (token !== "") {
             resolve(token);
           } else {

@@ -152,6 +152,7 @@ export interface WebGLRenderCompatibilityInfo {
     unmaskedRenderer?: string;
     unmaskedVendor?: string;
     userAgent: string;
+    usingIntegratedGraphics?: boolean;
 }
 
 // @public

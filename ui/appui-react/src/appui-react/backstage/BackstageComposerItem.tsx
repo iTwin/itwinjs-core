@@ -11,7 +11,7 @@ import { Logger } from "@itwin/core-bentley";
 import {
   BackstageActionItem, BackstageItem, BackstageStageLauncher, ConditionalBooleanValue, ConditionalStringValue, isStageLauncher,
 } from "@itwin/appui-abstract";
-import { BadgeUtilities, Icon } from "@itwin/core-react";
+import { BadgeUtilities, Icon, IconHelper } from "@itwin/core-react";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import { useActiveFrontstageId } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -25,6 +25,7 @@ export interface BackstageComposerActionItemProps {
 /** @internal */
 export function BackstageComposerActionItem({ item }: BackstageComposerActionItemProps) {
   const manager = useBackstageManager();
+  const iconSpec = IconHelper.getIconReactNode (item.icon, item.internalData);
   const handleClick = React.useCallback(() => {
     manager.close();
     item.execute();
@@ -32,7 +33,10 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
   return (
     <NZ_BackstageItem
       itemId={item.id}
-      icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
+      providerId={item.providerId}
+      itemPriority={item.itemPriority}
+      groupPriority={item.groupPriority}
+      icon={<Icon iconSpec={iconSpec} />}
       isActive={ConditionalBooleanValue.getValue(item.isActive)}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
@@ -60,10 +64,14 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
   }, [manager, item.stageId]);
   const activeFrontstageId = useActiveFrontstageId();
   const isActive = ConditionalBooleanValue.getValue(item.isActive ?? item.stageId === activeFrontstageId);
+  const iconSpec = IconHelper.getIconReactNode (item.icon, item.internalData);
   return (
     <NZ_BackstageItem
       itemId={item.id}
-      icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
+      providerId={item.providerId}
+      itemPriority={item.itemPriority}
+      groupPriority={item.groupPriority}
+      icon={<Icon iconSpec={iconSpec} />}
       isActive={isActive}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
@@ -81,6 +89,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
 export interface BackstageComposerItemProps {
   /** Backstage item to render */
   readonly item: BackstageItem;
+  readonly providerId?: string;
 }
 
 /** Item of [[BackstageComposer]].

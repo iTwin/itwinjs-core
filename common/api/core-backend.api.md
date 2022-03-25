@@ -76,8 +76,9 @@ import { ExternalSourceAttachmentProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentRole } from '@itwin/core-common';
 import { ExternalSourceProps } from '@itwin/core-common';
 import { FilePropertyProps } from '@itwin/core-common';
+import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
-import { FontProps } from '@itwin/core-common';
+import { FontType } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
@@ -319,6 +320,8 @@ export interface AzureBlobStorageCredentials {
     accessKey: string;
     // (undocumented)
     account: string;
+    // (undocumented)
+    baseUrl?: string;
 }
 
 // @beta
@@ -1402,6 +1405,8 @@ export class Element extends Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
+    // @beta
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;
     setUserProperties(nameSpace: string, value: any): void;
@@ -1555,6 +1560,9 @@ export class Entity {
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
     iModel: IModelDb;
+    static is(otherClass: typeof Entity): boolean;
+    // @internal
+    static get isGeneratedClass(): boolean;
     readonly isInstanceOfEntity: true;
     // @internal (undocumented)
     static get protectedOperations(): string[];
@@ -1973,6 +1981,8 @@ export abstract class GeometricElement extends Element {
     is2d(): this is GeometricElement2d;
     is3d(): this is GeometricElement3d;
     abstract get placement(): Placement2d | Placement3d;
+    // @beta (undocumented)
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     toJSON(): GeometricElementProps;
 }
 
@@ -2212,6 +2222,8 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
+    // @beta
+    addNewFont(name: string, type?: FontType): FontId;
     // @internal
     protected beforeClose(): void;
     // @internal
@@ -2219,13 +2231,15 @@ export abstract class IModelDb extends IModel {
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
+    // @internal (undocumented)
+    clearFontMap(): void;
     close(): void;
     get codeSpecs(): CodeSpecs;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     // @alpha
-    createBRepGeometry(createProps: BRepGeometryCreate): DbResult;
+    createBRepGeometry(createProps: BRepGeometryCreate): IModelStatus;
     // @beta
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // (undocumented)
@@ -2234,11 +2248,9 @@ export abstract class IModelDb extends IModel {
     // @beta
     deleteSettingDictionary(name: string): void;
     // @alpha
-    elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
+    elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus;
     // (undocumented)
     readonly elements: IModelDb.Elements;
-    // @internal (undocumented)
-    embedFont(prop: FontProps): FontProps;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static findByFilename(fileName: LocalFileName): IModelDb | undefined;
@@ -3904,6 +3916,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
     modelSelectorId: Id64String;
+    // @beta (undocumented)
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
 }
@@ -4381,6 +4395,8 @@ export abstract class ViewDefinition extends DefinitionElement {
     loadDisplayStyle(): DisplayStyle;
     // @internal (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
+    // @beta (undocumented)
+    static readonly requiredReferenceKeys: ReadonlyArray<string>;
     setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
     // @internal (undocumented)
     toJSON(): ViewDefinitionProps;
