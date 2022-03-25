@@ -647,7 +647,7 @@ export class TestRunner {
     const filepath = path.join(this.curConfig.iModelLocation, this.curConfig.iModelName);
     let iModel;
     try {
-      iModel = await SnapshotConnection.openFile(path.join(filepath));
+      iModel = await SnapshotConnection.openFile(filepath);
     } catch (err: any) {
       await this.logError(`openSnapshot failed: ${err.toString()}`);
       return undefined;

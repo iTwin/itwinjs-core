@@ -18,8 +18,6 @@ module.exports = {
   plugins: [
     "@itwin",
     "@typescript-eslint",
-    "react",
-    "react-hooks",
     "import",
     "prefer-arrow",
     "deprecation"

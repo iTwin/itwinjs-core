@@ -719,6 +719,10 @@
       "allowedCategories": [ "integration-testing" ]
     },
     {
+      "name": "path-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "postcss-flexbugs-fixes",
       "allowedCategories": [ "internal" ]
     },
