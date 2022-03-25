@@ -65,9 +65,9 @@ export interface RelatedPropertiesSpecification {
   instanceFilter?: string;
 
   /**
-   * Should the target class specified in [[propertiesSource]] be handled
-   * polymorphically. This means properties of not only the target class, but also all its subclasses
-   * are loaded.
+   * The attribute tells whether the target class specified through [[propertiesSource]] should be handled
+   * polymorphically. This means properties of the concrete class are loaded in addition to properties of the
+   * target class itself.
    *
    * @note There's a difference between loading properties and instances polymorphically. This attribute
    * only controls polymorphism of properties, while instances are always looked up in a polymorphic fashion.

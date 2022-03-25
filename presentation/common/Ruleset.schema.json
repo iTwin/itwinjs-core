@@ -2068,7 +2068,7 @@
           "type": "boolean"
         },
         "handleTargetClassPolymorphically": {
-          "description": "Should the target class specified in `propertiesSource` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
+          "description": "The attribute tells whether the target class specified through `propertiesSource` should be handled\npolymorphically. This means properties of the concrete class are loaded in addition to properties of the\ntarget class itself.",
           "type": "boolean"
         },
         "instanceFilter": {
