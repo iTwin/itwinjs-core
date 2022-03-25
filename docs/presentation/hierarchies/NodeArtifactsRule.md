@@ -2,7 +2,7 @@
 
 > TypeScript type: [NodeArtifactsRule]($presentation-common).
 
-> **Performance note:** The rule is costly performance-wise and should only be used in very limited amount of specific cases where
+> **Note:** The rule is costly performance-wise and should only be used in very limited amount of specific cases where
 > hidden child nodes need to be used to determine parent node's visibility.
 
 Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be

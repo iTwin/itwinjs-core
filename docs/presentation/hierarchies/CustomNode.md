@@ -167,7 +167,8 @@ Controls the order in which specifications are handled — specification with hi
 
 Generally, when a node is created, the rules engine has to determine whether it has children before returning it. This requires
 evaluating child node rules and, usually, executing additional queries. This attribute allows telling the engine that nodes created
-by this specification always or never have children.
+by this specification always or never have children, which may substantially improve performance of creating nodes in cases when
+getting child nodes is expensive.
 
 In case when the attribute value "lies":
 
@@ -177,12 +178,11 @@ empty list. It's up to the UI component to handle the case of parent node saying
 - When set to `Never`, the returned nodes always have [Node.hasChildren]($presentation-common) set to `false`. Requesting children for such nodes returns empty
 list even if there are child node rules that define children for it.
 
-|                      |                                                                                                                                                      |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Type**             | `"Always" \| "Never" \| "Unknown"`                                                                                                                   |
-| **Is Required**      | No                                                                                                                                                   |
-| **Default Value**    | `"Unknown"`                                                                                                                                          |
-| **Performance note** | Setting the attribute to `Always` or `Never` may substantially improve performance of creating nodes in cases when  getting child nodes is expensive |
+|                   |                                    |
+| ----------------- | ---------------------------------- |
+| **Type**          | `"Always" \| "Never" \| "Unknown"` |
+| **Is Required**   | No                                 |
+| **Default Value** | `"Unknown"`                        |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.HasChildren.Ruleset]]

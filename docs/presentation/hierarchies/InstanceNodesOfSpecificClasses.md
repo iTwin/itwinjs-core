@@ -162,14 +162,15 @@ Controls the order in which specifications are handled — specification with hi
 
 ### Attribute: `doNotSort`
 
-Suppress sorting of nodes returned by this specification. With this attribute set to `true`, the order of returned nodes is undefined.
+By default, nodes are sorted by their display label. This attribute allows suppressing sorting of nodes returned by this specification,
+which can substantially improve performance when large numbers of nodes are involved. With this attribute set to `true`, the order of
+returned nodes is undefined.
 
-|                      |                                                                                                            |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Type**             | `boolean`                                                                                                  |
-| **Is Required**      | No                                                                                                         |
-| **Default Value**    | `false`                                                                                                    |
-| **Performance note** | Setting the attribute to `true` may substantially improve performance when creating large numbers of nodes |
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.DoNotSort.Ruleset]]
@@ -222,7 +223,8 @@ Label grouping node is created only if all of these conditions match:
 
 Generally, when a node is created, the rules engine has to determine whether it has children before returning it. This requires
 evaluating child node rules and, usually, executing additional queries. This attribute allows telling the engine that nodes created
-by this specification always or never have children.
+by this specification always or never have children, which may substantially improve performance of creating nodes in cases when
+getting child nodes is expensive.
 
 In case when the attribute value "lies":
 
@@ -232,12 +234,11 @@ empty list. It's up to the UI component to handle the case of parent node saying
 - When set to `Never`, the returned nodes always have `hasChildren` set to `false`. Requesting children for such nodes returns empty
 list even if there are child node rules that define children for it.
 
-|                      |                                                                                                                                                      |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Type**             | `"Always" \| "Never" \| "Unknown"`                                                                                                                   |
-| **Is Required**      | No                                                                                                                                                   |
-| **Default Value**    | `"Unknown"`                                                                                                                                          |
-| **Performance note** | Setting the attribute to `Always` or `Never` may substantially improve performance of creating nodes in cases when  getting child nodes is expensive |
+|                   |                                    |
+| ----------------- | ---------------------------------- |
+| **Type**          | `"Always" \| "Never" \| "Unknown"` |
+| **Is Required**   | No                                 |
+| **Default Value** | `"Unknown"`                        |
 
 ```ts
 [[include:Presentation.Hierarchies.Specification.HasChildren.Ruleset]]
