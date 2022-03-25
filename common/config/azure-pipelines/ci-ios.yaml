@@ -60,43 +60,7 @@ jobs:
         failOnStderr: true
         condition: succeeded()
 
-      - script: |
-          rm -rf DerivedData
-          xcrun xcodebuild build-for-testing \
-            -configuration Release \
-            -sdk iphoneos \
-            -project core-test-runner.xcodeproj \
-            -scheme core-test-runner \
-            -derivedDataPath DerivedData \
-            -allowProvisioningUpdates
-        workingDirectory: tools/internal/ios/core-test-runner
-        displayName: 'Build Xcode project for testing'
-        condition: succeeded()
-
-      - script: |
-          appcenter test run xcuitest \
-            --app "$(AppCenterSlug)" \
-            --devices "$(AppCenterDevices)" \
-            --test-series "$(AppCenterTestSeries)" \
-            --locale "en_US" \
-            --build-dir DerivedData/Build/Products/Release-iphoneos/ \
-            --token "$(AppCenterToken)" \
-            --output json > ../run_output.json
-        workingDirectory: tools/internal/ios/core-test-runner
-        failOnStderr: true
-        displayName: 'Run App Center tests'
-        condition: succeeded()
-
-      - script: node ios/scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)"
-        workingDirectory: tools/internal
-        failOnStderr: true
-        displayName: 'Process Logs'
-        condition: succeededOrFailed()
-
-      - task: PublishTestResults@2
-        displayName: "Publish Test Results"
-        inputs:
-          testResultsFiles: "ios/junit_results.xml"
-          testRunTitle: "Core - Backend Tests - iOS"
-          searchFolder: core/backend
-        condition: succeededOrFailed()
+      - template: templates/app-center-test.yaml
+        parameters:
+          iosDirectory: tools/internal/ios
+          testSuiteName: "Core - Backend"

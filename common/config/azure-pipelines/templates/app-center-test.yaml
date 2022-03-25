@@ -1,0 +1,50 @@
+# This provides a template for running the core-test-runner in app center.
+# The folder at parameter 'iosDirectory' should contain the core-test-runner project, the webpack configuration, and any necessary scripts.
+
+parameters:
+  - name: iosDirectory
+    type: string
+  - name: testSuiteName
+    type: string
+
+steps:
+  - script: |
+      rm -rf DerivedData
+      xcrun xcodebuild build-for-testing \
+        -configuration Release \
+        -sdk iphoneos \
+        -project core-test-runner.xcodeproj \
+        -scheme core-test-runner \
+        -derivedDataPath DerivedData \
+        -allowProvisioningUpdates
+    workingDirectory: ${{ parameters.iosDirectory }}/core-test-runner
+    displayName: 'Build Xcode project for testing'
+    condition: succeeded()
+
+  - script: |
+      appcenter test run xcuitest \
+        --app "$(AppCenterSlug)" \
+        --devices "$(AppCenterDevices)" \
+        --test-series "$(AppCenterTestSeries)" \
+        --locale "en_US" \
+        --build-dir DerivedData/Build/Products/Release-iphoneos/ \
+        --token "$(AppCenterToken)" \
+        --output json > ../run_output.json
+    workingDirectory: ${{ parameters.iosDirectory }}/core-test-runner
+    failOnStderr: true
+    displayName: 'Run App Center tests of suite '${{ parameters.testSuiteName }}''
+    condition: succeeded()
+
+  - script: node scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)"
+    workingDirectory: ${{ parameters.iosDirectory }}
+    failOnStderr: true
+    displayName: 'Process Logs'
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    inputs:
+      testResultsFiles: "junit_results.xml"
+      testRunTitle: "Test suite '${{ parameters.testSuiteName }}' on iOS"
+      searchFolder: ${{ parameters.iosDirectory }}
+    condition: succeededOrFailed()
