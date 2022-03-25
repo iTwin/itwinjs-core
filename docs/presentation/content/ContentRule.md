@@ -83,7 +83,7 @@ Defines the order in which rules are handled - higher priority means the rule is
 
 ### Attribute: `onlyIfNotHandled`
 
-Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+Tells the library that the rule should only be handled if no other rule of the same type was *handled* previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules. **Note:** *handled* means that rules' specifications were picked for evaluation, but doesn't mean they resulted in content being returned.
 
 |                   |           |
 | ----------------- | --------- |
