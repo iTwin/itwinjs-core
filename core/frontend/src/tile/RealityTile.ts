@@ -344,11 +344,14 @@ export class RealityTile extends Tile {
     }
   }
 
-  public purgeContents(olderThan: BeTimePoint): void{
+  public purgeContents(olderThan: BeTimePoint, useProtectedTiles: boolean): void{
     const tilesToPurge = new Set<RealityTile>();
 
     // Get the list of tiles to purge
-    this.getTilesToPurge(olderThan, tilesToPurge);
+    if (useProtectedTiles)
+      this.getTilesToPurge(olderThan, tilesToPurge);
+    else
+      this.getTilesToPurgeWithoutProtection(olderThan, tilesToPurge);
 
     // Discard contents of tiles that have been marked.
     // Note we do not discard the child Tile objects themselves.
@@ -356,7 +359,7 @@ export class RealityTile extends Tile {
       tile.disposeContents();
   }
 
-  // Populate a set with tiles that should be disposed. Prevent some tile to be disposed to avoid holes when moving.
+  // Populate a set with tiles that should be disposed. Prevent some tiles to be disposed to avoid holes when moving.
   // Return true if the current tile is "protected".
   private getTilesToPurge(olderThan: BeTimePoint, tilesToPurge: Set<RealityTile>): boolean {
     const children = this.realityChildren;
@@ -391,6 +394,22 @@ export class RealityTile extends Tile {
     }
 
     return isInUse;
+  }
+
+  // Populate a set with tiles that should be disposed. Does not prevent some tiles to be disposed to avoid holes when moving.
+  // This method is simpler and more fitting for devices that has a bigger memory constraint, such as mobiles.
+  // However, it causes the apparition of holes by letting important tiles to be purged.
+  private getTilesToPurgeWithoutProtection(olderThan: BeTimePoint, tilesToPurge: Set<RealityTile>): void {
+    const children = this.realityChildren;
+
+    if (children) {
+      for (const child of children) {
+        child.getTilesToPurgeWithoutProtection(olderThan, tilesToPurge);
+      }
+    }
+
+    if (this.usageMarker.isExpired(olderThan))
+      tilesToPurge.add(this);
   }
 
   private removeFirstDisplayableChildrenFromSet(set: Set<RealityTile>): void {

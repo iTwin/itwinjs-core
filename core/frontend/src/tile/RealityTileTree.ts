@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint } from "@itwin/core-bentley";
+import { assert, BeTimePoint, ProcessDetector } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps,
 } from "@itwin/core-geometry";
@@ -185,7 +185,7 @@ export class RealityTileTree extends TileTree {
 
   public prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
-    this.rootTile.purgeContents(olderThan);
+    this.rootTile.purgeContents(olderThan, !ProcessDetector.isMobileBrowser);
   }
 
   public draw(args: TileDrawArgs): void {
