@@ -34,7 +34,7 @@ export interface CommonBackstageItem extends ProvidedItem {
    * allows extensions enough gaps to insert their own groups.
    */
   readonly groupPriority: number;
-  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue;
   /** Required unique id of the item. To ensure uniqueness it is suggested that a namespace prefix of the extension name be used. */
   readonly id: string;
@@ -100,6 +100,7 @@ export class BackstageItemUtilities {
   ): BackstageStageLauncher => ({
     groupPriority,
     icon,
+    internalData: overrides?.internalData,
     id: frontstageId,
     itemPriority,
     label,
@@ -116,6 +117,7 @@ export class BackstageItemUtilities {
     execute,
     groupPriority,
     icon,
+    internalData: overrides?.internalData,
     id: itemId,
     itemPriority,
     label,

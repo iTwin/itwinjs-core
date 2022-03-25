@@ -22,11 +22,14 @@ export interface SchemasSpecification {
 }
 
 /**
- * A specification for a schema requirement.
+ * This specification is designed for specifying schema requirements for the [[Ruleset]] or specific
+ * presentation rules.
+ *
+ * @see [Required schema specification reference documentation page]($docs/presentation/RequiredSchemaSpecification.md)
  * @beta
  */
 export interface RequiredSchemaSpecification {
-  /** ECSchema name */
+  /** Specifies the schema to whom the requirement is being set. */
   name: string;
 
   /**

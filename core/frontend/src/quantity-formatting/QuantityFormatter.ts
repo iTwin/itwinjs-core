@@ -6,7 +6,7 @@
  * @module QuantityFormatting
  */
 
-import { BeUiEvent, Logger } from "@itwin/core-bentley";
+import { BentleyError, BeUiEvent, Logger } from "@itwin/core-bentley";
 import {
   AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion,
   UnitProps, UnitsProvider, UnitSystemKey,
@@ -556,7 +556,8 @@ export class QuantityFormatter implements UnitsProvider {
     try {
       // force all cached data to be reinitialized
       await IModelApp.quantityFormatter.onInitialized();
-    } catch(_) {
+    } catch(err) {
+      Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, BentleyError.getErrorMessage(err), BentleyError.getErrorMetadata(err));
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
       // If there is a problem initializing with the given provider, default back to the internal provider
       await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider();

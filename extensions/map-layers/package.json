@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.2.0-dev.15",
+  "version": "3.2.0-dev.23",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -50,7 +50,7 @@
     "@itwin/core-react": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/imodel-components-react": "workspace:*",
-    "@itwin/itwinui-css": "0.44.2",
+    "@itwin/itwinui-css": "0.x",
     "@itwin/itwinui-react": "^1.32.0",
     "@itwin/presentation-common": "workspace:*",
     "@testing-library/react": "^12.0.0",

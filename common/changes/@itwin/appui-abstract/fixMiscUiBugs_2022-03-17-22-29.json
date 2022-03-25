@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Fix missing parameter in UiManager.getWidgets call and pass provider to isSupportedStage function.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}
