@@ -1,6 +1,13 @@
 # iTwin.js iOS Testing
 
 trigger: none
+pr: none
+schedules:
+  - cron: "0 5 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+        - master
 
 variables:
   - group: iTwin.js ios and App Center variables
