@@ -60,7 +60,7 @@ export interface PropertySortingRule extends SortingRuleBase {
 }
 
 /**
- *R ule to disable sorting for certain ECInstances in the hierarchy and/or content.
+ * Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
  *
  * @see [Disabled sorting rule reference documentation section]($docs/presentation/customization/SortingRule.md#disabled-sorting-rule)
  * @public
