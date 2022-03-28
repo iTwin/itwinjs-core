@@ -1284,19 +1284,7 @@ export class OnScreenTarget extends Target {
     const changed2d = this._2dCanvas.updateDimensions(pixelRatio);
     const changedWebGL = this._webglCanvas.updateDimensions(pixelRatio);
     this.renderRect.init(0, 0, this._curCanvas.width, this._curCanvas.height);
-    const changed = this._usingWebGLCanvas ? changedWebGL : changed2d;
-
-    // Certain UI events appear to be able to halt and then restart the execution of the event loop.
-    // This means that updateViewRect() can return true, but the framebuffer could never resize in response to that.
-    // The following code solves that issue by checking for a canvas-framebuffer size mismatch.
-    // Such a mismatch indicates that the framebuffer never reacted to the resize because the event loop was interrupted.
-    if (!changed && undefined !== this._fbo) {
-      const tx = this._fbo.getColor(0);
-      if (tx.width !== this._curCanvas.width || tx.height !== this._curCanvas.height)
-        return true; // Return true so the framebuffer will get recreated
-    }
-
-    return changed;
+    return this._usingWebGLCanvas ? changedWebGL : changed2d;
   }
 
   protected _beginPaint(fbo: FrameBuffer): void {
