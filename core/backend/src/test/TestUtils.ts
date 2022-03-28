@@ -57,11 +57,10 @@ export class TestUtils {
    * - cacheDir === path.join(__dirname, ".cache")
    */
   public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
-    if (ProcessDetector.isIOSAppBackend) {
-      return IModelHost.startup();
-    }
     const cfg = config ? config : new IModelHostConfiguration();
-    cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
+    if (!ProcessDetector.isIOSAppBackend) {
+      cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
+    }
     return IModelHost.startup(cfg);
   }
 
