@@ -2188,7 +2188,7 @@ export interface PropertyOverrides {
     categoryId?: string | CategoryIdentifier;
     doNotHideOtherPropertiesOnDisplayOverride?: boolean;
     editor?: PropertyEditorSpecification;
-    isDisplayed?: boolean;
+    isDisplayed?: boolean | string;
     labelOverride?: string;
     overridesPriority?: number;
     renderer?: CustomRendererSpecification;
@@ -2336,6 +2336,7 @@ export enum RelatedPropertiesSpecialValues {
 export interface RelatedPropertiesSpecification {
     autoExpand?: boolean;
     handleTargetClassPolymorphically?: boolean;
+    instanceFilter?: string;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
     properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     propertiesSource: RelationshipPathSpecification;
