@@ -101,7 +101,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
-  protected _fbo?: FrameBuffer;
+  private _fbo?: FrameBuffer;
   private _dcAssigned = false;
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationsState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
