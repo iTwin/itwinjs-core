@@ -217,21 +217,22 @@ export class Point4d implements BeJSONFunctions {
    * @param data buffer of numbers
    * @param xIndex first index for x,y,z,w sequence
    */
-  public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d {
-    return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
+  public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d | undefined {
+    if (xIndex >= 0 && xIndex + 3 < data.length)
+      return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
+    return undefined;
   }
   /** Create a `Point4d` with x,y,z from an `XYAndZ` input, and w from a separate number. */
   public static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d {
     return new Point4d(xyz.x, xyz.y, xyz.z, w);
   }
-/** Create a `Point4d` from
- * * Point2d, Point3d, or Point4d
- * * other structure with members x,y and optional z,w
- * * array of numbers
- * * default z is 0.0
- * * default 2 is 1.0  (array[3] can replace)
- */
-
+  /** Create a `Point4d` from
+   * * Point2d, Point3d, or Point4d
+   * * other structure with members x,y and optional z,w
+   * * array of numbers
+   * * default z is 0.0
+   * * default 2 is 1.0  (array[3] can replace)
+   */
   public static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d {
     if (point instanceof Point2d)
       return new Point4d(point.x, point.y, 0, 1);

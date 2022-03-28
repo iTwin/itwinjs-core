@@ -95,7 +95,7 @@ class Geometry4dTests {
 
     const unitVectors = [Point4d.unitX(), Point4d.unitY(), Point4d.unitZ(), Point4d.unitW()];
     const cc = new Float64Array([2, 3, 5, 4]);
-    const pointC = Point4d.createFromPackedXYZW(cc);
+    const pointC = Point4d.createFromPackedXYZW(cc)!;
     for (let i = 0; i < 4; i++) {
       ck.testExactNumber(cc[i], unitVectors[i].dotProduct(pointC));
       const a = 2.0 + i;

@@ -1043,32 +1043,89 @@ export namespace IModelJson {
     }
     /** Parse content of `bsurf` to BSplineSurface3d or BSplineSurface3dH */
     public static parseBsurf(data?: any): BSplineSurface3d | BSplineSurface3dH | undefined {
-      if (data.hasOwnProperty("uKnots") && Array.isArray(data.uKnots)
+      let newSurface: BSplineSurface3d | BSplineSurface3dH | undefined = undefined;
+      if (data !== undefined
+        && data.hasOwnProperty("uKnots") && Array.isArray(data.uKnots)
         && data.hasOwnProperty("vKnots") && Array.isArray(data.vKnots)
         && data.hasOwnProperty("orderU") && Number.isFinite(data.orderU)
         && data.hasOwnProperty("orderV") && Number.isFinite(data.orderV)
-        && data.hasOwnProperty("points") && Array.isArray(data.points)
-      ) {
+        && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0]) && Array.isArray(data.points[0][0]))
+        {
         const orderU = data.orderU;
         const orderV = data.orderV;
-        if (Array.isArray(data.points[0]) && Array.isArray(data.points[0][0])) {
-          const d = data.points[0][0].length;
-          /** xyz surface (no weights) */
-          if (d === 3) {
-            return BSplineSurface3d.createGrid(data.points,
-              orderU, data.uKnots,
-              orderV, data.vKnots);
+        let numPoleV = data.points.length;
+        let numPoleU = data.points[0].length;
+        const dim = data.points[0][0].length;
+
+        // copy the poles in case we have to expand them
+        const poles: number[][][] = [];
+        for (let i = 0; i < numPoleV; ++i) {
+          const newRow = [];
+          for (let j = 0; j < numPoleU; ++j) {
+            const newPt = [];
+            for (let k = 0; k < dim; ++k)
+              newPt.push(data.points[i][j][k]);
+            newRow.push(newPt);
           }
-          /** xyzw surface (weights already applied) */
-          if (d === 4) {
-            return BSplineSurface3dH.createGrid(data.points,
-              WeightStyle.WeightsAlreadyAppliedToCoordinates,
-              orderU, data.uKnots,
-              orderV, data.vKnots);
+        poles.push(newRow);
+        }
+
+        const uKnots: number[] = [];
+        let uWrapMode = BSplineWrapMode.None;
+        const closedU = (data.hasOwnProperty("closedU") && true === data.closedU) ? true : false;
+        if (closedU && this.getCorrectedKnotsForClosedClamped(numPoleU, data.uKnots, orderU, uKnots)) {
+          uWrapMode = BSplineWrapMode.OpenByRemovingKnots;  // corrected knots copied; poles are OK
+        } else {
+          for (const knot of data.uKnots) uKnots.push(knot);  // copy knots
+          if (closedU) {
+            for (let i = 0; i < numPoleV; ++i) {
+              for (let j = 0; j < orderU - 1; ++j) {
+                const wraparoundPt = [];
+                for (let k = 0; k < dim; ++k)
+                  wraparoundPt.push(poles[i][j][k]);
+                poles[i].push(wraparoundPt);  // append degreeU wraparound poles to each row
+              }
+            }
+            numPoleU += orderU - 1;
+            uWrapMode = BSplineWrapMode.OpenByAddingControlPoints;
           }
         }
+
+        const vKnots: number[] = [];
+        let vWrapMode = BSplineWrapMode.None;
+        const closedV = (data.hasOwnProperty("closedV") && true === data.closedV) ? true : false;
+        if (closedV && this.getCorrectedKnotsForClosedClamped(numPoleV, data.vKnots, orderV, vKnots)) {
+          vWrapMode = BSplineWrapMode.OpenByRemovingKnots;  // corrected knots copied; poles are OK
+        } else {
+          for (const knot of data.vKnots) vKnots.push(knot);  // copy knots
+          if (closedV) {
+            for (let i = 0; i < orderV - 1; ++i) {
+              const wrapAroundRow = [];
+              for (let j = 0; j < numPoleU; ++j) {
+                const wrapAroundPt = [];
+                for (let k = 0; k < dim; ++k)
+                  wrapAroundPt.push(poles[i][j][k]);
+                wrapAroundRow.push(wrapAroundPt); // append degreeV wraparound rows of poles
+              }
+              poles.push(wrapAroundRow);
+            }
+            numPoleV += orderV - 1;
+            vWrapMode = BSplineWrapMode.OpenByAddingControlPoints;
+          }
+        }
+
+        if (dim === 3)
+          newSurface = BSplineSurface3d.createGrid(poles, orderU, uKnots, orderV, vKnots);
+        else if (dim === 4)
+          newSurface = BSplineSurface3dH.createGrid(poles, WeightStyle.WeightsAlreadyAppliedToCoordinates, orderU, uKnots, orderV, vKnots);
+        if (undefined !== newSurface) {
+          if (closedU)
+            newSurface.setWrappable(0, uWrapMode);
+          if (closedV)
+            newSurface.setWrappable(1, vWrapMode);
+        }
       }
-      return undefined;
+      return newSurface;
     }
     /** Parse `cone` contents to `Cone` instance  */
     public static parseConeProps(json?: ConeProps): Cone | undefined {
@@ -1951,7 +2008,7 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     public handleBSplineSurface3d(surface: BSplineSurface3d): any {
-      // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
+      // ASSUME -- if the surface originated "closed", the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
       const periodicU = surface.isClosable(0);
       const periodicV = surface.isClosable(1);
@@ -2012,16 +2069,48 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     public handleBSplineSurface3dH(surface: BSplineSurface3dH): any {
-      const data = surface.getPointGridJSON();
-      return {
-        bsurf: {
-          points: data.points,
-          uKnots: surface.copyKnots(0, true),
-          vKnots: surface.copyKnots(1, true),
-          orderU: surface.orderUV(0),
-          orderV: surface.orderUV(1),
-        },
-      };
+      // ASSUME -- if the surface originated "closed", the knot and pole replication are unchanged,
+      // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
+      const periodicU = surface.isClosable(0);
+      const periodicV = surface.isClosable(1);
+      if (periodicU || periodicV) {
+        let numUPoles = surface.numPolesUV(0);
+        let numVPoles = surface.numPolesUV(1);
+        if (periodicU) numUPoles -= surface.degreeUV(0);
+        if (periodicV) numVPoles -= surface.degreeUV(1);
+        const xyzw = Point4d.create();
+        const grid = [];
+        for (let j = 0; j < numVPoles; j++) {
+          const stringer = [];
+          for (let i = 0; i < numUPoles; i++) {
+            surface.getPoint4dPoleXYZW(i, j, xyzw)!;
+            stringer.push([xyzw.x, xyzw.y, xyzw.z, xyzw.w]);
+          }
+          grid.push(stringer);
+        }
+        return {
+          bsurf: {
+            points: grid,
+            uKnots: surface.copyKnots(0, true),
+            vKnots: surface.copyKnots(1, true),
+            orderU: surface.orderUV(0),
+            orderV: surface.orderUV(1),
+            closedU: periodicU,
+            closedV: periodicV,
+          },
+        };
+      } else {
+        const data = surface.getPointGridJSON();
+        return {
+          bsurf: {
+            points: data.points,
+            uKnots: surface.copyKnots(0, true),
+            vKnots: surface.copyKnots(1, true),
+            orderU: surface.orderUV(0),
+            orderV: surface.orderUV(1),
+          },
+        };
+      }
     }
 
     /** Convert an array of strongly typed instances to an array of tagged json */

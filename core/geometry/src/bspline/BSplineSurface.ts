@@ -88,7 +88,7 @@ export interface BSplineSurface3dQuery {
    * * y column is a unit vector in the direction of the v derivative
    * * z direction is the surface normal
    */
-  fractionToRigidFrame(uFraction: number, vFraction: number): Transform | undefined;
+  fractionToRigidFrame(uFraction: number, vFraction: number, result?: Transform): Transform | undefined;
   /** Evaluate xyz coordinates at knot values (uKnot, vKnot) */
   knotToPoint(uKnot: number, vKnot: number): Point3d;
   /**  apply a transform to the surface */
@@ -144,13 +144,6 @@ export interface BSplineSurface3dQuery {
   poleStepUV(select: UVSelect): number;
 
   /**
-     * evaluate the surface at u and v fractions. Return a (squared, right handed) coordinate frame at that point on the surface.
-     * @param fractionU u parameter
-     * @param fractionV v parameter
-     * @param result undefined if surface derivatives are parallel (or either alone is zero)
-     */
-  // fractionToRigidFrame(fractionU: number, fractionV: number, result?: Transform): Transform | undefined;
-  /**
   * Return control points json arrays.
   * * Each row of points is an an array.
   * * Within the array for each row, each point is an array [x,y,z] or [x,y,z,w].
@@ -198,17 +191,29 @@ export abstract class BSpline2dNd extends GeometryQuery {
       return false;
     return true;
   }
-  /** Get the Point3d by row and column.
+  /** Get the indexed Point3d.
    * * (IMPORTANT) This assumes this is an xyz surface.  Data will be incorrect if this is an xyzw surface.
+   * @param i index in [0, numPolesU)
+   * @param j index in [0, numPolesV)
    */
   public getPoint3dPole(i: number, j: number, result?: Point3d): Point3d | undefined {
     return Point3d.createFromPacked(this.coffs, i + j * this._numPoles[0], result);
   }
-  /** Get the Point3d by row and column, projecting the weight away to get to xyz
+  /** Get the indexed Point3d, projecting the weight away to get to xyz.
    * * (IMPORTANT) This assumes this is an xyzw surface.  Data will be incorrect if this is an xyz surface.
+   * @param i index in [0, numPolesU)
+   * @param j index in [0, numPolesV)
    */
   public getPoint3dPoleXYZW(i: number, j: number, result?: Point3d): Point3d | undefined {
     return Point3d.createFromPackedXYZW(this.coffs, i + j * this._numPoles[0], result);
+  }
+  /** Get the indexed Point4d.
+   * * (IMPORTANT) This assumes this is an xyzw surface.  Data will be incorrect if this is an xyz surface.
+   * @param i index in [0, numPolesU)
+   * @param j index in [0, numPolesV)
+   */
+  public getPoint4dPoleXYZW(i: number, j: number, result?: Point4d): Point4d | undefined {
+    return Point4d.createFromPackedXYZW(this.coffs, (i + j * this._numPoles[0]) * 4, result);
   }
   /**
    * Return 0 for 0 input, 1 for any nonzero input.
@@ -568,10 +573,10 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
    * @param controlPointArray Array of points, ordered along the U direction.
    * @param numPoleU number of poles in each row in the U direction.
    * @param orderU order for the U direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
-   * @param KnotArrayU knots for the V direction.  See note above about knot counts.
+   * @param knotArrayU knots for the V direction.  See note above about knot counts.
    * @param numPoleV number of poles in each row in the U direction.
    * @param orderV order for the V direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
-   * @param KnotArrayV knots for the V direction.  See note above about knot counts.
+   * @param knotArrayV knots for the V direction.  See note above about knot counts.
    */
   public static create(controlPointArray: Point3d[] | Float64Array,
     numPolesU: number,
@@ -625,10 +630,10 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
    * @param controlPointArray Array of points, ordered along the U direction.
    * @param numPoleU number of poles in each row in the U direction.
    * @param orderU order for the U direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
-   * @param KnotArrayU knots for the V direction.  See note above about knot counts.
-   * @param numPoleV number of poles in each row in the U direction.
+   * @param knotArrayU knots for the V direction.  See note above about knot counts.
+   * @param numPoleV number of poles in each column in the V direction (the number of rows).
    * @param orderV order for the V direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
-   * @param KnotArrayV knots for the V direction.  See note above about knot counts.
+   * @param knotArrayV knots for the V direction.  See note above about knot counts.
    */
   public static createGrid(points: number[][][],
     orderU: number,
@@ -827,10 +832,10 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
    * @param weightArray array of weights, ordered along the U direction.
    * @param numPoleU number of poles in each row in the U direction.
    * @param orderU order for the U direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
-   * @param KnotArrayU optional knots for the V direction.  See note above about knot counts.
-   * @param numPoleV number of poles in each row in the U direction.
+   * @param knotArrayU optional knots for the V direction.  See note above about knot counts.
+   * @param numPoleV number of poles in each column in the V direction (the number of rows).
    * @param orderV order for the V direction polynomial (`order` is one more than the `degree`.  "cubic" polynomial is order 4.)
-   * @param KnotArrayV optional knots for the V direction.  See note above about knot counts.
+   * @param knotArrayV optional knots for the V direction.  See note above about knot counts.
    */
   public static create(
     controlPointArray: Point3d[] | Float64Array,
@@ -956,7 +961,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
   /** Evaluate at a position given by a knot value.  */
   public knotToPoint4d(u: number, v: number): Point4d {
     this.evaluateBuffersAtKnot(u, v);
-    return Point4d.createFromPackedXYZW(this._poleBuffer, 0);
+    return Point4d.createFromPackedXYZW(this._poleBuffer, 0)!;
   }
   /** Evaluate at a position given by a knot value.  */
   public knotToPointAndDerivatives(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {

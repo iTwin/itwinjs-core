@@ -205,7 +205,7 @@ export class BGFBWriter {
     const orderV = bsurf.orderUV(UVSelect.VDirection);
     const numPolesU = bsurf.numPolesUV(UVSelect.uDirection);
     const numPolesV = bsurf.numPolesUV(UVSelect.VDirection);
-    const closedU = false;
+    const closedU = false;  // typescript bsurfs are not closed.  There is API to impose wrapping . . .
     const closedV = false;
     const holeOrigin = 0;
     const boundariesOffset = 0;
