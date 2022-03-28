@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import Foundation
+import os
 
 import IModelJsNative
 
@@ -24,9 +25,9 @@ class ViewController: ObservableObject {
         NSLog("(ios): Running tests.")
         host.loadBackend(main) { [self] (numFailed: UInt32) in
             do {
-                let text = try String(contentsOf: testResultsUrl)
+                let text = try String(contentsOf: testResultsUrl, encoding: .utf8)
                 for line in text.components(separatedBy: .newlines) {
-                    NSLog("[Mocha_Result_XML]: %@", line)
+                    NSLog("[Mocha_Result_XML]: \(line)")
                 }
             } catch {
                 NSLog("(ios): Failed to read mocha test results.")
