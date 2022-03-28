@@ -2185,7 +2185,7 @@ importers:
       typemoq: ^2.1.0
       typescript: ~4.4.0
       typescript-json-schema: ^0.43.0
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -2220,7 +2220,7 @@ importers:
       typemoq: 2.1.0
       typescript: 4.4.4
       typescript-json-schema: 0.43.0
-      yargs: 16.2.0
+      yargs: 17.4.0
 
   ../../presentation/components:
     specifiers:
@@ -2687,22 +2687,22 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/node': 14.14.31
-      '@types/yargs': ^12.0.5
+      '@types/yargs': ^17.0.10
       eslint: ^7.11.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
-      yargs: 16.2.0
+      yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/node': 14.14.31
-      '@types/yargs': 12.0.20
+      '@types/yargs': 17.0.10
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -2718,27 +2718,27 @@ importers:
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
-      '@types/yargs': ^12.0.5
+      '@types/yargs': ^17.0.10
       chai: ^4.1.2
       eslint: ^7.11.0
       mocha: ^8.3.2
       rimraf: ^3.0.2
       typescript: ~4.4.0
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       chai: 4.3.6
-      yargs: 16.2.0
+      yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.3.0
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
-      '@types/yargs': 12.0.20
+      '@types/yargs': 17.0.10
       eslint: 7.32.0
       mocha: 8.4.0
       rimraf: 3.0.2
@@ -2755,26 +2755,26 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
       '@types/node': 14.14.31
-      '@types/yargs': ^12.0.5
+      '@types/yargs': ^17.0.10
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       fs-extra: 8.1.0
-      yargs: 16.2.0
+      yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/fs-extra': 4.0.12
       '@types/lodash': 4.14.179
       '@types/node': 14.14.31
-      '@types/yargs': 12.0.20
+      '@types/yargs': 17.0.10
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -2790,24 +2790,24 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/fs-extra': ^4.0.7
       '@types/node': 14.14.31
-      '@types/yargs': ^12.0.5
+      '@types/yargs': ^17.0.10
       eslint: ^7.11.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-orbitgt': link:../../core/orbitgt
-      yargs: 16.2.0
+      yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/fs-extra': 4.0.12
       '@types/node': 14.14.31
-      '@types/yargs': 12.0.20
+      '@types/yargs': 17.0.10
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -2823,26 +2823,26 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
       '@types/node': 14.14.31
-      '@types/yargs': ^12.0.5
+      '@types/yargs': ^17.0.10
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       fs-extra: 8.1.0
-      yargs: 16.2.0
+      yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/fs-extra': 4.0.12
       '@types/lodash': 4.14.179
       '@types/node': 14.14.31
-      '@types/yargs': 12.0.20
+      '@types/yargs': 17.0.10
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -2865,7 +2865,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
-      '@types/yargs': ^12.0.5
+      '@types/yargs': ^17.0.10
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
@@ -2876,7 +2876,7 @@ importers:
       mocha: ^8.3.2
       rimraf: ^3.0.2
       typescript: ~4.4.0
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -2890,7 +2890,7 @@ importers:
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       fs-extra: 8.1.0
-      yargs: 16.2.0
+      yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
@@ -2899,7 +2899,7 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
-      '@types/yargs': 12.0.20
+      '@types/yargs': 17.0.10
       cross-env: 5.2.1
       electron: 14.2.6
       eslint: 7.32.0
@@ -3248,7 +3248,7 @@ importers:
       source-map-loader: ^1.0.0
       webpack: 4.42.0
       yargonaut: ^1.1.2
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
       '@itwin/core-webpack-tools': link:../webpack-core
       case-sensitive-paths-webpack-plugin: 2.4.0
@@ -3262,7 +3262,7 @@ importers:
       source-map-loader: 1.1.3_webpack@4.42.0
       webpack: 4.42.0
       yargonaut: 1.1.4
-      yargs: 16.2.0
+      yargs: 17.4.0
     devDependencies:
       rimraf: 3.0.2
 
@@ -3286,7 +3286,7 @@ importers:
       typedoc-plugin-merge-modules: ^3.0.2
       typescript: ~4.4.0
       wtfnode: ^0.9.1
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
       '@microsoft/api-extractor': 7.7.3
       chalk: 3.0.0
@@ -3303,7 +3303,7 @@ importers:
       typedoc-plugin-merge-modules: 3.1.0_typedoc@0.22.13
       typescript: 4.4.4
       wtfnode: 0.9.1
-      yargs: 16.2.0
+      yargs: 17.4.0
     devDependencies:
       '@itwin/eslint-plugin': link:../eslint-plugin
       '@types/node': 14.14.31
@@ -3321,7 +3321,7 @@ importers:
       '@types/node': 14.14.31
       '@types/puppeteer': 2.0.1
       '@types/uuid': ^7.0.2
-      '@types/yargs': ^12.0.5
+      '@types/yargs': ^17.0.10
       detect-port: ~1.3.0
       electron: ^14.0.0
       eslint: ^7.11.0
@@ -3335,7 +3335,7 @@ importers:
       source-map-support: ^0.5.6
       typescript: ~4.4.0
       uuid: ^7.0.3
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
       detect-port: 1.3.0
       express: 4.17.3
@@ -3345,7 +3345,7 @@ importers:
       puppeteer: 5.3.1
       source-map-support: 0.5.21
       uuid: 7.0.3
-      yargs: 16.2.0
+      yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../build
       '@itwin/eslint-plugin': link:../eslint-plugin
@@ -3357,7 +3357,7 @@ importers:
       '@types/node': 14.14.31
       '@types/puppeteer': 2.0.1
       '@types/uuid': 7.0.5
-      '@types/yargs': 12.0.20
+      '@types/yargs': 17.0.10
       electron: 14.2.6
       eslint: 7.32.0
       nyc: 15.1.0
@@ -3468,9 +3468,9 @@ importers:
 
   ../../tools/internal:
     specifiers:
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
-      yargs: 16.2.0
+      yargs: 17.4.0
 
   ../../tools/perf-tools:
     specifiers:
@@ -4294,26 +4294,26 @@ importers:
       '@types/chai': ^4.1.4
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
-      '@types/yargs': ^12.0.5
+      '@types/yargs': ^17.0.10
       eslint: ^7.11.0
       glob: ^7.1.2
       mocha: ^8.3.2
       rimraf: ^3.0.2
       typescript: ~4.4.0
-      yargs: ^16.0.0
+      yargs: ^17.4.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       glob: 7.2.0
-      yargs: 16.2.0
+      yargs: 17.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.3.0
       '@types/glob': 5.0.37
       '@types/mocha': 8.2.3
-      '@types/yargs': 12.0.20
+      '@types/yargs': 17.0.10
       eslint: 7.32.0
       mocha: 8.4.0
       rimraf: 3.0.2
@@ -8969,12 +8969,14 @@ packages:
     resolution: {integrity: sha512-iO9ZQHkZxHn4mSakYV0vFHAVDyEOIJQrV2uZ06HxEPcx+mt8swXoZHIbaaJ2crJYFfErySgktuTZ3BeLz+XmFA==}
     dev: true
 
-  /@types/yargs/12.0.20:
-    resolution: {integrity: sha512-MjOKUoDmNattFOBJvAZng7X9KXIKSGy6XHoXY9mASkKwCn35X4Ckh+Ugv1DewXZXrWYXMNtLiXhlCfWlpcAV+Q==}
-    dev: true
-
   /@types/yargs/15.0.14:
     resolution: {integrity: sha512-yEJzHoxf6SyQGhBhIYGXQDSCkJjB6HohDShto7m8vaKg9Yp0Yn8+71J9eakh2bnPg6BfsH9PRMhiRTZnd4eXGQ==}
+    dependencies:
+      '@types/yargs-parser': 21.0.0
+    dev: true
+
+  /@types/yargs/17.0.10:
+    resolution: {integrity: sha512-gmEaFwpj/7f/ROdtIlci1R1VYU1J4j95m8T+Tj3iBgiBFKg1foE/PSl93bBd5T9LDXNPo8UlNN6W0qwD8O5OaA==}
     dependencies:
       '@types/yargs-parser': 21.0.0
     dev: true
@@ -22728,6 +22730,10 @@ packages:
     resolution: {integrity: sha512-y11nGElTIV+CT3Zv9t7VKl+Q3hTQoT9a1Qzezhhl6Rp21gJ/IVTW7Z3y9EWXhuUBC2Shnf+DX0antecpAwSP8w==}
     engines: {node: '>=10'}
 
+  /yargs-parser/21.0.1:
+    resolution: {integrity: sha512-9BK1jFpLzJROCI5TzwZL/TU4gqjK5xiHV/RfWLOahrjAko/e4DJkRDZQXfvqAsiZzzYhgAzbgz6lg48jcm4GLg==}
+    engines: {node: '>=12'}
+
   /yargs-unparser/2.0.0:
     resolution: {integrity: sha512-7pRTIA9Qc1caZ0bZ6RYRGbHJthJWuakf+WmHK0rVeLkNrrGhfoabBNdue6kdINI6r4if7ocq9aD/n7xwKOdzOA==}
     engines: {node: '>=10'}
@@ -22779,6 +22785,18 @@ packages:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 20.2.9
+
+  /yargs/17.4.0:
+    resolution: {integrity: sha512-WJudfrk81yWFSOkZYpAZx4Nt7V4xp7S/uJkX0CnxovMCt1wCE8LNftPpNuF9X/u9gN5nsD7ycYtRcDf2pL3UiA==}
+    engines: {node: '>=12'}
+    dependencies:
+      cliui: 7.0.4
+      escalade: 3.1.1
+      get-caller-file: 2.0.5
+      require-directory: 2.1.1
+      string-width: 4.2.3
+      y18n: 5.0.8
+      yargs-parser: 21.0.1
 
   /yauzl/2.10.0:
     resolution: {integrity: sha1-x+sXyT4RLLEIb6bY5R+wZnt5pfk=}

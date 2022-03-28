@@ -14,17 +14,24 @@ import {
 } from "@itwin/core-backend";
 import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
+import { exit } from "process";
 
 // cspell:ignore nodir
 /* eslint-disable id-blacklist,no-console */
 
-interface EditorOpts extends WorkspaceContainer.Props {
+/** Currently executing an "@" script? */
+let inScript = false;
+
+interface EditorProps {
   /** Allows overriding the location of WorkspaceDbs. If not present, defaults to `${homedir}/iTwin/Workspace` */
   directory?: LocalDirName;
   /** number of simultaneous http requests */
   nRequests?: number;
   /** enable logging */
   logging?: boolean;
+}
+
+interface EditorOpts extends EditorProps, WorkspaceContainer.Props {
   /** user name */
   user: string;
 }
@@ -40,6 +47,7 @@ interface WorkspaceDbOpt extends EditorOpts {
 interface InitializeOpts extends EditorOpts {
   noPrompt?: boolean;
 }
+
 /** options for copying a WorkspaceDb to a new name */
 interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
   newDbName: WorkspaceDb.Name;
@@ -56,7 +64,6 @@ type RscType = "blob" | "string" | "file";
 /** Options for adding, updating, extracting, or deleting resources from a WorkspaceDb */
 interface ResourceOption extends WorkspaceDbOpt {
   rscName?: WorkspaceResource.Name;
-  update: boolean;
   type: RscType;
 }
 
@@ -84,7 +91,9 @@ interface ListOptions extends WorkspaceDbOpt {
   blobs?: boolean;
 }
 
-type TransferOptions = WorkspaceDbOpt & CloudSqlite.TransferDbProps;
+type TransferOptions = WorkspaceDbOpt & CloudSqlite.TransferDbProps & {
+  noVacuum?: boolean;
+};
 
 /** Options for uploading a WorkspaceDb to blob storage */
 interface UploadOptions extends TransferOptions {
@@ -186,7 +195,7 @@ async function listWorkspaceDb(args: ListOptions) {
   });
 }
 
-/** Add or Update files into a WorkspaceDb. */
+/** Add files into a WorkspaceDb. */
 async function addResource(args: AddFileOptions) {
   await editWorkspace(args, (wsFile, args) => {
     glob.sync(args.files, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
@@ -197,14 +206,40 @@ async function addResource(args: AddFileOptions) {
       try {
         if (args.type === "string") {
           const val = fs.readFileSync(file, "utf-8");
-          wsFile[args.update ? "updateString" : "addString"](name, val);
+          wsFile.addString(name, val);
         } else if (args.type === "blob") {
           const val = fs.readFileSync(file);
-          wsFile[args.update ? "updateBlob" : "addBlob"](name, val);
+          wsFile.addBlob(name, val);
         } else {
-          wsFile[args.update ? "updateFile" : "addFile"](name, file);
+          wsFile.addFile(name, file);
         }
-        console.log(` ${args.update ? "updated" : "added"} "${file}" as ${args.type} resource [${name}]`);
+        console.log(` added "${file}" as ${args.type} resource [${name}]`);
+      } catch (e: unknown) {
+        console.error(IModelError.getErrorMessage(e));
+      }
+    });
+  });
+}
+
+/** Replace files in a WorkspaceDb. */
+async function replaceResource(args: AddFileOptions) {
+  await editWorkspace(args, (wsFile, args) => {
+    glob.sync(args.files, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
+      const file = args.root ? join(args.root, filePath) : filePath;
+      if (!IModelJsFs.existsSync(file))
+        throw new Error(`file [${file}] does not exist`);
+      const name = args.rscName ?? filePath;
+      try {
+        if (args.type === "string") {
+          const val = fs.readFileSync(file, "utf-8");
+          wsFile.updateString(name, val);
+        } else if (args.type === "blob") {
+          const val = fs.readFileSync(file);
+          wsFile.updateBlob(name, val);
+        } else {
+          wsFile.updateFile(name, file);
+        }
+        console.log(` updated "${file}" as ${args.type} resource [${name}]`);
       } catch (e: unknown) {
         console.error(IModelError.getErrorMessage(e));
       }
@@ -258,6 +293,11 @@ async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
 async function performTransfer(container: IModelJsNative.CloudContainer, direction: CloudSqlite.TransferDirection, args: TransferOptions) {
   fixVersionArg(args);
   const localFileName = args.localFileName;
+
+  if (direction === "upload" && !args.noVacuum) {
+    IModelHost.platform.DgnDb.vacuum(localFileName);
+    console.log(`${localFileName} vacuumed`);
+  }
   const info = `${direction === "download" ? "export" : "import"} ${localFileName}, container=${args.containerId}, dbName=${args.dbFileName} : `;
 
   let last = 0;
@@ -276,6 +316,7 @@ async function performTransfer(container: IModelJsNative.CloudContainer, directi
   await CloudSqlite.transferDb(direction, container, { ...args, localFileName, onProgress });
   readline.cursorTo(process.stdout, info.length);
   process.stdout.write(`complete, ${timer.elapsedSeconds.toString()} seconds`);
+  console.log("");
 }
 
 /** import a WorkspaceDb to a cloud WorkspaceContainer. */
@@ -411,8 +452,11 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
 }
 
 /** Start `IModelHost`, then run a WorkspaceEditor command. Errors are logged to console. */
-function runCommand<T extends EditorOpts>(cmd: (args: T) => Promise<void>) {
+function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
   return async (args: T) => {
+    if (inScript)
+      return cmd(args);
+
     let timer: NodeJS.Timeout | undefined;
     try {
       const config = new IModelHostConfiguration();
@@ -445,144 +489,182 @@ function runCommand<T extends EditorOpts>(cmd: (args: T) => Promise<void>) {
   };
 }
 
+const type: Yargs.Options = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], demandOption: true };
+const addOrReplace = {
+  rscName: { alias: "n", describe: "resource name for file", string: true },
+  root: { alias: "r", describe: "root directory. Path parts after this will be saved in resource name", string: true },
+  type,
+};
+Yargs.usage("Edits or lists contents of a WorkspaceDb");
+Yargs.wrap(Math.min(150, Yargs.terminalWidth()));
+Yargs.strict();
+Yargs.env("WORKSPACE_EDITOR");
+Yargs.config();
+Yargs.default("config", "workspaceEditor.json");
+Yargs.help();
+Yargs.version("V2.0");
+Yargs.options({
+  directory: { alias: "d", describe: "directory to use for WorkspaceContainers", string: true },
+  nRequest: { describe: "number of simultaneous http requests for cloud operations", number: true },
+  containerId: { alias: "c", describe: "WorkspaceContainerId for WorkspaceDb", string: true },
+  user: { describe: "user name", string: true, default: "workspace-editor" },
+  accountName: { alias: "a", describe: "cloud storage account name for container", string: true },
+  sasToken: { describe: "shared access signature token", string: true, default: "" },
+  storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
+  logging: { describe: "enable log messages", boolean: true, default: "false" },
+});
+Yargs.command<AddFileOptions>({
+  command: "add <dbName> <files>",
+  describe: "add files into a WorkspaceDb",
+  builder: addOrReplace,
+  handler: runCommand(addResource),
+});
+Yargs.command<AddFileOptions>({
+  command: "replace <dbName> <files>",
+  describe: "replace files in a WorkspaceDb",
+  builder: addOrReplace,
+  handler: runCommand(replaceResource),
+});
+Yargs.command<RemoveResourceOpts>({
+  command: "remove <dbName> <rscName>",
+  describe: "remove a resource from a WorkspaceDb",
+  builder: { type },
+  handler: runCommand(removeResource),
+});
+Yargs.command<ExtractResourceOpts>({
+  command: "extract <dbName> <rscName> <fileName>",
+  describe: "extract a resource from a WorkspaceDb into a local file",
+  builder: { type },
+  handler: runCommand(extractResource),
+});
+Yargs.command<ListOptions>({
+  command: "listDb <dbName>",
+  describe: "list the contents of a WorkspaceDb",
+  builder: {
+    strings: { alias: "s", describe: "list string resources", boolean: true, default: false },
+    blobs: { alias: "b", describe: "list blob resources", boolean: true, default: false },
+    files: { alias: "f", describe: "list file resources", boolean: true, default: false },
+  },
+  handler: runCommand(listWorkspaceDb),
+});
+Yargs.command<WorkspaceDbOpt>({
+  command: "deleteDb <dbName>",
+  describe: "delete a WorkspaceDb from a cloud container",
+  handler: runCommand(deleteWorkspaceDb),
+});
+Yargs.command<WorkspaceDbOpt>({
+  command: "createDb <dbName>",
+  describe: "create a new WorkspaceDb",
+  handler: runCommand(createWorkspaceDb),
+});
+Yargs.command<CopyWorkspaceDbOpt>({
+  command: "copyDb <dbName> <newDbName>",
+  describe: "make a copy of a WorkspaceDb in a cloud container with a new name",
+  handler: runCommand(copyWorkspaceDb),
+});
+Yargs.command<MakeVersionOpt>({
+  command: "versionDb <dbName>",
+  describe: "make a new version of a WorkspaceDb",
+  builder: {
+    versionType: { describe: "the type of version to create", default: "patch", string: true, choices: ["major", "minor", "patch"] },
+  },
+  handler: runCommand(versionWorkspaceDb),
+});
+Yargs.command<WorkspaceDbOpt>({
+  command: "pinDb <dbName>",
+  describe: "pin a WorkspaceDb from a cloud container",
+  handler: runCommand(pinWorkspaceDb),
+});
+Yargs.command<WorkspaceDbOpt>({
+  command: "unpinDb <dbName>",
+  describe: "un-pin a WorkspaceDb from a cloud container",
+  handler: runCommand(unPinWorkspaceDb),
+});
+Yargs.command<WorkspaceDbOpt>({
+  command: "vacuumDb <dbName>",
+  describe: "vacuum a WorkspaceDb",
+  handler: runCommand(vacuumWorkspaceDb),
+});
+Yargs.command<UploadOptions>({
+  command: "importDb <dbName> <localFileName>",
+  describe: "import a WorkspaceDb into a cloud container",
+  builder: {
+    noVacuum: { describe: "don't vacuum source Db before importing", boolean: true },
+  },
+  handler: runCommand(importWorkspaceDb),
+});
+Yargs.command<TransferOptions>({
+  command: "exportDb <dbName> <localFileName>",
+  describe: "export a WorkspaceDb from a cloud container to a local file",
+  handler: runCommand(exportWorkspaceDb),
+});
+Yargs.command<WorkspaceDbOpt>({
+  command: "queryDbs [like]",
+  describe: "query the list of WorkspaceDbs in a cloud container",
+  handler: runCommand(queryWorkspaceDbs),
+});
+Yargs.command<WorkspaceDbOpt>({
+  command: "acquireLock",
+  describe: "acquire the write lock for a cloud container",
+  handler: runCommand(acquireLock),
+});
+Yargs.command<WorkspaceDbOpt>({
+  command: "releaseLock",
+  describe: "release the write lock for a cloud container",
+  handler: runCommand(releaseLock),
+});
+Yargs.command<WorkspaceDbOpt>({
+  command: "clearWriteLock",
+  describe: "clear the write lock for a cloud container. Note: this can be dangerous!",
+  handler: runCommand(clearWriteLock),
+});
+Yargs.command<EditorOpts>({
+  command: "purgeWorkspace",
+  describe: "purge deleted blocks from a WorkspaceContainer",
+  handler: runCommand(purgeWorkspace),
+});
+Yargs.command<InitializeOpts>({
+  command: "initializeWorkspace",
+  describe: "initialize (empty if already exists) a WorkspaceContainer",
+  builder: {
+    noPrompt: { describe: "skip prompt", boolean: true, default: false },
+  },
+  handler: runCommand(initializeWorkspace),
+});
+
+async function runScript(arg: EditorProps & { scriptName: string }) {
+  inScript = true;
+  const val = fs.readFileSync(arg.scriptName, "utf-8");
+  const lines = val.split("\r");
+  let i = 0;
+  for (let line of lines) {
+    i++;
+    line = line.split("#")[0].trim();
+    if (line.length === 0)
+      continue;
+
+    await Yargs.parseAsync(line, {}, (err: Error | undefined, _argv: any, _output: string) => {
+      if (err) {
+        console.error(`${arg.scriptName}:${i} [${line}] : ${BentleyError.getErrorMessage(err)}`);
+        exit(1);
+      }
+    });
+  }
+}
+
 /** Parse and execute WorkspaceEditor commands */
 async function main() {
-  const type = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], required: true };
-  const update = { alias: "u", describe: "update (i.e. replace) rather than add the files", boolean: true, default: false };
-  Yargs.usage("Edits or lists contents of a WorkspaceDb");
-  Yargs.wrap(Math.min(150, Yargs.terminalWidth()));
-  Yargs.strict();
-  Yargs.env("WORKSPACE_EDITOR");
-  Yargs.config();
-  Yargs.default("config", "workspaceEditor.json");
-  Yargs.help();
-  Yargs.version("V2.0");
-  Yargs.options({
-    directory: { alias: "d", describe: "directory to use for WorkspaceContainers", string: true },
-    nRequest: { describe: "number of simultaneous http requests for cloud operations", number: true },
-    containerId: { alias: "c", describe: "WorkspaceContainerId for WorkspaceDb", string: true, required: true },
-    user: { describe: "user name", string: true, required: true },
-    accountName: { alias: "a", describe: "cloud storage account name for container", string: true, default: "" },
-    sasToken: { describe: "shared access signature token", string: true, default: "" },
-    storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
-    logging: { describe: "enable log messages", boolean: true, default: "false" },
-  });
-  Yargs.command({
-    command: "add <dbName> <files>",
-    describe: "add or update files into a WorkspaceDb",
-    builder: {
-      rscName: { alias: "n", describe: "resource name for file", string: true },
-      root: { alias: "r", describe: "root directory. Path parts after this will be saved in resource name", string: true },
-      update,
-      type,
-    },
-    handler: runCommand(addResource),
-  });
-  Yargs.command({
-    command: "remove <dbName> <rscName>",
-    describe: "remove a resource from a WorkspaceDb",
-    builder: { type },
-    handler: runCommand(removeResource),
-  });
-  Yargs.command({
-    command: "extract <dbName> <rscName> <fileName>",
-    describe: "extract a resource from a WorkspaceDb into a local file",
-    builder: { type },
-    handler: runCommand(extractResource),
-  });
-  Yargs.command({
-    command: "listDb <dbName>",
-    describe: "list the contents of a WorkspaceDb",
-    builder: {
-      strings: { alias: "s", describe: "list string resources", boolean: true, default: false },
-      blobs: { alias: "b", describe: "list blob resources", boolean: true, default: false },
-      files: { alias: "f", describe: "list file resources", boolean: true, default: false },
-    },
-    handler: runCommand(listWorkspaceDb),
-  });
-  Yargs.command({
-    command: "deleteDb <dbName>",
-    describe: "delete a WorkspaceDb from a cloud container",
-    handler: runCommand(deleteWorkspaceDb),
-  });
-  Yargs.command({
-    command: "createDb <dbName>",
-    describe: "create a new WorkspaceDb",
-    handler: runCommand(createWorkspaceDb),
-  });
-  Yargs.command({
-    command: "copyDb <dbName> <newDbName>",
-    describe: "make a copy of a WorkspaceDb in a cloud container with a new name",
-    handler: runCommand(copyWorkspaceDb),
-  });
-  Yargs.command({
-    command: "versionDb <dbName>",
-    describe: "make a new version of a WorkspaceDb",
-    builder: {
-      versionType: { describe: "the type of version to create", default: "patch", string: true, choices: ["major", "minor", "patch"] },
-    },
-    handler: runCommand(versionWorkspaceDb),
-  });
-  Yargs.command({
-    command: "pinDb <dbName>",
-    describe: "pin a WorkspaceDb from a cloud container",
-    handler: runCommand(pinWorkspaceDb),
-  });
-  Yargs.command({
-    command: "unpinDb <dbName>",
-    describe: "un-pin a WorkspaceDb from a cloud container",
-    handler: runCommand(unPinWorkspaceDb),
-  });
-  Yargs.command({
-    command: "vacuumDb <dbName>",
-    describe: "vacuum a WorkspaceDb",
-    handler: runCommand(vacuumWorkspaceDb),
-  });
-  Yargs.command({
-    command: "importDb <dbName> <localFileName>",
-    describe: "import a WorkspaceDb into a cloud container",
-    handler: runCommand(importWorkspaceDb),
-  });
-  Yargs.command({
-    command: "exportDb <dbName> <localFileName>",
-    describe: "export a WorkspaceDb from a cloud container to a local file",
-    handler: runCommand(exportWorkspaceDb),
-  });
-  Yargs.command({
-    command: "queryDbs [like]",
-    describe: "query the list of WorkspaceDbs in a cloud container",
-    handler: runCommand(queryWorkspaceDbs),
-  });
-  Yargs.command({
-    command: "acquireLock",
-    describe: "acquire the write lock for a cloud container",
-    handler: runCommand(acquireLock),
-  });
-  Yargs.command({
-    command: "releaseLock",
-    describe: "release the write lock for a cloud container",
-    handler: runCommand(releaseLock),
-  });
-  Yargs.command({
-    command: "clearWriteLock",
-    describe: "clear the write lock for a cloud container. Note: this can be dangerous!",
-    handler: runCommand(clearWriteLock),
-  });
-  Yargs.command({
-    command: "purgeWorkspace",
-    describe: "purge deleted blocks from a WorkspaceContainer",
-    handler: runCommand(purgeWorkspace),
-  });
-  Yargs.command({
-    command: "initializeWorkspace",
-    describe: "initialize (empty if already exists) a WorkspaceContainer",
-    builder: {
-      noPrompt: { describe: "skip prompt", boolean: true, default: false },
-    },
-    handler: runCommand(initializeWorkspace),
-  });
+  if (process.argv[2][0] === "@") {
+    const parsed = Yargs.parseSync(process.argv.slice(3));
+    if (parsed.config && parsed.config !== "workspaceEditor.json")
+      process.env.WORKSPACE_EDITOR_CONFIG = parsed.config as string;
+
+    await runCommand(runScript)({ scriptName: process.argv[2].substring(1) });
+    return;
+  }
+
   Yargs.demandCommand();
-  Yargs.argv;
+  await Yargs.parseAsync();
 }
 
 void main();
