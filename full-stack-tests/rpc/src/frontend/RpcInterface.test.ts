@@ -432,7 +432,7 @@ describe("RpcInterface", () => {
     await Promise.all(promises);
   });
 
-  it.only("should be able to send large requests as get requests", async () => {
+  it("should be able to send large requests as get requests", async () => {
     RpcOperation.lookup(TestRpcInterface, "op2").policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let longString = "";
