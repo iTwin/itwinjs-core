@@ -1,11 +1,10 @@
 {
   "name": "@itwin/core-react",
-  "version": "3.2.0-dev.9",
+  "version": "3.2.0-dev.26",
   "description": "iTwin.js UI core components",
   "main": "lib/cjs/core-react.js",
   "module": "lib/esm/core-react.js",
   "typings": "lib/cjs/core-react",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -40,8 +39,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.2.0-dev.9",
-    "@itwin/core-bentley": "workspace:^3.2.0-dev.9",
+    "@itwin/appui-abstract": "workspace:^3.2.0-dev.26",
+    "@itwin/core-bentley": "workspace:^3.2.0-dev.26",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -107,7 +106,7 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@itwin/itwinui-css": "0.44.2",
+    "@itwin/itwinui-css": "0.x",
     "@itwin/itwinui-react": "^1.32.0",
     "classnames": "^2.3.1",
     "dompurify": "^2.0.12",

@@ -185,7 +185,7 @@ describe("FrontstageDef", () => {
       await FrontstageManager.setActiveFrontstageDef(frontstageDef);
       const sut = FrontstageManager.activeFrontstageDef!;
       sut.rightPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderR1"]);
-      sut.rightPanel!.panelZones.middle.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderRM1"]);
+      sut.rightPanel!.panelZones.end.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderRM1"]);
       sut.leftPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderW1"]);
     });
   });

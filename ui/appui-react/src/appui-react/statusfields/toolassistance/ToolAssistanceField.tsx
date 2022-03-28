@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Notification
  */
@@ -16,7 +17,7 @@ import {
 } from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
 import {
-  FillCentered, Icon, LocalStateStorage, SvgSprite, UiCore, UiStateEntry, UiStateStorage, UiStateStorageResult, UiStateStorageStatus,
+  FillCentered, Icon, LocalStateStorage, UiCore, UiStateEntry, UiStateStorage, UiStateStorageResult, UiStateStorageStatus,
 } from "@itwin/core-react";
 import {
   FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog,
@@ -32,22 +33,22 @@ import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";
 import { UiStateStorageContext } from "../../uistate/useUiStateStorage";
 
-import acceptPointIcon from "./accept-point.svg?sprite";
-import cursorClickIcon from "./cursor-click.svg?sprite";
-import oneTouchDragIcon from "./gesture-one-finger-drag.svg?sprite";
-import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
-import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
-import twoTouchPinchIcon from "./gesture-pinch.svg?sprite";
-import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
-import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
-import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
-import clickLeftIcon from "./mouse-click-left.svg?sprite";
-import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
-import clickRightIcon from "./mouse-click-right.svg?sprite";
-import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
-import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
-import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
-import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
+import acceptPointIcon from "./accept-point.svg";
+import cursorClickIcon from "./cursor-click.svg";
+import oneTouchDragIcon from "./gesture-one-finger-drag.svg";
+import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg";
+import oneTouchTapIcon from "./gesture-one-finger-tap.svg";
+import twoTouchPinchIcon from "./gesture-pinch.svg";
+import twoTouchDragIcon from "./gesture-two-finger-drag.svg";
+import twoTouchTapIcon from "./gesture-two-finger-tap.svg";
+import clickLeftDragIcon from "./mouse-click-left-drag.svg";
+import clickLeftIcon from "./mouse-click-left.svg";
+import clickRightDragIcon from "./mouse-click-right-drag.svg";
+import clickRightIcon from "./mouse-click-right.svg";
+import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg";
+import mouseWheelClickIcon from "./mouse-click-wheel.svg";
+import touchCursorDragIcon from "./touch-cursor-pan.svg";
+import touchCursorTapIcon from "./touch-cursor-point.svg";
 
 // cSpell:ignore cursorprompt
 
@@ -589,12 +590,12 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           className = mediumSize ? /* istanbul ignore next */ "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
           break;
       }
-
+      const iconSpec = IconSpecUtilities.createWebComponentIconSpec(svgImage);
       image = (
         <div className={className}>
           {svgImage &&
             // istanbul ignore next
-            <SvgSprite src={svgImage} />
+            <Icon iconSpec={iconSpec} />
           }
         </div>
       );

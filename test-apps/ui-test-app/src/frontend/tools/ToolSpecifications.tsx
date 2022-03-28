@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";

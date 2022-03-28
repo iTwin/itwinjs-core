@@ -35,7 +35,7 @@ import { addRenderPass } from "./RenderPass";
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addTranslucency } from "./Translucency";
-import { addFeatureAndMaterialLookup, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 import { wantMaterials } from "../SurfaceGeometry";
 import { addWiremesh } from "./Wiremesh";
 
@@ -133,7 +133,12 @@ const computeMaterial = `
   }
 `;
 
-function addMaterial(builder: ProgramBuilder): void {
+const computeMaterialInstanced = `
+  decodeMaterialColor(u_materialColor);
+  g_materialParams = u_materialParams;
+`;
+
+function addMaterial(builder: ProgramBuilder, instanced: boolean): void {
   const frag = builder.frag;
   assert(undefined !== frag.find("v_surfaceFlags"));
 
@@ -175,20 +180,20 @@ function addMaterial(builder: ProgramBuilder): void {
     });
   });
 
-  // Material atlas
-  addFeatureAndMaterialLookup(vert);
-  vert.addFunction(unpackFloat);
-  vert.addFunction(readMaterialAtlas);
-  vert.addUniform("u_numColors", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("u_numColors", (uniform, params) => {
-      const info = params.geometry.materialInfo;
-      const numColors = undefined !== info && info.isAtlas ? info.vertexTableOffset : 0;
-      uniform.setUniform1f(numColors);
+  if (!instanced) {
+    // Material atlas
+    vert.addFunction(unpackFloat);
+    vert.addFunction(readMaterialAtlas);
+    vert.addUniform("u_numColors", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_numColors", (uniform, params) => {
+        const info = params.geometry.materialInfo;
+        const numColors = undefined !== info && info.isAtlas ? info.vertexTableOffset : 0;
+        uniform.setUniform1f(numColors);
+      });
     });
-  });
-
+  }
   vert.addGlobal("g_materialParams", VariableType.Vec4);
-  vert.set(VertexShaderComponent.ComputeMaterial, computeMaterial);
+  vert.set(VertexShaderComponent.ComputeMaterial, instanced ? computeMaterialInstanced : computeMaterial);
   vert.set(VertexShaderComponent.ApplyMaterialColor, applyMaterialColor);
   builder.addFunctionComputedVarying("v_materialParams", VariableType.Vec4, "computeMaterialParams", computeMaterialParams);
 }
@@ -356,13 +361,7 @@ vec3 octDecodeNormal(vec2 e) {
 const computeNormal = `
   if (!u_surfaceFlags[kSurfaceBitIndex_HasNormals])
     return vec3(0.0);
-
-  vec2 normal;
-  if (u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal])
-    normal = g_usesQuantizedPosition ? g_vertLutData[3].xy : g_vertLutData[4].zw;
-  else
-    normal = g_usesQuantizedPosition ? g_vertLutData[1].zw : g_vertLutData[5].xy;
-
+  vec2 normal = (u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal]) ? g_vertLutData3.xy : g_vertLutData1.zw;
   return normalize(MAT_NORM * octDecodeNormal(normal));
 `;
 
@@ -376,7 +375,7 @@ const applyBackgroundColor = `
 `;
 
 const computeTexCoord = `
-  vec4 rgba = g_usesQuantizedPosition ? g_vertLutData[3] : g_vertLutData[4];
+  vec4 rgba = g_vertLutData3;
   vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
   return chooseVec2WithBitFlag(vec2(0.0), unquantize2d(qcoords, u_qTexCoordParams), surfaceFlags, kSurfaceBit_HasTexture);
 `;
@@ -606,7 +605,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     addTransparencyDiscard(builder.frag);
 
   addSurfaceMonochrome(builder.frag);
-  addMaterial(builder);
+  addMaterial(builder, flags.isInstanced === IsInstanced.Yes);
 
   if (flags.isWiremesh)
     addWiremesh(builder);

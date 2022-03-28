@@ -214,4 +214,30 @@ describe("Render Compatibility", () => {
       expect(caps.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
     }
   });
+
+  it("detects integrated and dedicated graphics", () => {
+    const renderers = [
+      [ "ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
+      [ "ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
+      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)",  true ],
+      [ "Intel(R) Iris(TM) Graphics 6100", true ],
+      [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
+    ];
+
+    for (const renderer of renderers) {
+      overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number) => {
+        const ext = ctx.getExtension("WEBGL_debug_renderer_info");
+        if (ext && pname === ext.UNMASKED_RENDERER_WEBGL)
+          return renderer[0];
+
+        return undefined;
+      });
+
+      const context = makeTestContext(true);
+      const caps = new Capabilities();
+      const compatibility = caps.init(context);
+
+      expect(compatibility.usingIntegratedGraphics).to.equal(renderer[1]);
+    }
+  });
 });

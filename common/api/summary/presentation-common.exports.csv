@@ -30,6 +30,7 @@ internal;CommonIpcParams
 public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
 public;ConditionContainer
+deprecated;ConditionContainer
 public;Content
 public;ContentDescriptorRequestOptions
 public;ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions
@@ -130,7 +131,6 @@ public;FilterByTextHierarchyRequestOptions
 public;FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
-internal;getLocalesDirectory: (assetsDirectory: string) => string
 public;GroupingNodeKey 
 public;GroupingNodeKeyJSON 
 public;GroupingRule 
@@ -372,7 +372,7 @@ public;StructFieldMemberDescription
 public;StructTypeDescription 
 public;StyleOverride 
 deprecated;StyleOverride 
-public;SubCondition 
+public;SubCondition
 public;Subtract
 public;SupplementationInfo
 alpha;traverseContent(visitor: IContentVisitor, content: Content): void
