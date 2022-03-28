@@ -63,6 +63,8 @@ function getConfig(env) {
     },
     externals: {
       "electron": "electron",
+      "bufferutil": "bufferutil",
+      "utf-8-validate": "utf-8-validate"
     },
     plugins: [
       new plugins.CopyAppAssetsPlugin("./assets/"),

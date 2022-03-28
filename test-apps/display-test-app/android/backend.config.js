@@ -61,6 +61,10 @@ function getConfig(env) {
     stats: {
       warnings: false
     },
+    externals: {
+      "bufferutil": "bufferutil",
+      "utf-8-validate": "utf-8-validate"
+    },
     plugins: [
       new plugins.CopyAppAssetsPlugin("./assets/"),
       new plugins.CopyBentleyStaticResourcesPlugin(["assets"]),
