@@ -8,7 +8,7 @@ This specification allows including related instance properties into the content
 
 | Name                                                                              | Required? | Type                                                                                | Default             |
 | --------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------- | ------------------- |
-| [`propertiesSource`](#attribute-propertiessource)                                 | Yes       | [`RelationshipPathSpecification`](../Common-Rules/RelationshipPathSpecification.md) |                     |
+| [`propertiesSource`](#attribute-propertiessource)                                 | Yes       | [`RelationshipPathSpecification`](../RelationshipPathSpecification.md)              |                     |
 | [`instanceFilter`](#attribute-instancefilter)                                     | No        | [ECExpression](./ECExpressions.md#instance-filter)                                  | `""`                |
 | [`handleTargetClassPolymorphically`](#attribute-handletargetclasspolymorphically) | No        | `boolean`                                                                           | `false`             |
 | [`relationshipMeaning`](#attribute-relationshipmeaning)                           | No        | `"SameInstance" \| "RelatedInstance"`                                               | `"RelatedInstance"` |
