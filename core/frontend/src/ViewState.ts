@@ -337,7 +337,8 @@ export abstract class ViewState extends ElementState {
    */
   protected preload(hydrateRequest: HydrateViewStateRequestProps): void {
     const acsId = this.getAuxiliaryCoordinateSystemId();
-    if (Id64.isValid(acsId)) hydrateRequest.acsId = acsId;
+    if (Id64.isValid(acsId))
+      hydrateRequest.acsId = acsId;
     this.iModel.subcategories.preload(hydrateRequest, this.categorySelector.categories);
   }
 
