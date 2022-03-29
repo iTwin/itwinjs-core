@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Fri, 25 Mar 2022 15:10:02 GMT and should not be manually modified.
+This log was last generated on Tue, 29 Mar 2022 20:53:47 GMT and should not be manually modified.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- add two geom tests
+- PolyfaceBuilder.addMiteredPipes now handles elliptical sections
+- create spirals beyond [0,1]
+- Add secondary sort (based on curvature) to around-the-vertex ordering in planar subdivision with curves
+- fix Matrix4d.createInverse failure
+- Offset XY curve improvements
 
 ## 3.0.3
 Fri, 25 Mar 2022 15:10:02 GMT
