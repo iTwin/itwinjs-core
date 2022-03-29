@@ -2031,10 +2031,10 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
     // (undocumented)
     tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): {
         zones: {
-            4: import("./Zone").ZoneManagerProps;
-            2: import("./Zone").ZoneManagerProps;
             1: import("./Zone").ZoneManagerProps;
+            2: import("./Zone").ZoneManagerProps;
             3: import("./Zone").ZoneManagerProps;
+            4: import("./Zone").ZoneManagerProps;
             6: import("./Zone").ZoneManagerProps;
             7: import("./Zone").ZoneManagerProps;
             8: import("./Zone").ZoneManagerProps;
