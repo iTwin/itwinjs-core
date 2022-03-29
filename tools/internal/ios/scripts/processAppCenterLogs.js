@@ -86,8 +86,12 @@ function extractXML(xmlFilter, inputLogFile, outputXmlFile) {
   rl.on('line', (line) => {
     if (line.includes(xmlFilter)) {
       let xmlLine = line.substring(line.indexOf(xmlFilter) + xmlFilter.length);
-      outputStream.write(xmlLine + "\n", "utf-8");
-      console.log(xmlLine)
+
+      var regex = /\\M-b\\M\^@\\M-&/g;
+      let cleanedXmlLine = xmlLine.replace(regex, "...");
+
+      outputStream.write(cleanedXmlLine + "\n", "utf-8");
+      console.log(cleanedXmlLine);
     }
   });
 }
