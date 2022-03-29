@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -14,7 +16,6 @@ import {
 } from "@itwin/core-backend";
 import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { exit } from "process";
 
 // cspell:ignore nodir
 /* eslint-disable id-blacklist,no-console */
@@ -500,13 +501,12 @@ Yargs.wrap(Math.min(150, Yargs.terminalWidth()));
 Yargs.strict();
 Yargs.env("WORKSPACE_EDITOR");
 Yargs.config();
-Yargs.default("config", "workspaceEditor.json");
 Yargs.help();
 Yargs.version("V2.0");
 Yargs.options({
   directory: { alias: "d", describe: "directory to use for WorkspaceContainers", string: true },
   nRequest: { describe: "number of simultaneous http requests for cloud operations", number: true },
-  containerId: { alias: "c", describe: "WorkspaceContainerId for WorkspaceDb", string: true },
+  containerId: { alias: "c", describe: "WorkspaceContainerId for WorkspaceDb", string: true, demandOption: true },
   user: { describe: "user name", string: true, default: "workspace-editor" },
   accountName: { alias: "a", describe: "cloud storage account name for container", string: true },
   sasToken: { describe: "shared access signature token", string: true, default: "" },
@@ -625,7 +625,7 @@ Yargs.command<EditorOpts>({
 });
 Yargs.command<InitializeOpts>({
   command: "initializeWorkspace",
-  describe: "initialize (empty if already exists) a WorkspaceContainer",
+  describe: "initialize a WorkspaceContainer (empties if already initialized)",
   builder: {
     noPrompt: { describe: "skip prompt", boolean: true, default: false },
   },
@@ -646,7 +646,7 @@ async function runScript(arg: EditorProps & { scriptName: string }) {
     await Yargs.parseAsync(line, {}, (err: Error | undefined, _argv: any, _output: string) => {
       if (err) {
         console.error(`${arg.scriptName}:${i} [${line}] : ${BentleyError.getErrorMessage(err)}`);
-        exit(1);
+        process.exit(1);
       }
     });
   }
@@ -656,7 +656,7 @@ async function runScript(arg: EditorProps & { scriptName: string }) {
 async function main() {
   if (process.argv[2][0] === "@") {
     const parsed = Yargs.parseSync(process.argv.slice(3));
-    if (parsed.config && parsed.config !== "workspaceEditor.json")
+    if (parsed.config)
       process.env.WORKSPACE_EDITOR_CONFIG = parsed.config as string;
 
     await runCommand(runScript)({ scriptName: process.argv[2].substring(1) });
