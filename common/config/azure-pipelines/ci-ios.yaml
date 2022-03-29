@@ -8,6 +8,7 @@ schedules:
     branches:
       include:
         - master
+        - releases/*
 
 variables:
   - group: iTwin.js ios and App Center variables
