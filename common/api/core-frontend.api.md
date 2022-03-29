@@ -7339,6 +7339,7 @@ export class OnScreenTarget extends Target {
     protected _assignDC(): boolean;
     // (undocumented)
     protected _beginPaint(fbo: FrameBuffer): void;
+    checkFboDimensions(): boolean;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
@@ -10289,6 +10290,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     endPerfMetricFrame(readPixels?: boolean): void;
     // (undocumented)
     endPerfMetricRecord(readPixels?: boolean): void;
+    // (undocumented)
+    protected _fbo?: FrameBuffer;
     // (undocumented)
     get flashed(): Id64.Uint32Pair | undefined;
     // (undocumented)
