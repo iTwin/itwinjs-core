@@ -614,7 +614,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
-        "--no-config"
+        "--no-config",
+        "--no-timeouts"
       ],
       "env": {
         "NODE_ENV": "development"
