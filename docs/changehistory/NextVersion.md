@@ -24,6 +24,65 @@ If you are using [IModelTransformer]($transformer), you can configure automatic 
   transformer.processAll();
 ```
 
+## Presentation
+
+### Filtering related property instances
+
+The [related properties specification](../presentation/Content/RelatedPropertiesSpecification.md) allows including properties of related instances when requesting content  for the primary instance. However, sometimes there's a need show properties of only a few related instances rather than all of them. That can now be done by supplying an instance filter - see the [`instanceFilter` attribute section](../presentation/Content/RelatedPropertiesSpecification.md#attribute-instancefilter) for more details.
+
+### ECExpressions for property overrides
+
+It is now possible to set property specification [`isDisplayed` attribute](../presentation/Content/PropertySpecification.md#attribute-isdisplayed) value using [ECExpressions](../presentation/Content/ECExpressions.md#property-overrides).
+
+### Fixed nested hierarchy rules handling
+
+There was a bug with how [nested child node rules](../presentation/Hierarchies/Terminology.md#nested-rule) were handled. When creating children for a node created by a nested child node rule, the bug caused the library to only look for child node rules that are nested under the rule that created the parent node. The issue is now fixed and the library looks for all child node rules available at the current context.
+
+Example:
+
+```jsonc
+{
+  "id": "example",
+  "rules": [{
+    "ruleType": "RootNodes",
+    "specifications": [{
+      "specType": "CustomNode",
+      "type": "child-1",
+      "label": "Child 1",
+      "nestedRules": [{
+        "ruleType": "ChildNodes", // this rule now also returns children for `Child 1.2.1`
+        "specifications": [{
+          "specType": "CustomNode",
+          "type": "child-1.1",
+          "label": "Child 1.1"
+        }, {
+          "specType": "CustomNode",
+          "type": "child-1.2",
+          "label": "Child 1.2",
+          "nestedRules": [{
+            "ruleType": "ChildNodes",
+            "specifications": [{
+              "specType": "CustomNode",
+              "type": "child-1.2.1",
+              "label": "Child 1.2.1"
+            }]
+          }]
+        }]
+      }]
+    }]
+  }, {
+    "ruleType": "ChildNodes", // this rule now also returns children for `Child 1.2.1`
+    "specifications": [{
+      "specType": "CustomNode",
+      "type": "child-2",
+      "label": "Child 2"
+    }]
+  }]
+}
+```
+
+With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at other child node rules available in the context of the specification that created the node. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
+
 ### Detecting integrated graphics
 
 Many computers - especially laptops - contain two graphics processing units: a low-powered "integrated" GPU such as those manufactured by Intel, and a more powerful "discrete" GPU typically manufactured by NVidia or AMD. Operating systems and web browsers often default to using the integrated GPU to reduce power consumption, but this can produce poor performance in graphics-heavy applications like those built with iTwin.js.  We recommend that users adjust their settings to use the discrete GPU if one is available.

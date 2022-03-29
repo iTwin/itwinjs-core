@@ -58,6 +58,13 @@ export interface RelatedPropertiesSpecification {
   propertiesSource: RelationshipPathSpecification;
 
   /**
+   * Condition for filtering instances targeted by the [[propertiesSource]] attribute.
+   *
+   * **See:** [ECExpressions available in instance filter]($docs/presentation/Content/ECExpressions.md#instance-filter)
+   */
+  instanceFilter?: string;
+
+  /**
    * The attribute tells whether the target class specified through [[propertiesSource]] should be handled
    * polymorphically. This means properties of the concrete class are loaded in addition to properties of the
    * target class itself.
