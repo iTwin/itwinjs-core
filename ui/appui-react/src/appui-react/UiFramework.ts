@@ -524,6 +524,17 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetShowWidgetIcon, value, true);
   }
 
+  public static get autoCollapseUnpinnedPanels(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.autoCollapseUnpinnedPanels : /* istanbul ignore next */ false;
+  }
+
+  public static setAutoCollapseUnpinnedPanels(value: boolean) {
+    if (UiFramework.autoCollapseUnpinnedPanels === value)
+      return;
+
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.AutoCollapseUnpinnedPanels, value, true);
+  }
+
   public static get useDragInteraction(): boolean {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.useDragInteraction : false;
   }

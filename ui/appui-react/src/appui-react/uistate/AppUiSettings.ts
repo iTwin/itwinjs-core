@@ -22,6 +22,7 @@ export interface InitialAppUiSettings {
   frameworkVersion: FrameworkVersionId;
   widgetOpacity: number;
   showWidgetIcon?: boolean;
+  autoCollapseUnpinnedPanels?: boolean;
 }
 
 /** These are the UI settings that are stored in the Redux store. They control the color theme, the UI version,
@@ -47,6 +48,7 @@ export class AppUiSettings implements UserSettingsProvider {
   public frameworkVersion: UiStateEntry<FrameworkVersionId>;
   public widgetOpacity: UiStateEntry<number>;
   public showWidgetIcon: UiStateEntry<boolean>;
+  public autoCollapseUnpinnedPanels: UiStateEntry<boolean>;
 
   private setColorTheme = (theme: string) => {
     UiFramework.setColorTheme(theme);
@@ -69,6 +71,11 @@ export class AppUiSettings implements UserSettingsProvider {
       () => UiFramework.showWidgetIcon,
       (value: boolean) => UiFramework.setShowWidgetIcon(value), defaults.showWidgetIcon);
     this._settings.push(this.showWidgetIcon);
+
+    this.autoCollapseUnpinnedPanels = new UiStateEntry<boolean>(AppUiSettings._settingNamespace, "AutoCollapseUnpinnedPanels",
+      () => UiFramework.autoCollapseUnpinnedPanels,
+      (value: boolean) => UiFramework.setAutoCollapseUnpinnedPanels(value), defaults.autoCollapseUnpinnedPanels);
+    this._settings.push(this.autoCollapseUnpinnedPanels);
 
     this.frameworkVersion = new UiStateEntry<FrameworkVersionId>(AppUiSettings._settingNamespace, "FrameworkVersion",
       () => UiFramework.uiVersion,
@@ -100,6 +107,9 @@ export class AppUiSettings implements UserSettingsProvider {
 
     if (args.eventIds.has("configurableui:set-show-widget-icon"))
       await this.showWidgetIcon.saveSetting(UiFramework.getUiStateStorage());
+
+    if (args.eventIds.has("configurableui:set-auto-collapse-unpinned-panels"))
+      await this.autoCollapseUnpinnedPanels.saveSetting(UiFramework.getUiStateStorage());
 
     if (args.eventIds.has("configurableui:set_widget_opacity"))
       await this.widgetOpacity.saveSetting(UiFramework.getUiStateStorage());
