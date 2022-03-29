@@ -66,7 +66,7 @@ function exerciseArc3d(ck: Checker, arc: Arc3d) {
   const a = 4.2;
   const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(4, 3),
     Matrix3d.createScale(a, a, a));
-  const arc1 = arc.cloneTransformed(scaleTransform) as Arc3d;
+  const arc1 = arc.cloneTransformed(scaleTransform);
   ck.testFalse(arc.isAlmostEqual(arc1), "scale changes arc");
   ck.testPointer(arc1);
   ck.testBoolean(arc1.isCircular, arc.isCircular, "scaled clone retains circular");

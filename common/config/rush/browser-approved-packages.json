@@ -11,6 +11,54 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "@bentley/aec-units-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-bridge-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-common-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-geometric-rules-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-hydraulic-analysis-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-hydraulic-results-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-quantity-takeoffs-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-rail-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-roads-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-subsurface-conflict-analysis-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-subsurface-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/cif-units-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -27,7 +75,27 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "@bentley/plant-custom-attributes-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/process-functional-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/process-physical-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/quantity-takeoffs-aspects-schema",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/react-scripts",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/road-rail-units-schema",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -80,6 +148,10 @@
     },
     {
       "name": "@itwin/core-electron",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/core-extension",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -199,6 +271,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@itwin/itwinui-icons-react",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@itwin/itwinui-react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
@@ -288,7 +364,7 @@
     },
     {
       "name": "@testing-library/react",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@testing-library/react-hooks",
@@ -309,10 +385,6 @@
     {
       "name": "@typescript-eslint/typescript-estree",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "@ungap/url-search-params",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "@wojtekmaj/enzyme-adapter-react-17",
@@ -345,6 +417,10 @@
     {
       "name": "body-parser",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "buffer",
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "cache-require-paths",
@@ -461,6 +537,10 @@
     {
       "name": "enzyme-to-json",
       "allowedCategories": [ "extensions", "frontend" ]
+    },
+    {
+      "name": "esbuild",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "eslint",
@@ -784,7 +864,7 @@
     },
     {
       "name": "react-resize-detector",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-select",
@@ -867,6 +947,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "string_decoder",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "superagent",
       "allowedCategories": [ "backend", "common", "frontend" ]
     },
@@ -909,6 +993,10 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "url",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "username",

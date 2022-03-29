@@ -34,12 +34,8 @@ vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquan
 // Need to read 2 rgba values to obtain 6 16-bit integers for position
 const unquantizeVertexPositionFromLUT = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
-  vec2 tc = g_vertexBaseCoords;
-  vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  tc.x += g_vert_stepX;
-  vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-  g_vertexData2 = enc2.zw;
+  vec3 qpos = vec3(decodeUInt16(g_vertLutData0.xy), decodeUInt16(g_vertLutData0.zw), decodeUInt16(g_vertLutData1.xy));
+  g_featureAndMaterialIndex = g_vertLutData2;
   return unquantizePosition(qpos, origin, scale);
 }
 `;
@@ -160,7 +156,6 @@ const scratchLutParams = new Float32Array(4);
 function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexLUTIndex", VariableType.Float);
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
-  vert.addGlobal("g_vertexData2", VariableType.Vec2);
 
   vert.addFunction(decodeUint24);
   vert.addFunction(decodeUint16);
@@ -187,7 +182,30 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   addLookupTable(vert, "vert", "u_vertParams.z");
   vert.addInitializer(initializeVertLUTCoords);
+
+  vert.addGlobal(`g_vertLutData0`, VariableType.Vec4);
+  vert.addGlobal(`g_vertLutData1`, VariableType.Vec4);
+  vert.addGlobal(`g_vertLutData2`, VariableType.Vec4);
+  vert.addGlobal(`g_vertLutData3`, VariableType.Vec4);
+  vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
+
+  // Read the vertex data from the vertex table up front.  Yields a consistent (if unexplainable) small performance boost.
+  vert.addInitializer(`
+    vec2 tc = g_vertexBaseCoords;
+    g_vertLutData0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+    tc.x += g_vert_stepX;
+    g_vertLutData1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+    tc.x += g_vert_stepX;
+    g_vertLutData2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+    if (3.0 < u_vertParams.z) {
+      tc.x += g_vert_stepX;
+      g_vertLutData3 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+    }
+  `);
 }
+
+// Shader tests u_qScale.x < 0 to determine that positions are not quantized.
+const unquantizedScale = new Float32Array([-1, -1, -1]);
 
 /** @internal */
 export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
@@ -195,12 +213,14 @@ export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
 
   vert.addUniform("u_qScale", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_qScale", (uniform, params) => {
-      uniform.setUniform3fv(params.geometry.qScale);
+      uniform.setUniform3fv(params.geometry.usesQuantizedPositions ? params.geometry.qScale : unquantizedScale);
     });
   });
   vert.addUniform("u_qOrigin", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_qOrigin", (uniform, params) => {
-      uniform.setUniform3fv(params.geometry.qOrigin);
+      // If positions aren't quantized, the shader doesn't use the origin - don't bother updating it.
+      if (params.geometry.usesQuantizedPositions)
+        uniform.setUniform3fv(params.geometry.qOrigin);
     });
   });
 
@@ -266,24 +286,6 @@ export function addLineCode(vert: VertexShaderBuilder): void {
 /** @internal */
 export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
   vert.replaceFunction(computeLineCode, func);
-}
-
-/** @internal */
-export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
-  if (undefined !== vert.find("g_featureAndMaterialIndex"))
-    return;
-
-  const computeFeatureAndMaterialIndex = `
-  vec2 tc = g_vertexBaseCoords;
-  tc.x += g_vert_stepX * 2.0;
-  g_featureAndMaterialIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-`;
-
-  vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
-  if (!vert.usesInstancedGeometry) {
-    // Only needed for material atlas, and instanced geometry never uses material atlas.
-    vert.addInitializer(computeFeatureAndMaterialIndex);
-  }
 }
 
 // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.

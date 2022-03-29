@@ -34,12 +34,6 @@ export const MAX_ALLOWED_KEYS_PAGE_SIZE = 10000;
  * The backend implementation of PresentationRpcInterface. All it's basically
  * responsible for is forwarding calls to [[Presentation.manager]].
  *
- * Consumers should not use this class. Instead, they should register
- * [PresentationRpcInterface]($presentation-common):
- * ``` ts
- * [[include:Backend.Initialization.RpcInterface]]
- * ```
- *
  * @internal
  */
 export class PresentationRpcImpl extends PresentationRpcInterface implements IDisposable {
@@ -58,8 +52,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       // attempt to clean up every second
       cleanupInterval: 1000,
 
-      cleanupHandler: (id) => {
-        Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
+      cleanupHandler: (id, _, reason) => {
+        if (reason !== "request")
+          Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
       },
     });
   }
@@ -107,7 +102,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   }
 
   private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string, diagnostics?: DiagnosticsOptions, rulesetVariables?: RulesetVariableJSON[] }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
-    const requestKey = JSON.stringify(requestOptions);
+    const requestKey = JSON.stringify({ iModelKey: token.key, requestId, requestOptions });
 
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${requestKey}`);
 

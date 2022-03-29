@@ -70,36 +70,56 @@ export interface IdCategoryIdentifier {
 export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier;
 
 /**
- * Specification to define a custom property category.
+ * Content modifier for defining custom property categories. Custom categories are not present in the result unless
+ * they contain at least one property. One way to assign a property to the category is by using
+ * [property overrides]($docs/presentation/content/PropertySpecification.md).
  *
- * @see [More details]($docs/presentation/Content/PropertyCategorySpecification.md)
+ * @see [Property category specification reference documentation page]($docs/presentation/content/PropertyCategorySpecification.md)
  * @public
  */
 export interface PropertyCategorySpecification {
-  /** Category identifier which has to be unique at the scope of it's definition. */
+  /**
+   * Category identifier used to reference the category definition from property overrides or other category
+   * definitions. The identifier has to be unique within the list of category definitions where this
+   * specification is used.
+   */
   id: string;
 
   /**
-   * Identifier of a parent category. When specified as a `string`,
-   * the value acts as an [[IdCategoryIdentifier]]. Defaults to [[ParentCategoryIdentifier]].
+   * Identifier of a parent category. When specifying the parent category by ID, it has to be available in
+   * the scope of this category definition.
    */
   parentId?: string | CategoryIdentifier | NoCategoryIdentifier;
 
-  /** Display label of the category. May be [localized]($docs/presentation/Advanced/Localization.md). */
+  /** Display label of the category. May be [localized]($docs/presentation/advanced/Localization.md). */
   label: string;
 
-  /** Optional extensive description of the category. */
+  /**
+   * Extensive description of the category. The description is assigned to the category object that's set
+   * on content fields and it's up to UI component to decide how the description is displayed.
+   */
   description?: string;
 
   /**
-   * Priority of the category. Higher priority categories are displayed on top. Defaults to `1000`.
+   * Assign a custom [[CategoryDescription.priority]] to the category. It's up to the
+   * UI component to make sure that priority is respected - categories with higher priority should appear
+   * before or above categories with lower priority.
+   *
    * @type integer
    */
   priority?: number;
 
-  /** Should this category be auto-expanded. Defaults to `false`. */
+  /**
+   * Controls the value of [[CategoryDescription.expand]] which tells the UI component
+   * displaying the category to auto-expand the category.
+   */
   autoExpand?: boolean;
 
-  /** Custom category renderer specification. */
+  /**
+   * Custom category [renderer specification]($docs/presentation/content/RendererSpecification.md) that allows
+   * assigning a custom category renderer to be used in UI. This specification is used to set up
+   * [[CategoryDescription.renderer]] for this category and it's up to the UI component to
+   * make sure appropriate renderer is used to render the category.
+   */
   renderer?: CustomRendererSpecification;
 }

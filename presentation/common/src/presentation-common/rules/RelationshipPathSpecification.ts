@@ -10,48 +10,55 @@ import { SingleSchemaClassSpecification } from "./ClassSpecifications";
 import { RelationshipDirection } from "./RelationshipDirection";
 
 /**
- * Specification of a single relationship path step.
+ * Specification of a single step in [[RelationshipPathSpecification]].
+ *
+ * @see [Relationship path specification reference documentation page]($docs/presentation/RelationshipPathSpecification.md)
  * @public
  */
 export interface RelationshipStepSpecification {
-  /** Specification of the relationship to use for joining the related instance. */
+  /** This attribute specifies the ECRelationship that should be used to traverse to target class. */
   relationship: SingleSchemaClassSpecification;
 
-  /** Relationship direction that should be followed to find the target class. */
+  /** This attribute specifies the direction in which the [[relationship]] should be followed. */
   direction: RelationshipDirection.Forward | RelationshipDirection.Backward;
 
   /**
-   * Specification of the target class. Either relationship's source or target class is used (based
-   * on specified direction) if more specific target class is not specified by this attribute.
+   * This attribute may be used to specialize the target of the relationship.
    */
   targetClass?: SingleSchemaClassSpecification;
 }
 
 /**
- * Specification of a single relationship path step.
+ * Specification of a single step in [[RepeatableRelationshipPathSpecification]].
+ *
+ * @see [Repeatable relationship path specification reference documentation page]($docs/presentation/RepeatableRelationshipPathSpecification.md)
  * @public
  */
 export interface RepeatableRelationshipStepSpecification extends RelationshipStepSpecification {
   /**
-   * Number of relationship steps that should be taken. Special `*` value means that
-   * relationship is traversed recursively and all matching instances are accumulated.
-   * Defaults to `1`.
+   * When a number is specified, the relationship is traversed recursively the specified number of times.
+   *
+   * When it is set to a special value `"*"`, the same relationship is traversed recursively unbounded number
+   * of times, starting from zero (the relationship is not followed). On each traversal iteration, Presentation
+   * rules engine accumulates all indirectly related ECInstances as defined by the remaining relationship path.
    */
   count?: number | "*";
 }
 
 /**
- * Specification of a relationship path.
+ * Relationship path specification is used to define a relationship path to an ECClass.
  *
- * @see [More details]($docs/presentation/Common-Rules/RelationshipPathSpecification.md)
+ * @see [Relationship path specification reference documentation page]($docs/presentation/RelationshipPathSpecification.md)
  * @public
  */
 export type RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[];
 
 /**
- * Specification of a repeatable relationship path.
+ * This specification declares a step in a relationship path between a source and target ECInstances. A step
+ * can optionally be repeated a number of times to traverse the same relationship recursively. Multiple
+ * specifications of this type can be chained together to express complex indirect relationships.
  *
- * @see [More details]($docs/presentation/Common-Rules/RelationshipPathSpecification.md)
+ * @see [Repeatable relationship path specification reference documentation page]($docs/presentation/RepeatableRelationshipPathSpecification.md)
  * @public
  */
 export type RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[];

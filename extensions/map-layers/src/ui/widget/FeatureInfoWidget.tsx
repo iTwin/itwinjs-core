@@ -10,19 +10,19 @@ import { FillCentered, Orientation } from "@itwin/core-react";
 import { FeatureInfoDataProvider, MapFeatureInfoDataUpdate, MapFeatureInfoLoadState } from "./FeatureInfoDataProvider";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { MapFeatureInfoOptions } from "../Interfaces";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayersUI } from "../../mapLayers";
 
 interface MapFeatureInfoWidgetProps {
-  featureInfoOpts?: MapFeatureInfoOptions;
+  featureInfoOpts: MapFeatureInfoOptions;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
+export function MapFeatureInfoWidget({ featureInfoOpts }: MapFeatureInfoWidgetProps) {
 
   const dataProvider = React.useRef<FeatureInfoDataProvider>();
   const [loadingData, setLoadingData] = React.useState<boolean>(false);
   const [hasData, setHasData] = React.useState<boolean>(false);
-  const [noRecordsMessage] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:FeatureInfoWidget.NoRecords"));
+  const [noRecordsMessage] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:FeatureInfoWidget.NoRecords"));
 
   const handleLoadStateChange = (state: MapFeatureInfoLoadState) => {
     setLoadingData(state === MapFeatureInfoLoadState.DataLoadStart);
@@ -32,11 +32,13 @@ export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
   };
 
   React.useEffect(() => {
-    dataProvider.current = new FeatureInfoDataProvider();
+    if (featureInfoOpts?.onMapHit) {
+      dataProvider.current = new FeatureInfoDataProvider(featureInfoOpts.onMapHit);
+    }
     return () => {
       dataProvider?.current?.onUnload();
     };
-  }, []);
+  }, [featureInfoOpts?.onMapHit]);
 
   React.useEffect(() => {
 
@@ -48,7 +50,7 @@ export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
   }, []);
 
   React.useEffect(() => {
-    if (props.featureInfoOpts?.showLoadProgressAnimation) {
+    if (featureInfoOpts?.showLoadProgressAnimation) {
       dataProvider.current?.onDataLoadStateChanged.addListener(handleLoadStateChange);
       return () => {
         dataProvider.current?.onDataLoadStateChanged.removeListener(handleLoadStateChange);
@@ -56,7 +58,7 @@ export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
     }
     return;
 
-  }, [ props.featureInfoOpts?.showLoadProgressAnimation]);
+  }, [featureInfoOpts?.showLoadProgressAnimation]);
 
   if (loadingData) {
     return (<FillCentered><ProgressRadial indeterminate={true}></ProgressRadial></FillCentered>);
@@ -65,7 +67,7 @@ export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
   } else{
     if (dataProvider.current)
       return (<PropertyGrid dataProvider={dataProvider.current} orientation={Orientation.Vertical}
-        isPropertySelectionEnabled={props.featureInfoOpts?.propertyGridOptions?.isPropertySelectionEnabled} />);
+        isPropertySelectionEnabled={featureInfoOpts?.propertyGridOptions?.isPropertySelectionEnabled} />);
     else
       return (<></>);
   }

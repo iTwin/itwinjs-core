@@ -2,7 +2,7 @@
 
 Get started with iTwin.js in your local environment. It is free, with no iTwin subscription requirement or trial periods.
 
-[Snapshot iModels]($docs/learning/backend/accessingimodels.md/#snapshot-imodels) are a static but intelligent format representing the state of an iModel at a point in time. Once created, they can not be modified. And do not have a connection with iModelHub.
+[Snapshot iModels](../backend/accessingimodels.md/#snapshot-imodels) are a static but intelligent format representing the state of an iModel at a point in time. Once created, they can not be modified. And do not have a connection with iModelHub.
 
 ## Download iTwin Snapshot
 

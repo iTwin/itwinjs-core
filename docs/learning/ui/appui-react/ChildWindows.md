@@ -56,7 +56,7 @@ Careful consideration must be taken when building components for use in a child 
 
 ## Widgets
 
-A Widget can specify set its `canPopout` property to true if its supports being in a child window. This allows a Widget to be "popped-out" to its own window and then re-docked in the Widget Panel when the child window is closed. See [Popout Widget Support]($docs/learning/ui/appui-react/Widgets.md#popout-widget-support) for more details.
+A Widget can specify set its `canPopout` property to true if its supports being in a child window. This allows a Widget to be "popped-out" to its own window and then re-docked in the Widget Panel when the child window is closed. See [Popout Widget Support](../../ui/appui-react/Widgets.md#popout-widget-support) for more details.
 
 ## API Reference
 

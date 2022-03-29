@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "generated element classes now have a default implementation of collectPredecessors returning all set navigation properties",
+      "comment": "add requiredReferenceKeys and default null code references to the empty code when cloning elements",
       "type": "none"
     }
   ],

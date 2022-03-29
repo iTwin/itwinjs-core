@@ -8,7 +8,7 @@
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
-  ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
+  ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
   isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
 import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
@@ -441,38 +441,39 @@ export abstract class RenderSystem implements IDisposable {
   public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
-    const rasterTile = new MeshArgs();
-
     // corners
     // [0] [1]
     // [2] [3]
     // Quantize the points according to their range
-    rasterTile.points = new QPoint3dList(QParams3d.fromRange(Range3d.create(...corners)));
-    for (let i = 0; i < 4; ++i)
-      rasterTile.points.add(corners[i]);
+    const points = new QPoint3dList(QParams3d.fromRange(Range3d.create(...corners)));
+    for (let i = 0; i < 4; i++)
+      points.add(corners[i]);
 
     // Now remove the translation from the quantized points and put it into a transform instead.
     // This prevents graphical artifacts when quantization origin is large relative to quantization scale.
     // ###TODO: Would be better not to create a branch for every tile.
-    const qorigin = rasterTile.points.params.origin;
+    const qorigin = points.params.origin;
     const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
     qorigin.setZero();
 
-    rasterTile.vertIndices = [0, 1, 2, 2, 1, 3];
-    rasterTile.textureUv = [
-      new Point2d(0.0, 0.0),
-      new Point2d(1.0, 0.0),
-      new Point2d(0.0, 1.0),
-      new Point2d(1.0, 1.0),
-    ];
-
-    rasterTile.texture = tileTexture;
-    rasterTile.isPlanar = true;
-
+    const features = new FeatureIndex();
     if (undefined !== featureIndex) {
-      rasterTile.features.featureID = featureIndex;
-      rasterTile.features.type = FeatureIndexType.Uniform;
+      features.featureID = featureIndex;
+      features.type = FeatureIndexType.Uniform;
     }
+
+    const rasterTile: MeshArgs = {
+      points,
+      vertIndices: [0, 1, 2, 2, 1, 3],
+      isPlanar: true,
+      features,
+      colors: new ColorIndex(),
+      fillFlags: FillFlags.None,
+      textureMapping: {
+        uvParams: [new Point2d(0, 0), new Point2d(1, 0), new Point2d(0, 1), new Point2d(1, 1)],
+        texture: tileTexture,
+      },
+    };
 
     const trimesh = this.createTriMesh(rasterTile);
     if (undefined === trimesh)

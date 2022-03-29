@@ -54,6 +54,7 @@ import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { ColorDefProps } from '@itwin/core-common';
 import { ColorIndex } from '@itwin/core-common';
+import { CommonToolbarItem } from '@itwin/appui-abstract';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { Constructor } from '@itwin/core-bentley';
 import { ContentIdProvider } from '@itwin/core-common';
@@ -292,12 +293,15 @@ import { TileHeader } from '@itwin/core-common';
 import { TileProps } from '@itwin/core-common';
 import { TileReadStatus } from '@itwin/core-common';
 import { TileVersionInfo } from '@itwin/core-common';
+import { ToolbarOrientation } from '@itwin/appui-abstract';
+import { ToolbarUsage } from '@itwin/appui-abstract';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
+import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -1022,6 +1026,12 @@ export enum ACSType {
     Spherical = 3
 }
 
+// @alpha (undocumented)
+export enum ActivationEvent {
+    // (undocumented)
+    onStartup = "onStartup"
+}
+
 // @public
 export class ActivityMessageDetails {
     constructor(showProgressBar: boolean, showPercentInMessage: boolean, supportsCancellation: boolean, showDialogInitially?: boolean);
@@ -1607,8 +1617,6 @@ export class BingElevationProvider {
     constructor();
     // @internal (undocumented)
     getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number>;
-    // @internal (undocumented)
-    getGraphic(latLongRange: Range2d, corners: Point3d[], groundBias: number, texture: RenderTexture, system: RenderSystem): Promise<RenderGraphic | undefined>;
     getHeight(carto: Cartographic, geodetic?: boolean): Promise<any>;
     getHeightAverage(iModel: IModelConnection): Promise<number>;
     getHeightRange(iModel: IModelConnection): Promise<Range1d>;
@@ -1664,6 +1672,8 @@ export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps, openMode: OpenMode);
     close(): Promise<void>;
     get editingScope(): GraphicalEditingScope | undefined;
+    // @alpha
+    readonly editorToolSettings: BriefcaseEditorToolSettings;
     enterEditingScope(): Promise<GraphicalEditingScope>;
     hasPendingTxns(): Promise<boolean>;
     get iModelId(): GuidString;
@@ -1682,6 +1692,16 @@ export class BriefcaseConnection extends IModelConnection {
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;
+}
+
+// @alpha
+export class BriefcaseEditorToolSettings {
+    get category(): Id64String | undefined;
+    set category(category: Id64String | undefined);
+    get model(): Id64String | undefined;
+    set model(model: Id64String | undefined);
+    readonly onCategoryChanged: BeEvent<(previousCategory: Id64String | undefined) => void>;
+    readonly onModelChanged: BeEvent<(previousModel: Id64String | undefined) => void>;
 }
 
 // @public
@@ -1753,6 +1773,19 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseAll(): Promise<IModelStatus>;
     reverseSingleTxn(): Promise<IModelStatus>;
     reverseTxns(numOperations: number): Promise<IModelStatus>;
+}
+
+// @alpha (undocumented)
+export interface BuildExtensionManifest extends ExtensionManifest {
+    readonly module: string;
+}
+
+// @alpha (undocumented)
+export interface BuiltInExtensionLoaderProps {
+    // (undocumented)
+    loader: ResolveFunc;
+    // (undocumented)
+    manifest: Promise<any>;
 }
 
 // @internal (undocumented)
@@ -3063,6 +3096,64 @@ export enum EventHandled {
     No = 0,
     // (undocumented)
     Yes = 1
+}
+
+// @alpha
+export class ExtensionAdmin {
+    constructor();
+    addBuildExtension(manifestPromise: Promise<BuildExtensionManifest>, mainFunc?: ResolveFunc): Promise<void>;
+    addExtensionLoader(extensionLoader: ExtensionLoader): void;
+    addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
+    // @internal
+    onStartup: () => Promise<void>;
+}
+
+// @alpha
+export class ExtensionHost {
+    protected constructor();
+    // (undocumented)
+    static get accuSnap(): AccuSnap;
+    // (undocumented)
+    static get locateManager(): ElementLocateManager;
+    // (undocumented)
+    static get notifications(): NotificationManager;
+    // (undocumented)
+    static get renderSystem(): RenderSystem;
+    // (undocumented)
+    static get toolAdmin(): ToolAdmin;
+    // (undocumented)
+    static get viewManager(): ViewManager;
+}
+
+// @alpha (undocumented)
+export class ExtensionImpl {
+    constructor(_id: string);
+    // (undocumented)
+    registerTool(tool: ToolType, onRegistered?: () => any): Promise<void>;
+}
+
+// @alpha
+export interface ExtensionLoader {
+    downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
+    getManifest(arg: ExtensionLoaderProps): Promise<ExtensionManifest>;
+}
+
+// @alpha
+export interface ExtensionLoaderProps {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    version: string;
+}
+
+// @alpha
+export interface ExtensionManifest {
+    readonly activationEvents: ActivationEvent[];
+    readonly description?: string;
+    readonly displayName?: string;
+    readonly main: string;
+    readonly name: string;
+    readonly version: string;
 }
 
 // @public
@@ -4469,7 +4560,7 @@ export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boo
 export function imageElementFromImageSource(source: ImageSource): Promise<HTMLImageElement>;
 
 // @public
-export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
+export function imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise<HTMLImageElement>;
 
 // @internal
 export class ImageryMapLayerFormat extends MapLayerFormat {
@@ -4640,6 +4731,8 @@ export class IModelApp {
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    // @alpha (undocumented)
+    static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
     static getAccessToken(): Promise<AccessToken>;
@@ -4650,7 +4743,7 @@ export class IModelApp {
     // @internal (undocumented)
     static get initialized(): boolean;
     static get localization(): Localization;
-    // @internal (undocumented)
+    // (undocumented)
     static get locateManager(): ElementLocateManager;
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
@@ -4676,6 +4769,8 @@ export class IModelApp {
     // @internal
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
+    // @internal
+    static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @beta
     static get publicPath(): string;
@@ -4869,7 +4964,7 @@ export namespace IModelConnection {
     export class Views {
         // @internal
         constructor(_iModel: IModelConnection);
-        // @deprecated (undocumented)
+        // @deprecated
         getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
         load(viewDefinitionId: Id64String): Promise<ViewState>;
@@ -4978,11 +5073,10 @@ export class IModelTileRequestChannels {
         concurrency: number;
         usesHttp: boolean;
         cacheMetadata: boolean;
+        cacheConcurrency: number;
     });
     // (undocumented)
-    get cloudStorage(): TileRequestChannel | undefined;
-    // (undocumented)
-    enableCloudStorageCache(concurrency: number): TileRequestChannel;
+    get cloudStorage(): TileRequestChannel;
     getCachedContent(tile: IModelTile): IModelTileContent | undefined;
     // (undocumented)
     getChannelForTile(tile: IModelTile): TileRequestChannel;
@@ -5250,6 +5344,9 @@ export interface ITwinIdArg {
     readonly iTwinId?: GuidString;
 }
 
+// @public (undocumented)
+export const ITWINJS_CORE_VERSION: string;
+
 // @public
 export enum KeyinParseError {
     MismatchedQuotes = 4,
@@ -5279,6 +5376,14 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
+
+// @alpha
+export interface LocalExtensionProps {
+    // (undocumented)
+    readonly mainFunc?: ResolveFunc;
+    // (undocumented)
+    readonly manifest: ExtensionManifest;
+}
 
 // @internal
 export class LocalhostIpcApp {
@@ -7665,6 +7770,7 @@ export interface PreferenceKeyArg {
 // @public
 export abstract class PrimitiveTool extends InteractiveTool {
     autoLockTarget(): void;
+    get briefcase(): BriefcaseConnection | undefined;
     // (undocumented)
     exitTool(): Promise<void>;
     getPrompt(): string;
@@ -9012,6 +9118,9 @@ export abstract class RenderTextureDrape implements IDisposable {
 
 // @internal (undocumented)
 export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<IModelTileTreeProps>;
+
+// @alpha (undocumented)
+export type ResolveFunc = () => Promise<any>;
 
 // @internal
 export type RootIModelTile = Tile & {
@@ -11088,8 +11197,6 @@ export class TileRequestChannels {
     constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean);
     add(channel: TileRequestChannel): void;
     readonly elementGraphicsRpc: TileRequestChannel;
-    // @internal
-    enableCloudStorageCache(): void;
     get(name: string): TileRequestChannel | undefined;
     getForHttp(name: string): TileRequestChannel;
     // @internal (undocumented)
@@ -11407,8 +11514,6 @@ export class Tool {
 export class ToolAdmin {
     acsContextLock: boolean;
     acsPlaneSnapLock: boolean;
-    // @alpha
-    readonly activeSettings: ToolAdmin.ActiveSettings;
     get activeTool(): InteractiveTool | undefined;
     readonly activeToolChanged: BeEvent<(tool: Tool, start: StartOrResume) => void>;
     // @internal
@@ -11473,8 +11578,8 @@ export class ToolAdmin {
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     gridLock: boolean;
-    get idleTool(): IdleTool;
-    set idleTool(idleTool: IdleTool);
+    get idleTool(): InteractiveTool;
+    set idleTool(idleTool: InteractiveTool);
     // (undocumented)
     get isLocateCircleOn(): boolean;
     readonly manipulatorToolEvent: BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>;
@@ -11553,15 +11658,6 @@ export class ToolAdmin {
     // (undocumented)
     get viewTool(): ViewTool | undefined;
     }
-
-// @public (undocumented)
-export namespace ToolAdmin {
-    // @alpha
-    export class ActiveSettings {
-        category?: Id64String;
-        model?: Id64String;
-    }
-}
 
 // @public
 export class ToolAssistance {
@@ -11650,6 +11746,15 @@ export interface ToolAssistanceSection {
 
 // @public (undocumented)
 export type ToolList = ToolType[];
+
+// @alpha (undocumented)
+export class ToolProvider implements UiItemsProvider {
+    constructor(tool: ToolType);
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
+    }
 
 // @public
 export class ToolRegistry {
@@ -11836,7 +11941,7 @@ export class TraversalSelectionContext {
 }
 
 // @public
-export function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined>;
+export function tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise<HTMLImageElement | undefined>;
 
 // @public
 export class TwoWayViewportFrustumSync extends TwoWayViewportSync {

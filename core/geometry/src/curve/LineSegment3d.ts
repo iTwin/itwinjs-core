@@ -105,7 +105,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   /** Clone the LineSegment3d */
   public clone(): LineSegment3d { return LineSegment3d.create(this._point0, this._point1); }
   /** Clone and apply transform to the clone. */
-  public cloneTransformed(transform: Transform): CurvePrimitive {  // we know tryTransformInPlace succeeds.
+  public cloneTransformed(transform: Transform): LineSegment3d {  // we know tryTransformInPlace succeeds.
     const c = this.clone();
     c.tryTransformInPlace(transform);
     return c;
@@ -323,7 +323,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
-  public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
+  public override clonePartialCurve(fractionA: number, fractionB: number): LineSegment3d {
     return LineSegment3d.create(this.fractionToPoint(fractionA), this.fractionToPoint(fractionB));
   }
 
