@@ -30,3 +30,8 @@ The below table lists all of them:
 
 Additionally, [User Setting symbols](../advanced/ECExpressions.md#symbols-in-global-context) are
 available as well.
+
+## Property overrides
+
+Some [property overrides](./PropertySpecification.md) support ECExpressions to determine the value. Only [Ruleset variable symbols](../Advanced/ECExpressions.md#ruleset-variables-user-settings)
+are available in this ECExpression context.

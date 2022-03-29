@@ -1903,8 +1903,11 @@
           "description": "Custom property editor specification that allows assigning\na custom value editor to be used in UI."
         },
         "isDisplayed": {
-          "description": "This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the\nECSchema. The allowed settings are:\n\n- Omitted or `undefined`: property visibility is controlled by the ECSchema.\n\n- `true`: property is made visible. Warning: this will automatically hide all other properties of the same class.\n   If this behavior is not desirable, set `doNotHideOtherPropertiesOnDisplayOverride` attribute to `true`.\n\n- `false`: property is made hidden.",
-          "type": "boolean"
+          "description": "This attribute controls whether the particular property is present in the result, even when it is marked as hidden in the\nECSchema. The allowed settings are:\n\n- Omitted or `undefined`: property visibility is controlled by the ECSchema.\n\n- `true`: property is made visible. Warning: this will automatically hide all other properties of the same class.\n   If this behavior is not desirable, set `doNotHideOtherPropertiesOnDisplayOverride` attribute to `true`.\n\n- `false`: property is made hidden.\n\nThe value can also be set using an ECExpression.",
+          "type": [
+            "string",
+            "boolean"
+          ]
         },
         "labelOverride": {
           "description": "This is an attribute that allows overriding the property label. May be localized.",
@@ -2067,6 +2070,10 @@
         "handleTargetClassPolymorphically": {
           "description": "The attribute tells whether the target class specified through `propertiesSource` should be handled\npolymorphically. This means properties of the concrete class are loaded in addition to properties of the\ntarget class itself.",
           "type": "boolean"
+        },
+        "instanceFilter": {
+          "description": "Condition for filtering instances targeted by the `propertiesSource` attribute.\n\nSee: ECExpressions available in instance filter",
+          "type": "string"
         },
         "nestedRelatedProperties": {
           "description": "The attribute allows loading additional related properties that are related to the target instance of this specification.",
