@@ -3,9 +3,9 @@
     {
       "comment": "",
       "type": "none",
-      "packageName": "@itwin/presentation-testing"
+      "packageName": "@itwin/core-extension"
     }
   ],
-  "packageName": "@itwin/presentation-testing",
+  "packageName": "@itwin/core-extension",
   "email": "32379572+skirby1996@users.noreply.github.com"
 }

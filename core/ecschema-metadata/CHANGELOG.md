@@ -1,6 +1,14 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Fri, 25 Mar 2022 15:10:02 GMT and should not be manually modified.
+This log was last generated on Tue, 29 Mar 2022 20:53:47 GMT and should not be manually modified.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Now consuming format type definitions from @itwin/core-quantity. Implementation of the SchemaUnitProvider class to retrieve Units from EC schemas.
+- Simplifying the initialization of the SchemaUnitProvider by allowing a ISchemaLocater to be passed in during construction.
 
 ## 3.0.3
 Fri, 25 Mar 2022 15:10:02 GMT
