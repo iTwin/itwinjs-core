@@ -58,7 +58,9 @@ export class TestUtils {
    */
   public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
     const cfg = config ? config : new IModelHostConfiguration();
-    if (!ProcessDetector.isIOSAppBackend) {
+    if (ProcessDetector.isIOSAppBackend) {
+      cfg.cacheDir = undefined; // Let the native side handle the cache.
+    } else {
       cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
     }
     return IModelHost.startup(cfg);
