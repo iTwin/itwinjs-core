@@ -12,7 +12,7 @@ This specification allows overriding some attributes of specific ECProperty or d
 | [`overridesPriority`](#attribute-overridespriority)                                                 | No        | `number`                                                          | `1000`      |
 | [`labelOverride`](#attribute-labeloverride)                                                         | No        | `string`                                                          | `undefined` |
 | [`categoryId`](#attribute-categoryid)                                                               | No        | `string \| CategoryIdentifier`                                    | `undefined` |
-| [`isDisplayed`](#attribute-isdisplayed)                                                             | No        | `boolean`                                                         | `undefined` |
+| [`isDisplayed`](#attribute-isdisplayed)                                                             | No        | `boolean \| string`                                               | `undefined` |
 | [`doNotHideOtherPropertiesOnDisplayOverride`](#attribute-donothideotherpropertiesondisplayoverride) | No        | `boolean`                                                         | `false`     |
 | [`renderer`](#attribute-renderer)                                                                   | No        | [`RendererSpecification`](./RendererSpecification.md)             | `undefined` |
 | [`editor`](#attribute-editor)                                                                       | No        | [`PropertyEditorSpecification`](./PropertyEditorSpecification.md) | `undefined` |
@@ -33,7 +33,7 @@ solve the problem - if multiple specifications attempt to override the same attr
 from specification with the same `overridesPriority` is defined by the order they appear in the overrides list.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.OverridesPriority.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.OverridesPriority.Ruleset]]
 ```
 
 ![Example of using a "overrides priority" attribute](./media/propertyspecification-with-overridespriority-attribute.png)
@@ -45,7 +45,7 @@ from specification with the same `overridesPriority` is defined by the order the
 This is an attribute that allows overriding the property label. May be [localized](../Advanced/Localization.md).
 
 ```ts
-[[include:Content.Customization.PropertySpecification.LabelOverride.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.LabelOverride.Ruleset]]
 ```
 
 ![Example of using a "label override" attribute](./media/propertyspecification-with-labeloverride-attribute.png)
@@ -69,7 +69,7 @@ The attribute allows moving the property into a different category. There are se
 See [property categorization page](./PropertyCategorization.md) for more details.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.CategoryId.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.CategoryId.Ruleset]]
 ```
 
 ![Example of using a "category id" attribute](./media/propertyspecification-with-categoryid-attribute.png)
@@ -83,9 +83,10 @@ This attribute controls whether the particular property is present in the result
 - Omitted or `undefined`: property visibility is controlled by the ECSchema.
 - `true`: property is made visible. **Warning:** this will automatically hide all other properties of the same class. If this behavior is not desirable, set [`doNotHideOtherPropertiesOnDisplayOverride` attribute](#attribute-donothideotherpropertiesondisplayoverride) to `true`.
 - `false`: property is made hidden.
+- The value can be set using an [ECExpression](./ECExpressions.md#property-overrides). **Warning:** this will automatically hide all other properties of the same class, no matter what the expression evaluates to. If this behavior is not desirable, set [`doNotHideOtherPropertiesOnDisplayOverride` attribute](#attribute-donothideotherpropertiesondisplayoverride) to `true`.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.IsDisplayed.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.IsDisplayed.Ruleset]]
 ```
 
 ![Example of using a "is displayed" attribute](./media/propertyspecification-with-isdisplayed-attribute.png)
@@ -97,7 +98,7 @@ This attribute controls whether the particular property is present in the result
 This attribute controls whether making the property visible using [`isDisplayed`](#attribute-isdisplayed) should automatically hide all other properties of the same class. When `true`, this behavior is disabled.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.DoNotHideOtherPropertiesOnDisplayOverride.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.DoNotHideOtherPropertiesOnDisplayOverride.Ruleset]]
 ```
 
 | `doNotHideOtherPropertiesOnDisplayOverride: false`                                                                                                                                                | `doNotHideOtherPropertiesOnDisplayOverride: true`                                                                                                                                               |
@@ -112,14 +113,14 @@ Custom property [renderer specification](./RendererSpecification.md) that allows
 specification is used to set up [Field.renderer]($presentation-common) for this property and it's up to the UI component to make sure
 appropriate renderer is used to render the property.
 
-See [Custom property value renderers](../Customization/PropertyValueRenderers.md) page for a list of available renderers or how to register a custom one.
+See [Custom property value renderers](./PropertyValueRenderers.md) page for a list of available renderers or how to register a custom one.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Renderer.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.Renderer.Ruleset]]
 ```
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Renderer.Result]]
+[[include:Presentation.Content.Customization.PropertySpecification.Renderer.Result]]
 ```
 
 ### Attribute: `editor`
@@ -130,9 +131,9 @@ Custom [property editor specification](./PropertyEditorSpecification) that allow
 to be used in UI.
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Editor.Ruleset]]
+[[include:Presentation.Content.Customization.PropertySpecification.Editor.Ruleset]]
 ```
 
 ```ts
-[[include:Content.Customization.PropertySpecification.Editor.Result]]
+[[include:Presentation.Content.Customization.PropertySpecification.Editor.Result]]
 ```

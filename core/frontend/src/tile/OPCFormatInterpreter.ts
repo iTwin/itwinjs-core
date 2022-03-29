@@ -5,9 +5,8 @@
 
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
-import { ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS } from "@itwin/core-orbitgt";
+import { ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS } from "@itwin/core-orbitgt";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { DownloaderNode } from "@itwin/core-orbitgt/lib/cjs/system/runtime/DownloaderNode";
 import { BentleyError, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { RealityDataError, SpatialLocationAndExtents } from "../RealityDataSource";
 
@@ -25,7 +24,7 @@ export class OPCFormatInterpreter  {
    */
   public static async getFileReaderFromBlobFileURL(blobFileURL: string): Promise<PointCloudReader> {
     if (Downloader.INSTANCE == null)
-      Downloader.INSTANCE = new DownloaderNode();
+      Downloader.INSTANCE = new DownloaderXhr();
     if (CRSManager.ENGINE == null)
       CRSManager.ENGINE = await OnlineEngine.create();
 

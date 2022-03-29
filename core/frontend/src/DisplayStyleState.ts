@@ -218,12 +218,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @public
    */
   public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
-    const provider = BackgroundMapProvider.fromJSON(props);
     const base = this.settings.mapImagery.backgroundBase;
-    if (base instanceof ColorDef)
-      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(provider);
-    else
+    if (base instanceof ColorDef) {
+      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(BackgroundMapProvider.fromJSON(props));
+    } else {
+      const provider = base.provider ? base.provider.clone(props) : BackgroundMapProvider.fromJSON(props);
       this.settings.mapImagery.backgroundBase = base.cloneWithProvider(provider);
+    }
 
     this._synchBackgroundMapImagery();
   }

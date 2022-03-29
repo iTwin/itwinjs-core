@@ -6,29 +6,28 @@ Returns content for instances related to the selected (input) instances.
 
 ## Attributes
 
-| Name                                                      | Required? | Type                                                                                  | Default |
-| --------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------- | ------- |
+| Name                                                      | Required? | Type                                                                                         | Default |
+| --------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------- | ------- |
 | *Filtering*                                               |
-| [`relationshipPaths`](#attribute-relationshippaths)       | Yes       | [`RelationshipPathSpecification[]`](../Common-Rules/RelationshipPathSpecification.md) |
-| [`instanceFilter`](#attribute-instancefilter)             | No        | [ECExpression](./ECExpressions.md#instance-filter)                                    | `""`    |
-| [`onlyIfNotHandled`](#attribute-onlyifnothandled)         | No        | `boolean`                                                                             | `false` |
+| [`relationshipPaths`](#attribute-relationshippaths)       | Yes       | [`RepeatableRelationshipPathSpecification[]`](../RepeatableRelationshipPathSpecification.md) |
+| [`instanceFilter`](#attribute-instancefilter)             | No        | [ECExpression](./ECExpressions.md#instance-filter)                                           | `""`    |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)         | No        | `boolean`                                                                                    | `false` |
 | *Ordering*                                                |
-| [`priority`](#attribute-priority)                         | No        | `number`                                                                              | `1000`  |
+| [`priority`](#attribute-priority)                         | No        | `number`                                                                                     | `1000`  |
 | *Content Modifiers*                                       |
-| [`relatedProperties`](#attribute-relatedproperties)       | No        | `RelatedPropertiesSpecification[]`                                                    | `[]`    |
-| [`calculatedProperties`](#attribute-calculatedproperties) | No        | `CalculatedPropertiesSpecification[]`                                                 | `[]`    |
-| [`propertyCategories`](#attribute-propertycategories)     | No        | `PropertyCategorySpecification[]`                                                     | `[]`    |
-| [`propertyOverrides`](#attribute-propertyoverrides)       | No        | `PropertySpecification[]`                                                             | `[]`    |
-| [`showImages`](#attribute-showimages)                     | No        | `boolean`                                                                             | `false` |
+| [`relatedProperties`](#attribute-relatedproperties)       | No        | `RelatedPropertiesSpecification[]`                                                           | `[]`    |
+| [`calculatedProperties`](#attribute-calculatedproperties) | No        | `CalculatedPropertiesSpecification[]`                                                        | `[]`    |
+| [`propertyCategories`](#attribute-propertycategories)     | No        | `PropertyCategorySpecification[]`                                                            | `[]`    |
+| [`propertyOverrides`](#attribute-propertyoverrides)       | No        | `PropertySpecification[]`                                                                    | `[]`    |
 | *Misc.*                                                   |
-| [`relatedInstances`](#attribute-relatedinstances)         | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)   | `[]`    |
+| [`relatedInstances`](#attribute-relatedinstances)         | No        | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md)                       | `[]`    |
 
 ### Attribute: `relationshipPaths`
 
-Specifies a chain of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) that forms a path from an input instance to the output instances. When this array is empty, the specification produces no results.
+Specifies a chain of [relationship path specifications](../RepeatableRelationshipPathSpecification.md) that forms a path from an input instance to the output instances. When this array is empty, the specification produces no results.
 
 ```ts
-[[include:ContentRelatedInstances.RelationshipPaths.Ruleset]]
+[[include:Presentation.ContentRelatedInstances.RelationshipPaths.Ruleset]]
 ```
 
 The following is a result of selecting one instance of `bis.Model` as input for the ruleset above:
@@ -40,7 +39,7 @@ The following is a result of selecting one instance of `bis.Model` as input for 
 Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering instances of ECClasses targeted through the [`relationshipPaths` attribute](#attribute-relationshippaths).
 
 ```ts
-[[include:ContentRelatedInstances.InstanceFilter.Ruleset]]
+[[include:Presentation.ContentRelatedInstances.InstanceFilter.Ruleset]]
 ```
 
   |                | Result                                                                                      |
@@ -55,7 +54,7 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 Identifies whether we should ignore this specification if another specification was already handled (based on rule priorities and definition order). Should be used when defining a fallback specification.
 
 ```ts
-[[include:SharedAttributes.OnlyIfNotHandled.Ruleset]]
+[[include:Presentation.SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
   | onlyIfNotHandled | Result                                                                                                     |
@@ -70,7 +69,7 @@ Identifies whether we should ignore this specification if another specification 
 Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
 
 ```ts
-[[include:SharedAttributes.Priority.Ruleset]]
+[[include:Presentation.SharedAttributes.Priority.Ruleset]]
 ```
 
 ![Example of using "priority" attribute](./media/sharedattributes-with-priority.png)
@@ -80,7 +79,7 @@ Controls the order in which specifications are handled — specification with hi
 Specifications of [related properties](./RelatedPropertiesSpecification.md) which are included in the generated content.
 
 ```ts
-[[include:SharedAttributes.RelatedProperties.Ruleset]]
+[[include:Presentation.SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
   | without related properties                                                                          | with related properties                                                                                    |
@@ -92,7 +91,7 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 Specifications of [calculated properties](./CalculatedPropertiesSpecification.md) whose values are generated using provided [ECExpressions](../Advanced/ECExpressions.md#ecinstance).
 
 ```ts
-[[include:SharedAttributes.CalculatedProperties.Ruleset]]
+[[include:Presentation.SharedAttributes.CalculatedProperties.Ruleset]]
 ```
 
 ![Example of using "calculated properties" attribute](./media/sharedattributes-with-calculatedproperties.png)
@@ -104,7 +103,7 @@ Defines a list of [custom categories](PropertyCategorySpecification.md).
 Custom categories are not present in the result unless they contain at least one property. To assign a property to the category, reference its `id` in [`PropertySpecification.categoryId`](./PropertySpecification.md) when defining [`propertyOverrides`](#attribute-propertyoverrides).
 
 ```ts
-[[include:SharedAttributes.PropertyCategories.Ruleset]]
+[[include:Presentation.SharedAttributes.PropertyCategories.Ruleset]]
 ```
 
 ![Example of using "property categories" attribute](./media/sharedattributes-with-propertycategories.png)
@@ -114,7 +113,7 @@ Custom categories are not present in the result unless they contain at least one
 Specifications of various [property overrides](./PropertySpecification.md) that allow customizing individual properties display.
 
 ```ts
-[[include:SharedAttributes.PropertyOverrides.Ruleset]]
+[[include:Presentation.SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
   |        | Result                                                                                                     |
@@ -122,28 +121,22 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
   | before | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
   | after  | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
 
-### Attribute: `showImages`
-
-> **Default value:** `false`
-
-Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
-
 ### Attribute: `relatedInstances`
 
-Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used when creating the content. There are several use cases when this is useful:
+Specifications of [related instances](../RelatedInstanceSpecification.md) that can be used when creating the content. There are several use cases when this is useful:
 
-- When there's a need to only load instances that have a related instance. Providing a [related instance](../Common-Rules/RelatedInstanceSpecification.md)
-  specification with [isRequired](../Common-Rules/RelatedInstanceSpecification.md) set to `true` filters-out the instances that don't have the related instance.
+- When there's a need to only load instances that have a related instance. Providing a [related instance](../RelatedInstanceSpecification.md)
+  specification with [isRequired](../RelatedInstanceSpecification.md#attribute-isrequired) set to `true` filters-out the instances that don't have the related instance.
 
-- When there's a need to filter instances by a related instance value. The [alias](../Common-Rules/RelatedInstanceSpecification.md) attribute may then be used
+- When there's a need to filter instances by a related instance value. The [alias](../RelatedInstanceSpecification.md#attribute-alias) attribute may then be used
   in the [`instanceFilter` attribute](#attribute-instancefilter) to reference related instance property values.
 
 - When there's a need to customize content based on related instance property values. Related instance classes are included when looking for [customization rules](../Customization/index.md),
   which allows referencing related instances and their properties in [customization rule ECExpressions](../Customization/ECExpressions.md#override-value) by their
-  [alias](../Common-Rules/RelatedInstanceSpecification.md).
+  [alias](../RelatedInstanceSpecification.md#attribute-alias).
 
 ```ts
-[[include:SharedAttributes.RelatedInstances.Ruleset]]
+[[include:Presentation.SharedAttributes.RelatedInstances.Ruleset]]
 ```
 
   |                                                                   | Result                                                                                                                                |
@@ -151,3 +144,13 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
   | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/sharedattributes-with-relatedinstances-3.png)                                           |
   | `ModelSelector` instances                                         | ![A list of model selectors](./media/sharedattributes-with-relatedinstances-2.png)                                                    |
   | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/sharedattributes-with-relatedinstances-1.png) |
+
+## Deprecated attributes
+
+### Attribute: `showImages`
+
+> **Default value:** `false`
+
+Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
+
+[ExtendedDataRule](../customization/ExtendedDataRule.md) should be used instead to provide image data to content items created by this specification. See [extended data usage page](../customization/ExtendedDataUsage.md) for more details.

@@ -1903,8 +1903,11 @@
           "description": "Custom property editor specification."
         },
         "isDisplayed": {
-          "description": "Display override. `true` to force display, `false` to force hide, `undefined` to use default.",
-          "type": "boolean"
+          "description": "Display override. `true` to force display, `false` to force hide, `undefined` to use default.\nThe value can also be set using an ECExpression.",
+          "type": [
+            "string",
+            "boolean"
+          ]
         },
         "labelOverride": {
           "description": "Label override. May be localized.",
@@ -2067,6 +2070,10 @@
         "handleTargetClassPolymorphically": {
           "description": "Should the target class specified in `propertiesSource` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
           "type": "boolean"
+        },
+        "instanceFilter": {
+          "description": "Condition for filtering instances targeted by the `propertiesSource` attribute.\n\nSee: ECExpressions available in instance filter",
+          "type": "string"
         },
         "nestedRelatedProperties": {
           "description": "Specifications for nested related properties",

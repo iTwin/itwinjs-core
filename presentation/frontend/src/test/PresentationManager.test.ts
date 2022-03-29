@@ -1343,6 +1343,17 @@ describe("PresentationManager", () => {
       expect(result).to.deep.eq({ total: 0, items: [] });
     });
 
+    it("returns zero response when partial request returns less items than requested", async () => {
+      const getter = sinon.stub();
+      getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
+      getter.onSecondCall().resolves({ total: 5, items: [] });
+      const result = await buildPagedArrayResponse({ start: 1 }, getter);
+      expect(getter).to.be.calledTwice;
+      expect(getter.firstCall).to.be.calledWith({ start: 1, size: 0 });
+      expect(getter.secondCall).to.be.calledWith({ start: 3, size: 0 });
+      expect(result).to.deep.eq({ total: 0, items: [] });
+    });
+
   });
 
 });

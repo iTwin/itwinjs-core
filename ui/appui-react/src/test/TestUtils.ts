@@ -285,8 +285,8 @@ export function getButtonWithText(container: HTMLElement, label: string, onError
  */
 export const selectChangeValueByIndex = (select: HTMLElement, index: number, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const tippy = select.ownerDocument.querySelector("[data-tippy-root]") as HTMLElement;
+  const menu = tippy.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
@@ -304,8 +304,8 @@ export const selectChangeValueByIndex = (select: HTMLElement, index: number, onE
  */
 export const selectChangeValueByText = (select: HTMLElement, label: string, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const tippy = select.ownerDocument.querySelector("[data-tippy-root]") as HTMLElement;
+  const menu = tippy.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
@@ -328,8 +328,8 @@ export const selectChangeValueByText = (select: HTMLElement, label: string, onEr
  */
 export const selectTestOptionCount = (select: HTMLElement, expectedCount: number, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const tippy = select.ownerDocument.querySelector("[data-tippy-root]") as HTMLElement;
+  const menu = tippy.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;

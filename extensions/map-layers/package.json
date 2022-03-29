@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.1.0-dev.33",
+  "version": "3.2.0-dev.21",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -19,7 +19,8 @@
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./src/public/locales/en-PSEUDO",
-    "test": "mocha \"./lib/cjs/test/**/*.test.js\""
+    "test": "mocha \"./lib/cjs/test/**/*.test.js\"",
+    "rebuild": "npm run -s clean && npm run -s build"
   },
   "repository": {
     "type": "git",
@@ -49,8 +50,8 @@
     "@itwin/core-react": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/imodel-components-react": "workspace:*",
-    "@itwin/itwinui-css": "0.44.1",
-    "@itwin/itwinui-react": "1.29.3",
+    "@itwin/itwinui-css": "0.x",
+    "@itwin/itwinui-react": "^1.32.0",
     "@itwin/presentation-common": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^7.0.2",
@@ -84,8 +85,7 @@
   },
   "dependencies": {
     "classnames": "^2.3.1",
-    "react-beautiful-dnd": "^13.0.0",
-    "react-resize-detector": "^6.7.6"
+    "react-beautiful-dnd": "^13.0.0"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*",
