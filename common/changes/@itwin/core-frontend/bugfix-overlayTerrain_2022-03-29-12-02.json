@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix overlay map layers that were displayed at the wrong elevation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
