@@ -37,16 +37,17 @@ interface EditorOpts extends EditorProps, WorkspaceContainer.Props {
   user: string;
 }
 
+/** options for initializing a WorkspaceContainer */
+interface InitializeOpts extends EditorOpts {
+  noPrompt?: boolean;
+}
+
 /** options for performing an operation on a WorkspaceDb */
 interface WorkspaceDbOpt extends EditorOpts {
   dbName: WorkspaceDb.Name;
   dbFileName: string;
   version?: string;
   like?: string;
-}
-
-interface InitializeOpts extends EditorOpts {
-  noPrompt?: boolean;
 }
 
 /** options for copying a WorkspaceDb to a new name */
@@ -632,6 +633,7 @@ Yargs.command<InitializeOpts>({
   handler: runCommand(initializeWorkspace),
 });
 
+/** execute an "@" script - a list of WorkspaceEditor commands */
 async function runScript(arg: EditorProps & { scriptName: string }) {
   inScript = true;
   const val = fs.readFileSync(arg.scriptName, "utf-8");
