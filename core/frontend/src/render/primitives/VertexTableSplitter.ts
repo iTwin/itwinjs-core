@@ -22,6 +22,7 @@ interface TypedArrayBuilderOptions {
   initialCapacity?: number;
 }
 
+/** Incrementally builds an array of unsigned 8-, 16-, or 32-bit integers. */
 class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
   protected readonly _constructor: Constructor<T>;
   protected _data: T;
@@ -35,14 +36,17 @@ class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
     this._length = 0;
   }
 
+  /** The number of integer values currently in the array. */
   public get length(): number {
     return this._length;
   }
 
+  /** The number of integers that can fit in the memory currently allocated for the array. */
   public get capacity(): number {
     return this._data.length;
   }
 
+  /** Ensure that [[capacity]] is at least equal to `newCapacity`. */
   public ensureCapacity(newCapacity: number): number {
     if (this.capacity >= newCapacity)
       return this.capacity;
@@ -56,12 +60,14 @@ class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
     return this.capacity;
   }
 
+  /** Append an integer, resizing if necessary. */
   public push(value: number): void {
     this.ensureCapacity(this.length + 1);
     this._data[this.length] = value;
     ++this._length;
   }
 
+  /** Append an array of values, resizing (at most once) if necessary. */
   public append(values: T): void {
     const newLength = this.length + values.length;
     this.ensureCapacity(newLength);
@@ -69,6 +75,9 @@ class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
     this._length = newLength;
   }
 
+  /** Obtain the finished array. Note: this may return a direct reference to the underlying typed array, or a copy.
+   * If `includeUnusedCapacity` is true then additional memory that was allocated but not used will be included.
+   */
   public toTypedArray(includeUnusedCapacity = false): T {
     if (includeUnusedCapacity)
       return this._data;
@@ -105,7 +114,9 @@ class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
   }
 }
 
-/** Exported strictly for tests. */
+/** Builds up a [[VertexIndices]].
+ * Exported strictly for tests.
+ */
 export class IndexBuffer {
   private readonly _builder: Uint8ArrayBuilder;
   private readonly _index32 = new Uint32Array(1);
@@ -130,29 +141,35 @@ export class IndexBuffer {
   }
 }
 
+/** Builds up a [[VertexTable]]. */
 class VertexBuffer {
   private readonly _builder: Uint32ArrayBuilder;
   private readonly _source: VertexTable;
 
+  /** `source` is the original table containing the vertex data from which individual vertices will be obtained. */
   public constructor(source: VertexTable) {
     this._source = source;
     this._builder = new Uint32ArrayBuilder({ initialCapacity: 3 * source.numRgbaPerVertex });
   }
 
+  /** The number of vertices currently in the table. */
   public get length(): number {
     assert((this._builder.length % this.vertexSize) === 0);
     return this._builder.length / this.vertexSize;
   }
 
+  /** The number of 32-bit unsigned integers (RGBA values) per vertex. */
   public get vertexSize(): number {
     return this._source.numRgbaPerVertex;
   }
 
+  /** Append a vertex. `vertex` must be of size [[vertexSize]]. */
   public push(vertex: Uint32Array): void {
     assert(vertex.length === this.vertexSize);
     this._builder.append(vertex);
   }
 
+  /** Construct the finished vertex table. */
   public buildVertexTable(maxDimension: number, colorTable: ColorTable | undefined): VertexTable {
     // ###TODO support material atlas.
     const source = this._source;
@@ -193,6 +210,7 @@ class VertexBuffer {
 
 type ColorTable = Uint32Array | ColorDef;
 
+/** Remaps portions of a source color table into a filtered target color table. */
 class ColorTableRemapper {
   private readonly _remappedIndices = new Map<number, number>();
   private readonly _colorTable: Uint32Array;
@@ -204,6 +222,7 @@ class ColorTableRemapper {
     this._colorTable = colorTable;
   }
 
+  /** Extract the color index stored in `vertex`, ensure it is present in the remapped color table, and return its index in that table. */
   public remap(vertex: Uint32Array): void {
     this._32[0] = vertex[1];
     const oldIndex = this._16[1];
@@ -219,12 +238,14 @@ class ColorTableRemapper {
     vertex[1] = this._32[0];
   }
 
+  /** Construct the finished color table. */
   public buildColorTable(): ColorTable {
     assert(this.colors.length > 0);
     return this.colors.length > 1 ? new Uint32Array(this.colors) : ColorDef.fromAbgr(this.colors[0]);
   }
 }
 
+/** A node in a split vertex table. Each node corresponds to one or more elements. */
 class Node {
   public readonly vertices: VertexBuffer;
   public readonly remappedIndices = new Map<number, number>();
@@ -232,6 +253,7 @@ class Node {
   public readonly colors?: ColorTableRemapper;
   // ###TODO remap material indices.
 
+  /** `vertexTable` is the source table containing vertex data for all nodes, from which this node will extract the vertices belong to it. */
   public constructor(vertexTable: VertexTable) {
     this.vertices = new VertexBuffer(vertexTable);
     if (undefined == vertexTable.uniformColor)
@@ -273,13 +295,14 @@ class VertexTableSplitter {
     this._computeNodeId = computeNodeId;
   }
 
+  /** Split the source into one or more output nodes, returning a mapping of integer node Id to node. */
   public static split(source: VertexTableSplitArgs, computeNodeId: ComputeNodeId): Map<number, Node> {
     const splitter = new VertexTableSplitter(source, computeNodeId);
     splitter.split();
     return splitter._nodes;
   }
 
-  // ###TODO: Produce new color tables and material atlases, remapping indices.
+  // ###TODO: Produce new material atlases, remapping indices.
   private split(): void {
     // Track the most recent feature and corresponding node to avoid repeated lookups - vertices for
     // individual features are largely contiguous.
