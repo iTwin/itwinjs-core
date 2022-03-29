@@ -295,6 +295,7 @@ export class FrontstageDef {
     // istanbul ignore else
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
+    // istanbul ignore next
     if (this.contentGroupProvider)
       await this.contentGroupProvider.onFrontstageDeactivated();
 
@@ -365,9 +366,13 @@ export class FrontstageDef {
   public startDefaultTool(): void {
     // Start the default tool
     // istanbul ignore next
-    if (this.defaultTool && IModelApp.toolAdmin && IModelApp.viewManager) {
-      IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
-      this.defaultTool.execute();
+    if (IModelApp.toolAdmin && IModelApp.viewManager) {
+      if (this.defaultTool) {
+        IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
+        this.defaultTool.execute();
+      } else {
+        IModelApp.toolAdmin.startDefaultTool(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      }
     }
   }
 
@@ -664,15 +669,15 @@ export class FrontstageDef {
   /** @internal */
   public updateWidgetDefs(): void {
     // Tracks provided widgets to prevent duplicates.
-    const widgetDefs: WidgetDef[] = [];
+    const allStageWidgetDefs: WidgetDef[] = [];
 
     // Process panels before zones so in uiVersion="2" extension can explicitly target a widget for a StagePanelSection
-    this.panelDefs.forEach((panelDef: StagePanelDef) => {
-      panelDef.updateDynamicWidgetDefs(this.id, this.usage, panelDef.location, undefined, widgetDefs, this.applicationData);
+    this.panelDefs.forEach((stagePanelDef: StagePanelDef) => {
+      stagePanelDef.updateDynamicWidgetDefs(this.id, this.usage, stagePanelDef.location, undefined, allStageWidgetDefs, this.applicationData);
     });
 
     this.zoneDefs.forEach((zoneDef: ZoneDef) => {
-      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, widgetDefs, this.applicationData);
+      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, allStageWidgetDefs, this.applicationData);
     });
   }
 
@@ -708,6 +713,7 @@ export class FrontstageDef {
         return WidgetState.Floating;
 
       let collapsedPanel = false;
+      // istanbul ignore else
       if ("side" in location) {
         const panel = this.nineZoneState.panels[location.side];
         collapsedPanel = panel.collapsed || undefined === panel.size || 0 === panel.size;
@@ -794,13 +800,15 @@ export class FrontstageDef {
    */
   public isWidgetDisplayed(widgetId: string) {
     let widgetIsVisible = false;
-
+    // istanbul ignore else
     if (this.nineZoneState) {
       const tabLocation = findTab(this.nineZoneState, widgetId);
+      // istanbul ignore else
       if (tabLocation) {
         if (isFloatingLocation(tabLocation) || isPopoutLocation(tabLocation)) {
           widgetIsVisible = true;
         } else {
+          // istanbul ignore else
           if (isPanelLocation(tabLocation)) {
             const panel = this.nineZoneState.panels[tabLocation.side];
             const widgetDef = this.findWidgetDef(widgetId);

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/geonames-extension",
-  "version": "3.2.0-dev.19",
+  "version": "3.2.0-dev.27",
   "description": "Geolocation Extension",
   "main": "index.js",
   "license": "MIT",

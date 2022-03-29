@@ -40,7 +40,7 @@ import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExam
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { ButtonWithContextMenu, ContextMenuInPopup, GlobalContextMenuInPopup, PopupContextMenuInPopup, SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { ButtonWithContextMenu, ButtonWithDropdownMenu, ContextMenuInPopup, DropdownMenuInPopup, GlobalContextMenuInPopup, GlobalItwinContextMenuInPopup, PopupContextMenuInPopup, SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
@@ -644,10 +644,13 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Abstract ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
         createComponentExample("ContextMenu", undefined, <ButtonWithContextMenu />),
+        createComponentExample("iTwinUI DropdownMenu", "similar to ContextMenu", <ButtonWithDropdownMenu />),
         createComponentExample("ContextMenu in Popup", undefined, <ContextMenuInPopup />),
+        createComponentExample("iTwinUi DropdownMenu in Popup", "similar to ContextMenu in Popup", <DropdownMenuInPopup />),
         createComponentExample("Popup ContextMenu", undefined, <SamplePopupContextMenu />),
         createComponentExample("PopupContextMenu in Popup", undefined, <PopupContextMenuInPopup />),
         createComponentExample("Global ContextMenu", undefined, <GlobalContextMenuInPopup />),
+        createComponentExample("iTwinUI Menu at cursor", "similar to GlobalContextMenu", <GlobalItwinContextMenuInPopup />),
       ],
     };
   }
@@ -1289,7 +1292,7 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Basic Listbox", undefined,
           <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
-            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            onKeyDown={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
             {
               listItems?.map((cityName) =>
                 <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>
@@ -1299,7 +1302,7 @@ export class ComponentExamplesProvider {
           </Listbox>),
         createComponentExample("Listbox with disabled entries", undefined,
           <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
-            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            onKeyDown={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
             {
               listItems?.map((cityName, index) =>
                 <ListboxItem key={cityName} className="map-source-list-entry" value={cityName} disabled={0 === index % 2}>
