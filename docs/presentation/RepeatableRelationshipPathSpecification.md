@@ -1,4 +1,4 @@
-# Repeatable Relationship Path Specification
+# Repeatable relationship path specification
 
 > TypeScript type: [RepeatableRelationshipPathSpecification]($presentation-common).
 
@@ -10,16 +10,21 @@ multi-step path, target of the current step is used as the source of the next st
 
 ## Attributes
 
-| Name                                      | Required? | Type                             | Default                       |
-| ----------------------------------------- | --------- | -------------------------------- | ----------------------------- |
-| [`relationship`](#attribute-relationship) | Yes       | `SingleSchemaClassSpecification` |                               |
-| [`direction`](#attribute-direction)       | Yes       | `"Forward" \| "Backward"`        |                               |
-| [`targetClass`](#attribute-targetclass)   | No        | `SingleSchemaClassSpecification` | Other end of the relationship |
-| [`count`](#attribute-count)               | No        | `number \| "*"`                  | `1`                           |
+| Name                                      | Required? | Type                                                                    | Default                       |
+| ----------------------------------------- | --------- | ----------------------------------------------------------------------- | ----------------------------- |
+| [`relationship`](#attribute-relationship) | Yes       | [`SingleSchemaClassSpecification`](./SingleSchemaClassSpecification.md) |                               |
+| [`direction`](#attribute-direction)       | Yes       | `"Forward" \| "Backward"`                                               |                               |
+| [`targetClass`](#attribute-targetclass)   | No        | [`SingleSchemaClassSpecification`](./SingleSchemaClassSpecification.md) | Other end of the relationship |
+| [`count`](#attribute-count)               | No        | `number \| "*"`                                                         | `1`                           |
 
 ### Attribute: `relationship`
 
 This attribute specifies the ECRelationship that should be used to traverse to target class.
+
+|                 |                                                                         |
+| --------------- | ----------------------------------------------------------------------- |
+| **Type**        | [`SingleSchemaClassSpecification`](./SingleSchemaClassSpecification.md) |
+| **Is Required** | Yes                                                                     |
 
 ### Attribute: `direction`
 
@@ -28,21 +33,33 @@ This attribute specifies the direction in which the [relationship](#attribute-re
 - `"Forward"` - the relationship is traversed from source to target of the relationship.
 - `"Backward"` - the relationship is traversed from target to source of the relationship.
 
-### Attribute: `targetClass`
+|                 |                           |
+| --------------- | ------------------------- |
+| **Type**        | `"Forward" \| "Backward"` |
+| **Is Required** | Yes                       |
 
-> **Default value:** Target ECClass of the [relationship](#attribute-relationship) if the [direction](#attribute-direction) is `"Forward"` or
-> source ECClass if the [direction](#attribute-direction) is `"Backward"`.
+### Attribute: `targetClass`
 
 This attribute may be used to specialize the target of the relationship. E.g. when relationship points to a class like `bis.Element`, this
 attribute allows specializing it to `bis.PhysicalElement` or some other `bis.Element` subclass.
 
-### Attribute: `count`
+|                   |                                                                                                                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Type**          | [`SingleSchemaClassSpecification`](./SingleSchemaClassSpecification.md)                                                                                                                          |
+| **Is Required**   | No                                                                                                                                                                                               |
+| **Default Value** | Target ECClass of the [relationship](#attribute-relationship) if the [direction](#attribute-direction) is `"Forward"` or source ECClass if the [direction](#attribute-direction) is `"Backward"` |
 
-> **Default value:** `1`
+### Attribute: `count`
 
 When a number is specified, the relationship is traversed recursively the specified number of times.
 
 When it is set to a special value `"*"`, the same relationship is traversed recursively unbounded number of times, starting from zero (the relationship is not followed). On each traversal iteration, Presentation rules engine accumulates all indirectly related ECInstances as defined by the remaining relationship path.
+
+|                   |                 |
+| ----------------- | --------------- |
+| **Type**          | `number \| "*"` |
+| **Is Required**   | No              |
+| **Default Value** | `1`             |
 
 ## Examples
 
