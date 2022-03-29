@@ -14,7 +14,7 @@ import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo,
+  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo,
   HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo,
   LabelDefinition, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
   PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
@@ -37,6 +37,7 @@ import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
+import { getLocalesDirectory } from "../presentation-backend/Utils";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 

@@ -72,7 +72,7 @@ export interface UnifiedSelectionContextProviderProps {
 
 /**
  * Unified Selection context provider. It adapts framework-agnostic
- * [Unified Selection]($docs/presentation/Unified-Selection/index.md) API to be better suited for React
+ * [Unified Selection]($docs/presentation/unified-selection/index.md) API to be better suited for React
  * applications. The provided context is accessible via [[useUnifiedSelectionContext]] hook.
  * @beta
  */

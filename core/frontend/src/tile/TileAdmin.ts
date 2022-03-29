@@ -861,12 +861,6 @@ export class TileAdmin {
     const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
-
-    // Ugh this is all so gross and stupid. Can't we just ensure rpc interfaces get registered deterministically?
-    IModelTileRpcInterface.getClient().isUsingExternalTileCache().then((usingCache) => {
-      if (usingCache)
-        this.channels.enableCloudStorageCache();
-    }).catch(() => { });
   }
 }
 

@@ -12,14 +12,13 @@ import {
 } from "@itwin/components-react";
 import { ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
+import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, useLayoutResizeObserver, useRefState, WebFontIcon } from "@itwin/core-react";
 import { Input } from "@itwin/itwinui-react";
 import * as React from "react";
-import { useResizeDetector } from "react-resize-detector";
 import { StyleMapLayerSettings } from "../Interfaces";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import "./SubLayersTree.scss";
+import { MapLayersUI } from "../../mapLayers";
 
 interface ToolbarProps {
   searchField?: React.ReactNode;
@@ -42,7 +41,7 @@ function Toolbar(props: ToolbarProps) {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersPanel({ mapLayer, viewport }: { mapLayer: StyleMapLayerSettings, viewport: ScreenViewport | undefined }) {
-  const [noneAvailableLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.NoSubLayers"));
+  const [noneAvailableLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.NoSubLayers"));
   if (!viewport || (undefined === mapLayer.subLayers || 0 === mapLayer.subLayers.length)) {
     return <div className="map-manager-sublayer-panel">
       <div>{noneAvailableLabel}</div>
@@ -78,9 +77,9 @@ function getStyleMapLayerSettings(settings: ImageMapLayerSettings, isOverlay: bo
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
-  const [placeholderLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.SearchPlaceholder"));
-  const [allOnLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.AllOn"));
-  const [allOffLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.AllOff"));
+  const [placeholderLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.SearchPlaceholder"));
+  const [allOnLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.AllOn"));
+  const [allOffLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:SubLayers.AllOff"));
   const [mapLayer, setMapLayer] = React.useState(props.mapLayer);
   const [layerFilterString, setLayerFilterString] = React.useState<string>("");
 
@@ -137,7 +136,8 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     setLayerFilterString(event.target.value);
   }, []);
 
-  const { width, height, ref } = useResizeDetector();
+  const [divRef, divElement] = useRefState<HTMLDivElement>();
+  const [width, height] = useLayoutResizeObserver(divElement ?? null);
 
   return <>
     <div className="map-manager-sublayer-tree">
@@ -159,7 +159,8 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
           </button>,
         ]}
       </Toolbar>
-      <div ref={ref} className="map-manager-sublayer-tree-content">
+      {/* <div ref={ref} className="map-manager-sublayer-tree-content"> */}
+      <div ref={divRef} className="map-manager-sublayer-tree-content">
         {width && height ? <ControlledTree
           nodeLoader={nodeLoader}
           selectionMode={SelectionMode.None}

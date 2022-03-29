@@ -6,6 +6,7 @@ internal;addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["
 internal;addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"], tabs: WidgetState["tabs"], popoutWidgetArgs?: Partial
 internal;addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial
 internal;addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState
+internal;addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panelSectionWidgetId: string, widgetTabId: string): NineZoneState
 internal;AppButton 
 internal;AppButtonProps 
 internal;AppContent: React.NamedExoticComponent
@@ -156,6 +157,7 @@ internal;getResizeBy(handle: FloatingWidgetResizeHandle, offset: PointProps): Re
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 internal;getToolbarItemProps: 
 internal;getUniqueId(): string
+internal;getWidgetPanelSectionId(side: PanelSide, panelSectionIndex: number): string
 internal;getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings
 internal;getZoneCell: (id: ZoneId) => Cell
 internal;getZoneIdFromCell: (cell: CellProps) => WidgetZoneId
@@ -231,7 +233,7 @@ internal;NestedStagePanelsId
 internal;NestedStagePanelsManager
 internal;NestedStagePanelsManagerProps
 internal;NineZone(props: NineZoneProps): JSX.Element
-internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction
+internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelSetSplitterPercentAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction
 internal;NineZoneContext: React.Context
 internal;NineZoneDispatch = (action: NineZoneActionTypes) => void
 internal;NineZoneDispatchContext: React.Context
@@ -272,6 +274,7 @@ alpha;PanelProps
 deprecated;PanelProps 
 internal;PanelSetCollapsedAction
 internal;PanelSetSizeAction
+internal;PanelSetSplitterPercentAction
 internal;PanelSide = VerticalPanelSide | HorizontalPanelSide
 internal;PanelSideContext: React.Context
 internal;panelSides: [LeftPanelSide, RightPanelSide, TopPanelSide, BottomPanelSide]

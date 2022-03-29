@@ -14,9 +14,7 @@ import { NavigationRule } from "./hierarchy/NavigationRule";
 import { RequiredSchemaSpecification } from "./SchemasSpecification";
 
 /**
- * Base interface for all [[Rule]] implementations. Not meant
- * to be used directly, see `Rule`.
- *
+ * Base interface for all [[Rule]] implementations.
  * @public
  */
 export interface RuleBase {
@@ -24,42 +22,43 @@ export interface RuleBase {
   ruleType: RuleTypes;
 
   /**
-   * Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.
+   * Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are
+   * equal, the rules are handled in the order they're defined.
    *
    * @type integer
    */
   priority?: number;
 
   /**
-   * Should this rule should be ignored if there is already an existing
-   * rule with a higher priority.
+   * Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule
+   * priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
    */
   onlyIfNotHandled?: boolean;
 
   /**
-   * Schema requirements for this rule. The rule is not used if the requirements are not met.
+   * A list of [ECSchema requirements]($docs/presentation/RequiredSchemaSpecification.md) that need to be met for the rule to be used.
    * @beta
    */
   requiredSchemas?: RequiredSchemaSpecification[];
 }
 
 /**
- * Presentation rules allow configuring the hierarchy and content.
+ * A union of all presentation rule types.
  * @public
  */
 export declare type Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride;
 
 /**
  * Container of a [[condition]] property. Used for rules that support conditions. Not
- * meant to be used directly, see `Rule`.
+ * meant to be used directly, see [[Rule]].
  *
+ * @deprecated This interface is not used anymore. All interfaces that used to extend it, have the [[condition]]
+ * attribute of their own.
  * @public
  */
 export interface ConditionContainer {
   /**
-   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a limited set of symbols (depends on specific `ConditionContainer`).
+   * Defines a condition for the rule, which needs to be met in order to execute it.
    */
   condition?: string;
 }

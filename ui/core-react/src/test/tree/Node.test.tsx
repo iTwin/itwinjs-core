@@ -133,7 +133,7 @@ describe("<Node />", () => {
   it("does not call node onClick callback when checkbox is clicked", () => {
     const handleOnClick = sinon.fake();
     const { getByRole } = render(<Node label="a" level={0} onClick={handleOnClick} checkboxProps={{}} />);
-    fireEvent.click(getByRole("checkbox").parentElement!);
+    fireEvent.click(getByRole("checkbox"));
     expect(handleOnClick).to.not.have.been.called;
   });
 

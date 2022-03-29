@@ -2,14 +2,14 @@
 
 ## Setup
 
-- [Install necessary prerequisites]($docs/learning/tutorials/development-prerequisites).
+- [Install necessary prerequisites](./development-prerequisites).
 - [Register an Agent Application](https://developer.bentley.com/register/)
 - Give your agent application a name.
 - Choose "Service" application type.
   - Select necessary API associations
   - Be sure to save the secret somewhere safe - it is only shown once
 - [Clone agent-starter repo](https://github.com/iTwin/agent-starter)
-- If you do not have access to an iModel, follow one of our tutorials to [create an iModel]($docs/learning/tutorials/index.md)
+- If you do not have access to an iModel, follow one of our tutorials to [create an iModel](./index.md)
 - Add `{client_id}@apps.imsoidc.bentley.com` as a project participant of your test iModel using the "[My sample iModels](https://developer.bentley.com/my-imodels/)" page.
 
 > Allow some time after registering the agent application. The identity profile of the agent is being created in the background and can take between 5 and 10 minutes

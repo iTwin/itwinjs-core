@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Expose iTwin.js Core Version for extensions",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

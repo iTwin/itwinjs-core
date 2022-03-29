@@ -618,24 +618,24 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
    * Geometric entries are [[TextString]], [[GeometryQuery]], [[GeometryPart]], [[ImageGraphic]], and [[BRepEntity.DataProps]].
    */
   public next(): IteratorResult<GeometryStreamIteratorEntry> {
-    // NOTE: localRange remains valid until new subRange entry is encountered
+    // NOTE: localRange remains valid until we encounter either a new subRange entry or a geometry part reference.
     while (this._index < this.geometryStream.length) {
       const entry = this.geometryStream[this._index++];
       if (entry.appearance) {
         this.entry.geomParams.resetAppearance();
         if (entry.appearance.subCategory)
           this.entry.geomParams.subCategoryId = Id64.fromJSON(entry.appearance.subCategory);
-        if (entry.appearance.color)
+        if (undefined !== entry.appearance.color)
           this.entry.geomParams.lineColor = ColorDef.fromJSON(entry.appearance.color);
-        if (entry.appearance.weight)
+        if (undefined !== entry.appearance.weight)
           this.entry.geomParams.weight = entry.appearance.weight;
-        if (entry.appearance.style)
+        if (undefined !== entry.appearance.style)
           this.entry.geomParams.styleInfo = new LineStyle.Info(Id64.fromJSON(entry.appearance.style));
-        if (entry.appearance.transparency)
+        if (undefined !== entry.appearance.transparency)
           this.entry.geomParams.elmTransparency = entry.appearance.transparency;
-        if (entry.appearance.displayPriority)
+        if (undefined !== entry.appearance.displayPriority)
           this.entry.geomParams.elmPriority = entry.appearance.displayPriority;
-        if (entry.appearance.geometryClass)
+        if (undefined !== entry.appearance.geometryClass)
           this.entry.geomParams.geometryClass = entry.appearance.geometryClass;
       } else if (entry.styleMod) {
         if (this.entry.geomParams.styleInfo === undefined)
@@ -678,6 +678,9 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
             transform.multiplyTransformTransform(Transform.createRefs(Point3d.createZero(), Matrix3d.createUniformScale(entry.geomPart.scale)), transform);
         }
 
+        // Subgraphic range doesn't apply to parts. A sane geometry stream (i.e., any that has been through the native layers or GeometryStreamBuilder)
+        // will have a new subgraphic range for any geometric primitive following the part.
+        this.entry.localRange = undefined;
         this.entry.setPartReference(Id64.fromJSON(entry.geomPart.part), transform);
         return { value: this.entry, done: false };
       } else if (entry.textString) {

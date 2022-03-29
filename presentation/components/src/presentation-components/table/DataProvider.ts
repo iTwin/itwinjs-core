@@ -390,7 +390,7 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>, sameI
     throw new PresentationError(PresentationStatus.InvalidArgument, "item.primaryKeys");
   }
   const { mergedFieldsCounts: mergedCellsCounts, updatedValues } = extractValues(item.values, Object.values(sameInstanceFieldsMap).map((field) => (field.name)));
-  const updatedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, updatedValues, item.displayValues, item.mergedFieldNames, item.extendedData);
+  const updatedItem = new Item(item.primaryKeys, item.label, item.imageId, item.classInfo, updatedValues, item.displayValues, item.mergedFieldNames, item.extendedData); // eslint-disable-line deprecation/deprecation
 
   const key = JSON.stringify(item.primaryKeys[0]);
   if (descriptor.displayType === DefaultContentDisplayTypes.List) {

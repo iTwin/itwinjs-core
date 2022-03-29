@@ -512,12 +512,14 @@ describe("GridCategory", () => {
       expect(gridCategory.parentCategorySelectionKey).to.be.equal(parentSelectionKey);
 
       // Test current gridCategory descendants against flattened propertyCategory
+      // eslint-disable-next-line deprecation/deprecation
       const descendants = gridCategory.getDescendantCategoriesAndSelf();
       const flattenedPropertyCategories = GridUtils.flattenPropertyCategories([propertyCategory], {});
       expect(descendants.length).to.be.equal(flattenedPropertyCategories.length);
       descendants.forEach((descendant, index) => GridUtils.assertCategoryEquals(descendant, flattenedPropertyCategories[index].item as PropertyCategory));
 
       // Test current gridCategory children parent-child category relationship (recursive)
+      // eslint-disable-next-line deprecation/deprecation
       const childCategories = gridCategory.getChildCategories();
       const childPropertyCategories = propertyCategory.childCategories ?? [];
       expect(childCategories.length).to.be.equal(childPropertyCategories.length);
@@ -536,8 +538,10 @@ describe("GridCategory", () => {
 
         const gridCategory = new MutableGridCategory(propertyCategory, categoryRecords, gridItemFactory);
 
+        // eslint-disable-next-line deprecation/deprecation
         const childCategories = gridCategory.getChildCategories();
         expect(gridCategory.getChildren()).to.deep.equal(childCategories);
+        // eslint-disable-next-line deprecation/deprecation
         expect(gridCategory.getDescendantCategoriesAndSelf()).to.deep.equal([gridCategory, ...childCategories]);
         expect(gridCategory.getDescendantsAndSelf()).to.deep.equal([gridCategory, ...childCategories]);
 
@@ -557,8 +561,10 @@ describe("GridCategory", () => {
 
         const gridCategory = new MutableGridCategory(propertyCategory, categoryRecords, gridItemFactory);
 
+        // eslint-disable-next-line deprecation/deprecation
         const childCategories = gridCategory.getChildCategories();
         expect(gridCategory.getChildren()).to.deep.equal(childCategories);
+        // eslint-disable-next-line deprecation/deprecation
         expect(gridCategory.getDescendantCategoriesAndSelf()).to.deep.equal([gridCategory, ...childCategories]);
         expect(gridCategory.getDescendantsAndSelf()).to.deep.equal([gridCategory, ...childCategories]);
 

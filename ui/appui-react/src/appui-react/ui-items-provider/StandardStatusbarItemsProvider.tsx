@@ -38,7 +38,7 @@ export interface DefaultStatusbarItems {
 }
 
 /**
- * Provide standard tools for the SimpleStatusbarWidget
+ * Provide standard statusbar fields for the SimpleStatusbarWidget
  * @public
  */
 export class StandardStatusbarItemsProvider extends BaseUiItemsProvider {
@@ -50,7 +50,7 @@ export class StandardStatusbarItemsProvider extends BaseUiItemsProvider {
   * static function to register the StandardStatusbarItemsProvider
   * @param providerId - unique identifier for this instance of the provider. This is required in case separate packages want
   * to set up custom stage with their own subset of standard status bar items.
-  * @param defaultItems - if undefined all available tools are provided to stage. If defined only those
+  * @param defaultItems - if undefined all available item are provided to stage except for activityCenter. If defined only those
   * specific tool buttons are shown.
   * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
   * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
@@ -77,7 +77,7 @@ export class StandardStatusbarItemsProvider extends BaseUiItemsProvider {
       if (!this._defaultItems || this._defaultItems.postToolAssistanceSeparator)
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PostToolAssistance", StatusBarSection.Left, 25, <FooterSeparator />));
     }
-    if (!this._defaultItems || this._defaultItems.activityCenter) {
+    if (this._defaultItems?.activityCenter) {
       const ActivityCenter = withStatusFieldProps(ActivityCenterField);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ActivityCenter", StatusBarSection.Left, 30, <ActivityCenter />));
     }

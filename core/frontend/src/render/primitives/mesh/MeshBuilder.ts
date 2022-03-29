@@ -8,7 +8,7 @@
 
 import { assert, Dictionary } from "@itwin/core-bentley";
 import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d, Vector3d } from "@itwin/core-geometry";
-import { MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3d, QPoint3dList, TextureMapping } from "@itwin/core-common";
+import { MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList, TextureMapping } from "@itwin/core-common";
 import { DisplayParams } from "../DisplayParams";
 import { Triangle, TriangleKey, TriangleSet } from "../Primitives";
 import { StrokesPrimitivePointLists } from "../Strokes";
@@ -20,7 +20,7 @@ type VertexKeyPropsWithIndex = VertexKeyProps & { sourceIndex: number };
 
 /** @internal */
 export class MeshBuilder {
-  private _vertexMap?: VertexMap;
+  public readonly vertexMap: VertexMap;
   private _triangleSet?: TriangleSet;
   private _currentPolyface?: MeshBuilderPolyface;
   public readonly mesh: Mesh;
@@ -29,12 +29,6 @@ export class MeshBuilder {
   public readonly tileRange: Range3d;
   public get currentPolyface(): MeshBuilderPolyface | undefined { return this._currentPolyface; }
   public set displayParams(params: DisplayParams) { this.mesh.displayParams = params; }
-
-  /** create reference for vertexMap on demand */
-  public get vertexMap(): VertexMap {
-    if (undefined === this._vertexMap) this._vertexMap = new VertexMap();
-    return this._vertexMap;
-  }
 
   /** create reference for triangleSet on demand */
   public get triangleSet(): TriangleSet {
@@ -47,6 +41,17 @@ export class MeshBuilder {
     this.tolerance = tolerance;
     this.areaTolerance = areaTolerance;
     this.tileRange = tileRange;
+
+    let vertexTolerance;
+    if (mesh.points instanceof QPoint3dList) {
+      const p0 = mesh.points.params.unquantize(0, 0, 0);
+      const p1 = mesh.points.params.unquantize(1, 1, 1);
+      vertexTolerance = p1.minus(p0, p0);
+    } else {
+      vertexTolerance = { x: tolerance, y: tolerance, z: tolerance };
+    }
+
+    this.vertexMap = new VertexMap(vertexTolerance);
   }
 
   /** create a new MeshBuilder */
@@ -119,7 +124,6 @@ export class MeshBuilder {
   public createTriangleVertices(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions): VertexKeyPropsWithIndex[] | undefined {
     const { point, requireNormals } = visitor;
     const { fillColor, haveParam } = options;
-    const qPointParams = this.mesh.points.params;
 
     // If we do not have UVParams stored on the IndexedPolyface, compute them now
     let params: Point2d[] | undefined;
@@ -135,7 +139,7 @@ export class MeshBuilder {
     const vertices = [];
     for (let i = 0; i < 3; ++i) {
       const vertexIndex = 0 === i ? 0 : triangleIndex + i;
-      const position = QPoint3d.create(point.getPoint3dAtUncheckedPointIndex(vertexIndex), qPointParams);
+      const position = point.getPoint3dAtUncheckedPointIndex(vertexIndex);
       const normal = requireNormals ? OctEncodedNormal.fromVector(visitor.getNormal(vertexIndex)!) : undefined;
       const uvParam: Point2d | undefined = params ? params[vertexIndex] : undefined;
       vertices[i] = { position, fillColor, normal, uvParam, sourceIndex: vertexIndex };
@@ -144,7 +148,9 @@ export class MeshBuilder {
     // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
     // This led to unused vertex data, and caused mismatch in # of vertices when recreating the MeshBuilder from the data in the tile cache.
     // Detect beforehand instead.
-    if (vertices[0].position.equals(vertices[1].position) || vertices[0].position.equals(vertices[2].position) || vertices[1].position.equals(vertices[2].position))
+    if (this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[1])
+      || this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[2])
+      || this.vertexMap.arePositionsAlmostEqual(vertices[1], vertices[2]))
       return undefined;
 
     return vertices;
@@ -190,12 +196,10 @@ export class MeshBuilder {
   }
 
   /** removed Feature for now */
-  public addPolyline(pts: QPoint3dList | Point3d[], fillColor: number): void {
+  public addPolyline(points: Point3d[], fillColor: number): void {
     const { mesh } = this;
 
     const poly = new MeshPolyline();
-    const points = pts instanceof QPoint3dList ? pts : QPoint3dList.createFrom(pts, mesh.points.params);
-
     for (const position of points)
       poly.addIndex(this.addVertex({ position, fillColor }));
 
@@ -203,10 +207,9 @@ export class MeshBuilder {
   }
 
   /** removed Feature for now */
-  public addPointString(pts: Point3d[], fillColor: number): void {
+  public addPointString(points: Point3d[], fillColor: number): void {
     const { mesh } = this;
     const poly = new MeshPolyline();
-    const points = QPoint3dList.createFrom(pts, mesh.points.params);
 
     for (const position of points)
       poly.addIndex(this.addVertex({ position, fillColor }));
