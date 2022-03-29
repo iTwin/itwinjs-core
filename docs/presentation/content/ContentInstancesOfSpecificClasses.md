@@ -98,7 +98,7 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 
 ### Attribute: `onlyIfNotHandled`
 
-Specifies whether this specification should be ignored if another specification was handled before as determined by rule and specification priorities. This provides a mechanism for defining a fallback specification.
+When `true`, the specification takes effect only when all other specifications with higher priority are ruled out. This attribute is most useful for defining fallback specifications.
 
 |                   |           |
 | ----------------- | --------- |

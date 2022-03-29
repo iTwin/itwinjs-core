@@ -76,7 +76,7 @@ Defines the order in which rules are handled, higher number means the rule is ha
 
 ### Attribute: `onlyIfNotHandled`
 
-Tells the library that the rule should only be handled if no other rule of the same `ruleType` was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+When `true`, the rule takes effect only when all other root node rules with higher priority are ruled out. This attribute is most useful for defining fallback rules.
 
 |                   |           |
 | ----------------- | --------- |
