@@ -159,6 +159,9 @@ export const {
 	TileTreeReference,
 	TileUsageMarker,
 	Tiles,
+	ViewClipTool,
+	ViewClipClearTool,
+	ViewClipDecorationProvider,
 	EditManipulator,
 	EventController,
 	PrimitiveTool,
@@ -192,7 +195,6 @@ export const {
 	TypeOfChange,
 	ChangesetType,
 	BisCodeSpec,
-	ColorByName,
 	CommonLoggerCategory,
 	QueryRowFormat,
 	MonochromeMode,
@@ -232,6 +234,7 @@ export const {
 	TxnAction,
 	GridOrientationType,
 	RenderMode,
+	ColorByName,
 	ColorDef,
 } = ext.exports;
 // END GENERATED CODE

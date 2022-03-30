@@ -156,9 +156,10 @@ function generateRuntimeCode(exportListPreview, exportList) {
 function collectExports(packagePath) {
   // Adjust to relative path from monorepo root and add path to generated extension API
   packagePath = "../../" + packagePath + generatedCsvPath;
+  let fileContents;
 
   try {
-    let fileContents = fs.readFileSync(packagePath, "utf8");
+    fileContents = fs.readFileSync(packagePath, "utf8");
     if (fileContents.length === 0) {
       throw Error(`Extension api csv (${packagePath + generatedCsvPath}) is empty.`);
     }

@@ -170,6 +170,9 @@ export {
 	TileTreeReference,
 	TileUsageMarker,
 	Tiles,
+	ViewClipTool,
+	ViewClipClearTool,
+	ViewClipDecorationProvider,
 	EditManipulator,
 	EventController,
 	PrimitiveTool,
@@ -302,7 +305,6 @@ export {
 	TypeOfChange,
 	ChangesetType,
 	BisCodeSpec,
-	ColorByName,
 	CommonLoggerCategory,
 	QueryRowFormat,
 	MonochromeMode,
@@ -342,6 +344,7 @@ export {
 	TxnAction,
 	GridOrientationType,
 	RenderMode,
+	ColorByName,
 	ColorDef,
 } from "@itwin/core-common";
 

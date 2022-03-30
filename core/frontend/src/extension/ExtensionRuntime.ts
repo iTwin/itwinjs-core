@@ -165,6 +165,9 @@ import {
   TileTreeReference,
   TileUsageMarker,
   Tiles,
+  ViewClipTool,
+  ViewClipClearTool,
+  ViewClipDecorationProvider,
   EditManipulator,
   EventController,
   PrimitiveTool,
@@ -201,7 +204,6 @@ import {
   TypeOfChange,
   ChangesetType,
   BisCodeSpec,
-  ColorByName,
   CommonLoggerCategory,
   QueryRowFormat,
   MonochromeMode,
@@ -242,6 +244,7 @@ import {
   GridOrientationType,
   RenderMode,
   // @public real(s) from @itwin/core-common
+  ColorByName,
   ColorDef,
 } from "@itwin/core-common";
 
@@ -390,6 +393,9 @@ const extensionExports = {
   TileTreeReference,
   TileUsageMarker,
   Tiles,
+  ViewClipTool,
+  ViewClipClearTool,
+  ViewClipDecorationProvider,
   EditManipulator,
   EventController,
   PrimitiveTool,
@@ -422,7 +428,6 @@ const extensionExports = {
   TypeOfChange,
   ChangesetType,
   BisCodeSpec,
-  ColorByName,
   CommonLoggerCategory,
   QueryRowFormat,
   MonochromeMode,
@@ -462,6 +467,7 @@ const extensionExports = {
   TxnAction,
   GridOrientationType,
   RenderMode,
+  ColorByName,
   ColorDef,
 };
 
