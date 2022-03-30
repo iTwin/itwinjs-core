@@ -1041,75 +1041,90 @@ export namespace IModelJson {
       }
       return undefined;
     }
+    /** Copy from source to dest. NOOP if dest not empty. */
+    private static copyPolesIfEmpty(dest: number[][][], source: number[][][]) {
+      if (dest.length > 0) return;
+      const nOuter = source.length;
+      if (0 === nOuter) return;
+      const nMiddle = source[0].length;
+      if (0 === nMiddle) return;
+      const nInner = source[0][0].length;
+      if (0 === nInner) return;
+      for (let i = 0; i < nOuter; ++i) {
+        const newRow = [];
+        for (let j = 0; j < nMiddle; ++j) {
+          const newPt = [];
+          for (let k = 0; k < nInner; ++k)
+            newPt.push(source[i][j][k]);
+          newRow.push(newPt);
+        }
+      dest.push(newRow);
+      }
+    }
     /** Parse content of `bsurf` to BSplineSurface3d or BSplineSurface3dH */
     public static parseBsurf(data?: any): BSplineSurface3d | BSplineSurface3dH | undefined {
-      let newSurface: BSplineSurface3d | BSplineSurface3dH | undefined = undefined;
+      let newSurface: BSplineSurface3d | BSplineSurface3dH | undefined;
       if (data !== undefined
-        && data.hasOwnProperty("uKnots") && Array.isArray(data.uKnots)
-        && data.hasOwnProperty("vKnots") && Array.isArray(data.vKnots)
-        && data.hasOwnProperty("orderU") && Number.isFinite(data.orderU)
-        && data.hasOwnProperty("orderV") && Number.isFinite(data.orderV)
-        && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0]) && Array.isArray(data.points[0][0]))
-        {
+          && data.hasOwnProperty("uKnots") && Array.isArray(data.uKnots)
+          && data.hasOwnProperty("vKnots") && Array.isArray(data.vKnots)
+          && data.hasOwnProperty("orderU") && Number.isFinite(data.orderU)
+          && data.hasOwnProperty("orderV") && Number.isFinite(data.orderV)
+          && data.hasOwnProperty("points") && Array.isArray(data.points) && Array.isArray(data.points[0]) && Array.isArray(data.points[0][0])
+         ) {
         const orderU = data.orderU;
         const orderV = data.orderV;
         let numPoleV = data.points.length;
         let numPoleU = data.points[0].length;
         const dim = data.points[0][0].length;
-
-        // copy the poles in case we have to expand them
-        const poles: number[][][] = [];
-        for (let i = 0; i < numPoleV; ++i) {
-          const newRow = [];
-          for (let j = 0; j < numPoleU; ++j) {
-            const newPt = [];
-            for (let k = 0; k < dim; ++k)
-              newPt.push(data.points[i][j][k]);
-            newRow.push(newPt);
-          }
-        poles.push(newRow);
-        }
-
-        const uKnots: number[] = [];
+        const polesExpanded: number[][][] = [];
+        const uKnotsCorrected: number[] = [];
+        const vKnotsCorrected: number[] = [];
+        let poles = data.points;
+        let uKnots = data.uKnots;
+        let vKnots = data.vKnots;
         let uWrapMode = BSplineWrapMode.None;
+        let vWrapMode = BSplineWrapMode.None;
         const closedU = (data.hasOwnProperty("closedU") && true === data.closedU) ? true : false;
-        if (closedU && this.getCorrectedKnotsForClosedClamped(numPoleU, data.uKnots, orderU, uKnots)) {
-          uWrapMode = BSplineWrapMode.OpenByRemovingKnots;  // corrected knots copied; poles are OK
-        } else {
-          for (const knot of data.uKnots) uKnots.push(knot);  // copy knots
-          if (closedU) {
+        const closedV = (data.hasOwnProperty("closedV") && true === data.closedV) ? true : false;
+
+        if (closedU) {
+          if (this.getCorrectedKnotsForClosedClamped(numPoleU, data.uKnots, orderU, uKnotsCorrected)) {
+            uKnots = uKnotsCorrected;   // knots corrected, poles are OK
+            uWrapMode = BSplineWrapMode.OpenByRemovingKnots;
+          } else {
+            this.copyPolesIfEmpty(polesExpanded, poles);
             for (let i = 0; i < numPoleV; ++i) {
               for (let j = 0; j < orderU - 1; ++j) {
                 const wraparoundPt = [];
                 for (let k = 0; k < dim; ++k)
-                  wraparoundPt.push(poles[i][j][k]);
-                poles[i].push(wraparoundPt);  // append degreeU wraparound poles to each row
+                  wraparoundPt.push(polesExpanded[i][j][k]);
+                polesExpanded[i].push(wraparoundPt);  // append degreeU wraparound poles to each row
               }
             }
             numPoleU += orderU - 1;
+            poles = polesExpanded;
             uWrapMode = BSplineWrapMode.OpenByAddingControlPoints;
           }
         }
 
-        const vKnots: number[] = [];
-        let vWrapMode = BSplineWrapMode.None;
-        const closedV = (data.hasOwnProperty("closedV") && true === data.closedV) ? true : false;
-        if (closedV && this.getCorrectedKnotsForClosedClamped(numPoleV, data.vKnots, orderV, vKnots)) {
-          vWrapMode = BSplineWrapMode.OpenByRemovingKnots;  // corrected knots copied; poles are OK
-        } else {
-          for (const knot of data.vKnots) vKnots.push(knot);  // copy knots
-          if (closedV) {
+        if (closedV) {
+          if (this.getCorrectedKnotsForClosedClamped(numPoleV, data.vKnots, orderV, vKnotsCorrected)) {
+            vKnots = vKnotsCorrected;   // knots corrected, poles are OK
+            vWrapMode = BSplineWrapMode.OpenByRemovingKnots;
+          } else {
+            this.copyPolesIfEmpty(polesExpanded, poles);
             for (let i = 0; i < orderV - 1; ++i) {
               const wrapAroundRow = [];
               for (let j = 0; j < numPoleU; ++j) {
                 const wrapAroundPt = [];
                 for (let k = 0; k < dim; ++k)
-                  wrapAroundPt.push(poles[i][j][k]);
+                  wrapAroundPt.push(polesExpanded[i][j][k]);
                 wrapAroundRow.push(wrapAroundPt); // append degreeV wraparound rows of poles
               }
-              poles.push(wrapAroundRow);
+              polesExpanded.push(wrapAroundRow);
             }
             numPoleV += orderV - 1;
+            poles = polesExpanded;
             vWrapMode = BSplineWrapMode.OpenByAddingControlPoints;
           }
         }
