@@ -42,6 +42,9 @@ export const enum IsThematic { No, Yes }
 /** @internal */
 export const enum IsWiremesh { No, Yes }
 
+/** @internal */
+export type PositionType = "quantized" | "unquantized";
+
 /** Flags used to control which shader program is used by a rendering Technique.
  * @internal
  */
@@ -56,6 +59,7 @@ export class TechniqueFlags {
   public isShadowable: IsShadowable = IsShadowable.No;
   public isThematic: IsThematic = IsThematic.No;
   public isWiremesh: IsWiremesh = IsWiremesh.No;
+  public positionType: PositionType = "quantized";
   private _isHilite = false;
 
   public constructor(translucent: boolean = false) {
@@ -120,6 +124,7 @@ export class TechniqueFlags {
     this.isShadowable = shadowable;
     this.isThematic = thematic;
     this.isWiremesh = IsWiremesh.No;
+    this.positionType = "quantized";
     this.numClipPlanes = 0;
   }
 
@@ -154,6 +159,7 @@ export class TechniqueFlags {
       && this.isShadowable === other.isShadowable
       && this.isThematic === other.isThematic
       && this.isWiremesh === other.isWiremesh
+      && this.positionType === other.positionType
       && this.isHilite === other.isHilite;
   }
 
@@ -169,6 +175,7 @@ export class TechniqueFlags {
     if (this.isThematic) parts.push("Thematic");
     if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
     if (this.isWiremesh) parts.push("Wiremesh");
+    if (this.positionType === "unquantized") parts.push("Unquantized");
     return parts.join("-");
   }
 
@@ -206,6 +213,9 @@ export class TechniqueFlags {
           break;
         case "Wiremesh":
           flags.isWiremesh = IsWiremesh.Yes;
+          break;
+        case "Unquantized":
+          flags.positionType = "unquantized";
           break;
         case "Pick":
           flags.featureMode = FeatureMode.Pick;
