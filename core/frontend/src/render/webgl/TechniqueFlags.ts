@@ -70,12 +70,16 @@ export class TechniqueFlags {
     return this.numClipPlanes > 0;
   }
 
-  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No, wiremesh = IsWiremesh.No): void {
+  public get usesQuantizedPositions(): boolean {
+    return "quantized" === this.positionType;
+  }
+
+  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No, wiremesh = IsWiremesh.No, posType: PositionType = "quantized"): void {
     const clipStack = target.uniforms.branch.clipStack;
     const numClipPlanes = clipStack.hasClip ? clipStack.textureHeight : 0;
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
       const isClassified = (classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass) ? IsClassified.Yes : IsClassified.No;
-      this.initForHilite(numClipPlanes, instanced, isClassified);
+      this.initForHilite(numClipPlanes, instanced, isClassified, posType);
     } else {
       this._isHilite = false;
       this.isTranslucent = RenderPass.Translucent === pass;
@@ -113,7 +117,7 @@ export class TechniqueFlags {
     }
   }
 
-  public reset(mode: FeatureMode, instanced: IsInstanced = IsInstanced.No, shadowable: IsShadowable, thematic: IsThematic) {
+  public reset(mode: FeatureMode, instanced: IsInstanced = IsInstanced.No, shadowable: IsShadowable, thematic: IsThematic, posType: PositionType) {
     this._isHilite = false;
     this.featureMode = mode;
     this.isTranslucent = false;
@@ -124,7 +128,7 @@ export class TechniqueFlags {
     this.isShadowable = shadowable;
     this.isThematic = thematic;
     this.isWiremesh = IsWiremesh.No;
-    this.positionType = "quantized";
+    this.positionType = posType;
     this.numClipPlanes = 0;
   }
 
@@ -137,7 +141,7 @@ export class TechniqueFlags {
   }
 
   public get isHilite() { return this._isHilite; }
-  public initForHilite(numClipPlanes: number, instanced: IsInstanced, classified: IsClassified) {
+  public initForHilite(numClipPlanes: number, instanced: IsInstanced, classified: IsClassified, posType: PositionType) {
     this.featureMode = classified ? FeatureMode.None : FeatureMode.Overrides;
     this._isHilite = true;
     this.isTranslucent = false;
@@ -146,6 +150,7 @@ export class TechniqueFlags {
     this.isInstanced = instanced;
     this.isClassified = classified;
     this.numClipPlanes = numClipPlanes;
+    this.positionType = posType;
   }
 
   public equals(other: TechniqueFlags): boolean {
