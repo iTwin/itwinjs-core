@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<!DOCTYPE WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd"
+ [
+ <!ELEMENT VendorSpecificCapabilities EMPTY>
+ ]>  <!-- end of DOCTYPE declaration -->
+<WMT_MS_Capabilities version="1.1.1">
+<Service>
+  <Name>OGC:WMS</Name>
+  <Title>MapProxy WMS</Title>
+  <Abstract></Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://mapservices.onemap.sg/mapproxy/service"/>
+  <Fees>none</Fees>
+  <AccessConstraints>none</AccessConstraints>
+</Service>
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>application/vnd.ogc.wms_xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://mapservices.onemap.sg/mapproxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+        <Format>image/png</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://mapservices.onemap.sg/mapproxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>text/html</Format>
+      <Format>application/vnd.ogc.gml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://mapservices.onemap.sg/mapproxy/service?"/></Get>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+  </Request>
+  <Exception>
+    <Format>application/vnd.ogc.se_xml</Format>
+    <Format>application/vnd.ogc.se_inimage</Format>
+    <Format>application/vnd.ogc.se_blank</Format>
+  </Exception>
+  <Layer>
+    <Title>MapProxy WMS</Title>
+    <SRS>EPSG:4326</SRS>
+    <SRS>EPSG:3414</SRS>
+    <LatLonBoundingBox minx="103.358857333" miny="1.05386187892" maxx="104.766280454" maxy="1.76023057282" />
+    <BoundingBox SRS="EPSG:4326" minx="103.358857333" miny="1.05386187892" maxx="104.766280454" maxy="1.76023057282" />
+    <Layer>
+      <Name>Default</Name>
+      <Title>Default</Title>
+      <LatLonBoundingBox minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+      <BoundingBox SRS="EPSG:4326" minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+    </Layer>
+    <Layer>
+      <Name>Original</Name>
+      <Title>Original</Title>
+      <LatLonBoundingBox minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+      <BoundingBox SRS="EPSG:4326" minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+    </Layer>
+    <Layer>
+      <Name>Grey</Name>
+      <Title>Grey</Title>
+      <LatLonBoundingBox minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+      <BoundingBox SRS="EPSG:4326" minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+    </Layer>
+    <Layer>
+      <Name>Night</Name>
+      <Title>Night</Title>
+      <LatLonBoundingBox minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+      <BoundingBox SRS="EPSG:4326" minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+    </Layer>
+    <Layer>
+      <Name>singapore_3414_tms</Name>
+      <Title>singapore_3414_tms</Title>
+      <LatLonBoundingBox minx="103.595966412" miny="1.1442806158" maxx="104.165806259" maxy="1.49822231742" />
+      <BoundingBox SRS="EPSG:4326" minx="103.595966412" miny="1.1442806158" maxx="104.165806259" maxy="1.49822231742" />
+    </Layer>
+    <Layer>
+      <Name>singapore_3414_wms</Name>
+      <Title>singapore_3414_wms</Title>
+      <LatLonBoundingBox minx="103.358857333" miny="1.05386187892" maxx="104.766280454" maxy="1.76023057282" />
+      <BoundingBox SRS="EPSG:4326" minx="103.358857333" miny="1.05386187892" maxx="104.766280454" maxy="1.76023057282" />
+    </Layer>
+    <Layer>
+      <Name>singapore_3414_wmts</Name>
+      <Title>singapore_3414_wmts</Title>
+      <LatLonBoundingBox minx="103.595966412" miny="1.1442806158" maxx="104.165806259" maxy="1.49822231742" />
+      <BoundingBox SRS="EPSG:4326" minx="103.595966412" miny="1.1442806158" maxx="104.165806259" maxy="1.49822231742" />
+    </Layer>
+    <Layer>
+      <Name>singapore_landlot_wmts</Name>
+      <Title>singapore_landlot_wmts</Title>
+      <LatLonBoundingBox minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+      <BoundingBox SRS="EPSG:4326" minx="103.359" miny="1.054" maxx="104.766" maxy="1.76" />
+    </Layer>
+  </Layer>
+</Capability>
+</WMT_MS_Capabilities>
