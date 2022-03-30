@@ -14,7 +14,7 @@ import { Pass, TextureUnit } from "../RenderFlags";
 import { IsInstanced } from "../TechniqueFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
-import { decodeUint16, decodeUint24 } from "./Decode";
+import { decode3Float32, decodeUint16, decodeUint24 } from "./Decode";
 import { addInstanceOverrides } from "./Instancing";
 import { addLookupTable } from "./LookupTable";
 
@@ -37,6 +37,36 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
   vec3 qpos = vec3(decodeUInt16(g_vertLutData0.xy), decodeUInt16(g_vertLutData0.zw), decodeUInt16(g_vertLutData1.xy));
   g_featureAndMaterialIndex = g_vertLutData2;
   return unquantizePosition(qpos, origin, scale);
+}
+`;
+
+const computeUnquantizedPosition1 = `
+vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
+  vec3 pf[4];
+  pf[0] = g_vertLutData0.xyz;
+  g_featureAndMaterialIndex.x = g_vertLutData0.w;
+  pf[1] = g_vertLutData1.xyz;
+  g_featureAndMaterialIndex.y = g_vertLutData1.w;
+  pf[2] = g_vertLutData2.xyz;
+  g_featureAndMaterialIndex.z = g_vertLutData2.w;
+  pf[3] = g_vertLutData3.xyz;
+  g_featureAndMaterialIndex.w = g_vertLutData3.w;
+  return vec4(decode3Float32(pf), 1.0);
+}
+`;
+
+const computeUnquantizedPosition2 = `
+vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
+  uvec3 vux = uvec3(g_vertLutData0.xyz);
+  g_featureAndMaterialIndex.x = g_vertLutData0.w;
+  uvec3 vuy = uvec3(g_vertLutData1.xyz);
+  g_featureAndMaterialIndex.y = g_vertLutData1.w;
+  uvec3 vuz = uvec3(g_vertLutData2.xyz);
+  g_featureAndMaterialIndex.z = g_vertLutData2.w;
+  uvec3 vuw = uvec3(g_vertLutData3.xyz);
+  g_featureAndMaterialIndex.w = g_vertLutData3.w;
+  uvec3 u = (vuw << 24) | (vuz << 16) | (vuy << 8) | vux;
+  return vec4(uintBitsToFloat(u), 1.0);
 }
 `;
 
@@ -190,9 +220,24 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexLUTIndex", VariableType.Float);
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
 
+  const unquantized = "unquantized" === vert.positionType;
+  const maxRgbaPerVert = unquantized ? 6 : 4;
+  for (let i = 0; i < maxRgbaPerVert; i++)
+    vert.addGlobal(`g_vertLutData${i}`, VariableType.Vec4);
+
   vert.addFunction(decodeUint24);
   vert.addFunction(decodeUint16);
-  vert.addFunction(unquantizeVertexPositionFromLUT);
+
+  if (unquantized) {
+    if (System.instance.capabilities.isWebGL2) {
+      vert.addFunction(computeUnquantizedPosition2);
+    } else {
+      vert.addFunction(decode3Float32);
+      vert.addFunction(computeUnquantizedPosition1);
+    }
+  } else {
+    vert.addFunction(unquantizeVertexPositionFromLUT);
+  }
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
@@ -215,11 +260,6 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   addLookupTable(vert, "vert", "u_vertParams.z");
   vert.addInitializer(initializeVertLUTCoords);
-
-  const unquantized = "unquantized" === vert.positionType;
-  const maxRgbaPerVert = unquantized ? 6 : 4;
-  for (let i = 0; i < maxRgbaPerVert; i++)
-    vert.addGlobal(`g_vertLutData${i}`, VariableType.Vec4);
 
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
 
