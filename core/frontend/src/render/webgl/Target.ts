@@ -101,7 +101,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
-  private _fbo?: FrameBuffer;
+  protected _fbo?: FrameBuffer;
   private _dcAssigned = false;
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationsState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -1262,6 +1262,16 @@ export class OnScreenTarget extends Target {
 
   public setViewRect(_rect: ViewRect, _temporary: boolean): void {
     assert(false);
+  }
+
+  /** Internal-only function for testing. Returns true if the FBO dimensions match the canvas dimensions */
+  public checkFboDimensions(): boolean {
+    if (undefined !== this._fbo) {
+      const tx = this._fbo.getColor(0);
+      if (tx.width !== this._curCanvas.width || tx.height !== this._curCanvas.height)
+        return false;
+    }
+    return true;
   }
 
   protected _assignDC(): boolean {

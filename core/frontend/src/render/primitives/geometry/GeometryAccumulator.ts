@@ -196,8 +196,12 @@ export class GeometryAccumulator {
         }
       } else {
         assert(undefined !== transformOrigin);
-        assert((verts instanceof QPoint3dList && transformOrigin.isAlmostEqual(verts.params.origin))
-          || (!(verts instanceof QPoint3dList) && transformOrigin.isAlmostEqual(verts.range.center)));
+        if (verts instanceof QPoint3dList) {
+          assert(transformOrigin.isAlmostEqual(verts.params.origin));
+          verts.params.origin.setZero();
+        } else {
+          assert(transformOrigin.isAlmostEqual(verts.range.center));
+        }
       }
 
       const graphic = mesh.getGraphics(this.system, this._viewIndependentOrigin);

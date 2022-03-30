@@ -136,7 +136,7 @@ export class RpcBriefcaseUtility {
         Logger.logTrace(loggerCategory, "Open briefcase - pending", () => ({ ...tokenProps }));
         throw new RpcPendingResponse();
       }
-      // note: usage is logged in BriefcaseManager.downloadNewBriefcaseAndOpen
+      // note: usage is logged in the function BriefcaseManager.downloadNewBriefcaseAndOpen
       return briefcaseDb;
     }
 

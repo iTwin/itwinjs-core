@@ -25,6 +25,8 @@ export enum ConfigurableUiActionId {
   SetDragInteraction = "configurableui:set-drag-interaction",
   SetFrameworkVersion = "configurableui:set-framework-version",
   SetShowWidgetIcon = "configurableui:set-show-widget-icon",
+  /** @alpha */
+  AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
   SetViewOverlayDisplay = "configurableui:set-view-overlay-display",
 }
 
@@ -39,6 +41,8 @@ export interface ConfigurableUiState {
   useDragInteraction: boolean;
   frameworkVersion: FrameworkVersionId;
   showWidgetIcon: boolean;
+  /** @alpha */
+  autoCollapseUnpinnedPanels: boolean;
   viewOverlayDisplay: boolean;
 }
 
@@ -51,6 +55,7 @@ const initialState: ConfigurableUiState = {
   useDragInteraction: false,
   frameworkVersion: "2",
   showWidgetIcon: true,
+  autoCollapseUnpinnedPanels: false,
   viewOverlayDisplay: true,
 };
 
@@ -71,6 +76,7 @@ export const ConfigurableUiActions = {   // eslint-disable-line @typescript-esli
   setDragInteraction: (dragInteraction: boolean) => createAction(ConfigurableUiActionId.SetDragInteraction, dragInteraction),
   setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => createAction(ConfigurableUiActionId.SetFrameworkVersion, frameworkVersion),
   setShowWidgetIcon: (showWidgetIcon: boolean) => createAction(ConfigurableUiActionId.SetShowWidgetIcon, showWidgetIcon),
+  setAutoCollapseUnpinnedPanels: (autoCollapse: boolean) => createAction(ConfigurableUiActionId.AutoCollapseUnpinnedPanels, autoCollapse),
   setViewOverlayDisplay: (displayViewOverlay: boolean) => createAction(ConfigurableUiActionId.SetViewOverlayDisplay, displayViewOverlay),
 };
 
@@ -107,6 +113,9 @@ export function ConfigurableUiReducer(state: ConfigurableUiState = initialState,
     }
     case ConfigurableUiActionId.SetShowWidgetIcon: {
       return { ...state, showWidgetIcon: action.payload };
+    }
+    case ConfigurableUiActionId.AutoCollapseUnpinnedPanels: {
+      return { ...state, autoCollapseUnpinnedPanels: action.payload };
     }
     case ConfigurableUiActionId.SetViewOverlayDisplay: {
       return { ...state, viewOverlayDisplay: action.payload };

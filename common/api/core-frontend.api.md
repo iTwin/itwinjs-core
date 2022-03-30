@@ -5073,11 +5073,10 @@ export class IModelTileRequestChannels {
         concurrency: number;
         usesHttp: boolean;
         cacheMetadata: boolean;
+        cacheConcurrency: number;
     });
     // (undocumented)
-    get cloudStorage(): TileRequestChannel | undefined;
-    // (undocumented)
-    enableCloudStorageCache(concurrency: number): TileRequestChannel;
+    get cloudStorage(): TileRequestChannel;
     getCachedContent(tile: IModelTile): IModelTileContent | undefined;
     // (undocumented)
     getChannelForTile(tile: IModelTile): TileRequestChannel;
@@ -7339,6 +7338,7 @@ export class OnScreenTarget extends Target {
     protected _assignDC(): boolean;
     // (undocumented)
     protected _beginPaint(fbo: FrameBuffer): void;
+    checkFboDimensions(): boolean;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
@@ -10290,6 +10290,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     endPerfMetricRecord(readPixels?: boolean): void;
     // (undocumented)
+    protected _fbo?: FrameBuffer;
+    // (undocumented)
     get flashed(): Id64.Uint32Pair | undefined;
     // (undocumented)
     get flashedId(): Id64String;
@@ -11198,8 +11200,6 @@ export class TileRequestChannels {
     constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean);
     add(channel: TileRequestChannel): void;
     readonly elementGraphicsRpc: TileRequestChannel;
-    // @internal
-    enableCloudStorageCache(): void;
     get(name: string): TileRequestChannel | undefined;
     getForHttp(name: string): TileRequestChannel;
     // @internal (undocumented)

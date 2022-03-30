@@ -145,10 +145,10 @@ Array [
         "node": Object {
           "key": Object {
             "pathFromRoot": Array [
-              "049d0761fb6bf0bffa6a161a8e19bb7a",
-              "df09d7650467c5704fbcf30291b5032b",
+              "8aaa6ad3ca43d5a8f0efbe6d6c1a44eb",
+              "f311dfef4c5ea495ef7ad9f8142a297d",
             ],
-            "type": "nodeType",
+            "type": "nodeType11",
             "version": 2,
           },
           "label": Object {
@@ -171,11 +171,11 @@ Array [
             "node": Object {
               "key": Object {
                 "pathFromRoot": Array [
-                  "049d0761fb6bf0bffa6a161a8e19bb7a",
-                  "06f1e28d08a34b2bd3265d0189c5782c",
-                  "0aad958227b8f327fe56485357f1fa8d",
+                  "8aaa6ad3ca43d5a8f0efbe6d6c1a44eb",
+                  "1840960bee8f9ffe2b2214722a7e36f5",
+                  "ff569b1cf07f2eda7114084df402b1e1",
                 ],
-                "type": "nodeType",
+                "type": "nodeType131",
                 "version": 2,
               },
               "label": Object {
@@ -196,10 +196,10 @@ Array [
           "hasChildren": true,
           "key": Object {
             "pathFromRoot": Array [
-              "049d0761fb6bf0bffa6a161a8e19bb7a",
-              "06f1e28d08a34b2bd3265d0189c5782c",
+              "8aaa6ad3ca43d5a8f0efbe6d6c1a44eb",
+              "1840960bee8f9ffe2b2214722a7e36f5",
             ],
-            "type": "nodeType",
+            "type": "nodeType13",
             "version": 2,
           },
           "label": Object {
@@ -220,9 +220,9 @@ Array [
       "hasChildren": true,
       "key": Object {
         "pathFromRoot": Array [
-          "049d0761fb6bf0bffa6a161a8e19bb7a",
+          "8aaa6ad3ca43d5a8f0efbe6d6c1a44eb",
         ],
-        "type": "nodeType",
+        "type": "nodeType1",
         "version": 2,
       },
       "label": Object {
@@ -245,10 +245,10 @@ Array [
         "node": Object {
           "key": Object {
             "pathFromRoot": Array [
-              "fd9aec7ae7c6f2b6bdf49e5f0cff5e54",
-              "387655582c59afcd86ec1e0367536c7b",
+              "0b080d7ad6331f500b02cc7264f1d9e8",
+              "4fe547d202499bac6d5fb0b38876540e",
             ],
-            "type": "nodeType",
+            "type": "nodeType32",
             "version": 2,
           },
           "label": Object {
@@ -269,9 +269,9 @@ Array [
       "hasChildren": true,
       "key": Object {
         "pathFromRoot": Array [
-          "fd9aec7ae7c6f2b6bdf49e5f0cff5e54",
+          "0b080d7ad6331f500b02cc7264f1d9e8",
         ],
-        "type": "nodeType",
+        "type": "nodeType3",
         "version": 2,
       },
       "label": Object {

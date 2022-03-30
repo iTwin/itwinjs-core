@@ -1053,4 +1053,61 @@ describe("useAnimatePanelWidgets", () => {
 
     sinon.assert.notCalled(spy);
   });
+
+  it("should transition to panel collapse when collapseUnpinned is set", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
+    nineZone = produce(nineZone, (draft) => {
+      draft.panels.left.size = 200;
+      draft.panels.left.collapsed = false;
+      draft.panels.left.pinned = false;
+    });
+    const { container } = render(
+      <WidgetPanelProvider
+        side="left"
+      />,
+      {
+        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} dispatch={dispatch} autoCollapseUnpinnedPanels={true} />,  // eslint-disable-line react/display-name
+      },
+    );
+
+    const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
+
+    sinon.stub(panel, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 200 }));
+    panel.style.width.should.eq("200px");
+    fireEvent(panel, new MouseEvent("mouseleave"));
+    dispatch.calledWith({collapsed: true, side: "left", type: "PANEL_SET_COLLAPSED"}).should.be.true;
+  });
+
+  it("should not transition to panel collapse when already collapsed and collapseUnpinned is set", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
+    nineZone = produce(nineZone, (draft) => {
+      draft.panels.left.size = 200;
+      draft.panels.left.collapsed = true;
+      draft.panels.left.pinned = false;
+    });
+    const { container } = render(
+      <WidgetPanelProvider
+        side="left"
+      />,
+      {
+        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} dispatch={dispatch} autoCollapseUnpinnedPanels={true} />,  // eslint-disable-line react/display-name
+      },
+    );
+
+    const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
+
+    sinon.stub(panel, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 0 }));
+    panel.style.width.should.eq("0px");
+    fireEvent(panel, new MouseEvent("mouseleave"));
+
+    dispatch.called.should.be.false;
+  });
+
 });
