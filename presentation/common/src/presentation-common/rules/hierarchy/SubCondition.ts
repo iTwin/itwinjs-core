@@ -6,33 +6,40 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer } from "../Rule";
 import { RequiredSchemaSpecification } from "../SchemasSpecification";
 import { ChildNodeSpecification } from "./ChildNodeSpecification";
 
 /**
- * Defines child node specifications which should only be handled when a condition
- * is satisfied.
+ * This is a sub-rule which shares *placement attributes* and
+ * [nested customization rules]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-customizationrules)
+ * of the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules
+ * can add additional condition of their own.
  *
+ * @see [Sub-conditions reference documentation section]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-subconditions)
  * @public
  */
-export interface SubCondition extends ConditionContainer {
+export interface SubCondition {
   /**
-   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/presentation/Hierarchies/ECExpressions.md#rule-condition).
+   * Defines a condition which needs to be met in order for the rule to be used. The condition is an
+   * [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#rule-condition) which has to evaluate
+   * to a boolean value.
    */
   condition?: string;
 
   /**
-   * Schema requirements for this rule. The rule is not used if the requirements are not met.
+   * Specifications that define [ECSchema requirements]($docs/presentation/RequiredSchemaSpecification.md) for
+   * the rule to take effect.
    * @beta
    */
   requiredSchemas?: RequiredSchemaSpecification[];
 
-  /** Nested sub-conditions */
+  /**
+   * A list of nested sub-rules which share *placement attributes* of this sub-condition. This means the
+   * attributes of this sub-condition are still in effect and the sub-rules can add additional condition
+   * of their own.
+   */
   subConditions?: SubCondition[];
 
-  /** Child node specifications which are used if condition is satisfied */
+  /** A list of hierarchy specifications that define what nodes are going to be returned. */
   specifications?: ChildNodeSpecification[];
 }

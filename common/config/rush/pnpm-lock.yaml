@@ -89,7 +89,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.2.1
+      '@bentley/imodeljs-native': 3.2.3
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -131,7 +131,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.9.0
-      '@bentley/imodeljs-native': 3.2.1
+      '@bentley/imodeljs-native': 3.2.3
       '@itwin/core-telemetry': link:../telemetry
       form-data: 2.5.1
       fs-extra: 8.1.0
@@ -1574,7 +1574,24 @@ importers:
   ../../full-stack-tests/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.2.1
+      '@bentley/aec-units-schema': ^1.0.3
+      '@bentley/cif-bridge-schema': ^1.0.5
+      '@bentley/cif-common-schema': ^1.0.3
+      '@bentley/cif-geometric-rules-schema': ^1.0.1
+      '@bentley/cif-hydraulic-analysis-schema': ^1.0.3
+      '@bentley/cif-hydraulic-results-schema': ^1.0.3
+      '@bentley/cif-quantity-takeoffs-schema': ^1.0.1
+      '@bentley/cif-rail-schema': ^1.0.2
+      '@bentley/cif-roads-schema': ^1.0.1
+      '@bentley/cif-subsurface-conflict-analysis-schema': ^1.0.3
+      '@bentley/cif-subsurface-schema': ^1.0.3
+      '@bentley/cif-units-schema': ^1.0.1
+      '@bentley/imodeljs-native': 3.2.3
+      '@bentley/plant-custom-attributes-schema': ^1.0.1
+      '@bentley/process-functional-schema': ^1.0.1
+      '@bentley/process-physical-schema': ^1.0.2
+      '@bentley/quantity-takeoffs-aspects-schema': ^1.0.1
+      '@bentley/road-rail-units-schema': ^1.0.1
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -1608,7 +1625,24 @@ importers:
       typescript: ~4.4.0
     dependencies:
       '@azure/storage-blob': 12.9.0
-      '@bentley/imodeljs-native': 3.2.1
+      '@bentley/aec-units-schema': 1.0.3
+      '@bentley/cif-bridge-schema': 1.0.5
+      '@bentley/cif-common-schema': 1.0.3
+      '@bentley/cif-geometric-rules-schema': 1.0.1
+      '@bentley/cif-hydraulic-analysis-schema': 1.0.3
+      '@bentley/cif-hydraulic-results-schema': 1.0.3
+      '@bentley/cif-quantity-takeoffs-schema': 1.0.1
+      '@bentley/cif-rail-schema': 1.0.2
+      '@bentley/cif-roads-schema': 1.0.1
+      '@bentley/cif-subsurface-conflict-analysis-schema': 1.0.3
+      '@bentley/cif-subsurface-schema': 1.0.3
+      '@bentley/cif-units-schema': 1.0.1
+      '@bentley/imodeljs-native': 3.2.3
+      '@bentley/plant-custom-attributes-schema': 1.0.1
+      '@bentley/process-functional-schema': 1.0.1
+      '@bentley/process-physical-schema': 1.0.2
+      '@bentley/quantity-takeoffs-aspects-schema': 1.0.1
+      '@bentley/road-rail-units-schema': 1.0.1
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -6933,6 +6967,54 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
+  /@bentley/aec-units-schema/1.0.3:
+    resolution: {integrity: sha512-Rpc+g75LZfDaapej3OBUOx67p5vOi9xF34gAhfWlmdm2cWeMZzjkjzVLR/Fn8NMdvhn/QS8HRAVLlXLSOtm6kg==}
+    dev: false
+
+  /@bentley/cif-bridge-schema/1.0.5:
+    resolution: {integrity: sha512-uEgOHy5pDx+5aKu5DOAShxlECtYEJfYuX+cmFPoNOJyLKZtWkKUSBxu2oFT1sWhugEhqvUxAsJbvDnW3HEwRCA==}
+    dev: false
+
+  /@bentley/cif-common-schema/1.0.3:
+    resolution: {integrity: sha512-9HwVOFuJmq6s2QuYd2We2qbbha5CtLAK0TnvSVXBiTDGixQLnf3U80o6HMShL729l1vD/7vQKoB4sDOqLeZCKA==}
+    dev: false
+
+  /@bentley/cif-geometric-rules-schema/1.0.1:
+    resolution: {integrity: sha512-LfHqc3HzEcKojyziSjD4+fmt1801IySPEzajUFTIdzmqsw0lsCpSbFQI4RiMiYsS78hqoPT7eYf+SBl0S3NVWQ==}
+    dev: false
+
+  /@bentley/cif-hydraulic-analysis-schema/1.0.3:
+    resolution: {integrity: sha512-i1u5Pxt3YWhwD+dgrKQxJK2SNOufkBOJPT2eP+86nkeWHcSyqnnRfgvflp1y748Dsnw4EQL5xTho+JshWZMz9A==}
+    dev: false
+
+  /@bentley/cif-hydraulic-results-schema/1.0.3:
+    resolution: {integrity: sha512-rw4XLs6dbuzp6bxGzSlbsgkwpA93OQ0O7LHb7/0kerpxmL7ShO4n8Lr0mtgW763lb93p1HuJ9HEMG5y3Z8oKEw==}
+    dev: false
+
+  /@bentley/cif-quantity-takeoffs-schema/1.0.1:
+    resolution: {integrity: sha512-NlrEv0zl3xO/vLnKz5JJ4N2ix2cxMLtUBscfFGxsUOAFjv0CaLlgPicAJDjIiKTSzTfXlAhRq7WPzBOnZjKmXA==}
+    dev: false
+
+  /@bentley/cif-rail-schema/1.0.2:
+    resolution: {integrity: sha512-qLh07oGlT84obuv8haCQnjk9Zh14I8XuJ56g7BVINRYFjSL0W8ch00/dfBxUDEq9Tg60cKNQyRY4ARJC7Z6Pwg==}
+    dev: false
+
+  /@bentley/cif-roads-schema/1.0.1:
+    resolution: {integrity: sha512-pIVqWPH7s4qUnBs6HIwTsvrT8ixLJKVP9hIYmxY2xTf5bwafl+5wW6isDKre0nHtYKawG/3N+edDpJ1O1Sa/Qw==}
+    dev: false
+
+  /@bentley/cif-subsurface-conflict-analysis-schema/1.0.3:
+    resolution: {integrity: sha512-bFtOuTYnT7AK0QyWUxU5ZcZP+m5Q6Xm5wBMr8jMoOBKS6aWdoMteWG/t0khJooATjeW16+3gNdD7aZtIpZ4GFg==}
+    dev: false
+
+  /@bentley/cif-subsurface-schema/1.0.3:
+    resolution: {integrity: sha512-m5HoxGrgdGel+xWdf4NUzFQ7jMSeyjymsbvGzTlsuc8fLsyjHKo+afTOsIci1zWrZ3tSWIO0nHdzcz862/bnuQ==}
+    dev: false
+
+  /@bentley/cif-units-schema/1.0.1:
+    resolution: {integrity: sha512-K2TvSF7L5T5RBG82BTRhaqnlWdstlFpVCSGUUVtU2iiqEBizkYgVDuS6wBf8Lj/RquaHJyvbV3WAkU6SxopyFQ==}
+    dev: false
+
   /@bentley/icons-generic-webfont/1.0.34:
     resolution: {integrity: sha512-5zZgs+himE2vjf39CVlDXMHCFAwSfcoORqJBk3Vji8QVCF8AIX4IX2DO6HlsIAM7szxMNqhz1kd07Xfppro6MA==}
     dev: false
@@ -6941,9 +7023,25 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.2.1:
-    resolution: {integrity: sha512-oIe9mhdpI0iMVBXnBJRDxIKM7Bh+BkpdV9ve32FV0k1f5eYnBLnEzRXDGPQrUYrJh1HDHlGmnQdxNL9rWLNtvQ==}
+  /@bentley/imodeljs-native/3.2.3:
+    resolution: {integrity: sha512-6TJbZ8TkkLJFewa51l0e1hDaMaEP/Sc+Qax3P+Mn0XJvpzFZskp50UQaweHwTto1GJL0U0B5XbV2WAmkLpaLTw==}
     requiresBuild: true
+    dev: false
+
+  /@bentley/plant-custom-attributes-schema/1.0.1:
+    resolution: {integrity: sha512-RS45hmfj2Tz7HPTkSfxL9J3VWAyKMFyFNkThr4C/aL2dz3dBx5xmFtI8J+ngQncRNjN21jitDRxVV7bj91qNnQ==}
+    dev: false
+
+  /@bentley/process-functional-schema/1.0.1:
+    resolution: {integrity: sha512-3vGBu2TcLwH5ZONzLPdAA1BH+usowxneSgldbawya6fLEvuhuqyUmrm3eCqhxo1SM9wolF/BFdclRd5Ktb7W9w==}
+    dev: false
+
+  /@bentley/process-physical-schema/1.0.2:
+    resolution: {integrity: sha512-u4u3L83JaxI/2NfWHVMWYUUi4CP9sIA7sJXiioJQgSgnz+hXZOb+KPe3t+6YH7CAgv30lTUWOYMMtqJTXd016A==}
+    dev: false
+
+  /@bentley/quantity-takeoffs-aspects-schema/1.0.1:
+    resolution: {integrity: sha512-ufOI4M0zyRuf9qvQfVuvra3AFNA2xo9OOPjYq6/ffLptQtoocrmnLq+pfhMMPnY5JnSSt0CavzhxM0d6Ynzkhg==}
     dev: false
 
   /@bentley/react-scripts/4.0.3_react@17.0.2+typescript@4.4.4:
@@ -7144,6 +7242,10 @@ packages:
       - webpack-hot-middleware
       - webpack-plugin-serve
     dev: true
+
+  /@bentley/road-rail-units-schema/1.0.1:
+    resolution: {integrity: sha512-7vHunp5SZrxiCErMhibOmbO1DYCx1Fm3pJZ4SYBAJBtEDbmkdI8yrhcNf6PRYHBpTsfbzdWeOWCcG1A4zulY/A==}
+    dev: false
 
   /@bentley/units-schema/1.0.7:
     resolution: {integrity: sha512-yVPl8DLeD0sczWp1AFnKR+4+whQRvYgJupToQUOFUrlCGeVCvzyJw+mp38ciO3tRdWYZmW/k7lOx/by1hAiyrg==}
