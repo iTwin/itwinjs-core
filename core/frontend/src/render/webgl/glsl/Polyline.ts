@@ -13,7 +13,7 @@ import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
-import { IsInstanced } from "../TechniqueFlags";
+import { IsInstanced, PositionType } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addColor } from "./Color";
 import { addEdgeContrast } from "./Edge";
@@ -332,10 +332,10 @@ const computePosition = `
 const lineCodeArgs = "g_windowDir, g_windowPos, miterAdjust";
 
 /** @internal */
-export function createPolylineBuilder(isInstanced: IsInstanced): ProgramBuilder {
+export function createPolylineBuilder(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
-  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 5, instanced });
+  const builder = new ProgramBuilder(attrMap, { positionType, instanced });
 
   addShaderFlags(builder);
 
@@ -351,10 +351,10 @@ export function createPolylineBuilder(isInstanced: IsInstanced): ProgramBuilder 
 }
 
 /** @internal */
-export function createPolylineHiliter(isInstanced: IsInstanced): ProgramBuilder {
+export function createPolylineHiliter(isInstanced: IsInstanced, positionType: PositionType): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Polyline, instanced);
-  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 5, instanced });
+  const builder = new ProgramBuilder(attrMap, { positionType, instanced });
 
   addCommon(builder);
   addFrustum(builder);

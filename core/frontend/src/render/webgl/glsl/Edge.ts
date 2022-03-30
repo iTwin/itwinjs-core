@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
-import { IsAnimated, IsInstanced, IsThematic } from "../TechniqueFlags";
+import { IsAnimated, IsInstanced, IsThematic, PositionType } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { TextureUnit } from "../RenderFlags";
 import { addAnimation } from "./Animation";
@@ -220,14 +220,14 @@ export function addEdgeContrast(vert: VertexShaderBuilder): void {
 
 const edgeLutParams = new Float32Array(4);
 
-function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
+function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated, positionType: PositionType): ProgramBuilder {
   const isInstanced = IsInstanced.Yes === instanced;
   const isSilhouette = "Silhouette" === type;
   const isIndexed = "IndexedEdge" === type;
   const techId = isSilhouette ? TechniqueId.SilhouetteEdge : (isIndexed ? TechniqueId.IndexedEdge : TechniqueId.Edge);
   const attrMap = AttributeMap.findAttributeMap(techId, isInstanced);
 
-  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 5, instanced: isInstanced });
+  const builder = new ProgramBuilder(attrMap, { positionType, instanced: isInstanced });
   const vert = builder.vert;
 
   vert.addGlobal("g_otherPos", VariableType.Vec4);
@@ -306,8 +306,8 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
 }
 
 /** @internal */
-export function createEdgeBuilder(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
-  const builder = createBase(type, instanced, isAnimated);
+export function createEdgeBuilder(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated, posType: PositionType): ProgramBuilder {
+  const builder = createBase(type, instanced, isAnimated, posType);
   addShaderFlags(builder);
   addColor(builder);
   addEdgeContrast(builder.vert);

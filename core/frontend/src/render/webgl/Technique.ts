@@ -102,7 +102,7 @@ const featureModes = [FeatureMode.None, FeatureMode.Pick, FeatureMode.Overrides]
 const scratchTechniqueFlags = new TechniqueFlags();
 const scratchHiliteFlags = new TechniqueFlags();
 
-type CreateHiliter = (instanced: IsInstanced, classified: IsClassified, posType?: PositionType) => ProgramBuilder;
+type CreateHiliter = (instanced: IsInstanced, classified: IsClassified, posType: PositionType) => ProgramBuilder;
 
 /** A rendering technique implemented using multiple shader programs, selected based on TechniqueFlags.
  * @internal
@@ -442,14 +442,14 @@ class PolylineTechnique extends VariedTechnique {
     const flags = scratchTechniqueFlags;
     for (const posType of positionTypes) {
       for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
-        this.addHiliteShader(gl, instanced, IsClassified.No, posType, createPolylineHiliter);
+        this.addHiliteShader(gl, instanced, IsClassified.No, posType, (inst, _class, pos) => createPolylineHiliter(inst, pos));
         for (const featureMode of featureModes) {
           flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
-          const builder = createPolylineBuilder(instanced);
+          const builder = createPolylineBuilder(instanced, posType);
           addUnlitMonochrome(builder.frag);
 
           // The translucent shaders do not need the element IDs.
-          const builderTrans = createPolylineBuilder(instanced);
+          const builderTrans = createPolylineBuilder(instanced, posType);
           addUnlitMonochrome(builderTrans.frag);
           if (FeatureMode.Overrides === featureMode) {
             addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
@@ -506,11 +506,11 @@ class EdgeTechnique extends VariedTechnique {
           for (const featureMode of featureModes) {
             flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
             flags.isAnimated = iAnimate;
-            const builder = createEdgeBuilder(type, flags.isInstanced, flags.isAnimated);
+            const builder = createEdgeBuilder(type, flags.isInstanced, flags.isAnimated, posType);
             addUnlitMonochrome(builder.frag);
 
             // The translucent shaders do not need the element IDs.
-            const builderTrans = createEdgeBuilder(type, flags.isInstanced, flags.isAnimated);
+            const builderTrans = createEdgeBuilder(type, flags.isInstanced, flags.isAnimated, posType);
             addUnlitMonochrome(builderTrans.frag);
             if (FeatureMode.Overrides === featureMode) {
               addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
@@ -565,14 +565,14 @@ class PointStringTechnique extends VariedTechnique {
     const flags = scratchTechniqueFlags;
     for (const posType of positionTypes) {
       for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
-        this.addHiliteShader(gl, instanced, IsClassified.No, posType, createPointStringHiliter);
+        this.addHiliteShader(gl, instanced, IsClassified.No, posType, (inst, _class, pos) => createPointStringHiliter(inst, pos));
         for (const featureMode of featureModes) {
           flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No, posType);
-          const builder = createPointStringBuilder(instanced);
+          const builder = createPointStringBuilder(instanced, posType);
           addUnlitMonochrome(builder.frag);
 
           // The translucent shaders do not need the element IDs.
-          const builderTrans = createPointStringBuilder(instanced);
+          const builderTrans = createPointStringBuilder(instanced, posType);
           addUnlitMonochrome(builderTrans.frag);
           if (FeatureMode.Overrides === featureMode) {
             addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
@@ -621,7 +621,7 @@ class PointCloudTechnique extends VariedTechnique {
     ];
 
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
-      this.addHiliteShader(gl, IsInstanced.No, iClassified, "quantized", () => createPointCloudHiliter(iClassified));
+      this.addHiliteShader(gl, IsInstanced.No, iClassified, "quantized", (_inst, classified) => createPointCloudHiliter(classified));
       const flags = scratchTechniqueFlags;
       for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
         const pointCloudFeatureModes = [FeatureMode.None, FeatureMode.Overrides];
