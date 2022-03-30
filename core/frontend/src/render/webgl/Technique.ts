@@ -304,6 +304,9 @@ class SurfaceTechnique extends VariedTechnique {
       TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
       TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides"),
       TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
+      TechniqueFlags.fromDescription("Unquantized-Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Unquantized-Opaque-Instanced-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Unquantized-Opaque-Hilite-Classified"),
     ];
 
     const flags = scratchTechniqueFlags;
@@ -432,6 +435,8 @@ class PolylineTechnique extends VariedTechnique {
     this._earlyZFlags = [
       TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
       TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Unquantized-Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Unquantized-Opaque-Instanced-Hilite-Overrides"),
     ];
 
     const flags = scratchTechniqueFlags;
