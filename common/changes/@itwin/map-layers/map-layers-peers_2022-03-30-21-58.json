@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers",
-      "comment": "Fix peers to not lock down core packages",
+      "comment": "Adjusted the map-layers package's peer dependencies to no longer lock down core packages.",
       "type": "none"
     }
   ],
