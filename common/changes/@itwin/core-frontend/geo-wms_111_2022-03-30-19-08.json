@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improved support for WMS 1.1.1 servers.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
