@@ -13,6 +13,7 @@ import { ElementAspectProps } from '@itwin/core-common';
 import { ElementMultiAspect } from '@itwin/core-backend';
 import { ElementProps } from '@itwin/core-common';
 import { ElementUniqueAspect } from '@itwin/core-backend';
+import { Entity } from '@itwin/core-backend';
 import { FontProps } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelCloneContext } from '@itwin/core-backend';
@@ -61,7 +62,7 @@ export class IModelExporter {
     wantGeometry: boolean;
     wantSystemSchemas: boolean;
     wantTemplateModels: boolean;
-}
+    }
 
 // @beta
 export abstract class IModelExportHandler {
@@ -77,6 +78,8 @@ export abstract class IModelExportHandler {
     onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     onExportSchema(_schema: Schema): Promise<void>;
     onProgress(): Promise<void>;
+    // @internal
+    preExportElement(_element: Element): Promise<void>;
     shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     shouldExportElement(_element: Element): boolean;
     shouldExportElementAspect(_aspect: ElementAspect): boolean;
@@ -136,7 +139,6 @@ export interface IModelImportOptions {
 export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
     readonly context: IModelCloneContext;
-    protected _deferredElementIds: Set<string>;
     detectElementDeletes(): Promise<void>;
     detectRelationshipDeletes(): Promise<void>;
     dispose(): void;
@@ -159,12 +161,17 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
+    protected _partiallyCommittedElements: Map<string, PartiallyCommittedElement>;
+    protected _pendingReferences: PendingReferenceMap<PartiallyCommittedElement>;
+    // @internal
+    preExportElement(sourceElement: Element): Promise<void>;
     processAll(): Promise<void>;
     processChanges(accessToken: AccessToken, startChangesetId?: string): Promise<void>;
     processChildElements(sourceElementId: Id64String): Promise<void>;
     processCodeSpec(codeSpecName: string): Promise<void>;
     processCodeSpecs(): Promise<void>;
-    processDeferredElements(numRetries?: number): Promise<void>;
+    // @deprecated
+    processDeferredElements(_numRetries?: number): Promise<void>;
     processElement(sourceElementId: Id64String): Promise<void>;
     processFonts(): Promise<void>;
     processModel(sourceModeledElementId: Id64String): Promise<void>;
@@ -173,13 +180,15 @@ export class IModelTransformer extends IModelExportHandler {
     processSchemas(): Promise<void>;
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
     get provenanceDb(): IModelDb;
+    static get provenanceElementAspectClasses(): (typeof Entity)[];
+    static get provenanceElementClasses(): (typeof Entity)[];
     protected _schemaExportDir: string;
     shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     shouldExportElement(_sourceElement: Element): boolean;
-    shouldExportElementAspect(sourceAspect: ElementAspect): boolean;
     shouldExportRelationship(_sourceRelationship: Relationship): boolean;
     shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
-    protected skipElement(sourceElement: Element): void;
+    // @deprecated
+    protected skipElement(_sourceElement: Element): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
     get targetScopeElementId(): Id64String;

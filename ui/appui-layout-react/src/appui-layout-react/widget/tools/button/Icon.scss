@@ -21,6 +21,12 @@
       filter: $icon-shadow;
       display: inline-block;
     }
+    > .icon.core-svg-icon{
+      & svg {
+        width: $mls-icon-size;
+        height: $mls-icon-size;
+      }
+    }
   }
 
   &.nz-toolbar-button-icon-small {

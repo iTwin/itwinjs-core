@@ -7,19 +7,21 @@
  */
 
 /**
- * Specification for a single ECClass
+ * This specification is used to point to specific ECClass.
+ *
+ * @see [Single schema class specification reference documentation page]($docs/presentation/SingleSchemaClassSpecification.md)
  * @public
  */
 export interface SingleSchemaClassSpecification {
   /**
-   * Name of ECSchema
+   * Specifies name of the schema which contains the target class.
    *
    * @pattern ^[\w\d]+$
    */
   schemaName: string;
 
   /**
-   * Name of ECClass
+   * Specifies name of the target class.
    *
    * @pattern ^[\w\d]+$
    */
@@ -27,26 +29,26 @@ export interface SingleSchemaClassSpecification {
 }
 
 /**
- * Specification for multiple ECClasses that belong to
- * the same ECSchema.
+ * This specification lists ECClasses which should be targeted when creating content or hierarchy nodes.
  *
+ * @see [Multi schema classes specification reference documentation page]($docs/presentation/MultiSchemaClassesSpecification.md)
  * @public
  */
 export interface MultiSchemaClassesSpecification {
   /**
-   * Name of ECSchema
+   * Specifies the schema which contains the target classes.
    *
    * @pattern ^[\w\d]+$
    */
   schemaName: string;
 
   /**
-   * List of ECClass names.
+   * An array of target ECClass names.
    */
   classNames: string[];
 
   /**
-   * Should all classes specified in [[classNames]] array be handled polymorphically.
+   * Defines whether the derived ECClasses should be included in the result.
    */
   arePolymorphic?: boolean;
 }

@@ -2154,6 +2154,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -2166,6 +2167,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -2178,6 +2180,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -2191,6 +2194,7 @@ export const expandWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -4500,6 +4504,8 @@ export const PromptField: import("react-redux").ConnectedComponent<typeof Prompt
 
 // @public
 export class PropsHelper {
+    // (undocumented)
+    static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem>;
     static getIcon(iconSpec: string | ConditionalStringValue | React.ReactNode): JSX.Element | undefined;
     static getStringFromSpec(spec: string | StringGetter | ConditionalStringValue): string;
     static getStringSpec(explicitValue: string | StringGetter | ConditionalStringValue | undefined, stringKey?: string): string | StringGetter | ConditionalStringValue;
@@ -4876,6 +4882,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -4888,6 +4895,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -4900,6 +4908,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -4913,6 +4922,7 @@ export const setPanelSize: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5064,6 +5074,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5076,6 +5087,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5088,6 +5100,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -5101,6 +5114,7 @@ export const setWidgetLabel: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5233,6 +5247,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5245,6 +5260,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5257,6 +5273,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -5270,6 +5287,7 @@ export const setWidgetState: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5466,6 +5484,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly left: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5478,6 +5497,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly right: {
             readonly side: import("@itwin/appui-layout-react").VerticalPanelSide;
@@ -5490,6 +5510,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
         readonly top: {
             readonly span: boolean;
@@ -5503,6 +5524,7 @@ export const showWidget: (base: {
             readonly size: number | undefined;
             readonly widgets: readonly string[];
             readonly maxWidgetCount: number;
+            readonly splitterPercent: number | undefined;
         };
     };
     readonly tabs: {
@@ -5721,7 +5743,7 @@ export class StagePanelDef extends WidgetHost {
     get size(): number | undefined;
     set size(size: number | undefined);
     // @internal (undocumented)
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined, widgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined, allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
 
@@ -5810,7 +5832,7 @@ export class StagePanelZoneDef extends WidgetHost {
 }
 
 // @internal (undocumented)
-export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "middle" | "end">;
+export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "end">;
 
 // @public @deprecated
 export interface StagePanelZoneProps {
@@ -5826,8 +5848,6 @@ export class StagePanelZonesDef {
     get end(): StagePanelZoneDef;
     // (undocumented)
     initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation): void;
-    // (undocumented)
-    get middle(): StagePanelZoneDef;
     // (undocumented)
     get start(): StagePanelZoneDef;
     }
@@ -7046,6 +7066,9 @@ export function useScheduleAnimationDataProvider(viewport: ScreenViewport | unde
 // @beta
 export function useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined;
 
+// @public
+export function useSpecificWidgetDef(widgetId: string): WidgetDef | undefined;
+
 // @internal (undocumented)
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 
@@ -7364,6 +7387,9 @@ export class WidgetDef {
     get defaultFloatingPosition(): PointProps | undefined;
     set defaultFloatingPosition(position: PointProps | undefined);
     // @internal (undocumented)
+    get defaultFloatingSize(): SizeProps | undefined;
+    set defaultFloatingSize(size: SizeProps | undefined);
+    // @internal (undocumented)
     get defaultState(): WidgetState;
     // @alpha
     expand(): void;
@@ -7374,7 +7400,8 @@ export class WidgetDef {
     // (undocumented)
     getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined;
     // (undocumented)
-    get iconSpec(): string | ConditionalStringValue | React.ReactNode;
+    get iconSpec(): IconSpec;
+    set iconSpec(spec: IconSpec);
     // (undocumented)
     get id(): string;
     // (undocumented)
@@ -7453,7 +7480,7 @@ export class WidgetHost {
     findWidgetDef(id: string): WidgetDef | undefined;
     getSingleWidgetDef(): WidgetDef | undefined;
     // @internal
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined, widgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined, allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
     get widgetCount(): number;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
     }
