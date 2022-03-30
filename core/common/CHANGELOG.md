@@ -1,6 +1,23 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 10 Mar 2022 21:18:13 GMT and should not be manually modified.
+This log was last generated on Tue, 29 Mar 2022 20:53:47 GMT and should not be manually modified.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Add support for map layers using model geometry.
+- Deprecate IModelReadRpcInterface.getViewThumbnail
+- Deprecate RenderMaterial.Params in favor of CreateRenderMaterialArgs (core-frontend).
+- Remove IModelDb.elementGeometryUpdate.
+- ElementGeometryBuilderParams
+- Web IPC fix (when reloading frontend).
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
 
 ## 3.0.2
 Thu, 10 Mar 2022 21:18:13 GMT
