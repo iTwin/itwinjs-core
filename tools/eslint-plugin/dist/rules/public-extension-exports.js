@@ -84,31 +84,14 @@ module.exports = {
 
       const createCsvString = (name, kind) => `${name},${kind},${isPreview ? 'preview' : 'public'}\n`;
 
-      const name = declaration.kind === ts.SyntaxKind.VariableStatement ?
-        declaration.declarationList.declarations[0].symbol.escapedName :
-        declaration.symbol.escapedName;
-      const kind = getSyntaxKindFriendlyName(declaration.kind);
-      const csvString = createCsvString(name, kind);
-      fs.writeFileSync(apiFilePath, csvString, { flag: "a" });
-    }
-
-    function getFileName(parent) {
-      let currentParent = parent;
-      while (currentParent) {
-        if (currentParent.fileName !== undefined)
-          return currentParent.fileName;
-        currentParent = currentParent.parent;
-      }
-      return undefined;
-    }
-
-    function isLocalFile(declaration) {
-      if (declaration) {
-        const fileName = getFileName(declaration.parent);
-        if (fileName && typeof fileName === "string" && !fileName.includes("node_modules"))
-          return true;
-      }
-      return false;
+      const names = declaration.kind === ts.SyntaxKind.VariableStatement ?
+        declaration.declarationList.declarations.map(d => d.symbol.escapedName) :
+        [declaration.symbol.escapedName];
+      names.forEach(name => {
+        const kind = getSyntaxKindFriendlyName(declaration.kind);
+        const csvString = createCsvString(name, kind);
+        fs.writeFileSync(apiFilePath, csvString, { flag: "a" });
+      });
     }
 
     function getParentSymbolName(declaration) {
@@ -119,7 +102,7 @@ module.exports = {
 
     function checkJsDoc(declaration, node) {
       // Only check local elements, not consumed ones
-      if (!declaration || !declaration.jsDoc || !isLocalFile(declaration))
+      if (!declaration || !declaration.jsDoc)
         return undefined;
 
       for (const jsDoc of declaration.jsDoc)
