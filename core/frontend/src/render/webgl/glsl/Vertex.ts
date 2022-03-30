@@ -152,6 +152,39 @@ export function addNormalMatrix(vert: VertexShaderBuilder, instanced: IsInstance
   }
 }
 
+function readVertexData(index: number): string {
+  return `g_vertLutData${index} = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);`;
+}
+
+const nextVertexData = "tc.x += g_vert_stepX;";
+
+function readNextVertexData(index: number): string {
+  return `
+  ${nextVertexData}
+  ${readVertexData(index)}`;
+}
+
+const prereadVertexDataPrelude = `
+  vec2 tc = g_vertexBaseCoords;
+  ${readVertexData(0)}
+  ${readNextVertexData(1)}
+  ${readNextVertexData(2)}
+`;
+
+const prereadQuantizedVertexData = `${prereadVertexDataPrelude}
+  if (3.0 < u_vertParams.z) {
+    ${readNextVertexData(3)}
+  }
+`;
+
+const prereadUnquantizedVertexData = `${prereadVertexDataPrelude}
+  ${readNextVertexData(3)}
+  ${readNextVertexData(4)}
+  if (5.0 < u_vertParams.z) {
+    ${readNextVertexData(5)}
+  }
+`;
+
 const scratchLutParams = new Float32Array(4);
 function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexLUTIndex", VariableType.Float);
@@ -183,25 +216,15 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   addLookupTable(vert, "vert", "u_vertParams.z");
   vert.addInitializer(initializeVertLUTCoords);
 
-  vert.addGlobal(`g_vertLutData0`, VariableType.Vec4);
-  vert.addGlobal(`g_vertLutData1`, VariableType.Vec4);
-  vert.addGlobal(`g_vertLutData2`, VariableType.Vec4);
-  vert.addGlobal(`g_vertLutData3`, VariableType.Vec4);
+  const unquantized = "unquantized" === vert.positionType;
+  const maxRgbaPerVert = unquantized ? 6 : 4;
+  for (let i = 0; i < maxRgbaPerVert; i++)
+    vert.addGlobal(`g_vertLutData${i}`, VariableType.Vec4);
+
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
 
   // Read the vertex data from the vertex table up front.  Yields a consistent (if unexplainable) small performance boost.
-  vert.addInitializer(`
-    vec2 tc = g_vertexBaseCoords;
-    g_vertLutData0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    tc.x += g_vert_stepX;
-    g_vertLutData1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    tc.x += g_vert_stepX;
-    g_vertLutData2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    if (3.0 < u_vertParams.z) {
-      tc.x += g_vert_stepX;
-      g_vertLutData3 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    }
-  `);
+  vert.addInitializer(unquantized ? prereadUnquantizedVertexData : prereadQuantizedVertexData);
 }
 
 /** @internal */
