@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Thu, 24 Mar 2022 16:13:17 GMT and should not be manually modified.
+This log was last generated on Wed, 30 Mar 2022 16:03:53 GMT and should not be manually modified.
+
+## 2.19.35
+Wed, 30 Mar 2022 16:03:53 GMT
+
+### Updates
+
+- Add methods to validate ColorDefProps and color strings; fix failure to find duplicate color names.
 
 ## 2.19.34
 Thu, 24 Mar 2022 16:13:17 GMT

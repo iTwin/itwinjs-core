@@ -2,6 +2,12 @@
   "name": "@bentley/analytical-backend",
   "entries": [
     {
+      "version": "2.19.35",
+      "tag": "@bentley/analytical-backend_v2.19.35",
+      "date": "Wed, 30 Mar 2022 16:03:53 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.34",
       "tag": "@bentley/analytical-backend_v2.19.34",
       "date": "Thu, 24 Mar 2022 16:13:17 GMT",
