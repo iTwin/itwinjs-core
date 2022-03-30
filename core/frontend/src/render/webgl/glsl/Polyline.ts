@@ -21,7 +21,9 @@ import { addFrustum, addShaderFlags } from "./Common";
 import { unquantize2d } from "./Decode";
 import { addHiliter } from "./FeatureSymbology";
 import { addWhiteOnWhiteReversal } from "./Fragment";
-import { addLineCode as addLineCodeUniform, addLineWeight, addModelViewMatrix, addProjectionMatrix } from "./Vertex";
+import {
+  addLineCode as addLineCodeUniform, addLineWeight, addModelViewMatrix, addProjectionMatrix, addSamplePosition,
+} from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 
 const checkForDiscard = "return discardByLineCode;";
@@ -201,18 +203,15 @@ function addCommon(prog: ProgramBuilder) {
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.addVarying("v_lnInfo", VariableType.Vec4);
   addAdjustWidth(vert);
+
+  addSamplePosition(vert);
   vert.addFunction(decodePosition);
 }
 
 const decodePosition = `
 vec4 decodePosition(vec3 baseIndex) {
   float index = decodeUInt24(baseIndex);
-  vec2 tc = compute_vert_coords(index);
-  vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  tc.x += g_vert_stepX;
-  vec4 e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
-  return unquantizePosition(qpos, u_qOrigin, u_qScale);
+  return samplePosition(index);
 }
 `;
 
