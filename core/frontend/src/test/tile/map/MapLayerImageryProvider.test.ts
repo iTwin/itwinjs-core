@@ -136,7 +136,7 @@ describe("WmsMapLayerImageryProvider", () => {
 
   });
 
-  it.only("should create a GetMap requests URL using the right 'CRS'", async () => {
+  it("should create a GetMap requests URL using the right 'CRS'", async () => {
     const layerPros: MapLayerProps = {
       formatId: "WMS",
       url: "https://localhost/wms",
@@ -228,7 +228,7 @@ describe("WmsMapLayerImageryProvider", () => {
     chai.expect(p2.isAlmostEqual(refPoint2)).to.be.true;
   });
 
-  it.only("should create a GetMap requests URL in WMS 1.3.0", async () => {
+  it("should create a GetMap requests URL in WMS 1.3.0", async () => {
     const layerPros: MapLayerProps = {
       formatId: "WMS",
       url: "https://localhost/wms",

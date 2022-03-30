@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { WmsCapabilities } from "../../../tile/map/WmsCapabilities";
 
 const mapProxyDatasetNbLayers = 9;
-describe.only("WmsCapabilities", () => {
+describe("WmsCapabilities", () => {
 
   it("should parse WMS 1.1.1 capabilities", async () => {
 
