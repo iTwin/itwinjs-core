@@ -2,6 +2,18 @@
   "name": "@itwin/webgl-compatibility",
   "entries": [
     {
+      "version": "3.1.0",
+      "tag": "@itwin/webgl-compatibility_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Apply workaround for failure to render shadows and transparency on Mali-G71 MP20 (Samsung Galaxy Note 8)."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.0.3",
       "tag": "@itwin/webgl-compatibility_v3.0.3",
       "date": "Fri, 25 Mar 2022 15:10:02 GMT",

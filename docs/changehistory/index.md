@@ -1,118 +1,93 @@
+# 3.1.0 Change Notes
 
-# 3.0.0 Change Notes
+## Upgrade Note - peer dependency changes
 
-With most major releases comes many new features and some breaking API changes. Several breaking changes are the removal of previously deprecated APIs. In other cases, some APIs have changed in ways that may require calling code to be adjusted. This document describes these in detail to help you upgrade.
+- The `core-backend` package has changed it's peer dependency on `ecschema-metadata` to optional.  So it is no longer necessary to list `ecschema-metadata` as a dependency unless you use the `IModelSchemaLoader`.
+- The package `ecschema-metadata` now has `core-quantity` as a peer dependency.
 
-The first step in migrating to 3.0 is to try out the new [upgrade tool](#upgrade-guide) that makes it easy to react to all of the renames that took place during the 3.0 release.
+So if you are upgrading from 2.x or 3.0 and depend on `core-backend` you must either add `core-quantity` or remove `ecschema-metadata`.
 
-The table of contents created below will make it easier to navigate through the various changes within the release. It provides a summary of the more complicated or extensive changes made and details on why the change has been made.
+## Simplified material creation
 
-Table of Contents:
-
-- [Upgrade guide](#update-guide)
-- [New features](#new-features)
-  - [Display System](#display-system)
-  - [AppUi Framework](#new-appui-features)
-  - [Presentation](#new-presentation-features)
-  - [ECSql](#new-ecsql-features)
-- [Breaking changes](#breaking-changes)
-  - [Application Setup](#application-setup)
-  - [Authorization](#authorization-re-work)
-  - [iModel APIs](#imodels)
-  - [Tool Framework](#tool-framework)
-  - [Display System](#display-system-breaking-changes)
-  - [Presentation](#presentation)
-  - [AppUI](#appui)
-  - [Utility Methods](#utility-methods)
-  - [Buildology](#buildology)
-  - [iModel Transformer](#transformation)
-  - [Various Changes](#various-changes)
-- [Dependency Update](#dependency-updates)
-- [Exhaustive API Renames and Deprecation](#api-rename)
-
-## Upgrade guide
-
-To aid in the update from iModel.js 2.x, a [codemod tool](https://github.com/iTwin/codemods) using [JSCodeshift](https://github.com/facebook/jscodeshift) has been released which should serve as a starting point for updating your project to iTwin.js 3.0. This tool can automate some upgrade tasks like updating package names and replacing usage of deprecated or removed APIs with their replacement APIs. Please see the included [readme.md](https://github.com/iTwin/codemods#readme) for instructions on running the tool against your project.
-
-## New features
-
-Many of the enhancements introduced in iTwin.js 3.0 were directly motivated by feedback from users. If you have a new feature you'd like to see implemented, feel free to [let us know](https://github.com/iTwin/itwinjs-core/discussions)!
-
-### Display system
-
-#### Documentation
-
-A collection of [learning articles](../learning/display/index.md) has been assembled to provide an overview of the features provided by the display system, illustrated by interactive samples.
-
-#### Viewport.zoomToElements improvements
-
-[Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
-
-- Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
-- Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
-
-#### Fresnel effect
-
-[LightSettings]($common) has been enhanced to support a non-realistic Fresnel effect. As simply explained [here](https://www.dorian-iten.com/fresnel/), the effect causes surfaces to reflect more light based on the angle between the viewer's line of sight and the vector between the viewer and a given point on the surface. Use [FresnelSettings]($common) to configure this effect.
-
-Especially when combined with ambient occlusion, this effect can produce non-realistic views suitable for plant models and architectural models.
-
-Fresnel effect applied to an architectural model:
-
-![Fresnel effect applied to an architectural model](./assets/fresnel-building.jpg)
-
-Fresnel effect applied to a plant model:
-
-![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
-
-The following code applies a display style similar to those illustrated above to a [Viewport]($frontend):
+[RenderSystem.createMaterial]($frontend) presents an awkward API requiring the instantiation of several related objects to create even a simple [RenderMaterial]($common). It also requires an [IModelConnection]($frontend). It has been deprecated in favor of [RenderSystem.createRenderMaterial]($frontend), which accepts a single [CreateRenderMaterialArgs]($frontend) object concisely specifying only the properties of interest to the caller. For example, the following:
 
 ```ts
-  // Enable ambient occlusion.
-  viewport.viewFlags = viewport.viewFlags.with("ambientOcclusion", true);
+  const params = new RenderMaterial.Params();
+  params.alpha = 0.5;
+  params.diffuseColor = ColorDef.blue;
+  params.diffuse = 0.4;
 
-  // Configure the lighting.
-  viewport.displayStyle.lightSettings = LightSettings.fromJSON({
-    // A relatively bright ambient light is the only light source.
-    ambient: {
-      intensity: 0.55,
-    },
-    // Increase the brightness of surfaces that are closer to parallel with the viewer's line of sight.
-    fresnel: {
-      intensity: 0.8,
-      invert: true,
-    },
-    // Disable directional lighting.
-    solar: {
-      intensity: 0,
-    },
+  const mapParams = new TextureMapping.Params({ textureWeight: 0.25 });
+  params.textureMapping = new TextureMapping(texture, mapParams);
+  const material = IModelApp.renderSystem.createMaterial(params, iModel);
+```
+
+Can now be expressed as follows (note no IModelConnection is required):
+
+```ts
+  const material = IModelApp.renderSystem.createRenderMaterial({
+    alpha: 0.5,
+    diffuse: { color: ColorDef.blue, weight: 0.4 },
+    textureMapping: { texture, weight: 0.25 },
   });
 ```
 
-#### Transparent viewport background
+## Model map layers
 
-In some applications it is useful to be able to see HTML content underneath a [Viewport]($frontend). This can now be achieved by setting [DisplayStyleSettings.backgroundColor]($common) to a color with a transparency value greater than zero. HTML content behind the viewport will blend with the viewport's background color.
+Previously, map layers defined by a [MapLayerSettings]($common) were limited to imagery generated by tile servers, but many iModels contain planar spatial models representing [GIS](https://en.wikipedia.org/wiki/Geographic_information_system) data or aerial photography, similar to that obtained from tile imagery services. Now, the imagery for a map layer can also be obtained from such a model by specifying its model Id in a [ModelMapLayerSettings]($common). The model's geometry will be projected onto the terrain surface, and display of categories within the layer can be controlled by the view's category selector.
 
-Three overlapping viewports with transparent background colors:
+In the image below, a planar GIS model is displayed as an ordinary model in the scene - note how it does not align correctly with the 3d terrain:
 
-![Three overlapping viewports with transparent background colors](./assets/transparent-viewport.jpg)
+![Gis as model](assets/gis-as-map-layer.jpg "2D GIS deta displayed as model")
 
-#### Wiremesh display
+When displayed instead as a map layer, the same GIS model is correctly draped onto the 3d terrain:
 
-The graphics displayed by an iTwin.js [Viewport]($frontend) consist primarily of triangulated meshes. It can sometimes be useful to visualize the triangulation of these meshes. A new view flag - [ViewFlags.wiremesh]($common) - now enables wiremesh display. When wiremesh display is enabled, the edges of each triangle are overlaid on top of the mesh as anti-aliased black lines approximately 1 pixel wide.
+![GIS as map layer](assets/gis-as-model.jpg "2D GIS deta displayed as map layer")
 
-To enable wiremesh display for a viewport:
+[MapLayerSettings]($common) now serves as a base class for [ImageMapLayerSettings]($common) and [ModelMapLayerSettings]($common), with respective JSON representations [ImageMapLayerProps]($common) and [ModelMapLayerProps]($common).
+
+## Obtain geometry from terrain and reality models
+
+- [TileGeometryCollector]($core-frontend), which specifies the level of detail, spatial volume, and other criteria for determining which tile meshes to obtain; and
+- [GeometryTileTreeReference]($core-frontend), a [TileTreeReference]($core-frontend) that can supply [Polyface]($core-geometry) for its tiles.
+
+A [GeometryTileTreeReference]($core-frontend) can be obtained from an existing [TileTreeReference]($core-frontend) via [TileTreeReference.createGeometryTreeReference]($core-frontend). You can then supply a [TileGeometryCollector]($core-frontend) to [GeometryTileTreeReference.collectTileGeometry]($core-frontend) to collect the polyfaces. Because tile contents are downloaded asynchronously, you will need to repeat this process over successive frames until [TileGeometryCollector.isAllGeometryLoaded]($core-frontend) evaluates `true`.
+
+display-test-app provides [an example tool](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/TerrainDrapeTool.ts) that uses these APIs to allow the user to drape line strings onto terrain and reality models.
+
+## Draco compression
+
+[Draco compression](https://codelabs.developers.google.com/codelabs/draco-3d) can significantly reduce the sizes of meshes and point clouds. iTwin.js has been enhanced to correctly decompress reality models, point clouds, and glTF models that contain draco-encoded data, reducing download time and bandwidth usage.
+
+## Floating content views in AppUI
+
+![Floating iModel Content Dialog](../learning/ui/appui/images/FloatingViewport.png "Floating iModel Content Dialog")
+
+## Font Workspaces
+
+It is now possible to store and load fonts from a Font Workspace. See [Fonts](../learning/backend/Fonts.md) for more details.
+
+## Promote QuantityFormatter from beta to public
+
+The [QuantityFormatter]($core-frontend), accessed via `IModelApp.quantityFormatter`, is now public and provides a set of APIs to format and parse standard quantity types. For more documentation and samples see [Quantity Formatting](../learning/frontend/QuantityFormatting.md).
+
+## New SchemaUnitProvider
+
+It is now possible to retrieve `Units` from schemas stored in IModels. The new [SchemaUnitProvider]($ecschema-metadata) can now be created and used by the [QuantityFormatter]($core-frontend) or any method in the `core-quantity` package that requires a [UnitsProvider]($quantity). Below is an example, extracted from `ui-test-app`, that demonstrates how to register the IModel-specific `UnitsProvider` as the IModelConnection is created. This new provider will provide access to a wide variety of Units that were not available in the standalone `BasicUnitsProvider`.
 
 ```ts
-  viewport.viewFlags = viewport.viewFlags.with("wiremesh", true);
+    // Provide the QuantityFormatter with the iModelConnection so it can find the unit definitions defined in the iModel
+    const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
+    await IModelApp.quantityFormatter.setUnitsProvider (new SchemaUnitProvider(schemaLocater));
 ```
 
-![Wiremesh applied to a plant model](./assets/wiremesh-plant.jpg)
+>IMPORTANT: the `core-quantity` package is not a peer dependency of the `ecschema-metadata` package
 
-![Wiremesh applied to a reality model](./assets/wiremesh-reality.jpg)
+## AppUI Updates
 
-#### Viewport synchronization
+### WidgetState changes
 
+<<<<<<< HEAD
 [TwoWayViewportSync]($frontend) establishes a connection between two [Viewport]($frontend)s such that any change to one viewport is reflected in the other. This includes not only [Frustum]($common) changes, but changes to the display style, category and model selectors, and so on. Synchronizing **everything** is not always desirable; and if the viewports are viewing two different [IModelConnection]($frontend)s it is not even meaningful, as category and model Ids from one iModel will not make sense in the context of the other iModel.
 
 Now, `TwoWayViewportSync` is extensible, allowing subclasses to specify which aspects of the viewports should be synchronized by overriding [TwoWayViewportSync.connectViewports]($frontend) and [TwoWayViewportSync.syncViewports]($frontend). To establish a connection between two viewports using your subclass `MyViewportSync`, use `MyViewportSync.connect(viewport1, viewport2)`.
@@ -1937,3 +1912,6 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `BrowserAuthorizationClient`                | Moved to iTwin/auth-clients |
 | `BrowserAuthorizationClientRedirectState`   | Moved to iTwin/auth-clients |
 | `BrowserAuthorizationLogger`                | Moved to iTwin/auth-clients |
+=======
+The property [WidgetDef.state]($appui-react) will now return `WidgetState.Closed` if the widget is in a panel that is collapsed, or the panel size is 0 or undefined. When `WidgetState.Open` is passed to the method [WidgetDef.setWidgetState]($appui-react) the containing panel will also open if it is in a collapsed state.
+>>>>>>> 0d0aa3b248 (3.1.0 changelogs (#3440))
