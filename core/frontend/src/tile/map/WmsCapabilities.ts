@@ -82,12 +82,12 @@ export namespace WmsCapability {
     public readonly subLayers = new Array<SubLayer>();
     private static readonly PREFIX_SEPARATOR = ":";
 
-    constructor(_json: any, capabilities: WmsCapabilities) {
-      this.queryable = _json.queryable;
-      this.title = _json.title;
-      this.srs = initArray<string>(capabilities.isVersion13 ? _json.CRS : _json.SRS);
-      this.cartoRange = rangeFromJSON(_json);
-      this.subLayers.push(new SubLayer(_json, capabilities));
+    constructor(json: any, capabilities: WmsCapabilities) {
+      this.queryable = json.queryable;
+      this.title = json.title;
+      this.srs = initArray<string>(capabilities.isVersion13 ? json.CRS : json.SRS);
+      this.cartoRange = rangeFromJSON(json);
+      this.subLayers.push(new SubLayer(json, capabilities));
     }
     public getSubLayers(visible = true): MapSubLayerProps[] {
       const subLayers = new Array<MapSubLayerProps>();
