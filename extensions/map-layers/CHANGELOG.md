@@ -1,6 +1,23 @@
 # Change Log - @itwin/map-layers
 
-This log was last generated on Fri, 25 Mar 2022 15:10:02 GMT and should not be manually modified.
+This log was last generated on Tue, 29 Mar 2022 20:53:47 GMT and should not be manually modified.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Add support for map layers using model geometry.
+- User Preferences is now supported for Blank Connection configurations.
+- Fixed issue that would close the new maplayer dialog when a new layer type was picked.
+- Fix 'ResizeObserver loop limit exceeded' error in MapLayers widget
+- Added FeatureInfo Widget.
+- Bug fix: Right click on the new map layer dialog would close it.
+- Refactored MapLayersUI initialization, and will always use UiProviders
+- Fix style on select
+- Update to itwinui-css version "0.44.0".
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react - requires new compile option allowSyntheticDefaultImports=true.
 
 ## 3.0.3
 Fri, 25 Mar 2022 15:10:02 GMT

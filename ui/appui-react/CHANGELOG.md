@@ -1,6 +1,22 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Fri, 25 Mar 2022 15:10:01 GMT and should not be manually modified.
+This log was last generated on Tue, 29 Mar 2022 20:53:46 GMT and should not be manually modified.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:46 GMT
+
+### Updates
+
+- Fix missing parameter in UiManager.getWidgets call and pass provider to isSupportedStage function.
+- Allow initial UI version to be set when UIFramework is initialized.
+- Optimize ModelsTree search ruleset
+- Add data attributes to identify item and its UI provider.
+- Added ContentDialogManager, ContentDialog, and FloatingViewportContentControl to allow imodel viewport in a modeless dialog.
+- Add the ability to Open a collapsed Panel when a request to Open a widget in a collapsed panel is made.
+- Update to itwinui-css version "0.44.0".
+- Fix spelling error in function documentation.
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react - requires new compile option allowSyntheticDefaultImports=true.
 
 ## 3.0.3
 Fri, 25 Mar 2022 15:10:01 GMT
