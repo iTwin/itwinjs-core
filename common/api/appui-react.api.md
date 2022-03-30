@@ -1156,7 +1156,7 @@ export class ConfigurableCreateInfo {
 
 // @public
 export enum ConfigurableUiActionId {
-    // (undocumented)
+    // @alpha (undocumented)
     AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
     // (undocumented)
     SetDragInteraction = "configurableui:set-drag-interaction",
@@ -1278,7 +1278,7 @@ export function ConfigurableUiReducer(state: ConfigurableUiState | undefined, ac
 
 // @public
 export interface ConfigurableUiState {
-    // (undocumented)
+    // @alpha (undocumented)
     autoCollapseUnpinnedPanels: boolean;
     // (undocumented)
     frameworkVersion: FrameworkVersionId;
@@ -3301,7 +3301,7 @@ export function Indicator(props: IndicatorProps): JSX.Element;
 
 // @public
 export interface InitialAppUiSettings {
-    // (undocumented)
+    // @alpha (undocumented)
     autoCollapseUnpinnedPanels?: boolean;
     // (undocumented)
     colorTheme: string;
@@ -6770,7 +6770,7 @@ export interface UiDataProvidedDialogProps {
 
 // @public
 export class UiFramework {
-    // (undocumented)
+    // @alpha (undocumented)
     static get autoCollapseUnpinnedPanels(): boolean;
     // (undocumented)
     static get backstageManager(): BackstageManager;
@@ -6841,7 +6841,7 @@ export class UiFramework {
     static setActiveIModelId(iModelId: string): void;
     // (undocumented)
     static setActiveSelectionScope(selectionScopeId: string): void;
-    // (undocumented)
+    // @alpha
     static setAutoCollapseUnpinnedPanels(value: boolean): void;
     // (undocumented)
     static setColorTheme(theme: string): void;

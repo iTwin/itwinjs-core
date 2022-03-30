@@ -22,6 +22,7 @@ export interface InitialAppUiSettings {
   frameworkVersion: FrameworkVersionId;
   widgetOpacity: number;
   showWidgetIcon?: boolean;
+  /** @alpha */
   autoCollapseUnpinnedPanels?: boolean;
 }
 

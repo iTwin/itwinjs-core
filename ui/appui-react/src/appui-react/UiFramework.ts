@@ -524,10 +524,15 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetShowWidgetIcon, value, true);
   }
 
+  /** @alpha */
   public static get autoCollapseUnpinnedPanels(): boolean {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.autoCollapseUnpinnedPanels : /* istanbul ignore next */ false;
   }
 
+  /** Method used to enable the automatic closing of an unpinned widget panel as soon as the
+   * mouse leaves the widget panel. The default behavior is to require a mouse click outside
+   * the panel before it is closed.
+   * @alpha */
   public static setAutoCollapseUnpinnedPanels(value: boolean) {
     if (UiFramework.autoCollapseUnpinnedPanels === value)
       return;

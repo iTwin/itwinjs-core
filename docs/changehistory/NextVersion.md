@@ -118,10 +118,6 @@ The API impact of these updates are listed below.
 2. Widgets in panels only support the [WidgetState]($appui-abstract)s WidgetState.Open or WidgetState.Hidden.
 3. The UiItemProviders `provideWidgets` call can now return [AbstractWidgetProps]($appui-abstract) that specify a `defaultFloatingSize` that can be used for Widgets that use components that do not have an intrinsic size. For more details see [WidgetItem](../learning/ui/AugmentingUI.md).
 
-### Auto-hide Unpinned Widget Panels
-
-The new method [UiFramework.setAutoCollapseUnpinnedPanels]($appui-react) can be used to enable the automatic closing of an unpinned widget panel as soon as the mouse leaves the widget panel. The default behavior is to require a mouse click outside the panel before it is closed.
-
 ## Deprecations in @itwin/components-react package
 
 The interfaces and components [ShowHideMenuProps]($components-react), [ShowHideMenu]($components-react), [ShowHideItem]($components-react)[ShowHideID]($components-react), [ShowHideDialogProps]($components-react), and [ShowHideDialog]($components-react) are all being deprecated because they were supporting components for the now deprecated [Table]($components-react) component. This `Table` component used an Open Source component that is not being maintained so it was determined to drop it from the API. The @itwin/itwinui-react package now delivers a Table component which should be used in place of the deprecated Table.

@@ -25,6 +25,7 @@ export enum ConfigurableUiActionId {
   SetDragInteraction = "configurableui:set-drag-interaction",
   SetFrameworkVersion = "configurableui:set-framework-version",
   SetShowWidgetIcon = "configurableui:set-show-widget-icon",
+  /** @alpha */
   AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
   SetViewOverlayDisplay = "configurableui:set-view-overlay-display",
 }
@@ -40,6 +41,7 @@ export interface ConfigurableUiState {
   useDragInteraction: boolean;
   frameworkVersion: FrameworkVersionId;
   showWidgetIcon: boolean;
+  /** @alpha */
   autoCollapseUnpinnedPanels: boolean;
   viewOverlayDisplay: boolean;
 }
