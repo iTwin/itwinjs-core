@@ -287,7 +287,7 @@ Object {
 }
 `;
 
-exports[`PropertiesField fromJSON creates valid PropertiesFiled from valid JSON with navigation property 1`] = `
+exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON with navigation property 1`] = `
 Object {
   "category": "test-category",
   "editor": undefined,

@@ -602,18 +602,13 @@ function fromCompressedPropertyJSON(compressedPropertyJSON: PropertyJSON<string>
 function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfo {
   assert(classesMap.hasOwnProperty(compressedPropertyJSON.classInfo));
 
-  const propertyInfo: PropertyInfo = {
-    ...compressedPropertyJSON,
+  const { navigationPropertyInfo, ...leftOverPropertyJSON } = compressedPropertyJSON;
+
+  return {
+    ...leftOverPropertyJSON,
     classInfo: { id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo] },
-    navigationPropertyInfo: compressedPropertyJSON.navigationPropertyInfo
-      ? fromCompressedNavigationPropertyInfoJSON(compressedPropertyJSON.navigationPropertyInfo, classesMap)
-      : undefined,
+    ...(navigationPropertyInfo ? { navigationPropertyInfo: fromCompressedNavigationPropertyInfoJSON(navigationPropertyInfo, classesMap) } : undefined),
   };
-
-  if (!propertyInfo.navigationPropertyInfo)
-    delete propertyInfo.navigationPropertyInfo;
-
-  return propertyInfo;
 }
 
 function fromCompressedNavigationPropertyInfoJSON(compressedNavigationPropertyInfoJSON: NavigationPropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): NavigationPropertyInfo {

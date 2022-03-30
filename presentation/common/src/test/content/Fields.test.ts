@@ -129,7 +129,7 @@ describe("PropertiesField", () => {
       expect(field).to.be.undefined;
     });
 
-    it("creates valid PropertiesFiled from valid JSON with navigation property", () => {
+    it("creates valid PropertiesField from valid JSON with navigation property", () => {
       const category = createTestCategoryDescription();
       const json = createTestPropertiesContentField({
         category,
