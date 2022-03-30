@@ -57,6 +57,9 @@ export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoCh
 // @internal
 export const AppContent: React.NamedExoticComponent<object>;
 
+// @internal (undocumented)
+export const AutoCollapseUnpinnedPanelsContext: React.Context<boolean>;
+
 // @internal
 export class BackArrow extends React.PureComponent<BackArrowProps> {
     // (undocumented)
@@ -1375,6 +1378,8 @@ export interface NineZoneNestedStagePanelsManagerProps extends NestedStagePanels
 
 // @internal
 export interface NineZoneProps {
+    // (undocumented)
+    autoCollapseUnpinnedPanels?: boolean;
     // (undocumented)
     children?: React.ReactNode;
     // (undocumented)
