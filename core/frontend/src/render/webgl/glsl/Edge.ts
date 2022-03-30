@@ -18,7 +18,7 @@ import { addFrustum, addShaderFlags } from "./Common";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addAdjustWidth, addLineCode } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
-import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix, addSamplePosition } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 import { addLookupTable } from "./LookupTable";
 import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
@@ -26,12 +26,7 @@ import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
 export type EdgeBuilderType = "SegmentEdge" | "Silhouette" | "IndexedEdge";
 
 const computeOtherPos = `
-  vec2 tc = computeLUTCoords(g_otherIndex, u_vertParams.xy, g_vert_center, u_vertParams.z);
-  vec4 enc0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  tc.x += g_vert_stepX;
-  vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-  vec3 qpos = vec3(decodeUInt16(enc0.xy), decodeUInt16(enc0.zw), decodeUInt16(enc1.xy));
-  g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
+  g_otherPos = samplePosition(g_otherIndex);
 `;
 
 const decodeEndPointAndQuadIndices = `
@@ -235,6 +230,8 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
   vert.addGlobal("g_windowPos", VariableType.Vec4);
   vert.addGlobal("g_windowDir", VariableType.Vec2);
   vert.addGlobal("g_otherIndex", VariableType.Float);
+
+  addSamplePosition(vert);
 
   if (isIndexed) {
     vert.addGlobal("g_vertexId", VariableType.Int);
