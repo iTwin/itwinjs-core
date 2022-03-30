@@ -9,12 +9,12 @@ These overlays are an implementation of a modal frontstage. The backstage is ope
 To ensure that an extension can supply items for the Backstage menu, it should be created using the [BackstageComposer]($appui-react) component. The example below shows how to provide [BackstageActionItem]($appui-abstract) and [BackstageStageLauncher]($appui-abstract) item to the BackstageComposer.
 
 ```tsx
-import stageIconSvg from "@bentley/icons-generic/icons/imodeljs.svg?sprite";
-import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
+import stageIconSvg from "@bentley/icons-generic/icons/imodeljs.svg";
+import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg";
 
 export function AppBackstageComposer() {
   const [backstageItems] = React.useState(() => [
-    BackstageItemUtilities.createStageLauncher("app.SampleFrontstage", 100, 10, IModelApp.i18n.translate("app:backstage.sampleFrontstage"), undefined, IconSpecUtilities.createSvgIconSpec(stageIconSvg)),
+    BackstageItemUtilities.createStageLauncher("app.SampleFrontstage", 100, 10, IModelApp.i18n.translate("app:backstage.sampleFrontstage"), undefined, IconSpecUtilities.createWebComponentIconSpec(stageIconSvg)),
     SettingsModalFrontstage.getBackstageActionItem (300, 10),
   ]);
 

@@ -379,6 +379,7 @@
               }
             }
           ],
+          "instanceFilter": "this.Kind <> \"Relationship\"",
           "properties": [
             {
               "name": "Identifier",
@@ -436,6 +437,7 @@
               }
             }
           ],
+          "instanceFilter": "this.Kind <> \"Relationship\"",
           "properties": "_none_",
           "autoExpand": true,
           "nestedRelatedProperties": [

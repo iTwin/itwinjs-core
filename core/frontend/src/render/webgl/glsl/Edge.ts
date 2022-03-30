@@ -27,20 +27,11 @@ export type EdgeBuilderType = "SegmentEdge" | "Silhouette" | "IndexedEdge";
 
 const computeOtherPos = `
   vec2 tc = computeLUTCoords(g_otherIndex, u_vertParams.xy, g_vert_center, u_vertParams.z);
-  if (g_usesQuantizedPosition) {
-    vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    tc.x += g_vert_stepX;
-    vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-    g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
-  } else {
-    for (int i = 0; i < 3; i++) {
-      g_otherPos[i] = decodeFloat32(floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5));
-      tc.x += g_vert_stepX;
-    }
-
-    g_otherPos.w = 1.0;
-  }
+  vec4 enc0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  tc.x += g_vert_stepX;
+  vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec3 qpos = vec3(decodeUInt16(enc0.xy), decodeUInt16(enc0.zw), decodeUInt16(enc1.xy));
+  g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
 `;
 
 const decodeEndPointAndQuadIndices = `

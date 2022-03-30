@@ -20,7 +20,7 @@ export interface ISelectionProvider {
 
   /** Get the selection stored in the provider.
    * @param imodel iModel connection which the selection is associated with.
-   * @param level Level of the selection (see [Selection levels]($docs/presentation/Unified-Selection/index#selection-levels))
+   * @param level Level of the selection (see [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels))
    */
   getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
 }

@@ -1,11 +1,10 @@
 {
   "name": "@itwin/frontend-devtools",
-  "version": "3.2.0-dev.14",
+  "version": "3.2.0-dev.28",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/cjs/frontend-devtools.js",
   "module": "lib/esm/frontend-devtools.js",
   "typings": "lib/cjs/frontend-devtools",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs",
