@@ -58,7 +58,6 @@ function interpretCsv(csvString) {
   return apiByType;
 }
 
-
 // Create the export code for the .d.ts file
 function generateDeclarationCode(exportList) {
   let exportCode = "";
@@ -88,7 +87,6 @@ function generateDeclarationCode(exportList) {
 
   return exportCode;
 }
-
 
 // Create the export code for the .js file
 function generateJsCode(exportList) {
@@ -154,15 +152,13 @@ function generateRuntimeCode(exportListPreview, exportList) {
   return exportCode + exports + exportTrailer;
 }
 
-
-
 // Find the extension linter's output file and convert to a set of useful lists
 function collectExports(packagePath) {
   // Adjust to relative path from monorepo root and add path to generated extension API
   packagePath = "../../" + packagePath + generatedCsvPath;
 
   try {
-    var fileContents = fs.readFileSync(packagePath, "utf8");
+    let fileContents = fs.readFileSync(packagePath, "utf8");
     if (fileContents.length === 0) {
       throw Error(`Extension api csv (${packagePath + generatedCsvPath}) is empty.`);
     }
@@ -172,7 +168,6 @@ function collectExports(packagePath) {
 
   return interpretCsv(fileContents);
 }
-
 
 // Replace the target file's code gen block with the provided code
 function addToFile(filePath, generatedCode) {
@@ -193,7 +188,6 @@ function addToFile(filePath, generatedCode) {
   );
   fs.writeFileSync(filePath, fileContents);
 }
-
 
 // Use the extension linter's output file to add export statements to .d.ts and .js files
 function addGeneratedExports(packages) {
@@ -239,4 +233,5 @@ args.forEach((paramPair) => {
     path: paramPair[1]
   });
 });
+
 addGeneratedExports(packages);

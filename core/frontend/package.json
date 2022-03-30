@@ -126,7 +126,8 @@
           "releaseTags": [
             "public",
             "preview"
-          ]
+          ],
+          "outputApiFile": false
         }
       ]
     },
