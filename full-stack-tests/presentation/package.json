@@ -99,9 +99,6 @@
       "ignore-styles"
     ],
     "checkLeaks": true,
-    "globals": [
-      "requestAnimationFrame"
-    ],
     "timeout": 60000,
     "file": [
       "lib/setup.js"
