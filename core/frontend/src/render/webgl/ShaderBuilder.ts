@@ -660,7 +660,7 @@ export const enum VertexShaderComponent {
   // This runs before any initializers.
   // vec3 computeQuantizedPosition()
   ComputeQuantizedPosition,
-  // (Optional) Adjust the result of unquantizeVertexPosition().
+  // (Optional) Adjust the result of computeVertexPosition().
   // vec4 adjustRawPosition(vec4 rawPosition)
   AdjustRawPosition,
   // (Optional) Return true to discard this vertex before evaluating feature overrides etc, given the model-space position.
@@ -768,7 +768,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
         main.addline(`  { ${init} }\n`);
     }
 
-    main.addline("  vec4 rawPosition = unquantizeVertexPosition(qpos);");
+    main.addline("  vec4 rawPosition = computeVertexPosition(qpos);");
     const adjustRawPosition = this.get(VertexShaderComponent.AdjustRawPosition);
     if (undefined !== adjustRawPosition) {
       prelude.addFunction("vec4 adjustRawPosition(vec4 rawPos)", adjustRawPosition);
