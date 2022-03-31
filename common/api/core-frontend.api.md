@@ -8279,7 +8279,7 @@ export abstract class RealityTileLoader {
     // (undocumented)
     protected get _batchType(): BatchType;
     // (undocumented)
-    static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
+    static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
     // (undocumented)
     computeTilePriority(tile: Tile, viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number;
     // (undocumented)
