@@ -19,6 +19,7 @@ export const PRESENTATION_TREE_NODE_KEY = "__presentation-components/key";
 /** @internal */
 export interface CreateTreeNodeItemProps {
   appendChildrenCountForGroupingNodes?: boolean;
+  customizeTreeNodeItem?: (item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) => void;
 }
 
 /** @internal */
@@ -44,6 +45,8 @@ export function createTreeNodeItem(
     label: createNodeLabelRecord(node, !!props?.appendChildrenCountForGroupingNodes),
   };
   assignOptionalTreeNodeItemFields(item, node, parentId);
+  const customizeItemCallback = props?.customizeTreeNodeItem ?? customizeTreeNodeItem; // eslint-disable-line deprecation/deprecation
+  customizeItemCallback(item, node);
   return item;
 }
 
@@ -60,6 +63,8 @@ export function createPartialTreeNodeItem(
   }
 
   assignOptionalTreeNodeItemFields(item, node, parentId);
+  const customizeItemCallback = props.customizeTreeNodeItem ?? customizeTreeNodeItem; // eslint-disable-line deprecation/deprecation
+  customizeItemCallback(item, node);
   return item;
 }
 
@@ -93,17 +98,28 @@ function assignOptionalTreeNodeItemFields(
     item.autoExpand = true;
   }
 
-  if (node.imageId) {
-    item.icon = node.imageId;
+  if (node.extendedData) {
+    item.extendedData = node.extendedData;
+  }
+}
+
+/**
+ * Applies customization from [[Node]] to [[TreeNodeItem]].
+ * @public
+ * @deprecated
+ */
+export function customizeTreeNodeItem(item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) {
+  if (node.imageId) { // eslint-disable-line deprecation/deprecation
+    item.icon = node.imageId; // eslint-disable-line deprecation/deprecation
   }
 
-  if (node.isCheckboxVisible) {
+  if (node.isCheckboxVisible) { // eslint-disable-line deprecation/deprecation
     item.isCheckboxVisible = true;
-    if (node.isChecked) {
+    if (node.isChecked) { // eslint-disable-line deprecation/deprecation
       item.checkBoxState = CheckBoxState.On;
     }
 
-    if (!node.isCheckboxEnabled) {
+    if (!node.isCheckboxEnabled) { // eslint-disable-line deprecation/deprecation
       item.isCheckboxDisabled = true;
     }
   }
@@ -111,10 +127,6 @@ function assignOptionalTreeNodeItemFields(
   const style = createTreeNodeItemStyle(node);
   if (Object.keys(style).length > 0) {
     item.style = style;
-  }
-
-  if (node.extendedData) {
-    item.extendedData = node.extendedData;
   }
 }
 

@@ -6,31 +6,29 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
- * Rule that allows configuring check boxes for certain nodes.
+ * CheckBox rules provide a way to create a checkbox for specific types of ECInstance's.
  *
- * Is also allows binding check box state with boolean properties by setting [[propertyName]] parameter.
- * If [[propertyName]] is not set, then [[defaultValue]] is used for default check box state.
- *
- * @see [More details]($docs/presentation/Customization/CheckBoxRule.md)
+ * @see [CheckBox rule reference documentation page]($docs/presentation/customization/CheckBoxRule.md)
  * @public
+ * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
  */
-export interface CheckBoxRule extends RuleBase, ConditionContainer {
+export interface CheckBoxRule extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.CheckBox;
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * is an [ECExpression]($docs/presentation/advanced/ECExpressions.md), which can use
    * a [limited set of symbols]($docs/presentation/customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
   /**
-   * Name of boolean type ECProperty which is bound with the check box state. When set,
-   * property value gets bound to checkbox state.
+   * Name of boolean type ECProperty which is bound with the check box state. When set, property
+   * value gets bound to checkbox state.
    *
    * @minLength 1
    */

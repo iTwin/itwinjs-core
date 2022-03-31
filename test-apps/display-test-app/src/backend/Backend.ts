@@ -66,6 +66,31 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return this.writeExternalFile(esvFileName, namedViews);
   }
 
+  public override async readExternalCameraPaths(bimFileName: string): Promise<string> {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+      const docPath = process.env.DOCS;
+      bimFileName = path.join(docPath, bimFileName);
+    }
+
+    const cameraPathsFileName = this.createCameraPathsFilename(bimFileName);
+    if (!fs.existsSync(cameraPathsFileName))
+      return "";
+
+    const jsonStr = fs.readFileSync(cameraPathsFileName).toString();
+    return jsonStr ?? "";
+  }
+
+  public override async writeExternalCameraPaths(bimFileName: string, cameraPaths: string): Promise<void> {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+      // Used to set a writeable directory on an iOS or Android device.
+      const docPath = process.env.DOCS;
+      bimFileName = path.join(docPath, bimFileName);
+    }
+
+    const cameraPathsFileName = this.createCameraPathsFilename(bimFileName);
+    return this.writeExternalFile(cameraPathsFileName, cameraPaths);
+  }
+
   public override async readExternalFile(txtFileName: string): Promise<string> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
@@ -118,6 +143,13 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     if (-1 !== dotIndex)
       return `${fileName.substring(0, dotIndex)}_ESV.json`;
     return `${fileName}.sv`;
+  }
+
+  private createCameraPathsFilename(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf(".");
+    if (-1 !== dotIndex)
+      return `${fileName.substring(0, dotIndex)}_cameraPaths.json`;
+    return `${fileName}.cameraPaths.json`;
   }
 
   private createTxtFilename(fileName: string): string {

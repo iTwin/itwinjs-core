@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improve RealityTile loading priority calculation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -943,7 +943,7 @@ export function Icon(props: IconProps): JSX.Element | null;
 
 // @public
 export class IconHelper {
-    static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
+    static getIconData(iconSpec: IconSpec, internalData?: Map<string, any>): string | ConditionalStringValue;
     static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
     // (undocumented)
     static get reactIconKey(): string;
@@ -2017,13 +2017,13 @@ export interface SvgPathProps extends CommonProps {
     viewBoxWidth: number;
 }
 
-// @public
+// @public @deprecated
 export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface SvgSpriteProps extends CommonProps {
     src: string;
 }

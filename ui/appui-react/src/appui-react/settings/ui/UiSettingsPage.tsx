@@ -8,7 +8,7 @@
 
 // cSpell:ignore configurableui checkmark
 
-import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg?sprite";
+import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg";
 import "./UiSettingsPage.scss";
 import * as React from "react";
 import { SettingsTabEntry } from "@itwin/core-react";
@@ -53,11 +53,14 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   const widgetOpacityDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.widgetOpacityDescription"));
   const widgetIconTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.widgetIconTitle"));
   const widgetIconDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.widgetIconDescription"));
+  const autoCollapseUnpinnedPanelsTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoCollapseUnpinnedPanelsTitle"));
+  const autoCollapseUnpinnedPanelsDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoCollapseUnpinnedPanelsDescription"));
 
   const [theme, setTheme] = React.useState(() => UiFramework.getColorTheme());
   const [uiVersion, setUiVersion] = React.useState(() => UiFramework.uiVersion);
   const [useDragInteraction, setUseDragInteraction] = React.useState(() => UiFramework.useDragInteraction);
   const [showWidgetIcon, setShowWidgetIcon] = React.useState(() => UiFramework.showWidgetIcon);
+  const [autoCollapseUnpinnedPanels, setAutoCollapseUnpinnedPanels] = React.useState(() => UiFramework.autoCollapseUnpinnedPanels);
   const [widgetOpacity, setWidgetOpacity] = React.useState(() => UiFramework.getWidgetOpacity());
   const [autoHideUi, setAutoHideUi] = React.useState(() => UiShowHideManager.autoHideUi);
   const [useProximityOpacity, setUseProximityOpacity] = React.useState(() => UiShowHideManager.useProximityOpacity);
@@ -65,7 +68,8 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
 
   React.useEffect(() => {
     const syncIdsOfInterest = ["configurableui:set_theme", "configurableui:set_widget_opacity", "configurableui:set-show-widget-icon",
-      "configurableui:set-drag-interaction", "configurableui:set-framework-version", SyncUiEventId.ShowHideManagerSettingChange];
+      "configurableui:set-drag-interaction", "configurableui:set-framework-version",
+      "configurableui:set-auto-collapse-unpinned-panels", SyncUiEventId.ShowHideManagerSettingChange];
 
     const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       // istanbul ignore else
@@ -80,6 +84,8 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
           setUseDragInteraction(UiFramework.useDragInteraction);
         if (UiFramework.showWidgetIcon !== showWidgetIcon)
           setShowWidgetIcon(UiFramework.showWidgetIcon);
+        if (UiFramework.autoCollapseUnpinnedPanels !== autoCollapseUnpinnedPanels)
+          setAutoCollapseUnpinnedPanels(UiFramework.autoCollapseUnpinnedPanels);
         if (UiFramework.getWidgetOpacity() !== widgetOpacity)
           setWidgetOpacity(UiFramework.getWidgetOpacity());
         if (UiShowHideManager.autoHideUi !== autoHideUi)
@@ -91,7 +97,8 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
       }
     };
     return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
-  }, [autoHideUi, showWidgetIcon, snapWidgetOpacity, theme, uiVersion, useDragInteraction, useProximityOpacity, widgetOpacity]);
+  }, [autoCollapseUnpinnedPanels, autoHideUi, showWidgetIcon, snapWidgetOpacity, theme, uiVersion,
+    useDragInteraction, useProximityOpacity, widgetOpacity]);
 
   const defaultThemeOption = { label: systemPreferredLabel.current, value: SYSTEM_PREFERRED_COLOR_THEME };
   const themeOptions: SelectOption<string>[] = [
@@ -119,6 +126,10 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   const onWidgetIconChange = React.useCallback(async () => {
     UiFramework.setShowWidgetIcon(!showWidgetIcon);
   }, [showWidgetIcon]);
+
+  const onAutoCollapseUnpinnedPanelsChange = React.useCallback(async () => {
+    UiFramework.setAutoCollapseUnpinnedPanels(!autoCollapseUnpinnedPanels);
+  }, [autoCollapseUnpinnedPanels]);
 
   const onWidgetOpacityChange = React.useCallback(async (values: readonly number[]) => {
     // istanbul ignore else
@@ -170,6 +181,10 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
         <SettingsItem title={widgetIconTitle.current} description={widgetIconDescription.current}
           settingUi={<ToggleSwitch checked={showWidgetIcon} onChange={onWidgetIconChange} />}
         />
+        <SettingsItem title={autoCollapseUnpinnedPanelsTitle.current} description={autoCollapseUnpinnedPanelsDescription.current}
+          settingUi={<ToggleSwitch checked={autoCollapseUnpinnedPanels} onChange={onAutoCollapseUnpinnedPanelsChange} />}
+        />
+
       </>
       }
       <SettingsItem title={widgetOpacityTitle.current} description={widgetOpacityDescription.current}
@@ -213,7 +228,7 @@ export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFr
   return {
     itemPriority, tabId: "uifw:UiStateStorage",
     label: UiFramework.translate("settings.uiSettingsPage.label"),
-    icon: IconSpecUtilities.createSvgIconSpec(widowSettingsIconSvg),
+    icon: IconSpecUtilities.createWebComponentIconSpec(widowSettingsIconSvg),
     page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,
     isDisabled: false,
     tooltip: UiFramework.translate("settings.uiSettingsPage.tooltip"),

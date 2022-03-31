@@ -71,7 +71,7 @@ export interface ToolbarItem extends ProvidedItem {
  * @public
  */
 export interface ActionButton extends ToolbarItem {
-  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix  to imported symbol Id. */
   readonly icon: string | ConditionalStringValue;
   /** label, shown as tool tip on a button or an item label in a group. */
   readonly label: string | ConditionalStringValue;
@@ -83,7 +83,7 @@ export interface ActionButton extends ToolbarItem {
  * @public
  */
 export interface GroupButton extends ToolbarItem {
-  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
   readonly icon: string | ConditionalStringValue;
   /** label, shown as tool tip on group button or a group button label in a group panel. */
   readonly label: string | ConditionalStringValue;
@@ -97,7 +97,7 @@ export interface GroupButton extends ToolbarItem {
  * @public
  */
 export interface CustomButtonDefinition extends ToolbarItem {
-  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  /** Name of icon WebFont entry or if specifying an imported SVG symbol use "webSvg:" prefix to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue;
   /** label, shown as tool tip on group button or a group button label in a group panel. */
   readonly label?: string | ConditionalStringValue;

@@ -34,12 +34,6 @@ export const MAX_ALLOWED_KEYS_PAGE_SIZE = 10000;
  * The backend implementation of PresentationRpcInterface. All it's basically
  * responsible for is forwarding calls to [[Presentation.manager]].
  *
- * Consumers should not use this class. Instead, they should register
- * [PresentationRpcInterface]($presentation-common):
- * ``` ts
- * [[include:Backend.Initialization.RpcInterface]]
- * ```
- *
  * @internal
  */
 export class PresentationRpcImpl extends PresentationRpcInterface implements IDisposable {

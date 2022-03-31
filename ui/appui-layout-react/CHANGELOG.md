@@ -1,6 +1,26 @@
 # Change Log - @itwin/appui-layout-react
 
-This log was last generated on Thu, 24 Feb 2022 15:26:55 GMT and should not be manually modified.
+This log was last generated on Tue, 29 Mar 2022 20:53:46 GMT and should not be manually modified.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:46 GMT
+
+### Updates
+
+- Add data attributes to identify item and its UI provider.
+- Update to itwinui-css version "0.44.0".
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:01 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
 
 ## 3.0.1
 Thu, 24 Feb 2022 15:26:55 GMT

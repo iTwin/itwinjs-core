@@ -208,22 +208,11 @@ const decodePosition = `
 vec4 decodePosition(vec3 baseIndex) {
   float index = decodeUInt24(baseIndex);
   vec2 tc = compute_vert_coords(index);
-  if (g_usesQuantizedPosition) {
-    vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    tc.x += g_vert_stepX;
-    vec4 e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
-    return unquantizePosition(qpos, u_qOrigin, u_qScale);
-  }
-
-  vec4 position;
-  for (int i = 0; i < 3; i++) {
-    position[i] = decodeFloat32(floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5));
-    tc.x += g_vert_stepX;
-  }
-
-  position.w = 1.0;
-  return position;
+  vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  tc.x += g_vert_stepX;
+  vec4 e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
+  return unquantizePosition(qpos, u_qOrigin, u_qScale);
 }
 `;
 
