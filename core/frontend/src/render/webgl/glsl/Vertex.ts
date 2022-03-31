@@ -27,21 +27,21 @@ const unquantizePosition = `
 vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) { return vec4(origin + scale * pos, 1.0); }
 `;
 
-export const unquantizeVertexPosition = `
-vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquantizePosition(pos, origin, scale); }
+const unquantizeVertexPosition = `
+vec4 unquantizeVertexPosition(vec3 pos) { return unquantizePosition(pos, u_qOrigin, u_qScale); }
 `;
 
 // Need to read 2 rgba values to obtain 6 16-bit integers for position
 const unquantizeVertexPositionFromLUT = `
-vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
+vec4 unquantizeVertexPosition(vec3 encodedIndex) {
   vec3 qpos = vec3(decodeUInt16(g_vertLutData0.xy), decodeUInt16(g_vertLutData0.zw), decodeUInt16(g_vertLutData1.xy));
   g_featureAndMaterialIndex = g_vertLutData2;
-  return unquantizePosition(qpos, origin, scale);
+  return unquantizePosition(qpos, u_qOrigin, u_qScale);
 }
 `;
 
 const computeUnquantizedPosition1 = `
-vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
+vec4 unquantizeVertexPosition(vec3 encodedIndex) {
   vec3 pf[4];
   pf[0] = g_vertLutData0.xyz;
   g_featureAndMaterialIndex.x = g_vertLutData0.w;
@@ -56,7 +56,7 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
 `;
 
 const computeUnquantizedPosition2 = `
-vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
+vec4 unquantizeVertexPosition(vec3 encodedIndex) {
   uvec3 vux = uvec3(g_vertLutData0.xyz);
   g_featureAndMaterialIndex.x = g_vertLutData0.w;
   uvec3 vuy = uvec3(g_vertLutData1.xyz);
@@ -318,21 +318,20 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
   vert.addFunction(unquantizePosition);
 
-  vert.addUniform("u_qScale", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_qScale", (uniform, params) => {
-      // Unquantized shaders don't use the scale.
-      // ###TODO remove this uniform and u_qOrigin from those shaders.
-      if (params.geometry.usesQuantizedPositions)
+  if (!fromLUT || "quantized" === vert.positionType) {
+    vert.addUniform("u_qScale", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_qScale", (uniform, params) => {
+        assert(params.geometry.usesQuantizedPositions);
         uniform.setUniform3fv(params.geometry.qScale);
+      });
     });
-  });
-  vert.addUniform("u_qOrigin", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_qOrigin", (uniform, params) => {
-      // If positions aren't quantized, the shader doesn't use the origin - don't bother updating it.
-      if (params.geometry.usesQuantizedPositions)
+    vert.addUniform("u_qOrigin", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_qOrigin", (uniform, params) => {
+        assert(params.geometry.usesQuantizedPositions);
         uniform.setUniform3fv(params.geometry.qOrigin);
+      });
     });
-  });
+  }
 
   if (!fromLUT) {
     vert.addFunction(unquantizeVertexPosition);
