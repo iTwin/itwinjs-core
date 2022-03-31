@@ -37,6 +37,7 @@ module.exports = {
     },
     messages: {
       forbidden: `{{kind}} "{{name}}" without one of the release tags "{{releaseTags}}".`,
+      namespace: `Namespace "{{name}}" is without an @extensions tag but one of its members has one.`,
     },
     schema: [
       {
@@ -100,55 +101,78 @@ module.exports = {
       return undefined;
     }
 
-    function checkJsDoc(declaration, node) {
-      // Only check local elements, not consumed ones
-      if (!declaration || !declaration.jsDoc)
-        return undefined;
+    // reports an error if namespace doesn't have a valid @extensions tag but a member does
+    function checkNamespaceTags(declaration, node) {
+      const tags = ts.getJSDocTags(declaration.parent);
+      if (!tags || tags.length === 0)
+        return;
 
-      for (const jsDoc of declaration.jsDoc)
-        if (jsDoc.tags) {
-          let jsDocExtensionTag = jsDoc.tags.find(tag => tag.tagName.escapedText === extensionsTag);
-          let jsDocPreviewTag = jsDoc.tags.find(tag => tag.tagName.escapedText === previewTag);
-          // Has extension API tag
-          if (jsDocExtensionTag) {
-            addToApiList(declaration, jsDocPreviewTag);
-            // Does not have any of the required release tags
-            if (!jsDoc.tags.some(tag => releaseTags.includes(tag.tagName.escapedText))) {
-              let name;
-              if (declaration.kind === ts.SyntaxKind.Constructor)
-                name = declaration.parent.symbol.escapedName;
-              else {
-                name = declaration.symbol.escapedName;
-                const parentSymbol = getParentSymbolName(declaration);
-                if (parentSymbol)
-                  name = `${parentSymbol}.${name}`;
-              }
-
-              context.report({
-                node,
-                messageId: "forbidden",
-                data: {
-                  kind: getSyntaxKindFriendlyName(declaration.kind),
-                  name,
-                  releaseTags: releaseTags,
-                }
-              });
-            }
-          }
+      for (const tag of tags) {
+        if (tag.tagName.escapedText === extensionsTag) {
+          return;
         }
+      }
+      context.report({
+        node,
+        messageId: "namespace",
+        data: {
+          name: ts.getNameOfDeclaration(declaration.parent)?.getFullText(),
+        }
+      });
     }
 
-    function checkWithParent(declaration, node) {
+    // returns true if it was added to the API without error
+    function checkJsDoc(declaration, node) {
+      if (!declaration || !declaration.jsDoc)
+        return;
+
+      const tags = ts.getJSDocTags(declaration);
+      if (!tags || tags.length === 0)
+        return;
+
+      let jsDocExtensionTag = tags.find(tag => tag?.tagName?.escapedText === extensionsTag);
+      let jsDocPreviewTag = tags.find(tag => tag?.tagName?.escapedText === previewTag);
+      // Has extension API tag
+      if (jsDocExtensionTag) {
+        addToApiList(declaration, jsDocPreviewTag);
+        const validReleaseTag = tags.some(tag => releaseTags.includes(tag?.tagName?.escapedText));
+        if (validReleaseTag) {
+          return true;
+        } else {
+          let name;
+          if (declaration.kind === ts.SyntaxKind.Constructor)
+            name = declaration.parent?.symbol?.escapedName;
+          else {
+            name = declaration.symbol?.escapedName;
+            const parentSymbol = getParentSymbolName(declaration);
+            if (parentSymbol)
+              name = `${parentSymbol}.${name}`;
+          }
+
+          context.report({
+            node,
+            messageId: "forbidden",
+            data: {
+              kind: getSyntaxKindFriendlyName(declaration.kind),
+              name,
+              releaseTags: releaseTags,
+            }
+          });
+        }
+      }
+    }
+
+    function isNamespace(declaration) {
+      return ts.isModuleBlock(declaration) && ts.isModuleDeclaration(declaration.parent);
+    }
+
+    function check(declaration, node) {
       if (!declaration)
         return;
-      checkJsDoc(declaration, node);
-      if (declaration.parent && [
-        ts.SyntaxKind.ClassDeclaration,
-        ts.SyntaxKind.EnumDeclaration,
-        ts.SyntaxKind.InterfaceDeclaration,
-        ts.SyntaxKind.ModuleDeclaration,
-      ].includes(declaration.parent.kind))
-        checkJsDoc(declaration.parent, node);
+      if (checkJsDoc(declaration, node)) {
+        if (declaration.parent && isNamespace(declaration.parent))
+          checkNamespaceTags(declaration.parent, node);
+      }
     }
 
     return {
@@ -156,49 +180,49 @@ module.exports = {
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
-        checkWithParent(tsCall, node);
+        check(tsCall, node);
       },
 
       TSExportAssignment(node) {
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
-        checkWithParent(tsCall, node);
+        check(tsCall, node);
       },
 
       TSExportKeyword(node) {
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
-        checkWithParent(tsCall, node);
+        check(tsCall, node);
       },
 
       ExportDefaultDeclaration(node) {
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
-        checkWithParent(tsCall, node);
+        check(tsCall, node);
       },
 
       ExportNamedDeclaration(node) {
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
-        checkWithParent(tsCall, node);
+        check(tsCall, node);
       },
 
       ExportAllDeclaration(node) {
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
-        checkWithParent(tsCall, node);
+        check(tsCall, node);
       },
 
       ExportSpecifier(node) {
         const tsCall = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!tsCall)
           return;
-        checkWithParent(tsCall, node);
+        check(tsCall, node);
       },
     };
   }

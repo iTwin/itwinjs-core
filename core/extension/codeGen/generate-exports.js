@@ -161,7 +161,7 @@ function collectExports(packagePath) {
   try {
     fileContents = fs.readFileSync(packagePath, "utf8");
     if (fileContents.length === 0) {
-      throw Error(`Extension api csv (${packagePath + generatedCsvPath}) is empty.`);
+      throw Error(`Extension api csv (${packagePath}) is empty.`);
     }
   } catch (error) {
     throw Error("Failed to read extension api csv, it may not exist or has no content.\n" + error);
