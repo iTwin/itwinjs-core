@@ -13980,6 +13980,8 @@ export class WmsCapabilities {
     // (undocumented)
     getSubLayersCrs(subLayerNames: string[]): Map<string, string[]> | undefined;
     // (undocumented)
+    readonly isVersion13: boolean;
+    // (undocumented)
     get json(): any;
     // (undocumented)
     readonly layer?: WmsCapability.Layer;
@@ -13995,7 +13997,7 @@ export class WmsCapabilities {
 export namespace WmsCapability {
     // (undocumented)
     export class Layer {
-        constructor(_json: any);
+        constructor(json: any, capabilities: WmsCapabilities);
         // (undocumented)
         readonly cartoRange?: MapCartoRectangle;
         // (undocumented)
@@ -14029,7 +14031,7 @@ export namespace WmsCapability {
     }
     // (undocumented)
     export class SubLayer {
-        constructor(_json: any, parent?: SubLayer | undefined);
+        constructor(_json: any, capabilities: WmsCapabilities, parent?: SubLayer | undefined);
         // (undocumented)
         readonly cartoRange?: MapCartoRectangle;
         // (undocumented)
