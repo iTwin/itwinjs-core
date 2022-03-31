@@ -8,6 +8,7 @@ import chaiSubset from "chai-subset";
 import * as cpx from "cpx2";
 import * as fs from "fs";
 import * as path from "path";
+import sinon from "sinon";
 import sinonChai from "sinon-chai";
 import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
@@ -104,6 +105,10 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   await initializeTesting(presentationTestingInitProps);
+
+  (global as any).requestAnimationFrame = sinon.fake((cb: FrameRequestCallback) => {
+    return window.setTimeout(cb, 0);
+  });
 };
 
 export const initialize = async (backendTimeout: number = 0) => {
@@ -115,6 +120,7 @@ export const initializeWithClientServices = async () => {
 };
 
 export const terminate = async () => {
+  delete (global as any).requestAnimationFrame;
   await terminateTesting();
 };
 
