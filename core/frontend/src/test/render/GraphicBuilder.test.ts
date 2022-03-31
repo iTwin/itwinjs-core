@@ -167,7 +167,7 @@ describe("GraphicBuilder", () => {
 
     function injectNormalsCheck(expectNormals: boolean): void {
       const verifyParams = (params: MeshParams) => {
-        expect(params.vertices.numRgbaPerVertex).to.equal(expectNormals ? 4 : 3);
+        expect(params.vertices.numRgbaPerVertex).to.equal(5);
       };
       const verifyGraphic = (graphic: MeshGraphic) => {
         expect(graphic.meshData.type).to.equal(expectNormals ? SurfaceType.Lit : SurfaceType.Unlit);
