@@ -25,12 +25,12 @@ export namespace CloudSqliteTest {
     const pipeline = azureBlob.newPipeline(credential);
     const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${storage.accountName}`, pipeline);
     for await (const container of containers) {
-      setSasToken(container, "racwdl");
       try {
         await blobService.deleteContainer(container.containerId);
       } catch (e) {
       }
       await blobService.createContainer(container.containerId, container.isPublic ? { access: "blob" } : undefined);
+      setSasToken(container, "racwdl");
       container.initializeContainer({ checksumBlockNames: true });
     }
   }
@@ -75,7 +75,7 @@ export namespace CloudSqliteTest {
   }
 }
 
-describe("CloudSqlite", () => {
+describe.only("CloudSqlite", () => {
   let caches: IModelJsNative.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;

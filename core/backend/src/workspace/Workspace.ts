@@ -178,7 +178,7 @@ export interface WorkspaceOpts {
   containerDir?: LocalDirName;
 
   /** Properties for the cloud cache for the `WorkspaceContainers` of the Workspace. */
-  cloudCache?: WorkspaceCloudCacheProps;
+  cloudCacheProps?: WorkspaceCloudCacheProps;
 }
 
 /**
@@ -276,7 +276,7 @@ export class ITwinWorkspace implements Workspace {
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
     this.settings = settings;
     this.containerDir = opts?.containerDir ?? join(NativeLibrary.defaultLocalDir, "iTwin", "Workspace");
-    this._cloudCacheProps = opts?.cloudCache;
+    this._cloudCacheProps = opts?.cloudCacheProps;
   }
 
   public addContainer(toAdd: ITwinWorkspaceContainer) {

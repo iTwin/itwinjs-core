@@ -23,8 +23,8 @@ describe("Cloud workspace containers", () => {
       "cloudSqlite/containerId": containerId,
     };
 
-    const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), cloudCache: { name: "test1", clearContents: true } });
-    const workspace2 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), cloudCache: { name: "test2", clearContents: true } });
+    const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), cloudCacheProps: { name: "test1", clearContents: true } });
+    const workspace2 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), cloudCacheProps: { name: "test2", clearContents: true } });
     const settings = workspace1.settings;
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 

@@ -470,7 +470,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
       const config = new IModelHostConfiguration();
       config.workspace = {
         containerDir: args.directory,
-        cloudCache: {
+        cloudCacheProps: {
           nRequests: args.nRequests,
         },
       };
