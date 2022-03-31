@@ -219,6 +219,10 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
     const frameworkState = (state as any)[UiFramework.frameworkStateKey];
     return !!frameworkState.configurableUiState.showWidgetIcon;
   });
+  const autoCollapseUnpinnedPanels = useSelector((state: FrameworkRootState) => {
+    const frameworkState = (state as any)[UiFramework.frameworkStateKey];
+    return !!frameworkState.configurableUiState.autoCollapseUnpinnedPanels;
+  });
 
   const handleKeyDown = useEscapeSetFocusToHome();
   return (
@@ -233,6 +237,7 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
         state={nineZone}
         tab={tabElement}
         showWidgetIcon={showWidgetIcon}
+        autoCollapseUnpinnedPanels={autoCollapseUnpinnedPanels}
         toolSettingsContent={toolSettingsContent}
         widgetContent={widgetContent}
       >

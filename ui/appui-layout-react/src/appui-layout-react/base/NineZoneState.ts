@@ -429,6 +429,8 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const panel = state.panels[action.side];
       const newSize = Math.min(Math.max(action.size, panel.minSize), panel.maxSize);
       state.panels[action.side].size = newSize;
+      // eslint-disable-next-line no-console
+      // console.log(`${action.side} panel resized to value of ${newSize}`);
       return;
     }
     case "PANEL_SET_SPLITTER_VALUE": {

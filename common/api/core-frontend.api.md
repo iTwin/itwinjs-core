@@ -7297,6 +7297,7 @@ export class OnScreenTarget extends Target {
     protected _assignDC(): boolean;
     // (undocumented)
     protected _beginPaint(fbo: FrameBuffer): void;
+    checkFboDimensions(): boolean;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
@@ -8237,7 +8238,7 @@ export abstract class RealityTileLoader {
     // (undocumented)
     protected get _batchType(): BatchType;
     // (undocumented)
-    static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
+    static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
     // (undocumented)
     computeTilePriority(tile: Tile, viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number;
     // (undocumented)
@@ -10247,6 +10248,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     endPerfMetricFrame(readPixels?: boolean): void;
     // (undocumented)
     endPerfMetricRecord(readPixels?: boolean): void;
+    // (undocumented)
+    protected _fbo?: FrameBuffer;
     // (undocumented)
     get flashed(): Id64.Uint32Pair | undefined;
     // (undocumented)
@@ -13927,6 +13930,8 @@ export class WmsCapabilities {
     // (undocumented)
     getSubLayersCrs(subLayerNames: string[]): Map<string, string[]> | undefined;
     // (undocumented)
+    readonly isVersion13: boolean;
+    // (undocumented)
     get json(): any;
     // (undocumented)
     readonly layer?: WmsCapability.Layer;
@@ -13942,7 +13947,7 @@ export class WmsCapabilities {
 export namespace WmsCapability {
     // (undocumented)
     export class Layer {
-        constructor(_json: any);
+        constructor(json: any, capabilities: WmsCapabilities);
         // (undocumented)
         readonly cartoRange?: MapCartoRectangle;
         // (undocumented)
@@ -13976,7 +13981,7 @@ export namespace WmsCapability {
     }
     // (undocumented)
     export class SubLayer {
-        constructor(_json: any, parent?: SubLayer | undefined);
+        constructor(_json: any, capabilities: WmsCapabilities, parent?: SubLayer | undefined);
         // (undocumented)
         readonly cartoRange?: MapCartoRectangle;
         // (undocumented)

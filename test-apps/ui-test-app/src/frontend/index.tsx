@@ -336,7 +336,9 @@ export class SampleAppIModelApp {
         dragInteraction: false,
         frameworkVersion: "2",
         widgetOpacity: 0.8,
-        showWidgetIcon: true };
+        showWidgetIcon: true,
+        autoCollapseUnpinnedPanels: false,
+      };
 
       // initialize any settings providers that may need to have defaults set by iModelApp
       UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
