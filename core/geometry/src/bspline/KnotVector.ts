@@ -12,38 +12,34 @@ import { Geometry } from "../Geometry";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
 /**
- * Enumeration of the possible ways of converting a "periodic" knot vector to an open knot vector.
- * None (0) ==> no wrap possible
- * OpenByAddingControlPoints (1)  ==> wrapped by adding poles
- * OpenByRemovingKnots (2)  ==> wrapped by deleting extreme knots.
+ * Enumeration of the possible ways the B-spline was converted from legacy periodic data.
  * @public
  */
 export enum BSplineWrapMode {
-  /** No conversion to periodic */
+  /** No conversion performed. */
   None = 0,
-  /** Convert to periodic by removing control points.  This is typical for closed bcurve constructed by control points with maximum continuity.
-   * * Knots stay the same in open and periodic form.
-   * * Periodic form omits {degree} control points.
+  /** The periodic B-spline was opened up by adding degree wrap-around control points.
+   * * This is typical for periodic B-splines constructed with maximum continuity.
+   * * Knots are unaffected by this conversion.
    */
   OpenByAddingControlPoints = 1,
-  /** Convert to periodic by adding special knots.  This is typical of closed bcurve constructed as exact circular or elliptic arc
-   * * 2 knots on each end are omitted in open form
-   * * poles stay the same.
+  /** The periodic B-spline was opened up by removing degree extreme knots.
+   * * This is typical of closed B-splines constructed as exact circular or elliptical arcs.
+   * * Poles are unaffected by this conversion.
    */
   OpenByRemovingKnots = 2,
 }
 /**
- * Array of non-decreasing numbers acting as a knot array for bsplines.
+ * Array of non-decreasing numbers acting as a knot array for B-splines.
  *
  * * Essential identity: numKnots = numPoles + order - 2 = numPoles + degree - 1
- * * Various bspline libraries have confusion over how many "end knots" are needed. "Many" libraries (including MicroStation)
- *     incorrectly demand "order" knots at each end for clamping.   But only "order - 1" are really needed.
- * * This class uses the "order-1" convention.
- * * This class provides queries to convert among spanIndex and knotIndex
+ * * Various B-spline libraries have confusion over how many "end knots" are needed. Many libraries (including MicroStation)
+ * demand order knots at each end for clamping. But only order-1 are really needed. This class uses the order-1 convention.
+ * * This class provides queries to convert among spanIndex and knotIndex.
  * * A span is a single interval of the knots.
- * * The left knot of span {k} is knot {k+degree-1}
- * * This class provides queries to convert among spanFraction, fraction of knot range, and knot
- * * core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs.  Callers need to
+ * * The left knot of span {k} is knot {k+degree-1}.
+ * * This class provides queries to convert among spanFraction, fraction of knot range, and knot.
+ * * Core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs.  Callers need to
  * know their primary values (global knot, spanFraction).
  * @public
  */
@@ -66,7 +62,7 @@ export class KnotVector {
   public get leftKnotIndex() { return this.degree - 1; }
   /** Return the index of the rightmost knot of the active interval */
   public get rightKnotIndex() { return this.knots.length - this.degree; }
-  /** Whether the bspline was created by adding poles into "closed" structure. This is used by serialize/deserialize to mark knotVector's that were converted from periodic style. */
+  /** Whether this KnotVector was created by converting legacy periodic data during deserialization. The conversion used is specified by BSplineWrapMode, and is reversed at serialization time. */
   public get wrappable() { return this._wrapMode === undefined ? BSplineWrapMode.None : this._wrapMode; }
   public set wrappable(value: BSplineWrapMode) { this._wrapMode = value; }
   /** Return the number of bezier spans.  Note that this includes zero-length spans if there are repeated knots. */
@@ -119,7 +115,7 @@ export class KnotVector {
     const indexDelta = rightKnotIndex - leftKnotIndex;
     // maximum continuity mode .  . .
     if (mode === BSplineWrapMode.OpenByAddingControlPoints) {
-      for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
+      for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree; k0++) {
         const k1 = k0 + indexDelta;
         if (!Geometry.isSameCoordinate(this.knots[k0] + period, this.knots[k1]))
           return false;

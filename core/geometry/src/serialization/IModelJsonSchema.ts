@@ -795,7 +795,7 @@ export namespace IModelJson {
     private static getCorrectedKnotsForClosedClamped(numPoles: number, knots: number[], order: number, newKnots: number[]): boolean {
       const numKnots = knots.length;
       if (numPoles + 2 * order - 1 === numKnots
-        && knots[0] < knots[1]
+        && knots[0] < knots[1]                            // START HERE: this is the DGN fake-closed case. It currently only works for quadratic! Need to generalize. Rule out linear, which is OpenByAddingControlPoints.
         && knots[numKnots - 2] < knots[numKnots - 1]) {
         const a0 = knots[1];
         const a1 = knots[numKnots - 2];
@@ -872,14 +872,14 @@ export namespace IModelJson {
       return undefined;
     }
 
-    /** Parse `bcurve` content (right side)to  BSplineCurve3d or BSplineCurve3dH object. */
+    /** Parse `bcurve` content to an InterpolationCurve3d object. */
     public static parseInterpolationCurve(data?: any): InterpolationCurve3d | undefined {
       if (data === undefined)
         return undefined;
       return InterpolationCurve3d.create(data);
     }
 
-    /** Parse `bcurve` content (right side)to an Akima curve object. */
+    /** Parse `bcurve` content to an Akima curve object. */
     public static parseAkimaCurve3d(data?: any): AkimaCurve3d | undefined {
       if (data === undefined)
         return undefined;
@@ -1919,25 +1919,26 @@ export namespace IModelJson {
             order: curve.order,
           },
         };
-      } else if (curve.isClosable === BSplineWrapMode.OpenByRemovingKnots) {
-        // special case to re-close the case that originated as :    a a0 a0 .. a0 knot0 knot1 knot2 ... b1 b1 .. b1 b
-        // with (order) copies of a0 and b1 (usually 0 and 1)
-        // and a,b are related to the interior knots
-        // (This is the "bezier saturated arc")
+      } else if (wrapMode === BSplineWrapMode.OpenByRemovingKnots) {
+        // re-close the case that originated as: {a_i} {startKnot} interiorKnots {endKnot} {b_i}
+        // startKnot and endKnot have multiplicity order (usually they are 0 and 1)
+        // a_i are order/2 knots periodically extended before startKnot
+        // b_i are degree/2 knots periodically extended after endKnot
         const rawKnots = curve.copyKnots(false); // unchanged knots . . .
         const poles = curve.copyPoints();
-        const degree = curve.degree;
-        const leftIndex = degree - 1;
-        const rightIndex = rawKnots.length - degree;
+        const leftIndex = curve.degree - 1;
+        const rightIndex = rawKnots.length - curve.degree;
         const leftKnot = rawKnots[leftIndex];
         const rightKnot = rawKnots[rightIndex];
         const knotPeriod = rightKnot - leftKnot;
         const knots = [];
-        knots.push(rawKnots[rightIndex - 1] - knotPeriod);
-        knots.push(leftKnot);
+        for (let i = 0; i < Math.floor(curve.order / 2); ++i)
+          knots.push(rawKnots[rightIndex - i - 1] - knotPeriod);
+        knots.push(leftKnot);   // extra start knot of classic over-clamping
         for (const k of rawKnots) knots.push(k);
-        knots.push(rightKnot);
-        knots.push(rawKnots[leftIndex + 1] + knotPeriod);
+        knots.push(rightKnot);  // extra end knot of classic over-clamping
+        for (let i = 0; i < Math.floor(curve.degree / 2); ++i)
+          knots.push(rawKnots[leftIndex + i + 1] + knotPeriod);
         return {
           bcurve: {
             points: poles,
