@@ -151,7 +151,12 @@ function fixVersionArg(args: WorkspaceDbOpt) {
 /** Open for write, call a function to process, then close a WorkspaceDb */
 async function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: EditableWorkspaceDb, args: T) => void) {
   fixVersionArg(args);
-  processWorkspace(args, new EditableWorkspaceDb(args, await getContainer(args)), fn);
+
+  const ws = new EditableWorkspaceDb(args, await getContainer(args));
+  if (ws.container.cloudContainer?.queryDatabase(ws.dbFileName)?.state !== "copied")
+    throw new Error(`${args.dbFileName} is not editable. Create a new version first`);
+
+  processWorkspace(args, ws, fn);
 }
 
 /** Open for read, call a function to process, then close a WorkspaceDb */
@@ -448,7 +453,8 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
     if (db) {
       const dirty = db.dirtyBlocks ? `, ${db.dirtyBlocks} dirty` : "";
       const pinned = db.pinned !== 0 ? ", pinned" : "";
-      console.log(` "${dbName}", size=${db.totalBlocks * 4}Mb, ${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}% downloaded${dirty}${pinned}`);
+      const editable = db.state === "copied" ? ", editable" : "";
+      console.log(` "${dbName}", size=${db.totalBlocks * 4}Mb, ${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}% downloaded${editable}${dirty}${pinned}`);
     }
   }
 }
@@ -471,7 +477,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
       await IModelHost.startup(config);
       if (true === args.logging) {
         Logger.initializeToConsole();
-        Logger.setLevel("CloudSqlite", LogLevel.Info);
+        Logger.setLevel("CloudSqlite", LogLevel.Trace);
         IModelHost.appWorkspace.cloudCache?.setLogMask(0xff);
         timer = setInterval(() => IModelHost.platform.flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
       }

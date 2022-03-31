@@ -775,13 +775,16 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "@d:/temp/editworkpace.txt",
+        "queryDbs",
         "--config=d:/temp/workspaceEditor.json"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",
         "${workspaceFolder}/core/*/lib/**/*.js",
-      ]
+      ],
+      "env": {
+        "WORKSPACE_EDITOR_LOGGING": "true",
+      }
     },
     {
       "name": "imodel-transformer (app)",
