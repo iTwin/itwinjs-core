@@ -23,17 +23,18 @@ const initializeVertLUTCoords = `
   g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);
 `;
 
-const unquantizePosition = `
+/** @internal */
+export const unquantizePosition = `
 vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) { return vec4(origin + scale * pos, 1.0); }
 `;
 
-const unquantizeVertexPosition = `
-vec4 unquantizeVertexPosition(vec3 pos) { return unquantizePosition(pos, u_qOrigin, u_qScale); }
+const computeQuantizedPosition = `
+vec4 computeVertexPosition(vec3 pos) { return unquantizePosition(pos, u_qOrigin, u_qScale); }
 `;
 
 // Need to read 2 rgba values to obtain 6 16-bit integers for position
-const unquantizeVertexPositionFromLUT = `
-vec4 unquantizeVertexPosition(vec3 encodedIndex) {
+const computeVertexPositionFromLUT = `
+vec4 computeVertexPosition(vec3 encodedIndex) {
   vec3 qpos = vec3(decodeUInt16(g_vertLutData0.xy), decodeUInt16(g_vertLutData0.zw), decodeUInt16(g_vertLutData1.xy));
   g_featureAndMaterialIndex = g_vertLutData2;
   return unquantizePosition(qpos, u_qOrigin, u_qScale);
@@ -41,7 +42,7 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex) {
 `;
 
 const computeUnquantizedPosition1 = `
-vec4 unquantizeVertexPosition(vec3 encodedIndex) {
+vec4 computeVertexPosition(vec3 encodedIndex) {
   vec3 pf[4];
   pf[0] = g_vertLutData0.xyz;
   g_featureAndMaterialIndex.x = g_vertLutData0.w;
@@ -56,7 +57,7 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex) {
 `;
 
 const computeUnquantizedPosition2 = `
-vec4 unquantizeVertexPosition(vec3 encodedIndex) {
+vec4 computeVertexPosition(vec3 encodedIndex) {
   uvec3 vux = uvec3(g_vertLutData0.xyz);
   g_featureAndMaterialIndex.x = g_vertLutData0.w;
   uvec3 vuy = uvec3(g_vertLutData1.xyz);
@@ -283,7 +284,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
       vert.addFunction(computeUnquantizedPosition1);
     }
   } else {
-    vert.addFunction(unquantizeVertexPositionFromLUT);
+    vert.addFunction(computeVertexPositionFromLUT);
   }
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
@@ -316,9 +317,8 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
 /** @internal */
 export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
-  vert.addFunction(unquantizePosition);
-
   if (!fromLUT || "quantized" === vert.positionType) {
+    vert.addFunction(unquantizePosition);
     vert.addUniform("u_qScale", VariableType.Vec3, (prog) => {
       prog.addGraphicUniform("u_qScale", (uniform, params) => {
         assert(params.geometry.usesQuantizedPositions);
@@ -334,7 +334,7 @@ export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
   }
 
   if (!fromLUT) {
-    vert.addFunction(unquantizeVertexPosition);
+    vert.addFunction(computeQuantizedPosition);
   } else {
     addPositionFromLUT(vert);
   }
