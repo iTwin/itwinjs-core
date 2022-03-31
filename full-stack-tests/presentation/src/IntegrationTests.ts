@@ -106,7 +106,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
 
   await initializeTesting(presentationTestingInitProps);
 
-  global.requestAnimationFrame = sinon.fake((cb: FrameRequestCallback) => {
+  (global as any).requestAnimationFrame = sinon.fake((cb: FrameRequestCallback) => {
     return window.setTimeout(cb, 0);
   });
 };
