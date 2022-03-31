@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -38,10 +38,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.1.0",
-    "@itwin/core-common": "workspace:^3.1.0",
-    "@itwin/core-geometry": "workspace:^3.1.0",
-    "@itwin/ecschema-metadata": "workspace:^3.1.0"
+    "@itwin/core-bentley": "workspace:^3.1.1",
+    "@itwin/core-common": "workspace:^3.1.1",
+    "@itwin/core-geometry": "workspace:^3.1.1",
+    "@itwin/ecschema-metadata": "workspace:^3.1.1"
   },
   "peerDependenciesMeta": {
     "@itwin/ecschema-metadata": {
