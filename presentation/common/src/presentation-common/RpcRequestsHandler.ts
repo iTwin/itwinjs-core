@@ -6,8 +6,9 @@
  * @module RPC
  */
 
-import { Guid, Id64String, IDisposable } from "@itwin/core-bentley";
+import { Guid, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcManager } from "@itwin/core-common";
+import { PresentationCommonLoggerCategory } from "./CommonLoggerCategory";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
@@ -229,8 +230,7 @@ function cleanupRuleset(ruleset: Ruleset): Ruleset {
       if (propertyKey === "$schema")
         delete (cleanedUpRuleset as any)[propertyKey];
       else
-        // eslint-disable-next-line no-console
-        console.warn(`Provided ruleset contains unrecognized attribute '${propertyKey}'. It either doesn't exist or may be no longer supported.`);
+        Logger.logWarning(PresentationCommonLoggerCategory.Package, `Provided ruleset contains unrecognized attribute '${propertyKey}'. It either doesn't exist or may be no longer supported.`);
     }
   }
 

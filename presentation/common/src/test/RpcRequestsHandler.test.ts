@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
 import {
   DescriptorOverrides, DistinctValuesRpcRequestOptions, KeySet, KeySetJSON, Paged, PresentationError, PresentationRpcInterface,
@@ -100,7 +100,7 @@ describe("RpcRequestsHandler", () => {
       });
 
       it("removes redundant ruleset properties", async () => {
-        const func = sinon.stub(console, "warn");
+        const func = sinon.stub(Logger, "logWarning");
 
         const options = {
           rulesetOrId: {
