@@ -103,6 +103,10 @@ export class RpcRequestsHandler implements IDisposable {
     throw error;
   }
 
+  private static hasOwnProperty<X extends {}, Y extends PropertyKey>(obj: X, prop: Y): obj is X & Record<Y, unknown> {
+    return obj.hasOwnProperty(prop);
+  }
+
   /**
    * Send the request to backend.
    *
@@ -118,6 +122,16 @@ export class RpcRequestsHandler implements IDisposable {
     ...additionalOptions: TArg[]): Promise<TResult> {
     const { imodel, diagnostics, ...optionsNoIModel } = options;
     const { handler: diagnosticsHandler, ...diagnosticsOptions } = diagnostics ?? {};
+
+    if (RpcRequestsHandler.hasOwnProperty(optionsNoIModel, "rulesetOrId") && typeof optionsNoIModel.rulesetOrId === "object" && optionsNoIModel.rulesetOrId) {
+      const rulesetProperties = ["version", "requiredSchemas", "supplementationInfo", "vars", "id", "rules"];
+
+      for (const propertyKey of Object.keys(optionsNoIModel.rulesetOrId)) {
+        if (rulesetProperties.indexOf(propertyKey) === -1)
+          delete optionsNoIModel.rulesetOrId[propertyKey as keyof typeof optionsNoIModel.rulesetOrId];
+      }
+    }
+
     const rpcOptions: PresentationRpcRequestOptions<TOptions> = {
       ...optionsNoIModel,
       clientId: this.clientId,

@@ -99,6 +99,25 @@ describe("RpcRequestsHandler", () => {
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
       });
 
+      it("removes redundant ruleset properties", async () => {
+        const options = {
+          rulesetOrId: {
+            property: "abc",
+            id: "id",
+            rules: [],
+          },
+          imodel: token,
+        };
+
+        const actualResult = await handler.request(async (_: IModelRpcProps, hierarchyOptions: HierarchyRpcRequestOptions) => {
+          return successResponse(hierarchyOptions.rulesetOrId);
+        }, options);
+
+        expect(actualResult.hasOwnProperty("property")).to.eq(false);
+        expect(actualResult.hasOwnProperty("id")).to.eq(true);
+        expect(actualResult.hasOwnProperty("rules")).to.eq(true);
+      });
+
     });
 
     describe("when request throws unknown exception", () => {
