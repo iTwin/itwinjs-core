@@ -2285,6 +2285,7 @@ class MPCompositor extends Compositor {
         if (needAO)
           this._primitiveDrawState = PrimitiveDrawState.NonPickable;
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
+        this._primitiveDrawState = PrimitiveDrawState.Both;
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
     }
