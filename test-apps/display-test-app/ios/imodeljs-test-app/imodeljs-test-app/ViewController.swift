@@ -41,9 +41,9 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
     
         let host = IModelJsHost.sharedInstance();
         
-        let frontProvider = "http://192.168.18.38:3000";
+//        let frontProvider = "http://192.168.18.38:3000";
 
-        //let frontProvider = "imodeljs://app";
+        let frontProvider = "imodeljs://app";
 
         var queryParam = String(format: "#port=%u&platform=ios", host.getPort());
         if (bimFile != nil) {
