@@ -23,7 +23,7 @@ import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, Paged, RequestOptions, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
+  HierarchyRequestOptions, Paged, RequestOptions, RequestOptionsWithRuleset, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import {
   ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
@@ -119,8 +119,8 @@ export class RpcRequestsHandler implements IDisposable {
     ...additionalOptions: TArg[]): Promise<TResult> {
     const { imodel, diagnostics, ...optionsNoIModel } = options;
     const { handler: diagnosticsHandler, ...diagnosticsOptions } = diagnostics ?? {};
-    if (typeof (optionsNoIModel as any).rulesetOrId === "object")
-      (optionsNoIModel as any).rulesetOrId = cleanupRuleset((optionsNoIModel as any).rulesetOrId);
+    if (isOptionsWithRuleset(optionsNoIModel))
+      optionsNoIModel.rulesetOrId = cleanupRuleset(optionsNoIModel.rulesetOrId);
     const rpcOptions: PresentationRpcRequestOptions<TOptions> = {
       ...optionsNoIModel,
       clientId: this.clientId,
@@ -204,6 +204,10 @@ export class RpcRequestsHandler implements IDisposable {
   }
 }
 
+function isOptionsWithRuleset(options: Object): options is { rulesetOrId: Ruleset} {
+  return (typeof (options as RequestOptionsWithRuleset<any, any>).rulesetOrId === "object");
+}
+
 type RulesetWithRequiredProperties = {
   [key in keyof Ruleset]-?: true;
 };
@@ -217,13 +221,13 @@ const RULESET_SUPPORTED_PROPERTIES_OBJ: RulesetWithRequiredProperties = {
   vars: true,
 };
 
-function cleanupRuleset(ruleset: any): any {
-  const cleanedUpRuleset: any = { ...ruleset };
+function cleanupRuleset(ruleset: Ruleset): Ruleset {
+  const cleanedUpRuleset: Ruleset = { ...ruleset };
 
   for (const propertyKey of Object.keys(cleanedUpRuleset)) {
     if (!RULESET_SUPPORTED_PROPERTIES_OBJ.hasOwnProperty(propertyKey)) {
       if (propertyKey === "$schema")
-        delete cleanedUpRuleset[propertyKey];
+        delete (cleanedUpRuleset as any)[propertyKey];
       else
         // eslint-disable-next-line no-console
         console.warn(`Provided ruleset contains unrecognized attribute '${propertyKey}'. It either doesn't exist or may be no longer supported.`);
