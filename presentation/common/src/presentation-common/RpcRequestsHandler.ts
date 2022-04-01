@@ -120,7 +120,7 @@ export class RpcRequestsHandler implements IDisposable {
     const { imodel, diagnostics, ...optionsNoIModel } = options;
     const { handler: diagnosticsHandler, ...diagnosticsOptions } = diagnostics ?? {};
     if (typeof (optionsNoIModel as any).rulesetOrId === "object")
-      RpcRequestsHandler.removeUnneededPropertiesFromRuleset((optionsNoIModel as any).rulesetOrId);
+      (optionsNoIModel as any).rulesetOrId = cleanupRuleset((optionsNoIModel as any).rulesetOrId);
     const rpcOptions: PresentationRpcRequestOptions<TOptions> = {
       ...optionsNoIModel,
       clientId: this.clientId,
@@ -202,29 +202,33 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId);
   }
+}
 
-  private static removeUnneededPropertiesFromRuleset(ruleset: any) {
-    type RulesetWithRequiredProperties = {
-      [key in keyof Ruleset]-?: true;
-    };
+type RulesetWithRequiredProperties = {
+  [key in keyof Ruleset]-?: true;
+};
 
-    const rulesetWithRequiredProperties: RulesetWithRequiredProperties = {
-      id: true,
-      rules: true,
-      version: true,
-      requiredSchemas: true,
-      supplementationInfo: true,
-      vars: true,
-    };
+const RULESET_SUPPORTED_PROPERTIES_OBJ: RulesetWithRequiredProperties = {
+  id: true,
+  rules: true,
+  version: true,
+  requiredSchemas: true,
+  supplementationInfo: true,
+  vars: true,
+};
 
-    for (const propertyKey of Object.keys(ruleset)) {
-      if (!rulesetWithRequiredProperties.hasOwnProperty(propertyKey)) {
-        if (propertyKey === "$schema")
-          delete ruleset[propertyKey];
-        else
-          // eslint-disable-next-line no-console
-          console.warn(`Ruleset class does not have an attribute '${propertyKey}'. It will soon no longer be supported.`);
-      }
+function cleanupRuleset(ruleset: any): any {
+  const cleanedUpRuleset: any = { ...ruleset };
+
+  for (const propertyKey of Object.keys(cleanedUpRuleset)) {
+    if (!RULESET_SUPPORTED_PROPERTIES_OBJ.hasOwnProperty(propertyKey)) {
+      if (propertyKey === "$schema")
+        delete cleanedUpRuleset[propertyKey];
+      else
+        // eslint-disable-next-line no-console
+        console.warn(`Provided ruleset contains unrecognized attribute '${propertyKey}'. It either doesn't exist or may be no longer supported.`);
     }
   }
+
+  return cleanedUpRuleset;
 }
