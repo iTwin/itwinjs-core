@@ -187,7 +187,6 @@ export class GeometryAccumulator {
     for (const mesh of meshes) {
       const verts = mesh.points;
       if (branch.isEmpty) {
-        assert(transformOrigin === undefined);
         if (verts instanceof QPoint3dList) {
           transformOrigin = verts.params.origin.clone();
           verts.params.origin.setZero();

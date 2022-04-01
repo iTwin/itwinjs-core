@@ -555,6 +555,8 @@ export class AppUiSettings implements UserSettingsProvider {
     // (undocumented)
     apply(storage: UiStateStorage): Promise<void>;
     // (undocumented)
+    autoCollapseUnpinnedPanels: UiStateEntry<boolean>;
+    // (undocumented)
     colorTheme: UiStateEntry<string>;
     // (undocumented)
     dragInteraction: UiStateEntry<boolean>;
@@ -1154,6 +1156,8 @@ export class ConfigurableCreateInfo {
 
 // @public
 export enum ConfigurableUiActionId {
+    // @alpha (undocumented)
+    AutoCollapseUnpinnedPanels = "configurableui:set-auto-collapse-unpinned-panels",
     // (undocumented)
     SetDragInteraction = "configurableui:set-drag-interaction",
     // (undocumented)
@@ -1181,6 +1185,7 @@ export const ConfigurableUiActions: {
     setDragInteraction: (dragInteraction: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetDragInteraction, boolean>;
     setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetFrameworkVersion, FrameworkVersionId>;
     setShowWidgetIcon: (showWidgetIcon: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetShowWidgetIcon, boolean>;
+    setAutoCollapseUnpinnedPanels: (autoCollapse: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>;
     setViewOverlayDisplay: (displayViewOverlay: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetViewOverlayDisplay, boolean>;
 };
 
@@ -1273,6 +1278,8 @@ export function ConfigurableUiReducer(state: ConfigurableUiState | undefined, ac
 
 // @public
 export interface ConfigurableUiState {
+    // @alpha (undocumented)
+    autoCollapseUnpinnedPanels: boolean;
     // (undocumented)
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
@@ -2364,7 +2371,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.AutoCollapseUnpinnedPanels, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -3294,6 +3301,8 @@ export function Indicator(props: IndicatorProps): JSX.Element;
 
 // @public
 export interface InitialAppUiSettings {
+    // @alpha (undocumented)
+    autoCollapseUnpinnedPanels?: boolean;
     // (undocumented)
     colorTheme: string;
     // (undocumented)
@@ -6761,6 +6770,8 @@ export interface UiDataProvidedDialogProps {
 
 // @public
 export class UiFramework {
+    // @alpha (undocumented)
+    static get autoCollapseUnpinnedPanels(): boolean;
     // (undocumented)
     static get backstageManager(): BackstageManager;
     // (undocumented)
@@ -6830,6 +6841,8 @@ export class UiFramework {
     static setActiveIModelId(iModelId: string): void;
     // (undocumented)
     static setActiveSelectionScope(selectionScopeId: string): void;
+    // @alpha
+    static setAutoCollapseUnpinnedPanels(value: boolean): void;
     // (undocumented)
     static setColorTheme(theme: string): void;
     // (undocumented)

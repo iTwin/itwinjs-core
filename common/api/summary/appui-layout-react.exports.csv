@@ -10,6 +10,7 @@ internal;addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide, panel
 internal;AppButton 
 internal;AppButtonProps 
 internal;AppContent: React.NamedExoticComponent
+internal;AutoCollapseUnpinnedPanelsContext: React.Context
 internal;BackArrow 
 internal;BackArrowProps 
 internal;BackButton 

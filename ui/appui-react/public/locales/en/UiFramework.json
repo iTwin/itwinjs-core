@@ -164,7 +164,9 @@
       "widgetOpacityTitle": "Widget Opacity",
       "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets",
       "widgetIconTitle": "Show Icon on Widget Tab",
-      "widgetIconDescription": "If widget panel less 320 pixels wide then only icons will display on widget tab."
+      "widgetIconDescription": "If widget panel less 320 pixels wide then only icons will display on widget tab.",
+      "autoCollapseUnpinnedPanelsTitle": "Auto Collapse Unpinned Panels",
+      "autoCollapseUnpinnedPanelsDescription": "Collapse unpinned widget panels when mouse leaves panel boundary. If false, mouse down outside is required."
     }
   },
   "tools": {
