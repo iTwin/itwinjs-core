@@ -113,9 +113,9 @@ describe("RpcRequestsHandler", () => {
           return successResponse(hierarchyOptions.rulesetOrId);
         }, options);
 
-        expect(actualResult.hasOwnProperty("property")).to.eq(false);
-        expect(actualResult.hasOwnProperty("id")).to.eq(true);
-        expect(actualResult.hasOwnProperty("rules")).to.eq(true);
+        expect(actualResult.hasOwnProperty("property")).to.be.false;
+        expect(actualResult.hasOwnProperty("id")).to.be.true;
+        expect(actualResult.hasOwnProperty("rules")).to.be.true;
       });
 
     });
