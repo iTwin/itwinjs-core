@@ -95,6 +95,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-telemetry': workspace:*
+      '@itwin/core-webpack-tools': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': ^4.1.4
@@ -119,11 +120,14 @@ importers:
       json5: ^2.2.0
       mocha: ^8.3.2
       multiparty: ^4.2.1
+      null-loader: ^0.1.1
       nyc: ^15.1.0
       rimraf: ^3.0.2
       semver: ^5.5.0
       sinon: ^9.0.2
+      source-map-loader: ^1.0.0
       typescript: ~4.4.0
+      webpack: 4.42.0
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.9.0
@@ -141,6 +145,7 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-geometry': link:../geometry
+      '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.3.0
@@ -160,10 +165,13 @@ importers:
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
+      null-loader: 0.1.1
       nyc: 15.1.0
       rimraf: 3.0.2
       sinon: 9.2.4
+      source-map-loader: 1.1.3_webpack@4.42.0
       typescript: 4.4.4
+      webpack: 4.42.0
 
   ../../core/bentley:
     specifiers:

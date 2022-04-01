@@ -420,10 +420,6 @@ export namespace Mesh { // eslint-disable-line no-redeclare
     features?: Mesh.Features;
     type: Mesh.PrimitiveType;
     range: Range3d;
-    /** @note Support for unquantized positions has been temporarily, partially reverted - graphics that use them
-     * will not currently display properly.
-     * For now, always specify `true`.
-     */
     quantizePositions: boolean;
     is2d: boolean;
     isPlanar: boolean;

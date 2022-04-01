@@ -350,6 +350,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
   public onSelectionSetChanged(_iModel: IModelConnection) {
     for (const vp of this)
       vp.markSelectionSetDirty();
+
+    IModelApp.requestNextAnimation();
   }
 
   /** @internal */

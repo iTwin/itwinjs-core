@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-react
 
-This log was last generated on Fri, 25 Mar 2022 15:10:02 GMT and should not be manually modified.
+This log was last generated on Thu, 31 Mar 2022 15:55:48 GMT and should not be manually modified.
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Add ability to keep Dialog within application window.
+- Update to itwinui-css version "0.44.0".
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react - requires new compile option allowSyntheticDefaultImports=true.
 
 ## 3.0.3
 Fri, 25 Mar 2022 15:10:02 GMT

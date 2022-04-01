@@ -193,6 +193,7 @@ describe("ConfigurableUiReducer", () => {
       useDragInteraction: false,
       frameworkVersion: "2",
       showWidgetIcon: true,
+      autoCollapseUnpinnedPanels: true,
       viewOverlayDisplay: true,
     };
 
@@ -216,6 +217,9 @@ describe("ConfigurableUiReducer", () => {
 
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setShowWidgetIcon(false));
     expect(outState.showWidgetIcon).to.be.eql(false);
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setAutoCollapseUnpinnedPanels(false));
+    expect(outState.autoCollapseUnpinnedPanels).to.be.eql(false);
 
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setViewOverlayDisplay(false));
     expect(outState.viewOverlayDisplay).to.be.false;

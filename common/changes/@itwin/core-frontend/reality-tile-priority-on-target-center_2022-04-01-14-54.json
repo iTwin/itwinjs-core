@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Use zoom target on reality tile priority calculation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
