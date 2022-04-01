@@ -28,6 +28,7 @@ import {
 import {
   ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
 } from "./PresentationRpcInterface";
+import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
 import { PagedResponse } from "./Utils";
@@ -103,10 +104,6 @@ export class RpcRequestsHandler implements IDisposable {
     throw error;
   }
 
-  private static hasOwnProperty<X extends {}, Y extends PropertyKey>(obj: X, prop: Y): obj is X & Record<Y, unknown> {
-    return obj.hasOwnProperty(prop);
-  }
-
   /**
    * Send the request to backend.
    *
@@ -122,16 +119,8 @@ export class RpcRequestsHandler implements IDisposable {
     ...additionalOptions: TArg[]): Promise<TResult> {
     const { imodel, diagnostics, ...optionsNoIModel } = options;
     const { handler: diagnosticsHandler, ...diagnosticsOptions } = diagnostics ?? {};
-
-    if (RpcRequestsHandler.hasOwnProperty(optionsNoIModel, "rulesetOrId") && typeof optionsNoIModel.rulesetOrId === "object" && optionsNoIModel.rulesetOrId) {
-      const rulesetProperties = ["version", "requiredSchemas", "supplementationInfo", "vars", "id", "rules"];
-
-      for (const propertyKey of Object.keys(optionsNoIModel.rulesetOrId)) {
-        if (rulesetProperties.indexOf(propertyKey) === -1)
-          delete optionsNoIModel.rulesetOrId[propertyKey as keyof typeof optionsNoIModel.rulesetOrId];
-      }
-    }
-
+    if (typeof (optionsNoIModel as any).rulesetOrId === "object")
+      RpcRequestsHandler.removeUnneededPropertiesFromRuleset((optionsNoIModel as any).rulesetOrId);
     const rpcOptions: PresentationRpcRequestOptions<TOptions> = {
       ...optionsNoIModel,
       clientId: this.clientId,
@@ -212,5 +201,30 @@ export class RpcRequestsHandler implements IDisposable {
   public async computeSelection(options: SelectionScopeRequestOptions<IModelRpcProps>, ids: Id64String[], scopeId: string): Promise<KeySetJSON> {
     return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient.computeSelection.bind(this.rpcClient), options, ids, scopeId);
+  }
+
+  private static removeUnneededPropertiesFromRuleset(ruleset: any) {
+    type RulesetWithRequiredProperties = {
+      [key in keyof Ruleset]-?: true;
+    };
+
+    const rulesetWithRequiredProperties: RulesetWithRequiredProperties = {
+      id: true,
+      rules: true,
+      version: true,
+      requiredSchemas: true,
+      supplementationInfo: true,
+      vars: true,
+    };
+
+    for (const propertyKey of Object.keys(ruleset)) {
+      if (!rulesetWithRequiredProperties.hasOwnProperty(propertyKey)) {
+        if (propertyKey === "$schema")
+          delete ruleset[propertyKey];
+        else
+          // eslint-disable-next-line no-console
+          console.warn(`Ruleset class does not have an attribute '${propertyKey}'. It will soon no longer be supported.`);
+      }
+    }
   }
 }

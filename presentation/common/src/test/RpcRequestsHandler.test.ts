@@ -100,9 +100,12 @@ describe("RpcRequestsHandler", () => {
       });
 
       it("removes redundant ruleset properties", async () => {
+        const func = sinon.stub(console, "warn");
+
         const options = {
           rulesetOrId: {
             property: "abc",
+            $schema: "schema",
             id: "id",
             rules: [],
           },
@@ -113,9 +116,11 @@ describe("RpcRequestsHandler", () => {
           return successResponse(hierarchyOptions.rulesetOrId);
         }, options);
 
-        expect(actualResult.hasOwnProperty("property")).to.be.false;
+        expect(actualResult.hasOwnProperty("property")).to.be.true;
+        expect(actualResult.hasOwnProperty("$schema")).to.be.false;
         expect(actualResult.hasOwnProperty("id")).to.be.true;
         expect(actualResult.hasOwnProperty("rules")).to.be.true;
+        expect(func.callCount).to.eq(1);
       });
 
     });
