@@ -149,23 +149,24 @@ export abstract class RealityTileLoader {
   public static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number {
     // Compute a priority value for tiles that are:
     // * Closer to the eye;
-    // * Closer to the center of the screen.
+    // * Closer to the center of attention (center of the screen or zoom target).
     // This way, we can load in priority tiles that are more likely to be important.
-
-    const center = location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
+    let center: Point3d | undefined;
     let minDistance = 1.0;
 
+    const currentInputState = IModelApp.toolAdmin.currentInputState;
     const now = Date.now();
     const wheelEventRelevanceTimeout = 1000; // Wheel events older than this value will not be considered
 
     for (const viewport of viewports) {
+      center = center ?? location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
       const npc = viewport.worldToNpc(center, scratchTileCenterView);
 
       let focusPoint = new Point2d(0.5, 0.5);
 
-      if (viewport instanceof ScreenViewport) {
+      if (currentInputState.viewport === viewport && viewport instanceof ScreenViewport) {
         // Try to get a better target point from the last zoom target
-        const {lastWheelEvent} = IModelApp.toolAdmin.currentInputState;
+        const {lastWheelEvent} = currentInputState;
 
         if (lastWheelEvent !== undefined && now - lastWheelEvent.time < wheelEventRelevanceTimeout) {
           const focusPointCandidate = Point2d.fromJSON(viewport.worldToNpc(lastWheelEvent.point));
@@ -180,7 +181,7 @@ export abstract class RealityTileLoader {
       const distanceToCenter = Math.min(npc.distanceXY(focusPoint) / 0.707, 1.0); // Math.sqrt(0.5) = 0.707
 
       // Distance is a mix of the two previously computed values, still in range [0; 1]
-      // We use this factor to determine how much the distance to the center of the screen is important compared to distance to the eye
+      // We use this factor to determine how much the distance to the center of attention is important compared to distance to the eye
       const distanceToCenterWeight = 0.3;
       const distance = distanceToEye * (1.0 - distanceToCenterWeight) + distanceToCenter * distanceToCenterWeight;
 
