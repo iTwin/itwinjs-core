@@ -94,14 +94,14 @@ describe.only("CloudSqlite", () => {
     imodel.close();
 
     const uploadFile = async (container: IModelJsNative.CloudContainer, cache: IModelJsNative.CloudCache, dbName: string, localFileName: LocalFileName) => {
-      expect(container.isAttached).false;
-      container.attach(cache);
-      expect(container.isAttached);
+      expect(container.isConnected).false;
+      container.connect(cache);
+      expect(container.isConnected);
 
       await CloudSqlite.withWriteLock(user, container, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
-      expect(container.isAttached);
-      container.detach();
-      expect(container.isAttached).false;
+      expect(container.isConnected);
+      container.disconnect();
+      expect(container.isConnected).false;
     };
 
     const tempDbFile = join(KnownLocations.tmpdir, "TestWorkspaces", "testws.db");
@@ -120,8 +120,8 @@ describe.only("CloudSqlite", () => {
     expect(undefined !== caches[0]);
 
     const contain1 = testContainers[0];
-    contain1.attach(caches[1]); // attach it to the second cloudCache
-    expect(contain1.isAttached);
+    contain1.connect(caches[1]); // connect it to the second cloudCache
+    expect(contain1.isConnected);
 
     // first container has 2 databases
     let dbs = contain1.queryDatabases();
@@ -190,32 +190,32 @@ describe.only("CloudSqlite", () => {
     expect(contain1.garbageBlocks).greaterThan(0);
     expect(contain1.queryDatabases().length).equals(2);
 
-    contain1.detach();
+    contain1.disconnect();
     CloudSqliteTest.setSasToken(contain1, "rwl"); // don't ask for delete permission
-    contain1.attach(caches[1]);
+    contain1.connect(caches[1]);
     await CloudSqlite.withWriteLock(user, contain1, async () => {
       await expect(contain1.cleanDeletedBlocks()).eventually.rejectedWith("not authorized").property("errorNumber", 403);
     });
 
-    contain1.detach();
+    contain1.disconnect();
     CloudSqliteTest.setSasToken(contain1, "rwdl"); // now ask for delete permission
-    contain1.attach(caches[1]);
+    contain1.connect(caches[1]);
 
     await CloudSqlite.withWriteLock(user, contain1, async () => contain1.cleanDeletedBlocks());
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
-    // can't attach a container to another cache
-    expect(() => contain1.attach(caches[0])).throws("container already attached");
+    // can't connect a container to another cache
+    expect(() => contain1.connect(caches[0])).throws("container already attached");
 
-    // can't attach two containers with same name
+    // can't connect two containers with same name
     const cont2 = CloudSqliteTest.makeCloudSqliteContainer(contain1.containerId, false);
 
     CloudSqliteTest.setSasToken(cont2, "racwdl");
 
-    expect(() => cont2.attach(caches[1])).throws("container with that name already attached");
-    expect(cont2.isAttached).false;
-    cont2.attach(caches[0]); // attach it to a different cache
-    expect(cont2.isAttached);
+    expect(() => cont2.connect(caches[1])).throws("container with that name already attached");
+    expect(cont2.isConnected).false;
+    cont2.connect(caches[0]); // connect it to a different cache
+    expect(cont2.isConnected);
 
     // in second cache, testBim should not be local
     dbProps = cont2.queryDatabase("testBim");
@@ -248,17 +248,17 @@ describe.only("CloudSqlite", () => {
       expect(() => cont2.acquireWriteLock(user)).throws("cannot obtain write lock").property("errorNumber", DbResult.BE_SQLITE_BUSY);
     });
 
-    cont2.detach();
-    contain1.detach();
+    cont2.disconnect();
+    contain1.disconnect();
 
-    // can't attach with invalid token
+    // can't connect with invalid token
     contain1.sasToken = "bad";
-    expect(() => contain1.attach(caches[0])).throws("403").property("errorNumber", 403);
+    expect(() => contain1.connect(caches[0])).throws("403").property("errorNumber", 403);
 
     // Now attempt to obtain the write lock with a token that doesn't authorize it, expecting auth error
     CloudSqliteTest.setSasToken(contain1, "rl"); // get a read-only token
-    contain1.attach(caches[0]); // attach works with readonly token
-    expect(contain1.isAttached);
+    contain1.connect(caches[0]); // connect works with readonly token
+    expect(contain1.isConnected);
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => contain1.acquireWriteLock(user)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
     expect(contain1.hasWriteLock).false;
@@ -267,7 +267,7 @@ describe.only("CloudSqlite", () => {
     // try anonymous access
     const anonContainer = testContainers[2];
     anonContainer.sasToken = "";
-    anonContainer.attach(caches[0]);
+    anonContainer.connect(caches[0]);
     dbs = anonContainer.queryDatabases();
     expect(dbs.length).equals(2);
     // eslint-disable-next-line @typescript-eslint/promise-function-async
@@ -284,11 +284,11 @@ describe.only("CloudSqlite", () => {
     const wasCache2 = { name: caches[1].name, rootDir: caches[1].rootDir, guid: caches[1].guid };
 
     // destroying a cache detaches all attached containers
-    expect(contain1.isAttached);
-    expect(anonContainer.isAttached);
+    expect(contain1.isConnected);
+    expect(anonContainer.isConnected);
     caches[0].destroy();
-    expect(contain1.isAttached).false;
-    expect(anonContainer.isAttached).false;
+    expect(contain1.isConnected).false;
+    expect(anonContainer.isConnected).false;
     caches[1].destroy();
 
     // closing and then reopening (usually in another session) a cache should preserve its guid (via localstore.itwindb)

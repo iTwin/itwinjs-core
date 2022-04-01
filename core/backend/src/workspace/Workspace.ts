@@ -362,7 +362,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
 
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
-    this.cloudContainer?.attach(this.workspace.cloudCache);
+    this.cloudContainer?.connect(this.workspace.cloudCache);
   }
 
   public static validateVersion(version?: string) {

@@ -775,7 +775,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "queryDbs",
+        "releaseLock",
         "--config=d:/temp/workspaceEditor.json"
       ],
       "outFiles": [

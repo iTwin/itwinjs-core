@@ -22,6 +22,7 @@ import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 /** Currently executing an "@" script? */
 let inScript = false;
+let logTimer: NodeJS.Timeout | undefined;
 
 interface EditorProps {
   /** Allows overriding the location of WorkspaceDbs. If not present, defaults to `${homedir}/iTwin/Workspace` */
@@ -102,22 +103,29 @@ interface UploadOptions extends TransferOptions {
   replace: boolean;
 }
 
-const askQuestion = async (query: string) => {
+async function askQuestion(query: string) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return new Promise<string>((resolve) => rl.question(query, (ans) => { rl.close(); resolve(ans); }));
-};
+}
+
+/** show a message, potentially flushing log messages first */
+function showMessage(msg: string) {
+  if (logTimer)
+    IModelHost.platform.flushLog();
+  console.log(msg);
+}
 
 /** Create a new empty WorkspaceDb  */
 async function createWorkspaceDb(args: WorkspaceDbOpt) {
   const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer({ ...args, writeable: true }));
   await wsFile.createDb();
-  console.log(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
+  showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
 }
 
 /** open, call a function to process, then close a WorkspaceDb */
 function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceDbOpt>(args: T, ws: W, fn: (ws: W, args: T) => void) {
   ws.open();
-  console.log(`WorkspaceDb [${ws.sqliteDb.nativeDb.getFilePath()}]`);
+  showMessage(`WorkspaceDb [${ws.sqliteDb.nativeDb.getFilePath()}]`);
   try {
     fn(ws, args);
   } finally {
@@ -172,29 +180,29 @@ async function listWorkspaceDb(args: ListOptions) {
       args.blobs = args.files = args.strings = true;
 
     if (args.strings) {
-      console.log(" strings:");
+      showMessage(" strings:");
       file.sqliteDb.withSqliteStatement("SELECT id,value FROM strings", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step())
-          console.log(`  name=${stmt.getValueString(0)}, size=${stmt.getValueString(1).length}`);
+          showMessage(`  name=${stmt.getValueString(0)}, size=${stmt.getValueString(1).length}`);
       });
     }
     if (args.blobs) {
-      console.log(" blobs:");
+      showMessage(" blobs:");
       file.sqliteDb.withSqliteStatement("SELECT id,value FROM blobs", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step())
-          console.log(`  name=${stmt.getValueString(0)}, size=${stmt.getColumnBytes(1)}`);
+          showMessage(`  name=${stmt.getValueString(0)}, size=${stmt.getColumnBytes(1)}`);
       });
 
     }
     if (args.files) {
-      console.log(" files:");
+      showMessage(" files:");
       file.sqliteDb.withSqliteStatement("SELECT name FROM be_EmbedFile", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step()) {
           const embed = file.queryFileResource(stmt.getValueString(0));
           if (embed) {
             const info = embed.info;
             const date = new Date(info.date);
-            console.log(`  name=${stmt.getValueString(0)}, size=${info.size}, ext="${info.fileExt}", date=${date.toString()}`);
+            showMessage(`  name=${stmt.getValueString(0)}, size=${info.size}, ext="${info.fileExt}", date=${date.toString()}`);
           }
         }
       });
@@ -220,7 +228,7 @@ async function addResource(args: AddFileOptions) {
         } else {
           wsFile.addFile(name, file);
         }
-        console.log(` added "${file}" as ${args.type} resource [${name}]`);
+        showMessage(` added "${file}" as ${args.type} resource [${name}]`);
       } catch (e: unknown) {
         console.error(IModelError.getErrorMessage(e));
       }
@@ -246,7 +254,7 @@ async function replaceResource(args: AddFileOptions) {
         } else {
           wsFile.updateFile(name, file);
         }
-        console.log(` updated "${file}" as ${args.type} resource [${name}]`);
+        showMessage(` updated "${file}" as ${args.type} resource [${name}]`);
       } catch (e: unknown) {
         console.error(IModelError.getErrorMessage(e));
       }
@@ -270,7 +278,7 @@ async function extractResource(args: ExtractResourceOpts) {
     } else {
       verify(file.getFile(args.rscName, args.fileName));
     }
-    console.log(` ${args.type} resource [${args.rscName}] extracted to "${args.fileName}"`);
+    showMessage(` ${args.type} resource [${args.rscName}] extracted to "${args.fileName}"`);
   });
 }
 
@@ -283,7 +291,7 @@ async function removeResource(args: RemoveResourceOpts) {
       wsFile.removeBlob(args.rscName);
     else
       wsFile.removeFile(args.rscName);
-    console.log(` removed ${args.type} resource [${args.rscName}]`);
+    showMessage(` removed ${args.type} resource [${args.rscName}]`);
   });
 }
 
@@ -293,7 +301,7 @@ async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
   fixVersionArg(args);
   const localFile = new ITwinWorkspaceDb(args, container).dbFileName;
   IModelHost.platform.DgnDb.vacuum(localFile, container.cloudContainer);
-  console.log(`${localFile} vacuumed`);
+  showMessage(`${localFile} vacuumed`);
 }
 
 /** Either upload or download a WorkspaceDb to/from a cloud WorkspaceContainer. Shows progress % during transfer */
@@ -303,7 +311,7 @@ async function performTransfer(container: IModelJsNative.CloudContainer, directi
 
   if (direction === "upload" && !args.noVacuum) {
     IModelHost.platform.DgnDb.vacuum(localFileName);
-    console.log(`${localFileName} vacuumed`);
+    showMessage(`${localFileName} vacuumed`);
   }
   const info = `${direction === "download" ? "export" : "import"} ${localFileName}, container=${args.containerId}, dbName=${args.dbFileName} : `;
 
@@ -323,7 +331,7 @@ async function performTransfer(container: IModelJsNative.CloudContainer, directi
   await CloudSqlite.transferDb(direction, container, { ...args, localFileName, onProgress });
   readline.cursorTo(process.stdout, info.length);
   process.stdout.write(`complete, ${timer.elapsedSeconds.toString()} seconds`);
-  console.log("");
+  showMessage("");
 }
 
 /** import a WorkspaceDb to a cloud WorkspaceContainer. */
@@ -346,7 +354,7 @@ async function deleteWorkspaceDb(args: WorkspaceDbOpt) {
     return container.deleteDatabase(args.dbName);
   });
 
-  console.log(`deleted WorkspaceDb [${args.dbName}] from ${sayContainer(args)}`);
+  showMessage(`deleted WorkspaceDb [${args.dbName}] from ${sayContainer(args)}`);
 }
 
 function sayContainer(args: EditorOpts) {
@@ -364,7 +372,7 @@ async function initializeWorkspace(args: InitializeOpts) {
   }
   const container = new IModelHost.platform.CloudContainer(args as CloudSqlite.ContainerAccessProps);
   container.initializeContainer({ checksumBlockNames: true });
-  console.log(`container "${args.containerId} initialized`);
+  showMessage(`container "${args.containerId} initialized`);
 }
 
 /** purge unused (garbage) blocks from a WorkspaceContainer. */
@@ -373,7 +381,7 @@ async function purgeWorkspace(args: EditorOpts) {
   const nGarbage = container.garbageBlocks;
   await CloudSqlite.withWriteLock(args.user, container, async () => container.cleanDeletedBlocks());
   await container.checkForChanges(); // re-read manifest to get current garbage count
-  console.log(`purged ${sayContainer(args)}. ${nGarbage - container.garbageBlocks} garbage blocks cleaned`);
+  showMessage(`purged ${sayContainer(args)}. ${nGarbage - container.garbageBlocks} garbage blocks cleaned`);
 }
 
 /** Make a copy of a WorkspaceDb with a new name. */
@@ -385,7 +393,7 @@ async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
   const newName = ITwinWorkspaceContainer.makeDbFileName(newVersion.dbName, ITwinWorkspaceContainer.validateVersion(newVersion.version));
 
   await CloudSqlite.withWriteLock(args.user, container, async () => container.copyDatabase(oldName, newName));
-  console.log(`copied WorkspaceDb [${oldName}] to [${newName}] in ${sayContainer(args)}`);
+  showMessage(`copied WorkspaceDb [${oldName}] to [${newName}] in ${sayContainer(args)}`);
 }
 
 /** Make a copy of a WorkspaceDb with a new name. */
@@ -393,7 +401,7 @@ async function versionWorkspaceDb(args: MakeVersionOpt) {
   fixVersionArg(args);
   const container = await getCloudContainer(args);
   const result = await ITwinWorkspaceContainer.makeNewVersion(container, args, args.versionType);
-  console.log(`created new version: [${result.newName}] from [${result.oldName}] in ${sayContainer(args)}`);
+  showMessage(`created new version: [${result.newName}] from [${result.oldName}] in ${sayContainer(args)}`);
 }
 
 /** pin a WorkspaceDb from a WorkspaceContainer. */
@@ -401,7 +409,7 @@ async function pinWorkspaceDb(args: WorkspaceDbOpt) {
   fixVersionArg(args);
   const container = await getCloudContainer(args);
   await container.pinDatabase(args.dbFileName, true);
-  console.log(`pinned WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}`);
+  showMessage(`pinned WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}`);
 }
 
 /** pin a WorkspaceDb from a WorkspaceContainer. */
@@ -409,7 +417,7 @@ async function unPinWorkspaceDb(args: WorkspaceDbOpt) {
   fixVersionArg(args);
   const container = await getCloudContainer(args);
   await container.pinDatabase(args.dbFileName, false);
-  console.log(`un-pinned WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}`);
+  showMessage(`un-pinned WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}`);
 }
 
 /** acquire the write lock for a WorkspaceContainer. */
@@ -418,7 +426,7 @@ async function acquireLock(args: WorkspaceDbOpt) {
   if (container.hasWriteLock)
     throw new Error(`write lock is already held for ${sayContainer(args)}`);
   await container.acquireWriteLock(args.user);
-  console.log(`acquired lock for ${sayContainer(args)}`);
+  showMessage(`acquired lock for ${sayContainer(args)}`);
 }
 
 /** release the write lock for a WorkspaceContainer. */
@@ -428,14 +436,14 @@ async function releaseLock(args: WorkspaceDbOpt) {
     throw new Error(`write lock is not held for ${sayContainer(args)}`);
 
   await container.releaseWriteLock();
-  console.log(`released lock for ${sayContainer(args)}`);
+  showMessage(`released lock for ${sayContainer(args)}`);
 }
 
 /** clear the write lock for a WorkspaceContainer. */
 async function clearWriteLock(args: WorkspaceDbOpt) {
   const container = await getCloudContainer(args);
   container.clearWriteLock();
-  console.log(`write lock cleared for ${sayContainer(args)}`);
+  showMessage(`write lock cleared for ${sayContainer(args)}`);
 }
 
 /** query the list of WorkspaceDb in a WorkspaceContainer. */
@@ -445,7 +453,7 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
   const hasLocalMsg = container.hasLocalChanges ? ", has local changes" : "";
   const nGarbage = container.garbageBlocks;
   const garbageMsg = nGarbage ? `, ${nGarbage} garbage block${nGarbage > 1 ? "s" : ""}` : "";
-  console.log(`WorkspaceDbs in ${sayContainer(args)}${writeLockMsg}${hasLocalMsg}${garbageMsg}`);
+  showMessage(`WorkspaceDbs in ${sayContainer(args)}${writeLockMsg}${hasLocalMsg}${garbageMsg}`);
 
   const dbs = container.queryDatabases(args.like);
   for (const dbName of dbs) {
@@ -454,7 +462,7 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
       const dirty = db.dirtyBlocks ? `, ${db.dirtyBlocks} dirty` : "";
       const pinned = db.pinned !== 0 ? ", pinned" : "";
       const editable = db.state === "copied" ? ", editable" : "";
-      console.log(` "${dbName}", size=${db.totalBlocks * 4}Mb, ${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}% downloaded${editable}${dirty}${pinned}`);
+      showMessage(` "${dbName}", size=${db.totalBlocks * 4}Mb, ${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}% downloaded${editable}${dirty}${pinned}`);
     }
   }
 }
@@ -465,7 +473,6 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
     if (inScript)
       return cmd(args);
 
-    let timer: NodeJS.Timeout | undefined;
     try {
       const config = new IModelHostConfiguration();
       config.workspace = {
@@ -479,7 +486,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
         Logger.initializeToConsole();
         Logger.setLevel("CloudSqlite", LogLevel.Trace);
         IModelHost.appWorkspace.cloudCache?.setLogMask(0xff);
-        timer = setInterval(() => IModelHost.platform.flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
+        logTimer = setInterval(() => IModelHost.platform.flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
       }
 
       await cmd(args);
@@ -489,9 +496,9 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
 
       console.error(BentleyError.getErrorMessage(e));
     } finally {
-      if (timer) {
+      if (logTimer) {
         IModelHost.platform.flushLog();
-        clearInterval(timer);
+        clearInterval(logTimer);
       }
     }
   };

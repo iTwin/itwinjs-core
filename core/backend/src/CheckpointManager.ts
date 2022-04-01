@@ -143,10 +143,10 @@ export class V2CheckpointManager {
 
     try {
       const container = this.getContainer(v2props);
-      container.attach(this.daemonCache);
+      container.connect(this.daemonCache);
       return { dbName: v2props.dbName, container };
     } catch (e: any) {
-      const error = `Daemon attach failed: ${e.message}`;
+      const error = `Daemon connect failed: ${e.message}`;
       if (checkpoint.expectV2)
         Logger.logError(loggerCategory, error);
 
