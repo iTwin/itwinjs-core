@@ -9,6 +9,7 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
+import { MarkRequired } from '@itwin/core-bentley';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -278,7 +279,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     // (undocumented)
     provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
     // (undocumented)
-    provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _stageAppData?: any): AbstractWidgetProps[];
+    provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, _stageAppData?: any): AbstractWidgetProps[];
     // (undocumented)
     unregister(): void;
 }
@@ -1421,6 +1422,13 @@ export interface PointProps {
     readonly y: number;
 }
 
+// @beta
+export interface PossibleUiItemProviderOverrides {
+    providerId?: string;
+    stageIds?: string[];
+    stageUsages?: string[];
+}
+
 // @public
 export namespace Primitives {
     export type Boolean = boolean | string | {} | [];
@@ -2094,6 +2102,10 @@ export interface UiFlags {
     allowKeyinPalette?: boolean;
 }
 
+// @beta
+export type UiItemProviderOverrides = MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageUsages"> | MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageIds"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
+
 // @public
 export interface UiItemProviderRegisteredEventArgs {
     // (undocumented)
@@ -2118,7 +2130,7 @@ export class UiItemsManager {
     static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
     static get hasRegisteredProviders(): boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>;
-    static register(uiProvider: UiItemsProvider): void;
+    static register(uiProvider: UiItemsProvider, overrides?: UiItemProviderOverrides): void;
     static get registeredProviderIds(): string[];
     static unregister(uiProviderId: string): void;
 }

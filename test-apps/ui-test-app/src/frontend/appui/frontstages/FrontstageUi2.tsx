@@ -5,9 +5,9 @@
 import * as React from "react";
 import {
   BackstageAppButton, BackstageManager, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
-  IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
-  StandardNavigationToolsProvider,
-  StandardStatusbarItemsProvider,
+  IModelViewportControl, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  StandardNavigationToolsUiItemsProvider,
+  StandardStatusbarUiItemsProvider,
   SyncUiEventDispatcher,
   UiFramework,
 } from "@itwin/appui-react";
@@ -135,7 +135,10 @@ export class FrontstageUi2 {
   private static registerToolProviders() {
 
     // Provides standard tools for ToolWidget in ui2.0 stage
-    StandardContentToolsProvider.register("ui2-standardContentTools", {
+    StandardContentToolsUiItemsProvider.register({
+      vertical: {
+        selectElement: true,
+      },
       horizontal: {
         clearSelection: true,
         clearDisplayOverrides: true,
@@ -143,19 +146,13 @@ export class FrontstageUi2 {
         isolate: "group",
         emphasize: "element",
       },
-    }, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === FrontstageUi2.stageId;
-    });
+    }, { providerId: "ui2-standardContentTools", stageIds: [FrontstageUi2.stageId] });
 
     // Provides standard tools for NavigationWidget in ui2.0 stage
-    StandardNavigationToolsProvider.register("ui2-standardNavigationTools", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === FrontstageUi2.stageId;
-    });
+    StandardNavigationToolsUiItemsProvider.register(undefined, { providerId: "ui2-standardNavigationTools", stageIds: [FrontstageUi2.stageId] });
 
     // Provides standard status fields for ui2.0 stage
-    StandardStatusbarItemsProvider.register("ui2-standardStatusItems", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === FrontstageUi2.stageId;
-    });
+    StandardStatusbarUiItemsProvider.register(undefined, { providerId: "ui2-standardStatusItems", stageIds: [FrontstageUi2.stageId] });
 
     // Provides example widgets ui2.0 stage
     AppUi2StageItemsProvider.register(FrontstageUi2.showCornerButtons);

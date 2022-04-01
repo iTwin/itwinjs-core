@@ -174,6 +174,30 @@ export class MyFrontstage {
   }
 
   private static registerToolProviders() {
+
+    // =============== using stage usages ===================
+    const commonToolProvider = new StandardContentToolsProvider(
+      "ui2-standardNavigationTools",
+      {
+        horizontal: {
+          clearSelection: true,
+          clearDisplayOverrides: true,
+          hide: "group",
+          isolate: "group",
+          emphasize: "element",
+          },
+        }
+    );
+
+  const contextOverrides = {
+    stageUsages: [StageUsage.General, StageUsage.Edit],
+    stageIds: ["MainStage", "IssueResolution"],
+    isSupported: (stageId: string, _stageUsage: string, _applicationData: any, _provider: UiItemsProvider) => boolean;
+  }
+
+    UiItemsManager.register(commonToolProvider, contextOverrides);
+
+    // =============== using isSupported function ===================
     // Provides standard tools for ToolWidget in ui2.0 stage
     StandardContentToolsProvider.register({
       horizontal: {

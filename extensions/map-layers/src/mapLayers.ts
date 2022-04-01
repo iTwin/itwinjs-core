@@ -5,7 +5,7 @@
 import { Localization } from "@itwin/core-common";
 import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
-import { UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
+import { UiItemProviderOverrides, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
 import { MapFeatureInfoOptions, MapLayerOptions } from "./ui/Interfaces";
 
@@ -15,6 +15,8 @@ export interface MapLayersConfig {
   iTwinConfig?: UserPreferencesAccess;
   mapLayerOptions?: MapLayerOptions;
   featureInfoOpts?: MapFeatureInfoOptions;
+  mapLayerProviderOverrides?: UiItemProviderOverrides;
+  featureInfoProviderOverrides?: UiItemProviderOverrides;
 }
 
 /** MapLayersUI is use when the package is used as a dependency to another app.
@@ -26,10 +28,8 @@ export interface MapLayersConfig {
 export class MapLayersUI {
   private static _defaultNs = "mapLayers";
   public static localization: Localization;
-  private static _uiItemsProviders: UiItemsProvider[] = [];
-
+  private static _uiItemsProvidersId: string[] = [];
   private static _iTwinConfig?: UserPreferencesAccess;
-
   public static get iTwinConfig(): UserPreferencesAccess | undefined {
     return this._iTwinConfig;
   }
@@ -44,28 +44,26 @@ export class MapLayersUI {
 
     MapLayersUI._iTwinConfig = config?.iTwinConfig;
 
-    MapLayersUI._uiItemsProviders.push(
-      new MapLayersUiItemsProvider({ ...config?.mapLayerOptions })
-    );
+    const mlProvider = new MapLayersUiItemsProvider({ ...config?.mapLayerOptions });
+    const mlProviderId = config?.mapLayerProviderOverrides?.providerId ?? mlProvider.id;
+    MapLayersUI._uiItemsProvidersId.push(mlProviderId);
+    UiItemsManager.register(mlProvider, config?.mapLayerProviderOverrides);
 
     // Register the FeatureInfo widget only if MapHit was provided.
     if (config?.featureInfoOpts?.onMapHit) {
-      MapLayersUI._uiItemsProviders.push(
-        new FeatureInfoUiItemsProvider({ ...config?.featureInfoOpts })
-      );
+      const fiProvider = new FeatureInfoUiItemsProvider({ ...config?.featureInfoOpts });
+      const fiProviderId = config?.featureInfoProviderOverrides?.providerId ?? fiProvider.id;
+      MapLayersUI._uiItemsProvidersId.push(fiProviderId);
+      UiItemsManager.register(mlProvider, config?.mapLayerProviderOverrides);
     }
-
-    MapLayersUI._uiItemsProviders.forEach((uiProvider) => {
-      UiItemsManager.register(uiProvider);
-    });
   }
 
   /** Unregisters internationalization service namespace and UiItemManager  */
   public static terminate() {
     IModelApp.localization.unregisterNamespace(MapLayersUI.localizationNamespace);
 
-    MapLayersUI._uiItemsProviders.forEach((uiProvider) => {
-      UiItemsManager.unregister(uiProvider.id);
+    MapLayersUI._uiItemsProvidersId.forEach((uiProviderId) => {
+      UiItemsManager.unregister(uiProviderId);
     });
   }
 
