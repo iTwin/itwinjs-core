@@ -399,7 +399,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     }
 
     if (versions.length === 0)
-      throw new Error(`WorkspaceDb ${dbName} not found`);
+      versions[0] = "1.0.0";
 
     const range = props.version ?? "*";
     try {

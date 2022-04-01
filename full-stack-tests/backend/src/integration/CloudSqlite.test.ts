@@ -19,18 +19,18 @@ export namespace CloudSqliteTest {
     accountName: "devstoreaccount1",
     storageType: `azure?emulator=${httpAddr}&sas=1`,
   };
-  export const credential = new azureBlob.StorageSharedKeyCredential(storage.accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
+  const credential = new azureBlob.StorageSharedKeyCredential(storage.accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
 
   export async function initializeContainers(containers: TestContainer[]) {
     const pipeline = azureBlob.newPipeline(credential);
     const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${storage.accountName}`, pipeline);
     for await (const container of containers) {
+      setSasToken(container, "racwdl");
       try {
         await blobService.deleteContainer(container.containerId);
       } catch (e) {
       }
       await blobService.createContainer(container.containerId, container.isPublic ? { access: "blob" } : undefined);
-      setSasToken(container, "racwdl");
       container.initializeContainer({ checksumBlockNames: true });
     }
   }
@@ -68,6 +68,7 @@ export namespace CloudSqliteTest {
       permissions: azureBlob.ContainerSASPermissions.parse(permissionFlags),
       startsOn: now,
       expiresOn: new Date(now.valueOf() + 86400),
+      version: "2018-03-28", // note: fails without this value
     }, credential).toString();
   }
   export function setSasToken(container: IModelJsNative.CloudContainer, permissionFlags: string) {
@@ -75,7 +76,7 @@ export namespace CloudSqliteTest {
   }
 }
 
-describe.only("CloudSqlite", () => {
+describe("CloudSqlite", () => {
   let caches: IModelJsNative.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
@@ -187,7 +188,6 @@ describe.only("CloudSqlite", () => {
     });
 
     expect(contain1.queryDatabase("testBim2")).undefined;
-    expect(contain1.garbageBlocks).greaterThan(0);
     expect(contain1.queryDatabases().length).equals(2);
 
     contain1.disconnect();
