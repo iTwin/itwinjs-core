@@ -101,7 +101,7 @@ describe("CloudSqlite", () => {
 
       await CloudSqlite.withWriteLock(user, container, async () => CloudSqlite.uploadDb(container, { dbName, localFileName }));
       expect(container.isConnected);
-      container.disconnect();
+      container.disconnect(true);
       expect(container.isConnected).false;
     };
 
@@ -190,14 +190,14 @@ describe("CloudSqlite", () => {
     expect(contain1.queryDatabase("testBim2")).undefined;
     expect(contain1.queryDatabases().length).equals(2);
 
-    contain1.disconnect();
+    contain1.disconnect(false);
     CloudSqliteTest.setSasToken(contain1, "rwl"); // don't ask for delete permission
     contain1.connect(caches[1]);
     await CloudSqlite.withWriteLock(user, contain1, async () => {
       await expect(contain1.cleanDeletedBlocks()).eventually.rejectedWith("not authorized").property("errorNumber", 403);
     });
 
-    contain1.disconnect();
+    contain1.disconnect(false);
     CloudSqliteTest.setSasToken(contain1, "rwdl"); // now ask for delete permission
     contain1.connect(caches[1]);
 
@@ -248,8 +248,8 @@ describe("CloudSqlite", () => {
       expect(() => cont2.acquireWriteLock(user)).throws("cannot obtain write lock").property("errorNumber", DbResult.BE_SQLITE_BUSY);
     });
 
-    cont2.disconnect();
-    contain1.disconnect();
+    cont2.disconnect(true);
+    contain1.disconnect(true);
 
     // can't connect with invalid token
     contain1.sasToken = "bad";
