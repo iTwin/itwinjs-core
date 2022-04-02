@@ -101,7 +101,7 @@ export class Presentation {
   /**
    * Initializes Presentation library for the backend.
    *
-   * See [this]($docs/presentation/Setup/index.md#backend) for an example.
+   * See [Setting up iTwin.js Presentation library documentation page]($docs/presentation/setup/index.md#backend) for an example.
    *
    * **Important:** The method should be called after a call to [IModelHost.startup]($core-backend)
    *
