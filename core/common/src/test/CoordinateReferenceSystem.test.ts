@@ -554,175 +554,103 @@ describe("Geodetic Settings", () => {
           },
         },
       ],
-      "additionalTransformPaths": [
+      additionalTransformPaths: [
         {
-          "sourceDatumId": "NAD27",
-          "targetDatumId": "NAD83/2011",
-          "transforms": [
+          sourceDatumId: "NAD27",
+          targetDatumId: "NAD83/2011",
+          transforms: [
             {
-              "gridFile": {
-                "files": [
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Nadcon/conus.l?s",
-                    "format": "NADCON"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Nadcon/alaska.l?s",
-                    "format": "NADCON"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Nadcon/prvi.l?s",
-                    "format": "NADCON"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Nadcon/hawaii.l?s",
-                    "format": "NADCON"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Nadcon/stgeorge.l?s",
-                    "format": "NADCON"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Nadcon/stlrnc.l?s",
-                    "format": "NADCON"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Nadcon/stpaul.l?s",
-                    "format": "NADCON"
-                  }
-                ]
+              gridFile: {
+                files: [
+                  { direction: "Direct", fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON" },
+                  { direction: "Direct", fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON" },
+                  { direction: "Direct", fileName: "./Usa/Nadcon/prvi.l?s", format: "NADCON" },
+                  { direction: "Direct", fileName: "./Usa/Nadcon/hawaii.l?s", format: "NADCON" },
+                  { direction: "Direct", fileName: "./Usa/Nadcon/stgeorge.l?s", format: "NADCON" },
+                  { direction: "Direct", fileName: "./Usa/Nadcon/stlrnc.l?s", format: "NADCON" },
+                  { direction: "Direct", fileName: "./Usa/Nadcon/stpaul.l?s", format: "NADCON" },
+                ],
               },
-              "method": "GridFiles",
-              "sourceEllipsoid": {
-                "equatorialRadius": 6378206.4000000004,
-                "id": "CLRK66",
-                "polarRadius": 6356583.7999999998
+              method: "GridFiles",
+              sourceEllipsoid: {
+                equatorialRadius: 6378206.4000000004,
+                id: "CLRK66",
+                polarRadius: 6356583.7999999998,
               },
-              "targetDatumId": "NAD83",
-              "targetEllipsoid": {
-                "equatorialRadius": 6378137.0,
-                "id": "GRS1980",
-                "polarRadius": 6356752.3141403478
-              }
+              targetDatumId: "NAD83",
+              targetEllipsoid: {
+                equatorialRadius: 6378137.0,
+                id: "GRS1980",
+                polarRadius: 6356752.3141403478,
+              },
             },
             {
-              "gridFile": {
-                "files": [
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Harn/48hpgn.l?s",
-                    "format": "NADCON"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Harn/hihpgn.l?s",
-                    "format": "NADCON"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Harn/pvhpgn.l?s",
-                    "format": "NADCON"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Harn/eshpgn.l?s",
-                    "format": "NADCON"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/Harn/wshpgn.l?s",
-                    "format": "NADCON"
-                  }
-                ]
+              gridFile: {
+                files: [
+                  { direction: "Direct", fileName: "./Usa/Harn/48hpgn.l?s", format: "NADCON" },
+                  { direction: "Direct", fileName: "./Usa/Harn/hihpgn.l?s", format: "NADCON" },
+                  { direction: "Direct", fileName: "./Usa/Harn/pvhpgn.l?s", format: "NADCON" },
+                  { direction: "Direct", fileName: "./Usa/Harn/eshpgn.l?s", format: "NADCON" },
+                  { direction: "Direct", fileName: "./Usa/Harn/wshpgn.l?s", format: "NADCON" },
+                ],
               },
-              "method": "GridFiles",
-              "sourceEllipsoid": {
-                "equatorialRadius": 6378137.0,
-                "id": "GRS1980",
-                "polarRadius": 6356752.3141403478
+              method: "GridFiles",
+              sourceEllipsoid: {
+                equatorialRadius: 6378137.0,
+                id: "GRS1980",
+                polarRadius: 6356752.3141403478,
               },
-              "targetDatumId": "NAD83/HARN-A",
-              "targetEllipsoid": {
-                "equatorialRadius": 6378137.0,
-                "id": "GRS1980",
-                "polarRadius": 6356752.3141403478
-              }
+              targetDatumId: "NAD83/HARN-A",
+              targetEllipsoid: {
+                equatorialRadius: 6378137.0,
+                id: "GRS1980",
+                polarRadius: 6356752.3141403478,
+              },
             },
             {
-              "gridFile": {
-                "files": [
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/NSRS2007/dsl?.b",
-                    "format": "GEOCN"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/NSRS2007/dsl?a.b",
-                    "format": "GEOCN"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/NSRS2007/dsl?p.b",
-                    "format": "GEOCN"
-                  }
-                ]
+              gridFile: {
+                files: [
+                  { direction: "Direct", fileName: "./Usa/NSRS2007/dsl?.b", format: "GEOCN" },
+                  { direction: "Direct", fileName: "./Usa/NSRS2007/dsl?a.b", format: "GEOCN" },
+                  { direction: "Direct", fileName: "./Usa/NSRS2007/dsl?p.b", format: "GEOCN" },
+                ],
               },
-              "method": "GridFiles",
-              "sourceEllipsoid": {
-                "equatorialRadius": 6378137.0,
-                "id": "GRS1980",
-                "polarRadius": 6356752.3141403478
+              method: "GridFiles",
+              sourceEllipsoid: {
+                equatorialRadius: 6378137.0,
+                id: "GRS1980",
+                polarRadius: 6356752.3141403478,
               },
-              "targetDatumId": "NSRS07",
-              "targetEllipsoid": {
-                "equatorialRadius": 6378137.0,
-                "id": "GRS1980",
-                "polarRadius": 6356752.3141403478
-              }
+              targetDatumId: "NSRS07",
+              targetEllipsoid: {
+                equatorialRadius: 6378137.0,
+                id: "GRS1980",
+                polarRadius: 6356752.3141403478,
+              },
             },
             {
-              "gridFile": {
-                "files": [
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/NSRS2011/dsl?11.b",
-                    "format": "GEOCN"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/NSRS2011/dsl?a11.b",
-                    "format": "GEOCN"
-                  },
-                  {
-                    "direction": "Direct",
-                    "fileName": "./Usa/NSRS2011/dsl?p11.b",
-                    "format": "GEOCN"
-                  }
-                ]
+              gridFile: {
+                files: [
+                  { direction: "Direct", fileName: "./Usa/NSRS2011/dsl?11.b", format: "GEOCN" },
+                  { direction: "Direct", fileName: "./Usa/NSRS2011/dsl?a11.b", format: "GEOCN" },
+                  { direction: "Direct", fileName: "./Usa/NSRS2011/dsl?p11.b", format: "GEOCN" },
+                ],
               },
-              "method": "GridFiles",
-              "sourceEllipsoid": {
-                "equatorialRadius": 6378137.0,
-                "id": "GRS1980",
-                "polarRadius": 6356752.3141403478
+              method: "GridFiles",
+              sourceEllipsoid: {
+                equatorialRadius: 6378137.0,
+                id: "GRS1980",
+                polarRadius: 6356752.3141403478,
               },
-              "targetDatumId": "NAD83/2011",
-              "targetEllipsoid": {
-                "equatorialRadius": 6378137.0,
-                "id": "GRS1980",
-                "polarRadius": 6356752.3141403478
-              }
-            }
-          ]
-        }
+              targetDatumId: "NAD83/2011",
+              targetEllipsoid: {
+                equatorialRadius: 6378137.0,
+                id: "GRS1980",
+                polarRadius: 6356752.3141403478,
+              },
+            },
+          ],
+        },
       ],
     }, "input");
   });
@@ -881,175 +809,103 @@ describe("Geodetic Settings", () => {
             },
           },
         ],
-        "additionalTransformPaths": [
+        additionalTransformPaths: [
           {
-            "sourceDatumId": "NAD27",
-            "targetDatumId": "NAD83/2011",
-            "transforms": [
+            sourceDatumId: "NAD27",
+            targetDatumId: "NAD83/2011",
+            transforms: [
               {
-                "gridFile": {
-                  "files": [
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Nadcon/conus.l?s",
-                      "format": "NADCON"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Nadcon/alaska.l?s",
-                      "format": "NADCON"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Nadcon/prvi.l?s",
-                      "format": "NADCON"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Nadcon/hawaii.l?s",
-                      "format": "NADCON"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Nadcon/stgeorge.l?s",
-                      "format": "NADCON"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Nadcon/stlrnc.l?s",
-                      "format": "NADCON"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Nadcon/stpaul.l?s",
-                      "format": "NADCON"
-                    }
-                  ]
+                gridFile: {
+                  files: [
+                    { direction: "Direct", fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON" },
+                    { direction: "Direct", fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON" },
+                    { direction: "Direct", fileName: "./Usa/Nadcon/prvi.l?s", format: "NADCON" },
+                    { direction: "Direct", fileName: "./Usa/Nadcon/hawaii.l?s", format: "NADCON" },
+                    { direction: "Direct", fileName: "./Usa/Nadcon/stgeorge.l?s", format: "NADCON" },
+                    { direction: "Direct", fileName: "./Usa/Nadcon/stlrnc.l?s", format: "NADCON" },
+                    { direction: "Direct", fileName: "./Usa/Nadcon/stpaul.l?s", format: "NADCON" },
+                  ],
                 },
-                "method": "GridFiles",
-                "sourceEllipsoid": {
-                  "equatorialRadius": 6378206.4000000004,
-                  "id": "CLRK66",
-                  "polarRadius": 6356583.7999999998
+                method: "GridFiles",
+                sourceEllipsoid: {
+                  equatorialRadius: 6378206.4000000004,
+                  id: "CLRK66",
+                  polarRadius: 6356583.7999999998,
                 },
-                "targetDatumId": "NAD83",
-                "targetEllipsoid": {
-                  "equatorialRadius": 6378137.0,
-                  "id": "GRS1980",
-                  "polarRadius": 6356752.3141403478
-                }
+                targetDatumId: "NAD83",
+                targetEllipsoid: {
+                  equatorialRadius: 6378137.0,
+                  id: "GRS1980",
+                  polarRadius: 6356752.3141403478,
+                },
               },
               {
-                "gridFile": {
-                  "files": [
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Harn/48hpgn.l?s",
-                      "format": "NADCON"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Harn/hihpgn.l?s",
-                      "format": "NADCON"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Harn/pvhpgn.l?s",
-                      "format": "NADCON"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Harn/eshpgn.l?s",
-                      "format": "NADCON"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/Harn/wshpgn.l?s",
-                      "format": "NADCON"
-                    }
-                  ]
+                gridFile: {
+                  files: [
+                    { direction: "Direct", fileName: "./Usa/Harn/48hpgn.l?s", format: "NADCON" },
+                    { direction: "Direct", fileName: "./Usa/Harn/hihpgn.l?s", format: "NADCON" },
+                    { direction: "Direct", fileName: "./Usa/Harn/pvhpgn.l?s", format: "NADCON" },
+                    { direction: "Direct", fileName: "./Usa/Harn/eshpgn.l?s", format: "NADCON" },
+                    { direction: "Direct", fileName: "./Usa/Harn/wshpgn.l?s", format: "NADCON" },
+                  ],
                 },
-                "method": "GridFiles",
-                "sourceEllipsoid": {
-                  "equatorialRadius": 6378137.0,
-                  "id": "GRS1980",
-                  "polarRadius": 6356752.3141403478
+                method: "GridFiles",
+                sourceEllipsoid: {
+                  equatorialRadius: 6378137.0,
+                  id: "GRS1980",
+                  polarRadius: 6356752.3141403478,
                 },
-                "targetDatumId": "NAD83/HARN-A",
-                "targetEllipsoid": {
-                  "equatorialRadius": 6378137.0,
-                  "id": "GRS1980",
-                  "polarRadius": 6356752.3141403478
-                }
+                targetDatumId: "NAD83/HARN-A",
+                targetEllipsoid: {
+                  equatorialRadius: 6378137.0,
+                  id: "GRS1980",
+                  polarRadius: 6356752.3141403478,
+                },
               },
               {
-                "gridFile": {
-                  "files": [
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/NSRS2007/dsl?.b",
-                      "format": "GEOCN"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/NSRS2007/dsl?a.b",
-                      "format": "GEOCN"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/NSRS2007/dsl?p.b",
-                      "format": "GEOCN"
-                    }
-                  ]
+                gridFile: {
+                  files: [
+                    { direction: "Direct", fileName: "./Usa/NSRS2007/dsl?.b", format: "GEOCN" },
+                    { direction: "Direct", fileName: "./Usa/NSRS2007/dsl?a.b", format: "GEOCN" },
+                    { direction: "Direct", fileName: "./Usa/NSRS2007/dsl?p.b", format: "GEOCN" },
+                  ],
                 },
-                "method": "GridFiles",
-                "sourceEllipsoid": {
-                  "equatorialRadius": 6378137.0,
-                  "id": "GRS1980",
-                  "polarRadius": 6356752.3141403478
+                method: "GridFiles",
+                sourceEllipsoid: {
+                  equatorialRadius: 6378137.0,
+                  id: "GRS1980",
+                  polarRadius: 6356752.3141403478,
                 },
-                "targetDatumId": "NSRS07",
-                "targetEllipsoid": {
-                  "equatorialRadius": 6378137.0,
-                  "id": "GRS1980",
-                  "polarRadius": 6356752.3141403478
-                }
+                targetDatumId: "NSRS07",
+                targetEllipsoid: {
+                  equatorialRadius: 6378137.0,
+                  id: "GRS1980",
+                  polarRadius: 6356752.3141403478,
+                },
               },
               {
-                "gridFile": {
-                  "files": [
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/NSRS2011/dsl?11.b",
-                      "format": "GEOCN"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/NSRS2011/dsl?a11.b",
-                      "format": "GEOCN"
-                    },
-                    {
-                      "direction": "Direct",
-                      "fileName": "./Usa/NSRS2011/dsl?p11.b",
-                      "format": "GEOCN"
-                    }
-                  ]
+                gridFile: {
+                  files: [
+                    { direction: "Direct", fileName: "./Usa/NSRS2011/dsl?11.b", format: "GEOCN" },
+                    { direction: "Direct", fileName: "./Usa/NSRS2011/dsl?a11.b", format: "GEOCN" },
+                    { direction: "Direct", fileName: "./Usa/NSRS2011/dsl?p11.b", format: "GEOCN" },
+                  ],
                 },
-                "method": "GridFiles",
-                "sourceEllipsoid": {
-                  "equatorialRadius": 6378137.0,
-                  "id": "GRS1980",
-                  "polarRadius": 6356752.3141403478
+                method: "GridFiles",
+                sourceEllipsoid: {
+                  equatorialRadius: 6378137.0,
+                  id: "GRS1980",
+                  polarRadius: 6356752.3141403478,
                 },
-                "targetDatumId": "NAD83/2011",
-                "targetEllipsoid": {
-                  "equatorialRadius": 6378137.0,
-                  "id": "GRS1980",
-                  "polarRadius": 6356752.3141403478
-                }
-              }
-            ]
-          }
+                targetDatumId: "NAD83/2011",
+                targetEllipsoid: {
+                  equatorialRadius: 6378137.0,
+                  id: "GRS1980",
+                  polarRadius: 6356752.3141403478,
+                },
+              },
+            ],
+          },
         ],
       },
       unit: "Meter",
@@ -1178,175 +1034,103 @@ describe("Geodetic Settings", () => {
               },
             },
           ],
-          "additionalTransformPaths": [
+          additionalTransformPaths: [
             {
-              "sourceDatumId": "NAD27",
-              "targetDatumId": "NAD83/2011",
-              "transforms": [
+              sourceDatumId: "NAD27",
+              targetDatumId: "NAD83/2011",
+              transforms: [
                 {
-                  "gridFile": {
-                    "files": [
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Nadcon/conus.l?s",
-                        "format": "NADCON"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Nadcon/alaska.l?s",
-                        "format": "NADCON"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Nadcon/prvi.l?s",
-                        "format": "NADCON"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Nadcon/hawaii.l?s",
-                        "format": "NADCON"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Nadcon/stgeorge.l?s",
-                        "format": "NADCON"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Nadcon/stlrnc.l?s",
-                        "format": "NADCON"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Nadcon/stpaul.l?s",
-                        "format": "NADCON"
-                      }
-                    ]
+                  gridFile: {
+                    files: [
+                      { direction: "Direct", fileName: "./Usa/Nadcon/conus.l?s", format: "NADCON" },
+                      { direction: "Direct", fileName: "./Usa/Nadcon/alaska.l?s", format: "NADCON" },
+                      { direction: "Direct", fileName: "./Usa/Nadcon/prvi.l?s", format: "NADCON" },
+                      { direction: "Direct", fileName: "./Usa/Nadcon/hawaii.l?s", format: "NADCON" },
+                      { direction: "Direct", fileName: "./Usa/Nadcon/stgeorge.l?s", format: "NADCON" },
+                      { direction: "Direct", fileName: "./Usa/Nadcon/stlrnc.l?s", format: "NADCON" },
+                      { direction: "Direct", fileName: "./Usa/Nadcon/stpaul.l?s", format: "NADCON" },
+                    ],
                   },
-                  "method": "GridFiles",
-                  "sourceEllipsoid": {
-                    "equatorialRadius": 6378206.4000000004,
-                    "id": "CLRK66",
-                    "polarRadius": 6356583.7999999998
+                  method: "GridFiles",
+                  sourceEllipsoid: {
+                    equatorialRadius: 6378206.4000000004,
+                    id: "CLRK66",
+                    polarRadius: 6356583.7999999998,
                   },
-                  "targetDatumId": "NAD83",
-                  "targetEllipsoid": {
-                    "equatorialRadius": 6378137.0,
-                    "id": "GRS1980",
-                    "polarRadius": 6356752.3141403478
-                  }
+                  targetDatumId: "NAD83",
+                  targetEllipsoid: {
+                    equatorialRadius: 6378137.0,
+                    id: "GRS1980",
+                    polarRadius: 6356752.3141403478,
+                  },
                 },
                 {
-                  "gridFile": {
-                    "files": [
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Harn/48hpgn.l?s",
-                        "format": "NADCON"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Harn/hihpgn.l?s",
-                        "format": "NADCON"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Harn/pvhpgn.l?s",
-                        "format": "NADCON"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Harn/eshpgn.l?s",
-                        "format": "NADCON"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/Harn/wshpgn.l?s",
-                        "format": "NADCON"
-                      }
-                    ]
+                  gridFile: {
+                    files: [
+                      { direction: "Direct", fileName: "./Usa/Harn/48hpgn.l?s", format: "NADCON" },
+                      { direction: "Direct", fileName: "./Usa/Harn/hihpgn.l?s", format: "NADCON" },
+                      { direction: "Direct", fileName: "./Usa/Harn/pvhpgn.l?s", format: "NADCON" },
+                      { direction: "Direct", fileName: "./Usa/Harn/eshpgn.l?s", format: "NADCON" },
+                      { direction: "Direct", fileName: "./Usa/Harn/wshpgn.l?s", format: "NADCON" },
+                    ],
                   },
-                  "method": "GridFiles",
-                  "sourceEllipsoid": {
-                    "equatorialRadius": 6378137.0,
-                    "id": "GRS1980",
-                    "polarRadius": 6356752.3141403478
+                  method: "GridFiles",
+                  sourceEllipsoid: {
+                    equatorialRadius: 6378137.0,
+                    id: "GRS1980",
+                    polarRadius: 6356752.3141403478,
                   },
-                  "targetDatumId": "NAD83/HARN-A",
-                  "targetEllipsoid": {
-                    "equatorialRadius": 6378137.0,
-                    "id": "GRS1980",
-                    "polarRadius": 6356752.3141403478
-                  }
+                  targetDatumId: "NAD83/HARN-A",
+                  targetEllipsoid: {
+                    equatorialRadius: 6378137.0,
+                    id: "GRS1980",
+                    polarRadius: 6356752.3141403478,
+                  },
                 },
                 {
-                  "gridFile": {
-                    "files": [
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/NSRS2007/dsl?.b",
-                        "format": "GEOCN"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/NSRS2007/dsl?a.b",
-                        "format": "GEOCN"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/NSRS2007/dsl?p.b",
-                        "format": "GEOCN"
-                      }
-                    ]
+                  gridFile: {
+                    files: [
+                      { direction: "Direct", fileName: "./Usa/NSRS2007/dsl?.b", format: "GEOCN" },
+                      { direction: "Direct", fileName: "./Usa/NSRS2007/dsl?a.b", format: "GEOCN" },
+                      { direction: "Direct", fileName: "./Usa/NSRS2007/dsl?p.b", format: "GEOCN" },
+                    ],
                   },
-                  "method": "GridFiles",
-                  "sourceEllipsoid": {
-                    "equatorialRadius": 6378137.0,
-                    "id": "GRS1980",
-                    "polarRadius": 6356752.3141403478
+                  method: "GridFiles",
+                  sourceEllipsoid: {
+                    equatorialRadius: 6378137.0,
+                    id: "GRS1980",
+                    polarRadius: 6356752.3141403478,
                   },
-                  "targetDatumId": "NSRS07",
-                  "targetEllipsoid": {
-                    "equatorialRadius": 6378137.0,
-                    "id": "GRS1980",
-                    "polarRadius": 6356752.3141403478
-                  }
+                  targetDatumId: "NSRS07",
+                  targetEllipsoid: {
+                    equatorialRadius: 6378137.0,
+                    id: "GRS1980",
+                    polarRadius: 6356752.3141403478,
+                  },
                 },
                 {
-                  "gridFile": {
-                    "files": [
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/NSRS2011/dsl?11.b",
-                        "format": "GEOCN"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/NSRS2011/dsl?a11.b",
-                        "format": "GEOCN"
-                      },
-                      {
-                        "direction": "Direct",
-                        "fileName": "./Usa/NSRS2011/dsl?p11.b",
-                        "format": "GEOCN"
-                      }
-                    ]
+                  gridFile: {
+                    files: [
+                      { direction: "Direct", fileName: "./Usa/NSRS2011/dsl?11.b", format: "GEOCN" },
+                      { direction: "Direct", fileName: "./Usa/NSRS2011/dsl?a11.b", format: "GEOCN" },
+                      { direction: "Direct", fileName: "./Usa/NSRS2011/dsl?p11.b", format: "GEOCN" },
+                    ],
                   },
-                  "method": "GridFiles",
-                  "sourceEllipsoid": {
-                    "equatorialRadius": 6378137.0,
-                    "id": "GRS1980",
-                    "polarRadius": 6356752.3141403478
+                  method: "GridFiles",
+                  sourceEllipsoid: {
+                    equatorialRadius: 6378137.0,
+                    id: "GRS1980",
+                    polarRadius: 6356752.3141403478,
                   },
-                  "targetDatumId": "NAD83/2011",
-                  "targetEllipsoid": {
-                    "equatorialRadius": 6378137.0,
-                    "id": "GRS1980",
-                    "polarRadius": 6356752.3141403478
-                  }
-                }
-              ]
-            }
+                  targetDatumId: "NAD83/2011",
+                  targetEllipsoid: {
+                    equatorialRadius: 6378137.0,
+                    id: "GRS1980",
+                    polarRadius: 6356752.3141403478,
+                  },
+                },
+              ],
+            },
           ],
         },
         unit: "Meter",

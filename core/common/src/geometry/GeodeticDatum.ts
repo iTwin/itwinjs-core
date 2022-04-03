@@ -350,8 +350,8 @@ export interface GeodeticTransformProps {
   targetEllipsoid?: GeodeticEllipsoidProps;
   /** The id of the source datum. */
   sourceDatumId?: string;
-  /** The id of the target datum. This id is useful to seach within a geodeitc transform path for
-   *  a short to another included datum
+  /** The id of the target datum. This id is useful to seach within a geodetic transform path for
+   *  a shortcut to another included datum.
   */
   targetDatumId?: string;
   /** When method is Geocentric this property contains the geocentric parameters */
@@ -379,8 +379,8 @@ export class GeodeticTransform implements GeodeticTransformProps {
   public readonly targetEllipsoid?: GeodeticEllipsoid;
   /** The id of the source datum. */
   public readonly sourceDatumId?: string;
-  /** The id of the target datum. This id is useful to seach within a geodeitc transform path for
-   *  a short to another included datum
+  /** The id of the target datum. This id is useful to seach within a geodetic transform path for
+   *  a shortcut to another included datum.
   */
   public readonly targetDatumId?: string;
   /** When method is Geocentric this property contains the geocentric parameters */
@@ -464,13 +464,13 @@ export class GeodeticTransform implements GeodeticTransformProps {
 }
 
 /** This interface represents a geodetic datum transform path. It contains a list of transforms linking
- *  a source to a target datumGeodetic datums.
+ *  a source to a target geodetic datum.
  *  @public
  */
 export interface GeodeticTransformPathProps {
-  /** Source deodetic datum key name */
+  /** Source geodetic datum key name */
   sourceDatumId?: string;
-  /** Target deodetic datum key name */
+  /** Target geodetic datum key name */
   targetDatumId?: string;
   /** The transformation path from source datum to target datum.
    */
@@ -478,13 +478,13 @@ export interface GeodeticTransformPathProps {
 }
 
 /** This class represents a geodetic datum transform path. It contains a list of transforms linking
- *  a source to a target datumGeodetic datums.
+ *  a source to a target geodetic datum.
  *  @public
  */
 export class GeodeticTransformPath implements GeodeticTransformPathProps {
-  /** Source deodetic datum key name */
+  /** Source geodetic datum key name */
   public readonly sourceDatumId?: string;
-  /** Target deodetic datum key name */
+  /** Target geodetic datum key name */
   public readonly targetDatumId?: string;
   /** The transformation path from source datum to target datum.
    */
@@ -526,8 +526,7 @@ export class GeodeticTransformPath implements GeodeticTransformPathProps {
    * It takes into account descriptive properties not only mathematical definition properties.
    *  @public */
   public equals(other: GeodeticTransformPath): boolean {
-    if (this.sourceDatumId !== other.sourceDatumId ||
-      this.targetDatumId !== other.targetDatumId)
+    if (this.sourceDatumId !== other.sourceDatumId || this.targetDatumId !== other.targetDatumId)
       return false;
 
     if ((this.transforms === undefined) !== (other.transforms === undefined))
@@ -580,8 +579,8 @@ export interface GeodeticDatumProps {
    *  required to transform to WGS84, such as the newer datum definitions for Slovakia or Switzerland.
    */
   transforms?: GeodeticTransformProps[];
-  /** The optional list of transformation path to other datum. These should only be used if the path to
-   *  these datum is not included in the transforms property definition the transformation to WGS84.
+  /** The optional list of transformation paths to other datum. These should only be used if the path to
+   *  these datum is not included in the transforms property definition of the transformation to WGS84.
    *  It should not be used either if the transformation to the datum can be infered from the concatenation
    *  of their individual paths to WGS84. These should be used to express an alternate shortcut path that is
    *  inherent to the nature of the datum. As an example it is required to represent the transformation
@@ -629,8 +628,8 @@ export class GeodeticDatum implements GeodeticDatumProps {
    *  required to transform to WGS84, such as the newer datum definitions for Slovakia or Switzerland.
    */
   public readonly transforms?: GeodeticTransform[];
-  /** The optional list of transformation path to other datum. These should only be used if the path to
-   *  these datum is not included in the transforms property definition the transformation to WGS84.
+  /** The optional list of transformation paths to other datum. These should only be used if the path to
+   *  these datum is not included in the transforms property definition of the transformation to WGS84.
    *  It should not be used either if the transformation to the datum can be infered from the concatenation
    *  of their individual paths to WGS84. These should be used to express an alternate shortcut path that is
    *  inherent to the nature of the datum. As an example it is required to represent the transformation
