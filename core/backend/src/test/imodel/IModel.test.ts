@@ -1678,6 +1678,11 @@ describe("iModel", () => {
     assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.extent !== undefined);
     assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.extent!.equals(gcs.horizontalCRS!.extent!));
 
+    // The following were not in initial definition but were completed after storage.
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.datum !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.datum!.additionalTransformPaths !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.datum!.additionalTransformPaths!.length >= 0);
+
     // When a gcs is present then the ECEF is automatically defined.
     assert.isTrue(iModel2.ecefLocation !== undefined);
 
