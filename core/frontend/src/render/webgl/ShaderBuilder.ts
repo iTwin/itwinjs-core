@@ -14,6 +14,7 @@ import { volClassOpaqueColor } from "./glsl/PlanarClassification";
 import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex";
 import { ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
+import { PositionType } from "./TechniqueFlags";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -464,8 +465,8 @@ export class SourceBuilder {
 export interface ShaderBuilderFlags {
   /** If defined and true, the geometry is instanced. */
   readonly instanced?: boolean;
-  /** If defined and greater than zero, the vertex data comes from a texture, and each vertex in the table uses no more than this number of RGBA values. */
-  readonly maxRgbaPerVertex?: number;
+  /** If defined, indicates the vertex data comes from a texture and specifies whether the positions are quantized 16-bit integers or unquantized 32-bit floats. */
+  readonly positionType?: PositionType;
 }
 
 /**
@@ -483,10 +484,6 @@ export class ShaderBuilder extends ShaderVariables {
   public headerComment: string = "";
   protected readonly _flags: ShaderBuilderFlags;
   protected _initializers: string[] = new Array<string>();
-
-  public get usesVertexTable(): boolean {
-    return !!this._flags.maxRgbaPerVertex;
-  }
 
   public get usesInstancedGeometry(): boolean {
     return !!this._flags.instanced;
@@ -663,7 +660,7 @@ export const enum VertexShaderComponent {
   // This runs before any initializers.
   // vec3 computeQuantizedPosition()
   ComputeQuantizedPosition,
-  // (Optional) Adjust the result of unquantizeVertexPosition().
+  // (Optional) Adjust the result of computeVertexPosition().
   // vec4 adjustRawPosition(vec4 rawPosition)
   AdjustRawPosition,
   // (Optional) Return true to discard this vertex before evaluating feature overrides etc, given the model-space position.
@@ -729,8 +726,13 @@ export class VertexShaderBuilder extends ShaderBuilder {
     addPosition(this, this.usesVertexTable);
   }
 
-  public get maxRgbaPerVertex(): number | undefined {
-    return this._flags.maxRgbaPerVertex;
+  public get usesVertexTable(): boolean {
+    return undefined !== this._flags.positionType;
+  }
+
+  public get positionType(): PositionType {
+    assert(undefined !== this._flags.positionType);
+    return this._flags.positionType;
   }
 
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
@@ -766,7 +768,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
         main.addline(`  { ${init} }\n`);
     }
 
-    main.addline("  vec4 rawPosition = unquantizeVertexPosition(qpos, u_qOrigin, u_qScale);");
+    main.addline("  vec4 rawPosition = computeVertexPosition(qpos);");
     const adjustRawPosition = this.get(VertexShaderComponent.AdjustRawPosition);
     if (undefined !== adjustRawPosition) {
       prelude.addFunction("vec4 adjustRawPosition(vec4 rawPos)", adjustRawPosition);

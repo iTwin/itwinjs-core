@@ -11,10 +11,10 @@ import { DrawParams } from "../DrawCommand";
 import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
 import { Pass, TextureUnit } from "../RenderFlags";
-import { IsInstanced } from "../TechniqueFlags";
+import { IsInstanced, PositionType } from "../TechniqueFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
-import { decodeUint16, decodeUint24 } from "./Decode";
+import { decode3Float32, decodeUint16, decodeUint24 } from "./Decode";
 import { addInstanceOverrides } from "./Instancing";
 import { addLookupTable } from "./LookupTable";
 
@@ -23,25 +23,106 @@ const initializeVertLUTCoords = `
   g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);
 `;
 
-const unquantizePosition = `
+/** @internal */
+export const unquantizePosition = `
 vec4 unquantizePosition(vec3 pos, vec3 origin, vec3 scale) { return vec4(origin + scale * pos, 1.0); }
 `;
 
-export const unquantizeVertexPosition = `
-vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquantizePosition(pos, origin, scale); }
+const computeQuantizedPosition = `
+vec4 computeVertexPosition(vec3 pos) { return unquantizePosition(pos, u_qOrigin, u_qScale); }
 `;
 
 // Need to read 2 rgba values to obtain 6 16-bit integers for position
-const unquantizeVertexPositionFromLUT = `
-vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
+const computeVertexPositionFromLUT = `
+vec4 computeVertexPosition(vec3 encodedIndex) {
   vec3 qpos = vec3(decodeUInt16(g_vertLutData0.xy), decodeUInt16(g_vertLutData0.zw), decodeUInt16(g_vertLutData1.xy));
   g_featureAndMaterialIndex = g_vertLutData2;
-  return unquantizePosition(qpos, origin, scale);
+  return unquantizePosition(qpos, u_qOrigin, u_qScale);
+}
+`;
+
+const computeUnquantizedPosition1 = `
+vec4 computeVertexPosition(vec3 encodedIndex) {
+  vec3 pf[4];
+  pf[0] = g_vertLutData0.xyz;
+  g_featureAndMaterialIndex.x = g_vertLutData0.w;
+  pf[1] = g_vertLutData1.xyz;
+  g_featureAndMaterialIndex.y = g_vertLutData1.w;
+  pf[2] = g_vertLutData2.xyz;
+  g_featureAndMaterialIndex.z = g_vertLutData2.w;
+  pf[3] = g_vertLutData3.xyz;
+  g_featureAndMaterialIndex.w = g_vertLutData3.w;
+  return vec4(decode3Float32(pf), 1.0);
+}
+`;
+
+const computeUnquantizedPosition2 = `
+vec4 computeVertexPosition(vec3 encodedIndex) {
+  uvec3 vux = uvec3(g_vertLutData0.xyz);
+  g_featureAndMaterialIndex.x = g_vertLutData0.w;
+  uvec3 vuy = uvec3(g_vertLutData1.xyz);
+  g_featureAndMaterialIndex.y = g_vertLutData1.w;
+  uvec3 vuz = uvec3(g_vertLutData2.xyz);
+  g_featureAndMaterialIndex.z = g_vertLutData2.w;
+  uvec3 vuw = uvec3(g_vertLutData3.xyz);
+  g_featureAndMaterialIndex.w = g_vertLutData3.w;
+  uvec3 u = (vuw << 24) | (vuz << 16) | (vuy << 8) | vux;
+  return vec4(uintBitsToFloat(u), 1.0);
 }
 `;
 
 const computeLineWeight = "\nfloat computeLineWeight() { return g_lineWeight; }\n";
 const computeLineCode = "\nfloat computeLineCode() { return g_lineCode; }\n";
+
+export function addSamplePosition(vert: VertexShaderBuilder): void {
+  vert.addFunction(getSamplePosition(vert.positionType));
+}
+
+function getSamplePosition(type: PositionType): string {
+  const prelude = `
+    vec4 samplePosition(float index) {
+      vec2 tc = compute_vert_coords(index);`;
+
+  if ("quantized" === type) {
+    return `
+    ${prelude}
+      vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+      tc.x += g_vert_stepX;
+      vec4 e1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+      vec3 qpos = vec3(decodeUInt16(e0.xy), decodeUInt16(e0.zw), decodeUInt16(e1.xy));
+      return unquantizePosition(qpos, u_qOrigin, u_qScale);
+    }
+    `;
+  }
+
+  if (System.instance.capabilities.isWebGL2) {
+    return `
+    ${prelude}
+      uvec3 vux = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+      tc.x += g_vert_stepX;
+      uvec3 vuy = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+      tc.x += g_vert_stepX;
+      uvec3 vuz = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+      tc.x += g_vert_stepX;
+      uvec3 vuw = uvec3(floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5));
+      uvec3 u = (vuw << 24) | (vuz << 16) | (vuy << 8) | vux;
+      return vec4(uintBitsToFloat(u), 1.0);
+    }`;
+  }
+
+  return `
+    ${prelude}
+      vec3 pf[4];
+      pf[0] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
+      tc.x += g_vert_stepX;
+      pf[1] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
+      tc.x += g_vert_stepX;
+      pf[2] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
+      tc.x += g_vert_stepX;
+      pf[3] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
+      return vec4(decode3Float32(pf), 1.0);
+    }`;
+}
 
 /** @internal */
 export function addModelViewProjectionMatrix(vert: VertexShaderBuilder): void {
@@ -152,14 +233,62 @@ export function addNormalMatrix(vert: VertexShaderBuilder, instanced: IsInstance
   }
 }
 
+function readVertexData(index: number): string {
+  return `g_vertLutData${index} = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);`;
+}
+
+const nextVertexData = "tc.x += g_vert_stepX;";
+
+function readNextVertexData(index: number): string {
+  return `
+  ${nextVertexData}
+  ${readVertexData(index)}`;
+}
+
+const prereadVertexDataPrelude = `
+  vec2 tc = g_vertexBaseCoords;
+  ${readVertexData(0)}
+  ${readNextVertexData(1)}
+  ${readNextVertexData(2)}
+`;
+
+const prereadQuantizedVertexData = `${prereadVertexDataPrelude}
+  if (3.0 < u_vertParams.z) {
+    ${readNextVertexData(3)}
+  }
+`;
+
+const prereadUnquantizedVertexData = `${prereadVertexDataPrelude}
+  ${readNextVertexData(3)}
+  ${readNextVertexData(4)}
+  if (5.0 < u_vertParams.z) {
+    ${readNextVertexData(5)}
+  }
+`;
+
 const scratchLutParams = new Float32Array(4);
 function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexLUTIndex", VariableType.Float);
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
 
+  const unquantized = "unquantized" === vert.positionType;
+  const maxRgbaPerVert = unquantized ? 6 : 4;
+  for (let i = 0; i < maxRgbaPerVert; i++)
+    vert.addGlobal(`g_vertLutData${i}`, VariableType.Vec4);
+
   vert.addFunction(decodeUint24);
   vert.addFunction(decodeUint16);
-  vert.addFunction(unquantizeVertexPositionFromLUT);
+
+  if (unquantized) {
+    if (System.instance.capabilities.isWebGL2) {
+      vert.addFunction(computeUnquantizedPosition2);
+    } else {
+      vert.addFunction(decode3Float32);
+      vert.addFunction(computeUnquantizedPosition1);
+    }
+  } else {
+    vert.addFunction(computeVertexPositionFromLUT);
+  }
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
@@ -183,49 +312,32 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   addLookupTable(vert, "vert", "u_vertParams.z");
   vert.addInitializer(initializeVertLUTCoords);
 
-  vert.addGlobal(`g_vertLutData0`, VariableType.Vec4);
-  vert.addGlobal(`g_vertLutData1`, VariableType.Vec4);
-  vert.addGlobal(`g_vertLutData2`, VariableType.Vec4);
-  vert.addGlobal(`g_vertLutData3`, VariableType.Vec4);
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
 
   // Read the vertex data from the vertex table up front.  Yields a consistent (if unexplainable) small performance boost.
-  vert.addInitializer(`
-    vec2 tc = g_vertexBaseCoords;
-    g_vertLutData0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    tc.x += g_vert_stepX;
-    g_vertLutData1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    tc.x += g_vert_stepX;
-    g_vertLutData2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    if (3.0 < u_vertParams.z) {
-      tc.x += g_vert_stepX;
-      g_vertLutData3 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    }
-  `);
+  vert.addInitializer(unquantized ? prereadUnquantizedVertexData : prereadQuantizedVertexData);
 }
-
-// Shader tests u_qScale.x < 0 to determine that positions are not quantized.
-const unquantizedScale = new Float32Array([-1, -1, -1]);
 
 /** @internal */
 export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
-  vert.addFunction(unquantizePosition);
-
-  vert.addUniform("u_qScale", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_qScale", (uniform, params) => {
-      uniform.setUniform3fv(params.geometry.usesQuantizedPositions ? params.geometry.qScale : unquantizedScale);
+  if (!fromLUT || "quantized" === vert.positionType) {
+    vert.addFunction(unquantizePosition);
+    vert.addUniform("u_qScale", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_qScale", (uniform, params) => {
+        assert(params.geometry.usesQuantizedPositions);
+        uniform.setUniform3fv(params.geometry.qScale);
+      });
     });
-  });
-  vert.addUniform("u_qOrigin", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_qOrigin", (uniform, params) => {
-      // If positions aren't quantized, the shader doesn't use the origin - don't bother updating it.
-      if (params.geometry.usesQuantizedPositions)
+    vert.addUniform("u_qOrigin", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_qOrigin", (uniform, params) => {
+        assert(params.geometry.usesQuantizedPositions);
         uniform.setUniform3fv(params.geometry.qOrigin);
+      });
     });
-  });
+  }
 
   if (!fromLUT) {
-    vert.addFunction(unquantizeVertexPosition);
+    vert.addFunction(computeQuantizedPosition);
   } else {
     addPositionFromLUT(vert);
   }
