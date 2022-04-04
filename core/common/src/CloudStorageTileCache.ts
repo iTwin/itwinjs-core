@@ -6,6 +6,8 @@
  * @module CloudStorage
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "./CloudStorage";
 import { IModelRpcProps } from "./IModel";
 import { IModelTileRpcInterface } from "./rpc/IModelTileRpcInterface";

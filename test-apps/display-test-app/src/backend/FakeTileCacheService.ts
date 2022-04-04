@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable deprecation/deprecation */
+
 import * as fs from "fs-extra";
 import * as path from "path";
 import { CloudStorageService, CloudStorageUploadOptions } from "@itwin/core-backend";

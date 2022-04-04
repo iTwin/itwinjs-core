@@ -6,6 +6,7 @@
  * @module RpcInterface
  */
 
+import type { TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { Id64Array } from "@itwin/core-bentley";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
 import { TileContentIdentifier } from "../CloudStorageTileCache";
@@ -30,10 +31,17 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
 
-  /** Returns connection information for external tile cache or an empty `CloudStorageContainerUrl` if no external tile cache is configured on the backend.
+  /** @beta */
+  public async getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig> {
+    return this.forward(arguments);
+  }
+
+  /**
+   * Returns connection information for external tile cache or an empty `CloudStorageContainerUrl` if no external tile cache is configured on the backend.
    * @beta
+   * @deprecated
    */
-  public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
+  public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> { // eslint-disable-line deprecation/deprecation
     return this.forward(arguments);
   }
 

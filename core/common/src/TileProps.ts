@@ -6,6 +6,7 @@
  * @module Tile
  */
 
+import type { ObjectReference } from "@itwin/object-storage-core/lib/frontend";
 import { GuidString } from "@itwin/core-bentley";
 import { Range3dProps, TransformProps } from "@itwin/core-geometry";
 
@@ -81,4 +82,15 @@ export interface TileVersionInfo {
 export enum TileContentSource {
   Backend = 0,
   ExternalCache = 1,
+}
+
+/**
+ * @internal
+ */
+export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference {
+  return {
+    baseDirectory: iModelId,
+    relativeDirectory: `tiles/${treeId}/${guid ?? changesetId}`,
+    objectName: contentId,
+  };
 }

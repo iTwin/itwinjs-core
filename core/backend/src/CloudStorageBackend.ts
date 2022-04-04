@@ -13,6 +13,8 @@ import {
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
+/* eslint-disable deprecation/deprecation */
+
 /** @beta */
 export interface AzureBlobStorageCredentials {
   account: string;
@@ -20,14 +22,20 @@ export interface AzureBlobStorageCredentials {
   baseUrl?: string;
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export interface CloudStorageUploadOptions {
   type?: string;
   cacheControl?: string;
   contentEncoding?: "gzip";
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export abstract class CloudStorageService {
   public initialize(): void { }
   public terminate(): void { }
@@ -41,7 +49,10 @@ export abstract class CloudStorageService {
   }
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export class AzureBlobStorage extends CloudStorageService {
   private _service: Azure.BlobServiceClient;
   private _credential: Azure.StorageSharedKeyCredential;
@@ -160,7 +171,10 @@ export class AzureBlobStorage extends CloudStorageService {
   }
 }
 
-/** @internal */
+/**
+ * @beta
+ * @deprecated
+ */
 export class CloudStorageTileUploader {
   private _activeUploads: Map<string, Promise<void>> = new Map();
 

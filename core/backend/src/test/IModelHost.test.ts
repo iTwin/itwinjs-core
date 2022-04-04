@@ -13,6 +13,8 @@ import { Schemas } from "../Schema";
 import { IModelTestUtils, TestUtils } from "./index";
 import { AzureBlobStorage } from "../CloudStorageBackend";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("IModelHost", () => {
 
   beforeEach(async () => {

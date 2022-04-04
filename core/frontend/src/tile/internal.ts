@@ -40,6 +40,7 @@ export * from "./TiledGraphicsProvider";
 export * from "./TileAdmin";
 export * from "./TileRequest";
 export * from "./TileRequestChannel";
+export * from "./TileStorage";
 export * from "./IModelTileRequestChannels";
 export * from "./TileRequestChannels";
 export * from "./TileUsageMarker";
