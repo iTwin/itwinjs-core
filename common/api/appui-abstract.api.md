@@ -2104,6 +2104,8 @@ export interface UiFlags {
 
 // @beta
 export type UiItemProviderOverrides = MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageUsages"> | MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageIds"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<PossibleUiItemProviderOverrides, "stageIds"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<PossibleUiItemProviderOverrides, "stageUsages"> | // eslint-disable-line @typescript-eslint/indent
 MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
 
 // @public
