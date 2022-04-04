@@ -159,6 +159,8 @@ import { UiAdmin } from '@itwin/appui-abstract';
 import { UiDataProvider } from '@itwin/appui-abstract';
 import { UiEvent } from '@itwin/appui-abstract';
 import { UiEvent as UiEvent_2 } from '@itwin/core-react';
+import { UiItemProviderOverrides } from '@itwin/appui-abstract';
+import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UiLayoutDataProvider } from '@itwin/appui-abstract';
 import { UiStateEntry } from '@itwin/core-react';
 import { UiStateStorage } from '@itwin/core-react';
@@ -5870,12 +5872,25 @@ export interface StagePanelZonesProps {
 
 // @public
 export class StandardContentToolsProvider extends BaseUiItemsProvider {
-    constructor(providerId: string, defaultContextTools?: DefaultContentTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
+    constructor(providerId: string, defaultContentTools?: DefaultContentTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
     provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
     // (undocumented)
     provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    static register(providerId: string, defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardContentToolsProvider;
+    static register(providerId: string, defaultContentTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardContentToolsProvider;
+}
+
+// @beta (undocumented)
+export class StandardContentToolsUiItemsProvider implements UiItemsProvider {
+    constructor(defaultContextTools?: DefaultContentTools | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
+    // (undocumented)
+    static register(defaultContentTools?: DefaultContentTools, overrides?: UiItemProviderOverrides): StandardContentToolsUiItemsProvider;
 }
 
 // @public
@@ -5932,6 +5947,17 @@ export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
     static register(providerId: string, defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardNavigationToolsProvider;
 }
 
+// @beta
+export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
+    constructor(defaultNavigationTools?: DefaultNavigationTools | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[];
+    // (undocumented)
+    static register(defaultNavigationTools?: DefaultNavigationTools, overrides?: UiItemProviderOverrides): StandardNavigationToolsUiItemsProvider;
+}
+
 // @alpha
 export class StandardRotationNavigationAid extends React.Component<CommonProps, StandardRotationNavigationAidState> {
     constructor(props: any);
@@ -5954,6 +5980,17 @@ export class StandardStatusbarItemsProvider extends BaseUiItemsProvider {
     // (undocumented)
     provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
     static register(providerId: string, defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardStatusbarItemsProvider;
+}
+
+// @beta
+export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
+    constructor(_defaultItems?: DefaultStatusbarItems | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    static register(defaultItems?: DefaultStatusbarItems, overrides?: UiItemProviderOverrides): StandardStatusbarUiItemsProvider;
 }
 
 // @public

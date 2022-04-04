@@ -34,6 +34,8 @@ describe("AppUiSettings", () => {
     const colorTheme = "dark";
     const useDragInteraction = true;
     const showWidgetIcon = false;
+    const autoCollapseUnpinnedPanels = true;
+
     UiFramework.setUiVersion(uiVersion);
     UiFramework.setWidgetOpacity(opacity);
     UiFramework.setWidgetOpacity(opacity);
@@ -41,12 +43,14 @@ describe("AppUiSettings", () => {
     UiFramework.setColorTheme(colorTheme);
     UiFramework.setUseDragInteraction(useDragInteraction);
     UiFramework.setShowWidgetIcon(showWidgetIcon);
+    UiFramework.setAutoCollapseUnpinnedPanels(autoCollapseUnpinnedPanels);
     await TestUtils.flushAsyncOperations();
     expect(UiFramework.uiVersion).to.eql(uiVersion);
     expect(UiFramework.getWidgetOpacity()).to.eql(opacity);
     expect(UiFramework.getColorTheme()).to.eql(colorTheme);
     expect(UiFramework.useDragInteraction).to.eql(useDragInteraction);
     expect(UiFramework.showWidgetIcon).to.eql(showWidgetIcon);
+    expect(UiFramework.autoCollapseUnpinnedPanels).to.eql(autoCollapseUnpinnedPanels);
   });
 
   it("should used default settings", async () => {
@@ -56,6 +60,7 @@ describe("AppUiSettings", () => {
       frameworkVersion: "2",
       widgetOpacity: 0.8,
       showWidgetIcon: true,
+      autoCollapseUnpinnedPanels: true,
     };
 
     const uiSetting = new AppUiSettings(defaults);
@@ -66,6 +71,7 @@ describe("AppUiSettings", () => {
     expect(UiFramework.getColorTheme()).to.eql(defaults.colorTheme);
     expect(UiFramework.useDragInteraction).to.eql(defaults.dragInteraction);
     expect(UiFramework.showWidgetIcon).to.eql(defaults.showWidgetIcon);
+    expect(UiFramework.autoCollapseUnpinnedPanels).to.eql(defaults.autoCollapseUnpinnedPanels);
   });
 
 });

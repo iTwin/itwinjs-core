@@ -19,7 +19,42 @@ import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
 import { SectionsStatusField } from "../statusfields/SectionsField";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
-import { DefaultContentTools, getGroupPriority } from "./StandardContentToolsProvider";
+
+/**
+ * Defines what tools to include from the provider. If any tools in the horizontal or vertical group are
+ * specified then only those tools will be provided to stage.
+ * @public
+ */
+export interface DefaultContentTools {
+  horizontal?: {
+    clearSelection?: boolean;
+    clearDisplayOverrides?: boolean;
+    /** if group then group button is shown to allow user to hide by element, category, model */
+    hide?: "group" | "element";
+    /** if group then group button is shown to allow user to isolate by element, category, model */
+    isolate?: "group" | "element";
+    /** only element is currently support for emphasize */
+    emphasize?: "element";
+  };
+  vertical?: {
+    selectElement?: boolean;
+    measureGroup?: boolean;
+    sectionGroup?: boolean;
+  };
+}
+
+function getGroupPriority(potentialId: any, defaultValue: number) {
+  if (undefined === potentialId)
+    return defaultValue;
+
+  // istanbul ignore else
+  if (typeof potentialId === "number") {
+    return potentialId;
+  }
+
+  // istanbul ignore next
+  return defaultValue;
+}
 
 /**
  * @beta
