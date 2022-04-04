@@ -29,10 +29,9 @@ steps:
         --devices "$(AppCenterDevices)" \
         --test-series "$(AppCenterTestSeries)" \
         --locale "en_US" \
-        --build-dir DerivedData/Build/Products/Release-iphoneos/ \
+        --build-dir ${{ parameters.iosDirectory }}/core-test-runner/DerivedData/Build/Products/Release-iphoneos/ \
         --token "$(AppCenterToken)" \
         --output json > "${{ parameters.libDirectory }}/run_output.json"
-    workingDirectory: ${{ parameters.iosDirectory }}/core-test-runner
     failOnStderr: true
     displayName: 'Run App Center tests of suite ${{ parameters.testSuiteName }}'
     condition: succeeded()
