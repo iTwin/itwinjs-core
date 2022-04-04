@@ -204,7 +204,8 @@ export class PrimitiveCommand {
     const wiremesh = target.currentViewFlags.wiremesh && System.instance.isWebGL2 && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
     const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh);
+    const posType = this.primitive.cachedGeometry.usesQuantizedPositions ? "quantized" : "unquantized";
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh, posType);
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);

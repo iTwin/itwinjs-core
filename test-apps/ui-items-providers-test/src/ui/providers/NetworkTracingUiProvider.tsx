@@ -15,7 +15,7 @@ import {
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
 import { CustomToolbarItem } from "@itwin/components-react";
-import { Indicator, StateManager, StatusBarItemUtilities, SyncUiEventDispatcher } from "@itwin/appui-react";
+import { Indicator, PropsHelper, StateManager, StatusBarItemUtilities, SyncUiEventDispatcher } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "../widgets/PresentationPropertyGridWidget";
 import { OpenTraceDialogTool } from "../../tools/OpenTraceDialogTool";
@@ -24,12 +24,19 @@ import { getTestProviderState, setIsTraceAvailable } from "../../store";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
 import { VisibilityTreeComponent } from "../widgets/VisibilityWidget";
+import downstreamQuerySvg from "../icons/downstream-query.svg";
+import queryMultiSvg from "../icons/query-multi.svg";
+import upstreamQuerySvg from "../icons/upstream-query.svg";
+import { SvgList } from "@itwin/itwinui-icons-react";
 
-/** the following will import svgs into DOM and generate SymbolId that is used to locate the svg image. This
- * processing is done via the 'magic' webpack plugin and requires the use or the Bentley build scripts. */
-import upstreamIcon from "../icons/upstream-query.svg?sprite";
-import downstreamIcon from "../icons/downstream-query.svg?sprite";
-import traceIcon from "../icons/query-multi.svg?sprite";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function SvgApple(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' {...props}>
+      <path d='m14.38732 12.46864a8.67507 8.67507 0 0 1 -.85133 1.54667 7.83909 7.83909 0 0 1 -1.096 1.33933 2.11842 2.11842 0 0 1 -1.40933.62733 3.50824 3.50824 0 0 1 -1.30133-.314 3.7014 3.7014 0 0 0 -1.40133-.31333 3.82728 3.82728 0 0 0 -1.44066.31333 3.84425 3.84425 0 0 1 -1.24467.33067 1.98968 1.98968 0 0 1 -1.44066-.644 8.203 8.203 0 0 1 -1.14667-1.38664 9.61729 9.61729 0 0 1 -1.21266-2.43466 8.99338 8.99338 0 0 1 -.50933-2.90134 5.34287 5.34287 0 0 1 .68865-2.772 4.05969 4.05969 0 0 1 1.44134-1.474 3.84792 3.84792 0 0 1 1.94933-.556 4.55944 4.55944 0 0 1 1.50733.35466 4.79788 4.79788 0 0 0 1.196.35534 7.06478 7.06478 0 0 0 1.326-.41866 4.34039 4.34039 0 0 1 1.802-.32334 3.8146 3.8146 0 0 1 2.99733 1.59533 3.37671 3.37671 0 0 0 -1.768 3.062 3.3911 3.3911 0 0 0 1.09733 2.54467 3.59839 3.59839 0 0 0 1.096.72733q-.132.386-.27933.74133zm-3.05466-12.14864a3.43565 3.43565 0 0 1 -.86533 2.23866 2.93869 2.93869 0 0 1 -2.45 1.22267 2.58687 2.58687 0 0 1 -.018-.30334 3.63848 3.63848 0 0 1 2.03667-3.11132 3.30968 3.30968 0 0 1 1.28-.36667 2.86658 2.86658 0 0 1 .01667.32z' />
+    </svg>
+  );
+}
 
 /**
  * Test UiItemsProvider that provide buttons, widgets, and backstage item to NetworkTracing stage.
@@ -88,7 +95,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       const getDownstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-downstream",
         15, /* order within group button */
-        IconSpecUtilities.createSvgIconSpec(downstreamIcon),
+        IconSpecUtilities.createWebComponentIconSpec(downstreamQuerySvg),
         UiItemsProvidersTest.translate("trace-tool-downstream"),
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-downstream activated", undefined, OutputMessageType.Toast));
@@ -103,7 +110,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       const getUpstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-upstream",
         20, /* order within group button */
-        IconSpecUtilities.createSvgIconSpec(upstreamIcon),
+        IconSpecUtilities.createWebComponentIconSpec(upstreamQuerySvg),
         UiItemsProvidersTest.translate("trace-tool-upstream"),
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-upstream activated", undefined, OutputMessageType.Toast));
@@ -120,7 +127,8 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
        */
       const groupSpec = ToolbarItemUtilities.createGroupButton(
         "trace-tool-group", 230,
-        IconSpecUtilities.createSvgIconSpec(traceIcon), UiItemsProvidersTest.translate("trace-tool-group"),
+        IconSpecUtilities.createWebComponentIconSpec(queryMultiSvg),
+        UiItemsProvidersTest.translate("trace-tool-group"),
         [getConnectedButton, getDownstreamButton, getUpstreamButton],
         {
           badgeType: BadgeType.TechnicalPreview,
@@ -169,9 +177,8 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
     if ((stageId === NetworkTracingFrontstage.stageId || stageId === "ui-test-app:no-widget-frontstage") &&
       location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       /** This widget when only be displayed when there is an element selected. */
-      const widget: AbstractWidgetProps = {
+      const widget: AbstractWidgetProps = {...{
         id: "ui-item-provider-test:elementDataListWidget",
-        icon: "icon-annotation-info",
         label: "Data",
         defaultState: WidgetState.Hidden,
         isFloatingStateSupported: true,
@@ -179,7 +186,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
         getWidgetContent: () => {
           return <SelectedElementDataWidgetComponent />;
         },
-      };
+      }, ...PropsHelper.getAbstractPropsForReactIcon(<SvgApple/>)};
       widgets.push(widget);
     }
 
@@ -191,6 +198,8 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
         icon: PresentationPropertyGridWidgetControl.iconSpec,
         defaultState: WidgetState.Open,
         isFloatingStateSupported: true,
+        defaultFloatingSize: {width: 400, height: 600 },
+        isFloatingStateWindowResizable: true,
         // eslint-disable-next-line react/display-name
         getWidgetContent: () => {
           return <PresentationPropertyGridWidget />;
@@ -205,9 +214,10 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
 
   public provideBackstageItems(): BackstageItem[] {
     const label = UiItemsProvidersTest.translate("backstage.networkTracingFrontstageLabel");
+    const iconProps = PropsHelper.getAbstractPropsForReactIcon(<SvgApple />);
     return [
       // use 200 to group it with secondary stages in ui-test-app
-      BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 200, 1, label, "from provider", "icon-draw"),
+      BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 200, 1, label, "from provider", iconProps.icon, {internalData: iconProps.internalData}),
     ];
   }
 
@@ -215,7 +225,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageId === NetworkTracingFrontstage.stageId) {
       statusBarItems.push(
-        StatusBarItemUtilities.createStatusBarItem("Test:Visibility", StatusBarSection.Center, 50, <Indicator iconSpec="icon-tree" isLabelVisible={false} label="Searchable Tree" opened={false} dialog={<VisibilityTreeComponent />} />),
+        StatusBarItemUtilities.createStatusBarItem("Test:Visibility", StatusBarSection.Center, 50, <Indicator iconSpec={<SvgList />} isLabelVisible={false} label="Searchable Tree" opened={false} dialog={<VisibilityTreeComponent />} />),
       );
     }
     return statusBarItems;

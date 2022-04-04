@@ -4,6 +4,7 @@ public;ContentCacheConfig
 beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
 internal;getKeysForContentRequest(keys: Readonly
+internal;getLocalesDirectory: (assetsDirectory: string) => string
 beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
 beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode

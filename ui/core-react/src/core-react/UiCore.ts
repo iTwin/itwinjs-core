@@ -15,7 +15,7 @@ import "./classes.scss";
 import { Logger } from "@itwin/core-bentley";
 import type { Localization } from "@itwin/core-common";
 import { getClassName, UiError } from "@itwin/appui-abstract";
-
+import { IconWebComponent } from "./utils/IconWebComponent";
 // cSpell:ignore colorthemes colorvariables
 
 /**
@@ -38,6 +38,9 @@ export class UiCore {
 
     UiCore._localization = localization;
     await UiCore._localization.registerNamespace(UiCore.localizationNamespace);
+    if (window.customElements.get("svg-loader") === undefined)
+      window.customElements.define("svg-loader", IconWebComponent);
+
     UiCore._initialized = true;
   }
 

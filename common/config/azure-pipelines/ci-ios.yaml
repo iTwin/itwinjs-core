@@ -1,0 +1,103 @@
+# iTwin.js iOS Testing
+
+trigger: none
+pr: none
+schedules:
+  - cron: "0 5 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+        - master
+        - releases/*
+
+variables:
+  - group: iTwin.js ios and App Center variables
+
+jobs:
+  - job:
+    timeoutInMinutes: 120
+    pool:
+      vmImage: macos-latest
+    workspace:
+      clean: all
+
+    steps:
+      - task: InstallAppleProvisioningProfile@1
+        displayName: 'Install an Apple provisioning profile'
+        inputs:
+          provProfileSecureFile: '$(ProvisioningProfileSecureFile)'
+
+      - task: InstallAppleCertificate@2
+        displayName: 'Install an Apple certificate'
+        inputs:
+          certSecureFile: '$(CertificateSecureFile)'
+          certPwd: '$(CertificatePassword)'
+          setUpPartitionIdACLForPrivateKey: false
+
+      - checkout: self
+        clean: true
+
+      - task: NodeTool@0
+        displayName: "Use Node 14.17.4"
+        inputs:
+          versionSpec: 14.17.4
+          checkLatest: true
+
+      - script: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+        displayName: git config
+
+      - script: node common/scripts/install-run-rush.js install
+        displayName: rush install
+
+      - script: node common/scripts/install-run-rush.js build -v -p max --to core-backend
+        displayName: rush build
+        condition: succeeded()
+
+      - script: 'npm run ios:build:tests'
+        workingDirectory: core/backend
+        displayName: 'Build imodeljs-backend-test-app'
+        failOnStderr: true
+        condition: succeeded()
+
+      - script: |
+          rm -rf DerivedData
+          xcrun xcodebuild build-for-testing \
+            -configuration Release \
+            -sdk iphoneos \
+            -project core-test-runner.xcodeproj \
+            -scheme core-test-runner \
+            -derivedDataPath DerivedData \
+            -allowProvisioningUpdates
+        workingDirectory: core/backend/ios/core-test-runner
+        displayName: 'Build Xcode project for testing'
+        condition: succeeded()
+
+      - script: |
+          appcenter test run xcuitest \
+            --app "$(AppCenterSlug)" \
+            --devices "$(AppCenterDevices)" \
+            --test-series "$(AppCenterTestSeries)" \
+            --locale "en_US" \
+            --build-dir DerivedData/Build/Products/Release-iphoneos/ \
+            --token "$(AppCenterToken)" \
+            --output json > ../run_output.json
+        workingDirectory: core/backend/ios/core-test-runner
+        failOnStderr: true
+        displayName: 'Run App Center tests'
+        condition: succeeded()
+
+      - script: node ./ios/scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)"
+        workingDirectory: core/backend
+        failOnStderr: true
+        displayName: 'Process Logs'
+        condition: succeededOrFailed()
+
+      - task: PublishTestResults@2
+        displayName: "Publish Test Results"
+        inputs:
+          testResultsFiles: "ios/junit_results.xml"
+          testRunTitle: "Core - Backend Tests - iOS"
+          searchFolder: core/backend
+        condition: succeededOrFailed()

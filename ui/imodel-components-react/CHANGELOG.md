@@ -1,6 +1,29 @@
 # Change Log - @itwin/imodel-components-react
 
-This log was last generated on Thu, 10 Mar 2022 21:18:13 GMT and should not be manually modified.
+This log was last generated on Thu, 31 Mar 2022 15:55:48 GMT and should not be manually modified.
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Required updates based on @itwin/core-quantity format type definition related changes.
+- Add pointer cursor for ColorPicker close button.
+- whitespace change
+- Replace use of Context menu in Timeline with DropdownMenu.
+- Update to itwinui-css version "0.44.0".
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react.
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
 
 ## 3.0.2
 Thu, 10 Mar 2022 21:18:13 GMT
