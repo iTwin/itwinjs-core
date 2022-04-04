@@ -10,15 +10,16 @@ const path = require('path');
 
 const app_center_host = 'api.appcenter.ms';
 const app_center_api_ver = "v0.1";
-const owner_name = process.argv[2]; // app_center_owner;
-const app_name = process.argv[3];   // app_center_app;
-const api_token = process.argv[4];  // app_center_token;
+const owner_name = process.argv[2];       // app_center_owner;
+const app_name = process.argv[3];         // app_center_app;
+const api_token = process.argv[4];        // app_center_token;
+const lib_directory = process.argv[5];    // lib_directory (for output)
 
-const test_id = require("../run_output.json")[0].testRunId; // TODO: Pass test results path
+const test_id = require(`${lib_directory}/run_output.json`)[0].testRunId;
 
 const xmlFilter = "[Mocha_Result_XML]: ";
 const deviceLogsPath = "device_logs.txt"
-const resultsPath = "junit_results.xml"
+const resultsPath = `${lib_directory}/junit_results.xml`
 
 async function fetchTestReportInfo() {
   return new Promise((resolve, reject) => {

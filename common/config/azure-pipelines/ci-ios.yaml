@@ -64,4 +64,5 @@ jobs:
       - template: templates/app-center-test.yaml
         parameters:
           iosDirectory: tools/internal/ios
+          libDirectory: core/backend/lib
           testSuiteName: "Core - Backend"

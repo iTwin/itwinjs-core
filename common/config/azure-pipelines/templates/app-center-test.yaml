@@ -4,6 +4,8 @@
 parameters:
   - name: iosDirectory
     type: string
+  - name: libDirectory
+    type: string
   - name: testSuiteName
     type: string
 
@@ -29,13 +31,13 @@ steps:
         --locale "en_US" \
         --build-dir DerivedData/Build/Products/Release-iphoneos/ \
         --token "$(AppCenterToken)" \
-        --output json > ../run_output.json
+        --output json > "${{ parameters.libDirectory }}/run_output.json"
     workingDirectory: ${{ parameters.iosDirectory }}/core-test-runner
     failOnStderr: true
     displayName: 'Run App Center tests of suite ${{ parameters.testSuiteName }}'
     condition: succeeded()
 
-  - script: node scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)"
+  - script: node scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)" "${{ parameters.libDirectory }}"
     workingDirectory: ${{ parameters.iosDirectory }}
     failOnStderr: true
     displayName: 'Process Logs'
@@ -46,5 +48,5 @@ steps:
     inputs:
       testResultsFiles: "junit_results.xml"
       testRunTitle: "Test suite ${{ parameters.testSuiteName }} on iOS"
-      searchFolder: ${{ parameters.iosDirectory }}
+      searchFolder: ${{ parameters.libDirectory }}
     condition: succeededOrFailed()
