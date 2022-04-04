@@ -47,11 +47,15 @@ export interface PossibleUiItemProviderOverrides {
   stageIds?: string[];
 }
 
-/** Allowed overrides applied to a UiItemsProvider the application that registers a provider to limit when it is allowed to provide items
+/** Allowed overrides applied to a UiItemsProvider the application that registers a provider to limit when it is allowed to provide items.
+ * Note that if an override `providerId` is specified then either `stageIds` or `stageUsages` must be defined to limit when the provider's
+ * items are allowed.
  *  @beta
  */
 export type UiItemProviderOverrides = MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageUsages"> |
   MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageIds"> |                                 // eslint-disable-line @typescript-eslint/indent
+  MarkRequired<PossibleUiItemProviderOverrides, "stageIds"> |                                                // eslint-disable-line @typescript-eslint/indent
+  MarkRequired<PossibleUiItemProviderOverrides, "stageUsages"> |                                             // eslint-disable-line @typescript-eslint/indent
   MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;                  // eslint-disable-line @typescript-eslint/indent
 
 /** Interface that defines an instance of a UiItemsProvider and its application specified overrides.
@@ -136,9 +140,9 @@ export class UiItemsManager {
   private static allowItemsFromProvider(entry: UiItemProviderEntry, stageId?: string, stageUsage?: string) {
     // istanbul ignore else
     const overrides = entry.overrides;
-    if (stageId && overrides?.stageIds && !(overrides.stageIds.some((value: string) => value === stageId)))
+    if (undefined !== stageId && overrides?.stageIds && !(overrides.stageIds.some((value: string) => value === stageId)))
       return false;
-    if (stageUsage && overrides?.stageUsages && !(overrides.stageUsages.some((value: string) => value === stageUsage)))
+    if (undefined !== stageUsage && overrides?.stageUsages && !(overrides.stageUsages.some((value: string) => value === stageUsage)))
       return false;
     return true;
   }
@@ -163,7 +167,11 @@ export class UiItemsManager {
       // istanbul ignore else
       if (uiProvider.provideToolbarButtonItems && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
         uiProvider.provideToolbarButtonItems(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData)
-          .forEach((spec: CommonToolbarItem) => buttonItems.push({ ...spec, providerId }));
+          .forEach((spec: CommonToolbarItem) => {
+            // ignore duplicate ids
+            if (-1 === buttonItems.findIndex((existingItem)=> spec.id === existingItem.id ))
+              buttonItems.push({ ...spec, providerId });
+          });
       }
     });
 
@@ -188,9 +196,14 @@ export class UiItemsManager {
       // istanbul ignore else
       if (uiProvider.provideStatusBarItems && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
         uiProvider.provideStatusBarItems(stageId, stageUsage, stageAppData)
-          .forEach((item: CommonStatusBarItem) => statusBarItems.push({ ...item, providerId }));
+          .forEach((item: CommonStatusBarItem) => {
+            // ignore duplicate ids
+            if (-1 === statusBarItems.findIndex((existingItem)=> item.id === existingItem.id ))
+              statusBarItems.push({ ...item, providerId });
+          });
       }
     });
+
     return statusBarItems;
   }
 
@@ -210,7 +223,11 @@ export class UiItemsManager {
       // istanbul ignore else
       if (uiProvider.provideBackstageItems && this.allowItemsFromProvider(entry)) {
         uiProvider.provideBackstageItems()
-          .forEach((item: BackstageItem) => backstageItems.push({ ...item, providerId }));
+          .forEach((item: BackstageItem) => {
+            // ignore duplicate ids
+            if (-1 === backstageItems.findIndex((existingItem)=> item.id === existingItem.id ))
+              backstageItems.push({ ...item, providerId });
+          });
       }
     });
     return backstageItems;
@@ -236,7 +253,11 @@ export class UiItemsManager {
       // istanbul ignore else
       if (uiProvider.provideWidgets && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
         uiProvider.provideWidgets(stageId, stageUsage, location, section, zoneLocation, stageAppData)
-          .forEach((widget: AbstractWidgetProps) => widgets.push({ ...widget, providerId }));
+          .forEach((widget: AbstractWidgetProps) => {
+            // ignore duplicate ids
+            if (-1 === widgets.findIndex((existingItem)=> widget.id === existingItem.id ))
+              widgets.push({ ...widget, providerId });
+          });
       }
     });
     return widgets;
