@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}
