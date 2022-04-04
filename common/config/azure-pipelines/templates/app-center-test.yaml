@@ -36,8 +36,7 @@ steps:
     displayName: 'Run App Center tests of suite ${{ parameters.testSuiteName }}'
     condition: succeeded()
 
-  - script: node processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)" "${{ parameters.libDirectory }}"
-    workingDirectory: ${{ parameters.iosDirectory }}/scripts
+  - script: node ${{ parameters.iosDirectory }}/scripts/processAppCenterLogs.js "$(AppCenterOwner)" "$(AppCenterApp)" "$(AppCenterToken)" "${{ parameters.libDirectory }}"
     failOnStderr: true
     displayName: 'Process Logs'
     condition: succeededOrFailed()
