@@ -10,7 +10,6 @@ import {
 } from "@itwin/core-extension";
 
 /** Minimalistic extension tool for a user to pick a set of elements of interest
- * @public
  */
 export class ExtensionSelectTool extends PrimitiveTool {
 
