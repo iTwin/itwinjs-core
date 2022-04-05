@@ -265,6 +265,8 @@ public;GeodeticEllipsoid
 public;GeodeticEllipsoidProps
 public;GeodeticTransform 
 public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
+public;GeodeticTransformPath 
+public;GeodeticTransformPathProps
 public;GeodeticTransformProps
 public;GeographicCRS 
 beta;GeographicCRSInterpretRequestProps
