@@ -5,7 +5,7 @@
 import { Localization } from "@itwin/core-common";
 import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
-import { UiItemProviderOverrides, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
+import { UiItemProviderOverrides, UiItemsManager } from "@itwin/appui-abstract";
 import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
 import { MapFeatureInfoOptions, MapLayerOptions } from "./ui/Interfaces";
 

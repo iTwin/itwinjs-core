@@ -18,7 +18,7 @@ import { CoreTools } from "../tools/CoreToolDefinitions";
  * specified then only those tools will be provided to stage.
  * @public
  */
- export interface DefaultNavigationTools {
+export interface DefaultNavigationTools {
   horizontal?: {
     rotateView?: boolean;
     panView?: boolean;
