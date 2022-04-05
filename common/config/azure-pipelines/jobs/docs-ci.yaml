@@ -37,7 +37,7 @@ jobs:
       - publish: $(Agent.BuildDirectory)/tempDocsBuild/public_build/
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - Docs build
-        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+        condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/build/build-docs-yaml'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
 
       # The rest of the file is needed to release the documentation.
       # - task: Npm@1
