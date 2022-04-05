@@ -50,7 +50,7 @@ Example:
       "type": "child-1",
       "label": "Child 1",
       "nestedRules": [{
-        "ruleType": "ChildNodes", // this rule now also returns children for `Child 1.2.1`
+        "ruleType": "ChildNodes",
         "specifications": [{
           "specType": "CustomNode",
           "type": "child-1.1",
