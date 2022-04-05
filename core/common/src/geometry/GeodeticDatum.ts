@@ -190,7 +190,9 @@ export type GridFileFormat =
   "FRENCH" |
   "JAPAN" |
   "ATS77" |
-  "GEOCN";
+  "GEOCN" |
+  "OSTN02" |
+  "OSTN15";
 
 /** type to indicate the grid file application direction.
  *  @public
