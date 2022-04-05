@@ -381,6 +381,22 @@ describe("IModelTransformerHub", () => {
     assert.isTrue(replayedDb.isBriefcaseDb());
     assert.equal(replayedDb.iTwinId, iTwinId);
 
+    // depiction of this test's change history (*synchronizations are not bidirectional so sync points aren't necessarily equivalent)
+    // branch1       .-> s0 -> s1 -> s2 -.-------------------------------------------.-> s4
+    // master  s0 --{---------------------`-> s2-.------------> s3c -.-> s3m -> s4 -'
+    // branch2       `-> s0 ----------------------`-> s2 -> s3 -----'
+    // =====================================================================================
+    // deltas (I=Insert,U=Update(bump property),D=Delete,IU=InsertAndUpdate[insert with bumped prop])
+    // 1:      I1        I1          U1
+    // 2:      I2        I2    U2
+    // 3:                      I3    D3
+    // 4:                      I4
+    // 5:                            I5
+    // 6:                            I6                                         U6
+    // 7:                                                   I7  IU7      IU7    D7
+    // 8:                                                   I8
+    // 9:                                                       I9
+
     try {
       // record provenance in Branch1 and Branch2 iModels
       const provenanceInserterB1 = new IModelTransformer(masterDb, branchDb1, {
@@ -461,9 +477,9 @@ describe("IModelTransformerHub", () => {
       const state3Master = [1, 2, -3, 4, 5, 6, 7, 9];
       maintainPhysicalObjects(masterDb, delta3Master);
       assertPhysicalObjects(masterDb, state3Master);
-      await saveAndPushChanges(masterDb, "State2 -> State3M");
-      const changesetMasterState3M = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState3M, changesetMasterState2);
+      await saveAndPushChanges(masterDb, "State2 -> State3Conflict");
+      const changesetMasterState3Conflict = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState3Conflict, changesetMasterState2);
 
       // merge changes made on Branch2 back to Master with a conflict
       const branch2ToMaster = new IModelTransformer(branchDb2, masterDb, {
@@ -475,9 +491,9 @@ describe("IModelTransformerHub", () => {
       assertPhysicalObjects(masterDb, state3Merged); // source wins conflicts
       assertPhysicalObjectUpdated(masterDb, 7); // if it was updated, then the master version of it won
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
-      await saveAndPushChanges(masterDb, "State3M -> State3");
-      const changesetMasterState3 = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState3, changesetMasterState2);
+      await saveAndPushChanges(masterDb, "State3Conflict -> State3Merged");
+      const changesetMasterState3Merged = masterDb.changeset.id;
+      assert.notEqual(changesetMasterState3Merged, changesetMasterState2);
       branchDb2.saveChanges(); // saves provenance locally in case of re-merge
 
       // make change directly on Master
@@ -485,9 +501,9 @@ describe("IModelTransformerHub", () => {
       const state4 = [1, 2, -3, 4, 5, 6, -7, 8, 9];
       maintainPhysicalObjects(masterDb, delta34);
       assertPhysicalObjects(masterDb, state4);
-      await saveAndPushChanges(masterDb, "State3 -> State4");
+      await saveAndPushChanges(masterDb, "State3Merged -> State4");
       const changesetMasterState4 = masterDb.changeset.id;
-      assert.notEqual(changesetMasterState4, changesetMasterState3);
+      assert.notEqual(changesetMasterState4, changesetMasterState3Merged);
 
       // merge Master to Branch1
       const masterToBranch1 = new IModelTransformer(masterDb, branchDb1);
