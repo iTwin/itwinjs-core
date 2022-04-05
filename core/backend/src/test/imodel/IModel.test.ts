@@ -93,6 +93,13 @@ describe("iModel", () => {
       const accountName = "devstoreaccount1";
       const containerId = "gcs";
       const container = IModelHost.appWorkspace.getContainer({ storageType, accountName, containerId });
+      try {
+        await container.cloudContainer?.checkForChanges();
+      } catch (e: unknown) {
+        // eslint-disable-next-line no-console
+        console.log(`can't update GCS Workspaces`);
+      }
+
       for (const dbName of gcsDbs) {
         const wsDbName = container.resolveDbFileName({ dbName });
         IModelHost.platform.addGcsWorkspaceDb(wsDbName, container.cloudContainer);
@@ -1724,22 +1731,6 @@ describe("iModel", () => {
   });
 
   it.only("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
-    // this commented-out code allows gcs workspace files. This test should be moved to an integration test when
-    // the gcs data is no longer delivered with the backend.
-    // const addGcsWs = async (id: string) => {
-    //   try {
-    //     const ws = await IModelHost.appWorkspace.getContainer({ id });
-    //     const fileName = ws.localFile;
-    //     IModelHost.appWorkspace.dropContainer(ws);
-    //     expect(IModelHost.platform.addGcsWorkspace(fileName)).to.be.true;
-    //   } catch (e) {
-    //     // eslint-disable-next-line no-console
-    //     console.log(`cannot load GCS Workspace: ${id}`);
-    //   }
-    // };
-
-    // await addGcsWs("usa");
-    // await addGcsWs("uk");
     const convertTest = async (fileName: string, fileGCS: GeographicCRSProps, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
 
       const args = {
