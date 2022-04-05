@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Fix OOM stemming from JS trying to parse a very large object. Prefer use of `JSON.parse()` for very large objects.\"",
+      "comment": "",
       "type": "none"
     }
   ],
