@@ -12,6 +12,7 @@ public;AbstractWidgetProps
 public;AbstractZoneLocation
 deprecated;AbstractZoneLocation
 public;ActionButton 
+public;AllowedUiItemProviderOverrides
 public;AlternateDateFormats
 public;ArrayValue 
 public;BackstageActionItem 
@@ -118,7 +119,6 @@ public;OnValueCommitFunc = (value: Primitives.Value) => void
 internal;or(...filter: IFilter[]): IFilter
 public;ParseResults
 public;PointProps
-beta;PossibleUiItemProviderOverrides
 public;Primitives
 public;PrimitiveValue 
 public;PropertyChangeResult

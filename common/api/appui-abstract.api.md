@@ -124,6 +124,16 @@ export interface ActionButton extends ToolbarItem {
 }
 
 // @public
+export interface AllowedUiItemProviderOverrides {
+    // @beta
+    providerId?: string;
+    // @beta
+    stageIds?: string[];
+    // @beta
+    stageUsages?: string[];
+}
+
+// @public
 export enum AlternateDateFormats {
     // (undocumented)
     IsoDateTime = 2,
@@ -1422,13 +1432,6 @@ export interface PointProps {
     readonly y: number;
 }
 
-// @beta
-export interface PossibleUiItemProviderOverrides {
-    providerId?: string;
-    stageIds?: string[];
-    stageUsages?: string[];
-}
-
 // @public
 export namespace Primitives {
     export type Boolean = boolean | string | {} | [];
@@ -2102,11 +2105,11 @@ export interface UiFlags {
     allowKeyinPalette?: boolean;
 }
 
-// @beta
-export type UiItemProviderOverrides = MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageUsages"> | MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageIds"> | // eslint-disable-line @typescript-eslint/indent
-MarkRequired<PossibleUiItemProviderOverrides, "stageIds"> | // eslint-disable-line @typescript-eslint/indent
-MarkRequired<PossibleUiItemProviderOverrides, "stageUsages"> | // eslint-disable-line @typescript-eslint/indent
-MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
+// @public
+export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
 
 // @public
 export interface UiItemProviderRegisteredEventArgs {

@@ -36,27 +36,33 @@ export interface UiItemProviderRegisteredEventArgs {
 }
 
 /** UiItemProviderOverrides allows the application that registers a provider to limit when it is allowed to provide items
- *  @beta
+ *  @public
  */
-export interface PossibleUiItemProviderOverrides {
-  /** allows providerId to be overridden in the items manager for cases where the same provider needs to provide different content to different stages */
+export interface AllowedUiItemProviderOverrides {
+  /** allows providerId to be overridden in the items manager for cases where the same provider needs to provide different content to different stages
+   * @beta
+   */
   providerId?: string;
-  /** if specified then the current stage's Usage will be compared before allowing any items to be provided */
+  /** if specified then the current stage's Usage will be compared before allowing any items to be provided
+   * @beta
+   */
   stageUsages?: string[];
-  /** if specified then the current stage's Id will be compared before allowing any items to be provided */
+  /** if specified then the current stage's Id will be compared before allowing any items to be provided
+   * @beta
+  */
   stageIds?: string[];
 }
 
 /** Allowed overrides applied to a UiItemsProvider the application that registers a provider to limit when it is allowed to provide items.
  * Note that if an override `providerId` is specified then either `stageIds` or `stageUsages` must be defined to limit when the provider's
  * items are allowed.
- *  @beta
+ *  @public
  */
-export type UiItemProviderOverrides = MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageUsages"> |
-  MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageIds"> |                                 // eslint-disable-line @typescript-eslint/indent
-  MarkRequired<PossibleUiItemProviderOverrides, "stageIds"> |                                                // eslint-disable-line @typescript-eslint/indent
-  MarkRequired<PossibleUiItemProviderOverrides, "stageUsages"> |                                             // eslint-disable-line @typescript-eslint/indent
-  MarkRequired<PossibleUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;                  // eslint-disable-line @typescript-eslint/indent
+export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> |
+  MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> |                                 // eslint-disable-line @typescript-eslint/indent
+  MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> |                                                // eslint-disable-line @typescript-eslint/indent
+  MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> |                                             // eslint-disable-line @typescript-eslint/indent
+  MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;                  // eslint-disable-line @typescript-eslint/indent
 
 /** Interface that defines an instance of a UiItemsProvider and its application specified overrides.
  *  @beta
