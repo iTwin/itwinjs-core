@@ -48,6 +48,7 @@
 - [Data Evolution Across Time](./fundamentals/schema-evolution/data-evolution-across-time.md)
 - [Schema Versioning](./fundamentals/schema-evolution/schema-versioning-and-generations.md)
 - [Schema Production Status](./fundamentals/schema-evolution/schema-production-status.md)
+- [Schema Design Guidelines](./fundamentals/schema-evolution/schema-design-guidelines.md)
 
 #### BIS Naming Guidelines
 
