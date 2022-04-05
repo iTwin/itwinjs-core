@@ -15,14 +15,6 @@ import { IModelApp } from "./IModelApp";
 
 let instance: ApproximateTerrainHeights | undefined;
 
-/** @internal */
-export type TerrainHeightRangeProps = [number, number]; // low, high
-
-/** @internal */
-export interface ApproximateTerrainHeightsProps {
-  [key: string]: TerrainHeightRangeProps | undefined;
-}
-
 /**
  * A collection of functions for approximating terrain height
  * @internal
@@ -30,7 +22,7 @@ export interface ApproximateTerrainHeightsProps {
 export class ApproximateTerrainHeights {
   public static readonly maxLevel = 6;
   public readonly globalHeightRange = Range1d.createXX(-400, 90000); // Dead Sea to Mount Everest.
-  private _terrainHeights?: ApproximateTerrainHeightsProps;
+  private _terrainHeights: any;
   private readonly _scratchCorners = [Cartographic.createZero(), Cartographic.createZero(), Cartographic.createZero(), Cartographic.createZero()];
   private readonly _tilingScheme = new GeographicTilingScheme(2, 1, true); // Y at top... ?
   private readonly _scratchTileXY = Point2d.createZero();
@@ -47,12 +39,12 @@ export class ApproximateTerrainHeights {
    * @return {Promise}
    */
   public async initialize(): Promise<void> {
-    if (!this._terrainHeights) {
+    if (undefined === this._terrainHeights) {
       const data = await request(`${IModelApp.publicPath}assets/approximateTerrainHeights.json`, {
         method: "GET",
         responseType: "json",
       });
-      this._terrainHeights = data.body as ApproximateTerrainHeightsProps;
+      this._terrainHeights = data.body;
     }
   }
 
