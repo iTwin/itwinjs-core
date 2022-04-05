@@ -62,6 +62,46 @@ describe("iModel", () => {
 
   before(async () => {
     originalEnv = { ...process.env };
+    const gcsDbs = [
+      "baseGCS",
+      "ostn",
+      "usa-vertcon",
+      "usa-harn",
+      "usa-nadcon",
+      "usa-nsrs2007",
+      "usa-nsrs2011",
+      "uk",
+      "uk-hs2",
+      "uk-networkrail",
+      "germany",
+      "japan",
+      "spain",
+      "australia",
+      "australia-agd66",
+      "australia-agd84",
+      "brazil",
+      "france",
+      "newzealand",
+      "portugal",
+      "slovakia",
+      "switzerland",
+      "venezuela",
+    ];
+    try {
+      const httpAddr = "127.0.0.1:10000";
+      const storageType = `azure?emulator=${httpAddr}&sas=1`;
+      const accountName = "devstoreaccount1";
+      const containerId = "gcs";
+      const container = IModelHost.appWorkspace.getContainer({ storageType, accountName, containerId });
+      for (const dbName of gcsDbs) {
+        const wsDbName = container.resolveDbFileName({ dbName });
+        IModelHost.platform.addGcsWorkspaceDb(wsDbName, container.cloudContainer);
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(`cannot load GCS Workspaces`);
+    }
+
     IModelTestUtils.registerTestBimSchema();
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
@@ -1683,7 +1723,7 @@ describe("iModel", () => {
     iModel2.close();
   });
 
-  it("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
+  it.only("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
     // this commented-out code allows gcs workspace files. This test should be moved to an integration test when
     // the gcs data is no longer delivered with the backend.
     // const addGcsWs = async (id: string) => {
@@ -1700,7 +1740,6 @@ describe("iModel", () => {
 
     // await addGcsWs("usa");
     // await addGcsWs("uk");
-
     const convertTest = async (fileName: string, fileGCS: GeographicCRSProps, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
 
       const args = {
