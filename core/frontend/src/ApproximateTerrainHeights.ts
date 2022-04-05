@@ -48,11 +48,12 @@ export class ApproximateTerrainHeights {
    */
   public async initialize(): Promise<void> {
     if (!this._terrainHeights) {
-      const data = await request(`${IModelApp.publicPath}assets/approximateTerrainHeights.json`, {
-        method: "GET",
-        responseType: "json",
-      });
-      this._terrainHeights = data.body as ApproximateTerrainHeightsProps;
+      // const data = await request(`${IModelApp.publicPath}assets/approximateTerrainHeights.json`, {
+      //   method: "GET",
+      //   responseType: "json",
+      // });
+      // this._terrainHeights = data.body as ApproximateTerrainHeightsProps;
+      this._terrainHeights = await import("./public/assets/approximateTerrainHeights.json").then((data) => data.default) as ApproximateTerrainHeightsProps;
     }
   }
 
