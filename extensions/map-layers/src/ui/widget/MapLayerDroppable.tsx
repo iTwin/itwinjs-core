@@ -54,7 +54,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
       <div className="map-manager-source-item" data-id={rubric.source.index} key={activeLayer.name}
         {...dragProvided.draggableProps}
         ref={dragProvided.innerRef} >
-        <Button styleType="borderless" className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { props.onItemVisibilityToggleClicked(activeLayer); }}>
+        <Button size="small" styleType="borderless" className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { props.onItemVisibilityToggleClicked(activeLayer); }}>
           <Icon iconSpec={activeLayer.visible ? "icon-visibility" : "icon-visibility-hide-2"} />
         </Button>
         <span className="map-manager-item-label" {...dragProvided.dragHandleProps}>{activeLayer.name}</span>
@@ -65,7 +65,8 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
         </div>
         {activeLayer.provider?.status === MapLayerImageryProviderStatus.RequireAuth &&
           <Button
-            className="map-manager-item-requireAuth"
+            size="small"
+            styleType="borderless"
             onClick={() => {
               const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndSource(activeLayer.name, activeLayer.source, activeLayer.isOverlay);
               if (indexInDisplayStyle !== undefined && indexInDisplayStyle >= 0) {

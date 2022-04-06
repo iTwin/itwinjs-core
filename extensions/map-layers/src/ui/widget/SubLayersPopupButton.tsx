@@ -45,7 +45,7 @@ export function SubLayersPopupButton({ mapLayerSettings, activeViewport }: SubLa
 
   return (
     <>
-      <Button styleType="borderless" ref={buttonRef} className="map-manager-item-sub-layer-button" title={popupOpen ? hideSubLayersLabel : showSubLayersLabel}
+      <Button size="small" styleType="borderless" ref={buttonRef} className="map-manager-item-sub-layer-button" title={popupOpen ? hideSubLayersLabel : showSubLayersLabel}
         onClick={togglePopup}>
         <WebFontIcon iconName="icon-layers" />
       </Button>

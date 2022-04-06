@@ -15,20 +15,7 @@ $hovered-icon-color: $buic-foreground-primary;
 
 .map-manager-header-buttons-group {
 .maplayers-settings-popup-button {
-  color: $buic-foreground-body;
-  font-size: 20px;
-  background-color: transparent;
-  border: none;
   position: relative;
   top: 1px;
-
-  &:hover {
-    color: $hovered-icon-color;
-    background-color: transparent;
-  }
-
-  &:focus {
-    outline: none;
-  }
 }
 }

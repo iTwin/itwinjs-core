@@ -20,27 +20,14 @@
   }
 }
 
-.map-manager-base-item {
+
 .map-transparency-popup-button {
-    &:hover {
-      background-color: transparent;
-      svg.checkered {
-        fill: $buic-foreground-primary;
-      }
-    }
-  color: $buic-foreground-body;
-  font-size: $iui-font-size;
-  height: 2.2em;
-  border: none;
-  margin-right: 2px;
+.transparent-button {
+  width: 16px;
+  height: 16px;
+}
 
-  .transparent-button {
-    width: 16px;
-    height: 16px;
-  }
-
-  svg.checkered {
-    fill: $buic-foreground-body;
-  }
+svg.checkered {
+  fill: $buic-foreground-body;
 }
 }
