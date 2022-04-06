@@ -309,7 +309,7 @@ Array [
                       },
                     ],
                     "pathFromRoot": Array [
-                      "0724c83a8f4da39d6b6e9fa6f0249214",
+                      "e51b2266d19b4300d39be2617531f8cb",
                       "1a4d09db5bdc365efcdbbf97cf82444b",
                       "bae951c69239e9a5f927a1578c2ea51d",
                       "6353eaa324a9bd3ce40812bb86657761",
@@ -339,7 +339,7 @@ Array [
                 "className": "BisCore:DefinitionPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
-                  "0724c83a8f4da39d6b6e9fa6f0249214",
+                  "e51b2266d19b4300d39be2617531f8cb",
                   "1a4d09db5bdc365efcdbbf97cf82444b",
                   "bae951c69239e9a5f927a1578c2ea51d",
                   "6353eaa324a9bd3ce40812bb86657761",
@@ -373,7 +373,7 @@ Array [
                       },
                     ],
                     "pathFromRoot": Array [
-                      "0724c83a8f4da39d6b6e9fa6f0249214",
+                      "e51b2266d19b4300d39be2617531f8cb",
                       "1a4d09db5bdc365efcdbbf97cf82444b",
                       "bae951c69239e9a5f927a1578c2ea51d",
                       "2cff3053e2f25e55b4e8c7b4d0c4b9ac",
@@ -403,7 +403,7 @@ Array [
                 "className": "BisCore:LinkPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
-                  "0724c83a8f4da39d6b6e9fa6f0249214",
+                  "e51b2266d19b4300d39be2617531f8cb",
                   "1a4d09db5bdc365efcdbbf97cf82444b",
                   "bae951c69239e9a5f927a1578c2ea51d",
                   "2cff3053e2f25e55b4e8c7b4d0c4b9ac",
@@ -435,7 +435,7 @@ Array [
               },
             ],
             "pathFromRoot": Array [
-              "0724c83a8f4da39d6b6e9fa6f0249214",
+              "e51b2266d19b4300d39be2617531f8cb",
               "1a4d09db5bdc365efcdbbf97cf82444b",
               "bae951c69239e9a5f927a1578c2ea51d",
             ],
@@ -466,15 +466,15 @@ Array [
           },
         ],
         "pathFromRoot": Array [
-          "0724c83a8f4da39d6b6e9fa6f0249214",
+          "e51b2266d19b4300d39be2617531f8cb",
           "1a4d09db5bdc365efcdbbf97cf82444b",
         ],
         "type": "ECInstancesNode",
         "version": 2,
       },
       "label": Object {
-        "displayValue": "Ñót spêçìfíêd",
-        "rawValue": "@RulesEngine:LABEL_General_NotSpecified@",
+        "displayValue": "DgnV8Bridge",
+        "rawValue": "DgnV8Bridge",
         "typeName": "string",
       },
     },
