@@ -1,6 +1,13 @@
 # iTwin.js iOS Testing
 
-trigger: none
+trigger:
+  branches:
+    include:
+      - master
+      - releases/*
+  paths:
+    include:
+      - tools/internal/ios
 pr: none
 schedules:
   - cron: "0 5 * * *"
@@ -9,9 +16,6 @@ schedules:
       include:
         - master
         - releases/*
-    paths:
-      include:
-        - tools/internal/ios
 
 variables:
   - group: iTwin.js ios and App Center variables
