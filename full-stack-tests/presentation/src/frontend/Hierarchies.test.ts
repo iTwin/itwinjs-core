@@ -43,7 +43,6 @@ describe("Hierarchies", () => {
               label: "filter r1",
               nestedRules: [{
                 ruleType: RuleTypes.ChildNodes,
-                condition: `ParentNode.Type = "nodeType1"`,
                 specifications: [{
                   specType: ChildNodeSpecificationTypes.CustomNode,
                   type: "nodeType11",
@@ -58,7 +57,6 @@ describe("Hierarchies", () => {
                   label: "other ch3",
                   nestedRules: [{
                     ruleType: RuleTypes.ChildNodes,
-                    condition: `ParentNode.Type = "nodeType13"`,
                     specifications: [{
                       specType: ChildNodeSpecificationTypes.CustomNode,
                       type: "nodeType131",
@@ -77,7 +75,6 @@ describe("Hierarchies", () => {
               label: "other r3",
               nestedRules: [{
                 ruleType: RuleTypes.ChildNodes,
-                condition: `ParentNode.Type = "nodeType3"`,
                 specifications: [{
                   specType: ChildNodeSpecificationTypes.CustomNode,
                   type: "nodeType31",
