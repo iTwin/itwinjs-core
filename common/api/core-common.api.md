@@ -3836,7 +3836,7 @@ export interface GridFileDefinitionProps {
 export type GridFileDirection = "Direct" | "Inverse";
 
 // @public
-export type GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN";
+export type GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN" | "OSTN02" | "OSTN15";
 
 // @public
 export class GridFileTransform implements GridFileTransformProps {
