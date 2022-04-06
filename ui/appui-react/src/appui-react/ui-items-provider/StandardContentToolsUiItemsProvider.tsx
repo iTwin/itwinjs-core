@@ -61,15 +61,7 @@ function getGroupPriority(potentialId: any, defaultValue: number) {
  */
 export class StandardContentToolsUiItemsProvider implements UiItemsProvider {
   public get id(): string { return "appui-react:StandardContentToolsUiItemsProvider"; }
-
-  public static register(defaultContentTools?: DefaultContentTools, overrides?: UiItemProviderOverrides) {
-    const provider = new StandardContentToolsUiItemsProvider(defaultContentTools);
-    UiItemsManager.register(provider, overrides);
-
-    // register core commands not automatically registered
-    ViewClipByPlaneTool.register();
-    return provider;
-  }
+  private _isClipToolRegistered = false;
 
   constructor(private defaultContextTools?: DefaultContentTools) { }
 
@@ -117,8 +109,14 @@ export class StandardContentToolsUiItemsProvider implements UiItemsProvider {
       if (!this.defaultContextTools || !this.defaultContextTools.vertical || this.defaultContextTools.vertical.measureGroup)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(20, CoreTools.measureToolGroup, { groupPriority: measureGroupPriority }));
 
-      if (!this.defaultContextTools || !this.defaultContextTools.vertical || this.defaultContextTools.vertical.sectionGroup)
+      if (!this.defaultContextTools || !this.defaultContextTools.vertical || this.defaultContextTools.vertical.sectionGroup) {
+        if (!this._isClipToolRegistered) {
+          // register core commands not automatically registered
+          ViewClipByPlaneTool.register();
+          this._isClipToolRegistered = true;
+        }
         items.push(ToolbarHelper.createToolbarItemFromItemDef(30, CoreTools.sectionToolGroup, { groupPriority: selectionGroupPriority }));
+      }
     }
     return items;
   }

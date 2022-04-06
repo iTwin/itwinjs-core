@@ -68,7 +68,9 @@ describe("StandardStatusbarUiItemsProvider", () => {
   });
 
   it("should register StandardStatusbarUiItemsProvider with defaults", () => {
-    const provider = StandardStatusbarUiItemsProvider.register();
+    const provider = new StandardStatusbarUiItemsProvider();
+    UiItemsManager.register(provider);
+
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     // Activity Item is not included by default
     expect(UiItemsManager.getStatusBarItems("test", StageUsage.General, undefined).length).to.eq(8);
@@ -77,7 +79,7 @@ describe("StandardStatusbarUiItemsProvider", () => {
   });
 
   it("should register StandardStatusbarUiItemsProvider with no separators", () => {
-    const provider = StandardStatusbarUiItemsProvider.register({
+    const provider = new StandardStatusbarUiItemsProvider({
       messageCenter: true,
       toolAssistance: true,
       activityCenter: true,
@@ -86,6 +88,8 @@ describe("StandardStatusbarUiItemsProvider", () => {
       selectionScope: true,
       selectionInfo: true,
     });
+    UiItemsManager.register(provider);
+
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     expect(UiItemsManager.getStatusBarItems("test", StageUsage.General, undefined).length).to.eq(7);
     UiItemsManager.unregister(provider.id);
@@ -93,14 +97,17 @@ describe("StandardStatusbarUiItemsProvider", () => {
   });
 
   it("should process all combinations of options", () => {
-    const provider = StandardStatusbarUiItemsProvider.register();
+    const provider = new StandardStatusbarUiItemsProvider();
+    UiItemsManager.register(provider);
+
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     // Activity Item is not included by default
     expect(UiItemsManager.getStatusBarItems("test", StageUsage.General).length).to.eq(8);
     UiItemsManager.unregister(provider.id);
 
     testArray.forEach((itemList: DefaultStatusbarItems) => {
-      const local_provider = StandardStatusbarUiItemsProvider.register(itemList);
+      const local_provider = new StandardStatusbarUiItemsProvider(itemList);
+      UiItemsManager.register(provider);
       expect(UiItemsManager.hasRegisteredProviders).to.be.true;
       UiItemsManager.getStatusBarItems("test", StageUsage.General);
       UiItemsManager.unregister(local_provider.id);

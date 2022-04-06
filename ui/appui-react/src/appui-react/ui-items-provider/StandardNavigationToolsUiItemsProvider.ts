@@ -7,8 +7,7 @@
  */
 
 import {
-  CommonToolbarItem, ToolbarOrientation, ToolbarUsage,
-  UiItemProviderOverrides, UiItemsManager, UiItemsProvider,
+  CommonToolbarItem, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
 } from "@itwin/appui-abstract";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
@@ -39,12 +38,6 @@ export interface DefaultNavigationTools {
 export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
   public get id(): string { return "appui-react:StandardNavigationToolsUiItemsProvider"; }
 
-  public static register(defaultNavigationTools?: DefaultNavigationTools, overrides?: UiItemProviderOverrides) {
-    const provider = new StandardNavigationToolsUiItemsProvider(defaultNavigationTools);
-    UiItemsManager.register(provider, overrides);
-    return provider;
-  }
-
   constructor(private defaultNavigationTools?: DefaultNavigationTools) { }
 
   public provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[] {
@@ -70,7 +63,7 @@ export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
         items.push(ToolbarHelper.createToolbarItemFromItemDef(60, CoreTools.viewRedoCommand));
       }
 
-    } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
+    } else /* istanbul ignore else */if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
 
       if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.walk)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.walkViewCommand));

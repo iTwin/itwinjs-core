@@ -44,20 +44,16 @@ export interface DefaultStatusbarItems {
 export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
   public get id(): string { return "appui-react:StandardStatusbarUiItemsProvider"; }
 
-  public static register(defaultItems?: DefaultStatusbarItems, overrides?: UiItemProviderOverrides) {
-    const provider = new StandardStatusbarUiItemsProvider(defaultItems);
-    UiItemsManager.register(provider, overrides);
-    return provider;
-  }
-
   constructor(private _defaultItems?: DefaultStatusbarItems) { }
 
   public provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
+    // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.messageCenter) {
       const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.MessageCenter", StatusBarSection.Left, 10, <MessageCenter />));
     }
+    // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.toolAssistance) {
       if (!this._defaultItems || this._defaultItems.preToolAssistanceSeparator)
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PreToolAssistance", StatusBarSection.Left, 15, <FooterSeparator />));
@@ -68,25 +64,30 @@ export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
       if (!this._defaultItems || this._defaultItems.postToolAssistanceSeparator)
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PostToolAssistance", StatusBarSection.Left, 25, <FooterSeparator />));
     }
+    // istanbul ignore else
     if (this._defaultItems?.activityCenter) {
       const ActivityCenter = withStatusFieldProps(ActivityCenterField);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ActivityCenter", StatusBarSection.Left, 30, <ActivityCenter />));
     }
+    // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.accuSnapModePicker) {
       const SnapMode = withMessageCenterFieldProps(SnapModeField);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.SnapMode", StatusBarSection.Center, 10, <SnapMode />));
     }
 
+    // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.tileLoadIndicator) {
       const TileLoadIndicator = withStatusFieldProps(TileLoadingIndicator);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.TileLoadIndicator", StatusBarSection.Right, 10, <TileLoadIndicator />));
     }
 
+    // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.selectionScope) {
       const SelectionScope = withStatusFieldProps(SelectionScopeField);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.SelectionScope", StatusBarSection.Right, 20, <SelectionScope />));
     }
 
+    // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.selectionInfo) {
       const SelectionInfo = withStatusFieldProps(SelectionInfoField);
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.SelectionInfo", StatusBarSection.Right, 30, <SelectionInfo />));

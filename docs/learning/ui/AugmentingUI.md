@@ -234,13 +234,9 @@ export class MyFrontstage {
         },
       };
 
-    StandardContentToolsUiItemsProvider.register(contentToolOptions, {stageIds: ["MainStage", "IssueResolution"]});
-
-    // Provides standard tools for NavigationWidget in ui2.0 stage
-    StandardNavigationToolsUiItemsProvider.register(undefined, {stageIds: ["MainStage", "IssueResolution"]});
-
-    // Provides standard status fields for ui2.0 stage
-    StandardStatusbarItemsProvider.register(undefined, {stageIds: ["MainStage", "IssueResolution"]});
+    UiItemsManager.register(new StandardContentToolsUiItemsProvider(contentToolOptions), {stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"]});
+    UiItemsManager.register(new StandardNavigationToolsUiItemsProvider(), {stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"]});
+    UiItemsManager.register(new StandardStatusbarItemsProvider(), {stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"]});
   }
 }
 

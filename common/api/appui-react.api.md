@@ -159,7 +159,6 @@ import { UiAdmin } from '@itwin/appui-abstract';
 import { UiDataProvider } from '@itwin/appui-abstract';
 import { UiEvent } from '@itwin/appui-abstract';
 import { UiEvent as UiEvent_2 } from '@itwin/core-react';
-import { UiItemProviderOverrides } from '@itwin/appui-abstract';
 import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UiLayoutDataProvider } from '@itwin/appui-abstract';
 import { UiStateEntry } from '@itwin/core-react';
@@ -5889,8 +5888,6 @@ export class StandardContentToolsUiItemsProvider implements UiItemsProvider {
     provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
     // (undocumented)
     provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    // (undocumented)
-    static register(defaultContentTools?: DefaultContentTools, overrides?: UiItemProviderOverrides): StandardContentToolsUiItemsProvider;
 }
 
 // @public
@@ -5954,8 +5951,6 @@ export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
     get id(): string;
     // (undocumented)
     provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[];
-    // (undocumented)
-    static register(defaultNavigationTools?: DefaultNavigationTools, overrides?: UiItemProviderOverrides): StandardNavigationToolsUiItemsProvider;
 }
 
 // @alpha
@@ -5989,8 +5984,6 @@ export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
     get id(): string;
     // (undocumented)
     provideStatusBarItems(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
-    // (undocumented)
-    static register(defaultItems?: DefaultStatusbarItems, overrides?: UiItemProviderOverrides): StandardStatusbarUiItemsProvider;
 }
 
 // @public
