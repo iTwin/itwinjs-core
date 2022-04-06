@@ -11,7 +11,7 @@ import {
   SyncUiEventDispatcher,
   UiFramework,
 } from "@itwin/appui-react";
-import { StageUsage, StandardContentLayouts, UiSyncEventArgs } from "@itwin/appui-abstract";
+import { StageUsage, StandardContentLayouts, UiItemsManager, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";
@@ -135,7 +135,7 @@ export class FrontstageUi2 {
   private static registerToolProviders() {
 
     // Provides standard tools for ToolWidget in ui2.0 stage
-    StandardContentToolsUiItemsProvider.register({
+    UiItemsManager.register(new StandardContentToolsUiItemsProvider({
       vertical: {
         selectElement: true,
       },
@@ -146,13 +146,13 @@ export class FrontstageUi2 {
         isolate: "group",
         emphasize: "element",
       },
-    }, { providerId: "ui2-standardContentTools", stageIds: [FrontstageUi2.stageId] });
+    }), { providerId: "ui2-standardContentTools", stageIds: [FrontstageUi2.stageId] });
 
     // Provides standard tools for NavigationWidget in ui2.0 stage
-    StandardNavigationToolsUiItemsProvider.register(undefined, { providerId: "ui2-standardNavigationTools", stageIds: [FrontstageUi2.stageId] });
+    UiItemsManager.register(new StandardNavigationToolsUiItemsProvider(), { providerId: "ui2-standardNavigationTools", stageIds: [FrontstageUi2.stageId] });
 
     // Provides standard status fields for ui2.0 stage
-    StandardStatusbarUiItemsProvider.register(undefined, { providerId: "ui2-standardStatusItems", stageIds: [FrontstageUi2.stageId] });
+    UiItemsManager.register(new StandardStatusbarUiItemsProvider(), { providerId: "ui2-standardStatusItems", stageIds: [FrontstageUi2.stageId] });
 
     // Provides example widgets ui2.0 stage
     AppUi2StageItemsProvider.register(FrontstageUi2.showCornerButtons);
