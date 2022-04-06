@@ -24,7 +24,7 @@ Elements of the same *Element class* need to be often further classified. Such a
 
 Common examples of secondary classifications include elements that can be ordered from catalogs: *Pump ABC-123* and *Pump XYZ-123* are secondary classifications of `Pump` as a primary concept. This classification scheme can be applied to elements not organized into catalogs too. *Wearing course layer*, *Base course layer* and *Sub-base course layer* are secondary classifications of `Course` as a primary concept.
 
-BIS includes the concept of `Type Definitions` to cover such needs. Please refer to [Type Definitions](../physical-perspective/type-definitions.md) for more details.
+BIS includes the concept of `Type Definitions` to cover such needs. Please refer to [Type Definitions](./type-definitions.md) for more details.
 
 ## Data classification via Categories
 
@@ -37,5 +37,5 @@ Please refer to [Categories](./categories.md) for more details.
 Various externally-defined standards exist that introduce classification systems targeting specific disciplines or workflows. BIS can capture those classification systems in parallel to the schemes described above via the classes and patterns introduced by the [ClassificationSystems](../../domains/classificationsystems.ecschema/) schema.
 
 ---
-| Next: [Categories](./categories.md)
+| Next: [Type Definitions](./type-definitions.md)
 |:---

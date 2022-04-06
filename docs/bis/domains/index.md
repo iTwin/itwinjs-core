@@ -10,10 +10,8 @@ BIS domains are organized in this reference according to their intended [layer](
 
 ### [Common domains](./common-domains.md)
 
-### [Multi-discipline domains](./multidiscipline-domains.md)
+### [Discipline-Physical domains](./discipline-physical-domains.md)
 
-### [Building domains](./building-domains.md)
-
-### [Civil domains](./civil-domains.md)
+### [Discipline-Other domains](./discipline-other-domains.md)
 
 ### [Standard schemas](./standard-schemas.md)

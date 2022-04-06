@@ -39,5 +39,5 @@ The following instance diagram shows an example of a composite beam as an hetero
 &nbsp;
 
 ---
-| Next: [Functional Models and Elements](../other-perspectives/functional-models-and-elements.md)
+| Next: [Quantity takeoffs: Guidelines](./qto-guidelines.md)
 |:---

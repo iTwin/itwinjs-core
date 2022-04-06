@@ -24,5 +24,5 @@ This diagram shows both the class hierarchy for a `PhysicalElement` modeling a c
 Though we describe types here in terms of PhysicalElements, this pattern can be applied to other kinds of Elements. The relationships `GeometricElement2dHasTypeDefinition` and `GeometricElement3dHasTypeDefinition` make the pattern usable for geometric elements, but new relationships classes could be added to support a "type-system" for other kinds of Elements.
 
 ---
-| Next: [Functional Models and Elements](../other-perspectives/functional-models-and-elements.md)
+| Next: [Categories](./categories.md)
 |:---

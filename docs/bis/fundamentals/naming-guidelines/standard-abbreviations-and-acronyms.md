@@ -17,7 +17,7 @@ Consistency should be the primary goal when naming new concepts in the context o
 |---------|--------|
 | 1d, 2d, 3d  | One-, Two-, Three-Dimensional (note lowercase "d")
 | Html | HyperText Markup Language |
-| EC | Entity Classification
+| EC | Engineering Content
 | IO | Input/Output |
 | UI | User Interface |
 | Uri | Universal Resource Identifier See [http://www.w3.org/TR/uri-clarification](http://www.w3.org/TR/uri-clarification). We prefer the term Uri over Url/Urn for the reasons mentioned in the line above. If it is truly an Urn then rather use ‘Code’ |

@@ -19,6 +19,7 @@
 - [Relationship Fundamentals](./fundamentals/foundation/relationship-fundamentals.md)
 - [Schemas (“Domains”)](./fundamentals/foundation/schemas-domains.md)
 - [Data Classification](./fundamentals/foundation/data-classification.md)
+- [Type Definitions](./fundamentals/foundation/type-definitions.md)
 - [Categories](./fundamentals/foundation/categories.md)
 
 #### Data Organization
@@ -35,7 +36,6 @@
 - [3D Guidance](./fundamentals/physical-perspective/3d-guidance.md)
 - [PhysicalModel Hierarchy](./fundamentals/physical-perspective/physical-hierarchy-organization.md)
 - [Physical Models and Elements](./fundamentals/physical-perspective/physical-models-and-elements.md)
-- [Type Definitions](./fundamentals/physical-perspective/type-definitions.md)
 - [Physical Materials](./fundamentals/physical-perspective/physical-materials.md)
 
 #### Other Modeling Perspectives
