@@ -2610,7 +2610,6 @@ importers:
       internal-tools: workspace:*
       npm-run-all: ^4.1.5
       null-loader: ^0.1.1
-      path-browserify: ^1.0.1
       rimraf: ^3.0.2
       typescript: ~4.4.0
       webpack: 4.42.0
@@ -2632,7 +2631,6 @@ importers:
       '@itwin/imodels-client-authoring': 1.0.1
       '@itwin/reality-data-client': 0.7.0
       body-parser: 1.19.2
-      path-browserify: 1.0.1
     devDependencies:
       '@bentley/react-scripts': 5.0.0-dev.3_typescript@4.4.4
       '@itwin/build-tools': link:../../tools/build
