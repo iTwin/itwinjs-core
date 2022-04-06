@@ -1185,7 +1185,11 @@ class CanvasState {
   public updateDimensions(pixelRatio: number): boolean {
     const w = Math.floor(this.canvas.clientWidth * pixelRatio);
     const h = Math.floor(this.canvas.clientHeight * pixelRatio);
-    if (w === this._width && h === this._height)
+
+    // Do not update the dimensions if not needed, or if new width or height is 0, which is invalid.
+    // NB: the 0-dimension check indirectly resolves an issue when a viewport is dropped and immediately re-added
+    // to the view manager. See ViewManager.test.ts for more details.
+    if (w === this._width && h === this._height || (0 === w || 0 === h))
       return false;
 
     // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance.
