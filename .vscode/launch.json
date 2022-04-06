@@ -775,8 +775,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "queryDbs",
-        "--config=d:/temp/workspaceEditor.json"
+        "@g:/importAll.txt",
+        "--config=g:/createGcs.json"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",

@@ -23,7 +23,7 @@ import {
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import {
-  BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
+  BisCoreSchema, Category, ClassRegistry, CloudSqlite, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
@@ -62,48 +62,27 @@ describe("iModel", () => {
 
   before(async () => {
     originalEnv = { ...process.env };
-    const gcsDbs = [
-      "baseGCS",
-      "ostn",
-      "usa-vertcon",
-      "usa-harn",
-      "usa-nadcon",
-      "usa-nsrs2007",
-      "usa-nsrs2011",
-      "uk",
-      "uk-hs2",
-      "uk-networkrail",
-      "germany",
-      "japan",
-      "spain",
-      "australia",
-      "australia-agd66",
-      "australia-agd84",
-      "brazil",
-      "france",
-      "newzealand",
-      "portugal",
-      "slovakia",
-      "switzerland",
-      "venezuela",
-    ];
     try {
       const httpAddr = "127.0.0.1:10000";
       const storageType = `azure?emulator=${httpAddr}&sas=1`;
       const accountName = "devstoreaccount1";
       const containerId = "gcs";
-      const container = IModelHost.appWorkspace.getContainer({ storageType, accountName, containerId });
-      try {
-        await container.cloudContainer?.checkForChanges();
-      } catch (e: unknown) {
-        // eslint-disable-next-line no-console
-        console.log(`can't update GCS Workspaces`);
+      const container = IModelHost.appWorkspace.getContainer({ storageType, accountName, containerId, sasToken: "" });
+      const cloudContainer = container.cloudContainer;
+      if (cloudContainer) {
+        try {
+          await cloudContainer.checkForChanges();
+        } catch (e: unknown) {
+          // eslint-disable-next-line no-console
+          console.log(`can't update GCS Workspaces`);
+        }
       }
-
-      for (const dbName of gcsDbs) {
-        const wsDbName = container.resolveDbFileName({ dbName });
-        IModelHost.platform.addGcsWorkspaceDb(wsDbName, container.cloudContainer);
-      }
+      let wsDbName = container.resolveDbFileName({ dbName: "data" });
+      IModelHost.platform.addGcsWorkspaceDb(wsDbName, container.cloudContainer, true);
+      wsDbName = container.resolveDbFileName({ dbName: "base" });
+      IModelHost.platform.addGcsWorkspaceDb(wsDbName, container.cloudContainer, true);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      // CloudSqlite.prefetch(container.cloudContainer!, wsDbName);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(`cannot load GCS Workspaces`);

@@ -17,7 +17,7 @@ import {
 import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
-// cspell:ignore nodir
+// cspell:ignore nodir nocase
 /* eslint-disable id-blacklist,no-console */
 
 /** Currently executing an "@" script? */
@@ -120,6 +120,7 @@ async function createWorkspaceDb(args: WorkspaceDbOpt) {
   const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer({ ...args, writeable: true }));
   await wsFile.createDb();
   showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
+  wsFile.close();
 }
 
 /** open, call a function to process, then close a WorkspaceDb */
@@ -136,7 +137,11 @@ function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceDbOpt>(
 /** get a WorkspaceContainer that may or may not be a cloud container. */
 async function getContainer(args: EditorOpts) {
   const container = IModelHost.appWorkspace.getContainer({ ...args, writeable: true });
-  await container.cloudContainer?.checkForChanges();
+  try {
+    await container.cloudContainer?.checkForChanges();
+  } catch (e: unknown) {
+    showMessage("Cannot connect to server");
+  }
   return container;
 }
 
@@ -161,7 +166,8 @@ async function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: Editabl
   fixVersionArg(args);
 
   const ws = new EditableWorkspaceDb(args, await getContainer(args));
-  if (ws.container.cloudContainer?.queryDatabase(ws.dbFileName)?.state !== "copied")
+  const cloudContainer = ws.container.cloudContainer;
+  if (cloudContainer && cloudContainer.queryDatabase(ws.dbFileName)?.state !== "copied")
     throw new Error(`${args.dbFileName} is not editable. Create a new version first`);
 
   processWorkspace(args, ws, fn);
@@ -181,22 +187,22 @@ async function listWorkspaceDb(args: ListOptions) {
 
     if (args.strings) {
       showMessage(" strings:");
-      file.sqliteDb.withSqliteStatement("SELECT id,value FROM strings", (stmt) => {
+      file.sqliteDb.withSqliteStatement("SELECT id,value FROM strings ORDER BY id COLLATE NOCASE", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step())
           showMessage(`  name=${stmt.getValueString(0)}, size=${stmt.getValueString(1).length}`);
       });
     }
     if (args.blobs) {
       showMessage(" blobs:");
-      file.sqliteDb.withSqliteStatement("SELECT id,value FROM blobs", (stmt) => {
+      file.sqliteDb.withSqliteStatement("SELECT id,LENGTH(value) FROM blobs ORDER BY id COLLATE NOCASE", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step())
-          showMessage(`  name=${stmt.getValueString(0)}, size=${stmt.getColumnBytes(1)}`);
+          showMessage(`  name=${stmt.getValueString(0)}, size=${stmt.getValueInteger(1)}`);
       });
 
     }
     if (args.files) {
       showMessage(" files:");
-      file.sqliteDb.withSqliteStatement("SELECT name FROM be_EmbedFile", (stmt) => {
+      file.sqliteDb.withSqliteStatement("SELECT name FROM be_EmbedFile ORDER BY name COLLATE NOCASE", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step()) {
           const embed = file.queryFileResource(stmt.getValueString(0));
           if (embed) {
@@ -462,7 +468,7 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
       const dirty = db.dirtyBlocks ? `, ${db.dirtyBlocks} dirty` : "";
       const pinned = db.pinned !== 0 ? ", pinned" : "";
       const editable = db.state === "copied" ? ", editable" : "";
-      showMessage(` "${dbName}", size=${db.totalBlocks * 4}Mb, ${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}% downloaded${editable}${dirty}${pinned}`);
+      showMessage(` "${dbName}", size=${db.totalBlocks * 4}Mb, ${db.localBlocks * 4}Mb (${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}%) downloaded${editable}${dirty}${pinned}`);
     }
   }
 }
@@ -512,7 +518,6 @@ const addOrReplace = {
 };
 Yargs.usage("Edits or lists contents of a WorkspaceDb");
 Yargs.wrap(Math.min(150, Yargs.terminalWidth()));
-Yargs.strict();
 Yargs.env("WORKSPACE_EDITOR");
 Yargs.config();
 Yargs.help();
@@ -669,7 +674,7 @@ async function runScript(arg: EditorProps & { scriptName: string }) {
 
 /** Parse and execute WorkspaceEditor commands */
 async function main() {
-  if (process.argv[2][0] === "@") {
+  if (process.argv.length > 1 && process.argv[2]?.[0] === "@") {
     const parsed = Yargs.parseSync(process.argv.slice(3));
     if (parsed.config)
       process.env.WORKSPACE_EDITOR_CONFIG = parsed.config as string;
