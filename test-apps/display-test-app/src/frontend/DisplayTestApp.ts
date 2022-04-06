@@ -29,8 +29,6 @@ const getFrontendConfig = () => {
     Object.assign(configuration, getConfig());
   }
 
-  Object.assign(configuration, getConfig());
-
   // Overriding the configuration generally requires setting environment variables, rebuilding the app, and restarting the app from scratch -
   // and sometimes that doesn't even work.
   // If you want to quickly adjust aspects of the configuration on the frontend, you can instead add your overrides below and just hot-reload the app in the browser/electron.
