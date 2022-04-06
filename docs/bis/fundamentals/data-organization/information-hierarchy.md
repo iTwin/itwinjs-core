@@ -8,30 +8,22 @@ The hierarchies in BIS repositories are intended to facilitate both human and so
 
 ## Hierarchy Constructs
 
-As was explained in [Model Fundamentals](../foundation/model-fundamentals.md), there are only three mechanisms available in BIS to create a hierarchy:
+There are several mechanisms available in BIS that domain authors can take advantage of in order to organize elements into hierarchies:
 
-<!-- TODO: This is no longer true. There are more mechanisms in BIS to create a hierarchy. E.g. SpatialComposition, External Sources -->
+* A Model can contain Elements.
+* An Element can be *modeled* by (broken down into more detail by) a *SubModel*.
+* An Element can own child Elements.
+* A *Spatial Organizer* can hold an Element as part of the spatial decomposition of a *Facility*, in light of a specific discipline.
+* A *Physical System* can group a member Element.
+* The provenance of an Element can be traced to an *External Source*, whose organization may be hierarchical.
 
-* A Model can contain Elements
-* An Element can own child Elements
-* An Element can be *modeled* by (broken down into more detail by) a *SubModel*
-
-Each of these three mechanism is intended to be used in specific circumstances which are explained in this chapter.
+Each of these mechanism is intended to be used in specific circumstances which are explained in this chapter.
 
 ### Model Contains Elements
 
 A Model is a *container* for Elements.
 Models are a way to subdivide and organize the overall repository.
 Each Element is contained by exactly 1 Model as defined by the `ModelContainsElements` relationship.
-
-### Element Owns Child Elements
-
-An Element can own child Elements.
-This is useful for modeling *assembly* relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements.
-An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship.
-An Element without a parent is considered a *top-level* Element.
-An Element with a parent is considered a *child* Element.
-These hierarchies can go N levels deep, which means that an Element can be both a parent and a child.
 
 ### Model Models Element
 
@@ -45,6 +37,36 @@ There is no special class for a *SubModel*, only the standard `Model` subclasses
 For example, a `DrawingModel` breaks down a `Drawing` Element and contains the `DrawingGraphic` Elements that are the details of the overall drawing.
 
 <!-- TODO: insert figure -->
+
+### Element Owns Child Elements
+
+An Element can own child Elements.
+This is useful for modeling *assembly* relationships or for modeling cases where one Element exclusively controls the lifetime of other Elements.
+An Element can have 0 or 1 parent Elements as defined by the `ElementOwnsChildElements` relationship.
+An Element without a parent is considered a *top-level* Element.
+An Element with a parent is considered a *child* Element.
+These hierarchies can go N levels deep, which means that an Element can be both a parent and a child.
+
+### Element Held by Spatial Organizer
+
+A Spatial Organizer, typically a subclass of `spcomp:SpatialStructureElement` or `spcomp:Zone`, can hold Elements.
+These concepts are part of the rules and patterns introduced by the [SpatialComposition](../../domains/spatialcomposition.ecschema/) schema. They aim to enable the modeling of the Spatial Structure of infrastructure.
+The resulting hierarchy can define as many levels as needed.
+These Spatial Composition hierarchies can co-exist with the other organization mechanisms listed above.
+For more details about Spatial Composition in BIS, please refer to the [Spatial Composition](./spatial-composition.md) topic later in this chapter.
+
+### Physical System Groups Members
+
+A Physical System can group member-Elements which, together, provide a specific function.
+These Physical System hierarchies can co-exist with the other organization mechanisms listed above.
+For more details about Physical Systems in BIS, please refer to the [Modeling Systems](./modeling-systems.md) topic later in this chapter.
+
+### Element Is From Source
+
+An Element's provenance, captured by `bis:ExternalSourceAspect`s attached to it, can refer to the External Source it came from.
+External Sources can be organized in a hierarchical manner, reflecting how they are laid out in the external repository.
+These External Source hierarchies can co-exist with the other organization mechanisms listed above.
+For more details about External Sources in BIS, please refer to the [BisCore](../../domains/biscore.ecschema/#externalsource) documentation.
 
 ## Top of the World
 

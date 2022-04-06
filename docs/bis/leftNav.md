@@ -28,6 +28,7 @@
 - [Top of the World](./fundamentals/data-organization/top-of-the-world.md)
 - [Single Responsible Party Principle](./fundamentals/data-organization/srpp.md)
 - [Organizing Models and Elements](./fundamentals/data-organization/organizing-models-and-elements.md)
+- [Spatial Composition](./fundamentals/data-organization/spatial-composition.md)
 - [Modeling Systems](./fundamentals/data-organization/modeling-systems.md)
 - [Overlapping Systems](./fundamentals/data-organization/overlapping-systems.md)
 - [Organizing Repository-global Definition Elements](./fundamentals/data-organization/organizing-definition-elements.md)
@@ -37,6 +38,7 @@
 - [PhysicalModel Hierarchy](./fundamentals/physical-perspective/physical-hierarchy-organization.md)
 - [Physical Models and Elements](./fundamentals/physical-perspective/physical-models-and-elements.md)
 - [Physical Materials](./fundamentals/physical-perspective/physical-materials.md)
+- [Quantity Takeoffs: Guidelines](./fundamentals/physical-perspective/qto-guidelines.md)
 
 #### Other Modeling Perspectives
 - [Functional Models and Elements](./fundamentals/other-perspectives/functional-models-and-elements.md)

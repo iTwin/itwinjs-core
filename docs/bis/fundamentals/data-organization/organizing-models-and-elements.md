@@ -1,6 +1,6 @@
 # Organizing Models and Elements
 
-[Information Hierarchy](./information-hierarchy.md) explains the mechanics of how `Model`s, `Element`s and parent-child relationships among `Element`s can be used together to model [Entities](../glossary.md#Entity) in the real-world from various [Modeling Perspectives](./modeling-perspectives.md) and at various [Modeling Granularities](../glossary.md#Granularity).
+[Information Hierarchy](./information-hierarchy.md) explains the mechanics of how `Element`s can be organized into various kinds of hierarchies, which can be used together to model [Entities](../glossary.md#Entity) in the real-world from various [Modeling Perspectives](./modeling-perspectives.md) and at various [Modeling Granularities](../glossary.md#Granularity).
 
 [Top of the World](./top-of-the-world.md) explains how and why Elements are structured within the [RepositoryModel](../glossary.md#RepositoryModel) to describe what the [BIS Repository](../glossary.md#Bis-Repository) is “about”. The ‘leaf nodes’ in the `RepositoryModel` are [InformationPartitionElements](../glossary.md#InformationPartitionElement) (henceforth “partitions”) that establish a [Modeling Perspective](./modeling-perspectives.md) for a given [Subject](../glossary.md#Subject).
 
