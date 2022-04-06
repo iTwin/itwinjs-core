@@ -20,10 +20,16 @@
   }
 }
 
+.map-manager-base-item {
 .map-transparency-popup-button {
+    &:hover {
+      background-color: transparent;
+      svg.checkered {
+        fill: $buic-foreground-primary;
+      }
+    }
   color: $buic-foreground-body;
   font-size: $iui-font-size;
-  background-color: transparent;
   height: 2.2em;
   border: none;
   margin-right: 2px;
@@ -36,18 +42,5 @@
   svg.checkered {
     fill: $buic-foreground-body;
   }
-
-  &:hover {
-    color: $buic-foreground-primary-tone;
-    cursor: auto;
-
-    svg.checkered {
-      fill: $buic-foreground-primary-tone;
-    }
-  }
-
-  &:focus {
-    box-shadow: $uicore-button-focus-boxshadow;
-    outline: none;
-  }
+}
 }

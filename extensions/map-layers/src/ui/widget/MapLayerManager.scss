@@ -6,24 +6,8 @@
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 $divider-color: $buic-background-toolbutton-stroke;
-$hovered-icon-color: $buic-foreground-primary-tone;
-
-button.map-manager-item-visibility {
-  background-color: transparent;
-  border: none;
-  color: $buic-foreground-body;
-  background-color: transparent;
-
-  &:hover {
-    color: $hovered-icon-color;
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: $uicore-button-focus-boxshadow;
-  }
-}
-
+$hovered-icon-color: $buic-foreground-primary;
+$default-icon-height: 20px;
 .map-manager-layer-host {
   margin: 0 6px;
   height: 100%;
@@ -66,9 +50,8 @@ button.map-manager-item-visibility {
     padding-right: 5px;
   }
 
-  .map-manager-toggle {
-    height: 24px;
-  }
+  // .map-manager-toggle {
+  // }
 }
 
 .map-manager-container {
@@ -98,20 +81,13 @@ button.map-manager-item-visibility {
     padding-left: 10px;
 
     .map-manager-attach-layer-button {
-      background-color: transparent;
       margin-left: auto;
       width: 40px;
-      border: none;
-      color: $buic-foreground-body;
+      height: $default-icon-height;
       margin-right: 2px;
-
       &:hover {
+        background-color: transparent;
         color: $hovered-icon-color;
-      }
-
-      &:focus {
-        box-shadow: $uicore-button-focus-boxshadow;
-        outline: none;
       }
     }
   }
@@ -308,20 +284,15 @@ button.map-manager-item-visibility {
     margin-right: 6px;
   }
 
-  button.map-manager-item-visibility {
+  .map-manager-item-visibility {
     border: none;
     margin: 0 2px;
-    background-color: $buic-background-1;
-    color: $buic-foreground-body;
-
+    height: $default-icon-height;
     &:hover {
+      background-color: transparent;
       color: $hovered-icon-color;
     }
 
-    &:focus {
-      outline: none;
-      box-shadow: $uicore-button-focus-boxshadow;
-    }
   }
 
   button.map-manager-item-requireAuth {
@@ -339,38 +310,32 @@ button.map-manager-item-visibility {
       box-shadow: $uicore-button-focus-boxshadow;
     }
   }
-}
+  .map-layer-settings {
+    border: none;
+    background-color: transparent;
+    color: $buic-foreground-body;
+    height: $default-icon-height;
+    margin-left: 2px;
 
-.map-layer-settings {
-  border: none;
-  background-color: $buic-background-1;
-  color: $buic-foreground-body;
-  margin-left: 2px;
-
-  &:hover {
-    color: $hovered-icon-color;
+    &:hover {
+      background-color: transparent;
+      color: $hovered-icon-color;
+    }
   }
 
-  &:focus {
-    box-shadow: $uicore-button-focus-boxshadow;
-    outline: none;
-  }
-}
+  .map-manager-item-sub-layer-button {
+    border: none;
+    height: $default-icon-height;
+    background-color: transparent;
+    color: $buic-foreground-body;
 
-.map-manager-item-sub-layer-button {
-  border: none;
-  background-color: $buic-background-1;
-  color: $buic-foreground-body;
-
-  &:hover {
-    color: $hovered-icon-color;
-  }
-
-  &:focus {
-    box-shadow: $uicore-button-focus-boxshadow;
-    outline: none;
+    &:hover {
+      background-color: transparent;
+      color: $hovered-icon-color;
+    }
   }
 }
+
 
 .map-manager-item-sub-layer-container {
   @include uicore-z-index(dialog-popup);
