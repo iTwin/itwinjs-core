@@ -22,6 +22,7 @@ import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored in the ModelSelector.
  * @public
+ * @extensions
  */
 export class SpatialViewState extends ViewState3d {
   /** @internal */
@@ -222,6 +223,7 @@ export class SpatialViewState extends ViewState3d {
 }
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
  * @public
+ * @extensions
  */
 export class OrthographicViewState extends SpatialViewState {
   /** @internal */

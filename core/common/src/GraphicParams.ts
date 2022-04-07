@@ -13,6 +13,7 @@ import { RenderMaterial } from "./RenderMaterial";
 
 /** Flags indicating whether and how the interiors of closed planar regions is displayed within a view.
  * @public
+ * @extensions
  */
 export enum FillFlags {
   /** No fill */
