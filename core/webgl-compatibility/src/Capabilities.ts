@@ -73,6 +73,12 @@ const buggyIntelMatchers = [
   /ANGLE \(Intel, Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
 ];
 
+// Regexes to match Mali GPUs known to suffer from GraphicsDriverBugs.msaaWillHang.
+const buggyMaliMatchers = [
+  /Mali-G71/,
+  /Mali-G76/,
+];
+
 // Regexes to match as many Intel integrated GPUs as possible.
 // https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
 const integratedIntelGpuMatchers = [
@@ -326,6 +332,8 @@ export class Capabilities {
     this._driverBugs = {};
     if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
+    if (unmaskedRenderer && buggyMaliMatchers.some((x) => x.test(unmaskedRenderer)))
+      this._driverBugs.msaaWillHang = true;
 
     return {
       status: this._getCompatibilityStatus(missingRequiredFeatures, missingOptionalFeatures),
