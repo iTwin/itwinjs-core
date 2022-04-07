@@ -60,7 +60,7 @@ More advanced linking syntax should not be used as it would distract in the lint
 
 ### @extensions
 
-The `@extensions` tag indicates that an API item is officially included in the `@twin/core-extension` API and can be used to develop *iTwinjs Extensions*.
+The `@extensions` tag indicates that an API item is officially included in the `@twin/core-extension` API and can be used to develop *iTwin.js Extensions*.
 
 > Note: only *public* API items can have an `@extensions` tag (there is an lint rule to check).
 
