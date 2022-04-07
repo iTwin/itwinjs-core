@@ -76,13 +76,14 @@ describe("iModel", () => {
           // eslint-disable-next-line no-console
           console.log(`can't update GCS Workspaces`);
         }
+        const version = "^1.0.0";
+        let wsDbName = container.resolveDbFileName({ dbName: "data", version });
+        IModelHost.platform.addGcsWorkspaceDb(wsDbName, cloudContainer, true);
+        wsDbName = container.resolveDbFileName({ dbName: "base", version });
+        IModelHost.platform.addGcsWorkspaceDb(wsDbName, cloudContainer, true);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        CloudSqlite.prefetch(cloudContainer, wsDbName);
       }
-      let wsDbName = container.resolveDbFileName({ dbName: "data" });
-      IModelHost.platform.addGcsWorkspaceDb(wsDbName, container.cloudContainer, true);
-      wsDbName = container.resolveDbFileName({ dbName: "base" });
-      IModelHost.platform.addGcsWorkspaceDb(wsDbName, container.cloudContainer, true);
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      // CloudSqlite.prefetch(container.cloudContainer!, wsDbName);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.log(`cannot load GCS Workspaces`);
