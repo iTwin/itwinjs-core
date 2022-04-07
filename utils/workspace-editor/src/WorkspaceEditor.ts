@@ -390,6 +390,13 @@ async function purgeWorkspace(args: EditorOpts) {
   showMessage(`purged ${sayContainer(args)}. ${nGarbage - container.garbageBlocks} garbage blocks cleaned`);
 }
 
+/** detach a WorkspaceContainer from the local cache. */
+async function detachWorkspace(args: EditorOpts) {
+  const container = await getCloudContainer(args);
+  container.detach();
+  showMessage(`detached ${sayContainer(args)}.`);
+}
+
 /** Make a copy of a WorkspaceDb with a new name. */
 async function copyWorkspaceDb(args: CopyWorkspaceDbOpt) {
   const container = await getCloudContainer(args);
@@ -497,10 +504,10 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
 
       await cmd(args);
     } catch (e: any) {
-      if (typeof e.errorNumber === "number")
-        e = new BentleyError(e.errorNumber, e.message);
-
-      console.error(BentleyError.getErrorMessage(e));
+      if (typeof e.message === "string")
+        console.error(e.message);
+      else
+        console.log(BentleyError.getErrorMessage(e));
     } finally {
       if (logTimer) {
         IModelHost.platform.flushLog();
@@ -641,6 +648,11 @@ Yargs.command<EditorOpts>({
   command: "purgeWorkspace",
   describe: "purge deleted blocks from a WorkspaceContainer",
   handler: runCommand(purgeWorkspace),
+});
+Yargs.command<EditorOpts>({
+  command: "detachWorkspace",
+  describe: "detach a WorkspaceContainer from the local cache",
+  handler: runCommand(detachWorkspace),
 });
 Yargs.command<InitializeOpts>({
   command: "initializeWorkspace",

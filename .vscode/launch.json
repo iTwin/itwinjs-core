@@ -775,8 +775,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "@g:/importAll.txt",
-        "--config=g:/createGcs.json"
+        "detachWorkspace",
+        "--config=g:/workspaceEditor.json"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",
