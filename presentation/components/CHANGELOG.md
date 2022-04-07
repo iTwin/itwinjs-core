@@ -1,6 +1,11 @@
 # Change Log - @itwin/presentation-components
 
-This log was last generated on Thu, 31 Mar 2022 15:55:48 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Apr 2022 22:27:56 GMT and should not be manually modified.
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
 
 ## 3.1.1
 Thu, 31 Mar 2022 15:55:48 GMT
