@@ -63,6 +63,8 @@ export enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
+const maxTexSizeAllowed = 4096; // many devices and browsers have issues with source textures larger than this
+
 // Regexes to match Intel UHD/HD 620/630 integrated GPUS that suffer from GraphicsDriverBugs.fragDepthDoesNotDisableEarlyZ.
 const buggyIntelMatchers = [
   // Original unmasked renderer string when workaround we implemented.
@@ -89,17 +91,19 @@ export class Capabilities {
   private _canRenderDepthWithoutColor: boolean = false;
   private _maxAnisotropy?: number;
   private _maxAntialiasSamples: number = 1;
+  private _maxTexSizeAllow: number = maxTexSizeAllowed;
 
   private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
   private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
 
   private _isWebGL2: boolean = false;
   private _isMobile: boolean = false;
-  private _driverBugs: GraphicsDriverBugs = { };
+  private _driverBugs: GraphicsDriverBugs = {};
 
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
   public get maxTextureSize(): number { return this._maxTextureSize; }
+  public get maxTexSizeAllow(): number { return this._maxTexSizeAllow; }
   public get maxColorAttachments(): number { return this._maxColorAttachments; }
   public get maxDrawBuffers(): number { return this._maxDrawBuffers; }
   public get maxFragTextureUnits(): number { return this._maxFragTextureUnits; }
@@ -232,6 +236,7 @@ export class Capabilities {
     this._isMobile = ProcessDetector.isMobileBrowser;
 
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    this._maxTexSizeAllow = Math.min(this._maxTextureSize, maxTexSizeAllowed);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
     this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
     this._maxVertAttribs = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
