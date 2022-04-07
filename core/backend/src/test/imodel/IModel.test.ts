@@ -74,9 +74,9 @@ describe("iModel", () => {
           await cloudContainer.checkForChanges();
         } catch (e: unknown) {
           // eslint-disable-next-line no-console
-          console.log(`can't update GCS Workspaces`);
+          console.log(`can't check for new version of GCS Workspace`);
         }
-        let wsDbName = container.resolveDbFileName({ dbName: "data" });
+        let wsDbName = container.resolveDbFileName({ dbName: "earth" });
         IModelHost.platform.addGcsWorkspaceDb(wsDbName, cloudContainer);
         wsDbName = container.resolveDbFileName({ dbName: "base" });
         IModelHost.platform.addGcsWorkspaceDb(wsDbName, cloudContainer);
