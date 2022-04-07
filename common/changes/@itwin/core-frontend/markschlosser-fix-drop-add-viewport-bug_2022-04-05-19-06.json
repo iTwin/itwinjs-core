@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Prevent 0-dimension assignment in CanvasState.updateDimensions. This resolved a blank rendering issue when dropping and re-adding a viewport with the same size.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

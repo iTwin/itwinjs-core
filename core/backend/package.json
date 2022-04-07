@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.2.0-dev.29",
+  "version": "3.2.0-dev.36",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -21,8 +21,8 @@
     "extract-api": "betools extract-api --entry=core-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
-    "ios:webpack:tests": "webpack --config ios/ios.webpack.config.js",
-    "ios:copy:assets": "cpx \"./src/assets/**/*\" ./lib/ios/assets/assets && cpx \"./src/test/assets/**/*\" ./lib/ios/assets/assets",
+    "ios:webpack:tests": "TESTS_GLOB=./lib/**/*.test.js webpack --config ../../tools/internal/ios/ios.webpack.config.js",
+    "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
     "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets"
   },
   "repository": {
@@ -41,10 +41,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.2.0-dev.29",
-    "@itwin/core-common": "workspace:^3.2.0-dev.29",
-    "@itwin/core-geometry": "workspace:^3.2.0-dev.29",
-    "@itwin/ecschema-metadata": "workspace:^3.2.0-dev.29"
+    "@itwin/core-bentley": "workspace:^3.2.0-dev.36",
+    "@itwin/core-common": "workspace:^3.2.0-dev.36",
+    "@itwin/core-geometry": "workspace:^3.2.0-dev.36",
+    "@itwin/ecschema-metadata": "workspace:^3.2.0-dev.36"
   },
   "peerDependenciesMeta": {
     "@itwin/ecschema-metadata": {

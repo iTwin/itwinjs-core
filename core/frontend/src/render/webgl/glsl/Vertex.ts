@@ -114,8 +114,11 @@ function getSamplePosition(type: PositionType): string {
     ${prelude}
       vec3 pf[4];
       pf[0] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
+      tc.x += g_vert_stepX;
       pf[1] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
+      tc.x += g_vert_stepX;
       pf[2] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
+      tc.x += g_vert_stepX;
       pf[3] = floor(TEXTURE(u_vertLUT, tc).xyz * 255.0 + 0.5);
       return vec4(decode3Float32(pf), 1.0);
     }`;
