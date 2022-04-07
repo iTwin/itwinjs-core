@@ -3139,11 +3139,11 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
-      '@reduxjs/toolkit': 1.8.1_react-redux@7.2.8+react@17.0.2
+      '@reduxjs/toolkit': 1.8.0_react-redux@7.2.6+react@17.0.2
       classnames: 2.3.1
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
-      react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
+      react-redux: 7.2.6_react-dom@17.0.2+react@17.0.2
       react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
     devDependencies:
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.4
@@ -3286,7 +3286,7 @@ importers:
       react: 17.0.2
       react-beautiful-dnd: 13.1.0_react-dom@17.0.2+react@17.0.2
       react-dom: 17.0.2_react@17.0.2
-      react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
+      react-redux: 7.2.6_react-dom@17.0.2+react@17.0.2
       react-resize-detector: 6.7.8_react-dom@17.0.2+react@17.0.2
       react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
       react-table: 7.7.0_react@17.0.2
@@ -3961,7 +3961,7 @@ importers:
       raf: 3.4.1
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
-      react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
+      react-redux: 7.2.6_react-dom@17.0.2+react@17.0.2
       react-test-renderer: 17.0.2_react@17.0.2
       redux: 4.1.2
       rimraf: 3.0.2
@@ -8121,10 +8121,10 @@ packages:
     resolution: {integrity: sha512-Pc/AFTdwZwEKJxFJvlxrSmGe/di+aAOBn60sremrpLo6VI/6cmiUYNNwlI5KNYttg7uypzA3ILPMPgxB2GYZEg==}
     dev: false
 
-  /@reduxjs/toolkit/1.8.1_react-redux@7.2.8+react@17.0.2:
-    resolution: {integrity: sha512-Q6mzbTpO9nOYRnkwpDlFOAbQnd3g7zj7CtHAZWz5SzE5lcV97Tf8f3SzOO8BoPOMYBFgfZaqTUZqgGu+a0+Fng==}
+  /@reduxjs/toolkit/1.8.0_react-redux@7.2.6+react@17.0.2:
+    resolution: {integrity: sha512-cdfHWfcvLyhBUDicoFwG1u32JqvwKDxLxDd7zSmSoFw/RhYLOygIRtmaMjPRUUHmVmmAGAvquLLsKKU/677kSQ==}
     peerDependencies:
-      react: ^16.9.0 || ^17.0.0 || ^18
+      react: ^16.9.0 || ^17.0.0 || 18.0.0-beta
       react-redux: ^7.2.1 || ^8.0.0-beta
     peerDependenciesMeta:
       react:
@@ -8134,7 +8134,7 @@ packages:
     dependencies:
       immer: 9.0.12
       react: 17.0.2
-      react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
+      react-redux: 7.2.6_react-dom@17.0.2+react@17.0.2
       redux: 4.1.2
       redux-thunk: 2.4.1_redux@4.1.2
       reselect: 4.1.5
@@ -19478,7 +19478,7 @@ packages:
       raf-schd: 4.0.3
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
-      react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
+      react-redux: 7.2.6_react-dom@17.0.2+react@17.0.2
       redux: 4.1.2
       use-memo-one: 1.1.2_react@17.0.2
     transitivePeerDependencies:
@@ -19496,7 +19496,7 @@ packages:
       memoize-one: 5.2.1
       raf-schd: 4.0.3
       react: 17.0.2
-      react-redux: 7.2.8_react@17.0.2
+      react-redux: 7.2.6_react@17.0.2
       redux: 4.1.2
       use-memo-one: 1.1.2_react@17.0.2
     transitivePeerDependencies:
@@ -19636,10 +19636,10 @@ packages:
   /react-is/17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
 
-  /react-redux/7.2.8_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-6+uDjhs3PSIclqoCk0kd6iX74gzrGc3W5zcAjbrFgEdIjRSQObdIwfx80unTkVUYvbQ95Y8Av3OvFHq1w5EOUw==}
+  /react-redux/7.2.6_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-10RPdsz0UUrRL1NZE0ejTkucnclYSgXp5q+tB5SWx2qeG2ZJQJyymgAhwKy73yiL/13btfB6fPr+rgbMAaZIAQ==}
     peerDependencies:
-      react: ^16.8.3 || ^17 || ^18
+      react: ^16.8.3 || ^17
       react-dom: '*'
       react-native: '*'
     peerDependenciesMeta:
@@ -19648,7 +19648,7 @@ packages:
       react-native:
         optional: true
     dependencies:
-      '@babel/runtime': 7.17.9
+      '@babel/runtime': 7.17.8
       '@types/react-redux': 7.1.23
       hoist-non-react-statics: 3.3.2
       loose-envify: 1.4.0
@@ -19657,10 +19657,10 @@ packages:
       react-dom: 17.0.2_react@17.0.2
       react-is: 17.0.2
 
-  /react-redux/7.2.8_react@17.0.2:
-    resolution: {integrity: sha512-6+uDjhs3PSIclqoCk0kd6iX74gzrGc3W5zcAjbrFgEdIjRSQObdIwfx80unTkVUYvbQ95Y8Av3OvFHq1w5EOUw==}
+  /react-redux/7.2.6_react@17.0.2:
+    resolution: {integrity: sha512-10RPdsz0UUrRL1NZE0ejTkucnclYSgXp5q+tB5SWx2qeG2ZJQJyymgAhwKy73yiL/13btfB6fPr+rgbMAaZIAQ==}
     peerDependencies:
-      react: ^16.8.3 || ^17 || ^18
+      react: ^16.8.3 || ^17
       react-dom: '*'
       react-native: '*'
     peerDependenciesMeta:
@@ -19669,7 +19669,7 @@ packages:
       react-native:
         optional: true
     dependencies:
-      '@babel/runtime': 7.17.9
+      '@babel/runtime': 7.17.8
       '@types/react-redux': 7.1.23
       hoist-non-react-statics: 3.3.2
       loose-envify: 1.4.0
