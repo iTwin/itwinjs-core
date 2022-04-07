@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
 import {
   DescriptorOverrides, DistinctValuesRpcRequestOptions, KeySet, KeySetJSON, Paged, PresentationError, PresentationRpcInterface,
@@ -97,6 +97,30 @@ describe("RpcRequestsHandler", () => {
         const diagnosticsResult: DiagnosticsScopeLogs[] = [];
         await handler.request(async () => successResponse(result, diagnosticsResult), { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions });
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
+      });
+
+      it("removes redundant ruleset properties", async () => {
+        const func = sinon.stub(Logger, "logWarning");
+
+        const options = {
+          rulesetOrId: {
+            property: "abc",
+            $schema: "schema",
+            id: "id",
+            rules: [],
+          },
+          imodel: token,
+        };
+
+        const actualResult = await handler.request(async (_: IModelRpcProps, hierarchyOptions: HierarchyRpcRequestOptions) => {
+          return successResponse(hierarchyOptions.rulesetOrId);
+        }, options);
+
+        expect(actualResult.hasOwnProperty("property")).to.be.true;
+        expect(actualResult.hasOwnProperty("$schema")).to.be.false;
+        expect(actualResult.hasOwnProperty("id")).to.be.true;
+        expect(actualResult.hasOwnProperty("rules")).to.be.true;
+        expect(func.callCount).to.eq(1);
       });
 
     });
