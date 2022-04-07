@@ -15,8 +15,7 @@ export interface MapLayersConfig {
   iTwinConfig?: UserPreferencesAccess;
   mapLayerOptions?: MapLayerOptions;
   featureInfoOpts?: MapFeatureInfoOptions;
-  mapLayerProviderOverrides?: UiItemProviderOverrides;
-  featureInfoProviderOverrides?: UiItemProviderOverrides;
+  delayItemsProviderRegister?: boolean;
 }
 
 /** MapLayersUI is use when the package is used as a dependency to another app.
@@ -30,6 +29,9 @@ export class MapLayersUI {
   public static localization: Localization;
   private static _uiItemsProvidersId: string[] = [];
   private static _iTwinConfig?: UserPreferencesAccess;
+  private static _featureInfoOpts?: MapFeatureInfoOptions;
+  private static  _mapLayerOptions?: MapLayerOptions;
+
   public static get iTwinConfig(): UserPreferencesAccess | undefined {
     return this._iTwinConfig;
   }
@@ -43,18 +45,24 @@ export class MapLayersUI {
     );
 
     MapLayersUI._iTwinConfig = config?.iTwinConfig;
+    MapLayersUI._featureInfoOpts = config?.featureInfoOpts;
+    MapLayersUI._mapLayerOptions = config?.mapLayerOptions;
 
-    const mlProvider = new MapLayersUiItemsProvider({ ...config?.mapLayerOptions });
-    const mlProviderId = config?.mapLayerProviderOverrides?.providerId ?? mlProvider.id;
+    if (!config?.delayItemsProviderRegister)
+      MapLayersUI.registerUiItemsProviders();
+  }
+  public static registerUiItemsProviders(_mapLayerProviderOverrides?: UiItemProviderOverrides, _featureInfoProviderOverrides?: UiItemProviderOverrides) {
+    const mlProvider = new MapLayersUiItemsProvider({ ...MapLayersUI._mapLayerOptions });
+    const mlProviderId = _mapLayerProviderOverrides?.providerId ?? mlProvider.id;
     MapLayersUI._uiItemsProvidersId.push(mlProviderId);
-    UiItemsManager.register(mlProvider, config?.mapLayerProviderOverrides);
+    UiItemsManager.register(mlProvider, _mapLayerProviderOverrides);
 
     // Register the FeatureInfo widget only if MapHit was provided.
-    if (config?.featureInfoOpts?.onMapHit) {
-      const fiProvider = new FeatureInfoUiItemsProvider({ ...config?.featureInfoOpts });
-      const fiProviderId = config?.featureInfoProviderOverrides?.providerId ?? fiProvider.id;
+    if (MapLayersUI._featureInfoOpts?.onMapHit) {
+      const fiProvider = new FeatureInfoUiItemsProvider({ ...MapLayersUI._featureInfoOpts });
+      const fiProviderId = _featureInfoProviderOverrides?.providerId ?? fiProvider.id;
       MapLayersUI._uiItemsProvidersId.push(fiProviderId);
-      UiItemsManager.register(mlProvider, config?.mapLayerProviderOverrides);
+      UiItemsManager.register(mlProvider,  _featureInfoProviderOverrides);
     }
   }
 
