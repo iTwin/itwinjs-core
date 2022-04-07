@@ -10,7 +10,7 @@ module.exports = {
   mode: "development",
   entry: [
     path.resolve(__dirname, "scripts/configureMocha.js"),
-    ...glob.sync(path.resolve(__dirname, "../lib/**/*.test.js")),
+    ...glob.sync(path.resolve(__dirname, path.relative(__dirname, process.env.TESTS_GLOB))),
     path.resolve(__dirname, "scripts/runMocha.js")
   ],
   output: {
