@@ -37,6 +37,9 @@ export interface MapLayerSourceValidation {
 
 /**
  * Options to be passed to the IModelApp on startup which contain access keys for various layer formats
+ * 'BingMaps' must have it's key value set to 'key'
+ * 'MapboxImagery' must have it's key value set to 'access_token'
+ *
  * @beta
  */
 export interface MapLayerOptions {
