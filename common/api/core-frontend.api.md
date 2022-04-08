@@ -5840,13 +5840,9 @@ export enum MapLayerImageryProviderStatus {
 
 // @beta
 export interface MapLayerOptions {
-    // (undocumented)
     [format: string]: MapLayerKey | undefined;
-    // (undocumented)
     AzureMaps?: MapLayerKey;
-    // (undocumented)
     BingMaps?: MapLayerKey;
-    // (undocumented)
     MapboxImagery?: MapLayerKey;
 }
 
