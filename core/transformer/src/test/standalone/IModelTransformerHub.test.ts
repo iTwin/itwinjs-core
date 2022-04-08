@@ -384,14 +384,14 @@ describe("IModelTransformerHub", () => {
     // must be called after a changeset is pushed and before the db is edited further,
     // since nativeDb.extractChangedInstanceIdsFromChangeSets doesn't necessarily work after deleting elements in a new changeset
     async function extractDeletedInstanceIds(db: IModelDb, opts: { expectedChangesetCount?: number, deletedElementsSet?: Set<Id64String> } = {}): Promise<void> {
-      const masterDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: db.iModelId, targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId) });
+      const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: db.iModelId, targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId) });
       if (opts.expectedChangesetCount !== undefined)
-        assert.equal(masterDbChangesets.length, opts.expectedChangesetCount);
-      const latestChangeset = masterDbChangesets[masterDbChangesets.length - 1];
+        assert.equal(changesets.length, opts.expectedChangesetCount);
+      const latestChangeset = changesets[changesets.length - 1];
       assert.isDefined(latestChangeset.id);
       assert.isDefined(latestChangeset.description); // test code above always included a change description when pushChanges was called
       assert.isTrue(IModelJsFs.existsSync(latestChangeset.pathname));
-      const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = masterDb.nativeDb.extractChangedInstanceIdsFromChangeSets([latestChangeset.pathname]);
+      const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = db.nativeDb.extractChangedInstanceIdsFromChangeSets([latestChangeset.pathname]);
       assert.isUndefined(statusOrResult.error);
       const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
       assert.isDefined(result.element);
@@ -556,7 +556,7 @@ describe("IModelTransformerHub", () => {
       for (const masterDbChangeset of masterDbChangesets) {
         await sourceDb.pullChanges({ accessToken, toIndex: masterDbChangeset.index });
         await replayTransformer.processChanges(accessToken, sourceDb.changeset.id);
-        await saveAndPushChanges(replayedDb, masterDbChangeset.description ?? "");
+        await saveAndPushChanges(replayedDb, masterDbChangeset.description);
         await extractDeletedInstanceIds(replayedDb, { deletedElementsSet: replayedDeletedElementIds });
       }
       replayTransformer.dispose();
