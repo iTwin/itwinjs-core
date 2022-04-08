@@ -5,11 +5,10 @@
 // cspell:words buddi urlps
 
 import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
+import { NodeCliAuthorizationClient } from "@itwin/node-cli-authorization";
 import { AccessTokenAdapter, BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelsClient, NamedVersion } from "@itwin/imodels-client-authoring";
 
 export class IModelTransformerTestAppHost {
@@ -19,21 +18,10 @@ export class IModelTransformerTestAppHost {
     const iModelHost = new IModelHostConfiguration();
     IModelTransformerTestAppHost.iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
     iModelHost.hubAccess = new BackendIModelsAccess(IModelTransformerTestAppHost.iModelClient);
-
-    const opt = {
-      electronHost: {
-        developmentServer: process.env.NODE_ENV === "development",
-      },
-      nativeHost: {
-        applicationName: "imodel-transformer-test-app",
-      },
-      iModelHost,
-    };
-
-    await ElectronHost.startup(opt);
+    await IModelHost.startup(iModelHost);
   }
 
-  private static _authClient: ElectronMainAuthorization | undefined;
+  private static _authClient: NodeCliAuthorizationClient | undefined;
 
   /** Similar to get `IModelHost.authorizationClient.getAccessToken()` but lazily
    * initializes auth, so users aren't prompted to sign in unless a hub-accessing feature is used.
@@ -47,24 +35,13 @@ export class IModelTransformerTestAppHost {
         "An online-only interaction was requested, but the required environment variables haven't been configured\n"
         + "Please see the .env.template file on how to set up environment variables."
       );
-      return new Promise<AccessToken>(async (resolve, reject) => {
-        const client = new ElectronMainAuthorization({
-          clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-          redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-          scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-        });
-        await client.signInSilent();
-        this._authClient = client;
-
-        ElectronMainAuthorization.onUserStateChanged.addOnce((token: AccessToken) => {
-          if (token !== "") {
-            resolve(token);
-          } else {
-            reject(new Error("Failed to sign in"));
-          }
-        });
-        this._authClient.signIn().catch((err) => reject(err));
+      const client = new NodeCliAuthorizationClient({
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
       });
+      await client.signIn();
+      this._authClient = client;
     }
     return this._authClient.getAccessToken();
   }
