@@ -3922,6 +3922,10 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 
   public override async onDataButtonDown(_ev: BeButtonEvent) { return EventHandled.Yes; }
   public override async onDataButtonUp(_ev: BeButtonEvent) { return EventHandled.Yes; }
+  public override async onTouchStart(ev: BeTouchEvent): Promise<void> {
+    if (undefined !== this.viewport)
+      this.onStart(ev);
+  }
   public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
     this.handleEvent(ev);
   }
