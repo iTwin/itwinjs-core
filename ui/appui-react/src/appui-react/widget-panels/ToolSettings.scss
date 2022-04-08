@@ -7,6 +7,13 @@
   align-self: center;
 }
 
+.uif-toolsetting-label-docked-horizontal-empty {
+  padding-right: 0.5em;
+  align-self: center;
+  font-style: italic;
+  opacity: 0.7;
+}
+
 .uifw-standard-toolsettings-two-column-grid {
   display: grid;
   grid-template-columns: auto 1fr;

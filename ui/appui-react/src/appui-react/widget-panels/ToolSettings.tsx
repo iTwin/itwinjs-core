@@ -8,6 +8,7 @@
 
 import "./ToolSettings.scss";
 import * as React from "react";
+import { IModelApp } from "@itwin/core-frontend";
 import { DockedToolSetting, DockedToolSettings, ScrollableWidgetContent, ToolSettingsStateContext } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -20,6 +21,13 @@ export interface ToolSettingsEntry {
   labelNode: React.ReactNode;
   // editor entry used to display and edit the property value
   editorNode: React.ReactNode;
+}
+
+function EmptyToolSettingsEntry(): ToolSettingsEntry {
+  const labelString = IModelApp.localization.getLocalizedString("UiFramework:tools.noToolSettings");
+  const labelNode = <div className="uif-toolsetting-label-docked-horizontal-empty">{labelString}</div>;
+  const editorNode = <div />;
+  return {labelNode,editorNode };
 }
 
 /** @internal */
@@ -58,7 +66,10 @@ export function useHorizontalToolSettingNodes() {
   React.useEffect(() => {
     const handleToolActivatedEvent = () => {
       const nodes = FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
-      setSettings(nodes);
+      if (!nodes || nodes.length === 0)
+        setSettings ([EmptyToolSettingsEntry()]);
+      else
+        setSettings(nodes);
     };
     FrontstageManager.onToolActivatedEvent.addListener(handleToolActivatedEvent);
     return () => {
@@ -69,7 +80,10 @@ export function useHorizontalToolSettingNodes() {
   React.useEffect(() => {
     const handleToolSettingsReloadEvent = () => {
       const nodes = FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
-      setSettings(nodes);
+      if (!nodes || nodes.length === 0)
+        setSettings ([EmptyToolSettingsEntry()]);
+      else
+        setSettings(nodes);
     };
     FrontstageManager.onToolSettingsReloadEvent.addListener(handleToolSettingsReloadEvent);
     return () => {
