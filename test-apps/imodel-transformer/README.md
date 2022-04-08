@@ -6,11 +6,11 @@ The application contained within this directory is a test application for transf
 
 Example command line:
 
-`npm start -- --sourceFile=<sourceIModelFileName> --targetFile=<targetIModelFileName>`
+`npm start -- --sourceFile <sourceIModelFileName> --targetFile <targetIModelFileName>`
 
 The target file must be a `StandaloneDb`, you can use the utility script `test-apps/display-test-app/src/backend/SetToStandalone.ts`
 to turn a snapshot into a `StandaloneDb` for testing purposes.
-You can also perform a transform onto an empty target by specifying `--targetDestination=<path>` instead.
+You can also perform a transform onto an empty target by specifying `--targetDestination <path>` instead.
 
 To get usage help run:
 
@@ -41,11 +41,11 @@ Here are the steps that can be used:
 - Get the GUID of the iTwinId and the GUID of the iModelId. Both should be available in the URL used by Design Review to view the iModel.
 - Optionally, you can turn on verbose iModel transformation-related logging with the `--logTransformer` option.
 - Set the appropriate options either on the command line or by editing the `imodel-transformer (app)` launch configuration within `launch.json` (in the root imodeljs directory)
-  - `--hub='qa'` (or 'dev' or 'prod')
+  - `--hub qa` (or 'dev' or 'prod')
   - `--logTransformer`
-  - `--sourceContextId='<context GUID>'`
-  - `--sourceIModelId='<iModel GUID>'`
-  - `--targetDestination='<full path to file on local computer>'`
+  - `--sourceContextId <context GUID>`
+  - `--sourceIModelId <iModel GUID>`
+  - `--targetDestination <full path to file on local computer>`
 
 A common strategy is to run with verbose logging on to find the problem element or spot where the problem occurs.
 Once the problem area has been identified, you can employ various strategies to set a conditional breakpoint.
