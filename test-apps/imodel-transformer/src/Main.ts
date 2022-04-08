@@ -116,6 +116,7 @@ void (async () => {
           default: false,
         },
         logTransformer: {
+          alias: ["verbose", "v"],
           desc: "If true, turn on verbose logging for iModel transformation",
           type: "boolean",
           default: false,
