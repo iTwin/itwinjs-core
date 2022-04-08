@@ -3695,7 +3695,6 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   private _singleTouch = false;
   private _duration!: BeDuration;
   private _end!: BeTimePoint;
-  private _hasZoom = false;
   private _rotate2dDisabled = false;
   private _rotate2dThreshold?: Angle;
   private _only2dManipulations = false;
@@ -3753,7 +3752,6 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   }
 
   private computeZoomRatio(ev?: BeTouchEvent): number {
-    this._hasZoom = false;
     if (undefined === ev || 0.0 === this._startDistance)
       return 1.0;
 
@@ -3764,7 +3762,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     if (0.0 === distance || Math.abs(this._startDistance - distance) < threshold)
       return 1.0;
 
-    this._hasZoom = true;
+    // Remove inertia if the viewing operation includes zoom, only use it for pan and rotate.
+    this._inertiaVec = undefined;
     const adjustedDist = (distance > this._startDistance ? (distance - threshold) : (distance + threshold)); // Avoid sudden jump in zoom scale by subtracting zoom threshold distance...
     return Geometry.clamp(this._startDistance / adjustedDist, .1, 10);
   }
@@ -3900,8 +3899,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     if (this._startPtView.isAlmostEqualXY(thisPt, smallDistance)) {
       this._lastPtView.setFrom(this._startPtView);
     } else {
-      // Don't add inertia if the viewing operation included zoom, only do this for pan and rotate.
-      if (!samePoint && !this._hasZoom) {
+      if (!samePoint) {
         this._inertiaVec = this._lastPtView.vectorTo(thisPt);
         this._inertiaVec.z = 0;
       }
