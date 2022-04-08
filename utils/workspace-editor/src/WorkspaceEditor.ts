@@ -115,6 +115,23 @@ function showMessage(msg: string) {
   console.log(msg);
 }
 
+/** perform a vacuum on a database, with a message while it's happening */
+function doVacuum(fileName: string, cloudContainer?: IModelJsNative.CloudContainer) {
+  process.stdout.write(`Vacuuming ${fileName} ... `);
+  IModelHost.platform.DgnDb.vacuum(fileName, cloudContainer);
+  process.stdout.write("done");
+  showMessage("");
+}
+
+/** Convert a file size value to a "friendly" string, rounding to nearest integer for K, M, G, T */
+function friendlyFileSize(size: number) {
+  if (size < 1024)
+    return `${size}`;
+
+  const i = Math.floor(Math.log(size) / Math.log(1024));
+  return `${Math.round(size / Math.pow(1024, i))}${["", "K", "M", "G", "T"][i]}`;
+}
+
 /** Create a new empty WorkspaceDb  */
 async function createWorkspaceDb(args: WorkspaceDbOpt) {
   const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer({ ...args, writeable: true }));
@@ -196,7 +213,7 @@ async function listWorkspaceDb(args: ListOptions) {
       showMessage(" blobs:");
       file.sqliteDb.withSqliteStatement("SELECT id,LENGTH(value) FROM blobs ORDER BY id COLLATE NOCASE", (stmt) => {
         while (DbResult.BE_SQLITE_ROW === stmt.step())
-          showMessage(`  name=${stmt.getValueString(0)}, size=${stmt.getValueInteger(1)}`);
+          showMessage(`  name=${stmt.getValueString(0)}, size=${friendlyFileSize(stmt.getValueInteger(1))}`);
       });
 
     }
@@ -208,7 +225,7 @@ async function listWorkspaceDb(args: ListOptions) {
           if (embed) {
             const info = embed.info;
             const date = new Date(info.date);
-            showMessage(`  name=${stmt.getValueString(0)}, size=${info.size}, ext="${info.fileExt}", date=${date.toString()}`);
+            showMessage(`  name=${stmt.getValueString(0)}, size=${friendlyFileSize(info.size)}, ext="${info.fileExt}", date=${date.toString()}`);
           }
         }
       });
@@ -306,8 +323,7 @@ async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
   const container = await getContainer(args);
   fixVersionArg(args);
   const localFile = new ITwinWorkspaceDb(args, container).dbFileName;
-  IModelHost.platform.DgnDb.vacuum(localFile, container.cloudContainer);
-  showMessage(`${localFile} vacuumed`);
+  doVacuum(localFile, container.cloudContainer);
 }
 
 /** Either upload or download a WorkspaceDb to/from a cloud WorkspaceContainer. Shows progress % during transfer */
@@ -315,10 +331,9 @@ async function performTransfer(container: IModelJsNative.CloudContainer, directi
   fixVersionArg(args);
   const localFileName = args.localFileName;
 
-  if (direction === "upload" && !args.noVacuum) {
-    IModelHost.platform.DgnDb.vacuum(localFileName);
-    showMessage(`${localFileName} vacuumed`);
-  }
+  if (direction === "upload" && !args.noVacuum)
+    doVacuum(localFileName);
+
   const info = `${direction === "download" ? "export" : "import"} ${localFileName}, container=${args.containerId}, dbName=${args.dbFileName} : `;
 
   let last = 0;
@@ -388,6 +403,13 @@ async function purgeWorkspace(args: EditorOpts) {
   await CloudSqlite.withWriteLock(args.user, container, async () => container.cleanDeletedBlocks());
   await container.checkForChanges(); // re-read manifest to get current garbage count
   showMessage(`purged ${sayContainer(args)}. ${nGarbage - container.garbageBlocks} garbage blocks cleaned`);
+}
+
+/** detach a WorkspaceContainer from the local cache. */
+async function detachWorkspace(args: EditorOpts) {
+  const container = await getCloudContainer(args);
+  container.detach();
+  showMessage(`detached ${sayContainer(args)}.`);
 }
 
 /** Make a copy of a WorkspaceDb with a new name. */
@@ -497,10 +519,10 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
 
       await cmd(args);
     } catch (e: any) {
-      if (typeof e.errorNumber === "number")
-        e = new BentleyError(e.errorNumber, e.message);
-
-      console.error(BentleyError.getErrorMessage(e));
+      if (typeof e.message === "string")
+        console.error(e.message);
+      else
+        console.log(BentleyError.getErrorMessage(e));
     } finally {
       if (logTimer) {
         IModelHost.platform.flushLog();
@@ -641,6 +663,11 @@ Yargs.command<EditorOpts>({
   command: "purgeWorkspace",
   describe: "purge deleted blocks from a WorkspaceContainer",
   handler: runCommand(purgeWorkspace),
+});
+Yargs.command<EditorOpts>({
+  command: "detachWorkspace",
+  describe: "detach a WorkspaceContainer from the local cache",
+  handler: runCommand(detachWorkspace),
 });
 Yargs.command<InitializeOpts>({
   command: "initializeWorkspace",
