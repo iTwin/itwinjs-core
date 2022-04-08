@@ -54,6 +54,8 @@ Example usages:
 - A user could create a DefinitionModel to collect together project standards (styles, categories, etc.)
 - A developer could create a private DefinitionModel to hold application or domain definitions and configuration settings.
 
+DefinitionElement instances meant to be discoverable by any logic writing to an iModel need to be organized according to the guidelines specified in [Organizing Repository-Global Definition Elements](../data-organization/organizing-definition-elements.md).
+
 ### InformationPartitionElement
 
 InformationPartitionElement is an abstract base class for elements that indicate that there is a new modeling perspective within the overall repository information hierarchy.

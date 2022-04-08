@@ -153,6 +153,8 @@ Examples include:
 ![Information Element](../media/information-element.png)
 &nbsp;
 
+See [Information Models and Elements](../other-perspectives/information-models-and-elements.md) for details about  `InformationContentElement` sub-classes in BisCore.
+
 ### RoleElement
 
 Roles play a vital role (pun intended) in the ability of BIS to break down application-specific domain silos into pieces that allow common information to be shared and leveraged.
