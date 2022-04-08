@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "exportChanges now processes all changesets simultaneously since processing them individually as done is redundant and was never actually supported",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}
