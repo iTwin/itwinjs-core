@@ -5,13 +5,14 @@
 /* eslint-disable deprecation/deprecation */
 import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  CategorySelectorProps, DisplayStyleProps, EcefLocation, HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelReadRpcInterface, IModelRpcProps, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
+  CategorySelectorProps, DisplayStyleProps, EcefLocation, HydrateViewStateResponseProps, IModelReadRpcInterface, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
 } from "@itwin/core-common";
 import { DrawingViewState, EmphasizeElements, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState } from "@itwin/core-frontend";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
+import * as sinon from "sinon";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentProps, CoreTools, Frontstage,
   FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, StageContentLayout, StageContentLayoutProps, ViewportContentControl, Widget,
@@ -20,7 +21,7 @@ import {
 import { ViewUtilities } from "../../appui-react/utils/ViewUtilities";
 import TestUtils from "../TestUtils";
 
-describe.only("StageContentLayout", () => {
+describe("StageContentLayout", () => {
 
   const extents = Vector3d.create(400, 400);
   const origin = Point3d.createZero();
@@ -36,7 +37,8 @@ describe.only("StageContentLayout", () => {
   imodelMock.setup((x) => x.ecefLocation).returns(() => new EcefLocation({ origin: Point3d.createZero(), orientation: YawPitchRollAngles.createRadians(0, 0, 0) }));
   imodelMock.setup((x) => x.projectExtents).returns(() => Range3d.create(Point3d.createZero()));
 
-  rpcMock.setup(async (x) => x.hydrateViewState({key: ""}, {})).returns(async (_token: IModelRpcProps, _options: HydrateViewStateRequestProps) => {return {} as HydrateViewStateResponseProps; });
+  rpcMock.setup(async (x) => x.hydrateViewState(moq.It.isAny(), moq.It.isAny())).returns(async () => ({} as HydrateViewStateResponseProps));
+
   const viewDefinitionProps1: SpatialViewDefinitionProps = {
     cameraOn: false, origin, extents,
     camera: { lens: 0, focusDist: 1, eye: [0, 0, 0] },
@@ -130,8 +132,13 @@ describe.only("StageContentLayout", () => {
     ConfigurableUiManager.registerControl("TestViewport", TestViewportContentControl);
   });
 
+  beforeEach(async () => {
+    sinon.stub(IModelReadRpcInterface, "getClientForRouting").returns(rpcMock.object);
+  });
+
   after(async () => {
     await MockRender.App.shutdown();
+    sinon.restore();
     TestUtils.terminateUiFramework();
   });
 
