@@ -29,7 +29,8 @@
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "fs-extra": "^8.1.0",
-    "yargs": "^16.0.0"
+    "yargs": "^16.0.0",
+    "@itwin/node-cli-authorization": "~0.9.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
