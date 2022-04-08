@@ -32,6 +32,8 @@ export class Capabilities {
     // (undocumented)
     get maxRenderType(): RenderType;
     // (undocumented)
+    get maxTexSizeAllow(): number;
+    // (undocumented)
     get maxTextureSize(): number;
     // (undocumented)
     get maxVaryingVectors(): number;
