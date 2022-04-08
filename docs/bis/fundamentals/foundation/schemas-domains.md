@@ -24,15 +24,15 @@ The next layer in the BIS family of ECSchemas above “Core” is "Common". That
 
 The layers above "Common" specialize on a single discipline (in the figure above, sharing the same initial letter), while differentiating in their purpose: "Physical" and "Other" (e.g. Functional/Analytical).
 
-### The Physical layer
+### The Discipline-Physical layer
 
 “Physical” and “Functional/Analytical” domains model a particular discipline from different perspectives.
 
-The Physical layer defines real-world physical entities and closely associated information. Classes such as Pump, Pipe or Column are in the Physical layer. This layer also comprises concepts introduced as Spatial Composition, such as Building, Road or Bridge.
+The Discipline-Physical layer defines real-world physical entities and closely associated information, in light of a specific discipline. Classes such as Pump, Pipe or Column are in the Discipline-Physical layer. This layer also comprises discipline-specific concepts introduced in terms of the concepts and patterns established by the Spatial Composition schema, such as Building, Road or Bridge.
 
-### The Functional/Analytical layer
+### The Discipline-Other layer
 
-This layer defines data types for functional or analytical data towards enabling various schematics and simulations.
+This layer defines data types for modeling perspectives other than Physical. Functional or analytical schemas enabling various schematics and simulations are examples of this layer.
 
 <!-- TODO
 *AB> Add example elements (Vern?).*
@@ -65,17 +65,15 @@ Taking Road & Rail disciplines as a example, the following figure depicts how th
 <!-- TODO: Update diagram to include Spatial Composition schemas -->
 ![Example](../media/road-rail-schemas.png)
 
-At the lowest level, BisCore continues to be most generic domain, layout the framework and foundation for all BIS domains.
+At the lowest layer - Core - the BisCore schema is the most generic domain which lays out the framework and foundation for all other BIS domains. Other Core layer schemas depicted in the figure above include PhysicalMaterials, Functional, Analytical and Generic.
 
-Next layer up – Common – domains shared with disciplines other than Road & Rail can be found. Those include domains such as Linear-Referencing, Network-Topology and Distribution Systems.
+Next layer up – Common – domains targeting abstract concepts can be found. Those include domains such as Linear-Referencing, Network-Topology, Profiles and Distribution Systems.
 
-Above Common, discipline-specific layers are introduced. In the case of Road & Rail, domains that introduce fundamental pieces such as Alignments – based on Linear-Referencing – and Physical Terrain can be found. These in turn serve as the foundation for Physical domains focusing on different structures common in Road and Railways, such as Bridges, Tunnels and Pathways in general.
+Above Common, discipline-specific layers are introduced. In the case of Road & Rail, the Discipline-Physical layer depicts domains that introduce fundamental pieces such as Alignments – based on Linear-Referencing – Earthwork and Terrain. Other related domains are shown, which focused on Physical-modeling and Spatial-Composition of Road and Railway infrastructure, such as Bridges, Tunnels and Drainage.
 
-Other domains in Road & Rail disciplines focusing on Analytical perspectives included in the figure above include: Structural Analysis (applicable to bridges and tunnels), Traffic Analysis and Storm water Analysis (Hydraulic and Hydraulic simulations).
+Other domains in Road & Rail disciplines that focus on other modeling perspectives included in the figure above are: Structural Analysis (applicable to bridges and tunnels), Traffic Analysis and Hydraulic Analysis.
 
-Additionally, concepts defined in these Road & Rail domains are needed in other disciplines, such as Site and Building – Physical as well as analytical, such as for Site optimization – calling for references from these other domains into the appropriate Road & Rail domains depicted below.
-
-Lastly, several Civil applications can be built on top of all these Road & Rail domains. These Civil applications may focus on specific assets and lifecycle phases in the Road & Rail disciplines. However, BIS ECSchemas referenced by them are expected to be useful across the entire lifecycle of assets in the Road & Rail disciplines.
+Lastly, several application schemas, including iModel Connector schemas, can be built on top of all these Road & Rail domains. These Civil applications may focus on specific assets and lifecycle phases in the Road & Rail disciplines. However, BIS ECSchemas referenced by them are expected to be useful across the entire lifecycle of assets in the Road & Rail disciplines.
 
 ---
 | Next: [Information Hierarchy](../data-organization/information-hierarchy.md)
