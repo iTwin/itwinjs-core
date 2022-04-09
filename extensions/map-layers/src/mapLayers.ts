@@ -17,6 +17,11 @@ export interface MapLayersConfig {
   featureInfoOpts?: MapFeatureInfoOptions;
   delayItemsProviderRegister?: boolean;
 }
+/** Configuration for registering UiItemsProviders for the MapLayers package */
+export interface MapLayersUiProviderConfig {
+  mapLayerProviderOverrides?: UiItemProviderOverrides;
+  featureInfoProviderOverrides?: UiItemProviderOverrides;
+}
 
 /** MapLayersUI is use when the package is used as a dependency to another app.
  * '''ts
@@ -51,18 +56,24 @@ export class MapLayersUI {
     if (!config?.delayItemsProviderRegister)
       MapLayersUI.registerUiItemsProviders();
   }
-  public static registerUiItemsProviders(_mapLayerProviderOverrides?: UiItemProviderOverrides, _featureInfoProviderOverrides?: UiItemProviderOverrides) {
+
+  /** Registers the UiItemsProviders for MapLayers with optional overrides
+   * This is useful for an app that wants to defer UiItemsProvider registration so that it
+   * may limit the MapLayers widgets to a specific workflow
+   * @beta
+   */
+  public static registerUiItemsProviders(config?: MapLayersUiProviderConfig) {
     const mlProvider = new MapLayersUiItemsProvider({ ...MapLayersUI._mapLayerOptions });
-    const mlProviderId = _mapLayerProviderOverrides?.providerId ?? mlProvider.id;
+    const mlProviderId = config?.mapLayerProviderOverrides?.providerId ?? mlProvider.id;
     MapLayersUI._uiItemsProvidersId.push(mlProviderId);
-    UiItemsManager.register(mlProvider, _mapLayerProviderOverrides);
+    UiItemsManager.register(mlProvider, config?.mapLayerProviderOverrides);
 
     // Register the FeatureInfo widget only if MapHit was provided.
     if (MapLayersUI._featureInfoOpts?.onMapHit) {
       const fiProvider = new FeatureInfoUiItemsProvider({ ...MapLayersUI._featureInfoOpts });
-      const fiProviderId = _featureInfoProviderOverrides?.providerId ?? fiProvider.id;
+      const fiProviderId = config?.featureInfoProviderOverrides?.providerId ?? fiProvider.id;
       MapLayersUI._uiItemsProvidersId.push(fiProviderId);
-      UiItemsManager.register(mlProvider,  _featureInfoProviderOverrides);
+      UiItemsManager.register(mlProvider,  config?.featureInfoProviderOverrides);
     }
   }
 
