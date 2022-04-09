@@ -9,8 +9,7 @@ import {
 } from "@itwin/appui-abstract";
 import TestUtils from "../TestUtils";
 import { MockRender } from "@itwin/core-frontend";
-import { DefaultStatusbarItems, StandardStatusbarItemsProvider } from "../../appui-react";
-
+import { DefaultStatusbarItems, StandardStatusbarUiItemsProvider } from "../../appui-react";
 const testArray: DefaultStatusbarItems[] = [
   {
   },
@@ -54,8 +53,7 @@ const testArray: DefaultStatusbarItems[] = [
 
 ];
 
-describe("StandardStatusbarItemsProvider", () => {
-  const testProviderId = "testStatusItemsProvider";
+describe("StandardStatusbarUiItemsProvider", () => {
 
   // avoid problems due to no real localization resources by return dummy values for englishKeyin and keyin properties.
   before(async () => {
@@ -69,17 +67,19 @@ describe("StandardStatusbarItemsProvider", () => {
     sinon.reset();
   });
 
-  it("should register StandardStatusbarItemsProvider with defaults", () => {
-    const provider = StandardStatusbarItemsProvider.register(testProviderId);
+  it("should register StandardStatusbarUiItemsProvider with defaults", () => {
+    const provider = new StandardStatusbarUiItemsProvider();
+    UiItemsManager.register(provider);
+
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     // Activity Item is not included by default
     expect(UiItemsManager.getStatusBarItems("test", StageUsage.General, undefined).length).to.eq(8);
-    provider.unregister();
+    UiItemsManager.unregister(provider.id);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
 
-  it("should register StandardStatusbarItemsProvider with no separators", () => {
-    const provider = StandardStatusbarItemsProvider.register(testProviderId, {
+  it("should register StandardStatusbarUiItemsProvider with no separators", () => {
+    const provider = new StandardStatusbarUiItemsProvider({
       messageCenter: true,
       toolAssistance: true,
       activityCenter: true,
@@ -88,26 +88,29 @@ describe("StandardStatusbarItemsProvider", () => {
       selectionScope: true,
       selectionInfo: true,
     });
+    UiItemsManager.register(provider);
+
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     expect(UiItemsManager.getStatusBarItems("test", StageUsage.General, undefined).length).to.eq(7);
-    provider.unregister();
+    UiItemsManager.unregister(provider.id);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
 
   it("should process all combinations of options", () => {
-    const provider = StandardStatusbarItemsProvider.register(testProviderId, undefined, (_stageId: string, _stageUsage: string, _applicationData: any) => {
-      return true;
-    });
+    const provider = new StandardStatusbarUiItemsProvider();
+    UiItemsManager.register(provider);
+
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     // Activity Item is not included by default
-    expect(UiItemsManager.getStatusBarItems("test", StageUsage.General, undefined).length).to.eq(8);
-    provider.unregister();
+    expect(UiItemsManager.getStatusBarItems("test", StageUsage.General).length).to.eq(8);
+    UiItemsManager.unregister(provider.id);
 
     testArray.forEach((itemList: DefaultStatusbarItems) => {
-      const local_provider = StandardStatusbarItemsProvider.register(testProviderId, itemList);
+      const local_provider = new StandardStatusbarUiItemsProvider(itemList);
+      UiItemsManager.register(provider);
       expect(UiItemsManager.hasRegisteredProviders).to.be.true;
       UiItemsManager.getStatusBarItems("test", StageUsage.General);
-      local_provider.unregister();
+      UiItemsManager.unregister(local_provider.id);
       expect(UiItemsManager.hasRegisteredProviders).to.be.false;
     });
   });

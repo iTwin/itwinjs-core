@@ -6,36 +6,41 @@
  * @module StandardUiItemsProvider
  */
 
-import { BaseUiItemsProvider, CommonToolbarItem, ToolbarOrientation, ToolbarUsage, UiItemsManager } from "@itwin/appui-abstract";
+import {
+  CommonToolbarItem, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
+} from "@itwin/appui-abstract";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
-import { DefaultNavigationTools } from "./StandardNavigationToolsUiItemsProvider";
+
+/**
+ * Defines what tools to include from the provider. If any tools in the horizontal or vertical group are
+ * specified then only those tools will be provided to stage.
+ * @public
+ */
+export interface DefaultNavigationTools {
+  horizontal?: {
+    rotateView?: boolean;
+    panView?: boolean;
+    fitView?: boolean;
+    windowArea?: boolean;
+    viewUndoRedo?: boolean;
+  };
+  vertical?: {
+    walk?: boolean;
+    toggleCamera?: boolean;
+  };
+}
 
 /**
  * Provide standard tools for the ViewNavigationWidgetComposer.
- * @public
+ * @beta
  */
-export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
-  /**
-   * static function to register the StandardContentToolsProvider
-   * @param providerId - unique identifier for this instance of the provider. This is required in case separate packages want
-   * to set up custom stage with their own subset of standard tools
-   * @param defaultNavigationTools - if undefined all available tools are provided to stage. If defined only those
-   * specific tool buttons are shown.
-   * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
-   * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
-   */
-  public static register(providerId: string, defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
-    const provider = new StandardNavigationToolsProvider(providerId, defaultNavigationTools, isSupportedStage);
-    UiItemsManager.register(provider);
-    return provider;
-  }
+export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
+  public get id(): string { return "appui-react:StandardNavigationToolsUiItemsProvider"; }
 
-  constructor(providerId: string, private defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
-    super(providerId, isSupportedStage);
-  }
+  constructor(private defaultNavigationTools?: DefaultNavigationTools) { }
 
-  public override provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[] {
+  public provideToolbarButtonItems(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[] {
     const items: CommonToolbarItem[] = [];
     if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Horizontal) {
 
@@ -58,7 +63,7 @@ export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
         items.push(ToolbarHelper.createToolbarItemFromItemDef(60, CoreTools.viewRedoCommand));
       }
 
-    } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
+    } else /* istanbul ignore else */if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
 
       if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.walk)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.walkViewCommand));

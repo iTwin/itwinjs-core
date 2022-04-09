@@ -119,14 +119,62 @@ For newer apps that run only in AppUI then the above method can be simplified to
 
 One last thing to point out in the above example. We specified default size for the widget if it is "floated". This is sometimes required due to the specific construction of the widget component. Most components have an intrinsic size based on their contents and this size is used when the widget is floated. There are a few widget that draw directly to a canvas object or some other object that does not have an intrinsic size, and these component must have a size specified. Widgets that use the `PropertyGrid` and `ControlledTree` components are of this type and must have their sizes specified. The `defaultFloatingSize` prop is used to specify a default size for these widgets when they are "floated". If the prop `isFloatingStateWindowResizable={true}` is also specified the user is allowed to resize the widgets when floated and that stated is saved and used if the widget is floated again in the same frontstage.
 
+## UiItemProviderOverrides
+
+When registering a [UiItemsProvider]($appui-abstract) with the [UiItemsManager]($appui-abstract) it is possible to pass an additional argument to limit when the provider is allowed to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) defines the parameters that can be used to limit when the provider is called to provide its items.
+
+In the example registration below the `commonToolSetProvider` is limited to be called to when the active stage has a StageUsage: `StageUsage.General`, `StageUsage.Edit`, or `StageUsage.ViewOnly`. Remember the StageUsage is defined by the FrontStageProvider that has been registered.  Since we want the same provider to provide a different set of tools to different stages we assign an override providerId for this instance of the provider. This is needed since the UiItemsManager does not allow providers with duplicate Ids. The `redlineToolSetProvider` is then registered to show only a subset of tools when the active stage has a StageUsage of `StageUsage.Redline`.
+
+```ts
+const commonToolSetProvider = new StandardContentToolsUiItemsProvider();
+UiItemsManager.register(commonToolSetProvider, {providerId: "general-content-tools",
+ stageUsages: [StageUsage.General, StageUsage.Edit, StageUsage.ViewOnly]});
+
+const contentToolsToShow: DefaultContentTools = {
+      vertical: {
+        selectElement: true,
+      },
+      horizontal: {
+        clearSelection: true,
+      },
+    };
+const redlineToolSetProvider = new StandardContentToolsUiItemsProvider(contentToolsToShow);
+UiItemsManager.register(redlineToolSetProvider, {providerId: "redline-content-tools",
+  stageUsages: [StageUsage.Redline]});
+```
+
+Alternately StageIds could be used to specify when the different tool set providers are used. This requires the caller the registers the UiItemsProvider to know all stageIds that are available in the application.
+
+```ts
+const commonToolSetProvider = new StandardContentToolsUiItemsProvider();
+UiItemsManager.register(commonToolSetProvider, {providerId: "general-content-tools",
+ stageIds: ["Main", "PlanAndProfile", "BasicEditing"]});
+
+const contentToolsToShow: DefaultContentTools = {
+      vertical: {
+        selectElement: true,
+      },
+      horizontal: {
+        clearSelection: true,
+      },
+    };
+const redlineToolSetProvider = new StandardContentToolsUiItemsProvider(contentToolsToShow);
+UiItemsManager.register(redlineToolSetProvider, {providerId: "redline-content-tools",
+  stageIds: ["Markup"]});
+```
+
+There are three standard providers that can be used to serve as example of defining a UiItemsProvider. They are [StandardContentToolsUiItemsProvider]($appui-react), [StandardNavigationToolsUiItemsProvider]($appui-react), and [StandardStatusbarUiItemsProvider]($appui-react).
+
 ## BaseUiItemsProvider
+
+Note - This class is targeted to be deprecated in favor of the less intrusive ability to specify overrides as outlined in the topic above.
 
 The BaseUiItemsProvider implements the UiItemsProvider interface and provides the additional functionality of allowing the user of the provider to define a function
 that determines if the provided items are to be supplied to the active stage. The BaseUiItemsProvider is meant to be subclassed to create an items provider that supports the isSupportedStage callback function.
 
 If developing an general purpose UiItemsProvider that may be used in multiple products or may be instantiated multiple times within a product to deliver a different set of items to different stages it is recommended that the provider be subclassed from the BaseUiItemsProvider class.
 
-To see a more complete example of adding ToolButtons, Status Bar items, and Widgets see the [UiItemsProvider example](./abstract/uiitemsprovider/#uiitemsprovider-example). The [StandardContentToolsProvider]($appui-react) class serves as a good example of an items provider subclassed from BaseUiItemsProvider.
+To see a more complete example of adding ToolButtons, Status Bar items, and Widgets see the [UiItemsProvider example](./abstract/uiitemsprovider/#uiitemsprovider-example). The [StandardContentToolsProvider]($appui-react) class serves as an example of an items provider subclassed from BaseUiItemsProvider.
 
 ## Adding a Frontstage
 
@@ -174,28 +222,21 @@ export class MyFrontstage {
   }
 
   private static registerToolProviders() {
-    // Provides standard tools for ToolWidget in ui2.0 stage
-    StandardContentToolsProvider.register({
-      horizontal: {
-        clearSelection: true,
-        clearDisplayOverrides: true,
-        hide: "group",
-        isolate: "group",
-        emphasize: "element",
-      },
-    }, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === MyFrontstage.stageId;
-    });
 
-    // Provides standard tools for NavigationWidget in ui2.0 stage
-    StandardNavigationToolsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === MyFrontstage.stageId;
-    });
+    // =============== using stage ids to filter when provider is called ===================
+    const contentToolOptions = {
+        horizontal: {
+          clearSelection: true,
+          clearDisplayOverrides: true,
+          hide: "group",
+          isolate: "group",
+          emphasize: "element",
+        },
+      };
 
-    // Provides standard status fields for ui2.0 stage
-    StandardStatusbarItemsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === MyFrontstage.stageId;
-    });
+    UiItemsManager.register(new StandardContentToolsUiItemsProvider(contentToolOptions), {stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"]});
+    UiItemsManager.register(new StandardNavigationToolsUiItemsProvider(), {stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"]});
+    UiItemsManager.register(new StandardStatusbarItemsProvider(), {stageIds: ["myPackage:MyStageId", "MainStage", "IssueResolution"]});
   }
 }
 

@@ -539,14 +539,17 @@ internal;StagePanelZonesDef
 public;StagePanelZonesProps
 deprecated;StagePanelZonesProps
 public;StandardContentToolsProvider 
+beta;StandardContentToolsUiItemsProvider 
 public;StandardFrontstageProps
 public;StandardFrontstageProvider 
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
 public;StandardNavigationToolsProvider 
+beta;StandardNavigationToolsUiItemsProvider 
 alpha;StandardRotationNavigationAid 
 alpha;StandardRotationNavigationAidControl 
 public;StandardStatusbarItemsProvider 
+beta;StandardStatusbarUiItemsProvider 
 public;StateManager
 public;StateType
 public;StatusBar 
