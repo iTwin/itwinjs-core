@@ -7,7 +7,7 @@
  */
 
 import { AbandonedError, assert, BeEvent, BeTimePoint, IModelStatus, Logger } from "@itwin/core-bentley";
-import { Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY } from "@itwin/core-geometry";
+import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
@@ -323,7 +323,6 @@ export class ToolAdmin {
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
   private _lastHandledMotionTime?: BeTimePoint;
-  private _lastHandledMotionPoint?: Vector2d;
   private _mouseMoveOverTimeout?: NodeJS.Timeout;
 
   /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select", referring to [[SelectionTool]].
@@ -966,17 +965,16 @@ export class ToolAdmin {
 
   // Call accuSnap.onMotion
   private async onMotionSnapOrSkip(ev: BeButtonEvent): Promise<void> {
-    if (this.shouldSkipOnMotionSnap(ev))
+    if (this.shouldSkipOnMotionSnap())
       return;
 
     await IModelApp.accuSnap.onMotion(ev);
 
     this._lastHandledMotionTime = BeTimePoint.now();
-    this._lastHandledMotionPoint = Vector2d.fromJSON(ev.viewPoint);
   }
 
   // Should the current onMotionSnap event be skipped to avoid unnecessary ReadPixel calls?
-  private shouldSkipOnMotionSnap(ev: BeButtonEvent ): boolean {
+  private shouldSkipOnMotionSnap(): boolean {
     if (this._lastHandledMotionTime === undefined)
       return false;
 
@@ -986,20 +984,7 @@ export class ToolAdmin {
     const maxOnMotionCallPerSecond = 15; // TODO: Make it configurable?
     const delay = 1000 / maxOnMotionCallPerSecond;
 
-    if (msSinceLastCall < delay) // Call too close to the previous one, skip it
-      return true;
-    if (msSinceLastCall > 2 * delay) // Call too long after last one, keep it
-      return false;
-
-    const movement = this._lastHandledMotionPoint?.vectorTo(ev.viewPoint);
-
-    if (movement !== undefined) {
-      const distance = new Vector2d(movement.x / ev.viewport!.viewRect.width, movement.y / ev.viewport!.viewRect.height).magnitude();
-
-      return distance < 0.1 || distance > 0.6; // TODO: Make it configurable?
-    }
-
-    return false;
+    return msSinceLastCall < delay;
   }
 
   private async onStartDrag(ev: BeButtonEvent, tool?: InteractiveTool): Promise<EventHandled> {
@@ -1098,7 +1083,7 @@ export class ToolAdmin {
   // Called with the last MouseMove event if the user stopped moving the mouse
   private async onMouseMoveOver(event: ToolEvent): Promise<any> {
     // Make sure that we fire the motion snap event correctly
-    this._lastHandledMotionTime = this._lastHandledMotionPoint = undefined;
+    this._lastHandledMotionTime = undefined;
 
     const vp = event.vp!;
     const pos = this.getMousePosition(event);
