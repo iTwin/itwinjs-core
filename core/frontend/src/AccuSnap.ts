@@ -7,7 +7,7 @@
  */
 
 import { BeDuration } from "@itwin/core-bentley";
-import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, /* Vector2d,*/ Vector3d, XAndY } from "@itwin/core-geometry";
+import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { SnapRequestProps } from "@itwin/core-common";
 import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
 import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
@@ -19,9 +19,6 @@ import { ToolSettings } from "./tools/ToolSettings";
 import { DecorateContext } from "./ViewContext";
 import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
-
-let rpCount = 0;
-let rpTimerHandle: any;
 
 // cspell:ignore dont primitivetools
 
@@ -928,22 +925,6 @@ export class AccuSnap implements Decorator {
    * @internal
    */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
-    //    const screenPoint = new Vector2d(ev.viewPoint.x / ev.viewport.viewRect.width, ev.viewPoint.y / ev.viewport.viewRect.height);
-    //    const lastScreenPoint = new Vector2d(this._lastCursorPos.x / ev.viewport.viewRect.width, this._lastCursorPos.y / ev.viewport.viewRect.height);
-    //    const normalizedMovement = screenPoint.distance(lastScreenPoint);
-
-    if (rpTimerHandle === undefined) {
-      rpTimerHandle = setInterval(() => {
-        if (rpCount > 0) {
-          // eslint-disable-next-line no-console
-          console.log(`${rpCount} read pixel instruction the last second.`);
-        }
-        rpCount = 0;
-
-      }, 1000);
-    }
-    rpCount ++;
-
     this.clearToolTip(ev);
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
