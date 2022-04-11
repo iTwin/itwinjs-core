@@ -6,7 +6,10 @@
  * @module IModelApp
  */
 
-const copyrightNotice = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+export const ITWINJS_CORE_VERSION = require("../../package.json").version as string; // require resolves from the lib/{cjs,esm} dir
+const COPYRIGHT_NOTICE = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
@@ -56,6 +59,7 @@ require("./IModeljs-css");
 
 /** Options that can be supplied with [[IModelAppOptions]] to customize frontend security.
  * @public
+ * @extensions
  */
 export interface FrontendSecurityOptions {
   /** Configures protection from Cross Site Request Forgery attacks. */
@@ -277,7 +281,7 @@ export class IModelApp {
   public static readonly telemetry: TelemetryManager = new TelemetryManager();
 
   /** @alpha */
-  public static readonly extensionAdmin = new ExtensionAdmin();
+  public static readonly extensionAdmin = this._createExtensionAdmin();
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -688,7 +692,7 @@ export class IModelApp {
     return this.makeLogoCard({
       iconSrc: `${this.publicPath}images/about-imodeljs.svg`,
       heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("iModelJs:Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
-      notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
+      notice: `${ITWINJS_CORE_VERSION}<br>${COPYRIGHT_NOTICE}`,
     });
   }
 
@@ -723,5 +727,16 @@ export class IModelApp {
     }
 
     return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
+  }
+
+  /**
+   * Creates an instance of the ExtensionAdmin
+   * and registers an event to execute after startup is complete
+   * @returns an instance of ExtensionAdmin
+   */
+  private static _createExtensionAdmin(): ExtensionAdmin {
+    const extensionAdmin = new ExtensionAdmin();
+    IModelApp.onAfterStartup.addListener(extensionAdmin.onStartup);
+    return extensionAdmin;
   }
 }

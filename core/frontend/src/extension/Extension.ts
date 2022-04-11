@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Extensions
  */
@@ -9,9 +9,7 @@
 /**
  * @alpha
  */
-export enum ActivationEvent {
-  onStartup = "onStartup",
-}
+export type ActivationEvent = "onStartup";
 
 /**
  * @alpha
@@ -40,7 +38,7 @@ export interface ExtensionManifest {
    */
   readonly module?: string;
   /** List of activation events this Extension supports. */
-  readonly activationEvents: ActivationEvent[] | string[];
+  readonly activationEvents: ActivationEvent[];
 }
 
 /**
@@ -77,6 +75,7 @@ export type Extension = ExtensionContentProvider & {
 /**
  * Properties that are required to construct an Extension.
  * Is the parameter type for the "ExtensionAdmin.addExtension" method, which is the preferred method for consumers to provide/register an Extension
+ * @alpha
  */
 export type ExtensionProvider = ExtensionContentProvider &
   (

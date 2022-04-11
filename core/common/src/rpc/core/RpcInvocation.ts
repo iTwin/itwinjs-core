@@ -22,6 +22,7 @@ import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
 /** The properties of an RpcActivity.
  * @public
+ * @extensions
  */
 export interface RpcActivity extends SessionProps {
   /** Used for logging to correlate an Rpc activity between frontend and backend */
@@ -216,15 +217,12 @@ export class RpcInvocation {
 
     const result = await RpcMarshaling.serialize(this.protocol, reason);
 
-    let isNoContentError = false;
-    try { isNoContentError = reason.errorNumber === IModelStatus.NoContent; } catch { }
-
     if (reason instanceof RpcPendingResponse) {
       this._pending = true;
       this._threw = false;
       result.objects = reason.message;
       this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedPending, this);
-    } else if (this.supportsNoContent() && isNoContentError) {
+    } else if (this.supportsNoContent() && reason?.errorNumber === IModelStatus.NoContent) {
       this._noContent = true;
       this._threw = false;
       this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedNoContent, this);

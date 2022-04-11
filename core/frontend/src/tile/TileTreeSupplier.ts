@@ -17,6 +17,7 @@ import { TileTree, TileTreeOwner } from "./internal";
  * changes to its properties may affect comparison and therefore sorting order.
  * @see [[Tiles.getTileTreeOwner]] to obtain a tile tree from a supplier.
  * @public
+ * @extensions
  */
 export interface TileTreeSupplier {
   /** Compare two tree Ids returning a negative number if `lhs` < rhs, a positive number if `lhs` > rhs, or 0 if the Ids are equivalent. */

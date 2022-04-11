@@ -85,6 +85,13 @@ export enum SampleAppUiActionId {
   setInitialViewIds = "sampleapp:setInitialViewIds",
 }
 
+/* ----------------------------------------------------------------------------
+* The following variable is used to test initializing UiFramework to use UI 1.0
+* and using that initial value in ui-test-app. By default UiFramework initializes
+* the Redux state to UI 2.0 mode.
+----------------------------------------------------------------------------- */
+const useUi1Mode = false;
+
 export interface SampleAppState {
   testProperty: string;
   animationViewId: string;
@@ -260,7 +267,7 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    await UiFramework.initialize(undefined);
+    await UiFramework.initialize(undefined, undefined, useUi1Mode);
 
     // initialize Presentation
     await Presentation.initialize({
@@ -323,16 +330,21 @@ export class SampleAppIModelApp {
 
     // Create and register the AppUiSettings instance to provide default for ui settings in Redux store
     const lastTheme = (window.localStorage && window.localStorage.getItem("uifw:defaultTheme")) ?? SYSTEM_PREFERRED_COLOR_THEME;
-    const defaults: InitialAppUiSettings = {
-      colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
-      dragInteraction: false,
-      frameworkVersion: "2",
-      widgetOpacity: 0.8,
-      showWidgetIcon: true,
-    };
+    if (!useUi1Mode) {
+      const defaults: InitialAppUiSettings = {
+        colorTheme: lastTheme ?? SYSTEM_PREFERRED_COLOR_THEME,
+        dragInteraction: false,
+        frameworkVersion: "2",
+        widgetOpacity: 0.8,
+        showWidgetIcon: true,
+        autoCollapseUnpinnedPanels: false,
+      };
 
-    // initialize any settings providers that may need to have defaults set by iModelApp
-    UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+      // initialize any settings providers that may need to have defaults set by iModelApp
+      UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
+    } else {
+      window.localStorage.removeItem("AppUiSettings.FrameworkVersion");
+    }
 
     UiFramework.useDefaultPopoutUrl = true;
 

@@ -1,18 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Extensions
  */
 
 import { IModelApp } from "../IModelApp";
-import {
-  ActivationEvent,
-  Extension,
-  ExtensionManifest,
-  ExtensionProvider,
-} from "./Extension";
+import { Extension, ExtensionManifest, ExtensionProvider } from "./Extension";
 
 /** The Extensions loading system has the following goals:
  *   1. Only fetch what is needed when it is required
@@ -51,7 +46,7 @@ export class ExtensionAdmin {
    * @internal
    */
   public onStartup = async () => {
-    await this.activateExtensionEvents(ActivationEvent.onStartup);
+    await this.activateExtensionEvents("onStartup");
   };
 
   public constructor() {
@@ -89,7 +84,7 @@ export class ExtensionAdmin {
    * @param hostUrl
    */
   public registerHost(hostUrl: string) {
-    this._hosts.push(new URL(hostUrl).hostname.replace("www",""));
+    this._hosts.push(new URL(hostUrl).hostname.replace("www", ""));
   }
 
   /** Loops over all enabled Extensions and triggers each one if the provided event is defined. */
@@ -134,8 +129,8 @@ export class ExtensionAdmin {
   private async execute(extension: Extension): Promise<void> {
     if (extension.main) return extension.main();
     if (extension.jsUrl) {
-      const hostName = new URL(extension.jsUrl).hostname.replace("www","");
-      if (this._hosts.indexOf(hostName)< 0) {
+      const hostName = new URL(extension.jsUrl).hostname.replace("www", "");
+      if (this._hosts.indexOf(hostName) < 0) {
         throw new Error(
           `Extension "${extension.manifest.name}" could not be loaded from "${hostName}". Please register the host for extension usage via the registerHost API`
         );

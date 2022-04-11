@@ -12,10 +12,9 @@ import {
 } from "@itwin/components-react";
 import { ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
-import { Input } from "@itwin/itwinui-react";
+import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, useLayoutResizeObserver, useRefState, WebFontIcon } from "@itwin/core-react";
+import { Button, Input } from "@itwin/itwinui-react";
 import * as React from "react";
-import { useResizeDetector } from "react-resize-detector";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import "./SubLayersTree.scss";
@@ -137,7 +136,8 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     setLayerFilterString(event.target.value);
   }, []);
 
-  const { width, height, ref } = useResizeDetector();
+  const [divRef, divElement] = useRefState<HTMLDivElement>();
+  const [width, height] = useLayoutResizeObserver(divElement ?? null);
 
   return <>
     <div className="map-manager-sublayer-tree">
@@ -151,15 +151,16 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
         }
       >
         {mapLayer.provider?.mutualExclusiveSubLayer ? undefined : [
-          <button key="show-all-btn" title={allOnLabel} onClick={showAll}>
+          <Button size="small"styleType="borderless" key="show-all-btn" title={allOnLabel} onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
-          </button>,
-          <button key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
+          </Button>,
+          <Button size="small"styleType="borderless" key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
             <WebFontIcon iconName="icon-visibility-hide-2" />
-          </button>,
+          </Button>,
         ]}
       </Toolbar>
-      <div ref={ref} className="map-manager-sublayer-tree-content">
+      {/* <div ref={ref} className="map-manager-sublayer-tree-content"> */}
+      <div ref={divRef} className="map-manager-sublayer-tree-content">
         {width && height ? <ControlledTree
           nodeLoader={nodeLoader}
           selectionMode={SelectionMode.None}

@@ -265,6 +265,7 @@ class SectionAttachment {
 
 /** A view of a [DrawingModel]($backend)
  * @public
+ * @extensions
  */
 export class DrawingViewState extends ViewState2d {
   /** @internal */

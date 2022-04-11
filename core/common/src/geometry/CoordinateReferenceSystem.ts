@@ -13,11 +13,13 @@ import { Carto2DDegrees, Carto2DDegreesProps, Projection, ProjectionProps } from
 import { AdditionalTransform, AdditionalTransformProps } from "./AdditionalTransform";
 /** This type indicates possible linear and angular units supported.
  *  @public
+ *  @extensions
 */
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 /** The extent in latitude, longitude bounds where a horizontal CRS is applicable
  *  @public
+ *  @extensions
 */
 export interface HorizontalCRSExtentProps {
   /** The South West point in latitude and longitude in degrees for the user-defined extent of the CRS */
@@ -76,6 +78,7 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
 
 /** Horizontal Geographic Coordinate Reference System definition
  *  @public
+ *  @extensions
  */
 export interface HorizontalCRSProps {
   /** The identifier of the horizontal CRS as stored in the dictionary or the service database */
@@ -282,6 +285,7 @@ export class HorizontalCRS implements HorizontalCRSProps {
 
 /** Vertical Geographic Coordinate reference System definition
  * @public
+ * @extensions
  */
 export interface VerticalCRSProps {
   /** Vertical CRS Key name.
@@ -339,6 +343,7 @@ export class VerticalCRS implements VerticalCRSProps {
  *  additional transformation.
  *  @see [[GeographicCRS]].
  *  @public
+ *  @extensions
  */
 export interface GeographicCRSProps {
   /** The horizontal portion of the geographic coordinate reference system. */

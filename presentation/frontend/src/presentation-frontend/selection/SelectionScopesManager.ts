@@ -23,7 +23,7 @@ export interface SelectionScopesManagerProps {
 }
 
 /**
- * A manager that knows available [selection scopes]($docs/presentation/Unified-Selection/index#selection-scopes)
+ * A manager that knows available [selection scopes]($docs/presentation/unified-selection/index#selection-scopes)
  * and can compute logical selection based on element IDs and selection scope.
  *
  * @public

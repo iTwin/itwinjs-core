@@ -101,7 +101,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
-  private _fbo?: FrameBuffer;
+  protected _fbo?: FrameBuffer;
   private _dcAssigned = false;
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationsState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -1185,7 +1185,11 @@ class CanvasState {
   public updateDimensions(pixelRatio: number): boolean {
     const w = Math.floor(this.canvas.clientWidth * pixelRatio);
     const h = Math.floor(this.canvas.clientHeight * pixelRatio);
-    if (w === this._width && h === this._height)
+
+    // Do not update the dimensions if not needed, or if new width or height is 0, which is invalid.
+    // NB: the 0-dimension check indirectly resolves an issue when a viewport is dropped and immediately re-added
+    // to the view manager. See ViewManager.test.ts for more details.
+    if (w === this._width && h === this._height || (0 === w || 0 === h))
       return false;
 
     // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance.
@@ -1262,6 +1266,16 @@ export class OnScreenTarget extends Target {
 
   public setViewRect(_rect: ViewRect, _temporary: boolean): void {
     assert(false);
+  }
+
+  /** Internal-only function for testing. Returns true if the FBO dimensions match the canvas dimensions */
+  public checkFboDimensions(): boolean {
+    if (undefined !== this._fbo) {
+      const tx = this._fbo.getColor(0);
+      if (tx.width !== this._curCanvas.width || tx.height !== this._curCanvas.height)
+        return false;
+    }
+    return true;
   }
 
   protected _assignDC(): boolean {

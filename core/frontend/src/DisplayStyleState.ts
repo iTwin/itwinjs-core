@@ -37,6 +37,7 @@ export class TerrainDisplayOverrides {
 /** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
  * @see [[DisplayStyleState.setOSMBuildingDisplay]].
  * @public
+ * @extensions
  */
 export interface OsmBuildingDisplayOptions {
   /** If defined, enables or disables display of the buildings by attaching or detaching the OpenStreetMap Buildings reality model. */
@@ -47,6 +48,7 @@ export interface OsmBuildingDisplayOptions {
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]].
  * @public
+ * @extensions
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
@@ -218,12 +220,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @public
    */
   public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
-    const provider = BackgroundMapProvider.fromJSON(props);
     const base = this.settings.mapImagery.backgroundBase;
-    if (base instanceof ColorDef)
-      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(provider);
-    else
+    if (base instanceof ColorDef) {
+      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(BackgroundMapProvider.fromJSON(props));
+    } else {
+      const provider = base.provider ? base.provider.clone(props) : BackgroundMapProvider.fromJSON(props);
       this.settings.mapImagery.backgroundBase = base.cloneWithProvider(provider);
+    }
 
     this._synchBackgroundMapImagery();
   }
@@ -786,6 +789,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
 /** A display style that can be applied to 2d views.
  * @public
+ * @extensions
  */
 export class DisplayStyle2dState extends DisplayStyleState {
   /** @internal */
@@ -806,6 +810,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
 /** A [[DisplayStyleState]] that can be applied to spatial views.
  * @public
+ * @extensions
  */
 export class DisplayStyle3dState extends DisplayStyleState {
   /** @internal */

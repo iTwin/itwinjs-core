@@ -111,6 +111,7 @@ export class FuzzySearch<T> {
 
 /** Interface implemented by objects returned while iterating through FuzzySearchResults
  * @public
+ * @extensions
  */
 export interface FuzzySearchResult<T> {
   /** Return the current result object */
