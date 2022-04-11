@@ -5,9 +5,11 @@
 
 import { Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
-import { StopWatch } from "@itwin/core-bentley";
+import { Id64String, StopWatch } from "@itwin/core-bentley";
+import { ElementProps } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
+import { IModelImporter } from "../../IModelImporter";
 import { IModelTransformer, IModelTransformOptions } from "../../IModelTransformer";
 import { assertIdentityTransformation } from "../IModelTransformerUtils";
 
@@ -131,18 +133,34 @@ describe("test resuming transformations", () => {
     let crashingEnabled = false;
     let crashableCallsMade = 0;
 
+    class CountingImporter extends IModelImporter {
+      public owningTransformer: CrashingTransformer | undefined;
+      public override importElement(elementProps: ElementProps): Id64String {
+        if (this.owningTransformer === undefined)
+          throw Error("uninitialized, '_owningTransformer' must have been set before transformations");
+        ++this.owningTransformer.importedEntities;
+        return super.importElement(elementProps);
+      }
+    }
+
     /** this class services two functions,
      * 1. make sure transformations can be resumed by subclasses with different constructor argument types
      * 2. count the operations that are expected to be done less during a transformation
      */
     class CrashingTransformer extends IModelTransformer {
+      public importedEntities = 0;
       public exportedEntities = 0;
       constructor(opts: {
         source: IModelDb;
         target: IModelDb;
         options?: IModelTransformOptions;
       }) {
-        super(opts.source, opts.target, opts.options);
+        super(
+          opts.source,
+          new CountingImporter(opts.target),
+          opts.options
+        );
+        (this.importer as CountingImporter).owningTransformer = this;
       }
       public override onExportElement(sourceElement: Element) {
         ++this.exportedEntities;
@@ -234,7 +252,8 @@ describe("test resuming transformations", () => {
           finalTransformationTime: timer!.elapsedSeconds,
           finalTransformationCallsMade: crashableCallsMade,
           crashCount,
-          exportedElementCount: transformer.exportedEntities,
+          importedEntityCount: transformer.importedEntities,
+          exportedEntityCount: transformer.exportedEntities,
         };
         crashableCallsMade = 0;
         return result;
@@ -266,21 +285,27 @@ describe("test resuming transformations", () => {
 
     let totalCrashableCallsMade = 0;
     let totalNonCrashingTransformationsTime = 0.0;
+    let totalImportedEntities = 0;
+    let totalExportedEntities = 0;
     const totalNonCrashingTransformations = Number(process.env.TRANSFORMER_RESUMPTION_TEST_TOTAL_NON_CRASHING_TRANSFORMATIONS) || 5;
     for (let i = 0; i < totalNonCrashingTransformations; ++i) {
       // eslint-disable-next-line @typescript-eslint/no-shadow
-      const { finalTransformationTime, finalTransformationCallsMade } = await runAndCompareWithControl(false);
-      totalCrashableCallsMade += finalTransformationCallsMade;
-      totalNonCrashingTransformationsTime += finalTransformationTime;
+      const result = await runAndCompareWithControl(false);
+      totalCrashableCallsMade += result.finalTransformationCallsMade;
+      totalNonCrashingTransformationsTime += result.finalTransformationTime;
+      totalImportedEntities += result.importedEntityCount;
+      totalExportedEntities += result.exportedEntityCount;
     }
     const avgNonCrashingTransformationsTime = totalNonCrashingTransformationsTime / totalNonCrashingTransformations;
     const avgCrashableCallsMade = totalCrashableCallsMade / totalNonCrashingTransformations;
+    const avgImportedEntityCount = totalImportedEntities / totalNonCrashingTransformations;
+    const avgExportedEntityCount = totalExportedEntities / totalNonCrashingTransformations;
 
     // eslint-disable-next-line no-console
     console.log(`the average non crashing transformation took ${
-      avgNonCrashingTransformationsTime
+      fmtter.format(avgNonCrashingTransformationsTime)
     } and made ${
-      avgCrashableCallsMade
+      fmtter.format(avgCrashableCallsMade)
     } native calls.`);
 
     let totalCrashingTransformationsTime = 0.0;
@@ -289,21 +314,25 @@ describe("test resuming transformations", () => {
     let totalCrashingTransformations = 0;
     for (let i = 0; i < MAX_CRASHING_TRANSFORMS && totalCrashingTransformations < targetTotalCrashingTransformations; ++i) {
       // eslint-disable-next-line @typescript-eslint/no-shadow
-      const { finalTransformationTime, finalTransformationCallsMade, crashCount } = await runAndCompareWithControl(true);
-      if (crashCount === 0) continue;
+      const result = await runAndCompareWithControl(true);
+      if (result.crashCount === 0) continue;
       totalCrashingTransformations++;
-      const proportionOfNonCrashingTransformTime = finalTransformationTime / avgNonCrashingTransformationsTime;
-      const proportionOfNonCrashingTransformCalls = finalTransformationCallsMade / avgCrashableCallsMade;
+      const proportionOfNonCrashingTransformTime = result.finalTransformationTime / avgNonCrashingTransformationsTime;
+      const proportionOfNonCrashingTransformCalls = result.finalTransformationCallsMade / avgCrashableCallsMade;
+      const proportionOfNonCrashingEntityImports = result.importedEntityCount / avgImportedEntityCount;
+      const _proportionOfNonCrashingEntityExports = result.importedEntityCount / avgExportedEntityCount;
       const ratioOfCallsToTime = proportionOfNonCrashingTransformCalls / proportionOfNonCrashingTransformTime;
       /* eslint-disable no-console */
-      console.log(`the finishing resuming transformation took ${
+      console.log(`final resuming transformation took | ${
         percent(proportionOfNonCrashingTransformTime)
-      } as much time as a regular transform and made ${
+      } as much time  | ${
         percent(proportionOfNonCrashingTransformCalls)
-      } the amount of transformation and native calls.`);
+      } as many calls | ${
+        percent(proportionOfNonCrashingEntityImports)
+      } as many imported elements |`);
       console.log(`ratio of call/time proportions when resumes is: ${ratioOfCallsToTime}`);
       /* eslint-enable no-console */
-      totalCrashingTransformationsTime += finalTransformationTime;
+      totalCrashingTransformationsTime += result.finalTransformationTime;
     }
     const avgCrashingTransformationsTime = totalCrashingTransformationsTime / totalCrashingTransformations;
     /* eslint-disable no-console */
