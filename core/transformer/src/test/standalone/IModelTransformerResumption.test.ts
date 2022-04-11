@@ -281,6 +281,7 @@ describe("test resuming transformations", () => {
       minimumFractionDigits: 2,
     });
 
+    /** convert a proportion to a percent */
     const percent = (n: number) => `${fmtter.format(100 * n)}%`;
 
     let totalCrashableCallsMade = 0;
@@ -320,17 +321,17 @@ describe("test resuming transformations", () => {
       const proportionOfNonCrashingTransformTime = result.finalTransformationTime / avgNonCrashingTransformationsTime;
       const proportionOfNonCrashingTransformCalls = result.finalTransformationCallsMade / avgCrashableCallsMade;
       const proportionOfNonCrashingEntityImports = result.importedEntityCount / avgImportedEntityCount;
-      const _proportionOfNonCrashingEntityExports = result.importedEntityCount / avgExportedEntityCount;
-      const ratioOfCallsToTime = proportionOfNonCrashingTransformCalls / proportionOfNonCrashingTransformTime;
+      expect(result.exportedEntityCount ).to.equal(avgExportedEntityCount);
+      const _ratioOfCallsToTime = proportionOfNonCrashingTransformCalls / proportionOfNonCrashingTransformTime;
+      const _ratioOfImportsToTime = proportionOfNonCrashingEntityImports / proportionOfNonCrashingTransformTime;
       /* eslint-disable no-console */
       console.log(`final resuming transformation took | ${
         percent(proportionOfNonCrashingTransformTime)
-      } as much time  | ${
+      } time | ${
         percent(proportionOfNonCrashingTransformCalls)
-      } as many calls | ${
+      } calls | ${
         percent(proportionOfNonCrashingEntityImports)
-      } as many imported elements |`);
-      console.log(`ratio of call/time proportions when resumes is: ${ratioOfCallsToTime}`);
+      } element imports |`);
       /* eslint-enable no-console */
       totalCrashingTransformationsTime += result.finalTransformationTime;
     }
