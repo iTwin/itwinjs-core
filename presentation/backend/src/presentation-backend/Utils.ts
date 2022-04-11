@@ -10,6 +10,7 @@ import { parse as parseVersion } from "semver";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Element, IModelDb } from "@itwin/core-backend";
 import { InstanceKey } from "@itwin/presentation-common";
+import path from "path";
 
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
@@ -34,3 +35,7 @@ export function normalizeVersion(version?: string) {
   }
   return "0.0.0";
 }
+
+/** @internal */
+// istanbul ignore next
+export const getLocalesDirectory = (assetsDirectory: string) => path.join(assetsDirectory, "locales");

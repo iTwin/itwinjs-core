@@ -52,6 +52,7 @@ export interface BlankConnectionProps {
 
 /** A connection to a [IModelDb]($backend) hosted on the backend.
  * @public
+ * @extensions
  */
 export abstract class IModelConnection extends IModel {
   /** The [[ModelState]]s in this IModelConnection. */

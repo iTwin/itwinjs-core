@@ -3084,6 +3084,7 @@ export class AccuDraw {
 
 /** Specify the rotation to return from [[AccuDrawHintBuilder.getContextRotation]].
  * @public
+ * @extensions
  */
 export enum ContextRotationId { Top, Front, Left, Bottom, Back, Right, View, Face }
 
@@ -3096,6 +3097,7 @@ export enum ContextRotationId { Top, Front, Left, Bottom, Back, Right, View, Fac
  * through keyboard shortcuts.
  * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)*
  * @public
+ * @extensions
  */
 export class AccuDrawHintBuilder {
   private _flagOrigin = false;

@@ -53,8 +53,7 @@ describe("PinToggle", () => {
       </TestNineZoneProvider>
     );
     const toggle = container.getElementsByClassName("nz-widget-pinToggle")[0];
-    const icon = toggle.firstElementChild!;
-    Array.from(icon.classList.values()).should.contain("icon-chevron-down");
+    Array.from(toggle.classList.values()).should.contain("nz-is-pinned");
   });
 
   it("should dispatch PANEL_TOGGLE_PINNED", () => {

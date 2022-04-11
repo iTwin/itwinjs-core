@@ -20,6 +20,7 @@ import { ViewState } from "./ViewState";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
+ * @extensions
  */
 export class ModelState extends EntityState implements ModelProps {
   /** @internal */
@@ -74,6 +75,7 @@ export class ModelState extends EntityState implements ModelProps {
 /** Represents the front-end state of a [GeometricModel]($backend).
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
  * @public
+ * @extensions
  */
 export abstract class GeometricModelState extends ModelState implements GeometricModelProps {
   /** @internal */
@@ -186,6 +188,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 }
 /** Represents the front-end state of a [GeometricModel2d]($backend).
  * @public
+ * @extensions
  */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
   /** @internal */
@@ -212,6 +215,7 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 
 /** Represents the front-end state of a [GeometricModel3d]($backend).
  * @public
+ * @extensions
  */
 export class GeometricModel3dState extends GeometricModelState {
   /** @internal */
@@ -256,6 +260,7 @@ export class GeometricModel3dState extends GeometricModelState {
 
 /** Represents the front-end state of a [SheetModel]($backend).
  * @public
+ * @extensions
  */
 export class SheetModelState extends GeometricModel2dState {
   /** @internal */
@@ -264,6 +269,7 @@ export class SheetModelState extends GeometricModel2dState {
 
 /** Represents the front-end state of a [SpatialModel]($backend).
  * @public
+ * @extensions
  */
 export class SpatialModelState extends GeometricModel3dState {
   /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it. */
@@ -287,6 +293,7 @@ export class SpatialModelState extends GeometricModel3dState {
 
 /** Represents the front-end state of a [PhysicalModel]($backend).
  * @public
+ * @extensions
  */
 export class PhysicalModelState extends SpatialModelState {
   /** @internal */
@@ -295,6 +302,7 @@ export class PhysicalModelState extends SpatialModelState {
 
 /** Represents the front-end state of a [SpatialLocationModel]($backend).
  * @public
+ * @extensions
  */
 export class SpatialLocationModelState extends SpatialModelState {
   /** @internal */
@@ -303,6 +311,7 @@ export class SpatialLocationModelState extends SpatialModelState {
 
 /** Represents the front-end state of a [DrawingModel]($backend).
  * @public
+ * @extensions
  */
 export class DrawingModelState extends GeometricModel2dState {
   /** @internal */
@@ -311,6 +320,7 @@ export class DrawingModelState extends GeometricModel2dState {
 
 /** Represents the front-end state of a [SectionDrawingModel]($backend).
  * @public
+ * @extensions
  */
 export class SectionDrawingModelState extends DrawingModelState {
   /** @internal */

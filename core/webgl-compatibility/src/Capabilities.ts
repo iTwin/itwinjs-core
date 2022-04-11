@@ -73,6 +73,12 @@ const buggyIntelMatchers = [
   /ANGLE \(Intel, Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
 ];
 
+// Regexes to match Mali GPUs known to suffer from GraphicsDriverBugs.msaaWillHang.
+const buggyMaliMatchers = [
+  /Mali-G71/,
+  /Mali-G76/,
+];
+
 // Regexes to match as many Intel integrated GPUs as possible.
 // https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
 const integratedIntelGpuMatchers = [
@@ -254,6 +260,16 @@ export class Capabilities {
 
     this._isMobile = ProcessDetector.isMobileBrowser;
 
+    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+    const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
+    const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
+
+    this._driverBugs = {};
+    if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
+      this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
+    if (unmaskedRenderer && buggyMaliMatchers.some((x) => x.test(unmaskedRenderer)))
+      this._driverBugs.msaaWillHang = true;
+
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._supportsCreateImageBitmap = typeof createImageBitmap === "function" && ProcessDetector.isChromium && !ProcessDetector.isIOSBrowser;
     this._maxTexSizeAllow = Math.min(this._maxTextureSize, maxTexSizeAllowed);
@@ -263,7 +279,7 @@ export class Capabilities {
     this._maxVertUniformVectors = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
     this._maxVaryingVectors = gl.getParameter(gl.MAX_VARYING_VECTORS);
     this._maxFragUniformVectors = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
-    this._maxAntialiasSamples = (this._isWebGL2 && undefined !== gl2 ? gl.getParameter(gl2.MAX_SAMPLES) : 1);
+    this._maxAntialiasSamples = this._driverBugs.msaaWillHang ? 1 : (this._isWebGL2 && undefined !== gl2 ? gl.getParameter(gl2.MAX_SAMPLES) : 1);
 
     const extensions = gl.getSupportedExtensions(); // This just retrieves a list of available extensions (not necessarily enabled).
     if (extensions) {
@@ -288,10 +304,6 @@ export class Capabilities {
       this._maxColorAttachments = dbExt !== undefined ? gl.getParameter(dbExt.MAX_COLOR_ATTACHMENTS_WEBGL) : 1;
       this._maxDrawBuffers = dbExt !== undefined ? gl.getParameter(dbExt.MAX_DRAW_BUFFERS_WEBGL) : 1;
     }
-
-    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
-    const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
-    const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
 
     // Determine the maximum color-renderable attachment type.
     const allowFloatRender =
@@ -322,10 +334,6 @@ export class Capabilities {
     this._presentFeatures = this._gatherFeatures();
     const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
     const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
-
-    this._driverBugs = {};
-    if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
-      this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
 
     return {
       status: this._getCompatibilityStatus(missingRequiredFeatures, missingOptionalFeatures),

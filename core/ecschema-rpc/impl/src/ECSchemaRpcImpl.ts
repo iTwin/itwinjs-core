@@ -1,5 +1,5 @@
 import * as backend from "@itwin/core-backend";
-import { IModelRpcProps, QueryRowFormat, RpcInterface, RpcManager } from "@itwin/core-common";
+import { BentleyError, BentleyStatus, IModelRpcProps, IModelStatus, QueryRowFormat, RpcInterface, RpcManager } from "@itwin/core-common";
 import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
@@ -82,11 +82,12 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     const schemaResult = iModelDb.nativeDb.getSchema(schemaName);
 
     if (schemaResult.error !== undefined) {
-      throw new Error(schemaResult.error.message);
+      const defaultMessage = schemaResult.error.status === IModelStatus.NotFound ? `${schemaName} schema Not Found` : schemaResult.error.message;
+      throw new BentleyError(schemaResult.error.status, defaultMessage);
     }
 
     if (schemaResult.result === undefined) {
-      throw new Error("Schema does not exists");
+      throw new BentleyError(BentleyStatus.ERROR, `${schemaName} schema could not be retrieved.`);
     }
 
     return JSON.parse(schemaResult.result);

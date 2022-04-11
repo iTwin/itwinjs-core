@@ -10,6 +10,7 @@
  * @note All logger categories in this package start with the `core-frontend` prefix.
  * @see [Logger]($bentley)
  * @public
+ * @extensions
  */
 export enum FrontendLoggerCategory {
   Package = "core-frontend",

@@ -54,7 +54,6 @@ import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { ColorDefProps } from '@itwin/core-common';
 import { ColorIndex } from '@itwin/core-common';
-import { CommonToolbarItem } from '@itwin/appui-abstract';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { Constructor } from '@itwin/core-bentley';
 import { ContentIdProvider } from '@itwin/core-common';
@@ -293,15 +292,12 @@ import { TileHeader } from '@itwin/core-common';
 import { TileProps } from '@itwin/core-common';
 import { TileReadStatus } from '@itwin/core-common';
 import { TileVersionInfo } from '@itwin/core-common';
-import { ToolbarOrientation } from '@itwin/appui-abstract';
-import { ToolbarUsage } from '@itwin/appui-abstract';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
-import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -1027,10 +1023,7 @@ export enum ACSType {
 }
 
 // @alpha (undocumented)
-export enum ActivationEvent {
-    // (undocumented)
-    onStartup = "onStartup"
-}
+export type ActivationEvent = "onStartup";
 
 // @public
 export class ActivityMessageDetails {
@@ -3099,40 +3092,6 @@ export enum EventHandled {
 }
 
 // @alpha
-export class ExtensionAdmin {
-    constructor();
-    addBuildExtension(manifestPromise: Promise<BuildExtensionManifest>, mainFunc?: ResolveFunc): Promise<void>;
-    addExtensionLoader(extensionLoader: ExtensionLoader): void;
-    addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
-    // @internal
-    onStartup: () => Promise<void>;
-}
-
-// @alpha
-export class ExtensionHost {
-    protected constructor();
-    // (undocumented)
-    static get accuSnap(): AccuSnap;
-    // (undocumented)
-    static get locateManager(): ElementLocateManager;
-    // (undocumented)
-    static get notifications(): NotificationManager;
-    // (undocumented)
-    static get renderSystem(): RenderSystem;
-    // (undocumented)
-    static get toolAdmin(): ToolAdmin;
-    // (undocumented)
-    static get viewManager(): ViewManager;
-}
-
-// @alpha (undocumented)
-export class ExtensionImpl {
-    constructor(_id: string);
-    // (undocumented)
-    registerTool(tool: ToolType, onRegistered?: () => any): Promise<void>;
-}
-
-// @alpha
 export interface ExtensionLoader {
     downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
     getManifest(arg: ExtensionLoaderProps): Promise<ExtensionManifest>;
@@ -4560,7 +4519,7 @@ export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boo
 export function imageElementFromImageSource(source: ImageSource): Promise<HTMLImageElement>;
 
 // @public
-export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
+export function imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise<HTMLImageElement>;
 
 // @internal
 export class ImageryMapLayerFormat extends MapLayerFormat {
@@ -5073,11 +5032,10 @@ export class IModelTileRequestChannels {
         concurrency: number;
         usesHttp: boolean;
         cacheMetadata: boolean;
+        cacheConcurrency: number;
     });
     // (undocumented)
-    get cloudStorage(): TileRequestChannel | undefined;
-    // (undocumented)
-    enableCloudStorageCache(concurrency: number): TileRequestChannel;
+    get cloudStorage(): TileRequestChannel;
     getCachedContent(tile: IModelTile): IModelTileContent | undefined;
     // (undocumented)
     getChannelForTile(tile: IModelTile): TileRequestChannel;
@@ -5841,13 +5799,9 @@ export enum MapLayerImageryProviderStatus {
 
 // @beta
 export interface MapLayerOptions {
-    // (undocumented)
     [format: string]: MapLayerKey | undefined;
-    // (undocumented)
     AzureMaps?: MapLayerKey;
-    // (undocumented)
     BingMaps?: MapLayerKey;
-    // (undocumented)
     MapboxImagery?: MapLayerKey;
 }
 
@@ -7339,6 +7293,7 @@ export class OnScreenTarget extends Target {
     protected _assignDC(): boolean;
     // (undocumented)
     protected _beginPaint(fbo: FrameBuffer): void;
+    checkFboDimensions(): boolean;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
@@ -8279,7 +8234,7 @@ export abstract class RealityTileLoader {
     // (undocumented)
     protected get _batchType(): BatchType;
     // (undocumented)
-    static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
+    static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
     // (undocumented)
     computeTilePriority(tile: Tile, viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number;
     // (undocumented)
@@ -10290,6 +10245,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     endPerfMetricRecord(readPixels?: boolean): void;
     // (undocumented)
+    protected _fbo?: FrameBuffer;
+    // (undocumented)
     get flashed(): Id64.Uint32Pair | undefined;
     // (undocumented)
     get flashedId(): Id64String;
@@ -11198,8 +11155,6 @@ export class TileRequestChannels {
     constructor(rpcConcurrency: number | undefined, cacheMetadata: boolean);
     add(channel: TileRequestChannel): void;
     readonly elementGraphicsRpc: TileRequestChannel;
-    // @internal
-    enableCloudStorageCache(): void;
     get(name: string): TileRequestChannel | undefined;
     getForHttp(name: string): TileRequestChannel;
     // @internal (undocumented)
@@ -11750,15 +11705,6 @@ export interface ToolAssistanceSection {
 // @public (undocumented)
 export type ToolList = ToolType[];
 
-// @alpha (undocumented)
-export class ToolProvider implements UiItemsProvider {
-    constructor(tool: ToolType);
-    // (undocumented)
-    readonly id: string;
-    // (undocumented)
-    provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
-    }
-
 // @public
 export class ToolRegistry {
     create(toolId: string, ...args: any[]): Tool | undefined;
@@ -11944,7 +11890,7 @@ export class TraversalSelectionContext {
 }
 
 // @public
-export function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined>;
+export function tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise<HTMLImageElement | undefined>;
 
 // @public
 export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
@@ -13980,6 +13926,8 @@ export class WmsCapabilities {
     // (undocumented)
     getSubLayersCrs(subLayerNames: string[]): Map<string, string[]> | undefined;
     // (undocumented)
+    readonly isVersion13: boolean;
+    // (undocumented)
     get json(): any;
     // (undocumented)
     readonly layer?: WmsCapability.Layer;
@@ -13995,7 +13943,7 @@ export class WmsCapabilities {
 export namespace WmsCapability {
     // (undocumented)
     export class Layer {
-        constructor(_json: any);
+        constructor(json: any, capabilities: WmsCapabilities);
         // (undocumented)
         readonly cartoRange?: MapCartoRectangle;
         // (undocumented)
@@ -14029,7 +13977,7 @@ export namespace WmsCapability {
     }
     // (undocumented)
     export class SubLayer {
-        constructor(_json: any, parent?: SubLayer | undefined);
+        constructor(_json: any, capabilities: WmsCapabilities, parent?: SubLayer | undefined);
         // (undocumented)
         readonly cartoRange?: MapCartoRectangle;
         // (undocumented)

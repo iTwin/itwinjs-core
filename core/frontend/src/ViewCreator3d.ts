@@ -25,6 +25,7 @@ import { SpatialViewState } from "./SpatialViewState";
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
+ * @extensions
 */
 export interface ViewCreator3dOptions {
   /** Turn [[Camera]] on when generating the view. Defaults to true (on) */
@@ -47,6 +48,7 @@ export interface ViewCreator3dOptions {
  * const defaultView = await viewCreator.createDefaultView({skyboxOn: true});
  * ```
  * @public
+ * @extensions
  */
 export class ViewCreator3d {
 

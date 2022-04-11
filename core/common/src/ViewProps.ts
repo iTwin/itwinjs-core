@@ -17,6 +17,7 @@ import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
  * @see [[SectionDrawingProps]]
  * @public
+ * @extensions
  */
 export interface SectionDrawingViewProps {
   /** The Id of the spatial view from which the SectionDrawing was generated. */
@@ -29,6 +30,7 @@ export interface SectionDrawingViewProps {
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend).
  * @public
+ * @extensions
  */
 export interface ViewStateProps {
   viewDefinitionProps: ViewDefinitionProps;
@@ -47,6 +49,7 @@ export interface ViewStateProps {
 
 /** Options for loading a [[ViewStateProps]] via [IModelConnection.Views.load]($frontend) or [IModelDb.Views.getViewStateData]($backend).
  * @public
+ * @extensions
  */
 export interface ViewStateLoadProps {
   /** Options for loading the view's [[DisplayStyleProps]]. */
@@ -55,6 +58,7 @@ export interface ViewStateLoadProps {
 
 /** Properties that define a ModelSelector
  * @public
+ * @extensions
  */
 export interface ModelSelectorProps extends DefinitionElementProps {
   models: Id64Array;
@@ -62,6 +66,7 @@ export interface ModelSelectorProps extends DefinitionElementProps {
 
 /** Properties that define a CategorySelector
  * @public
+ * @extensions
  */
 export interface CategorySelectorProps extends DefinitionElementProps {
   categories: Id64Array;
@@ -69,6 +74,7 @@ export interface CategorySelectorProps extends DefinitionElementProps {
 
 /** Parameters for performing a query on [ViewDefinition]($backend) classes.
  * @public
+ * @extensions
  */
 export interface ViewQueryParams extends EntityQueryParams {
   wantPrivate?: boolean;
@@ -76,6 +82,7 @@ export interface ViewQueryParams extends EntityQueryParams {
 
 /** Parameters used to construct a ViewDefinition
  * @public
+ * @extensions
  */
 export interface ViewDefinitionProps extends DefinitionElementProps {
   categorySelectorId: Id64String;
@@ -89,6 +96,7 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
 
 /** Parameters to construct a ViewDefinition3d
  * @public
+ * @extensions
  */
 export interface ViewDefinition3dProps extends ViewDefinitionProps {
   /** if true, camera is valid. */
@@ -109,6 +117,7 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
 
 /** Parameters to construct a SpatialViewDefinition
  * @public
+ * @extensions
  */
 export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
   modelSelectorId: Id64String;
@@ -116,6 +125,7 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 
 /** Parameters used to construct a ViewDefinition2d
  * @public
+ * @extensions
  */
 export interface ViewDefinition2dProps extends ViewDefinitionProps {
   baseModelId: Id64String;
@@ -124,7 +134,10 @@ export interface ViewDefinition2dProps extends ViewDefinitionProps {
   angle: AngleProps;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export interface AuxCoordSystemProps extends ElementProps {
   type?: number;
   description?: string;
@@ -132,6 +145,7 @@ export interface AuxCoordSystemProps extends ElementProps {
 
 /**  Properties of AuxCoordSystem2d
  * @public
+ * @extensions
  */
 export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
   /** Origin of the AuxCoordSystem2d */
@@ -142,6 +156,7 @@ export interface AuxCoordSystem2dProps extends AuxCoordSystemProps {
 
 /** Properties of AuxCoordSystem3d
  * @public
+ * @extensions
  */
 export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
   /** Origin of the AuxCoordSystem3d */
