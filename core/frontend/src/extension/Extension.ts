@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Extensions
  */
@@ -47,21 +47,21 @@ export interface ExtensionManifest {
  */
 type ExtensionContentProvider =
   | {
-      /**
+    /**
        * A local function that is the starting execution point for the Extension.
        * Typically used with locally installed Extensions
        */
-      readonly main: ResolveFunc;
-      jsUrl?: never;
-    }
+    readonly main: ResolveFunc;
+    jsUrl?: never;
+  }
   | {
-      main?: never;
-      /**
+    main?: never;
+    /**
        * The url for an endpoint that responds with a Javascript file that contains a default function that is the starting execution point for the Extension.
        * Typically used with remote Extensions
        */
-      readonly jsUrl: string;
-    };
+    readonly jsUrl: string;
+  };
 
 /**
  * A "ready to use" Extension (contains a manifest object).
@@ -78,21 +78,21 @@ export type Extension = ExtensionContentProvider & {
  * @alpha
  */
 export type ExtensionProvider = ExtensionContentProvider &
-  (
-    | {
-        /**
+(
+  | {
+    /**
          * A local promise that resolves the manifest.
          * Typically used with locally installed Extensions
          */
-        readonly manifestPromise: Promise<ExtensionManifest>;
-        manifestUrl?: never;
-      }
-    | {
-        readonly manifestPromise?: never;
-        /**
+    readonly manifestPromise: Promise<ExtensionManifest>;
+    manifestUrl?: never;
+  }
+  | {
+    readonly manifestPromise?: never;
+    /**
          * The url for an endpoint that responds with the manifest.
          * Typically used with remote Extensions
          */
-        manifestUrl: string;
-      }
-  );
+    manifestUrl: string;
+  }
+);
