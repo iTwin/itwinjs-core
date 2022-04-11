@@ -12,6 +12,7 @@ import { LowAndHighXY, XAndY } from "@itwin/core-geometry";
  *
  * Increasing **x** moves from left to right, and increasing **y** moves from top to bottom.
  * @public
+ * @extensions
  */
 export class ViewRect {
   private _left!: number;

@@ -88,6 +88,7 @@ const inertialDampen = (pt: Vector3d) => {
 
 /** An InteractiveTool that manipulates a view.
  * @public
+ * @extensions
  */
 export abstract class ViewTool extends InteractiveTool {
   public static translate(val: string) { return CoreTools.translate(`View.${val}`); }
@@ -295,6 +296,7 @@ export class ViewHandleArray {
 
 /** Base class for tools that manipulate the frustum of a Viewport.
  * @public
+ * @extensions
  */
 export abstract class ViewManip extends ViewTool {
   /** @internal */
