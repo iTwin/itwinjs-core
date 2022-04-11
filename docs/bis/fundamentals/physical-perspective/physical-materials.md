@@ -28,6 +28,12 @@ The following class diagram depicts the relationships between `PhysicalElement`,
 ![Physical Materials in Types and Elements](../media/physical-material-type-element.png)
 &nbsp;
 
+Modeling perspectives other than Physical may have the need to capture Physical Material information. Each concrete implementation of such modeling perspective may choose to reference `PhysicalMaterial` instances in their own way. The following diagram shows an example from the `StructuralAnalytical` domain (alias `sa`):
+
+&nbsp;
+![Physical Materials in Other Modeling Perspectives](../media/physical-material-analytical-type.png)
+&nbsp;
+
 ## Heterogeneous Assemblies
 
 It is not uncommon to find physical assemblies composed of parts made of different materials. This use-case spans multiple disciplines, from composite walls and structural beams to rigid pavement structures. The approach in BIS explained above associates one and only one `PhysicalMaterial` instance for each `PhysicalElement` instance. Heterogeneous assemblies are, therefore, accomodated by associating `PhysicalMaterial` instances with the parts being assembled rather than the parent assembly.

@@ -6,7 +6,7 @@ Quantity takeoffs and material estimating are an important use-cases that BIS ta
 
 ## General approach
 
-It is expected that each Discipline-Physical schema modeling concepts of interest for Quantity takeoffs purposes introduce any relevant quantity-related concepts in light of its domain as first-class properties of its classes. Those quantity-related properties shall be introduced with the appropriate name according to their domain and applicable [Kind of Quantity](../../ec/kindofquantity.md)s.
+It is expected that each Discipline-Physical schema modeling concepts of interest for Quantity takeoffs purposes introduce any relevant quantity-related concepts in light of its domain as first-class properties of its classes. Those quantity-related properties shall be introduced with the appropriate name according to their domain and applicable [Kind of Quantity](../../ec/kindofquantity.md) definitions.
 
 ## Fallback strategies
 

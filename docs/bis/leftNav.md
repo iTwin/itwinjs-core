@@ -72,9 +72,8 @@
 - [Overview](./domains/index.md)
 - [Core domains](./domains/core-domains.md)
 - [Common domains](./domains/common-domains.md)
-- [Multi-discipline domains](./domains/multidiscipline-domains.md)
-- [Building domains](./domains/building-domains.md)
-- [Civil domains](./domains/civil-domains.md)
+- [Discipline-Physical domains](./domains/discipline-physical-domains.md)
+- [Discipline-Other domains](./domains/discipline-other-domains.md)
 
 &nbsp;
 
