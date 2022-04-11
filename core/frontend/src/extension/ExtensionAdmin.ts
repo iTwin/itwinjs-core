@@ -1,12 +1,11 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Extensions
  */
 
-import { IModelApp } from "../IModelApp";
 import { Extension, ExtensionManifest, ExtensionProvider } from "./Extension";
 
 /** The Extensions loading system has the following goals:
@@ -50,7 +49,6 @@ export class ExtensionAdmin {
   };
 
   public constructor() {
-    IModelApp.onAfterStartup.addListener(this.onStartup);
     this._hosts = [];
   }
 
@@ -61,6 +59,7 @@ export class ExtensionAdmin {
    */
   public async addExtension(provider: ExtensionProvider): Promise<void> {
     const manifest = await this.getManifest(provider);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { manifestPromise, manifestUrl, ...extensionContent } = provider;
     this._extensions.set(manifest.name, {
       manifest,
