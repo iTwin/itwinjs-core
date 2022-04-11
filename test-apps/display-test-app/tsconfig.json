@@ -19,7 +19,8 @@
     ]
   },
   "include": [
-    "./src/**/*.ts"
+    "./src/frontend/*.ts",
+    "./src/common/*.ts"
   ],
   "exclude": [
     "lib",
