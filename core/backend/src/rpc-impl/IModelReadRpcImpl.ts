@@ -198,23 +198,27 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
 
     const getSingleCandidateMassProperties = async (candidate: string) => {
-      const massPropResults: MassPropertiesResponseProps[] = [];
+      try {
+        const massPropResults: MassPropertiesResponseProps[] = [];
 
-      for (const op of props.operations) {
-        const massProperties = await iModelDb.getMassProperties({ operation: op, candidates: [candidate] });
-        massPropResults.push(massProperties);
-      }
-
-      let singleCandidateResult: MassPropertiesPerCandidateResponseProps = { status: BentleyStatus.ERROR, candidate };
-
-      if (massPropResults.some((r) => r.status !== BentleyStatus.ERROR)) {
-        singleCandidateResult.status = BentleyStatus.SUCCESS;
-        for (const r of massPropResults.filter((mpr) => mpr.status !== BentleyStatus.ERROR)) {
-          singleCandidateResult = { ...singleCandidateResult, ...r };
+        for (const op of props.operations) {
+          const massProperties = await iModelDb.getMassProperties({ operation: op, candidates: [candidate] });
+          massPropResults.push(massProperties);
         }
-      }
 
-      return singleCandidateResult;
+        let singleCandidateResult: MassPropertiesPerCandidateResponseProps = { status: BentleyStatus.ERROR, candidate };
+
+        if (massPropResults.some((r) => r.status !== BentleyStatus.ERROR)) {
+          singleCandidateResult.status = BentleyStatus.SUCCESS;
+          for (const r of massPropResults.filter((mpr) => mpr.status !== BentleyStatus.ERROR)) {
+            singleCandidateResult = { ...singleCandidateResult, ...r };
+          }
+        }
+
+        return singleCandidateResult;
+      } catch {
+        return { status: BentleyStatus.ERROR, candidate };
+      }
     };
 
     const promises: Promise<MassPropertiesPerCandidateResponseProps>[] = [];
