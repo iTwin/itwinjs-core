@@ -60,8 +60,9 @@ export enum BackendLoggerCategory {
 
   /** The logger category used by the following classes:
    * - IModelTileRpcImpl (Tile Uploading)
+   * - TileStorage (tile upload/download)
    */
-  IModelTileUpload = "core-backend.IModelTileUpload",
+  IModelTileStorage = "core-backend.IModelTileStorage",
 
   /** The logger category used by the following classes:
    * - [[Relationship]]

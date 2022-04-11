@@ -1,5 +1,7 @@
-import { Metadata, ObjectReference, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
+import { Metadata, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
 import { getTileObjectReference } from "@itwin/core-common";
+import { Logger } from "@itwin/core-bentley";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 export class TileStorage {
   public constructor(public readonly storage: ServerStorage) { }
@@ -9,8 +11,8 @@ export class TileStorage {
   public async initialize(iModelId: string): Promise<void> {
     if (this._initializedIModels.has(iModelId))
       return;
-    if (!(await this.storage.exists({ baseDirectory: iModelId }))) {
-      await this.storage.create({ baseDirectory: iModelId });
+    if (!(await this.storage.baseDirectoryExists({ baseDirectory: iModelId }))) {
+      await this.storage.createBaseDirectory({ baseDirectory: iModelId });
     }
     this._initializedIModels.add(iModelId);
   }
@@ -35,11 +37,32 @@ export class TileStorage {
     return buffer;
   }
 
-  public async getCachedTiles(iModelId: string, prefix: string): Promise<ObjectReference[]> {
-    return this.storage.list({ baseDirectory: iModelId, relativeDirectory: prefix });
+  public async getCachedTiles(iModelId: string, _prefix: string): Promise<{ treeId: string, contentId: string, guid?: string }[]> {
+    return (await this.storage.list({ baseDirectory: iModelId }))
+      .map((objectReference) => ({
+        parts: objectReference.relativeDirectory?.split("/") ?? [""],
+        objectName: objectReference.objectName
+      }))
+      .filter(({ parts, objectName }) => {
+        if (parts[0] !== "tiles")
+          return false;
+        if (parts.length !== 3) {
+          Logger.logWarning(BackendLoggerCategory.IModelTileStorage, "Malformed tile id found in tile cache: {tileId}", { tileId: [...parts, objectName].join("/") });
+          return false;
+        }
+        return true;
+      }).map(({ parts, objectName }) => {
+        // relativeDirectory = tiles/<treeId>/<guid>
+        // objectName = <contentId>
+        return {
+          treeId: parts[1],
+          contentId: objectName,
+          guid: parts[2],
+        }
+      });
   }
 
   public async isTileCached(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<boolean> {
-    return this.storage.exists(getTileObjectReference(iModelId, changesetId, treeId, contentId, guid));
+    return this.storage.objectExists(getTileObjectReference(iModelId, changesetId, treeId, contentId, guid));
   }
 }
