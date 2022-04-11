@@ -416,7 +416,7 @@ internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
 public;MassPropertiesOperation
 public;MassPropertiesPerCandidateRequestProps
-public;MassPropertiesPerCandidateResponseProps 
+public;MassPropertiesPerCandidateResponseProps
 public;MassPropertiesRequestProps
 public;MassPropertiesResponseProps
 public;MaterialProps
