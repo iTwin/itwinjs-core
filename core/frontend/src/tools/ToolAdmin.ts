@@ -981,8 +981,7 @@ export class ToolAdmin {
     const now = BeTimePoint.now();
     const msSinceLastCall = now.milliseconds - this._lastHandledMotionTime.milliseconds;
 
-    const maxOnMotionCallPerSecond = 15; // TODO: Make it configurable?
-    const delay = 1000 / maxOnMotionCallPerSecond;
+    const delay = 1000 / ToolSettings.maxOnMotionSnapCallPerSecond;
 
     return msSinceLastCall < delay;
   }
