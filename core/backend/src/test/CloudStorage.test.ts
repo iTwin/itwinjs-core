@@ -22,7 +22,7 @@ describe("AzureBlobStorage.obtainContainerUrl()", () => {
       provider: CloudStorageProvider.Azure,
       name: "testContainerName",
     }, new Date());
-    expect(url.url).to.equal("https://testaccountname.blob.core.windows.net/testContainerName?fake&sas=%key");
+    expect(url.url.toLowerCase()).to.equal("https://testaccountname.blob.core.windows.net/testcontainername?fake&sas=%key");
   });
 
   it("connects to custom Azure provider", () => {

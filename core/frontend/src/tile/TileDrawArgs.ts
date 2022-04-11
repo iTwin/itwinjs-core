@@ -29,6 +29,7 @@ const scratchMatrix4d = Matrix4d.createIdentity();
 
 /** Parameters used to construct [[TileDrawArgs]].
  * @public
+ * @extensions
  */
 export interface TileDrawArgParams {
   /** Context for the scene into which the tiles are to be rendered. */
@@ -66,6 +67,7 @@ export interface TileDrawArgParams {
  * @see [[TileTree.selectTiles]]
  * @see [[TileTree.draw]]
  * @public
+ * @extensions
  */
 export class TileDrawArgs {
   /** Transform to the location in iModel coordinates at which the tiles are to be drawn. */

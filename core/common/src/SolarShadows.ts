@@ -13,6 +13,7 @@ import { RgbColor } from "./RgbColor";
 
 /** JSON representation of [[SolarShadowSettings]].
  * @public
+ * @extensions
  */
 export interface SolarShadowSettingsProps {
   /** Shadow color. Default: [[ColorByName.grey]]. */

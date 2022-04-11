@@ -100,7 +100,7 @@ export function PopupItem(props: PopupItemProps) {
         data-item-type="tool-button-popup"
         data-item-group-priority={props.groupPriority}
         data-item-priority={props.itemPriority}
-        data-item-providerid={props.providerId}
+        data-item-provider-id={props.providerId}
         ref={targetRef}
         disabled={props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
         onClick={onButtonClick}

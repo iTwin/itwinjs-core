@@ -89,6 +89,13 @@ export interface GraphicsDriverBugs {
    * The workaround for this bug has minimal impact on performance and no impact on visual fidelity.
    */
   fragDepthDoesNotDisableEarlyZ?: true;
+  /** If true, the graphics driver will hang when applying MSAA to a viewport.
+   *
+   * Known to affect certain mobile Mali chipsets (G71 and G76). May affect more.
+   *
+   * The workaround for this bug means MSAA cannot be enabled on those devices.
+   */
+  msaaWillHang?: true;
 }
 
 /** Describes the level of compatibility of a client device/browser with the iTwin.js rendering system.

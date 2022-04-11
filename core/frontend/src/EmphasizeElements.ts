@@ -14,6 +14,7 @@ import { Viewport } from "./Viewport";
 
 /** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
  * @public
+ * @extensions
  */
 export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureAppearance;

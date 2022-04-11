@@ -3572,9 +3572,14 @@ importers:
 
   ../../tools/internal:
     specifiers:
+      '@itwin/build-tools': workspace:*
+      mocha: ^8.3.2
       yargs: ^16.0.0
     dependencies:
       yargs: 16.2.0
+    devDependencies:
+      '@itwin/build-tools': link:../build
+      mocha: 8.4.0
 
   ../../tools/perf-tools:
     specifiers:
