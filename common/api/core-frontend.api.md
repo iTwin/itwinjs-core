@@ -1768,19 +1768,6 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseTxns(numOperations: number): Promise<IModelStatus>;
 }
 
-// @alpha (undocumented)
-export interface BuildExtensionManifest extends ExtensionManifest {
-    readonly module: string;
-}
-
-// @alpha (undocumented)
-export interface BuiltInExtensionLoaderProps {
-    // (undocumented)
-    loader: ResolveFunc;
-    // (undocumented)
-    manifest: Promise<any>;
-}
-
 // @internal (undocumented)
 export type CachedDecoration = {
     type: "graphic";
@@ -3092,18 +3079,9 @@ export enum EventHandled {
 }
 
 // @alpha
-export interface ExtensionLoader {
-    downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
-    getManifest(arg: ExtensionLoaderProps): Promise<ExtensionManifest>;
-}
-
-// @alpha
-export interface ExtensionLoaderProps {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    version: string;
-}
+export type Extension = ExtensionContentProvider & {
+    readonly manifest: ExtensionManifest;
+};
 
 // @alpha
 export interface ExtensionManifest {
@@ -3111,9 +3089,19 @@ export interface ExtensionManifest {
     readonly description?: string;
     readonly displayName?: string;
     readonly main: string;
+    readonly module?: string;
     readonly name: string;
     readonly version: string;
 }
+
+// @alpha
+export type ExtensionProvider = ExtensionContentProvider & ({
+    readonly manifestPromise: Promise<ExtensionManifest>;
+    manifestUrl?: never;
+} | {
+    readonly manifestPromise?: never;
+    manifestUrl: string;
+});
 
 // @public
 export interface ExtentLimits {
@@ -5335,14 +5323,6 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
-
-// @alpha
-export interface LocalExtensionProps {
-    // (undocumented)
-    readonly mainFunc?: ResolveFunc;
-    // (undocumented)
-    readonly manifest: ExtensionManifest;
-}
 
 // @internal
 export class LocalhostIpcApp {
