@@ -370,7 +370,9 @@ export abstract class IModelConnection extends IModel {
     return undefined;
   }
 
-  /** Request element mass properties from the backend. */
+  /** Request element mass properties from the backend.
+   * @note For better performance use [[getMassPropertiesPerCandidate]] when called from a loop with identical operations and a single candidate per iteration.
+   */
   public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps); }
 
   /** Request mass properties for multiple elements from the backend. */
