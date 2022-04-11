@@ -41,15 +41,25 @@ export interface MassPropertiesPerCandidateRequestProps {
  * @public
  */
 export interface MassPropertiesResponseProps {
+  /** Success if requested [[MassPropertiesOperation]] could be evaluated for the specified elements */
   status: BentleyStatus;
+  /** Volume of solids when [[MassPropertiesOperation.AccumulateVolumes]] requested */
   volume?: number;
+  /** Surface area of solids and surfaces when [[MassPropertiesOperation.AccumulateVolumes]] or [[MassPropertiesOperation.AccumulateAreas]] requested */
   area?: number;
+  /** Perimeter of surfaces and planar regions when [[MassPropertiesOperation.AccumulateAreas]] requested */
   perimeter?: number;
+  /** Length of curves or perimeter of planar regions when [[MassPropertiesOperation.AccumulateAreas]] or [[MassPropertiesOperation.AccumulateLength]] requested */
   length?: number;
+  /** Centroid of geometry */
   centroid?: XYZProps;
+  /** Product of inertia with respect to xy plane */
   ixy?: number;
+  /** Product of inertia with respect to xz plane */
   ixz?: number;
+  /** Product of inertia with respect to yz plane */
   iyz?: number;
+  /** Moments of inertia */
   moments?: XYZProps;
 }
 
