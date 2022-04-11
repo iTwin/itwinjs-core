@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Element, IModelDb, IModelHost, IModelJsNative, SnapshotDb } from "@itwin/core-backend";
+import { Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import { StopWatch } from "@itwin/core-bentley";
 import { assert, expect } from "chai";
@@ -67,7 +67,7 @@ describe("test resuming transformations", () => {
   });
 
   // change "skip" to "only" to test some huge local model that is not worth putting in the actual tests
-  it.only("local test", async () => {
+  it.skip("local test", async () => {
     class CrashingTransformer extends IModelTransformer {
       public elementExportsUntilCrash = 2_500_000; // this model has 3 million elements and relationships so this should be a good crash point
       public override onExportElement(sourceElement: Element): void {
@@ -123,18 +123,34 @@ describe("test resuming transformations", () => {
   });
 
   // replace "skip" with "only" to run several transformations with random native platform and transformer api method errors thrown
-  it.skip("crashing transforms stats gauntlet", async () => {
+  // you may control the amount of tests ran with the following environment variables
+  // TRANSFORMER_RESUMPTION_TEST_TOTAL_NON_CRASHING_TRANSFORMATIONS (defaults to 5)
+  // TRANSFORMER_RESUMPTION_TEST_TARGET_TOTAL_CRASHING_TRANSFORMATIONS (defaults to 50)
+  // TRANSFORMER_RESUMPTION_TEST_MAX_CRASHING_TRANSFORMATIONS (defaults to 200)
+  it.only("crashing transforms stats gauntlet", async () => {
     let crashingEnabled = false;
     let crashableCallsMade = 0;
 
-    // here to test that types work when calling resumeTransformation
+    /** this class services two functions,
+     * 1. make sure transformations can be resumed by subclasses with different constructor argument types
+     * 2. count the operations that are expected to be done less during a transformation
+     */
     class CrashingTransformer extends IModelTransformer {
+      public exportedEntities = 0;
       constructor(opts: {
         source: IModelDb;
         target: IModelDb;
         options?: IModelTransformOptions;
       }) {
         super(opts.source, opts.target, opts.options);
+      }
+      public override onExportElement(sourceElement: Element) {
+        ++this.exportedEntities;
+        return super.onExportElement(sourceElement);
+      }
+      public override onExportRelationship(sourceRelationship: Relationship) {
+        ++this.exportedEntities;
+        return super.onExportRelationship(sourceRelationship);
       }
     }
 
@@ -217,6 +233,8 @@ describe("test resuming transformations", () => {
           resultDb: targetDb,
           finalTransformationTime: timer!.elapsedSeconds,
           finalTransformationCallsMade: crashableCallsMade,
+          crashCount,
+          exportedElementCount: transformer.exportedEntities,
         };
         crashableCallsMade = 0;
         return result;
@@ -248,7 +266,7 @@ describe("test resuming transformations", () => {
 
     let totalCrashableCallsMade = 0;
     let totalNonCrashingTransformationsTime = 0.0;
-    const totalNonCrashingTransformations = 5;
+    const totalNonCrashingTransformations = Number(process.env.TRANSFORMER_RESUMPTION_TEST_TOTAL_NON_CRASHING_TRANSFORMATIONS) || 5;
     for (let i = 0; i < totalNonCrashingTransformations; ++i) {
       // eslint-disable-next-line @typescript-eslint/no-shadow
       const { finalTransformationTime, finalTransformationCallsMade } = await runAndCompareWithControl(false);
@@ -258,11 +276,22 @@ describe("test resuming transformations", () => {
     const avgNonCrashingTransformationsTime = totalNonCrashingTransformationsTime / totalNonCrashingTransformations;
     const avgCrashableCallsMade = totalCrashableCallsMade / totalNonCrashingTransformations;
 
+    // eslint-disable-next-line no-console
+    console.log(`the average non crashing transformation took ${
+      avgNonCrashingTransformationsTime
+    } and made ${
+      avgCrashableCallsMade
+    } native calls.`);
+
     let totalCrashingTransformationsTime = 0.0;
-    const totalCrashingTransformations = 50;
-    for (let i = 0; i < totalCrashingTransformations; ++i) {
+    const targetTotalCrashingTransformations = Number(process.env.TRANSFORMER_RESUMPTION_TEST_TARGET_TOTAL_CRASHING_TRANSFORMATIONS) || 50;
+    const MAX_CRASHING_TRANSFORMS = Number(process.env.TRANSFORMER_RESUMPTION_TEST_MAX_CRASHING_TRANSFORMATIONS) || 200;
+    let totalCrashingTransformations = 0;
+    for (let i = 0; i < MAX_CRASHING_TRANSFORMS && totalCrashingTransformations < targetTotalCrashingTransformations; ++i) {
       // eslint-disable-next-line @typescript-eslint/no-shadow
-      const { finalTransformationTime, finalTransformationCallsMade } = await runAndCompareWithControl(true);
+      const { finalTransformationTime, finalTransformationCallsMade, crashCount } = await runAndCompareWithControl(true);
+      if (crashCount === 0) continue;
+      totalCrashingTransformations++;
       const proportionOfNonCrashingTransformTime = finalTransformationTime / avgNonCrashingTransformationsTime;
       const proportionOfNonCrashingTransformCalls = finalTransformationCallsMade / avgCrashableCallsMade;
       const ratioOfCallsToTime = proportionOfNonCrashingTransformCalls / proportionOfNonCrashingTransformTime;
