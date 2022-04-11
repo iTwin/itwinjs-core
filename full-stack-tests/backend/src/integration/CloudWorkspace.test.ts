@@ -31,7 +31,7 @@ describe("Cloud workspace containers", () => {
     const testDbName = "testDb";
 
     await initializeContainer(containerId);
-    const wsCont1 = workspace1.getContainer({ ...CloudSqliteTest.storage, containerId, writeable: true, sasToken: CloudSqliteTest.makeSasToken(containerId, "rwadl") });
+    const wsCont1 = workspace1.getContainer({ ...CloudSqliteTest.storage, containerId, writeable: true, accessToken: CloudSqliteTest.makeSasToken(containerId, "rwadl") });
 
     const makeVersion = async (version?: string) => {
       assert(undefined !== wsCont1.cloudContainer);
@@ -39,7 +39,7 @@ describe("Cloud workspace containers", () => {
         const wsDbEdit = new EditableWorkspaceDb({ dbName: testDbName }, wsCont1);
         try {
           await wsDbEdit.createDb(version);
-          const account1 = settings.getObject<CloudSqlite.AccountProps>("cloudSqlite/accountProps")!;
+          const account1 = settings.getObject<CloudSqlite.AccountAccessProps>("cloudSqlite/accountProps")!;
           expect(account1).deep.equals(CloudSqliteTest.storage);
           const contain1 = settings.getString("cloudSqlite/containerId")!;
           expect(contain1).equals(containerId);
@@ -62,7 +62,7 @@ describe("Cloud workspace containers", () => {
 
     expect(wsCont1.cloudContainer?.hasWriteLock).false;
 
-    const wsCont2 = workspace2.getContainer({ ...CloudSqliteTest.storage, containerId, sasToken: CloudSqliteTest.makeSasToken(containerId, "rl") });
+    const wsCont2 = workspace2.getContainer({ ...CloudSqliteTest.storage, containerId, accessToken: CloudSqliteTest.makeSasToken(containerId, "rl") });
     const ws2Cloud = wsCont2.cloudContainer;
     assert(ws2Cloud !== undefined);
 

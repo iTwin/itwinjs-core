@@ -25,7 +25,9 @@ import { Settings, SettingsPriority } from "./Settings";
  * @beta
  */
 enum WorkspaceSetting {
-  ContainerAlias = "workspace/container/alias",
+  Accounts = "workspace/account",
+  Containers = "workspace/containers",
+  Databases = "workspace/databases",
 }
 
 export namespace WorkspaceContainer {
@@ -56,10 +58,10 @@ export namespace WorkspaceContainer {
 
   /**
  * Properties that specify a WorkspaceContainer. For local containers, supply only `containerId`. For cloud WorkspaceContainers, also
- * supply `accountName`, `storageType` and `sasToken`.
+ * supply `accessName`, `storageType` and `accessToken`.
  * @beta
  */
-  export type Props = Optional<CloudSqlite.ContainerAccessProps, "accountName" | "storageType" | "sasToken">;
+  export type Props = Optional<CloudSqlite.ContainerAccessProps, "accessName" | "storageType" | "accessToken">;
 }
 
 export namespace WorkspaceDb {
@@ -141,7 +143,7 @@ export interface WorkspaceDb {
    * @param rscName The name of the file resource in the WorkspaceDb
    * @param targetFileName optional name for extracted file. Some applications require files in specific locations or filenames. If
    * you know the full path to use for the extracted file, you can supply it. Generally, it is best to *not* supply the filename and
-   * keep the extracted files in the  container filesDir.
+   * keep the extracted files in the  filesDir.
    * @returns the full path to a file on the local filesystem.
    * @note The file is copied from the file into the local filesystem so it may be accessed directly. This happens only
    * as necessary, if the local file doesn't exist, or if it is out-of-date because it was updated in the file.
@@ -195,12 +197,16 @@ export interface Workspace {
 
   getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
 
+  resolveAccessName(accountName: string): CloudSqlite.AccountAccessProps;
+
   /**
    * Resolve a WorkspaceContainer.Name to a WorkspaceContainer.Id.
-   * The highest priority [[WorkspaceSetting.containerAlias]] setting with an entry for the WorkspaceContainer.Name
-   * is used. If no WorkspaceSetting.containerAlias entry for the WorkspaceContainer.Name can be found, the name is returned as the id.
+   * The highest priority [[WorkspaceSetting.containerAlias]] setting with an entry for `containerName`
+   * is used. If no WorkspaceSetting.containerAlias entry for the `containerName`, the name is returned as the ContainerId.
    */
-  resolveContainerName(containerName: WorkspaceContainer.Name): WorkspaceContainer.Id;
+  resolveContainerName(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props;
+
+  resolveDatabaseName(databaseName: string): WorkspaceDb.Props;
 
   /**
    * Get an open [[WorkspaceDb]]. If the WorkspaceDb is present but not open, it is opened first.
@@ -308,16 +314,49 @@ export class ITwinWorkspace implements Workspace {
     this._containers.clear();
   }
 
-  public resolveContainerName(containerName: WorkspaceContainer.Name): WorkspaceContainer.Id {
-    return this.settings.resolveSetting(WorkspaceSetting.ContainerAlias, (val) => {
+  public resolveAccessName(accountName: string): CloudSqlite.AccountAccessProps {
+    const resolved = this.settings.resolveSetting<CloudSqlite.AccountAccessProps>(WorkspaceSetting.Accounts, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
-          if (typeof entry === "object" && entry.name === containerName && typeof entry.id === "string")
-            return entry.id;
+          if (typeof entry === "object" && entry.name === accountName && typeof entry.storageType === "string" && typeof entry.accessName == "string")
+            return entry;
         }
       }
       return undefined; // keep going through all settings dictionaries
-    }, containerName);
+    });
+    if (resolved === undefined)
+      throw new Error(`no setting "${WorkspaceSetting.Accounts}" entry for ${accountName}`);
+
+    return resolved;
+  }
+
+  public resolveContainerName(containerName: string): WorkspaceContainer.Props {
+    const resolved = this.settings.resolveSetting<WorkspaceContainer.Props>(WorkspaceSetting.Containers, (val) => {
+      if (Array.isArray(val)) {
+        for (const entry of val) {
+          if (typeof entry === "object" && entry.name === containerName && typeof entry.id === "string" && typeof entry.account == "string") {
+            return { ...this.resolveAccessName(entry.account), containerId: entry.id };
+          }
+        }
+      }
+      return undefined; // keep going through all settings dictionaries
+    });
+    return resolved ?? { containerId: containerName };
+  }
+
+  public resolveDatabaseName(databaseName: string): WorkspaceDb.Props {
+    const resolved = this.settings.resolveSetting<WorkspaceDb.Props>(WorkspaceSetting.Containers, (val) => {
+      if (Array.isArray(val)) {
+        for (const entry of val) {
+          if (typeof entry === "object" && entry.name === databaseName && typeof entry.dbName === "string" && typeof entry.containerName == "string") {
+            return { ...entry, ...this.resolveContainerName(entry.containerName,), containerId: entry.id };
+          }
+        }
+      }
+      return undefined; // keep going through all settings dictionaries
+    });
+
+    return resolved ?? { dbName: databaseName };
   }
 }
 
@@ -357,7 +396,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.workspace = workspace;
     this.id = props.containerId;
 
-    if (undefined !== props.storageType && undefined !== props.accountName)
+    if (undefined !== props.storageType && undefined !== props.accessName)
       this.cloudContainer = new IModelHost.platform.CloudContainer(props as CloudSqlite.ContainerAccessProps);
 
     workspace.addContainer(this);
@@ -502,7 +541,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
       return undefined;
 
     // since resource names can contain illegal characters, path separators, etc., we make the local file name from its hash, in hex.
-    let localFileName = join(this.container.filesDir, createHash("sha1").update(rscName).digest("hex"));
+    let localFileName = join(this.container.filesDir, createHash("sha1").update(this.dbFileName).update(rscName).digest("hex"));
     if (info.fileExt !== "") // since some applications may expect to see the extension, append it here if it was supplied.
       localFileName = `${localFileName}.${info.fileExt}`;
     return { localFileName, info };

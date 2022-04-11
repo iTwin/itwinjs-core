@@ -146,7 +146,7 @@ describe("WorkspaceFile", () => {
     compareFiles(inFile2, outFile);
   });
 
-  it("resolve workspace alias", async () => {
+  it.only("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1" });
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
@@ -157,7 +157,7 @@ describe("WorkspaceFile", () => {
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
-    const fontsDb = makeEditableDb({ containerId: "public-data-1", dbName: "fonts" });
+    const fontsDb = makeEditableDb({ containerId: "public-fonts", dbName: "fonts" });
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();
@@ -165,24 +165,34 @@ describe("WorkspaceFile", () => {
     interface FontDbs { dbName: string, containerName: string }
     const fontList = settings.getArray<FontDbs>("workspace/fontDbs")!;
     const containerId = workspace.resolveContainerName(fontList[0].containerName);
-    const fonts = await workspace.getWorkspaceDb({ containerId, dbName: fontList[0].dbName });
+    const fonts = await workspace.getWorkspaceDb({ ...containerId, dbName: fontList[0].dbName });
     expect(fonts).to.not.be.undefined;
     const fontFile = fonts.getFile("Helvetica.ttf")!;
     expect(fontFile).contains(".ttf");
     compareFiles(fontFile, schemaFile);
     fonts.container.dropWorkspaceDb(fonts);
 
+    const httpAddr = "127.0.0.1:10000";
+    const storageType = `azure?emulator=${httpAddr}&sas=1`;
     const setting2: SettingDictionary = {
-      "workspace/container/alias": [
-        { name: "default-icons", id: "icons-01" },
-        { name: "default-lang", id: "lang-05" },
-        { name: "public-data", id: "fonts-02" },
-        { name: "default-key", id: "key-05" },
+      "workspace/accounts": [
+        { name: "gcs/data", accessName: "devstoreaccount1", storageType },
+        { name: "icons/data", accessName: "devstoreaccount1", storageType },
+        { name: "fonts/data", accessName: "devstoreaccount1", storageType },
+      ],
+      "workspace/containers": [
+        { name: "gcs/container", id: "gcs", account: "gcs/data" },
+        { name: "default-icons", id: "icons-01", account: "icons/data" },
+        { name: "fonts/02", id: "fonts-02", account: "icons/data" },
+      ],
+      "workspace/databases": [
+        { name: "gcs/base", dbName: "baseGCS", version: "^1", containerName: "gcsContainer" },
+        { name: "gcs/entire-earth", dbName: "allEarth", version: "^1", containerName: "gcsContainer" },
       ],
     };
     settings.addDictionary("imodel-02", SettingsPriority.iModel, setting2);
-    expect(workspace.resolveContainerName(fontList[0].containerName)).equals("fonts-02");
-    expect(workspace.resolveContainerName("public-data-3")).equals("public-data-3");
+    expect(workspace.resolveContainerName(fontList[0].containerName).containerId).equals("fonts-02");
+    expect(workspace.resolveContainerName("public-data-3").containerId).equals("public-data-3");
 
     settings.dropDictionary("imodel-02");
     expect(workspace.resolveContainerName(fontList[0].containerName)).equals("public-data-1");

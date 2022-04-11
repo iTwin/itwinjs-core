@@ -15,15 +15,15 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 export namespace CloudSqliteTest {
   export type TestContainer = IModelJsNative.CloudContainer & { isPublic: boolean };
   export const httpAddr = "127.0.0.1:10000";
-  export const storage: CloudSqlite.AccountProps = {
-    accountName: "devstoreaccount1",
+  export const storage: CloudSqlite.AccountAccessProps = {
+    accessName: "devstoreaccount1",
     storageType: `azure?emulator=${httpAddr}&sas=1`,
   };
-  const credential = new azureBlob.StorageSharedKeyCredential(storage.accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
+  const credential = new azureBlob.StorageSharedKeyCredential(storage.accessName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==");
 
   export async function initializeContainers(containers: TestContainer[]) {
     const pipeline = azureBlob.newPipeline(credential);
-    const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${storage.accountName}`, pipeline);
+    const blobService = new azureBlob.BlobServiceClient(`http://${httpAddr}/${storage.accessName}`, pipeline);
     for await (const container of containers) {
       setSasToken(container, "racwdl");
       try {
@@ -40,7 +40,7 @@ export namespace CloudSqliteTest {
   }
 
   export function makeCloudSqliteContainer(containerId: string, isPublic: boolean): TestContainer {
-    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, writeable: true, sasToken: "" }) as TestContainer;
+    const cont = new IModelHost.platform.CloudContainer({ ...storage, containerId, writeable: true, accessToken: "" }) as TestContainer;
     cont.isPublic = isPublic;
     return cont;
   }
@@ -72,7 +72,7 @@ export namespace CloudSqliteTest {
     }, credential).toString();
   }
   export function setSasToken(container: IModelJsNative.CloudContainer, permissionFlags: string) {
-    container.sasToken = makeSasToken(container.containerId, permissionFlags);
+    container.accessToken = makeSasToken(container.containerId, permissionFlags);
   }
 }
 
@@ -252,7 +252,7 @@ describe("CloudSqlite", () => {
     contain1.detach();
 
     // can't connect with invalid token
-    contain1.sasToken = "bad";
+    contain1.accessToken = "bad";
     expect(() => contain1.connect(caches[0])).throws("403").property("errorNumber", 403);
 
     // Now attempt to obtain the write lock with a token that doesn't authorize it, expecting auth error
@@ -266,7 +266,7 @@ describe("CloudSqlite", () => {
 
     // try anonymous access
     const anonContainer = testContainers[2];
-    anonContainer.sasToken = "";
+    anonContainer.accessToken = "";
     anonContainer.connect(caches[0]);
     dbs = anonContainer.queryDatabases();
     expect(dbs.length).equals(2);

@@ -30,20 +30,27 @@
     ],
     "editor/renderWhitespace": "selection",
     "editor/lineHeight": 11,
-    "workspace/container/alias": [
+    "workspace/containers": [
         {
-            "name": "public-data",
-            "id": "public-data-1"
-        },
-        {
-            "name": "gcs-data",
-            "id": "gcsdata-01"
+            "name": "gcs/container",
+            "id": "gcs",
+            "account": "gcs/data"
         }
     ],
+    "workspace/accounts": [
+        {
+            "name": "gcs/data",
+            "accessName": "devstoreaccount1",
+            "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
+        }
+    ],
+    "workspace/databases": [],
     "workspace/fontDbs": [
         {
-            "containerName": "public-data",
-            "dbName": "fonts"
+            "name": "fonts_ws",
+            "dbName": "fonts",
+            "version": "^1",
+            "containerName": "public-fonts"
         }
     ],
     "editor/tokenColorCustomizations": {
@@ -58,7 +65,7 @@
                     "scope": [
                         "constant",
                         "constant.language",
-                        "support.constant",
+                        "support.constant"
                     ],
                     "settings": {
                         "foreground": "#d16c6c",
@@ -67,7 +74,7 @@
                 },
                 {
                     "scope": [
-                        "comment",
+                        "comment"
                     ],
                     "settings": {
                         "foreground": "#7c7b7b",
@@ -76,7 +83,7 @@
                 },
                 {
                     "scope": [
-                        "variable.language",
+                        "variable.language"
                     ],
                     "settings": {
                         "foreground": "#9c7325"
@@ -90,7 +97,7 @@
                         "entity.name.tag",
                         "entity.name.type",
                         "entity.other",
-                        "entity",
+                        "entity"
                     ],
                     "settings": {
                         "foreground": "#0857be"
@@ -105,7 +112,7 @@
                         "keyword.operator.new",
                         "keyword.operator",
                         "keyword.other",
-                        "keyword",
+                        "keyword"
                     ],
                     "settings": {
                         "foreground": "#068135",
@@ -127,5 +134,5 @@
         }
     },
     "workbench/colorTheme": "Visual Studio Light",
-    "app1/tree/blah": "blah default"
+    "app1/tree/blah": true
 }

@@ -2291,8 +2291,8 @@ class RefreshV2CheckpointSas {
       if (!props)
         throw new Error("can't reset checkpoint sas token");
 
-      container.sasToken = props.sasToken;
-      this.setTimestamp(props.sasToken);
+      container.accessToken = props.accessToken;
+      this.setTimestamp(props.accessToken);
 
       Logger.logInfo(BackendLoggerCategory.Authorization, "refreshed checkpoint sasToken successfully");
     } finally {
@@ -2452,7 +2452,7 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
-    snapshot._refreshSas = new RefreshV2CheckpointSas(container.sasToken, checkpoint.reattachSafetySeconds);
+    snapshot._refreshSas = new RefreshV2CheckpointSas(container.accessToken, checkpoint.reattachSafetySeconds);
     return snapshot;
   }
 

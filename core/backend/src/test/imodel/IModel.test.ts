@@ -65,21 +65,22 @@ describe("iModel", () => {
     try {
       const httpAddr = "127.0.0.1:10000";
       const storageType = `azure?emulator=${httpAddr}&sas=1`;
-      const accountName = "devstoreaccount1";
+      const accessName = "devstoreaccount1";
       const containerId = "gcs";
-      const container = IModelHost.appWorkspace.getContainer({ storageType, accountName, containerId, sasToken: "" });
+      const container = IModelHost.appWorkspace.getContainer({ storageType, accessName, containerId, accessToken: "" });
       const cloudContainer = container.cloudContainer;
       if (cloudContainer) {
         try {
           await cloudContainer.checkForChanges();
         } catch (e: unknown) {
           // eslint-disable-next-line no-console
-          console.log(`can't check for new version of GCS Workspace`);
+          console.log(`check for updates to GCS Workspace failed`);
         }
-        const version = "^1.0.0";
-        let wsDbName = container.resolveDbFileName({ dbName: "data", version });
+        const dbProps = { version: "^1", dbName: "allEarth" };
+        let wsDbName = container.resolveDbFileName(dbProps);
         IModelHost.platform.addGcsWorkspaceDb(wsDbName, cloudContainer);
-        wsDbName = container.resolveDbFileName({ dbName: "base", version });
+        dbProps.dbName = "baseGCS";
+        wsDbName = container.resolveDbFileName(dbProps);
         IModelHost.platform.addGcsWorkspaceDb(wsDbName, cloudContainer);
         void CloudSqlite.prefetch(cloudContainer, wsDbName); // don't await this promise
       }
@@ -1709,7 +1710,7 @@ describe("iModel", () => {
     iModel2.close();
   });
 
-  it.only("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
+  it("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
     const convertTest = async (fileName: string, fileGCS: GeographicCRSProps, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
 
       const args = {
@@ -2065,9 +2066,9 @@ describe("iModel", () => {
 
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
-      accountName: "testAccount",
+      accessName: "testAccount",
       containerId: "imodelblocks-123",
-      sasToken: "testSAS",
+      accessToken: "testSAS",
       dbName: "testDb",
       storageType: "azure?sas=1",
     };

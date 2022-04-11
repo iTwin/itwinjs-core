@@ -251,19 +251,44 @@ However, when deciding how to organize workspace data, keep in mind:
 
 Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainer.Id]($backend). `WorkspaceContainer.Id`s may be GUIDs or any other identifier scheme that guarantees uniqueness. Since `WorkspaceContainer.Id`s can therefore be long and hard to recognize, `WorkspaceContainer`s can also be identified with a shorter, human recognizable `WorkspaceContainer.Name`. This not only provides an easier to recognize and understand scheme for interacting with `WorkspaceContainer`s, but also provides a level of indirection that can be useful for substituting different `WorkspaceContainer`s for the same `WorkspaceContainer.Name` at runtime, for example for versioning.
 
-#### The `workspace/container/alias` Setting
-
-A `WorkspaceContainer.Id` is *resolved* from a `WorkspaceContainer.Name` via the [Workspace.resolveContainerId]($backend) method. It does so by looking through all current [Workspace.settings]($backend) of type:
+#### The `workspace` Settings
 
 ```ts
-    "workspace/container/alias": {
+    "workspace/accounts": {
       "type": "array",
-      "description": "array of workspace container aliases",
+      "description": "array of workspace container accounts",
       "items": {
         "type": "object",
         "required": [
           "name",
-          "id"
+          "accessName",
+          "storageType",
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "the name of the workspace container account"
+          },
+          "accessName": {
+            "type": "string",
+            "description": "the accessName for workspace container account"
+          },
+          "storageType": {
+            "type": "string",
+            "description": "the storageType of the workspace container account"
+          },
+        }
+      }
+    },
+    "workspace/containers": {
+      "type": "array",
+      "description": "array of workspace containers",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "id",
+          "account",
         ],
         "properties": {
           "id": {
@@ -274,8 +299,37 @@ A `WorkspaceContainer.Id` is *resolved* from a `WorkspaceContainer.Name` via the
             "type": "string",
             "description": "the name of the workspace container"
           }
+          "account": {
+            "type": "string",
+            "description": "the account for the workspace container"
+          }
         }
-      },
+      }
+    },
+    "workspace/databases": {
+      "type": "array",
+      "description": "array of workspace databases",
+      "items": {
+        "type": "object",
+        "required": [
+          "dbName",
+        ],
+        "properties": {
+          "dbName": {
+            "type": "string",
+            "description": "the name of the workspace database"
+          }
+          "containerName": {
+            "type": "string",
+            "description": "the workspace container name"
+          }
+          "version": {
+            "type": "string",
+            "description": "the (semver) range of acceptable versions"
+          }
+        }
+      }
+    },
 ```
 
 with entries whose `name` property matches the `WorkspaceContainer.Name` value. The highest priority `workspace/container/alias` setting for a `WorkspaceContainer.Name` becomes its `WorkspaceContainer.Id`. If no matching `workspace/container/alias` setting is found, the `WorkspaceContainer.Name` becomes the `WorkspaceContainer.Id`.

@@ -334,8 +334,8 @@ export class IModelHubBackend implements BackendHubAccess {
 
     return {
       containerId: containerAccessKeyContainer,
-      sasToken: containerAccessKeySAS,
-      accountName: containerAccessKeyAccount,
+      accessToken: containerAccessKeySAS,
+      accessName: containerAccessKeyAccount,
       dbName: containerAccessKeyDbName,
       storageType: "azure?sas=1",
     };
@@ -364,9 +364,9 @@ export class IModelHubBackend implements BackendHubAccess {
 
     const container = new IModelHost.platform.CloudContainer({
       containerId: containerAccessKeyContainer,
-      sasToken: containerAccessKeySAS,
+      accessToken: containerAccessKeySAS,
       storageType: "azure?sas=1",
-      accountName: containerAccessKeyAccount,
+      accessName: containerAccessKeyAccount,
       writeable: false,
     });
     const transfer = new IModelHost.platform.CloudDbTransfer("download", container, { dbName: containerAccessKeyDbName, localFileName: arg.localFile });

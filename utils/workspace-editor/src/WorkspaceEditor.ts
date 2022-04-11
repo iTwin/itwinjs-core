@@ -123,13 +123,13 @@ function doVacuum(fileName: string, cloudContainer?: IModelJsNative.CloudContain
   showMessage("");
 }
 
-/** Convert a file size value to a "friendly" string, rounding to nearest integer for K, M, G, T */
+/** Convert a file size byte value to a friendly string, rounding to nearest integer for K, M, G, T */
 function friendlyFileSize(size: number) {
   if (size < 1024)
-    return `${size}`;
+    return `${size}`; // less than 1K, just show number of bytes with no units
 
-  const i = Math.floor(Math.log(size) / Math.log(1024));
-  return `${Math.round(size / Math.pow(1024, i))}${["", "K", "M", "G", "T"][i]}`;
+  const units = Math.floor(Math.log(size) / Math.log(1024));
+  return `${Math.round(size / Math.pow(1024, units))}${["", "K", "M", "G", "T"][units]}`;
 }
 
 /** Create a new empty WorkspaceDb  */
@@ -384,7 +384,7 @@ function sayContainer(args: EditorOpts) {
 
 /** initialize (empty if it exists) a cloud WorkspaceContainer. */
 async function initializeWorkspace(args: InitializeOpts) {
-  if (undefined === args.storageType || !args.accountName)
+  if (undefined === args.storageType || !args.accessName)
     throw new Error("No cloud container supplied");
   if (!args.noPrompt) {
     const yesNo = await askQuestion(`Are you sure you want to initialize ${sayContainer(args)}"? [y/n]: `);
@@ -490,7 +490,7 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
       const dirty = db.dirtyBlocks ? `, ${db.dirtyBlocks} dirty` : "";
       const pinned = db.pinned !== 0 ? ", pinned" : "";
       const editable = db.state === "copied" ? ", editable" : "";
-      showMessage(` "${dbName}", size=${db.totalBlocks * 4}Mb, ${db.localBlocks * 4}Mb (${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}%) downloaded${editable}${dirty}${pinned}`);
+      showMessage(` "${dbName}", size=${db.totalBlocks * 4}M, ${db.localBlocks * 4}M downloaded (${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}%)${editable}${dirty}${pinned}`);
     }
   }
 }
