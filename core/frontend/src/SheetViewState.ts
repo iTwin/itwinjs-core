@@ -266,6 +266,7 @@ class ViewAttachments {
 
 /** A view of a [SheetModel]($backend).
  * @public
+ * @extensions
  */
 export class SheetViewState extends ViewState2d {
   /** The width and height of the sheet in world coordinates. */

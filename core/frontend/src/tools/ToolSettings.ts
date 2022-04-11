@@ -11,6 +11,7 @@ import { Angle, Constant } from "@itwin/core-geometry";
 
 /** Settings that control the behavior of built-in tools. Applications may modify these values.
  * @public
+ * @extensions
  */
 export class ToolSettings {
   /** Two tap must be within this period to be a double tap. */

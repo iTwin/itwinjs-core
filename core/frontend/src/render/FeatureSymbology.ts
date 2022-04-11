@@ -15,6 +15,7 @@ import { ViewState } from "../ViewState";
 
 /** Contains types that enable an application to customize how [Feature]($common)s are drawn within a [[Viewport]].
  * @public
+ * @extensions
  */
 export namespace FeatureSymbology {
   /** An object that serves as the source of a [[FeatureSymbology.Overrides]].
