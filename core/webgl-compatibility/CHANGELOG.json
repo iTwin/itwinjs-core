@@ -2,6 +2,18 @@
   "name": "@bentley/webgl-compatibility",
   "entries": [
     {
+      "version": "2.19.36",
+      "tag": "@bentley/webgl-compatibility_v2.19.36",
+      "date": "Mon, 11 Apr 2022 14:32:05 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Partial backport of texture size limit"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.35",
       "tag": "@bentley/webgl-compatibility_v2.19.35",
       "date": "Wed, 30 Mar 2022 16:03:53 GMT",

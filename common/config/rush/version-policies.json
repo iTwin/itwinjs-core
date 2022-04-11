@@ -2,7 +2,7 @@
   {
     "policyName": "prerelease-monorepo-lockStep",
     "definitionName": "lockStepVersion",
-    "version": "2.19.35",
+    "version": "2.19.36",
     "nextBump": "prerelease"
   }
 ]

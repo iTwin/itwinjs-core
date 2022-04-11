@@ -2,6 +2,12 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.19.36",
+      "tag": "@bentley/imodeljs-common_v2.19.36",
+      "date": "Mon, 11 Apr 2022 14:32:05 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.35",
       "tag": "@bentley/imodeljs-common_v2.19.35",
       "date": "Wed, 30 Mar 2022 16:03:53 GMT",
