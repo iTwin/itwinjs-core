@@ -196,9 +196,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const result: MassPropertiesPerCandidateResponseProps[] = [];
 
-    for (const candidate of CompressedId64Set.iterable(props.candidates)) {
+    const getSingleCandidateMassProperties = async (candidate: string) => {
       const massPropResults: MassPropertiesResponseProps[] = [];
 
       for (const op of props.operations) {
@@ -215,14 +214,16 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
         }
       }
 
-      result.push(singleCandidateResult);
+      return singleCandidateResult;
+    };
 
-      if (result.length === 1000) {
-        break;
-      }
+    const promises: Promise<MassPropertiesPerCandidateResponseProps>[] = [];
+
+    for (const candidate of CompressedId64Set.iterable(props.candidates)) {
+      promises.push(getSingleCandidateMassProperties(candidate));
     }
 
-    return result;
+    return Promise.all(promises);
   }
 
   public async getToolTipMessage(tokenProps: IModelRpcProps, id: string): Promise<string[]> {
