@@ -10,12 +10,12 @@ import * as semver from "semver";
 import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, using } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType,
-  GeoCoordinatesRequestProps, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
-  IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
-  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
+  FontMap, FontType, GeoCoordinatesRequestProps, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
+  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, MapImageryProps, ModelProps, PhysicalElementProps,
+  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping,
+  TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
   Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
@@ -23,12 +23,12 @@ import {
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { V2CheckpointManager } from "../../CheckpointManager";
 import {
-  BisCoreSchema, Category, ClassRegistry, CloudSqlite, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
+  BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
-  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
-  SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
+  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SettingsPriority, SnapshotDb, SpatialCategory,
+  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
 import { HubMock } from "../HubMock";
@@ -52,7 +52,7 @@ function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: 
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
 }
 
-describe("iModel", () => {
+describe.only("iModel", () => {
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
   let imodel3: SnapshotDb;
@@ -62,32 +62,15 @@ describe("iModel", () => {
 
   before(async () => {
     originalEnv = { ...process.env };
-    try {
-      const httpAddr = "127.0.0.1:10000";
-      const storageType = `azure?emulator=${httpAddr}&sas=1`;
-      const accessName = "devstoreaccount1";
-      const containerId = "gcs";
-      const container = IModelHost.appWorkspace.getContainer({ storageType, accessName, containerId, accessToken: "" });
-      const cloudContainer = container.cloudContainer;
-      if (cloudContainer) {
-        try {
-          await cloudContainer.checkForChanges();
-        } catch (e: unknown) {
-          // eslint-disable-next-line no-console
-          console.log(`check for updates to GCS Workspace failed`);
-        }
-        const dbProps = { version: "^1", dbName: "allEarth" };
-        let wsDbName = container.resolveDbFileName(dbProps);
-        IModelHost.platform.addGcsWorkspaceDb(wsDbName, cloudContainer);
-        dbProps.dbName = "baseGCS";
-        wsDbName = container.resolveDbFileName(dbProps);
-        IModelHost.platform.addGcsWorkspaceDb(wsDbName, cloudContainer);
-        void CloudSqlite.prefetch(cloudContainer, wsDbName); // don't await this promise
-      }
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log(`cannot load GCS Workspaces`);
-    }
+    IModelHost.appWorkspace.settings.addDictionary("gcs-tests", SettingsPriority.application, {
+      "workspace/accounts": [
+        {
+          name: "gcs/account",
+          accessName: "http://127.0.0.1:10000/devstoreaccount1",
+          storageType: "azure?customuri=1&sas=1",
+        },
+      ],
+    });
 
     IModelTestUtils.registerTestBimSchema();
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
@@ -1964,7 +1947,7 @@ describe("iModel", () => {
     iModel2.close();
   });
 
-  it("presence of a GCS imposes the ecef value", async () => {
+  it.only("presence of a GCS imposes the ecef value", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
@@ -2049,7 +2032,7 @@ describe("iModel", () => {
     const changeset: ChangesetIdWithIndex = { id: "fakeChangeSetId", index: 10 };
     const iTwinId = "fakeIModelId";
     const iModelId = "fakeIModelId";
-    const cloudContainer = { sasToken: "sas" };
+    const cloudContainer = { accessToken: "sas" };
     const fakeSnapshotDb: any = {
       cloudContainer,
       isReadonly: () => true,
@@ -2074,7 +2057,7 @@ describe("iModel", () => {
     };
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => { return { dbName: "fakeDb", container: { sasToken: "sas" } as any }; });
+    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => { return { dbName: "fakeDb", container: { accessToken: "sas" } as any }; });
     const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
@@ -2094,9 +2077,9 @@ describe("iModel", () => {
     assert.include(errorLogStub.args[0][1], "attached with timestamp that expires before");
 
     errorLogStub.resetHistory();
-    expect(cloudContainer.sasToken).equal("sas");
+    expect(cloudContainer.accessToken).equal("sas");
     await checkpoint.refreshContainerSas(accessToken);
-    expect(cloudContainer.sasToken).equal("testSAS");
+    expect(cloudContainer.accessToken).equal("testSAS");
 
     assert.equal(errorLogStub.callCount, 1);
     assert.include(errorLogStub.args[0][1], "attached with timestamp that expires before");

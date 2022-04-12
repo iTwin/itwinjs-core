@@ -153,7 +153,8 @@ describe("WorkspaceFile", () => {
     defaultDb.close();
 
     const settings = workspace.settings;
-    await workspace.loadSettingsDictionary({ rscName: "default-settings", containerId: "default", dbName: "db1" }, SettingsPriority.defaults);
+    const wsDb = await workspace.getWorkspaceDb({ dbName: "db1" }, { containerId: "default" });
+    workspace.loadSettingsDictionary({ rscName: "default-settings" }, wsDb, SettingsPriority.defaults);
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
@@ -164,8 +165,8 @@ describe("WorkspaceFile", () => {
 
     interface FontDbs { dbName: string, containerName: string }
     const fontList = settings.getArray<FontDbs>("workspace/fontDbs")!;
-    const containerId = workspace.resolveContainer(fontList[0].containerName);
-    const fonts = await workspace.getWorkspaceDb({ ...containerId, dbName: fontList[0].dbName });
+    const container = workspace.resolveContainer(fontList[0].containerName);
+    const fonts = await workspace.getWorkspaceDb({ dbName: fontList[0].dbName }, { ...container });
     expect(fonts).to.not.be.undefined;
     const fontFile = fonts.getFile("Helvetica.ttf")!;
     expect(fontFile).contains(".ttf");
@@ -180,9 +181,12 @@ describe("WorkspaceFile", () => {
     };
     settings.addDictionary("imodel-02", SettingsPriority.iModel, setting2);
     const gcsDb = workspace.resolveDatabase("gcs/entire-world");
-    expect(gcsDb.accessName).equals("devstoreaccount1");
-    expect(gcsDb.storageType).equals("azure?emulator=127.0.0.1:10000&sas=1");
-    expect(gcsDb.containerId).equals("gcs");
+    const gcsContainer = workspace.resolveContainer(gcsDb.containerName);
+    const gcsAccount = workspace.resolveAccount(gcsContainer.accountName);
+
+    expect(gcsAccount.accessName).equals("devstoreaccount1");
+    expect(gcsAccount.storageType).equals("azure?emulator=127.0.0.1:10000&sas=1");
+    expect(gcsContainer.containerId).equals("gcs");
     expect(gcsDb.dbName).equals("entireEarth");
     expect(gcsDb.version).equals("^1");
 

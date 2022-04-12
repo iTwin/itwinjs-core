@@ -167,13 +167,13 @@ describe("Example Code", () => {
 
     // __PUBLISH_EXTRACT_START__ Settings.containerAlias
     const iTwinDict: SettingDictionary = {
-      "workspace/container/alias": [
+      "workspace/containers": [
         { name: "default-fonts", id: "fonts-01" },
         { name: "gcs-data", id: "gcsdata-01" },
       ],
     };
     const iModelDict: SettingDictionary = {
-      "workspace/container/alias": [
+      "workspace/containers": [
         { name: "default-icons", id: "icons-01" },
         { name: "default-lang", id: "lang-05" },
         { name: "default-fonts", id: "fonts-02" },
@@ -187,13 +187,13 @@ describe("Example Code", () => {
     settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
     settings.addDictionary("iModel", SettingsPriority.iModel, iModelDict);
 
-    expect(workspace.resolveContainerName(fontContainerName)).equals("fonts-02"); // iModel has higher priority than iTwin
+    expect(workspace.resolveContainer(fontContainerName)).equals("fonts-02"); // iModel has higher priority than iTwin
 
     settings.dropDictionary("iModel"); // drop iModel dict
-    expect(workspace.resolveContainerName(fontContainerName)).equals("fonts-01"); // now resolves to iTwin value
+    expect(workspace.resolveContainer(fontContainerName)).equals("fonts-01"); // now resolves to iTwin value
 
     settings.dropDictionary("iTwin"); // drop iTwin dict
-    expect(workspace.resolveContainerName(fontContainerName)).equals(fontContainerName); // no resolution, resolves to name
+    expect(workspace.resolveContainer(fontContainerName)).equals(fontContainerName); // no resolution, resolves to name
     // __PUBLISH_EXTRACT_END__
   });
 

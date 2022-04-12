@@ -683,6 +683,7 @@ export abstract class IModelDb extends IModel {
 
   /** Update the IModelProps of this iModel in the database. */
   public updateIModelProps(): void {
+    this._geoCoordConfig.initialize(this);
     this.nativeDb.updateIModelProps(this.toJSON());
   }
 
@@ -1104,16 +1105,16 @@ export abstract class IModelDb extends IModel {
     return this.nativeDb.getMassProperties(JsonUtils.toObject(props));
   }
 
-  private static _geoCoordConfig = new GeoCoordConfig();
+  private _geoCoordConfig = new GeoCoordConfig();
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
-    await IModelDb._geoCoordConfig.initialize();
+    this._geoCoordConfig.initialize(this);
     return this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
   public async getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
-    await IModelDb._geoCoordConfig.initialize();
+    this._geoCoordConfig.initialize(this);
     return this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
   }
 
