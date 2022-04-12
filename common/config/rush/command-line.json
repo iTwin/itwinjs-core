@@ -25,6 +25,16 @@
       "ignoreDependencyOrder": true
     },
     {
+      "name": "build",
+      "commandKind": "bulk",
+      "summary": "Run build script for each package",
+      "description": "Runs the 'build' script for each package in the monorepo. Used in some ci jobs to only build cjs.",
+      "enableParallelism": true,
+      "ignoreMissingScript": false,
+      "ignoreDependencyOrder": false,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
       "name": "build:ci",
       "commandKind": "bulk",
       "summary": "Run build:ci script for each package",
