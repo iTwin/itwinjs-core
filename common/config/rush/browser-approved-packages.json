@@ -879,6 +879,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-transition-group",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-window",
       "allowedCategories": [ "frontend" ]
     },

@@ -12,6 +12,8 @@ import { IModelApp } from "@itwin/core-frontend";
 import { DockedToolSetting, DockedToolSettings, ScrollableWidgetContent, ToolSettingsStateContext } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { UiFramework } from "../UiFramework";
 
 /** Defines a ToolSettings property entry.
  * @public
@@ -52,17 +54,43 @@ export function WidgetPanelsToolSettings() {
 export function ToolSettingsDockedContent() {
   const settings = useHorizontalToolSettingNodes();
   // for the overflow to work properly each setting in the DockedToolSettings should be wrapped by a DockedToolSetting component
-  return (
-    <DockedToolSettings itemId={FrontstageManager.activeToolSettingsProvider?.uniqueId ?? "none"} key={Date.now()}>
-      {settings && settings.map((entry, index) => <DockedToolSetting key={index}><TsLabel>{entry.labelNode}</TsLabel>{entry.editorNode}</DockedToolSetting>)}
-    </DockedToolSettings>
-  );
+  if (UiFramework.animateToolSettings && settings) {
+    return (
+      <DockedToolSettings itemId={FrontstageManager.activeToolSettingsProvider?.uniqueId ?? "none"} key={Date.now()}>
+        {settings && settings.map((entry, index) =>
+          <TransitionGroup
+            appear={true}
+            key={index}
+          >
+            <CSSTransition
+              in={true}
+              timeout={800}
+              unmountOnExit={true}
+              appear={true}
+              classNames={{
+                appear: "toolsettings-appear",
+                appearActive: "toolsettings-appear-active",
+              }}
+            >
+              <DockedToolSetting key={index}><TsLabel>{entry.labelNode}</TsLabel>{entry.editorNode}</DockedToolSetting>
+            </CSSTransition>
+          </TransitionGroup>
+        )}
+      </DockedToolSettings>
+    );
+  }  else {
+
+    return (
+      <DockedToolSettings itemId={FrontstageManager.activeToolSettingsProvider?.uniqueId ?? "none"} key={Date.now()}>
+        {settings && settings.map((entry, index) => <DockedToolSetting key={index}><TsLabel>{entry.labelNode}</TsLabel>{entry.editorNode}</DockedToolSetting>)}
+      </DockedToolSettings>
+    );
+  }
 }
 
 /** @internal */
 export function useHorizontalToolSettingNodes() {
   const [settings, setSettings] = React.useState(FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes);
-
   React.useEffect(() => {
     const handleToolActivatedEvent = () => {
       const nodes = FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes;
