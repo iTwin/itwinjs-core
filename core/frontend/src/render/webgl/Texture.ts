@@ -275,8 +275,20 @@ class Texture2DCreateParams {
       }
     }
 
+    // If we have to resize, use a canvas
+    let source: TexImageSource = image;
+    if (image.width !== targetWidth || image.height !== targetHeight) {
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const context = canvas.getContext("2d")!;
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      source = canvas;
+    }
+
     return new Texture2DCreateParams(targetWidth, targetHeight, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
-      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, image), props.useMipMaps, props.interpolate, props.anisotropicFilter);
+      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, source), props.useMipMaps, props.interpolate, props.anisotropicFilter);
   }
 
   private static getImageProperties(type: RenderTexture.Type): TextureImageProperties {
