@@ -2360,6 +2360,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     // (undocumented)
     onTouchMove(ev: BeTouchEvent): Promise<void>;
     // (undocumented)
+    onTouchStart(ev: BeTouchEvent): Promise<void>;
+    // (undocumented)
     static toolId: string;
 }
 
