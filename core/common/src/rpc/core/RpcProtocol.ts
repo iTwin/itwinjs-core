@@ -60,6 +60,9 @@ export interface RpcRequestFulfillment {
 
   /* A protocol-specific value for retrying this request. */
   retry?: string;
+
+  /** Whether to compress the result with one of the client's supported encodings. */
+  allowCompression?: boolean;
 }
 
 /** @internal */
