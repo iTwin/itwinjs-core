@@ -47,6 +47,7 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+import { GeoCoordConfig } from "./GeoCoordConfig";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -1103,13 +1104,16 @@ export abstract class IModelDb extends IModel {
     return this.nativeDb.getMassProperties(JsonUtils.toObject(props));
   }
 
+  private static _geoCoordConfig = new GeoCoordConfig();
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
+    await IModelDb._geoCoordConfig.initialize();
     return this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
   public async getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
+    await IModelDb._geoCoordConfig.initialize();
     return this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
   }
 

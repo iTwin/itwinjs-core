@@ -87,8 +87,7 @@
         "type": "object",
         "required": [
           "name",
-          "id",
-          "account"
+          "id"
         ],
         "properties": {
           "id": {
@@ -101,7 +100,7 @@
           },
           "account": {
             "type": "string",
-            "description": "the account for the workspace container"
+            "description": "the account for a cloud workspace container"
           }
         }
       }
@@ -112,8 +111,14 @@
       "items": {
         "type": "object",
         "required": [
-          "dbName"
+          "name",
+          "dbName",
+          "containerName"
         ],
+        "name": {
+          "type": "string",
+          "description": "the name of the workspace database"
+        },
         "properties": {
           "dbName": {
             "type": "string",
@@ -126,6 +131,10 @@
           "version": {
             "type": "string",
             "description": "the (semver) range of acceptable versions"
+          },
+          "includePrerelease": {
+            "type": "boolean",
+            "description": "include prerelease version as acceptable versions"
           }
         }
       }

@@ -25,7 +25,7 @@ import { Settings, SettingsPriority } from "./Settings";
  * @beta
  */
 enum WorkspaceSetting {
-  Accounts = "workspace/account",
+  Accounts = "workspace/accounts",
   Containers = "workspace/containers",
   Databases = "workspace/databases",
 }
@@ -33,11 +33,11 @@ enum WorkspaceSetting {
 export namespace WorkspaceContainer {
   /**
    * The name of a WorkspaceContainer. This is the user-supplied name of a WorkspaceContainer, used to specify its *purpose* within a workspace.
-   * WorkspaceContainer.Name can be "aliased" by `WorkspaceSetting.containerAlias` settings so that the resolved [[WorkspaceContainer.Id]] that supplies
+   * WorkspaceContainer.Name can be "aliased" by `WorkspaceSetting.Containers` settings so that the resolved [[WorkspaceContainer.Id]] that supplies
    * the actual container  may vary. Also note that more than one WorkspaceContainer.Name may resolve to the same
    * WorkspaceContainer.Id, if multiple purposes are served by the same WorkspaceContainer.
    * @note there are no constraints on the contents or length of `WorkspaceContainer.Name`s, although short descriptive names are recommended.
-   * However, when no alias exists in WorkspaceSetting.containerAlias for a WorkspaceContainer.Name, then the WorkspaceContainer.Name becomes
+   * However, when no alias exists in WorkspaceSetting.Containers for a WorkspaceContainer.Name, then the WorkspaceContainer.Name becomes
    * the WorkspaceContainer.Id, and the constraints on WorkspaceContainer.Id apply.
    * @beta
    */
@@ -45,7 +45,7 @@ export namespace WorkspaceContainer {
 
   /**
    * The unique identifier of a WorkspaceContainer. This becomes the base name for the local directory holding the WorkspaceDbs from a WorkspaceContainer.
-   * `WorkspaceContainer.Name`s are resolved to WorkspaceContainer.Id through `WorkspaceSetting.containerAlias` settings,
+   * `WorkspaceContainer.Name`s are resolved to WorkspaceContainer.Id through `WorkspaceSetting.Containers` settings,
    * so users may not recognize the actual WorkspaceContainer.Id supplying resources for a WorkspaceDb.Name.
    *
    * `WorkspaceContainer.Id`s may:
@@ -66,10 +66,20 @@ export namespace WorkspaceContainer {
 
 export namespace WorkspaceDb {
   /**
-   * The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier)
+   * The name of a WorkspaceDb. This is the user-supplied name of a WorkspaceDb, used to specify its *purpose* within a workspace.
+   * WorkspaceDb.Name can be "aliased" by [[WorkspaceSetting.Databases]] settings so that the resolved WorkspaceDb properties may vary.
+   * Also note that more than one WorkspaceDb.Name may resolve to the same WorkspaceDb properties.
+   * @note there are no constraints on the contents or length of `WorkspaceDb.Name`s, although descriptive names using "path-like" syntax (using the "/" delimiter)
+   * to ensure uniqueness is recommended.
    * @beta
    */
   export type Name = string;
+
+  /**
+   * The base name of a WorkspaceDb within a WorkspaceContainer (without any version identifier)
+   * @beta
+   */
+  export type DbName = string;
 
   /**
    * The semver-format version identifier for a WorkspaceDb. More than one version of a WorkspaceDb may be stored in the same WorkspaceContainer. This
@@ -126,7 +136,7 @@ export namespace WorkspaceResource {
 export interface WorkspaceDb {
   readonly container: WorkspaceContainer;
   /** The base name of this WorkspaceDb, without version */
-  readonly dbName: WorkspaceDb.Name;
+  readonly dbName: WorkspaceDb.DbName;
   /** event raised before this WorkspaceDb is closed. */
   readonly onClose: BeEvent<() => void>;
   /** either a local file name or the name of a database in a cloud container */
@@ -197,16 +207,16 @@ export interface Workspace {
 
   getContainer(props: WorkspaceContainer.Props): WorkspaceContainer;
 
-  resolveAccessName(accountName: string): CloudSqlite.AccountAccessProps;
+  resolveAccount(accountName: string): CloudSqlite.AccountAccessProps;
 
   /**
-   * Resolve a WorkspaceContainer.Name to a WorkspaceContainer.Id.
-   * The highest priority [[WorkspaceSetting.containerAlias]] setting with an entry for `containerName`
-   * is used. If no WorkspaceSetting.containerAlias entry for the `containerName`, the name is returned as the ContainerId.
+   * Resolve a WorkspaceContainer.Name to a WorkspaceContainer.Props.
+   * The highest priority [[WorkspaceSetting.Containers]] setting with an entry for `containerName`
+   * is used. If no WorkspaceSetting.Containers entry for the `containerName`, the name is returned as the containerId member.
    */
-  resolveContainerName(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props;
+  resolveContainer(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props;
 
-  resolveDatabaseName(databaseName: string): WorkspaceDb.Props;
+  resolveDatabase(databaseName: string): WorkspaceDb.Props & WorkspaceContainer.Props;
 
   /**
    * Get an open [[WorkspaceDb]]. If the WorkspaceDb is present but not open, it is opened first.
@@ -314,12 +324,12 @@ export class ITwinWorkspace implements Workspace {
     this._containers.clear();
   }
 
-  public resolveAccessName(accountName: string): CloudSqlite.AccountAccessProps {
+  public resolveAccount(accountName: string): CloudSqlite.AccountAccessProps {
     const resolved = this.settings.resolveSetting<CloudSqlite.AccountAccessProps>(WorkspaceSetting.Accounts, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === accountName && typeof entry.storageType === "string" && typeof entry.accessName == "string")
-            return entry;
+            return { storageType: entry.storageType, accessName: entry.accessName };
         }
       }
       return undefined; // keep going through all settings dictionaries
@@ -330,12 +340,13 @@ export class ITwinWorkspace implements Workspace {
     return resolved;
   }
 
-  public resolveContainerName(containerName: string): WorkspaceContainer.Props {
+  public resolveContainer(containerName: string): WorkspaceContainer.Props {
     const resolved = this.settings.resolveSetting<WorkspaceContainer.Props>(WorkspaceSetting.Containers, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
-          if (typeof entry === "object" && entry.name === containerName && typeof entry.id === "string" && typeof entry.account == "string") {
-            return { ...this.resolveAccessName(entry.account), containerId: entry.id };
+          if (typeof entry === "object" && entry.name === containerName && typeof entry.id === "string") {
+            // if no account is supplied, it's just a local file.
+            return (typeof entry.account === "string") ? { containerId: entry.id, ...this.resolveAccount(entry.account) } : { containerId: entry.id };
           }
         }
       }
@@ -344,19 +355,21 @@ export class ITwinWorkspace implements Workspace {
     return resolved ?? { containerId: containerName };
   }
 
-  public resolveDatabaseName(databaseName: string): WorkspaceDb.Props {
-    const resolved = this.settings.resolveSetting<WorkspaceDb.Props>(WorkspaceSetting.Containers, (val) => {
+  public resolveDatabase(databaseName: string): WorkspaceDb.Props & WorkspaceContainer.Props {
+    const resolved = this.settings.resolveSetting<WorkspaceDb.Props & WorkspaceContainer.Props>(WorkspaceSetting.Databases, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === databaseName && typeof entry.dbName === "string" && typeof entry.containerName == "string") {
-            return { ...entry, ...this.resolveContainerName(entry.containerName,), containerId: entry.id };
+            return { dbName: entry.dbName, version: entry.version, includePrerelease: entry.includePrerelease, ...this.resolveContainer(entry.containerName) };
           }
         }
       }
       return undefined; // keep going through all settings dictionaries
     });
+    if (resolved === undefined)
+      throw new Error(`no setting "${WorkspaceSetting.Databases}" entry for ${databaseName}`);
 
-    return resolved ?? { dbName: databaseName };
+    return resolved;
   }
 }
 
@@ -367,7 +380,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   public readonly id: WorkspaceContainer.Id;
 
   public readonly cloudContainer?: IModelJsNative.CloudContainer | undefined;
-  private _wsDbs = new Map<WorkspaceDb.Name, ITwinWorkspaceDb>();
+  private _wsDbs = new Map<WorkspaceDb.DbName, ITwinWorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
   public static noLeadingOrTrailingSpaces(name: string, msg: string) {
@@ -385,7 +398,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
       throw new Error(`invalid containerId: [${id}]`);
   }
 
-  public static validateDbName(dbName: WorkspaceDb.Name) {
+  public static validateDbName(dbName: WorkspaceDb.DbName) {
     if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
       throw new Error(`invalid dbName: [${dbName}]`);
     this.noLeadingOrTrailingSpaces(dbName, "dbName");
@@ -525,7 +538,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   /** the SQLiteDb for this WorkspaceDb*/
   public readonly sqliteDb = new SQLiteDb();
   /** the base WorkspaceDb name, without directory, extension, or version information. */
-  public readonly dbName: WorkspaceDb.Name;
+  public readonly dbName: WorkspaceDb.DbName;
   /** The WorkspaceContainer holding this WorkspaceDb */
   public readonly container: WorkspaceContainer;
   /** called before db is closed */

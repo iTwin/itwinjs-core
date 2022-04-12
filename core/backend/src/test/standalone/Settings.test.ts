@@ -177,12 +177,12 @@ describe("Settings", () => {
     const settingFileName = IModelTestUtils.resolveAssetFile("test.setting.json5");
     appSettings.addFile(settingFileName, SettingsPriority.application);
     expect(() => iModelSettings.addFile(settingFileName, SettingsPriority.application)).to.throw("Use IModelHost.appSettings");
-    expect(appSettings.getString("workbench/colorTheme")).equals("Visual Studio Light");
-    expect(iModelSettings.getString("workbench/colorTheme")).equals("Visual Studio Light");
+    expect(appSettings.getString("app1/colorTheme")).equals("Light Theme");
+    expect(iModelSettings.getString("app1/colorTheme")).equals("Light Theme");
     const token = appSettings.getSetting<any>("editor/tokenColorCustomizations")!;
     expect(token["Visual Studio Light"].textMateRules[0].settings.foreground).equals("#d16c6c");
     expect(token["Default High Contrast"].comments).equals("#FF0000");
-    expect(appSettings.getArray<string>("cSpell/enableFiletypes")!.length).equals(17);
+    expect(appSettings.getArray<string>("editor/enableFiletypes")!.length).equals(17);
     appSettings.dropDictionary(settingFileName);
   });
 

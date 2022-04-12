@@ -5,7 +5,7 @@
     "editor/multiCursorModifier": "ctrlCmd",
     "editor/cursorStyle": "line",
     "window/restoreWindows": "all",
-    "cSpell/enableFiletypes": [
+    "editor/enableFiletypes": [
         "c",
         "cpp",
         "csharp",
@@ -30,13 +30,6 @@
     ],
     "editor/renderWhitespace": "selection",
     "editor/lineHeight": 11,
-    "workspace/containers": [
-        {
-            "name": "gcs/container",
-            "id": "gcs",
-            "account": "gcs/data"
-        }
-    ],
     "workspace/accounts": [
         {
             "name": "gcs/data",
@@ -44,10 +37,30 @@
             "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
         }
     ],
-    "workspace/databases": [],
+    "workspace/containers": [
+        {
+            "name": "gcs/container",
+            "id": "gcs",
+            "account": "gcs/data"
+        }
+    ],
+    "workspace/databases": [
+        {
+            "name": "gcs/base",
+            "dbName": "base",
+            "containerName": "gcs/container",
+            "version": "^1"
+        },
+        {
+            "name": "gcs/entire-world",
+            "dbName": "entireEarth",
+            "containerName": "gcs/container",
+            "version": "^1"
+        }
+    ],
     "workspace/fontDbs": [
         {
-            "name": "fonts_ws",
+            "name": "fonts/all-fonts",
             "dbName": "fonts",
             "version": "^1",
             "containerName": "public-fonts"
@@ -133,6 +146,6 @@
             ]
         }
     },
-    "workbench/colorTheme": "Visual Studio Light",
+    "app1/colorTheme": "Light Theme",
     "app1/tree/blah": true
 }
