@@ -14,6 +14,7 @@ import { assert } from "@itwin/core-bentley";
 import { DockedToolSettingsHandle } from "./Handle";
 import { DockedToolSettingsOverflow } from "./Overflow";
 import { ToolSettingsOverflowPanel } from "./Panel";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 /** @internal */
 export function onOverflowLabelAndEditorResize() {
@@ -100,7 +101,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
     "nz-toolSettings-docked",
     props.className,
   );
-  return (
+return (
     <div
       data-toolsettings-provider={props.itemId}
       className={className}
@@ -112,15 +113,34 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
       />
       {dockedChildren.map(([key, child]) => {
         return (
-          <DockedToolSettingsEntry
-            key={key}
-            entryKey={key}
-            getOnResize={handleEntryResize}
+          <TransitionGroup
+          appear={true}
+          enter={true}
+          key={key}
           >
-            {child}
-          </DockedToolSettingsEntry>
-        );
-      })}
+            <CSSTransition
+              in={true}
+              timeout={800}
+              // unmountOnExit={true}
+              appear={true}
+              classNames={{
+                appear: "toolsettings-appear",
+                enter: "toolsettings-appear",
+                appearActive: "toolsettings-appear-active",
+                enterActive: "toolsettings-appear-active",
+              }}
+            >
+              <DockedToolSettingsEntry
+                key={key}
+                entryKey={key}
+                getOnResize={handleEntryResize}
+              >
+                {child}
+              </DockedToolSettingsEntry>
+            </CSSTransition>
+          </TransitionGroup>
+          );
+        })}
       {(!overflown || overflown.length > 0) && (
         <>
           <DockedToolSettingsOverflow
