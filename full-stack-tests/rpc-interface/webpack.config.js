@@ -42,6 +42,8 @@ module.exports = {
   },
   externals: {
     electron: "commonjs electron",
+    stream: {},
+    zlib: {},
   },
   node: {
     process: false
