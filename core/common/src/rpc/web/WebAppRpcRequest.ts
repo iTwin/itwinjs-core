@@ -121,7 +121,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
     if (fulfillment.allowCompression && req.header("Accept-Encoding")?.includes("gzip")) {
       res.set("Content-Encoding", "gzip");
-      const readableResponseBody = (responseBody instanceof Readable) ? responseBody : Readable.from(responseBody);
+      const readableResponseBody = (responseBody instanceof Stream) ? responseBody : Readable.from(responseBody);
       responseBody = readableResponseBody.pipe(createGzip());
     }
 
