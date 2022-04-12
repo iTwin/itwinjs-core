@@ -952,6 +952,13 @@ export class ToolAdmin {
     this._snapMotionPromise = this._toolMotionPromise = undefined;
   }
 
+  private async forceOnMotionSnap(ev: BeButtonEvent): Promise<boolean> {
+    // Make sure that we fire the motion snap event correctly
+    this._lastHandledMotionTime = undefined;
+
+    return this.onMotionSnap(ev);
+  }
+
   private async onMotionSnap(ev: BeButtonEvent): Promise<boolean> {
     try {
       await this.onMotionSnapOrSkip(ev);
@@ -1081,9 +1088,6 @@ export class ToolAdmin {
 
   // Called with the last MouseMove event if the user stopped moving the mouse
   private async onMouseMoveOver(event: ToolEvent): Promise<any> {
-    // Make sure that we fire the motion snap event correctly
-    this._lastHandledMotionTime = undefined;
-
     const vp = event.vp!;
     const pos = this.getMousePosition(event);
     const current = this.currentInputState;
@@ -1092,7 +1096,7 @@ export class ToolAdmin {
     current.fromPoint(vp, pos, InputSource.Mouse);
     current.toEvent(ev, false);
 
-    await this.onMotionSnap(ev);
+    await this.forceOnMotionSnap(ev);
   }
 
   public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
@@ -1275,7 +1279,7 @@ export class ToolAdmin {
     current.toEvent(ev, true);
     current.updateDownPoint(ev);
 
-    await this.onMotionSnap(ev);
+    await this.forceOnMotionSnap(ev);
 
     return this.sendButtonEvent(ev);
   }
