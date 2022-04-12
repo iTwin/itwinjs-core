@@ -6,12 +6,14 @@
  * @module Views
  */
 
-import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps } from "./DisplayStyleSettings";
-import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps } from "./ElementProps";
+import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
 import { EntityQueryParams } from "./EntityProps";
+import { ModelProps } from "./ModelProps";
+import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
 /** As part of a [[ViewStateProps]], describes the [[SpatialViewDefinition]] from which a [SectionDrawing]($backend) was generated.
@@ -26,6 +28,61 @@ export interface SectionDrawingViewProps {
   displaySpatialView: boolean;
   /** Transform from drawing coordinates to spatial coordinates. If undefined, use identity transform. */
   drawingToSpatialTransform?: TransformProps;
+}
+
+/** The response props from the getCustomViewState3dData RPC endpoint
+ * @internal
+ */
+export interface CustomViewState3dProps {
+  modelIds: CompressedId64Set;
+  modelExtents: Range3dProps;
+  categoryIds: CompressedId64Set;
+}
+
+/**
+ * The options passed to the getCustomViewState3dData RPC endpoint.
+ * @internal
+ */
+export interface CustomViewState3dCreatorOptions {
+  modelIds?: CompressedId64Set;
+}
+
+/**
+ * A result row from querying for subcategories during hydrateViewState
+ * @internal
+ */
+export interface SubCategoryResultRow {
+  parentId: Id64String;
+  id: Id64String;
+  appearance: SubCategoryAppearance.Props;
+}
+
+/**
+ * Request props for the hydrateViewState RPC endpoint.
+ * @internal
+ */
+export interface HydrateViewStateRequestProps {
+  acsId?: string;
+  notLoadedModelSelectorStateModels?: CompressedId64Set;
+  notLoadedCategoryIds?: CompressedId64Set;
+  sheetViewAttachmentIds?: CompressedId64Set;
+  viewStateLoadProps?: ViewStateLoadProps;
+  baseModelId?: Id64String;
+  spatialViewId?: Id64String;
+}
+
+/** Response props from the hydrateViewState RPC endpoint.
+ * @internal
+ */
+export interface HydrateViewStateResponseProps {
+  acsElementProps?: ElementProps;
+  modelSelectorStateModels?: ModelProps[];
+  // cast this to viewattachmentInfo[] on the frontend.
+  sheetViewAttachmentProps?: ViewAttachmentProps[];
+  sheetViewViews?: (ViewStateProps | undefined)[];
+  baseModelProps?: ModelProps;
+  spatialViewProps?: ViewStateProps;
+  categoryIdsResult?: SubCategoryResultRow[];
 }
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend).
