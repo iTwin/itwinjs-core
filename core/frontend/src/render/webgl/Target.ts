@@ -770,7 +770,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private createOrReuseReadPixelResources(rect: ViewRect): ReadPixelResources | undefined {
     if (this._readPixelReusableResources !== undefined) {
 
-      // To reuse a texture, we need it to be the same size or smaller than what we need
+      // To reuse a texture, we need it to be the same size or bigger than what we need
       if (this._readPixelReusableResources.texture.width >= rect.width && this._readPixelReusableResources.texture.height >= rect.height) {
         const resources = this._readPixelReusableResources;
         this._readPixelReusableResources = undefined;
