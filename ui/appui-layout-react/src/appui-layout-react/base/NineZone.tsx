@@ -34,6 +34,7 @@ export interface NineZoneProps {
   tab?: React.ReactNode;
   showWidgetIcon?: boolean;
   autoCollapseUnpinnedPanels?: boolean;
+  animateDockedToolSettings?: boolean;
 }
 
 /** @internal */
@@ -93,15 +94,17 @@ export function NineZoneProvider(props: NineZoneProviderProps) {
                             <PanelsStateContext.Provider value={props.state.panels}>
                               <FloatingWidgetsStateContext.Provider value={props.state.floatingWidgets}>
                                 <ToolSettingsStateContext.Provider value={props.state.toolSettings}>
-                                  <DragProvider>
-                                    <CursorTypeProvider>
-                                      <WidgetContentManager>
-                                        <MeasureContext.Provider value={props.measure}>
-                                          {props.children}
-                                        </MeasureContext.Provider>
-                                      </WidgetContentManager>
-                                    </CursorTypeProvider>
-                                  </DragProvider>
+                                  <AnimateDockedToolSettingsContext.Provider value={!!props.animateDockedToolSettings}>
+                                    <DragProvider>
+                                      <CursorTypeProvider>
+                                        <WidgetContentManager>
+                                          <MeasureContext.Provider value={props.measure}>
+                                            {props.children}
+                                          </MeasureContext.Provider>
+                                        </WidgetContentManager>
+                                      </CursorTypeProvider>
+                                    </DragProvider>
+                                  </AnimateDockedToolSettingsContext.Provider>
                                 </ToolSettingsStateContext.Provider>
                               </FloatingWidgetsStateContext.Provider>
                             </PanelsStateContext.Provider>
@@ -171,6 +174,10 @@ ShowWidgetIconContext.displayName = "nz:ShowWidgetIconContext";
 /** @internal */
 export const AutoCollapseUnpinnedPanelsContext = React.createContext<boolean>(false); // eslint-disable-line @typescript-eslint/naming-convention
 AutoCollapseUnpinnedPanelsContext.displayName = "nz:AutoCollapseUnpinnedPanelsContext";
+
+/** @internal */
+export const AnimateDockedToolSettingsContext = React.createContext<boolean>(false); // eslint-disable-line @typescript-eslint/naming-convention
+AnimateDockedToolSettingsContext.displayName = "nz:AnimateDockedToolSettingsContext";
 
 /** @internal */
 export const ToolSettingsNodeContext = React.createContext<React.ReactNode>(undefined); // eslint-disable-line @typescript-eslint/naming-convention

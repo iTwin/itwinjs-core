@@ -14,6 +14,7 @@ import { assert } from "@itwin/core-bentley";
 import { DockedToolSettingsHandle } from "./Handle";
 import { DockedToolSettingsOverflow } from "./Overflow";
 import { ToolSettingsOverflowPanel } from "./Panel";
+import { AnimateDockedToolSettingsContext } from "../base/NineZone";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 /** @internal */
@@ -55,6 +56,8 @@ export interface DockedToolSettingsProps extends CommonProps {
  */
 export function DockedToolSettings(props: DockedToolSettingsProps) {
   const [open, setOpen] = React.useState(false);
+  const animateToolSettings = React.useContext(AnimateDockedToolSettingsContext);
+
   const ref = React.useRef<HTMLDivElement>(null);
   const width = React.useRef<number | undefined>(undefined);
   const handleWidth = React.useRef<number | undefined>(undefined);
@@ -101,7 +104,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
     "nz-toolSettings-docked",
     props.className,
   );
-return (
+  return (
     <div
       data-toolsettings-provider={props.itemId}
       className={className}
@@ -114,15 +117,15 @@ return (
       {dockedChildren.map(([key, child]) => {
         return (
           <TransitionGroup
-          appear={true}
-          enter={true}
-          key={key}
+            appear={animateToolSettings}
+            enter={animateToolSettings}
+            key={key}
           >
             <CSSTransition
-              in={true}
+              in={animateToolSettings}
               timeout={800}
               // unmountOnExit={true}
-              appear={true}
+              appear={animateToolSettings}
               classNames={{
                 appear: "toolsettings-appear",
                 enter: "toolsettings-appear",
@@ -139,8 +142,8 @@ return (
               </DockedToolSettingsEntry>
             </CSSTransition>
           </TransitionGroup>
-          );
-        })}
+        );
+      })}
       {(!overflown || overflown.length > 0) && (
         <>
           <DockedToolSettingsOverflow

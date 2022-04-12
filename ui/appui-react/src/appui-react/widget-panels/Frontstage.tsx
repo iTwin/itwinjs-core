@@ -223,6 +223,10 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
     const frameworkState = (state as any)[UiFramework.frameworkStateKey];
     return !!frameworkState.configurableUiState.autoCollapseUnpinnedPanels;
   });
+  const animateToolSettings = useSelector((state: FrameworkRootState) => {
+    const frameworkState = (state as any)[UiFramework.frameworkStateKey];
+    return !!frameworkState.configurableUiState.animateToolSettings;
+  });
 
   const handleKeyDown = useEscapeSetFocusToHome();
   return (
@@ -240,6 +244,7 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
         autoCollapseUnpinnedPanels={autoCollapseUnpinnedPanels}
         toolSettingsContent={toolSettingsContent}
         widgetContent={widgetContent}
+        animateDockedToolSettings={animateToolSettings}
       >
         {widgetPanelsFrontstage}
       </NineZone>
