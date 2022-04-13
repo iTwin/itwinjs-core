@@ -2276,9 +2276,11 @@ export abstract class ViewState2d extends ViewState {
 
   /** @internal */
   protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
-    if (hydrateResponse.baseModelProps === undefined)
-      return;
-    await this.iModel.models.updateLoadedWithModelProps([hydrateResponse.baseModelProps]);
+    const promises = [];
+    promises.push(super.postload(hydrateResponse));
+    if (hydrateResponse.baseModelProps !== undefined)
+      promises.push(this.iModel.models.updateLoadedWithModelProps([hydrateResponse.baseModelProps]));
+    await Promise.all(promises);
   }
 
   /** Provides access to optional detail settings for this view. */
