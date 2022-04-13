@@ -15,7 +15,7 @@ import {
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
   mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
   QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface,
-  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
+  TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -725,7 +725,16 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
       try {
         const propArray = await this.getProps(notLoaded);
-        for (const props of propArray) {
+        await this.updateLoadedWithModelProps(propArray);
+      } catch (err) {
+        // ignore error, we had nothing to do.
+      }
+    }
+
+    /** Given an array of modelProps, find the class for each model and construct it. save it in the iModelConnection's loaded set. */
+    public async updateLoadedWithModelProps(modelProps: ModelProps[]): Promise<void> {
+      try {
+        for (const props of modelProps) {
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
           if (undefined === this.getLoaded(props.id!)) { // do not overwrite if someone else loads it while we await
             const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
@@ -1040,7 +1049,12 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
         },
       };
       const viewProps = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewStateData(this._iModel.getRpcProps(), viewDefinitionId, options);
+      const viewState = await this.convertViewStatePropsToViewState(viewProps);
+      return viewState;
+    }
 
+    /** Return the [[ViewState]] object associated with the [[ViewStateProps]] passed in. */
+    public async convertViewStatePropsToViewState(viewProps: ViewStateProps): Promise<ViewState> {
       const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
