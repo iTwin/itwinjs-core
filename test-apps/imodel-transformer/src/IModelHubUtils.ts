@@ -89,7 +89,7 @@ export namespace IModelHubUtils {
     }
   }
 
-  export async function downloadAndOpenBriefcase(briefcaseArg: RequestNewBriefcaseArg): Promise<BriefcaseDb> {
+  export async function downloadAndOpenBriefcase(briefcaseArg: Omit<RequestNewBriefcaseArg, "accessToken">): Promise<BriefcaseDb> {
     const PROGRESS_FREQ_MS = 2000;
     let nextProgressUpdate = Date.now() + PROGRESS_FREQ_MS;
 
@@ -97,6 +97,7 @@ export namespace IModelHubUtils {
       BriefcaseManager.getCachedBriefcases(briefcaseArg.iModelId)[0] ??
       (await BriefcaseManager.downloadBriefcase({
         ...briefcaseArg,
+        accessToken: await IModelTransformerTestAppHost.acquireAccessToken(),
         onProgress(loadedBytes, totalBytes) {
           if (totalBytes !== 0 && Date.now() > nextProgressUpdate || loadedBytes === totalBytes) {
             if (loadedBytes === totalBytes) Logger.logInfo(loggerCategory, "Briefcase download completed");

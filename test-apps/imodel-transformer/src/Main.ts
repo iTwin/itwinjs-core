@@ -236,7 +236,6 @@ void (async () => {
       }
 
       sourceDb = await IModelHubUtils.downloadAndOpenBriefcase({
-        accessToken: await acquireAccessToken(),
         iTwinId: sourceITwinId,
         iModelId: sourceIModelId,
         asOf: sourceEndVersion.toJSON(),
@@ -291,7 +290,6 @@ void (async () => {
       }
 
       targetDb = await IModelHubUtils.downloadAndOpenBriefcase({
-        accessToken: await acquireAccessToken(),
         iTwinId: targetITwinId,
         iModelId: targetIModelId,
       });
