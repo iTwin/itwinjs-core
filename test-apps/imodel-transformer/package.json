@@ -17,10 +17,10 @@
   },
   "repository": {},
   "dependencies": {
-    "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-transformer": "workspace:*",
     "@itwin/imodels-access-backend": "^1.0.1",
     "@itwin/imodels-client-authoring": "^1.0.1",
