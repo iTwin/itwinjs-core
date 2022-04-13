@@ -2574,7 +2574,7 @@ importers:
 
   ../../test-apps/display-performance-test-app:
     specifiers:
-      '@bentley/react-scripts': 5.0.0-dev.3
+      '@bentley/react-scripts': 5.0.0-dev.4
       '@itwin/appui-abstract': workspace:*
       '@itwin/browser-authorization': ^0.5.1
       '@itwin/build-tools': workspace:*
@@ -2632,7 +2632,7 @@ importers:
       '@itwin/reality-data-client': 0.7.0
       body-parser: 1.19.2
     devDependencies:
-      '@bentley/react-scripts': 5.0.0-dev.3_typescript@4.4.4
+      '@bentley/react-scripts': 5.0.0-dev.4_typescript@4.4.4
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/perf-tools': link:../../tools/perf-tools
@@ -2660,7 +2660,7 @@ importers:
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodelbank-client': workspace:*
-      '@bentley/react-scripts': 5.0.0-dev.3
+      '@bentley/react-scripts': 5.0.0-dev.4
       '@itwin/appui-abstract': workspace:*
       '@itwin/backend-webpack-tools': workspace:*
       '@itwin/browser-authorization': ^0.5.1
@@ -2736,7 +2736,7 @@ importers:
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.19.2
     devDependencies:
-      '@bentley/react-scripts': 5.0.0-dev.3_typescript@4.4.4
+      '@bentley/react-scripts': 5.0.0-dev.4_typescript@4.4.4
       '@itwin/backend-webpack-tools': link:../../tools/backend-webpack
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
@@ -2991,7 +2991,7 @@ importers:
   ../../test-apps/presentation-test-app:
     specifiers:
       '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/react-scripts': 5.0.0-dev.3
+      '@bentley/react-scripts': 5.0.0-dev.4
       '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/components-react': workspace:*
@@ -3065,7 +3065,7 @@ importers:
       react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
       semver: 5.7.1
     devDependencies:
-      '@bentley/react-scripts': 5.0.0-dev.3_ab07b577459101d56b9c77f7027e54fa
+      '@bentley/react-scripts': 5.0.0-dev.4_ab07b577459101d56b9c77f7027e54fa
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/bunyan': 1.8.8
@@ -3157,7 +3157,7 @@ importers:
       '@axe-core/react': 4.3.1
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/react-scripts': 5.0.0-dev.3
+      '@bentley/react-scripts': 5.0.0-dev.4
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
       '@itwin/appui-react': workspace:*
@@ -3290,7 +3290,7 @@ importers:
       semver: 5.7.1
     devDependencies:
       '@axe-core/react': 4.3.1
-      '@bentley/react-scripts': 5.0.0-dev.3_react@17.0.2+typescript@4.4.4
+      '@bentley/react-scripts': 5.0.0-dev.4_react@17.0.2+typescript@4.4.4
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
@@ -6096,8 +6096,8 @@ packages:
     resolution: {integrity: sha512-ufOI4M0zyRuf9qvQfVuvra3AFNA2xo9OOPjYq6/ffLptQtoocrmnLq+pfhMMPnY5JnSSt0CavzhxM0d6Ynzkhg==}
     dev: false
 
-  /@bentley/react-scripts/5.0.0-dev.3_ab07b577459101d56b9c77f7027e54fa:
-    resolution: {integrity: sha512-G0ZgKkFWrN1xBr97fRvRftfWNmkju9zfE4TkPF3kWGpri1umVDou6I0AGUQ6q45iE7rlQNNNHHCiN2UN3CxYSg==}
+  /@bentley/react-scripts/5.0.0-dev.4_ab07b577459101d56b9c77f7027e54fa:
+    resolution: {integrity: sha512-2jkL8kvzAbYvBGMlw1pT1XRNUutWvSUd/XYDO98R7QZnyvb4p70Erk0blqwZQCug9a6yCwASXXA0H4Nhgn41Rw==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     peerDependencies:
@@ -6108,7 +6108,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.17.8
-      '@itwin/core-webpack-tools': 3.0.3_webpack@5.70.0
+      '@itwin/core-webpack-tools': 3.2.0-dev.42_webpack@5.70.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.4_cb46ffc29cbac33b1cd7a2454d0f4425
       '@svgr/webpack': 5.5.0
       babel-jest: 27.5.1_@babel+core@7.17.8
@@ -6126,7 +6126,7 @@ packages:
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 8.11.0
-      eslint-config-react-app: 7.0.0_e57ff54e94f85ef9cbfbd7ef3ac06963
+      eslint-config-react-app: 7.0.1_e57ff54e94f85ef9cbfbd7ef3ac06963
       eslint-webpack-plugin: 3.1.1_eslint@8.11.0+webpack@5.70.0
       fast-sass-loader: 2.0.1_sass@1.49.9+webpack@5.70.0
       file-loader: 6.2.0_webpack@5.70.0
@@ -6145,7 +6145,7 @@ packages:
       prompts: 2.4.2
       react: 17.0.2
       react-app-polyfill: 3.0.0
-      react-dev-utils: 12.0.0_86301f05f49d91f7eb3d95adceabcecf
+      react-dev-utils: 12.0.1_86301f05f49d91f7eb3d95adceabcecf
       react-refresh: 0.11.0
       resolve: 1.22.0
       resolve-url-loader: 4.0.0
@@ -6153,7 +6153,6 @@ packages:
       sass-loader: 12.6.0_sass@1.49.9+webpack@5.70.0
       semver: 7.3.5
       source-map-loader: 3.0.1_webpack@5.70.0
-      speed-measure-webpack-plugin: 1.5.0_webpack@5.70.0
       style-loader: 3.3.1_webpack@5.70.0
       svg-sprite-loader: 4.2.1_webpack@5.70.0
       tailwindcss: 3.0.23_autoprefixer@8.6.5
@@ -6200,8 +6199,8 @@ packages:
       - webpack-plugin-serve
     dev: true
 
-  /@bentley/react-scripts/5.0.0-dev.3_react@17.0.2+typescript@4.4.4:
-    resolution: {integrity: sha512-G0ZgKkFWrN1xBr97fRvRftfWNmkju9zfE4TkPF3kWGpri1umVDou6I0AGUQ6q45iE7rlQNNNHHCiN2UN3CxYSg==}
+  /@bentley/react-scripts/5.0.0-dev.4_react@17.0.2+typescript@4.4.4:
+    resolution: {integrity: sha512-2jkL8kvzAbYvBGMlw1pT1XRNUutWvSUd/XYDO98R7QZnyvb4p70Erk0blqwZQCug9a6yCwASXXA0H4Nhgn41Rw==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     peerDependencies:
@@ -6212,7 +6211,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.17.8
-      '@itwin/core-webpack-tools': 3.0.3_webpack@5.70.0
+      '@itwin/core-webpack-tools': 3.2.0-dev.42_webpack@5.70.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.4_cb46ffc29cbac33b1cd7a2454d0f4425
       '@svgr/webpack': 5.5.0
       babel-jest: 27.5.1_@babel+core@7.17.8
@@ -6230,7 +6229,7 @@ packages:
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 8.11.0
-      eslint-config-react-app: 7.0.0_e57ff54e94f85ef9cbfbd7ef3ac06963
+      eslint-config-react-app: 7.0.1_e57ff54e94f85ef9cbfbd7ef3ac06963
       eslint-webpack-plugin: 3.1.1_eslint@8.11.0+webpack@5.70.0
       fast-sass-loader: 2.0.1_sass@1.49.9+webpack@5.70.0
       file-loader: 6.2.0_webpack@5.70.0
@@ -6249,7 +6248,7 @@ packages:
       prompts: 2.4.2
       react: 17.0.2
       react-app-polyfill: 3.0.0
-      react-dev-utils: 12.0.0_86301f05f49d91f7eb3d95adceabcecf
+      react-dev-utils: 12.0.1_86301f05f49d91f7eb3d95adceabcecf
       react-refresh: 0.11.0
       resolve: 1.22.0
       resolve-url-loader: 4.0.0
@@ -6257,7 +6256,6 @@ packages:
       sass-loader: 12.6.0_sass@1.49.9+webpack@5.70.0
       semver: 7.3.5
       source-map-loader: 3.0.1_webpack@5.70.0
-      speed-measure-webpack-plugin: 1.5.0_webpack@5.70.0
       style-loader: 3.3.1_webpack@5.70.0
       svg-sprite-loader: 4.2.1_webpack@5.70.0
       tailwindcss: 3.0.23
@@ -6304,8 +6302,8 @@ packages:
       - webpack-plugin-serve
     dev: true
 
-  /@bentley/react-scripts/5.0.0-dev.3_typescript@4.4.4:
-    resolution: {integrity: sha512-G0ZgKkFWrN1xBr97fRvRftfWNmkju9zfE4TkPF3kWGpri1umVDou6I0AGUQ6q45iE7rlQNNNHHCiN2UN3CxYSg==}
+  /@bentley/react-scripts/5.0.0-dev.4_typescript@4.4.4:
+    resolution: {integrity: sha512-2jkL8kvzAbYvBGMlw1pT1XRNUutWvSUd/XYDO98R7QZnyvb4p70Erk0blqwZQCug9a6yCwASXXA0H4Nhgn41Rw==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     peerDependencies:
@@ -6316,7 +6314,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.17.8
-      '@itwin/core-webpack-tools': 3.0.3_webpack@5.70.0
+      '@itwin/core-webpack-tools': 3.2.0-dev.42_webpack@5.70.0
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.4_cb46ffc29cbac33b1cd7a2454d0f4425
       '@svgr/webpack': 5.5.0
       babel-jest: 27.5.1_@babel+core@7.17.8
@@ -6334,7 +6332,7 @@ packages:
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 8.11.0
-      eslint-config-react-app: 7.0.0_e57ff54e94f85ef9cbfbd7ef3ac06963
+      eslint-config-react-app: 7.0.1_e57ff54e94f85ef9cbfbd7ef3ac06963
       eslint-webpack-plugin: 3.1.1_eslint@8.11.0+webpack@5.70.0
       fast-sass-loader: 2.0.1_sass@1.49.9+webpack@5.70.0
       file-loader: 6.2.0_webpack@5.70.0
@@ -6352,7 +6350,7 @@ packages:
       postcss-preset-env: 7.4.3_postcss@8.4.12
       prompts: 2.4.2
       react-app-polyfill: 3.0.0
-      react-dev-utils: 12.0.0_86301f05f49d91f7eb3d95adceabcecf
+      react-dev-utils: 12.0.1_86301f05f49d91f7eb3d95adceabcecf
       react-refresh: 0.11.0
       resolve: 1.22.0
       resolve-url-loader: 4.0.0
@@ -6360,7 +6358,6 @@ packages:
       sass-loader: 12.6.0_sass@1.49.9+webpack@5.70.0
       semver: 7.3.5
       source-map-loader: 3.0.1_webpack@5.70.0
-      speed-measure-webpack-plugin: 1.5.0_webpack@5.70.0
       style-loader: 3.3.1_webpack@5.70.0
       svg-sprite-loader: 4.2.1_webpack@5.70.0
       tailwindcss: 3.0.23
@@ -6739,8 +6736,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@itwin/core-webpack-tools/3.0.3_webpack@5.70.0:
-    resolution: {integrity: sha512-nFsQKSh68ORZY8cN6pPieLXQBwswkskMlnbK8IaAJcsCDLB/eHOFP0RGurydzupCDk0xSWMr0IuMlCFlUTMDJQ==}
+  /@itwin/core-webpack-tools/3.2.0-dev.42_webpack@5.70.0:
+    resolution: {integrity: sha512-uq8B2/QHT/C6TPa/EKAx6fgUwuNxSQ3KdyHP3RDcIfscfe7kgdrTyRVdGxaevif/iyy/EqwBOXMEyUirMxjEEg==}
     peerDependencies:
       webpack: 4.42.0
     dependencies:
@@ -12324,8 +12321,8 @@ packages:
       source-map: 0.6.1
     dev: true
 
-  /eslint-config-react-app/7.0.0_e57ff54e94f85ef9cbfbd7ef3ac06963:
-    resolution: {integrity: sha512-xyymoxtIt1EOsSaGag+/jmcywRuieQoA2JbPCjnw9HukFj9/97aGPoZVFioaotzk1K5Qt9sHO5EutZbkrAXS0g==}
+  /eslint-config-react-app/7.0.1_e57ff54e94f85ef9cbfbd7ef3ac06963:
+    resolution: {integrity: sha512-K6rNzvkIeHaTd8m/QEh1Zko0KI7BACWkkneSs6s9cKZC/J27X3eZR6Upt1jkmZ/4FK+XUOPPxMEN7+lbUXfSlA==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       eslint: ^8.0.0
@@ -18789,8 +18786,8 @@ packages:
       react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /react-dev-utils/12.0.0_86301f05f49d91f7eb3d95adceabcecf:
-    resolution: {integrity: sha512-xBQkitdxozPxt1YZ9O1097EJiVpwHr9FoAuEVURCKV0Av8NBERovJauzP7bo1ThvuhZ4shsQ1AJiu4vQpoT1AQ==}
+  /react-dev-utils/12.0.1_86301f05f49d91f7eb3d95adceabcecf:
+    resolution: {integrity: sha512-84Ivxmr17KjUupyqzFode6xKhjwuEJDROWKJy/BthkL7Wn6NJ8h4WE6k/exAv6ImS+0oZLRRW5j/aINMHyeGeQ==}
     engines: {node: '>=14'}
     dependencies:
       '@babel/code-frame': 7.16.7
@@ -18812,7 +18809,7 @@ packages:
       open: 8.4.0
       pkg-up: 3.1.0
       prompts: 2.4.2
-      react-error-overlay: 6.0.10
+      react-error-overlay: 6.0.11
       recursive-readdir: 2.2.2
       shell-quote: 1.7.3
       strip-ansi: 6.0.1
@@ -18887,8 +18884,8 @@ packages:
       '@babel/runtime': 7.17.8
       react: 17.0.2
 
-  /react-error-overlay/6.0.10:
-    resolution: {integrity: sha512-mKR90fX7Pm5seCOfz8q9F+66VCc1PGsWSBxKbITjfKVQHMNF2zudxHnMdJiB1fRCb+XsbQV9sO9DCkgsMQgBIA==}
+  /react-error-overlay/6.0.11:
+    resolution: {integrity: sha512-/6UZ2qgEyH2aqzYZgQPxEnz33NJ2gNsnHA2o5+o4wW9bLM/JYQitNP9xPhsXwC08hMMovfGe/8retsdDsczPRg==}
     dev: true
 
   /react-highlight-words/0.17.0_react@17.0.2:
@@ -20179,16 +20176,6 @@ packages:
       spdy-transport: 3.0.0
     transitivePeerDependencies:
       - supports-color
-
-  /speed-measure-webpack-plugin/1.5.0_webpack@5.70.0:
-    resolution: {integrity: sha512-Re0wX5CtM6gW7bZA64ONOfEPEhwbiSF/vz6e2GvadjuaPrQcHTQdRGsD8+BE7iUOysXH8tIenkPCQBEcspXsNg==}
-    engines: {node: '>=6.0.0'}
-    peerDependencies:
-      webpack: ^1 || ^2 || ^3 || ^4 || ^5
-    dependencies:
-      chalk: 4.1.2
-      webpack: 5.70.0
-    dev: true
 
   /split-string/3.1.0:
     resolution: {integrity: sha512-NzNVhJDYpwceVVii8/Hu6DKfD2G+NrQHlS/V/qgv763EYudVwEcMQNxd2lh+0VrUByXN/oJkl5grOhYWvQUYiw==}
