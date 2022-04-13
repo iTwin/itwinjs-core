@@ -28,13 +28,13 @@
 
 .toolsettings-appear {
   opacity: 0.1;
-  transition: opacity 300ms ease-in-out;
+  transition: opacity 150ms ease-in-out;
   transform: translateY(-100%);
 }
 
 .toolsettings-appear-active {
   opacity: 0.7;
-  transition: opacity 300ms ease-in-out;
+  transition: opacity 150ms ease-in-out;
   transform: translateY(0);
-  transition: transform 800ms ease-out;
+  transition: transform 400ms ease-out;
 }

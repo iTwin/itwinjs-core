@@ -123,7 +123,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
           >
             <CSSTransition
               in={animateToolSettings}
-              timeout={800}
+              timeout={400}
               classNames={{
                 appear: "toolsettings-appear",
                 enter: "toolsettings-appear",
