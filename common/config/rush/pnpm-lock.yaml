@@ -17053,11 +17053,11 @@ packages:
   /moment-timezone/0.5.34:
     resolution: {integrity: sha512-3zAEHh2hKUs3EXLESx/wsgw6IQdusOT8Bxm3D9UrHPQR7zlMmzwybC8zHEM1tQ4LJwP7fcxrWr8tuBg05fFCbg==}
     dependencies:
-      moment: 2.29.1
+      moment: 2.29.2
     dev: false
 
-  /moment/2.29.1:
-    resolution: {integrity: sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==}
+  /moment/2.29.2:
+    resolution: {integrity: sha512-UgzG4rvxYpN15jgCmVJwac49h9ly9NurikMWGPdVxm8GZD6XjkKPxDTjQQ43gtGgnV3X0cAyWDdP2Wexoquifg==}
     dev: false
 
   /moo/0.5.1:
@@ -20342,7 +20342,7 @@ packages:
       dottie: 2.0.2
       inflection: 1.13.2
       lodash: 4.17.21
-      moment: 2.29.1
+      moment: 2.29.2
       moment-timezone: 0.5.34
       mysql2: 2.3.3
       pg-connection-string: 2.5.0
