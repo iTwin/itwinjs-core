@@ -8,6 +8,7 @@ import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { BentleyLoggerCategory, IDisposable, Logger, LogLevel } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostConfiguration } from "../IModelHost";
+import { SettingsPriority } from "../workspace/Settings";
 
 /** Class for simple test timing */
 export class Timer {
@@ -59,7 +60,17 @@ export class TestUtils {
   public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
     const cfg = config ?? new IModelHostConfiguration();
     cfg.cacheDir = cfg.cacheDir ?? path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-    return IModelHost.startup(cfg);
+    await IModelHost.startup(cfg);
+    IModelHost.appWorkspace.settings.addDictionary("gcs-tests", SettingsPriority.application, {
+      "workspace/accounts": [
+        {
+          name: "gcs/account",
+          accessName: "http://127.0.0.1:10000/devstoreaccount1",
+          storageType: "azure?customuri=1&sas=1",
+        },
+      ],
+    });
+
   }
 
   public static async shutdownBackend(): Promise<void> {

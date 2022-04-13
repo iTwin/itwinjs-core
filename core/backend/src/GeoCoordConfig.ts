@@ -6,12 +6,16 @@
  * @module iModels
  */
 
+// cspell:ignore customuri
+
 import { CloudSqlite } from "@bentley/imodeljs-native";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SettingsPriority } from "./workspace/Settings";
 import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
+
+const loggerCat = "GeoCoord";
 
 interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Alias {
   prefetch?: boolean;
@@ -27,18 +31,27 @@ export class GeoCoordConfig {
       const dbProps = ws.resolveDatabase(gcsDbAlias) as GcsDbProps;
       const containerProps = ws.resolveContainer(dbProps.containerName);
       const account = ws.resolveAccount(containerProps.accountName);
-      containerProps.syncOnOpen = true;
+      containerProps.syncOnConnect = true;
       const container = ws.getContainer(containerProps, account);
       const cloudContainer = container.cloudContainer;
-      if (!cloudContainer?.isConnected)
-        throw new Error("could not connect to GCS Workspace service");
+      if (!cloudContainer?.isConnected) {
+        Logger.logInfo("GeoCoord", `could not load gcs database "${gcsDbAlias}"`);
+        return;
+      }
 
-      const wsDbName = container.resolveDbFileName(dbProps);
-      IModelHost.platform.addGcsWorkspaceDb(wsDbName, cloudContainer, dbProps.priority);
+      const gcsDbName = container.resolveDbFileName(dbProps);
+      const gcsDbProps = cloudContainer.queryDatabase(gcsDbName);
+      if (undefined === gcsDbProps)
+        throw new Error(`database "${gcsDbName}" not found in container "${containerProps.containerId}"`);
+
+      if (!ws.settings.getBoolean("gcs/noLogging"))
+        Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
+
+      IModelHost.platform.addGcsWorkspaceDb(gcsDbName, cloudContainer, dbProps.priority);
       if (true === dbProps.prefetch)
-        void CloudSqlite.prefetch(cloudContainer, wsDbName); // don't await this promise
+        void CloudSqlite.prefetch(cloudContainer, gcsDbName); // don't await this promise
     } catch (e: unknown) {
-      Logger.logInfo("GeoCoord", BentleyError.getErrorMessage(e));
+      Logger.logError(loggerCat, BentleyError.getErrorMessage(e));
     }
   }
 
@@ -65,7 +78,7 @@ export class GeoCoordConfig {
       "workspace/databases": [
         {
           name: "gcs/base",
-          dbName: "base",
+          dbName: "baseGCS",
           containerName: "gcs/container",
           version: "^1",
           prefetch: true,
@@ -73,7 +86,7 @@ export class GeoCoordConfig {
         },
         {
           name: "gcs/entire-earth",
-          dbName: "earth",
+          dbName: "allEarth",
           containerName: "gcs/container",
           version: "^1",
           prefetch: false,

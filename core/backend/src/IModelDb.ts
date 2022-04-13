@@ -293,14 +293,19 @@ export abstract class IModelDb extends IModel {
    */
   public get pathName(): LocalFileName { return this.nativeDb.getFilePath(); }
 
+  private _geoCoordConfig = new GeoCoordConfig();
+
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this._nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
+
+    this.loadSettingDictionaries();
+    this._geoCoordConfig.initialize(this); // must be done before calling initializeIModelDb
+
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
-    this.loadSettingDictionaries();
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -683,7 +688,6 @@ export abstract class IModelDb extends IModel {
 
   /** Update the IModelProps of this iModel in the database. */
   public updateIModelProps(): void {
-    this._geoCoordConfig.initialize(this);
     this.nativeDb.updateIModelProps(this.toJSON());
   }
 
@@ -1105,16 +1109,13 @@ export abstract class IModelDb extends IModel {
     return this.nativeDb.getMassProperties(JsonUtils.toObject(props));
   }
 
-  private _geoCoordConfig = new GeoCoordConfig();
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
-    this._geoCoordConfig.initialize(this);
     return this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
   public async getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
-    this._geoCoordConfig.initialize(this);
     return this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
   }
 

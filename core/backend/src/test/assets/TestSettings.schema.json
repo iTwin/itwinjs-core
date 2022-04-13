@@ -87,10 +87,10 @@
         "type": "object",
         "required": [
           "name",
-          "id"
+          "containerId"
         ],
         "properties": {
-          "id": {
+          "containerId": {
             "type": "string",
             "description": "the id of the workspace container"
           },
@@ -98,7 +98,7 @@
             "type": "string",
             "description": "the name of the workspace container"
           },
-          "account": {
+          "accountName": {
             "type": "string",
             "description": "the account for a cloud workspace container"
           }

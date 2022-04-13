@@ -69,7 +69,7 @@ export namespace WorkspaceContainer {
    * @beta
    */
   export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
-    syncOnOpen?: boolean;
+    syncOnConnect?: boolean;
   }
 }
 
@@ -236,7 +236,8 @@ export interface Workspace {
    * If `cloudProps` are supplied, and if container is not  present or not up-to-date, it is downloaded first.
    * @returns a Promise that is resolved when the container is local, opened, and available for access.
    */
-  getWorkspaceDb(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): Promise<WorkspaceDb>;
+  getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): Promise<WorkspaceDb>;
+  getWorkspaceDb(dbAlias: WorkspaceDb.Alias): Promise<WorkspaceDb>;
 
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
@@ -322,8 +323,15 @@ export class ITwinWorkspace implements Workspace {
     return this.findContainer(props.containerId) ?? new ITwinWorkspaceContainer(this, props, account);
   }
 
-  public async getWorkspaceDb(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): Promise<WorkspaceDb> {
+  public async getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): Promise<WorkspaceDb> {
     return this.getContainer(containerProps, account).getWorkspaceDb(dbProps);
+  }
+
+  public async getWorkspaceDb(dbAlias: string) {
+    const dbProps = this.resolveDatabase(dbAlias);
+    const containerProps = this.resolveContainer(dbProps.containerName);
+    const account = containerProps.accountName !== "" ? this.resolveAccount(containerProps.accountName) : undefined;
+    return this.getWorkspaceDbFromProps(dbProps, containerProps, account);
   }
 
   public loadSettingsDictionary(settingRsc: WorkspaceResource.Props, db: WorkspaceDb, priority: SettingsPriority) {
@@ -341,13 +349,19 @@ export class ITwinWorkspace implements Workspace {
     this._containers.clear();
   }
 
+  private static checkStringMember(val: any, member: string, cat: string, name: string) {
+    if (typeof val[member] !== "string")
+      throw new Error(`invalid "${cat}" setting entry for "${name}": ${member} is ${val[member]}`);
+  }
+
   public resolveAccount(accountName: string): WorkspaceAccount.Props {
+    const checkMember = (val: any, member: string) => ITwinWorkspace.checkStringMember(val, member, WorkspaceSetting.Accounts, accountName);
     const resolved = this.settings.resolveSetting<WorkspaceAccount.Props>(WorkspaceSetting.Accounts, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === accountName) {
-            if (typeof entry.storageType !== "string" || typeof entry.accessName !== "string")
-              throw new Error(`invalid "${WorkspaceSetting.Accounts}" entry for "${accountName}"`);
+            checkMember(entry, "storageType");
+            checkMember(entry, "accessName");
             return entry;
           }
         }
@@ -355,18 +369,19 @@ export class ITwinWorkspace implements Workspace {
       return undefined; // keep going through all settings dictionaries
     });
     if (resolved === undefined)
-      throw new Error(`no setting "${WorkspaceSetting.Accounts}" entry for ${accountName}`);
+      throw new Error(`no setting "${WorkspaceSetting.Accounts}" entry for "${accountName}"`);
 
     return resolved;
   }
 
   public resolveContainer(containerName: string): WorkspaceContainer.Props & WorkspaceAccount.Alias {
+    const checkMember = (val: any, member: string) => ITwinWorkspace.checkStringMember(val, member, WorkspaceSetting.Containers, containerName);
     const resolved = this.settings.resolveSetting<WorkspaceContainer.Props & WorkspaceAccount.Alias>(WorkspaceSetting.Containers, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === containerName) {
-            if (typeof entry.containerId !== "string" || typeof entry.accountName !== "string")
-              throw new Error(`invalid "${WorkspaceSetting.Containers}" entry for "${containerName}"`);
+            checkMember(entry, "containerId");
+            checkMember(entry, "accountName");
             return entry;
           }
         }
@@ -374,18 +389,19 @@ export class ITwinWorkspace implements Workspace {
       return undefined; // keep going through all settings dictionaries
     });
     if (resolved === undefined)
-      throw new Error(`no setting "${WorkspaceSetting.Containers}" entry for ${containerName}`);
+      throw new Error(`no setting "${WorkspaceSetting.Containers}" entry for "${containerName}"`);
 
     return resolved;
   }
 
   public resolveDatabase(databaseName: string): WorkspaceDb.Props & WorkspaceContainer.Alias {
+    const checkMember = (val: any, member: string) => ITwinWorkspace.checkStringMember(val, member, WorkspaceSetting.Databases, databaseName);
     const resolved = this.settings.resolveSetting<WorkspaceDb.Props & WorkspaceContainer.Alias>(WorkspaceSetting.Databases, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === databaseName) {
-            if (typeof entry.dbName !== "string" || typeof entry.containerName !== "string")
-              throw new Error(`invalid "${WorkspaceSetting.Databases}" entry for "${databaseName}"`);
+            checkMember(entry, "dbName");
+            checkMember(entry, "containerName");
             return entry;
           }
         }
@@ -436,21 +452,22 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.workspace = workspace;
     this.id = props.containerId;
 
-    if (account?.accessName && account.storageType)
+    if (account)
       this.cloudContainer = new IModelHost.platform.CloudContainer({ accessToken: "", ...props, ...account });
 
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
 
     const cloudContainer = this.cloudContainer;
-    if (cloudContainer) {
-      cloudContainer.connect(this.workspace.cloudCache);
-      if (props.syncOnOpen) {
-        try {
-          cloudContainer.checkForChanges();
-        } catch (e: unknown) {
-          // must be offline
-        }
+    if (undefined === cloudContainer)
+      return;
+
+    cloudContainer.connect(this.workspace.cloudCache);
+    if (props.syncOnConnect) {
+      try {
+        cloudContainer.checkForChanges();
+      } catch (e: unknown) {
+        // must be offline
       }
     }
   }

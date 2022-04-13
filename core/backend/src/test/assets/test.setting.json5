@@ -1,10 +1,6 @@
 {
     "$schema": "./TestSettings.schema.json", // non-standard - supported by VSCode only
-    "editor/fontWeight": "normal",
-    "editor/fontSize": 12,
-    "editor/multiCursorModifier": "ctrlCmd",
-    "editor/cursorStyle": "line",
-    "window/restoreWindows": "all",
+    "editor/renderWhitespace": "selection",
     "editor/enableFiletypes": [
         "c",
         "cpp",
@@ -26,13 +22,16 @@
     ],
     "myApp/categories": [
         "cat 2",
-        "junk"
+        "vital2"
     ],
-    "editor/renderWhitespace": "selection",
-    "editor/lineHeight": 11,
     "workspace/accounts": [
         {
             "name": "gcs/data",
+            "accessName": "devstoreaccount1",
+            "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
+        },
+        {
+            "name": "other/data",
             "accessName": "devstoreaccount1",
             "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
         }
@@ -40,8 +39,13 @@
     "workspace/containers": [
         {
             "name": "gcs/container",
-            "id": "gcs",
-            "account": "gcs/data"
+            "containerId": "gcs",
+            "accountName": "gcs/data"
+        },
+        {
+            "name": "fonts/public",
+            "containerId": "fonts",
+            "accountName": ""
         }
     ],
     "workspace/databases": [
@@ -56,15 +60,23 @@
             "dbName": "entireEarth",
             "containerName": "gcs/container",
             "version": "^1"
+        },
+        {
+            "name": "fonts/public-fonts",
+            "dbName": "fonts",
+            "version": "^1",
+            "containerName": "fonts/public"
+        },
+        {
+            "name": "fonts/more-fonts",
+            "dbName": "fonts2",
+            "version": "^1",
+            "containerName": "fonts/public"
         }
     ],
     "workspace/fontDbs": [
-        {
-            "name": "fonts/all-fonts",
-            "dbName": "fonts",
-            "version": "^1",
-            "containerName": "public-fonts"
-        }
+        "fonts/public-fonts",
+        "fonts/more-fonts"
     ],
     "editor/tokenColorCustomizations": {
         "Default High Contrast": {

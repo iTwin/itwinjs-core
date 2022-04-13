@@ -27,8 +27,8 @@ import {
   DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
   ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
   GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition,
-  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SettingsPriority, SnapshotDb, SpatialCategory,
-  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
+  Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement,
+  SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
 import { HubMock } from "../HubMock";
@@ -52,7 +52,7 @@ function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: 
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
 }
 
-describe.only("iModel", () => {
+describe("iModel", () => {
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
   let imodel3: SnapshotDb;
@@ -62,15 +62,6 @@ describe.only("iModel", () => {
 
   before(async () => {
     originalEnv = { ...process.env };
-    IModelHost.appWorkspace.settings.addDictionary("gcs-tests", SettingsPriority.application, {
-      "workspace/accounts": [
-        {
-          name: "gcs/account",
-          accessName: "http://127.0.0.1:10000/devstoreaccount1",
-          storageType: "azure?customuri=1&sas=1",
-        },
-      ],
-    });
 
     IModelTestUtils.registerTestBimSchema();
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
@@ -1947,7 +1938,7 @@ describe.only("iModel", () => {
     iModel2.close();
   });
 
-  it.only("presence of a GCS imposes the ecef value", async () => {
+  it("presence of a GCS imposes the ecef value", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",

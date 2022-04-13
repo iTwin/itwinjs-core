@@ -37,7 +37,7 @@ interface EditorOpts extends EditorProps, WorkspaceContainer.Props, WorkspaceAcc
   /** user name */
   user: string;
   writeable?: boolean;
-  syncOnOpen?: boolean;
+  syncOnConnect?: boolean;
 }
 
 /** options for initializing a WorkspaceContainer */
@@ -162,7 +162,7 @@ function getContainer(args: EditorOpts) {
 
 /** get a WorkspaceContainer that is expected to be a cloud container, throw otherwise. */
 function getCloudContainer(args: EditorOpts): IModelJsNative.CloudContainer {
-  args.syncOnOpen = true;
+  args.syncOnConnect = true;
   const container = getContainer(args);
   const cloudContainer = container.cloudContainer;
   if (!cloudContainer || !cloudContainer.isConnected)
