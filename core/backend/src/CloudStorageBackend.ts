@@ -196,7 +196,7 @@ export class CloudStorageTileUploader {
       await IModelHost.tileCacheService?.upload(containerKey, resourceKey, content, options, metadata);
       perfLogger.dispose();
     } catch (err) {
-      Logger.logError(BackendLoggerCategory.IModelTileStorage, (err instanceof Error) ? err.toString() : JSON.stringify(err));
+      Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));
     }
 
     this._activeUploads.delete(containerKey + resourceKey);
