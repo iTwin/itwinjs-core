@@ -55,12 +55,15 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   const widgetIconDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.widgetIconDescription"));
   const autoCollapseUnpinnedPanelsTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoCollapseUnpinnedPanelsTitle"));
   const autoCollapseUnpinnedPanelsDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.autoCollapseUnpinnedPanelsDescription"));
+  const animateToolSettingsTitle = React.useRef(UiFramework.translate("settings.uiSettingsPage.animateToolSettingsTitle"));
+  const animateToolSettingsDescription = React.useRef(UiFramework.translate("settings.uiSettingsPage.animateToolSettingsDescription"));
 
   const [theme, setTheme] = React.useState(() => UiFramework.getColorTheme());
   const [uiVersion, setUiVersion] = React.useState(() => UiFramework.uiVersion);
   const [useDragInteraction, setUseDragInteraction] = React.useState(() => UiFramework.useDragInteraction);
   const [showWidgetIcon, setShowWidgetIcon] = React.useState(() => UiFramework.showWidgetIcon);
   const [autoCollapseUnpinnedPanels, setAutoCollapseUnpinnedPanels] = React.useState(() => UiFramework.autoCollapseUnpinnedPanels);
+  const [animateToolSettings, setAnimateToolSettings] = React.useState(() => UiFramework.animateToolSettings);
   const [widgetOpacity, setWidgetOpacity] = React.useState(() => UiFramework.getWidgetOpacity());
   const [autoHideUi, setAutoHideUi] = React.useState(() => UiShowHideManager.autoHideUi);
   const [useProximityOpacity, setUseProximityOpacity] = React.useState(() => UiShowHideManager.useProximityOpacity);
@@ -69,7 +72,7 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
   React.useEffect(() => {
     const syncIdsOfInterest = ["configurableui:set_theme", "configurableui:set_widget_opacity", "configurableui:set-show-widget-icon",
       "configurableui:set-drag-interaction", "configurableui:set-framework-version",
-      "configurableui:set-auto-collapse-unpinned-panels", SyncUiEventId.ShowHideManagerSettingChange];
+      "configurableui:set-auto-collapse-unpinned-panels", "configurableui:set-animate-tool-settings", SyncUiEventId.ShowHideManagerSettingChange];
 
     const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       // istanbul ignore else
@@ -94,11 +97,13 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
           setUseProximityOpacity(UiShowHideManager.useProximityOpacity);
         if (UiShowHideManager.snapWidgetOpacity !== snapWidgetOpacity)
           setSnapWidgetOpacity(UiShowHideManager.snapWidgetOpacity);
+        if (UiFramework.animateToolSettings !== animateToolSettings)
+          setAnimateToolSettings(UiFramework.animateToolSettings);
       }
     };
     return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
   }, [autoCollapseUnpinnedPanels, autoHideUi, showWidgetIcon, snapWidgetOpacity, theme, uiVersion,
-    useDragInteraction, useProximityOpacity, widgetOpacity]);
+    useDragInteraction, useProximityOpacity, widgetOpacity, animateToolSettings]);
 
   const defaultThemeOption = { label: systemPreferredLabel.current, value: SYSTEM_PREFERRED_COLOR_THEME };
   const themeOptions: SelectOption<string>[] = [
@@ -145,6 +150,9 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
     UiFramework.setUseDragInteraction(!useDragInteraction);
   }, [useDragInteraction]);
 
+  const OnToggleAnimateToolSettings = React.useCallback(async () => {
+    UiFramework.setAnimateToolSettings(!animateToolSettings);
+  }, [animateToolSettings]);
   const currentTheme = UiFramework.getColorTheme();
 
   return (
@@ -183,6 +191,9 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
         />
         <SettingsItem title={autoCollapseUnpinnedPanelsTitle.current} description={autoCollapseUnpinnedPanelsDescription.current}
           settingUi={<ToggleSwitch checked={autoCollapseUnpinnedPanels} onChange={onAutoCollapseUnpinnedPanelsChange} />}
+        />
+        <SettingsItem title={animateToolSettingsTitle.current} description={animateToolSettingsDescription.current}
+          settingUi={<ToggleSwitch checked={animateToolSettings} onChange={OnToggleAnimateToolSettings} />}
         />
 
       </>

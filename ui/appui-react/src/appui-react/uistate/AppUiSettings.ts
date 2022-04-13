@@ -24,6 +24,7 @@ export interface InitialAppUiSettings {
   showWidgetIcon?: boolean;
   /** @alpha */
   autoCollapseUnpinnedPanels?: boolean;
+  animateToolSettings?: boolean;
 }
 
 /** These are the UI settings that are stored in the Redux store. They control the color theme, the UI version,
@@ -50,6 +51,7 @@ export class AppUiSettings implements UserSettingsProvider {
   public widgetOpacity: UiStateEntry<number>;
   public showWidgetIcon: UiStateEntry<boolean>;
   public autoCollapseUnpinnedPanels: UiStateEntry<boolean>;
+  public animateToolSettings: UiStateEntry<boolean>;
 
   private setColorTheme = (theme: string) => {
     UiFramework.setColorTheme(theme);
@@ -87,6 +89,11 @@ export class AppUiSettings implements UserSettingsProvider {
       () => UiFramework.getWidgetOpacity(), (value: number) => UiFramework.setWidgetOpacity(value), defaults.widgetOpacity);
     this._settings.push(this.widgetOpacity);
 
+    this.animateToolSettings = new UiStateEntry<boolean>(AppUiSettings._settingNamespace, "AnimateToolSettings",
+      () => UiFramework.animateToolSettings,
+      (value: boolean) => UiFramework.setAnimateToolSettings(value), defaults.animateToolSettings);
+    this._settings.push(this.animateToolSettings);
+
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
   }
 
@@ -114,6 +121,9 @@ export class AppUiSettings implements UserSettingsProvider {
 
     if (args.eventIds.has("configurableui:set_widget_opacity"))
       await this.widgetOpacity.saveSetting(UiFramework.getUiStateStorage());
+
+    if (args.eventIds.has("configurableui:set-animate-tool-settings"))
+      await this.animateToolSettings.saveSetting(UiFramework.getUiStateStorage());
   };
 
   public async apply(storage: UiStateStorage): Promise<void> {
