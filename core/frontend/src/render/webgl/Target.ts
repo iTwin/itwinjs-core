@@ -794,19 +794,29 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   private disposeOrReuseReadPixelResources({texture, fbo}: ReadPixelResources) {
-    if (this._readPixelReusableResources !== undefined) {
+    const maxReusableTextureSize = 256;
+    const isTooBigToReuse = texture.width > maxReusableTextureSize || texture.height > maxReusableTextureSize;
+
+    let reuseResources = !isTooBigToReuse;
+
+    if (reuseResources && this._readPixelReusableResources !== undefined) {
+
       // Keep the biggest texture
       if (this._readPixelReusableResources.texture.width > texture.width && this._readPixelReusableResources.texture.height > texture.height) {
-        dispose(fbo);
-        dispose(texture);
-        return;
+        reuseResources = false; // The current resources being reused are better
       } else {
+        // Free memory of the current reusable resources before replacing them
         dispose(this._readPixelReusableResources.fbo);
         dispose(this._readPixelReusableResources.texture);
       }
     }
 
-    this._readPixelReusableResources = {texture, fbo};
+    if (reuseResources) {
+      this._readPixelReusableResources = {texture, fbo};
+    } else {
+      dispose(fbo);
+      dispose(texture);
+    }
   }
 
   private beginReadPixels(selector: Pixel.Selector, cullingFrustum?: Frustum): void {
