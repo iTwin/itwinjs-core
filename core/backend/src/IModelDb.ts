@@ -293,8 +293,6 @@ export abstract class IModelDb extends IModel {
    */
   public get pathName(): LocalFileName { return this.nativeDb.getFilePath(); }
 
-  private _geoCoordConfig = new GeoCoordConfig();
-
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
     super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
@@ -302,7 +300,7 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
 
     this.loadSettingDictionaries();
-    this._geoCoordConfig.initialize(this); // must be done before calling initializeIModelDb
+    GeoCoordConfig.initializeImodel(this); // must be done before calling initializeIModelDb
 
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);

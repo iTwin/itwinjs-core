@@ -146,7 +146,7 @@ describe("WorkspaceFile", () => {
     compareFiles(inFile2, outFile);
   });
 
-  it.only("resolve workspace alias", async () => {
+  it("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1" });
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));

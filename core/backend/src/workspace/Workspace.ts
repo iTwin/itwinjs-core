@@ -410,7 +410,7 @@ export class ITwinWorkspace implements Workspace {
     });
 
     if (resolved === undefined)
-      throw new Error(`no setting "${WorkspaceSetting.Databases}" entry for ${databaseName}`);
+      throw new Error(`no setting "${WorkspaceSetting.Databases}" entry for "${databaseName}"`);
 
     return resolved;
   }
@@ -452,7 +452,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.workspace = workspace;
     this.id = props.containerId;
 
-    if (account)
+    if (account?.accessName && account.storageType)
       this.cloudContainer = new IModelHost.platform.CloudContainer({ accessToken: "", ...props, ...account });
 
     workspace.addContainer(this);

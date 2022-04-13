@@ -196,41 +196,27 @@ describe("Settings", () => {
     const setting1changed: SettingDictionary = {
       "imodel/setting1": "this is changed setting1",
     };
-    const httpAddr = "127.0.0.1:10000";
-    const setting2: SettingDictionary = {
-      "workspace/accounts": [
-        { name: "gcs/data", accessName: "devstoreaccount1", storageType: `azure?emulator=${httpAddr}&sas=1` },
-      ],
-      "workspace/containers": [
-        { name: "gcs/container", id: "gcs", account: "gcs/data" },
-        { name: "default-icons", id: "icons-01" },
-        { name: "default-lang", id: "lang-05" },
-        { name: "default-fonts", id: "fonts-02" }, // a container id that doesn't exist
-        { name: "default-key", id: "key-05" },
-      ],
-      "workspace/databases": [
-        { name: "gcs/base", dbName: "baseGCS", version: "^1", containerName: "gcsContainer" },
-        { name: "gcs/entire-earth", dbName: "allEarth", version: "^1", containerName: "gcsContainer" },
-      ],
+    const gcsDbDict: SettingDictionary = {
+      "gcs/databases": ["gcs/Usa", "gcs/Canada"],
     };
-    iModel2.saveSettingDictionary("testSetting", setting2);
+    iModel2.saveSettingDictionary("gcs-dbs", gcsDbDict);
     iModel2.saveSettingDictionary("test1", setting1);
     iModel2.close();
 
     let iModel3 = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
-    expect(iModel3.workspace.settings.getObject("workspace/containers")).to.deep.equal(setting2["workspace/containers"]);
+    expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1["imodel/setting1"]);
 
     iModel3.saveSettingDictionary("test1", setting1changed);
     iModel3.close();
     iModel3 = StandaloneDb.openFile(iModelName);
-    expect(iModel3.workspace.settings.getObject("workspace/containers")).to.deep.equal(setting2["workspace/containers"]);
+    expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1changed["imodel/setting1"]);
     iModel3.deleteSettingDictionary("test1");
     iModel3.close();
 
     iModel3 = StandaloneDb.openFile(iModelName);
-    expect(iModel3.workspace.settings.getObject("workspace/containers")).to.deep.equal(setting2["workspace/containers"]);
+    expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).to.be.undefined;
     iModel3.close();
   });
