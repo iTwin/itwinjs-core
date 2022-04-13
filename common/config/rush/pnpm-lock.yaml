@@ -2937,13 +2937,12 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
-      '@itwin/core-electron': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
-      '@itwin/electron-authorization': ^0.8.3
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-client-authoring': ^1.0.1
+      '@itwin/node-cli-authorization': ~0.9.0
       '@itwin/projects-client': ^0.6.0
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
@@ -2953,7 +2952,6 @@ importers:
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
-      electron: ^14.0.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
@@ -2965,12 +2963,11 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
-      '@itwin/core-electron': link:../../core/electron
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
-      '@itwin/electron-authorization': 0.8.3
       '@itwin/imodels-access-backend': 1.0.1
       '@itwin/imodels-client-authoring': 1.0.1
+      '@itwin/node-cli-authorization': 0.9.0
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       fs-extra: 8.1.0
@@ -2985,7 +2982,6 @@ importers:
       '@types/node': 14.14.31
       '@types/yargs': 12.0.20
       cross-env: 5.2.1
-      electron: 14.2.9
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
@@ -7645,6 +7641,18 @@ packages:
       react-table: 7.7.0_react@17.0.2
       react-transition-group: 4.4.2_react@17.0.2
     dev: true
+
+  /@itwin/node-cli-authorization/0.9.0:
+    resolution: {integrity: sha512-h6N9GniUPPcRMJ13dYGvYEcV9gsdHo7v9+n6DeaqA8Hz05HmL+T45i0sOaw7ctEN5OjUnq6s/YWJhBkHift4PQ==}
+    dependencies:
+      '@itwin/core-bentley': link:../../core/bentley
+      '@openid/appauth': 1.3.1
+      keytar: 7.9.0
+      open: 8.4.0
+      username: 5.1.0
+    transitivePeerDependencies:
+      - debug
+    dev: false
 
   /@itwin/oidc-signin-tool/3.4.0:
     resolution: {integrity: sha512-OSPTPlweOdnkTMMMne9+b+/KSQc9zPMPgBBaFQXqmOKkEjVaCcLfZmOL5um9y1jZveGp11zaWDnFecuwAO0wPg==}
@@ -19648,7 +19656,7 @@ packages:
       react-native:
         optional: true
     dependencies:
-      '@babel/runtime': 7.17.8
+      '@babel/runtime': 7.17.9
       '@types/react-redux': 7.1.23
       hoist-non-react-statics: 3.3.2
       loose-envify: 1.4.0
@@ -19669,7 +19677,7 @@ packages:
       react-native:
         optional: true
     dependencies:
-      '@babel/runtime': 7.17.8
+      '@babel/runtime': 7.17.9
       '@types/react-redux': 7.1.23
       hoist-non-react-statics: 3.3.2
       loose-envify: 1.4.0
@@ -22707,7 +22715,7 @@ packages:
   /wide-align/1.1.5:
     resolution: {integrity: sha512-eDMORYaPNZ4sQIuuYPDHdQvf4gyCF9rEEV/yPxGfwPkRodwEgiMUUXTx/dex+Me0wxx53S+NgUHaP7y3MGlDmg==}
     dependencies:
-      string-width: 1.0.2
+      string-width: 4.2.3
     dev: false
 
   /widest-line/3.1.0:
