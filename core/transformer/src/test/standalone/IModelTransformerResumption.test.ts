@@ -15,13 +15,13 @@ import { assertIdentityTransformation } from "../IModelTransformerUtils";
 
 describe("test resuming transformations", () => {
   it("simple single crash transform resumption", async () => {
-    // here to test that types work when calling resumeTransformation
-    class CrashingTransformer extends IModelTransformer {
-      public elementExportsUntilCrash = 10;
+    class CountdownCrashingTransformer extends IModelTransformer {
+      public elementExportsUntilCrash: number | undefined = 10;
       public override onExportElement(sourceElement: Element): void {
         if (this.elementExportsUntilCrash === 0) throw Error("crash");
         const result = super.onExportElement(sourceElement);
-        this.elementExportsUntilCrash--;
+        if (this.elementExportsUntilCrash !== undefined)
+          this.elementExportsUntilCrash--;
         return result;
       }
     }
@@ -32,7 +32,7 @@ describe("test resuming transformations", () => {
     async function transformWithCrashAndRecover() {
       const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationCrash.bim");
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
-      let transformer = new CrashingTransformer(sourceDb, targetDb);
+      let transformer = new CountdownCrashingTransformer(sourceDb, targetDb);
       let crashed = false;
 
       try {
@@ -42,7 +42,7 @@ describe("test resuming transformations", () => {
         try {
           const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
           const state = transformer.serializeState(dumpPath);
-          transformer = CrashingTransformer.resumeTransformation(state, sourceDb, targetDb);
+          transformer = CountdownCrashingTransformer.resumeTransformation(state, sourceDb, targetDb);
           transformer.elementExportsUntilCrash = -1; // do not crash this time
           crashed = true;
         } catch (err) {
