@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "mock hydrateviewstate rpc method in SavedviewLayout tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

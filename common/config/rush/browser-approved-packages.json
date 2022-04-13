@@ -287,6 +287,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/node-cli-authorization",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/oidc-signin-tool",
       "allowedCategories": [ "integration-testing", "internal" ]
     },

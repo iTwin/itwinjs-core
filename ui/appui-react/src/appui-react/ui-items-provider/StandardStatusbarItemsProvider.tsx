@@ -19,23 +19,7 @@ import { SnapModeField } from "../statusfields/SnapMode";
 import { SelectionInfoField } from "../statusfields/SelectionInfo";
 import { TileLoadingIndicator } from "../statusfields/tileloading/TileLoadingIndicator";
 import { SelectionScopeField } from "../statusfields/SelectionScope";
-
-/**
- * Defines what items to include from the provider. If any items are
- * specified then only those items will be added to statusbar.
- * @public
- */
-export interface DefaultStatusbarItems {
-  messageCenter?: boolean;
-  preToolAssistanceSeparator?: boolean;
-  toolAssistance?: boolean;
-  postToolAssistanceSeparator?: boolean;
-  activityCenter?: boolean;
-  accuSnapModePicker?: boolean;
-  tileLoadIndicator?: boolean;
-  selectionScope?: boolean;
-  selectionInfo?: boolean;
-}
+import { DefaultStatusbarItems } from "./StandardStatusbarUiItemsProvider";
 
 /**
  * Provide standard statusbar fields for the SimpleStatusbarWidget

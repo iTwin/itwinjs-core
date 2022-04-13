@@ -34,8 +34,9 @@ describe("AppUiSettings", () => {
     const colorTheme = "dark";
     const useDragInteraction = true;
     const showWidgetIcon = false;
-    const autoCollapseUnpinnedPanels = false;
     const animateToolSettings = false;
+    const autoCollapseUnpinnedPanels = true;
+
     UiFramework.setUiVersion(uiVersion);
     UiFramework.setWidgetOpacity(opacity);
     UiFramework.setWidgetOpacity(opacity);

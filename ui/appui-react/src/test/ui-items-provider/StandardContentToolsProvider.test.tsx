@@ -9,7 +9,7 @@ import {
 } from "@itwin/appui-abstract";
 import TestUtils from "../TestUtils";
 import { MockRender } from "@itwin/core-frontend";
-import { DefaultContentTools, DefaultContentToolsAppData, StandardContentToolsProvider } from "../../appui-react/ui-items-provider/StandardContentToolsProvider";
+import { DefaultContentTools, DefaultContentToolsAppData, StandardContentToolsProvider } from "../../appui-react";
 
 const testAppDataPropsArray: DefaultContentToolsAppData[] = [
   {

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add two new rpcimpls, hydrateViewState and getCustomViewState3dData",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
