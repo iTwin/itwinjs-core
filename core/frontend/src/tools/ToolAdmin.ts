@@ -1010,6 +1010,11 @@ export class ToolAdmin {
       return;
     }
 
+    // Detect when the motion stops by setting a timeout
+    if (this._mouseMoveOverTimeout !== undefined)
+      clearTimeout(this._mouseMoveOverTimeout); // If a previous timeout was up, it is cancelled: the movement is not over yet
+    this._mouseMoveOverTimeout = setTimeout(async () => {await this.onMotionEnd(vp, pt2d, inputSource);}, 100);
+
     const ev = new BeButtonEvent();
     current.fromPoint(vp, pt2d, inputSource);
     current.toEvent(ev, false);
@@ -1068,6 +1073,17 @@ export class ToolAdmin {
     }).catch((_) => { });
   }
 
+  // Called when we detect that the motion stopped
+  private async onMotionEnd(vp: ScreenViewport, pos: XAndY, inputSource: InputSource): Promise<void> {
+    const current = this.currentInputState;
+
+    const ev = new BeButtonEvent();
+    current.fromPoint(vp, pos, inputSource);
+    current.toEvent(ev, false);
+
+    await this.forceOnMotionSnap(ev);
+  }
+
   private async onMouseMove(event: ToolEvent): Promise<any> {
     const vp = event.vp!;
     const pos = this.getMousePosition(event);
@@ -1079,24 +1095,7 @@ export class ToolAdmin {
     if (!(buttonMask & 1))
       this.currentInputState.button[BeButton.Data].isDown = false;
 
-    if (this._mouseMoveOverTimeout !== undefined)
-      clearTimeout(this._mouseMoveOverTimeout);
-    this._mouseMoveOverTimeout = setTimeout(async () => {await this.onMouseMoveOver(event);}, 100);
-
     return this.onMotion(vp, pos, InputSource.Mouse, false, mov);
-  }
-
-  // Called with the last MouseMove event if the user stopped moving the mouse
-  private async onMouseMoveOver(event: ToolEvent): Promise<any> {
-    const vp = event.vp!;
-    const pos = this.getMousePosition(event);
-    const current = this.currentInputState;
-
-    const ev = new BeButtonEvent();
-    current.fromPoint(vp, pos, InputSource.Mouse);
-    current.toEvent(ev, false);
-
-    await this.forceOnMotionSnap(ev);
   }
 
   public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
@@ -1278,8 +1277,6 @@ export class ToolAdmin {
     current.onButtonDown(button);
     current.toEvent(ev, true);
     current.updateDownPoint(ev);
-
-    await this.forceOnMotionSnap(ev);
 
     return this.sendButtonEvent(ev);
   }
