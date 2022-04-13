@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodelhub-client-tests
 
-This log was last generated on Mon, 11 Apr 2022 14:32:05 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Apr 2022 14:00:41 GMT and should not be manually modified.
+
+## 2.19.37
+Wed, 13 Apr 2022 14:00:41 GMT
+
+_Version update only_
 
 ## 2.19.36
 Mon, 11 Apr 2022 14:32:05 GMT

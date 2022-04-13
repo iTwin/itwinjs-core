@@ -2,6 +2,18 @@
   "name": "@bentley/webgl-compatibility",
   "entries": [
     {
+      "version": "2.19.37",
+      "tag": "@bentley/webgl-compatibility_v2.19.37",
+      "date": "Wed, 13 Apr 2022 14:00:41 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Do not allow buggy GPUs to render MSAA."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.36",
       "tag": "@bentley/webgl-compatibility_v2.19.36",
       "date": "Mon, 11 Apr 2022 14:32:05 GMT",
