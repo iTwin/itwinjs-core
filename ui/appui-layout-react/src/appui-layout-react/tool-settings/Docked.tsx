@@ -124,8 +124,6 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
             <CSSTransition
               in={animateToolSettings}
               timeout={800}
-              // unmountOnExit={true}
-              appear={animateToolSettings}
               classNames={{
                 appear: "toolsettings-appear",
                 enter: "toolsettings-appear",

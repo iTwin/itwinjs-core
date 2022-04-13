@@ -533,7 +533,6 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.AnimateToolSettings, value, true);
   }
 
-
   /** @alpha */
   public static get autoCollapseUnpinnedPanels(): boolean {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.autoCollapseUnpinnedPanels : /* istanbul ignore next */ false;
