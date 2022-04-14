@@ -10,6 +10,7 @@ import { MapManagerSettings } from "./MapManagerSettings";
 
 import "./MapLayerSettingsPopupButton.scss";
 import { MapLayersUI } from "../../mapLayers";
+import { Button } from "@itwin/itwinui-react";
 
 /** @alpha */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -29,9 +30,9 @@ export function MapLayerSettingsPopupButton() {
 
   return (
     <>
-      <button title={buttonTooltip} className="maplayers-settings-popup-button" onClick={togglePopupDisplay} ref={buttonRef}>
+      <Button styleType="borderless" title={buttonTooltip} className="maplayers-settings-popup-button" onClick={togglePopupDisplay} ref={buttonRef}>
         <WebFontIcon iconName="icon-settings" />
-      </button>
+      </Button>
       <Popup
         isOpen={isSettingsOpen}
         position={RelativePosition.BottomRight}

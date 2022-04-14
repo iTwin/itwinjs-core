@@ -16,7 +16,10 @@ import { ViewHandleType, ViewManip } from "./tools/ViewTool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class TentativePoint {
   public isActive = false;
   public currSnap?: SnapDetail;

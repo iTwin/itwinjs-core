@@ -17,6 +17,7 @@ import { Viewport } from "./Viewport";
  * will be visible, regardless of any [SubCategoryOverride]($common)s applied by the view's [[DisplayStyleState]].
  * @see [[Viewport.perModelCategoryVisibility]] to define the per-model category visibility for a viewport.
  * @public
+ * @extensions
  */
 export namespace PerModelCategoryVisibility {
   /** Describes whether and how a category's visibility is overridden. */

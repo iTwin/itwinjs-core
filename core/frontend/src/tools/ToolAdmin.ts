@@ -31,10 +31,16 @@ import {
 import { ToolSettings } from "./ToolSettings";
 import { ViewTool } from "./ViewTool";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum StartOrResume { Start = 1, Resume = 2 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 } // eslint-disable-line no-restricted-syntax
@@ -295,6 +301,7 @@ interface ToolEvent {
 
 /** Controls the operation of [[Tool]]s, administering the current [[ViewTool]], [[PrimitiveTool]], and [[IdleTool]] and forwarding events to the appropriate tool.
  * @public
+ * @extensions
  */
 export class ToolAdmin {
   public markupView?: ScreenViewport;

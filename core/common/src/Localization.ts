@@ -36,6 +36,7 @@ interface LocalizationOptions {
 
 /** The interface defining the localization requirements of [IModelApp]($frontend).
  * @public
+ * @extensions
  */
 export interface Localization {
   /** This method must be called and awaited before using an instance of Localization.

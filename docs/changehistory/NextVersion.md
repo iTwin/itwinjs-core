@@ -103,6 +103,14 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
 
 Enums in TypeScript have some shortcomings, one of which resulted in a bug that caused [ColorDef.fromString]($common) to return [ColorDef.black]($common) for some valid color strings like "aqua". This is due to several standard color names ("aqua" and "cyan", "magenta" and "fuschia", and several "grey" vs "gray" variations) having the same numeric values. To address this, [ColorByName]($common) has been converted from an `enum` to a `namespace`. Code that accesses `ColorByName` members by name will continue to compile with no change.
 
+## UiItemsManager Changes
+
+When registering a UiItemsProvider with the [UiItemsManager]($appui-abstract) it is now possible to pass an additional argument to limit when the provider is called to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) define the parameters that can be used to limit the provider. The example registration below will limit a provider to only be used if the active stage has an Id of "redlining".
+
+```ts
+    UiItemsManager.register(commonToolProvider, {stageIds: ["redlining"]});
+```
+
 ## Widget Panel Changes
 
 Based on usability testing, the following changes to widget panels have been implemented.

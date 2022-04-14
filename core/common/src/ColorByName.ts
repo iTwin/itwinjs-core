@@ -11,6 +11,7 @@
  * This is different than color values in #RRGGBB format for HTML pages (red and blue are swapped).
  * @note If your colors don't look right, likely you're using 0xRRGGBB where ColorDef expects 0xBBGGRR.
  * @public
+ * @extensions
  */
 export const ColorByName = { // eslint-disable-line @typescript-eslint/naming-convention
   aliceBlue: 0xFFF8F0,

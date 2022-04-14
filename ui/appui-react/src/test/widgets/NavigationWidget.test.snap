@@ -17,7 +17,6 @@ exports[`NavigationWidget localStorage Wrapper NavigationWidget NavigationWidget
         "handleChangeWrapper": [Function],
         "isSubscribed": [Function],
         "notifyNestedSubs": [Function],
-        "onStateChange": [Function],
         "trySubscribe": [Function],
         "tryUnsubscribe": [Function],
       },
