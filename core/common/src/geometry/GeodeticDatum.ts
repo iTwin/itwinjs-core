@@ -12,6 +12,7 @@ import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
 
 /** Holds 3 components of a Positional Vector rotation definition in arc seconds
  *  @public
+ *  @extensions
  */
 export interface XyzRotationProps {
   /** X rotation component in arc second */
@@ -64,6 +65,7 @@ export class XyzRotation implements XyzRotationProps {
 
 /** Type indicating the geodetic transformation method
  *  @public
+ *  @extensions
  */
 export type GeodeticTransformMethod =
   "None" |
@@ -75,6 +77,7 @@ export type GeodeticTransformMethod =
 
 /** This interface represents a geocentric (three parameters) geodetic transformation.
  *  @public
+ *  @extensions
  */
 export interface GeocentricTransformProps {
   /** The frame translation components in meters */
@@ -117,6 +120,7 @@ export class GeocentricTransform implements GeocentricTransformProps {
  *  EPSG operation 9606. Beware that the convention relative to rotation direction is different
  *  from the Coordinate Frame operation (epsg 9607).
  *  @public
+ *  @extensions
  */
 export interface PositionalVectorTransformProps {
   /** The frame translation components in meters */
@@ -181,6 +185,7 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
 
 /** Type indicating the file format of the grid files.
  *  @public
+ *  @extensions
  */
 export type GridFileFormat =
   "NONE" |
@@ -190,15 +195,19 @@ export type GridFileFormat =
   "FRENCH" |
   "JAPAN" |
   "ATS77" |
-  "GEOCN";
+  "GEOCN" |
+  "OSTN02" |
+  "OSTN15";
 
 /** type to indicate the grid file application direction.
  *  @public
+ *  @extensions
  */
 export type GridFileDirection = "Direct" | "Inverse";
 
 /** Grid file definition containing name of the file, the format and the direction it should be applied
  *  @public
+ *  @extensions
  */
 export interface GridFileDefinitionProps {
   /** Name of the grid shift file. This name is relative to the expected dictionary root document.
@@ -263,6 +272,7 @@ export class GridFileDefinition implements GridFileDefinitionProps {
 
 /** This interface represents a grid files based geodetic transformation.
  *  @public
+ *  @extensions
  */
 export interface GridFileTransformProps {
   /** The list of grid files. The order of file is meaningful, the first encountered that covers the extent of coordinate
@@ -335,6 +345,7 @@ export class GridFileTransform implements GridFileTransformProps {
 /** This interface represents a geodetic transformation that enables transforming longitude/latitude coordinates
  *  from one datum to another.
  *  @public
+ *  @extensions
  */
 export interface GeodeticTransformProps {
   /** The method used by the geodetic transform */
@@ -552,6 +563,7 @@ export class GeodeticTransformPath implements GeodeticTransformPathProps {
  *  Sometimes there exists transformation paths direct from one non-WGS84 datum to another non-WGS84. The current model
  *  does not allow specifications of these special paths at the moment.
  *  @public
+ *  @extensions
  */
 export interface GeodeticDatumProps {
   /** GeodeticDatum key name */

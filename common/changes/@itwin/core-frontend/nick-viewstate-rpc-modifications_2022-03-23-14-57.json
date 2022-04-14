@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add preload, postload functions to ViewStates. Use hydrateViewState in load function",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

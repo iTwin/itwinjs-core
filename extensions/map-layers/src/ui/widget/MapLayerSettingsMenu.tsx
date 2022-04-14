@@ -5,7 +5,7 @@
 import * as React from "react";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { ContextMenu, ContextMenuItem } from "@itwin/core-react";
-import { Slider } from "@itwin/itwinui-react";
+import { Button, Slider } from "@itwin/itwinui-react";
 import "./MapLayerManager.scss";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUI } from "../../mapLayers";
@@ -81,13 +81,15 @@ export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, ac
 
   return (
     <>
-      <button data-testid="map-layer-settings" className="map-layer-settings icon icon-more-vertical-2" ref={settingsRef} onClick={onSettingsClick} ></button>
+      <Button size="small" styleType="borderless" data-testid="map-layer-settings" className="map-layer-settings icon icon-more-vertical-2" ref={settingsRef} onClick={onSettingsClick} ></Button>
       <ContextMenu opened={isSettingsOpen && (undefined !== hasRangeData)} onOutsideClick={handleCloseSetting} >
-        <ContextMenuItem hideIconContainer={true} key={0} className={hasRangeData ? "" : "core-context-menu-disabled"} onSelect={handleZoomToLayer}>{labelZoomToLayer}</ContextMenuItem>
-        <ContextMenuItem hideIconContainer={true} key={1} onSelect={handleRemoveLayer}>{labelDetach}</ContextMenuItem>
-        <ContextMenuItem hideIconContainer={true} key={2} >
-          <Slider min={0} max={100} values={[transparency * 100]} step={1} onChange={handleTransparencyChange} />
-        </ContextMenuItem>
+        <div className="map-manager-item-menu" >
+          <ContextMenuItem hideIconContainer={true} key={0} className={hasRangeData ? "" : "core-context-menu-disabled"} onSelect={handleZoomToLayer}>{labelZoomToLayer}</ContextMenuItem>
+          <ContextMenuItem hideIconContainer={true} key={1} onSelect={handleRemoveLayer}>{labelDetach}</ContextMenuItem>
+          <ContextMenuItem hideIconContainer={true} key={2} >
+            <Slider min={0} max={100} values={[transparency * 100]} step={1} onChange={handleTransparencyChange} />
+          </ContextMenuItem>
+        </div>
       </ContextMenu>
     </>
   );

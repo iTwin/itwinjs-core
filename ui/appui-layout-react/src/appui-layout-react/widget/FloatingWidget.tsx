@@ -13,7 +13,7 @@ import { PointProps } from "@itwin/appui-abstract";
 import { CommonProps, Point, Rectangle, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
-import { NineZoneDispatchContext } from "../base/NineZone";
+import { NineZoneDispatchContext, UiIsVisibleContext } from "../base/NineZone";
 import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
@@ -38,7 +38,7 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
   const { id, bounds, userSized } = props.floatingWidget;
   const { minimized, tabs } = props.widget;
   const isSingleTab = 1 === tabs.length;
-
+  const uiIsVisible = React.useContext(UiIsVisibleContext);
   const style = React.useMemo(() => {
     const boundsRect = Rectangle.create(bounds);
     const { height, width } = boundsRect.getSize();
@@ -53,7 +53,8 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
   }, [bounds, isSingleTab, minimized, userSized]);
   const className = React.useMemo(() => classnames(
     minimized && "nz-minimized",
-  ), [minimized]);
+    !!!uiIsVisible && "nz-hidden",
+  ), [minimized, uiIsVisible]);
   return (
     <FloatingWidgetIdContext.Provider value={id}>
       <FloatingWidgetContext.Provider value={props.floatingWidget}>

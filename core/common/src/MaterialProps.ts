@@ -14,17 +14,20 @@ import { TextureMapping } from "./TextureMapping";
  * the second to green, and the third to blue.
  * @see usage in [[RenderMaterialAssetProps]].
  * @public
+ * @extensions
  */
 export type RgbFactorProps = number[];
 
 /** A 2d point specified as an array of 2 numbers [x, y].
  * @see usage in [[TextureMapProps]].
  * @public
+ * @extensions
  */
 export type Point2dProps = number[];
 
 /** Describes the units in which a [[TextureMapProps]]' scale is expressed.
  * @public
+ * @extensions
  */
 export enum TextureMapUnits {
   /** Indicates the scale has no units. */
@@ -39,6 +42,7 @@ export enum TextureMapUnits {
 
 /** As part of a [[RenderMaterialAssetProps]], describes how to map a [[RenderTexture]]'s image to the triangles of a mesh to which the material is applied.
  * @public
+ * @extensions
  */
 export interface TextureMapProps {
   /** Angle in degrees to rotate texture when applying; defaults to 0.0 if undefined */
@@ -63,6 +67,7 @@ export interface TextureMapProps {
 
 /** Describes the graphical properties of a [RenderMaterialElement]($backend) as part of a [[RenderMaterialProps]].
  * @public
+ * @extensions
  */
 export interface RenderMaterialAssetProps {
   /** If true, this material has a fill/diffuse color; if undefined, defaults to false */
@@ -109,6 +114,7 @@ export interface RenderMaterialAssetProps {
 /** Properties that define a [RenderMaterialElement]($backend).
  * @see [[RenderMaterial]] for the representation used by the display system.
  * @public
+ * @extensions
  */
 export interface RenderMaterialProps extends DefinitionElementProps {
   /** The name of a palette that can be used to categorize multiple materials. */

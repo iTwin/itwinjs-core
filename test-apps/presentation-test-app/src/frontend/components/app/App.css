@@ -26,6 +26,7 @@
   grid-template-columns: auto 20% 10% 10%;
   padding: 5px;
   column-gap: 5px;
+  align-items: center;
 }
 
 .app-pickers > div {

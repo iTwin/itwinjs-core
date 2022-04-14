@@ -31,6 +31,8 @@ function readPackage(pkg) {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
   } else if (pkg.name == "@itwin/oidc-signin-tool") {
     pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
+  } else if (pkg.name == "@itwin/node-cli-authorization") {
+    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
   }
 
   // https://github.com/iTwin/reality-data-client

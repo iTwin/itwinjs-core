@@ -9,8 +9,8 @@ import { BentleyError } from "@itwin/core-bentley";
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import {
   ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
-  RpcOperation, RpcOperationPolicy, RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
-  SerializedRpcActivity, WipRpcInterface,
+  RpcOperation, RpcOperationPolicy, RpcProtocol, RpcProtocolEvent, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
+  SerializedRpcActivity, WebAppRpcRequest, WipRpcInterface,
 } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
@@ -430,6 +430,28 @@ describe("RpcInterface", () => {
       promises.push(singleStressTest());
     }
     await Promise.all(promises);
+  });
+
+  it("should be able to send large requests as get requests", async () => {
+    RpcOperation.lookup(TestRpcInterface, "op2").policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let longString = "";
+    // Rpc encodes the body using base64, which takes 4 characters to represent every 3 bytes, with potentially 8 bytes of padding.
+    const length = (WebAppRpcRequest.maxUrlComponentSize / 4 * 3) - 8;
+    for (let i = 0; i < length; i++) {
+      longString = longString + characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    let request: RpcRequest;
+    TestRpcInterface.getClient().configuration.protocol.events.addListener((type, req) => {
+      if (type === RpcProtocolEvent.RequestCreated)
+        request = req as RpcRequest<any>; // we can cast it to Rpcrequest because for requestcreated event, RpcRequest is raised
+    });
+    const result = await TestRpcInterface.getClient().op2(longString);
+    assert.isTrue(result === longString);
+    assert.isTrue(request! !== undefined);
+    // only the ._request property's method is changed, atleast in WebAppRpcRequest.
+    if (request! instanceof WebAppRpcRequest)
+      assert.isTrue((request as any)._request.method === "get", "Expected request to be a get request!");
   });
 
   it("should support cacheable responses", async () => {
