@@ -359,7 +359,6 @@ return undefined;
         const normalIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.normalIndexArray());
         const colorIndexI32 = nullToUndefined<Int32Array>(polyfaceHeader.colorIndexArray());
         const taggedNumericDataOffset = polyfaceHeader.taggedNumericData();
-        // const colorIndexI32 = nullToUndefined<Int32Array>(offsetToPolyface.colorIndexArray());
         if (meshStyle === 1 && pointF64 && pointIndexI32) {
           const polyface = IndexedPolyface.create(normalF64 !== undefined, paramF64 !== undefined, intColorU32 !== undefined, twoSided);
           polyface.expectedClosure = expectedClosure;

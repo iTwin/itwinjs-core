@@ -4919,11 +4919,11 @@ export namespace BGFBAccessors {
     }
 
     /**
-     * @returns Int32Array
+     * @returns Uint32Array
      */
-    intColorArray(): Int32Array | null {
+    intColorArray(): Uint32Array | null {
       const offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      return offset ? new Uint32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**

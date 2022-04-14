@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { IndexedPolyface } from "./Polyface";
+
 /** @packageDocumentation
  * @module Polyface
  */
 
-// For boundary sorting, an edge exists as a (packed!) Float64Array.
-// Fixed entries are:
-// 0:
 /**
  * * For boundary sorting, an edge is a (packed!) Float64Array.
  * * Fixed entry positions are:
@@ -91,6 +90,17 @@ export class SortableEdge extends Float64Array {
     for (const cluster of data)
       result.push(SortableEdge.clusterToJSON(cluster));
     return result;
+  }
+  /** Return the indices into the polyface index arrays corresponding to this edge, or undefined if error. */
+  public getEdgeIndices(polyface: IndexedPolyface): {edgeIndexA: number, edgeIndexB: number} | undefined {
+    let indexA = -1; let indexB = -1;
+    for (let i = polyface.facetIndex0(this.facetIndex); i < polyface.facetIndex1(this.facetIndex); ++i) {
+      if (this.vertexIndexA === polyface.data.pointIndex[i])
+        indexA = i;
+      else if (this.vertexIndexB === polyface.data.pointIndex[i])
+        indexB = i;
+    }
+    return (indexA < 0 || indexB < 0) ? undefined : {edgeIndexA: indexA, edgeIndexB: indexB };
   }
 }
 
