@@ -3026,7 +3026,6 @@ importers:
       eslint: ^7.11.0
       internal-tools: workspace:*
       npm-run-all: ^4.1.5
-      path-browserify: ^1.0.1
       postcss-flexbugs-fixes: 4.1.0
       postcss-loader: 3.0.0
       react: ^17.0.0
@@ -3058,7 +3057,6 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
-      path-browserify: 1.0.1
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-resize-detector: 6.7.8_react-dom@17.0.2+react@17.0.2
@@ -17393,10 +17391,6 @@ packages:
 
   /path-browserify/0.0.1:
     resolution: {integrity: sha512-BapA40NHICOS+USX9SN4tyhq+A2RrN/Ws5F0Z5aMHDp98Fl86lX8Oti8B7uN93L4Ifv4fHOEA+pQw87gmMO/lQ==}
-
-  /path-browserify/1.0.1:
-    resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
-    dev: false
 
   /path-dirname/1.0.2:
     resolution: {integrity: sha1-zDPSTVJeCZpTiMAzbG4yuRYGCeA=}

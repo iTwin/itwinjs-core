@@ -19,7 +19,7 @@ import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
-  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, seprator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
+  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
@@ -643,7 +643,7 @@ export class TestRunner {
   }
 
   private async openIModel(): Promise<TestContext | undefined> {
-    const filepath = `${this.curConfig.iModelLocation}${seprator}${this.curConfig.iModelName}`;
+    const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
     let iModel;
     try {
       iModel = await SnapshotConnection.openFile(filepath);
@@ -806,7 +806,7 @@ export class TestRunner {
     const filename = `${this.getTestName(test, prefix, true)}.png`;
     if (ProcessDetector.isMobileAppFrontend)
       return filename; // on mobile we use device's Documents path as determined by mobile backend
-    return `${this.curConfig.outputPath}${seprator}${filename}`;
+    return `${this.curConfig.outputPath}${separator}${filename}`;
   }
 
   private getRowData(timings: Timings, test: TestCase, pixSelectStr?: string): Map<string, number | string> {
