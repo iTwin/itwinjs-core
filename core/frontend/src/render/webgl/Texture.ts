@@ -506,6 +506,29 @@ export class Texture2DHandle extends TextureHandle {
     return true;
   }
 
+  /** Replace the 2D texture contents. */
+  public replaceTextureDataWithSource(source: TexImageSource, useMipMaps: boolean): boolean {
+    assert(this._dataType === GL.Texture.DataType.UnsignedByte);
+
+    if (this.width < source.width || this.height < source.height)
+      return false;
+
+    const tex = this.getHandle()!;
+    if (undefined === tex)
+      return false;
+
+    const gl = System.instance.context;
+
+    // Go through System to ensure we don't interfere with currently-bound textures!
+    System.instance.activateTexture2d(TextureUnit.Zero, tex);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this._format, this._dataType, source);
+    if (useMipMaps)
+      gl.generateMipmap(gl.TEXTURE_2D);
+    System.instance.bindTexture2d(TextureUnit.Zero, undefined);
+
+    return true;
+  }
+
   private static create(params: Texture2DCreateParams): Texture2DHandle | undefined {
     const glTex = System.instance.context.createTexture();
     return null !== glTex ? new Texture2DHandle(glTex, params) : undefined;

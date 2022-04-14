@@ -32,6 +32,7 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
+import { System } from "../render/webgl/System";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -2035,8 +2036,9 @@ export abstract class GltfReader {
 
     const samplerId = texture.sampler;
     const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
+
     const textureType = this.getTextureType(sampler);
-    const renderTexture = this._system.createTexture({
+    const renderTexture = (this._system as System).texturePool.createOrReuseTexture({ // TODO avoid the 'as'
       type: textureType,
       image: {
         source: image,

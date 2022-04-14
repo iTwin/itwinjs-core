@@ -49,7 +49,9 @@ class RealityTextureParam implements IDisposable {
   public get isProjected() { return this._projectedTextureOrMatrix instanceof ProjectedTexture; }
 
   public dispose(): void {
-    this.texture = dispose(this.texture);
+    if (this.texture !== undefined) {
+      this.texture = System.instance.texturePool.disposeOrReuseTexture(this.texture);
+    }
   }
 
   /* There are two methods of applying a texture to a reality mesh.  the first member of "params" denotes which

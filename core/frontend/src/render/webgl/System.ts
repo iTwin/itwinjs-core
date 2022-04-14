@@ -62,6 +62,7 @@ import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpac
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
 import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
+import { TexturePool } from "./TexturePool";
 import { UniformHandle } from "./UniformHandle";
 
 /* eslint-disable no-restricted-syntax */
@@ -376,6 +377,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   private _noiseTexture?: TextureHandle;
   private _techniques?: Techniques;
   private _screenSpaceEffects?: ScreenSpaceEffects;
+  private _texturePool?: TexturePool;
   public readonly debugShaderFiles: DebugShaderFile[] = [];
 
   public static get instance() { return IModelApp.renderSystem as System; }
@@ -392,6 +394,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public get screenSpaceEffects() {
     assert(undefined !== this._screenSpaceEffects);
     return this._screenSpaceEffects;
+  }
+
+  public get texturePool(): TexturePool {
+    assert(undefined !== this._texturePool);
+    return this._texturePool;
   }
 
   public override get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
@@ -476,7 +483,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return undefined === this._techniques
       && undefined === this._lineCodeTexture
       && undefined === this._noiseTexture
-      && undefined === this._screenSpaceEffects;
+      && undefined === this._screenSpaceEffects
+      && undefined === this._texturePool;
   }
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
@@ -485,6 +493,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this._screenSpaceEffects = dispose(this._screenSpaceEffects);
     this._lineCodeTexture = dispose(this._lineCodeTexture);
     this._noiseTexture = dispose(this._noiseTexture);
+    this._texturePool = dispose(this._texturePool);
 
     // We must attempt to dispose of each idmap in the resourceCache (if idmap is already disposed, has no effect)
     this.resourceCache.forEach((idMap: IdMap) => {
@@ -805,6 +814,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this.capabilities = capabilities;
     this.resourceCache = new Map<IModelConnection, IdMap>();
     this.glTimer = GLTimer.create(this);
+    this._texturePool = new TexturePool(this);
     if (capabilities.isWebGL2)
       this._extensions = new WebGL2Extensions(this);
     else {
