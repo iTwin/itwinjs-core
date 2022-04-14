@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { BeEvent, Id64String } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
-import { AxisAlignedBox3d, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
+import { AxisAlignedBox3d, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -151,10 +151,25 @@ export class SpatialViewState extends ViewState3d {
     val.modelSelectorId = this.modelSelector.id;
     return val;
   }
-  public override async load(): Promise<void> {
-    await super.load();
-    return this.modelSelector.load();
+
+  /** @internal */
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    super.preload(hydrateRequest);
+    const notLoaded = this.iModel.models.filterLoaded(this.modelSelector.models);
+    if (undefined === notLoaded)
+      return; // all requested models are already loaded
+    hydrateRequest.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
   }
+
+  /** @internal */
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    const promises = [];
+    promises.push(super.postload(hydrateResponse));
+    if (hydrateResponse.modelSelectorStateModels !== undefined)
+      promises.push(this.iModel.models.updateLoadedWithModelProps(hydrateResponse.modelSelectorStateModels));
+    await Promise.all(promises);
+  }
+
   public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
   public clearViewedModels() { this.modelSelector.models.clear(); }
   public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }

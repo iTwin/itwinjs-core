@@ -166,8 +166,10 @@
       "widgetIconTitle": "Show Icon on Widget Tab",
       "widgetIconDescription": "If widget panel less 320 pixels wide then only icons will display on widget tab.",
       "autoCollapseUnpinnedPanelsTitle": "Auto Collapse Unpinned Panels",
-      "autoCollapseUnpinnedPanelsDescription": "Collapse unpinned widget panels when mouse leaves panel boundary. If false, mouse down outside is required."
-    }
+      "autoCollapseUnpinnedPanelsDescription": "Collapse unpinned widget panels when mouse leaves panel boundary. If false, mouse down outside is required.",
+      "animateToolSettingsTitle": "Animate Docked Tool Settings on appear",
+      "animateToolSettingsDescription": "Animate tool settings when they appear in the docked bar."
+   }
   },
   "tools": {
     "clearSelection": "Clear Selection",
@@ -181,6 +183,7 @@
     "isolateModels": "Isolate Models",
     "emphasizeSelected": "Emphasize Selected",
     "clearVisibility": "Clear Isolated, Hidden, and Emphasized Elements",
+    "noToolSettings": "No settings for this tool." ,
     "sectionTools": "Section Tools",
     "sectionClear": "Clear Sections",
     "sectionPanelLabel": "Section",
