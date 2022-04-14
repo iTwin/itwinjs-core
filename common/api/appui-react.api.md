@@ -990,13 +990,13 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     static enableCategory(viewManager: ViewManager, imodel: IModelConnection, ids: string[], enabled: boolean, forAllViewports: boolean, enableAllSubCategories?: boolean): void;
     static enableSubCategory(viewManager: ViewManager, key: string, enabled: boolean, forAllViewports?: boolean): void;
     // (undocumented)
-    getCategoryVisibility(id: string): "hidden" | "visible";
+    getCategoryVisibility(id: string): "visible" | "hidden";
     // (undocumented)
     static getInstanceIdFromTreeNodeKey(nodeKey: NodeKey): string;
     // (undocumented)
     getParent(key: string): Category | undefined;
     // (undocumented)
-    getSubCategoryVisibility(id: string): "hidden" | "visible";
+    getSubCategoryVisibility(id: string): "visible" | "hidden";
     // (undocumented)
     getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus;
     // (undocumented)
@@ -4728,7 +4728,7 @@ export enum SelectionScope {
 }
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "activeSelectionScope" | "availableSelectionScopes">>;
 
 // @public @deprecated
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -6345,7 +6345,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, import("react-redux").Omit<React.ClassAttributes<ThemeManagerComponent> & ThemeManagerProps, "theme" | "widgetOpacity">>;
+export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, import("react-redux").Omit<React.ClassAttributes<ThemeManagerComponent> & ThemeManagerProps, "widgetOpacity" | "theme">>;
 
 // @public
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -7821,7 +7821,7 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>) => JSX.Element;
 
 // @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React.JSXElementConstructor<P> & C) => {
@@ -7879,7 +7879,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget">>) => JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {
