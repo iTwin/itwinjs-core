@@ -5,8 +5,8 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2 && npm run -s webpack:frontend",
-    "build:ci": "npm run -s build",
+    "build": "tsc 1>&2",
+    "build:ci": "npm run -s build && npm run -s webpack:frontend",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm -s test",
     "docs": "",
