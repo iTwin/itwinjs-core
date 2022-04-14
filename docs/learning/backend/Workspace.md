@@ -254,7 +254,7 @@ Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainer.
 #### The `workspace` Settings
 
 ```ts
-    "workspace/accounts": {
+    "cloud/accounts": {
       "type": "array",
       "description": "array of workspace container accounts",
       "items": {
@@ -280,7 +280,7 @@ Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainer.
         }
       }
     },
-    "workspace/containers": {
+    "cloud/containers": {
       "type": "array",
       "description": "array of workspace containers",
       "items": {

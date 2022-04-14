@@ -9,10 +9,14 @@ import {
 } from "@itwin/core-common";
 import { IModelHost } from "../../IModelHost";
 import { Geometry } from "@itwin/core-geometry";
+import { GeoCoordConfig } from "../../GeoCoordConfig";
 
 // spell-checker: disable
 
 describe("GeoServices", () => {
+  before(() => {
+    GeoCoordConfig.loadDefaultDatabases();
+  });
 
   it("should be able to interpret to completion an incomplete GeographicCRS", async () => {
 

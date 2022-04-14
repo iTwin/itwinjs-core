@@ -62,7 +62,7 @@ export class TestUtils {
     cfg.cacheDir = cfg.cacheDir ?? path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
     await IModelHost.startup(cfg);
     IModelHost.appWorkspace.settings.addDictionary("gcs-tests", SettingsPriority.application, {
-      "workspace/accounts": [
+      "cloud/accounts": [
         {
           name: "gcs/account",
           accessName: "http://127.0.0.1:10000/devstoreaccount1",

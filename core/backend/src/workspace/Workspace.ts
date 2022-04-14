@@ -19,16 +19,17 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
 
+/* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore rowid primarykey
 
 /** The names of Settings used by Workspace
  * @beta
  */
-enum WorkspaceSetting {
-  Accounts = "workspace/accounts",
-  Containers = "workspace/containers",
-  Databases = "workspace/databases",
-}
+export const WorkspaceSetting = {
+  Accounts: "cloud/accounts",
+  Containers: "cloud/containers",
+  Databases: "workspace/databases",
+};
 
 export namespace WorkspaceAccount {
   export interface Alias { accountName: string }
@@ -347,6 +348,8 @@ export class ITwinWorkspace implements Workspace {
     for (const [_id, container] of this._containers)
       container.close();
     this._containers.clear();
+    this._cloudCache?.destroy();
+    this._cloudCache = undefined;
   }
 
   private static checkStringMember(val: any, member: string, cat: string, name: string) {
@@ -576,6 +579,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     for (const [_name, db] of this._wsDbs)
       db.close();
     this._wsDbs.clear();
+    this.cloudContainer?.disconnect();
   }
 
   public purgeContainerFiles() {

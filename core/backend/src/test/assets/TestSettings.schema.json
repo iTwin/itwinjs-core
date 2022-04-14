@@ -54,7 +54,7 @@
       "default": true,
       "description": "the setting for blah"
     },
-    "workspace/accounts": {
+    "cloud/accounts": {
       "type": "array",
       "description": "array of workspace container accounts",
       "items": {
@@ -80,7 +80,7 @@
         }
       }
     },
-    "workspace/containers": {
+    "cloud/containers": {
       "type": "array",
       "description": "array of workspace containers",
       "items": {

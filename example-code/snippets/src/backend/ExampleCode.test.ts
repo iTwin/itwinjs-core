@@ -167,13 +167,13 @@ describe("Example Code", () => {
 
     // __PUBLISH_EXTRACT_START__ Settings.containerAlias
     const iTwinDict: SettingDictionary = {
-      "workspace/containers": [
+      "cloud/containers": [
         { name: "default-fonts", id: "fonts-01" },
         { name: "gcs-data", id: "gcsdata-01" },
       ],
     };
     const iModelDict: SettingDictionary = {
-      "workspace/containers": [
+      "cloud/containers": [
         { name: "default-icons", id: "icons-01" },
         { name: "default-lang", id: "lang-05" },
         { name: "default-fonts", id: "fonts-02" },

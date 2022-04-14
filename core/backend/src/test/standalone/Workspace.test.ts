@@ -172,7 +172,7 @@ describe("WorkspaceFile", () => {
     fonts.container.dropWorkspaceDb(fonts);
 
     const setting2: SettingDictionary = {
-      "workspace/containers": [
+      "cloud/containers": [
         { name: "icons/default", containerId: "icons-01", accountName: "" },
         { name: "fonts/public", containerId: "fonts-02", accountName: "" },
       ],

@@ -167,7 +167,7 @@ export class IModelHostConfiguration {
 }
 
 /**
- * Settings for the application workspace.
+ * Settings for `IModelHost.appWorkspace`.
  * @note this includes the default dictionary from the SettingsSpecRegistry
  */
 class ApplicationSettings extends BaseSettings {
@@ -222,6 +222,10 @@ export class IModelHost {
   }
 
   public static configuration?: IModelHostConfiguration;
+
+  /** Event raised during startup to allow loading settings data */
+  public static readonly onWorkspaceStartup = new BeEvent<() => void>();
+
   /** Event raised just after the backend IModelHost was started */
   public static readonly onAfterStartup = new BeEvent<() => void>();
 
@@ -391,6 +395,8 @@ export class IModelHost {
 
     this.setupHostDirs(configuration);
     this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+    // allow subsystems to load their default settings
+    IModelHost.onWorkspaceStartup.raiseEvent();
 
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
@@ -414,8 +420,6 @@ export class IModelHost {
     IModelHost.setupTileCache();
 
     this.platform.setUseTileCache(IModelHost.tileCacheService ? false : true);
-
-    process.once("beforeExit", IModelHost.shutdown);
     IModelHost.onAfterStartup.raiseEvent();
   }
 

@@ -10,7 +10,6 @@
 
 import { CloudSqlite } from "@bentley/imodeljs-native";
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { Settings, SettingsPriority } from "./workspace/Settings";
 import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
@@ -46,8 +45,7 @@ export class GeoCoordConfig {
       if (!IModelHost.platform.addGcsWorkspaceDb(gcsDbName, cloudContainer, dbProps.priority))
         return; // already had this db
 
-      if (!ws.settings.getBoolean("gcs/noLogging"))
-        Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
+      Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
         void CloudSqlite.prefetch(cloudContainer, gcsDbName); // don't await this promise
@@ -68,19 +66,20 @@ export class GeoCoordConfig {
     });
   }
 
-  public static loadSettings() {
+  private static _defaultDbsLoaded = false;
+  public static addSettings() {
     const containerName = "gcs/container";
     const version = "^1";
     const allGcsDatabases = [
-      { name: "gcs/base", dbName: "base", containerName, version, prefetch: true, priority: 0 },
-      { name: "gcs/entire-earth", dbName: "allEarth", containerName, version, prefetch: false, priority: 1000 },
+      { name: "gcs/base", dbName: "base", containerName, version, priority: 10000, prefetch: true },
+      { name: "gcs/entire-earth", dbName: "allEarth", containerName, version, priority: 100 },
     ];
     ["Australia", "Brazil", "Canada", "France", "Germany", "Japan", "NewZealand", "Portugal", "Slovakia", "SouthAfrica", "Spain", "Switzerland", "UK", "Usa", "Venezuela"]
-      .forEach((dbName) => allGcsDatabases.push({ name: `gcs/${dbName}`, dbName, containerName, version, prefetch: false, priority: 500 }));
+      .forEach((dbName) => allGcsDatabases.push({ name: `gcs/${dbName}`, dbName, containerName, version, priority: 500 }));
 
     const gcsSettings = {
-      "workspace/accounts": [{ name: "gcs/account", accessName: "http://gcs-data.itwin.org/", storageType: "azure?customuri=1&sas=1" }],
-      "workspace/containers": [{ name: "gcs/container", accountName: "gcs/account", containerId: "gcs" }],
+      "cloud/accounts": [{ name: "gcs/account", accessName: "http://gcs-data.itwin.org/", storageType: "azure?customuri=1&sas=1" }],
+      "cloud/containers": [{ name: "gcs/container", accountName: "gcs/account", containerId: "gcs" }],
       "workspace/databases": allGcsDatabases,
       "gcs/default/databases": ["gcs/base", "gcs/entire-earth"],
     };
@@ -88,20 +87,22 @@ export class GeoCoordConfig {
     // add this as a settings dictionary so that it can be overridden externally.
     const settings = IModelHost.appWorkspace.settings;
     settings.addDictionary("gcs-data", SettingsPriority.defaults, gcsSettings);
+    this._defaultDbsLoaded = false;
   }
 
-  private static _isStaticInitialized = false;
-  public static staticInit(): void {
-    if (!this._isStaticInitialized) {
-      this._isStaticInitialized = true;
+  public static loadDefaultDatabases(): void {
+    if (!this._defaultDbsLoaded) {
+      this._defaultDbsLoaded = true;
       this.loadAll(IModelHost.appWorkspace.settings, "gcs/default/databases");
+      IModelHost.platform.setLoadLocalGcsFiles(false);
     }
   }
 
-  public static initializeImodel(iModel: IModelDb) {
-    this.staticInit();
-    this.loadAll(iModel.workspace.settings, "gcs/databases");
+  public static loadForImodel(settings: Settings) {
+    this.loadDefaultDatabases();
+    this.loadAll(settings, "gcs/databases");
   }
 }
 
-IModelHost.onAfterStartup.addListener(() => GeoCoordConfig.loadSettings());
+IModelHost.onWorkspaceStartup.addListener(() => GeoCoordConfig.addSettings());
+

@@ -24,7 +24,7 @@
         "cat 2",
         "vital2"
     ],
-    "workspace/accounts": [
+    "cloud/accounts": [
         {
             "name": "gcs/data",
             "accessName": "devstoreaccount1",
@@ -36,7 +36,7 @@
             "storageType": "azure?emulator=127.0.0.1:10000&sas=1"
         }
     ],
-    "workspace/containers": [
+    "cloud/containers": [
         {
             "name": "gcs/container",
             "containerId": "gcs",

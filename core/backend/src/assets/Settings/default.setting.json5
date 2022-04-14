@@ -1,0 +1,21 @@
+{
+  "$schema": "./Schemas/Settings.schema.json",
+  "cloud/accounts": [
+    {
+      "name": "gcs/account",
+      "accessName": "http://gcs-data.itwin.org/",
+      "storageType": "azure?customuri=1&sas=1"
+    }
+  ],
+  "cloud/containers": [
+    {
+      "name": "gcs/container",
+      "accountName": "gcs/account",
+      "containerId": "gcs"
+    }
+  ],
+  "gcs/default/databases": [
+    "gcs/base",
+    "gcs/entire-earth"
+  ]
+}
