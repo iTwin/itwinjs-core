@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
-import { Id64String, StopWatch } from "@itwin/core-bentley";
+import { BriefcaseDb, Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb } from "@itwin/core-backend";
+import { HubMock, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
+import { AccessToken, GuidString, Id64String, StopWatch } from "@itwin/core-bentley";
 import { ElementProps } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
@@ -138,22 +138,25 @@ function setupCrashingNativeAndTransformer({
 }
 
 async function transformWithCrashAndRecover<
-  Transformer extends IModelTransformer
+  Transformer extends IModelTransformer,
+  DbType extends IModelDb
 >({
   sourceDb,
   targetDb,
   transformer,
   disableCrashing: onResume,
+  transformerProcessing = async (t) => { await t.processSchemas(); await t.processAll(); },
 }: {
-  sourceDb: IModelDb;
-  targetDb: IModelDb;
+  sourceDb: DbType;
+  targetDb: DbType;
   transformer: Transformer;
+  /* what processing to do for the transform; defaults to { t.processSchemas(); t.processAll(); } */
+  transformerProcessing?: (transformer: Transformer) => Promise<void>;
   disableCrashing?: (transformer: Transformer) => void;
 }) {
   let crashed = false;
   try {
-    await transformer.processSchemas();
-    await transformer.processAll();
+    await transformerProcessing(transformer);
   } catch (transformerErr) {
     try {
       const dumpPath = IModelTestUtils.prepareOutputFile(
@@ -161,7 +164,9 @@ async function transformWithCrashAndRecover<
         "transformer-state.db"
       );
       const state = transformer.serializeState(dumpPath);
-      transformer = (transformer.constructor as typeof IModelTransformer).resumeTransformation(state, sourceDb, targetDb) as Transformer;
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const TransformerClass = transformer.constructor as typeof IModelTransformer;
+      transformer = TransformerClass.resumeTransformation(state, sourceDb, targetDb) as Transformer;
       onResume?.(transformer);
       crashed = true;
     } catch (err) {
@@ -173,28 +178,43 @@ async function transformWithCrashAndRecover<
   return targetDb;
 }
 
+/** this utility is for consistency and readability, it doesn't provide any actual abstraction */
 async function transformNoCrash<
   Transformer extends IModelTransformer
->(args: {
+>({
+  targetDb,
+  transformer,
+  transformerProcessing = async (t) => { await t.processSchemas(); await t.processAll(); },
+}: {
   sourceDb: IModelDb;
   targetDb: IModelDb;
   transformer: Transformer;
+  transformerProcessing?: (transformer: Transformer) => Promise<void>;
 }): Promise<IModelDb> {
-  const transformer = new IModelTransformer(args.sourceDb, args.targetDb);
-  await transformer.processSchemas();
-  await transformer.processAll();
-  return args.targetDb;
+  await transformerProcessing(transformer);
+  return targetDb;
 }
 
 describe("test resuming transformations", () => {
-  it("simple single crash transform resumption", async () => {
+  let iTwinId: GuidString;
+  let accessToken: AccessToken;
 
+  before(async () => {
+    HubMock.startup("IModelTransformerHub");
+    iTwinId = HubMock.iTwinId;
+    accessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
+  });
+
+  after(() => HubMock.shutdown());
+
+  it("simple single crash transform resumption", async () => {
     const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
-    const sourceDb = SnapshotDb.openFile(sourceFileName);
+    const sourceDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: sourceFileName, noLocks: true });
+    const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
 
     const crashingTarget = await (async () => {
-      const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationCrash.bim");
-      const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
+      const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: sourceFileName, noLocks: true });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCrash = 10;
       // eslint-disable-next-line @typescript-eslint/no-shadow
@@ -208,6 +228,43 @@ describe("test resuming transformations", () => {
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
       const transformer = new IModelTransformer(sourceDb, targetDb);
       return transformNoCrash({sourceDb, targetDb, transformer});
+    })();
+
+    await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+  });
+
+  it("processChanges crash and resume", async () => {
+    const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const sourceDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: sourceFileName, noLocks: true });
+    const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
+
+    const crashingTarget = await (async () => {
+      const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: sourceFileName, noLocks: true });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
+      transformer.elementExportsUntilCrash = 10;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      await transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(transformer) {
+        transformer.elementExportsUntilCrash = undefined;
+      }, async transformerProcessing(t) {
+        await t.processSchemas();
+        await t.processChanges(sourceDb.changeset.id);
+      }});
+      targetDb.saveChanges();
+      await targetDb.pushChanges({accessToken, description: "completed transformation that crashed"});
+      return targetDb;
+    })();
+
+    const regularTarget = await (async () => {
+      const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationNoCrash.bim");
+      const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      return transformNoCrash({
+        sourceDb, targetDb, transformer,
+        async transformerProcessing(t) {
+          await t.processSchemas();
+          await t.processChanges(sourceDb.changeset.id);
+        }});
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
