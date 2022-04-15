@@ -1844,11 +1844,23 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
   }
 
+  /** Return the polyface index array indices corresponding to the given edge, or undefined if error. */
+  private getEdgeIndices(edge: SortableEdge): {edgeIndexA: number, edgeIndexB: number} | undefined {
+    let indexA = -1; let indexB = -1;
+    for (let i = this._polyface.facetIndex0(edge.facetIndex); i < this._polyface.facetIndex1(edge.facetIndex); ++i) {
+      if (edge.vertexIndexA === this._polyface.data.pointIndex[i])
+        indexA = i;
+      else if (edge.vertexIndexB === this._polyface.data.pointIndex[i])
+        indexB = i;
+    }
+    return (indexA < 0 || indexB < 0) ? undefined : {edgeIndexA: indexA, edgeIndexB: indexB };
+  }
+
   /** Create a side face between base and swept facets along a base boundary edge.
    * * Assumes numBaseFacets base facets were added to this builder, immediately followed by the same number of swept facets with opposite orientation (first index not preserved).
   */
   private addSweptFace(baseBoundaryEdge: SortableEdge, numBaseFacets: number): boolean {
-    const edge = PolyfaceQuery.getEdgeIndicesFromSortableEdge(this._polyface, baseBoundaryEdge);
+    const edge = this.getEdgeIndices(baseBoundaryEdge);
     if (undefined === edge)
       return false;
     const sweptFacetIndex = numBaseFacets + baseBoundaryEdge.facetIndex;

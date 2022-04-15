@@ -918,17 +918,6 @@ export class PolyfaceQuery {
     }
     return edges;
   }
-  /** Return the polyface index array indices corresponding to the given edge, or undefined if error. */
-  public static getEdgeIndicesFromSortableEdge(polyface: IndexedPolyface, edge: SortableEdge): {edgeIndexA: number, edgeIndexB: number} | undefined {
-    let indexA = -1; let indexB = -1;
-    for (let i = polyface.facetIndex0(edge.facetIndex); i < polyface.facetIndex1(edge.facetIndex); ++i) {
-      if (edge.vertexIndexA === polyface.data.pointIndex[i])
-        indexA = i;
-      else if (edge.vertexIndexB === polyface.data.pointIndex[i])
-        indexB = i;
-    }
-    return (indexA < 0 || indexB < 0) ? undefined : {edgeIndexA: indexA, edgeIndexB: indexB };
-  }
   /**
   * * Find mated pairs among facet edges.
   * * Mated pairs have the same vertex indices appearing in opposite order.
