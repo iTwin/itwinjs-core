@@ -72,29 +72,35 @@ For more details about External Sources in BIS, please refer to the [BisCore](..
 
 The top of the information hierarchy is strictly controlled and is very similar in all BIS repositories. Its contents are explained in [Top of the World](./top-of-the-world.md)
 
-<!-- TODO
 ## Typical Repository Organization
 
 Two examples of repository organizations are described below. It should be noted that a single BIS repository may have multiple uses. When that occurs each use (often corresponding to an application) adds the hierarchy; the resulting hierarchy is similar to a union of the uses' hierarchies.
 
-### iModel Connector Repository Organization
-
-TODO: show organization for an iModel created by both:
-
-* One connector with two source files
-* Another connector with one source file
-
-### Editing Application Repository Organization
-
-TODO
-
--->
-
 ## Example Information Hierarchy
+
+The following instance diagram depicts the information hierarchy for an hypothetical campus. It shows the organization of data in two modeling perspectives: Physical and Functional, as well as catalog-data in Definition models.
 
 &nbsp;
 ![Information Hierarchy](../media/information-hierarchy.png)
 &nbsp;
+
+### iModel Connector Repository Organization
+
+iModel Connectors transform data in an external format into an iModel. As part of that job, they need to organize the resulting data in a way that is comprenhensible by both humans and software.
+
+The following instance diagram depicts the organization of information in one iModel target by three iModel Connectors: IFC, OpenBuilding Designer and Bentley Civil. The last two are shown with more detail, including their parallel `Model`, `ExternalSource` and `SpatialComposition` hierarchies. The sample iModel shows data synchronized from three different datasets, two .dgn-based and one .ifc.
+
+&nbsp;
+![iModel Connector Repository Organization](../media/imodel-connector-repository-organization.png)
+&nbsp;
+
+Since iModel Connectors run headless without user-input, they need to organize data they write into iModels based on their understanding about it. In the example above, data synchronized by each iModel Connector is stored under a specific branch of the Subject hierarchy. Each iModel Connector lays out the next levels according to the structure and discoverable semantics about the data on the source. In the case of dgn files, both the OpenBuilding Designer and Bentley Civil iModel Connectors create child Subjects for every referenced dgn & model on the external dataset, mirroring the division of labor among teams and disciplines that drive the organization of data in those external products.
+
+See [iModel Connectors](../../../learning/imodel-connectors.md) for more details.
+
+<!-- TODO:
+### Editing Application Repository Organization
+-->
 
 ---
 | Next: [Modeling Perspectives](./modeling-perspectives.md)
