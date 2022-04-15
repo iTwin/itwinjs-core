@@ -13,18 +13,132 @@ import { IModelImporter } from "../../IModelImporter";
 import { IModelTransformer, IModelTransformOptions } from "../../IModelTransformer";
 import { assertIdentityTransformation } from "../IModelTransformerUtils";
 
+const formatter = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2,
+});
+
+/** format a proportion (number between 0 and 1) to a percent */
+const percent = (n: number) => `${formatter.format(100 * n)}%`;
+
+class CountingImporter extends IModelImporter {
+  public owningTransformer: CountingTransformer | undefined;
+  public override importElement(elementProps: ElementProps): Id64String {
+    if (this.owningTransformer === undefined)
+      throw Error("uninitialized, '_owningTransformer' must have been set before transformations");
+    ++this.owningTransformer.importedEntities;
+    return super.importElement(elementProps);
+  }
+}
+
+/** this class services two functions,
+ * 1. make sure transformations can be resumed by subclasses with different constructor argument types
+ * 2. count operations that should not be reperformed by a resumed transformation
+ */
+class CountingTransformer extends IModelTransformer {
+  public importedEntities = 0;
+  public exportedEntities = 0;
+  constructor(opts: {
+    source: IModelDb;
+    target: IModelDb;
+    options?: IModelTransformOptions;
+  }) {
+    super(
+      opts.source,
+      new CountingImporter(opts.target),
+      opts.options
+    );
+    (this.importer as CountingImporter).owningTransformer = this;
+  }
+  public override onExportElement(sourceElement: Element) {
+    ++this.exportedEntities;
+    return super.onExportElement(sourceElement);
+  }
+  public override onExportRelationship(sourceRelationship: Relationship) {
+    ++this.exportedEntities;
+    return super.onExportRelationship(sourceRelationship);
+  }
+}
+
+/** a transformer that crashes on the nth element export, set `elementExportsUntilCrash` to control the count */
+class CountdownToCrashTransformer extends IModelTransformer {
+  public elementExportsUntilCrash: number | undefined = 10;
+  public override onExportElement(sourceElement: Element): void {
+    if (this.elementExportsUntilCrash === 0) throw Error("crash");
+    const result = super.onExportElement(sourceElement);
+    if (this.elementExportsUntilCrash !== undefined)
+      this.elementExportsUntilCrash--;
+    return result;
+  }
+}
+
+/**
+ * Wraps all IModel native addon functions and constructors in a randomly throwing wrapper,
+ * as well as all IModelTransformer functions
+ * @note you must call sinon.restore at the end of any test that uses this
+ */
+function setupCrashingNativeAndTransformer({
+  methodCrashProbability = 1 / 800,
+  onCrashableCallMade,
+}: {
+  methodCrashProbability?: number;
+  onCrashableCallMade?(): void;
+} = {}) {
+  let crashingEnabled = false;
+  for (const [key, descriptor] of Object.entries(
+    Object.getOwnPropertyDescriptors(IModelHost.platform)
+  ) as [keyof typeof IModelHost["platform"], PropertyDescriptor][]) {
+    const superValue: unknown = descriptor.value;
+    if (typeof superValue === "function" && descriptor.writable) {
+      sinon.replace(
+        IModelHost.platform,
+        key,
+        function (this: IModelJsNative.DgnDb, ...args: any[]) {
+          onCrashableCallMade?.();
+          if (crashingEnabled) {
+            // this does not at all test mid-method crashes... that might be doable by racing timeouts on async functions...
+            if (crashingEnabled && Math.random() <= methodCrashProbability)
+              throw Error("fake native crash");
+          }
+          const isConstructor = (o: Function): o is new (...a: any[]) => any =>
+            "prototype" in o;
+          if (isConstructor(superValue)) return new superValue(...args);
+          else return superValue.call(this, ...args);
+        }
+      );
+    }
+  }
+
+  for (const [key, descriptor] of Object.entries(
+    Object.getOwnPropertyDescriptors(IModelTransformer.prototype)
+  ) as [keyof IModelTransformer, PropertyDescriptor][]) {
+    const superValue: unknown = descriptor.value;
+    if (typeof superValue === "function" && descriptor.writable) {
+      sinon.replace(
+        IModelTransformer.prototype,
+        key,
+        function (this: IModelTransformer, ...args: any[]) {
+          onCrashableCallMade?.();
+          if (crashingEnabled) {
+            // this does not at all test mid-method crashes... that might be doable by racing timeouts on async functions...
+            if (crashingEnabled && Math.random() <= methodCrashProbability)
+              throw Error("fake crash");
+          }
+          return superValue.call(this, ...args);
+        }
+      );
+    }
+  }
+
+  return {
+    enableCrashes: (val = true) => {
+      crashingEnabled = val;
+    },
+  };
+}
+
 describe("test resuming transformations", () => {
   it("simple single crash transform resumption", async () => {
-    class CountdownCrashingTransformer extends IModelTransformer {
-      public elementExportsUntilCrash: number | undefined = 10;
-      public override onExportElement(sourceElement: Element): void {
-        if (this.elementExportsUntilCrash === 0) throw Error("crash");
-        const result = super.onExportElement(sourceElement);
-        if (this.elementExportsUntilCrash !== undefined)
-          this.elementExportsUntilCrash--;
-        return result;
-      }
-    }
 
     const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const sourceDb = SnapshotDb.openFile(sourceFileName);
@@ -32,7 +146,7 @@ describe("test resuming transformations", () => {
     async function transformWithCrashAndRecover() {
       const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationCrash.bim");
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
-      let transformer = new CountdownCrashingTransformer(sourceDb, targetDb);
+      let transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       let crashed = false;
 
       try {
@@ -42,7 +156,7 @@ describe("test resuming transformations", () => {
         try {
           const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
           const state = transformer.serializeState(dumpPath);
-          transformer = CountdownCrashingTransformer.resumeTransformation(state, sourceDb, targetDb);
+          transformer = CountdownToCrashTransformer.resumeTransformation(state, sourceDb, targetDb);
           transformer.elementExportsUntilCrash = -1; // do not crash this time
           crashed = true;
         } catch (err) {
@@ -68,10 +182,13 @@ describe("test resuming transformations", () => {
     await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
   });
 
-  // change "skip" to "only" to test some huge local model that is not worth putting in the actual tests
-  it.skip("local test", async () => {
+  // env variables:
+  // TRANSFORMER_RESUMPTION_TEST_SINGLE_MODEL_ELEMENTS_BEFORE_CRASH (defaults to 2_500_000)
+  // TRANSFORMER_RESUMPTION_TEST_SINGLE_MODEL_PATH (defaults to the likely invalid "huge-model.bim")
+  // change "skip" to "only" to test local models
+  it.skip("local test single model", async () => {
     class CrashingTransformer extends IModelTransformer {
-      public elementExportsUntilCrash = 2_500_000; // this model has 3 million elements and relationships so this should be a good crash point
+      public elementExportsUntilCrash = 2_500_000;
       public override onExportElement(sourceElement: Element): void {
         if (this.elementExportsUntilCrash === 0) throw Error("crash");
         const result = super.onExportElement(sourceElement);
@@ -80,12 +197,14 @@ describe("test resuming transformations", () => {
       }
     }
 
-    const sourceDb = SnapshotDb.openFile("/home/mike/shell.bim");
+    const sourceDb = SnapshotDb.openFile("./huge-model.bim");
 
     async function transformWithCrashAndRecover() {
-      const targetDbPath = "/tmp/shell-out.bim";
+      const targetDbPath = "/tmp/huge-model-out.bim";
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
-      let transformer = new CrashingTransformer(sourceDb, targetDb);
+
+      let transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
+      transformer.elementExportsUntilCrash = Number(process.env.TRANSFORMER_RESUMPTION_TEST_SINGLE_MODEL_ELEMENTS_BEFORE_CRASH) || 2_500_000;
 
       let crashed = false;
       try {
@@ -130,85 +249,8 @@ describe("test resuming transformations", () => {
   // TRANSFORMER_RESUMPTION_TEST_TARGET_TOTAL_CRASHING_TRANSFORMATIONS (defaults to 50)
   // TRANSFORMER_RESUMPTION_TEST_MAX_CRASHING_TRANSFORMATIONS (defaults to 200)
   it.only("crashing transforms stats gauntlet", async () => {
-    let crashingEnabled = false;
     let crashableCallsMade = 0;
-
-    class CountingImporter extends IModelImporter {
-      public owningTransformer: CrashingTransformer | undefined;
-      public override importElement(elementProps: ElementProps): Id64String {
-        if (this.owningTransformer === undefined)
-          throw Error("uninitialized, '_owningTransformer' must have been set before transformations");
-        ++this.owningTransformer.importedEntities;
-        return super.importElement(elementProps);
-      }
-    }
-
-    /** this class services two functions,
-     * 1. make sure transformations can be resumed by subclasses with different constructor argument types
-     * 2. count the operations that are expected to be done less during a transformation
-     */
-    class CrashingTransformer extends IModelTransformer {
-      public importedEntities = 0;
-      public exportedEntities = 0;
-      constructor(opts: {
-        source: IModelDb;
-        target: IModelDb;
-        options?: IModelTransformOptions;
-      }) {
-        super(
-          opts.source,
-          new CountingImporter(opts.target),
-          opts.options
-        );
-        (this.importer as CountingImporter).owningTransformer = this;
-      }
-      public override onExportElement(sourceElement: Element) {
-        ++this.exportedEntities;
-        return super.onExportElement(sourceElement);
-      }
-      public override onExportRelationship(sourceRelationship: Relationship) {
-        ++this.exportedEntities;
-        return super.onExportRelationship(sourceRelationship);
-      }
-    }
-
-    for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(
-      IModelHost.platform
-    )) as [keyof typeof IModelHost["platform"], PropertyDescriptor][]) {
-      const superValue: unknown = descriptor.value;
-      if (typeof superValue === "function" && descriptor.writable) {
-        sinon.replace(IModelHost.platform, key, function (this: IModelJsNative.DgnDb, ...args: any[]) {
-          crashableCallsMade++;
-          if (crashingEnabled) {
-            const METHOD_CRASH_PROBABILITY = 1/800;
-            // this does not at all test mid-method crashes... that might be doable by racing timeouts on async functions...
-            if (crashingEnabled && Math.random() <= METHOD_CRASH_PROBABILITY) throw Error("fake native crash");
-          }
-          const isConstructor = (o: Function): o is new(...a: any[]) => any => "prototype" in o;
-          if (isConstructor(superValue))
-            return new superValue(...args);
-          else return superValue.call(this, ...args);
-        });
-      }
-    }
-
-    for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(
-      IModelTransformer.prototype
-    )) as [keyof IModelTransformer, PropertyDescriptor][]) {
-      const superValue: unknown = descriptor.value;
-      if (typeof superValue === "function" && descriptor.writable) {
-        sinon.replace(IModelTransformer.prototype, key, function (this: IModelTransformer, ...args: any[]) {
-          crashableCallsMade++;
-          if (crashingEnabled) {
-            const METHOD_CRASH_PROBABILITY = 1/800;
-            // this does not at all test mid-method crashes... that might be doable by racing timeouts on async functions...
-            if (crashingEnabled && Math.random() <= METHOD_CRASH_PROBABILITY) throw Error("fake crash");
-          }
-          return superValue.call(this, ...args);
-        });
-      }
-    }
-
+    const { enableCrashes } = setupCrashingNativeAndTransformer({ onCrashableCallMade() { ++crashableCallsMade; } });
     async function runAndCompareWithControl(crashingEnabledForThisTest: boolean) {
       const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
       const sourceDb = SnapshotDb.openFile(sourceFileName);
@@ -216,12 +258,12 @@ describe("test resuming transformations", () => {
       async function transformWithCrashAndRecover() {
         const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationCrash.bim");
         const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
-        let transformer = new CrashingTransformer({ source: sourceDb, target: targetDb });
+        let transformer = new CountingTransformer({ source: sourceDb, target: targetDb });
         const MAX_ITERS = 100;
         let crashCount = 0;
         let timer: StopWatch;
 
-        crashingEnabled = crashingEnabledForThisTest;
+        enableCrashes(crashingEnabledForThisTest);
 
         for (let i = 0; i <= MAX_ITERS; ++i) {
           timer = new StopWatch();
@@ -234,10 +276,10 @@ describe("test resuming transformations", () => {
             try {
               crashCount++;
               const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
-              crashingEnabled = false;
+              enableCrashes(false);
               const state = transformer.serializeState(dumpPath);
-              transformer = CrashingTransformer.resumeTransformation(state, { source: sourceDb, target: targetDb });
-              crashingEnabled = true;
+              transformer = CountingTransformer.resumeTransformation(state, { source: sourceDb, target: targetDb });
+              enableCrashes(true);
               crashableCallsMade = 0;
               console.log(`crashed after ${timer.elapsed.seconds} seconds`); // eslint-disable-line no-console
             } catch (err) {
@@ -260,7 +302,7 @@ describe("test resuming transformations", () => {
       }
 
       async function transformNoCrash(): Promise<IModelDb> {
-        crashingEnabled = false;
+        enableCrashes(false);
         const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationNoCrash.bim");
         const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
         const transformer = new IModelTransformer(sourceDb, targetDb);
@@ -275,14 +317,6 @@ describe("test resuming transformations", () => {
       await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
       return crashingTransformResult;
     }
-
-    const fmtter = new Intl.NumberFormat("en-US", {
-      maximumFractionDigits: 2,
-      minimumFractionDigits: 2,
-    });
-
-    /** convert a proportion to a percent */
-    const percent = (n: number) => `${fmtter.format(100 * n)}%`;
 
     let totalCrashableCallsMade = 0;
     let totalNonCrashingTransformationsTime = 0.0;
@@ -304,9 +338,9 @@ describe("test resuming transformations", () => {
 
     // eslint-disable-next-line no-console
     console.log(`the average non crashing transformation took ${
-      fmtter.format(avgNonCrashingTransformationsTime)
+      formatter.format(avgNonCrashingTransformationsTime)
     } and made ${
-      fmtter.format(avgCrashableCallsMade)
+      formatter.format(avgCrashableCallsMade)
     } native calls.`);
 
     let totalCrashingTransformationsTime = 0.0;
