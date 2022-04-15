@@ -26,7 +26,6 @@
 - [Information Hierarchy](./fundamentals/data-organization/information-hierarchy.md)
 - [Modeling Perspectives](./fundamentals/data-organization/modeling-perspectives.md)
 - [Top of the World](./fundamentals/data-organization/top-of-the-world.md)
-- [Single Responsible Party Principle](./fundamentals/data-organization/srpp.md)
 - [Organizing Models and Elements](./fundamentals/data-organization/organizing-models-and-elements.md)
 - [Spatial Composition](./fundamentals/data-organization/spatial-composition.md)
 - [Modeling Systems](./fundamentals/data-organization/modeling-systems.md)

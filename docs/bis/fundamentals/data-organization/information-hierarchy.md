@@ -15,7 +15,7 @@ There are several mechanisms available in BIS that domain authors can take advan
 * An Element can own child Elements.
 * A *Spatial Organizer* can hold an Element as part of the spatial decomposition of a *Facility*, in light of a specific discipline.
 * A *Physical System* can group a member Element.
-* The provenance of an Element can be traced to an *External Source*, whose organization may be hierarchical.
+* The provenance of an Element can be traced back to an *External Source*, whose organization may be hierarchical.
 
 Each of these mechanism is intended to be used in specific circumstances which are explained in this chapter.
 
@@ -36,7 +36,7 @@ There is no special class for a *SubModel*, only the standard `Model` subclasses
 
 For example, a `DrawingModel` breaks down a `Drawing` Element and contains the `DrawingGraphic` Elements that are the details of the overall drawing.
 
-<!-- TODO: insert figure -->
+![DrawingModel Break-down](../media/drawing-breakdown.png)
 
 ### Element Owns Child Elements
 
@@ -49,10 +49,14 @@ These hierarchies can go N levels deep, which means that an Element can be both 
 
 ### Element Held by Spatial Organizer
 
-A Spatial Organizer, typically a subclass of `spcomp:SpatialStructureElement` or `spcomp:Zone`, can hold Elements.
+A Spatial Organizer, typically a subclass of `spcomp:SpatialStructureElement` or `spcomp:Zone`, can *hold* Spatial Elements and aggregate other Spatial Structure elements.
 These concepts are part of the rules and patterns introduced by the [SpatialComposition](../../domains/spatialcomposition.ecschema/) schema. They aim to enable the modeling of the Spatial Structure of infrastructure.
-The resulting hierarchy can define as many levels as needed.
-These Spatial Composition hierarchies can co-exist with the other organization mechanisms listed above.
+The resulting hierarchy can define as many levels as needed. These Spatial Composition hierarchies can co-exist with the other organization mechanisms listed above.
+
+For example, a `Building` is modeled as a subclass of `spcomp:SpatialStructureElement`, which spatially aggregates other Spatial Organizers such as `Stories` and `Spaces`. Physical elements such as `Wall`s, `Column`s and `Door`s are associated to (held or referenced by depending on the case) those concepts from the Building decomposition.
+
+![Building decomposition](../media/building-decomposition.png)
+
 For more details about Spatial Composition in BIS, please refer to the [Spatial Composition](./spatial-composition.md) topic later in this chapter.
 
 ### Physical System Groups Members
@@ -66,6 +70,11 @@ For more details about Physical Systems in BIS, please refer to the [Modeling Sy
 An Element's provenance, captured by `bis:ExternalSourceAspect`s attached to it, can refer to the External Source it came from.
 External Sources can be organized in a hierarchical manner, reflecting how they are laid out in the external repository.
 These External Source hierarchies can co-exist with the other organization mechanisms listed above.
+
+For example, an iModel Connector synchronizes data from a Road dataset containing 4 dgn files. The model-attachments among those dgn files are represented in the iModel by a hierarchy composed of `ExternalSource` instances, which act as the *sources* for the elements in the iModel that were synchronized from the external dgn files.
+
+![External Sources Example](../media/external-sources.png)
+
 For more details about External Sources in BIS, please refer to the [BisCore](../../domains/biscore.ecschema/#externalsource) documentation.
 
 ## Top of the World
