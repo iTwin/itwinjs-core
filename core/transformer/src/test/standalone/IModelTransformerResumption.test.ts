@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseDb, Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb } from "@itwin/core-backend";
+import { Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb } from "@itwin/core-backend";
 import { HubMock, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, GuidString, Id64String, StopWatch } from "@itwin/core-bentley";
 import { ElementProps } from "@itwin/core-common";
@@ -248,7 +248,7 @@ describe("test resuming transformations", () => {
         transformer.elementExportsUntilCrash = undefined;
       }, async transformerProcessing(t) {
         await t.processSchemas();
-        await t.processChanges(sourceDb.changeset.id);
+        await t.processChanges(accessToken);
       }});
       targetDb.saveChanges();
       await targetDb.pushChanges({accessToken, description: "completed transformation that crashed"});
@@ -263,7 +263,7 @@ describe("test resuming transformations", () => {
         sourceDb, targetDb, transformer,
         async transformerProcessing(t) {
           await t.processSchemas();
-          await t.processChanges(sourceDb.changeset.id);
+          await t.processChanges(accessToken);
         }});
     })();
 
