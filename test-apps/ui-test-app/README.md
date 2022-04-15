@@ -129,3 +129,23 @@ Follow these steps to obtain a new OIDC client to use the ui-test-app depending 
 1. Enter Redirect URI <http://localhost:3000/signin-callback>
 1. Enter Post logout Redirect URI: <http://localhost:3000>.
 1. Click the Save button
+
+## Debugging
+
+Debugging ui-test-app can be accomplished using the following procedures to easily debug both the backend and frontend of the app.
+
+In addition, the configuration allows setting breakpoints in any dependent package that lives within this monorepo (i.e. core-frontend or core-backend).
+
+1. Make sure the backend is built `npm run build:backend`
+1. Run `npm run start:webserver`
+    * Launches the react-scripts dev server, providing hot-module reloading of the frontend
+1. Launch the VSCode "ui-test-app (electron)" or "ui-test-app (chrome)" depending on which app type
+
+A more advanced debug experience will give you more quick turn around time for both backend and frontend changes:
+
+1. Initialize the backend build using `npm run build:backend -- --watch` in one terminal
+    * The `--watch` command allows the Typescript compiler watch all of the source files and any time they change will automatically re-run the compilation
+    * One caveat is you will have to restart the debugger (#3) each time you make a change. Note this is different from the frontend experience that live reloads the browser with the updated code, the backend doesn't support that currently.
+1. Run `npm run start:webserver` in a separate terminal
+    * Note: if the webserver and backend are run in the same terminal it will be hard to parse the output and attribute it to each one. This is why we recommend two different terminals instead of a single script to handle both.
+1. Launch the VSCode "ui-test-app (electron)" or "ui-test-app (chrome)" depending on which app type
