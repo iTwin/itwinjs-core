@@ -7,14 +7,12 @@
  * @module Polyface
  */
 
-// import { Point2d } from "./Geometry2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-// import { Geometry } from "./Geometry";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { NumberArray } from "../geometry3d/PointHelpers";
@@ -23,10 +21,6 @@ import { Transform } from "../geometry3d/Transform";
 import { FacetFaceData } from "./FacetFaceData";
 import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
 import { PolyfaceData } from "./PolyfaceData";
-
-function allDefined(valueA: any, valueB: any, valueC: any): boolean {
-  return valueA !== undefined && valueB !== undefined && valueC !== undefined;
-}
 
 /**
  * A Polyface is an abstract mesh structure (of unspecified implementation) that provides a PolyfaceVisitor
@@ -185,9 +179,6 @@ export class IndexedPolyface extends Polyface {
    * * Will only copy param, normal, color, and face data if we are already tracking them AND/OR the source contains them.
    */
   public addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform: Transform | undefined) {
-    const copyParams = allDefined(this.data.param, source.data.param, source.data.paramIndex);
-    const copyNormals = allDefined(this.data.normal, source.data.normal, source.data.normalIndex);
-    const copyColors = allDefined(this.data.color, source.data.color, source.data.colorIndex);
     const numSourceFacets = source.facetCount;
 
     // Add point, point index, and edge visibility data
@@ -218,30 +209,27 @@ export class IndexedPolyface extends Polyface {
     }
 
     // Add param and param index data
-    if (copyParams) {
-      const myParams = this.data.param!;
-      const startOfNewParams = myParams.length;
-      myParams.pushFromGrowableXYArray(source.data.param!);
+    if (undefined !== this.data.param && undefined !== source.data.param && undefined !== source.data.paramIndex) {
+      const startOfNewParams = this.data.param.length;
+      this.data.param.pushFromGrowableXYArray(source.data.param);
       for (let i = 0; i < numSourceFacets; i++) {  // Expect facet start and ends for points to match normals
         const i0 = source._facetStart[i];
         const i1 = source._facetStart[i + 1];
         if (reversed) {
           for (let j = i1; j-- > i0;)
-            this.addParamIndex(startOfNewParams + source.data.paramIndex![j]);
+            this.addParamIndex(startOfNewParams + source.data.paramIndex[j]);
         } else {
           for (let j = i0; j < i1; j++)
-            this.addParamIndex(startOfNewParams + source.data.paramIndex![j]);
+            this.addParamIndex(startOfNewParams + source.data.paramIndex[j]);
         }
       }
     }
 
     // Add normal and normal index data
-    if (copyNormals) {
-      const myNormals = this.data.normal!;
-      const startOfNewNormals = myNormals.length;
-      const numNewNormals = source.data.normal!.length;
-      for (let i = 0; i < numNewNormals; i++) {
-        const sourceNormal = source.data.normal!.getVector3dAtCheckedVectorIndex(i)!;
+    if (undefined !== this.data.normal && undefined !== source.data.normal && undefined !== source.data.normalIndex) {
+      const startOfNewNormals = this.data.normal.length;
+      for (let i = 0; i < source.data.normal.length; i++) {
+        const sourceNormal = source.data.normal.getVector3dAtCheckedVectorIndex(i)!;
         if (transform)
           transform.multiplyVector(sourceNormal, sourceNormal);
         if (reversed)
@@ -253,29 +241,28 @@ export class IndexedPolyface extends Polyface {
         const i1 = source._facetStart[i + 1];
         if (reversed) {
           for (let j = i1; j-- > i0;)
-            this.addNormalIndex(startOfNewNormals + source.data.normalIndex![j]);
+            this.addNormalIndex(startOfNewNormals + source.data.normalIndex[j]);
         } else {
           for (let j = i0; j < i1; j++)
-            this.addNormalIndex(startOfNewNormals + source.data.normalIndex![j]);
+            this.addNormalIndex(startOfNewNormals + source.data.normalIndex[j]);
         }
       }
     }
 
     // Add color and color index data
-    if (copyColors) {
-      const myColors = this.data.color!;
-      const startOfNewColors = myColors.length;
-      for (const sourceColor of source.data.color!)
+    if (undefined !== this.data.color && undefined !== source.data.color && undefined !== source.data.colorIndex) {
+      const startOfNewColors = this.data.color.length;
+      for (const sourceColor of source.data.color)
         this.addColor(sourceColor);
       for (let i = 0; i < numSourceFacets; i++) {  // Expect facet start and ends for points to match colors
         const i0 = source._facetStart[i];
         const i1 = source._facetStart[i + 1];
         if (reversed) {
           for (let j = i1; j-- > i0;)
-            this.addColorIndex(startOfNewColors + source.data.colorIndex![j]);
+            this.addColorIndex(startOfNewColors + source.data.colorIndex[j]);
         } else {
           for (let j = i0; j < i1; j++)
-            this.addColorIndex(startOfNewColors + source.data.colorIndex![j]);
+            this.addColorIndex(startOfNewColors + source.data.colorIndex[j]);
         }
       }
     }
