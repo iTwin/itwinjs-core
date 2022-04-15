@@ -1848,7 +1848,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Assumes numBaseFacets base facets were added to this builder, immediately followed by the same number of swept facets with opposite orientation (first index not preserved).
   */
   private addSweptFace(baseBoundaryEdge: SortableEdge, numBaseFacets: number): boolean {
-    const edge = baseBoundaryEdge.getEdgeIndices(this._polyface);
+    const edge = PolyfaceQuery.getEdgeIndicesFromSortableEdge(this._polyface, baseBoundaryEdge);
     if (undefined === edge)
       return false;
     const sweptFacetIndex = numBaseFacets + baseBoundaryEdge.facetIndex;
