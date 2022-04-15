@@ -137,47 +137,78 @@ function setupCrashingNativeAndTransformer({
   };
 }
 
+async function transformWithCrashAndRecover<
+  Transformer extends IModelTransformer
+>({
+  sourceDb,
+  targetDb,
+  transformer,
+  disableCrashing: onResume,
+}: {
+  sourceDb: IModelDb;
+  targetDb: IModelDb;
+  transformer: Transformer;
+  disableCrashing?: (transformer: Transformer) => void;
+}) {
+  let crashed = false;
+  try {
+    await transformer.processSchemas();
+    await transformer.processAll();
+  } catch (transformerErr) {
+    try {
+      const dumpPath = IModelTestUtils.prepareOutputFile(
+        "IModelTransformerResumption",
+        "transformer-state.db"
+      );
+      const state = transformer.serializeState(dumpPath);
+      transformer = (transformer.constructor as typeof IModelTransformer).resumeTransformation(state, sourceDb, targetDb) as Transformer;
+      onResume?.(transformer);
+      crashed = true;
+    } catch (err) {
+      assert.fail((err as Error).message);
+    }
+  }
+
+  expect(crashed).to.be.true;
+  return targetDb;
+}
+
+async function transformNoCrash<
+  Transformer extends IModelTransformer
+>(args: {
+  sourceDb: IModelDb;
+  targetDb: IModelDb;
+  transformer: Transformer;
+}): Promise<IModelDb> {
+  const transformer = new IModelTransformer(args.sourceDb, args.targetDb);
+  await transformer.processSchemas();
+  await transformer.processAll();
+  return args.targetDb;
+}
+
 describe("test resuming transformations", () => {
   it("simple single crash transform resumption", async () => {
 
     const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const sourceDb = SnapshotDb.openFile(sourceFileName);
 
-    async function transformWithCrashAndRecover() {
+    const crashingTarget = await (async () => {
       const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationCrash.bim");
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
-      let transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
-      let crashed = false;
+      const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
+      transformer.elementExportsUntilCrash = 10;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      return transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(transformer) {
+        transformer.elementExportsUntilCrash = undefined;
+      }});
+    })();
 
-      try {
-        await transformer.processSchemas();
-        await transformer.processAll();
-      } catch (transformerErr) {
-        try {
-          const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
-          const state = transformer.serializeState(dumpPath);
-          transformer = CountdownToCrashTransformer.resumeTransformation(state, sourceDb, targetDb);
-          transformer.elementExportsUntilCrash = -1; // do not crash this time
-          crashed = true;
-        } catch (err) {
-          assert.fail((err as Error).message);
-        }
-      }
-      expect(crashed).to.be.true;
-      return targetDb;
-    }
-
-    async function transformNoCrash(): Promise<IModelDb> {
+    const regularTarget = await (async () => {
       const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationNoCrash.bim");
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
       const transformer = new IModelTransformer(sourceDb, targetDb);
-      await transformer.processSchemas();
-      await transformer.processAll();
-      return targetDb;
-    }
-
-    const crashingTarget = await transformWithCrashAndRecover();
-    const regularTarget = await transformNoCrash();
+      return transformNoCrash({sourceDb, targetDb, transformer});
+    })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
   });
@@ -187,59 +218,26 @@ describe("test resuming transformations", () => {
   // TRANSFORMER_RESUMPTION_TEST_SINGLE_MODEL_PATH (defaults to the likely invalid "huge-model.bim")
   // change "skip" to "only" to test local models
   it.skip("local test single model", async () => {
-    class CrashingTransformer extends IModelTransformer {
-      public elementExportsUntilCrash = 2_500_000;
-      public override onExportElement(sourceElement: Element): void {
-        if (this.elementExportsUntilCrash === 0) throw Error("crash");
-        const result = super.onExportElement(sourceElement);
-        this.elementExportsUntilCrash--;
-        return result;
-      }
-    }
-
     const sourceDb = SnapshotDb.openFile("./huge-model.bim");
 
-    async function transformWithCrashAndRecover() {
+    const crashingTarget = await (async () => {
       const targetDbPath = "/tmp/huge-model-out.bim";
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
-
-      let transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
+      const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCrash = Number(process.env.TRANSFORMER_RESUMPTION_TEST_SINGLE_MODEL_ELEMENTS_BEFORE_CRASH) || 2_500_000;
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      return transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(transformer) {
+        transformer.elementExportsUntilCrash = undefined;
+      }});
+    })();
 
-      let crashed = false;
-      try {
-        await transformer.processSchemas();
-        await transformer.processAll();
-      } catch (transformerErr) {
-        try {
-          const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
-          const state = transformer.serializeState(dumpPath);
-          transformer = CrashingTransformer.resumeTransformation(state, sourceDb, targetDb);
-          transformer.elementExportsUntilCrash = -1; // do not crash this time
-          crashed = true;
-        } catch (err) {
-          assert.fail((err as Error).message);
-        }
-      }
-
-      expect(crashed).to.be.true;
-
-      return targetDb;
-    }
-
-    async function transformNoCrash(): Promise<IModelDb> {
-      const targetDbPath = "/tmp/shell-out2.bim";
+    const regularTarget = await (async () => {
+      const targetDbPath = "/tmp/huge-model-out.bim";
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
       const transformer = new IModelTransformer(sourceDb, targetDb);
-      await transformer.processSchemas();
-      await transformer.processAll();
-      return targetDb;
-    }
+      return transformNoCrash({sourceDb, targetDb, transformer});
+    })();
 
-    const crashingTarget = await transformWithCrashAndRecover();
-    const regularTarget = await transformNoCrash();
-
-    // TODO: need to make this
     await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
   });
 
@@ -251,11 +249,12 @@ describe("test resuming transformations", () => {
   it.only("crashing transforms stats gauntlet", async () => {
     let crashableCallsMade = 0;
     const { enableCrashes } = setupCrashingNativeAndTransformer({ onCrashableCallMade() { ++crashableCallsMade; } });
+
     async function runAndCompareWithControl(crashingEnabledForThisTest: boolean) {
       const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
       const sourceDb = SnapshotDb.openFile(sourceFileName);
 
-      async function transformWithCrashAndRecover() {
+      async function transformWithMultipleCrashesAndRecover() {
         const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationCrash.bim");
         const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
         let transformer = new CountingTransformer({ source: sourceDb, target: targetDb });
@@ -301,20 +300,18 @@ describe("test resuming transformations", () => {
         return result;
       }
 
-      async function transformNoCrash(): Promise<IModelDb> {
-        enableCrashes(false);
+      const { resultDb: crashingTarget, ...crashingTransformResult } = await transformWithMultipleCrashesAndRecover();
+
+      const regularTarget = await (async () => {
         const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "ResumeTransformationNoCrash.bim");
         const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
         const transformer = new IModelTransformer(sourceDb, targetDb);
-        await transformer.processSchemas();
-        await transformer.processAll();
-        return targetDb;
-      }
-
-      const { resultDb: crashingTarget, ...crashingTransformResult } = await transformWithCrashAndRecover();
-      const regularTarget = await transformNoCrash();
+        enableCrashes(false);
+        return transformNoCrash({sourceDb, targetDb, transformer});
+      })();
 
       await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+
       return crashingTransformResult;
     }
 
