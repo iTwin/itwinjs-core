@@ -72,10 +72,14 @@
     },
     "gcs/default/databases": {
       "type": "array",
-      "description": "array of workspace database aliases. Must be entries in \"workspace/databases\".",
+      "description": "List of GCS workspace database aliases loaded by default. Must be entries in \"workspace/databases\".",
       "items": {
         "type": "string"
-      }
+      },
+      "default": [
+        "gcs/base",
+        "gcs/entire-earth"
+      ]
     },
     "workspace/databases": {
       "type": "array",

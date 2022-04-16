@@ -32,29 +32,25 @@ export const WorkspaceSetting = {
 };
 
 export namespace WorkspaceAccount {
+  /** A member named `accountName` that specifies by a "cloud/accounts" setting */
   export interface Alias { accountName: string }
 
+  /** The properties of a cloud account required to open containers with CloudSqlite. Usually supplied via a "cloud/accounts" setting.
+   * @beta
+   */
   export type Props = CloudSqlite.AccountAccessProps;
 }
 
 export namespace WorkspaceContainer {
   /**
-   * The name of a WorkspaceContainer. This is the user-supplied name of a WorkspaceContainer, used to specify its *purpose* within a workspace.
-   * WorkspaceContainer.Name can be "aliased" by `WorkspaceSetting.Containers` settings so that the resolved [[WorkspaceContainer.Id]] that supplies
-   * the actual container  may vary. Also note that more than one WorkspaceContainer.Name may resolve to the same
-   * WorkspaceContainer.Id, if multiple purposes are served by the same WorkspaceContainer.
-   * @note there are no constraints on the contents or length of `WorkspaceContainer.Name`s, although short descriptive names are recommended.
-   * However, when no alias exists in WorkspaceSetting.Containers for a WorkspaceContainer.Name, then the WorkspaceContainer.Name becomes
-   * the WorkspaceContainer.Id, and the constraints on WorkspaceContainer.Id apply.
+   * The name of a WorkspaceContainer in a "cloud/containers" setting.
    * @beta
    */
   export type Name = string;
 
   /**
    * The unique identifier of a WorkspaceContainer. This becomes the base name for the local directory holding the WorkspaceDbs from a WorkspaceContainer.
-   * `WorkspaceContainer.Name`s are resolved to WorkspaceContainer.Id through `WorkspaceSetting.Containers` settings,
-   * so users may not recognize the actual WorkspaceContainer.Id supplying resources for a WorkspaceDb.Name.
-   *
+   * Usually supplied via the `containerId` member of a "cloud/containers" setting.
    * `WorkspaceContainer.Id`s may:
    *  - only contain lower case letters, numbers or dashes
    *  - not start or end with a dash
@@ -63,6 +59,7 @@ export namespace WorkspaceContainer {
    */
   export type Id = string;
 
+  /** A member named `containerName` that specifies by a "cloud/containers" setting */
   export interface Alias { containerName: string }
 
   /**
@@ -75,7 +72,6 @@ export namespace WorkspaceContainer {
 }
 
 export namespace WorkspaceDb {
-
   export type Alias = string;
 
   /**
@@ -113,7 +109,7 @@ export namespace WorkspaceDb {
   }
 
   /**
-   * Type of version to increment.
+   * Scope of increment for a version number.
    * @see semver.ReleaseType
    */
   export type VersionIncrement = "major" | "minor" | "patch";
@@ -204,6 +200,9 @@ export interface WorkspaceOpts {
 
   /** Properties for the cloud cache for the `WorkspaceContainers` of the Workspace. */
   cloudCacheProps?: WorkspaceCloudCacheProps;
+
+  /** the name of one or more settings files to load. */
+  settingsFiles?: LocalFileName | [LocalFileName];
 }
 
 /**
@@ -308,6 +307,12 @@ export class ITwinWorkspace implements Workspace {
     this.settings = settings;
     this.containerDir = opts?.containerDir ?? join(NativeLibrary.defaultLocalDir, "iTwin", "Workspace");
     this._cloudCacheProps = opts?.cloudCacheProps;
+    let settingsFiles = opts?.settingsFiles;
+    if (settingsFiles) {
+      if (typeof settingsFiles === "string")
+        settingsFiles = [settingsFiles];
+      settingsFiles.forEach((file) => settings.addFile(file, SettingsPriority.application));
+    }
   }
 
   public addContainer(toAdd: ITwinWorkspaceContainer) {

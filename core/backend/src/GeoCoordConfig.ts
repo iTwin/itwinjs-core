@@ -45,6 +45,7 @@ export class GeoCoordConfig {
       if (!IModelHost.platform.addGcsWorkspaceDb(gcsDbName, cloudContainer, dbProps.priority))
         return; // already had this db
 
+      IModelHost.platform.enableLocalGcsFiles(false);
       Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
@@ -94,7 +95,6 @@ export class GeoCoordConfig {
     if (!this._defaultDbsLoaded) {
       this._defaultDbsLoaded = true;
       this.loadAll(IModelHost.appWorkspace.settings, "gcs/default/databases");
-      IModelHost.platform.setLoadLocalGcsFiles(false);
     }
   }
 

@@ -420,6 +420,7 @@ export class IModelHost {
     IModelHost.setupTileCache();
 
     this.platform.setUseTileCache(IModelHost.tileCacheService ? false : true);
+    process.once("beforeExit", IModelHost.shutdown);
     IModelHost.onAfterStartup.raiseEvent();
   }
 
