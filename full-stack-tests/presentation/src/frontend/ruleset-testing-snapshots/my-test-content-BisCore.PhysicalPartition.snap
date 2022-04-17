@@ -3,7 +3,7 @@
 exports[`BisCore.PhysicalPartition`] = `
 Array [
   PropertyRecord {
-    "description": "Ñót spêçìfíêd",
+    "description": "DgnV8Bridge",
     "isReadonly": true,
     "property": Object {
       "displayLabel": "Model",
@@ -11,7 +11,7 @@ Array [
       "typename": "navigation",
     },
     "value": Object {
-      "displayValue": "Ñót spêçìfíêd",
+      "displayValue": "DgnV8Bridge",
       "value": Object {
         "className": "BisCore:RepositoryModel",
         "id": "0x1",
@@ -75,7 +75,7 @@ Array [
           "value": Object {
             "members": Object {
               "pc_bis_Element_Model_2": PropertyRecord {
-                "description": "Ñót spêçìfíêd",
+                "description": "DgnV8Bridge",
                 "isReadonly": true,
                 "property": Object {
                   "displayLabel": "Model",
@@ -83,7 +83,7 @@ Array [
                   "typename": "navigation",
                 },
                 "value": Object {
-                  "displayValue": "Ñót spêçìfíêd",
+                  "displayValue": "DgnV8Bridge",
                   "value": Object {
                     "className": "BisCore:RepositoryModel",
                     "id": "0x1",

@@ -205,6 +205,9 @@ public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
 beta;MultiElementPropertiesRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 
+beta;NavigationPropertyInfo
+beta;NavigationPropertyInfo
+beta;NavigationPropertyInfoJSON
 public;NavigationRule = RootNodeRule | ChildNodeRule
 public;NavigationRuleBase 
 public;NestedContentField 
