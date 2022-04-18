@@ -1,26 +1,26 @@
 sep=;
 Release Tag;API Item
 internal;AccuDraw
-internal;AccuDrawChangeModeTool
+internal;AccuDrawChangeModeTool 
 internal;AccudrawData
 internal;AccuDrawFlags
 public;AccuDrawHintBuilder
-internal;AccuDrawRotateAxesTool
-internal;AccuDrawRotateCycleTool
-internal;AccuDrawRotateElementTool
-internal;AccuDrawRotateFrontTool
-internal;AccuDrawRotateSideTool
-internal;AccuDrawRotateTopTool
-internal;AccuDrawRotateViewTool
-internal;AccuDrawSetLockAngleTool
-internal;AccuDrawSetLockDistanceTool
-internal;AccuDrawSetLockSmartTool
-internal;AccuDrawSetLockXTool
-internal;AccuDrawSetLockYTool
-internal;AccuDrawSetLockZTool
-internal;AccuDrawSetOriginTool
+internal;AccuDrawRotateAxesTool 
+internal;AccuDrawRotateCycleTool 
+internal;AccuDrawRotateElementTool 
+internal;AccuDrawRotateFrontTool 
+internal;AccuDrawRotateSideTool 
+internal;AccuDrawRotateTopTool 
+internal;AccuDrawRotateViewTool 
+internal;AccuDrawSetLockAngleTool 
+internal;AccuDrawSetLockDistanceTool 
+internal;AccuDrawSetLockSmartTool 
+internal;AccuDrawSetLockXTool 
+internal;AccuDrawSetLockYTool 
+internal;AccuDrawSetLockZTool 
+internal;AccuDrawSetOriginTool 
 alpha;AccuDrawShortcuts
-public;AccuSnap
+public;AccuSnap 
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
@@ -28,16 +28,16 @@ alpha;ActivationEvent = "onStartup"
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
-internal;AlternateUnitLabelsRegistry
-beta;AngleDescription
-internal;AnimatedTreeReference
+internal;AlternateUnitLabelsRegistry 
+beta;AngleDescription 
+internal;AnimatedTreeReference 
 internal;AnimationBranchState
 internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
-internal;ArcGISMapLayerImageryProvider
+internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISTileMap
 internal;ArcGisToken
 internal;ArcGisTokenClientType
@@ -47,34 +47,34 @@ internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
 internal;AttachToViewportArgs
-public;AuxCoordSystem2dState
-public;AuxCoordSystem3dState
-public;AuxCoordSystemSpatialState
-public;class AuxCoordSystemState
-internal;AzureMapsLayerImageryProvider
-internal;B3dmReader
+public;AuxCoordSystem2dState 
+public;AuxCoordSystem3dState 
+public;AuxCoordSystemSpatialState 
+public;class AuxCoordSystemState 
+internal;AzureMapsLayerImageryProvider 
+internal;B3dmReader 
 internal;BackgroundMapGeometry
-beta;class BaseUnitFormattingSettingsProvider
+beta;class BaseUnitFormattingSettingsProvider 
 internal;BatchedTileIdMap
 public;BatchOptions
 public;BeButton
-public;BeButtonEvent
+public;BeButtonEvent 
 public;BeButtonEventProps
 public;BeButtonState
 public;BeModifierKeys
-public;BeTouchEvent
-public;BeTouchEventProps
-public;BeWheelEvent
-public;BeWheelEventProps
+public;BeTouchEvent 
+public;BeTouchEventProps 
+public;BeWheelEvent 
+public;BeWheelEventProps 
 public;BingElevationProvider
 public;BingLocationProvider
-internal;BingMapsImageryLayerProvider
-public;BlankConnection
+internal;BingMapsImageryLayerProvider 
+public;BlankConnection 
 public;BlankConnectionProps
-public;BriefcaseConnection
+public;BriefcaseConnection 
 alpha;BriefcaseEditorToolSettings
-public;class BriefcaseNotificationHandler
-public;BriefcaseTxns
+public;class BriefcaseNotificationHandler 
+public;BriefcaseTxns 
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -82,20 +82,20 @@ public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
-public;CategorySelectorState
+public;CategorySelectorState 
 internal;CesiumIonAssetProvider
 internal;ChangeFlag
 public;ChangeFlags
 public;ChangeViewedModel2dOptions
-public;CheckboxFormatPropEditorSpec
-public;CheckpointConnection
+public;CheckboxFormatPropEditorSpec 
+public;CheckpointConnection 
 public;ClipEventType
 public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
 alpha;CompassMode
 public;ComputeChordToleranceArgs
 internal;ContextMode
-public;ContextRealityModelState
+public;ContextRealityModelState 
 public;ContextRotationId
 internal;ContextShareProvider
 public;CoordinateLockOverrides
@@ -118,43 +118,43 @@ public;CreateTextureFromSourceArgs
 internal;CurrentInputState
 internal;CurrentState
 public;CustomFormatPropEditorSpec
-public;CustomGraphicBuilderOptions
-public;CustomQuantityTypeDefinition
+public;CustomGraphicBuilderOptions 
+public;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
-public;DecorateContext
-public;Decorations
+public;DecorateContext 
+public;Decorations 
 internal;DecorationsCache
-public;Decorator
-internal;DefaultViewTouchTool
-internal;DefineACSByElementTool
-internal;DefineACSByPointsTool
+public;Decorator 
+internal;DefaultViewTouchTool 
+internal;DefineACSByElementTool 
+internal;DefineACSByPointsTool 
 public;DepthPointOptions
 public;DepthPointSource
 public;DepthRangeNpc
 internal;DevTools
-public;DisclosedTileTreeSet
-public;DisplayStyle2dState
-public;DisplayStyle3dState
-public;class DisplayStyleState
+public;DisclosedTileTreeSet 
+public;DisplayStyle2dState 
+public;DisplayStyle3dState 
+public;class DisplayStyleState 
 internal;disposeTileTreesForGeometricModels(modelIds: Set
 public;DownloadBriefcaseId =
 public;DownloadBriefcaseOptions = DownloadBriefcaseId &
 internal;DrawClipOptions
-public;DrawingModelState
-public;DrawingViewState
-internal;class DynamicIModelTile
-public;DynamicsContext
+public;DrawingModelState 
+public;DrawingViewState 
+internal;class DynamicIModelTile 
+public;DynamicsContext 
 public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
 public;ElementLocateManager
 public;ElementPicker
-alpha;class ElementSetTool
-public;ElementState
-internal;EllipsoidTerrainProvider
-public;EmphasizeElements
-beta;EngineeringLengthDescription
-public;EntityState
+alpha;class ElementSetTool 
+public;ElementState 
+internal;EllipsoidTerrainProvider 
+public;EmphasizeElements 
+beta;EngineeringLengthDescription 
+public;EntityState 
 internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
@@ -168,14 +168,14 @@ internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeigh
 public;FeatureOverrideProvider
 public;FeatureSymbology
 alpha;Source
-public;FitViewTool
+public;FitViewTool 
 internal;Flags
 public;FlashMode
 public;FlashSettings
 public;FlashSettingsOptions = Mutable
-public;FlyViewTool
+public;FlyViewTool 
 internal;formatAnimationBranchId(modelId: Id64String, branchId: number): string
-beta;class FormattedQuantityDescription
+beta;class FormattedQuantityDescription 
 public;FormatterParserSpecsProvider
 public;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
@@ -188,16 +188,16 @@ public;FrontendHubAccess
 public;FrontendLoggerCategory
 public;FrontendSecurityOptions
 public;Frustum2d
-public;FrustumAnimator
+public;FrustumAnimator 
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
 internal;GeoConverter
-internal;GeographicTilingScheme
-public;GeometricModel2dState
-public;GeometricModel3dState
-public;class GeometricModelState
-beta;GeometryTileTreeReference
+internal;GeographicTilingScheme 
+public;GeometricModel2dState 
+public;GeometricModel3dState 
+public;class GeometricModelState 
+beta;GeometryTileTreeReference 
 internal;GeoServices
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
@@ -213,48 +213,48 @@ public;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 public;GlobalAlignmentOptions
 public;GlobalLocation
 public;GlobalLocationArea
-public;GlobeAnimator
-internal;Gltf
+public;GlobeAnimator 
+internal;Gltf 
 internal;Gltf1Id = string
 internal;Gltf2Id = number
 internal;GltfBufferData
 internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
 internal;GltfDataType
-internal;GltfGraphicsReader
-internal;GltfHeader
+internal;GltfGraphicsReader 
+internal;GltfHeader 
 internal;GltfId = Gltf1Id | Gltf2Id
 internal;GltfMeshData
 internal;GltfNode = Gltf1Node | Gltf2Node
 internal;class GltfReader
 internal;GltfReaderArgs
 internal;GltfReaderProps
-internal;GltfReaderResult
+internal;GltfReaderResult 
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
 public;GpuMemoryLimits
-public;GraphicalEditingScope
+public;GraphicalEditingScope 
 public;GraphicArc
 public;GraphicArc2d
-public;GraphicBranch
+public;GraphicBranch 
 internal;GraphicBranchFrustum
 public;GraphicBranchOptions
 public;class GraphicBuilder
 public;GraphicBuilderOptions
 public;GraphicLineString
-public;GraphicLineString2d
+public;GraphicLineString2d 
 public;GraphicList = RenderGraphic[]
 public;GraphicLoop
 public;GraphicPath
 public;GraphicPointString
-public;GraphicPointString2d
+public;GraphicPointString2d 
 public;GraphicPolyface
 public;GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface | GraphicSolidPrimitive
 public;GraphicPrimitive2d
 internal;GraphicsCollector
-internal;GraphicsCollectorDrawArgs
+internal;GraphicsCollectorDrawArgs 
 public;GraphicShape
-public;GraphicShape2d
+public;GraphicShape2d 
 public;GraphicSolidPrimitive
 public;GraphicType
 internal;GroundPlaneDecorations
@@ -269,45 +269,45 @@ public;HitListHolder
 public;HitParentGeomType
 public;HitPriority
 public;HitSource
-internal;I3dmReader
+internal;I3dmReader 
 public;IconSprites
-public;IdleTool
+public;IdleTool 
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
-internal;ImageryMapLayerFormat
-internal;ImageryMapLayerTreeReference
-internal;ImageryMapTile
-internal;ImageryMapTileTree
-internal;ImageryTileContent
+internal;ImageryMapLayerFormat 
+internal;ImageryMapLayerTreeReference 
+internal;ImageryMapTile 
+internal;ImageryMapTileTree 
+internal;ImageryTileContent 
 internal;Imdl
 internal;ImdlReader
 internal;ImdlReaderCreateArgs
-internal;ImdlReaderResult
+internal;ImdlReaderResult 
 public;IModelApp
 public;IModelAppOptions
-public;class IModelConnection
+public;class IModelConnection 
 public;IModelConnection
 internal;IModelFrameLifecycle
 public;IModelIdArg
 public;IModelRoutingContext
-internal;IModelTile
-internal;IModelTileContent
-internal;IModelTileParams
+internal;IModelTile 
+internal;IModelTileContent 
+internal;IModelTileParams 
 internal;iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | undefined): IModelTileParams
 internal;IModelTileRequestChannels
-internal;IModelTileTree
+internal;IModelTileTree 
 internal;IModelTileTreeOptions
-internal;IModelTileTreeParams
+internal;IModelTileTreeParams 
 internal;iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams
-public;class InputCollector
+public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
-public;class InteractiveTool
+public;class InteractiveTool 
 internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
-public;IntersectDetail
+public;IntersectDetail 
 public;IpcApp
 public;IpcAppOptions
 public;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
@@ -319,29 +319,29 @@ beta;ITwinIdArg
 public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
 internal;KeyinStatus
-beta;LengthDescription
+beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
 internal;LocalhostIpcApp
 internal;LocalHostIpcAppOpts
-beta;LocalUnitFormatProvider
+beta;LocalUnitFormatProvider 
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
 public;LocateResponse
 internal;LockedStates
-public;LookAndMoveTool
+public;LookAndMoveTool 
 beta;LookAtArgs
-beta;LookAtOrthoArgs
-beta;LookAtPerspectiveArgs
-beta;LookAtUsingLensAngle
-public;LookViewTool
+beta;LookAtOrthoArgs 
+beta;LookAtPerspectiveArgs 
+beta;LookAtUsingLensAngle 
+public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode
 public;ManipulatorToolEvent
-internal;MapBoxLayerImageryProvider
-internal;MapCartoRectangle
+internal;MapBoxLayerImageryProvider 
+internal;MapCartoRectangle 
 alpha;MapFeatureInfo
-alpha;MapFeatureInfoRecord
+alpha;MapFeatureInfoRecord 
 internal;MapLayerAuthenticationInfo
 beta;MapLayerAuthType
 internal;MapLayerClassifiers = Map
@@ -356,31 +356,31 @@ internal;MapLayerSource
 internal;MapLayerSources
 internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation
-internal;class MapLayerTileTreeReference
+internal;class MapLayerTileTreeReference 
 internal;MapLayerTokenEndpoint
 alpha;MapSubLayerFeatureInfo
-internal;MapTile
-internal;MapTiledGraphicsProvider
-internal;MapTileLoader
+internal;MapTile 
+internal;MapTiledGraphicsProvider 
+internal;MapTileLoader 
 internal;class MapTileProjection
-internal;MapTileTree
-internal;MapTileTreeReference
+internal;MapTileTree 
+internal;MapTileTreeReference 
 internal;class MapTilingScheme
 public;MarginOptions
 public;MarginPercent
-public;Marker
+public;Marker 
 public;MarkerFillStyle = string | CanvasGradient | CanvasPattern
 public;MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap
 public;class MarkerSet
 public;MarkerTextAlign = "left" | "right" | "center" | "start" | "end"
 public;MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom"
-public;MeasureAreaByPointsTool
-public;MeasureAreaTool
-public;MeasureDistanceTool
-public;class MeasureElementTool
-public;MeasureLengthTool
-public;MeasureLocationTool
-public;MeasureVolumeTool
+public;MeasureAreaByPointsTool 
+public;MeasureAreaTool 
+public;MeasureDistanceTool 
+public;class MeasureElementTool 
+public;MeasureLengthTool 
+public;MeasureLocationTool 
+public;MeasureVolumeTool 
 public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
@@ -389,40 +389,40 @@ internal;MockRender
 internal;ModalOptions
 internal;ModalReturn
 beta;ModelDisplayTransformProvider
-internal;ModelMapLayerTileTreeReference
-public;ModelSelectorState
-public;ModelState
+internal;ModelMapLayerTileTreeReference 
+public;ModelSelectorState 
+public;ModelState 
 alpha;ModifyElementSource
-internal;MutableChangeFlags
+internal;MutableChangeFlags 
 public;NativeApp
 internal;NativeAppLogger
-public;NativeAppOpts
+public;NativeAppOpts 
 internal;NoRenderApp
 public;class NotificationHandler
-public;NotificationManager
+public;NotificationManager 
 public;NotifyMessageDetails
-internal;NullRenderSystem
-internal;NullTarget
-internal;OffScreenTarget
-public;OffScreenViewport
+internal;NullRenderSystem 
+internal;NullTarget 
+internal;OffScreenTarget 
+public;OffScreenViewport 
 public;OffScreenViewportOptions
 internal;OldTextureImage
 public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
-internal;OnScreenTarget
+internal;OnScreenTarget 
 public;OnViewExtentsError
 internal;OPCFormatInterpreter
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
+internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
-internal;OrbitGtTileTree
-public;OrthographicViewState
+public;OrthographicViewState 
 public;OsmBuildingDisplayOptions
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
 public;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
-public;PanViewTool
+public;PanViewTool 
 public;ParseAndRunResult
 public;ParsedKeyin
 public;ParseKeyinError
@@ -430,12 +430,12 @@ public;ParseKeyinResult = ParsedKeyin | ParseKeyinError
 public;ParticleCollectionBuilder
 public;ParticleCollectionBuilder
 public;ParticleCollectionBuilderParams
-public;ParticleProps
+public;ParticleProps 
 internal;PatternGraphicParams
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
-public;PhysicalModelState
-public;PickableGraphicOptions
+public;PhysicalModelState 
+public;PickableGraphicOptions 
 internal;PingTestResult
 public;Pixel
 internal;PlanarClassifierMap = Map
@@ -444,15 +444,15 @@ beta;PlanarClipMaskState
 alpha;PlanarGridProps
 alpha;PlanarGridTransparency
 internal;PlanarTilePatch
-beta;PreferenceArg
+beta;PreferenceArg 
 beta;PreferenceKeyArg
-public;class PrimitiveTool
+public;class PrimitiveTool 
 internal;PrimitiveVisibility
 alpha;PublisherProductInfo
 internal;QuadId
 public;QuantityFormatOverridesChangedArgs
 public;QuantityFormatsChangedArgs
-public;QuantityFormatter
+public;QuantityFormatter 
 public;QuantityType
 public;QuantityTypeArg = QuantityType | string
 public;QuantityTypeDefinition
@@ -468,9 +468,9 @@ public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId:
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
-internal;ReadonlyTileUserSet
+internal;ReadonlyTileUserSet 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
-alpha;RealityDataError
+alpha;RealityDataError 
 beta;RealityDataSource
 beta;RealityDataSource
 internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey
@@ -479,60 +479,60 @@ alpha;createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider
 alpha;createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined
 alpha;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
 internal;RealityModelSource = ViewState | DisplayStyleState
-internal;RealityModelTileTree
+internal;RealityModelTileTree 
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
-internal;RealityTile
-internal;RealityTileContent
-internal;RealityTileDrawArgs
+internal;RealityTile 
+internal;RealityTileContent 
+internal;RealityTileDrawArgs 
 alpha;RealityTileGeometry
 internal;class RealityTileLoader
-internal;RealityTileParams
+internal;RealityTileParams 
 internal;RealityTileRegion
-internal;RealityTileTree
-internal;RealityTileTreeParams
-internal;RealityTreeReference
+internal;RealityTileTree 
+internal;RealityTileTreeParams 
+internal;RealityTreeReference 
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics
 internal;RenderGeometry = IDisposable & RenderMemory.Consumer
-public;class RenderGraphic
-public;class RenderGraphicOwner
+public;class RenderGraphic 
+public;class RenderGraphicOwner 
 internal;RenderMaterialSource
 internal;RenderMemory
 internal;RenderPlan
-internal;class RenderPlanarClassifier
-internal;RenderScheduleState
+internal;class RenderPlanarClassifier 
+internal;RenderScheduleState 
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
 internal;RenderSkyCubeParams
 internal;RenderSkyGradientParams
 internal;RenderSkySphereParams
-public;class RenderSystem
+public;class RenderSystem 
 public;RenderSystem
 beta;RenderSystemDebugControl
-internal;class RenderTarget
+internal;class RenderTarget 
 internal;RenderTargetDebugControl
-internal;class RenderTerrainGeometry
-internal;class RenderTextureDrape
+internal;class RenderTerrainGeometry 
+internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 alpha;ResolveFunc = () => Promise
 internal;RootIModelTile = Tile &
-public;RotateViewTool
+public;RotateViewTool 
 alpha;RotationMode
 internal;RoundOff
 internal;SavedState
 public;Scene
-public;SceneContext
+public;SceneContext 
 internal;SceneVolumeClassifier
 public;ScreenSpaceEffectBuilder
 public;ScreenSpaceEffectBuilderParams
 public;ScreenSpaceEffectContext
 public;ScreenSpaceEffectSource
-public;ScreenViewport
-public;ScrollViewTool
+public;ScreenViewport 
+public;ScrollViewTool 
 internal;SectionDrawingInfo
-public;SectionDrawingModelState
+public;SectionDrawingModelState 
 public;SelectAddEvent
 internal;SelectedAndReadyTiles
 public;SelectedViewportChangedArgs
@@ -542,50 +542,50 @@ public;SelectionProcessing
 public;SelectionSet
 public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
 public;SelectionSetEventType
-public;SelectionTool
+public;SelectionTool 
 internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
-public;SetupCameraTool
-public;SetupWalkCameraTool
-public;SheetModelState
-public;SheetViewState
+public;SetupCameraTool 
+public;SetupWalkCameraTool 
+public;SheetModelState 
+public;SheetViewState 
 internal;ShouldAbortImdlReader = (reader: ImdlReader) => boolean
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
 internal;SkyBoxDecorations
-public;SnapDetail
+public;SnapDetail 
 public;SnapHeat
 public;SnapMode
-public;SnapshotConnection
+public;SnapshotConnection 
 public;SnapStatus
-internal;class SpatialClassifierTileTreeReference
+internal;class SpatialClassifierTileTreeReference 
 alpha;SpatialLocationAndExtents
-public;SpatialLocationModelState
-public;SpatialModelState
+public;SpatialLocationModelState 
+public;SpatialModelState 
+internal;SpatialTileTreeReferences 
 internal;SpatialTileTreeReferences
-internal;SpatialTileTreeReferences
-public;SpatialViewState
+public;SpatialViewState 
 public;Sprite
-public;SpriteLocation
+public;SpriteLocation 
 public;StandardView
 public;StandardViewId
-public;StandardViewTool
+public;StandardViewTool 
 public;StartOrResume
 public;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
-beta;SurveyLengthDescription
+beta;SurveyLengthDescription 
 internal;SuspendedToolState
-internal;class Target
+internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
 internal;TerrainDisplayOverrides
 internal;class TerrainMeshProvider
 internal;TerrainTexture
-internal;TerrainTileContent
-public;TextInputFormatPropEditorSpec
-public;TextSelectFormatPropEditorSpec
+internal;TerrainTileContent 
+public;TextInputFormatPropEditorSpec 
+public;TextSelectFormatPropEditorSpec 
 public;TextureCacheKey = string | Gradient.Symb
 public;TextureCacheOwnership
 internal;TextureDrapeMap = Map
@@ -626,12 +626,12 @@ public;TileTreeOwner
 public;TileTreeParams
 public;class TileTreeReference
 public;TileTreeSupplier
-internal;TileUrlImageryProvider
+internal;TileUrlImageryProvider 
 public;TileUsageMarker
 public;TileUser
 public;TileUser
-internal;TileUserIdSet
-internal;TileUserIdSets
+internal;TileUserIdSet 
+internal;TileUserIdSets 
 public;TileVisibility
 beta;TokenArg
 public;Tool
@@ -651,84 +651,84 @@ internal;ToolState
 public;ToolTipOptions
 internal;ToolTipProvider
 public;ToolType = typeof Tool
-internal;TouchCursor
+internal;TouchCursor 
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
 public;tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
-public;TwoWayViewportFrustumSync
+public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
 public;Uniform
-public;UniformArrayParams
+public;UniformArrayParams 
 public;UniformContext
 public;UniformParams
 public;UniformType
 internal;UniqueTileUserSets
 public;UnitFormattingSettingsProvider
 public;UnitNameKey = string
-internal;UpsampledMapTile
+internal;UpsampledMapTile 
 beta;UserPreferencesAccess
 public;VaryingType
 public;ViewAnimationOptions
-public;ViewChangeOptions
-public;ViewClipByElementTool
-public;ViewClipByPlaneTool
-public;ViewClipByRangeTool
-public;ViewClipByShapeTool
-public;ViewClipClearTool
+public;ViewChangeOptions 
+public;ViewClipByElementTool 
+public;ViewClipByPlaneTool 
+public;ViewClipByRangeTool 
+public;ViewClipByShapeTool 
+public;ViewClipClearTool 
 internal;ViewClipControlArrow
-internal;ViewClipDecoration
-public;ViewClipDecorationProvider
+internal;ViewClipDecoration 
+public;ViewClipDecorationProvider 
 public;ViewClipEventHandler
-internal;class ViewClipModifyTool
-internal;ViewClipPlanesModifyTool
-internal;ViewClipShapeModifyTool
-public;ViewClipTool
+internal;class ViewClipModifyTool 
+internal;ViewClipPlanesModifyTool 
+internal;ViewClipShapeModifyTool 
+public;ViewClipTool 
 public;ViewCreator2d
 public;ViewCreator2dOptions
 public;ViewCreator3d
 public;ViewCreator3dOptions
 internal;viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight?: number, pitchAngleRadians?: number, location?: GlobalLocation): number
 internal;ViewGlobalLocationConstants
-public;ViewGlobeBirdTool
-public;ViewGlobeIModelTool
-public;ViewGlobeLocationTool
-public;ViewGlobeSatelliteTool
+public;ViewGlobeBirdTool 
+public;ViewGlobeIModelTool 
+public;ViewGlobeLocationTool 
+public;ViewGlobeSatelliteTool 
 internal;ViewHandleArray
 internal;ViewHandleType
 public;ViewingSpace
 internal;class ViewingToolHandle
-public;ViewManager
-public;class ViewManip
-public;class Viewport
+public;ViewManager 
+public;class ViewManip 
+public;class Viewport 
 public;ViewportDecorator
-public;ViewportGraphicBuilderOptions
+public;ViewportGraphicBuilderOptions 
 public;class ViewPose
-internal;ViewPose2d
-internal;ViewPose3d
+internal;ViewPose2d 
+internal;ViewPose3d 
 public;ViewRect
-public;ViewRedoTool
-public;class ViewState
-public;class ViewState2d
-public;class ViewState3d
+public;ViewRedoTool 
+public;class ViewState 
+public;class ViewState2d 
+public;class ViewState3d 
 public;ViewStatus
-public;ViewToggleCameraTool
-public;class ViewTool
+public;ViewToggleCameraTool 
+public;class ViewTool 
 public;ViewUndoEvent
-public;ViewUndoTool
+public;ViewUndoTool 
 beta;VisibleFeature
-public;WalkViewTool
+public;WalkViewTool 
 internal;WebMercatorProjection
-internal;WebMercatorTilingScheme
+internal;WebMercatorTilingScheme 
 internal;WheelEventProcessor
-public;WindowAreaTool
+public;WindowAreaTool 
 internal;WmsCapabilities
 internal;WmsCapability
 internal;WmsCrsSupport
-internal;WmsMapLayerImageryProvider
+internal;WmsMapLayerImageryProvider 
 internal;WmsUtilities
 internal;WmtsCapabilities
 internal;WmtsCapability
-internal;WmtsMapLayerImageryProvider
+internal;WmtsMapLayerImageryProvider 
 public;ZoomToOptions
-public;ZoomViewTool
+public;ZoomViewTool 
