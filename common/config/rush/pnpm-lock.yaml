@@ -1797,10 +1797,12 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
+      '@itwin/ecschema-rpcinterface-impl': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-access-frontend': ^1.0.1
+      '@itwin/imodels-client-authoring': ^1.0.1
       '@itwin/imodels-client-management': ^1.0.1
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/presentation-common': workspace:*
@@ -1838,8 +1840,10 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
+      '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
       '@itwin/imodels-access-backend': 1.0.1
       '@itwin/imodels-access-frontend': 1.0.1
+      '@itwin/imodels-client-authoring': 1.0.1
       '@itwin/imodels-client-management': 1.0.1
       '@itwin/oidc-signin-tool': 3.4.0
       '@itwin/presentation-common': link:../../presentation/common
