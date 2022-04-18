@@ -7,17 +7,19 @@ import { expect } from "chai";
 import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-describe("SettingsRegistry", () => {
+describe("SettingsSchemas", () => {
 
-  it("register groups", () => {
+  it("add groups", () => {
     SettingsSchemas.reset();
 
     // can't add a group with no name
-    expect(() => SettingsSchemas.addGroup({} as any)).to.throw("settings group has no name");
+    let problems = SettingsSchemas.addGroup({} as any);
+    expect(problems.length).equals(1);
+    expect(problems[0]).contains(`has no "groupName" member`);
 
     SettingsSchemas.addGroup({ groupName: "app1" } as any);
 
-    const problems = SettingsSchemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
+    problems = SettingsSchemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
     expect(problems.length).equals(0);
 
     expect(SettingsSchemas.allSchemas.get("app1/list/openMode")!.type).equals("string");

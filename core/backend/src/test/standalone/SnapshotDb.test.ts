@@ -24,14 +24,14 @@ describe("SnapshotDb.refreshContainerSas", () => {
   };
 
   const mockCheckpointV2 = {
-    accessName: "testAccount",
+    accountName: "testAccount",
     containerId: "imodelblocks-123",
-    accessToken: makeToken("2021-01-01T01:00:00Z"),
+    sasToken: makeToken("2021-01-01T01:00:00Z"),
     dbName: "testDb",
     storageType: "azure?sas=1",
   };
 
-  const cloudContainer = { accessToken: mockCheckpointV2.accessToken };
+  const cloudContainer = { accessToken: mockCheckpointV2.sasToken };
   const fakeSnapshotDb: any = {
     cloudContainer,
     isReadonly: () => true,
@@ -57,7 +57,7 @@ describe("SnapshotDb.refreshContainerSas", () => {
 
     const userAccessToken = "token";
     const checkpoint = await SnapshotDb.openCheckpointV2({ accessToken: userAccessToken, iTwinId, iModelId, changeset, reattachSafetySeconds: 60 });
-    expect(checkpoint.nativeDb.cloudContainer?.accessToken).equal(mockCheckpointV2.accessToken);
+    expect(checkpoint.nativeDb.cloudContainer?.accessToken).equal(mockCheckpointV2.sasToken);
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
 
@@ -70,7 +70,7 @@ describe("SnapshotDb.refreshContainerSas", () => {
 
     clock.setSystemTime(Date.parse("2021-01-01T00:59:10Z")); // after safety period
 
-    mockCheckpointV2.accessToken = makeToken("2021-01-01T02:00:00Z");
+    mockCheckpointV2.sasToken = makeToken("2021-01-01T02:00:00Z");
     const attachPromise = checkpoint.refreshContainerSas("");
     const promise2 = checkpoint.refreshContainerSas(""); // gets copy of first promise
     const promise3 = checkpoint.refreshContainerSas(""); // "
@@ -90,7 +90,7 @@ describe("SnapshotDb.refreshContainerSas", () => {
     expect(infoLogStub.args[1][1]).include("refreshed checkpoint sasToken");
 
     clock.setSystemTime(Date.parse("2021-01-01T03:00:00Z"));
-    mockCheckpointV2.accessToken = makeToken("2021-01-01T03:00:10Z"); // an expiry within safety interval should cause error log
+    mockCheckpointV2.sasToken = makeToken("2021-01-01T03:00:10Z"); // an expiry within safety interval should cause error log
     await checkpoint.refreshContainerSas("");
     expect(errorLogStub.callCount).equal(1);
     expect(errorLogStub.args[0][1]).include("timestamp that expires before safety interval");
@@ -98,7 +98,7 @@ describe("SnapshotDb.refreshContainerSas", () => {
     queryStub.resetHistory();
     errorLogStub.resetHistory();
     infoLogStub.resetHistory();
-    mockCheckpointV2.accessToken = makeToken("2021-01-01T04:00:10Z"); // expiry after safety interval
+    mockCheckpointV2.sasToken = makeToken("2021-01-01T04:00:10Z"); // expiry after safety interval
     clock.setSystemTime(Date.parse("2021-01-01T03:00:02Z"));
     // next call to reattach daemon should work fine and correct problem
     await checkpoint.refreshContainerSas("");

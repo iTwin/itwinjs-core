@@ -2040,9 +2040,9 @@ describe("iModel", () => {
 
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
-      accessName: "testAccount",
+      accountName: "testAccount",
       containerId: "imodelblocks-123",
-      accessToken: "testSAS",
+      sasToken: "testSAS",
       dbName: "testDb",
       storageType: "azure?sas=1",
     };

@@ -130,6 +130,11 @@ export class V2CheckpointManager {
     }
     return container;
   }
+  private static toCloudContainerProps(from: V2CheckpointAccessProps): CloudSqlite.ContainerAccessProps {
+    return { ...from, accessName: from.accountName, accessToken: from.sasToken };
+
+  }
+
   public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: IModelJsNative.CloudContainer }> {
 
     let v2props: V2CheckpointAccessProps | undefined;
@@ -142,7 +147,7 @@ export class V2CheckpointManager {
     }
 
     try {
-      const container = this.getContainer(v2props);
+      const container = this.getContainer(this.toCloudContainerProps(v2props));
       container.connect(this.daemonCache);
       return { dbName: v2props.dbName, container };
     } catch (e: any) {
@@ -161,7 +166,7 @@ export class V2CheckpointManager {
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
     CheckpointManager.onDownloadV2.raiseEvent(job);
-    const container = new IModelHost.platform.CloudContainer(v2props);
+    const container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2props));
     await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
     return request.checkpoint.changeset.id;
   }

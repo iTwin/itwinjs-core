@@ -31,11 +31,11 @@ describe("Cloud workspace containers", () => {
     const testDbName = "testDb";
 
     await initializeContainer(containerId);
-    const wsCont1 = workspace1.getContainer({ ...CloudSqliteTest.storage, containerId, writeable: true, accessToken: CloudSqliteTest.makeSasToken(containerId, "rwadl") });
+    const wsCont1 = workspace1.getContainer({ containerId, writeable: true, accessToken: CloudSqliteTest.makeSasToken(containerId, "rwadl") }, CloudSqliteTest.storage);
 
     const makeVersion = async (version?: string) => {
-      assert(undefined !== wsCont1.cloudContainer);
-      await CloudSqlite.withWriteLock("Cloud workspace test", wsCont1.cloudContainer, async () => {
+      expect(wsCont1.cloudContainer).not.undefined;
+      await CloudSqlite.withWriteLock("Cloud workspace test", wsCont1.cloudContainer!, async () => {
         const wsDbEdit = new EditableWorkspaceDb({ dbName: testDbName }, wsCont1);
         try {
           await wsDbEdit.createDb(version);
@@ -62,7 +62,7 @@ describe("Cloud workspace containers", () => {
 
     expect(wsCont1.cloudContainer?.hasWriteLock).false;
 
-    const wsCont2 = workspace2.getContainer({ ...CloudSqliteTest.storage, containerId, accessToken: CloudSqliteTest.makeSasToken(containerId, "rl") });
+    const wsCont2 = workspace2.getContainer({ containerId, accessToken: CloudSqliteTest.makeSasToken(containerId, "rl") }, CloudSqliteTest.storage);
     const ws2Cloud = wsCont2.cloudContainer;
     assert(ws2Cloud !== undefined);
 
@@ -85,7 +85,7 @@ describe("Cloud workspace containers", () => {
       ws3.close();
     });
 
-    await ws2Cloud.checkForChanges();
+    ws2Cloud.checkForChanges();
     expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: "~1.1.0" })).contains("1.1.3");
     expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: "1.2.0" })).contains("1.2.0");
     expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: ">1.0.0 <3.0.0" })).contains("1.2.4");

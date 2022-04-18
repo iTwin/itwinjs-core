@@ -2295,8 +2295,8 @@ class RefreshV2CheckpointSas {
       if (!props)
         throw new Error("can't reset checkpoint sas token");
 
-      container.accessToken = props.accessToken;
-      this.setTimestamp(props.accessToken);
+      container.accessToken = props.sasToken;
+      this.setTimestamp(props.sasToken);
 
       Logger.logInfo(BackendLoggerCategory.Authorization, "refreshed checkpoint sasToken successfully");
     } finally {

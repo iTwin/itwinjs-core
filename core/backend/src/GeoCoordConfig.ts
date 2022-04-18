@@ -24,12 +24,12 @@ interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Alias {
 export class GeoCoordConfig {
 
   private static addGcsWorkspace(gcsDbAlias: string) {
+    const ws = IModelHost.appWorkspace;
+    const dbProps = ws.resolveDatabase(gcsDbAlias) as GcsDbProps;
+    const containerProps = ws.resolveContainer(dbProps.containerName);
+    const account = ws.resolveAccount(containerProps.accountName);
+    containerProps.syncOnConnect = true;
     try {
-      const ws = IModelHost.appWorkspace;
-      const dbProps = ws.resolveDatabase(gcsDbAlias) as GcsDbProps;
-      const containerProps = ws.resolveContainer(dbProps.containerName);
-      const account = ws.resolveAccount(containerProps.accountName);
-      containerProps.syncOnConnect = true;
       const container = ws.getContainer(containerProps, account);
       const cloudContainer = container.cloudContainer;
       if (!cloudContainer?.isConnected) {
@@ -51,7 +51,7 @@ export class GeoCoordConfig {
       if (true === dbProps.prefetch)
         void CloudSqlite.prefetch(cloudContainer, gcsDbName); // don't await this promise
     } catch (e: unknown) {
-      Logger.logError(loggerCat, BentleyError.getErrorMessage(e));
+      Logger.logError(loggerCat, `${BentleyError.getErrorMessage(e)}, account=${account.accessName}`);
     }
   }
 

@@ -48,12 +48,11 @@ export class LockConflict extends IModelError {
  * @internal
  */
 export interface V2CheckpointAccessProps {
-  /** blob store account name. */
-  readonly accessName: string;
+  readonly accountName: string;
   /** The name of the iModel's blob store container holding all checkpoints. */
   readonly containerId: string;
   /** AccessToken that grants access to the container. */
-  readonly accessToken: AccessToken;
+  readonly sasToken: AccessToken;
   /** The name of the virtual file within the container, used for the checkpoint */
   readonly dbName: string;
   /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
