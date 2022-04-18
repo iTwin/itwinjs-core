@@ -63,11 +63,6 @@ steps:
     condition: succeededOrFailed()
 
   - script: npm run test:integration
-    workingDirectory: "full-stack-tests/rpc"
-    displayName: "Run RPC Full Stack Tests"
-    condition: succeededOrFailed()
-
-  - script: npm run test:integration
     workingDirectory: "full-stack-tests/rpc-interface"
     displayName: "Run RPC Interface Full Stack Tests"
     condition: succeededOrFailed()
@@ -96,21 +91,14 @@ steps:
     displayName: "Publish ECSchema Rpc Interface Integration Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/ecschema-rpc-interface/ecschema-rpcinterface-tests-result/ecschema-rpcinterface-tests-result.xml"
-      testRunTitle: "Core - Integration Tests - ${{ parameters.Node_Version }}"
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Rpc Integration Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/rpc/lib/test/junit_results.xml"
-      testRunTitle: "Core - Integration Tests - ${{ parameters.Node_Version }}"
+      testRunTitle: "ECSchema Rpc Interface - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
     displayName: "Publish Rpc Interface Integration Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/rpc-interface/full_stack_test_results/full_stack_test_result.xml"
-      testRunTitle: "Core - Integration Tests - ${{ parameters.Node_Version }}"
+      testRunTitle: "Rpc Interface - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
