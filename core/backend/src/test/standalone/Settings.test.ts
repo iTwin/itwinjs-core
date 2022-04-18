@@ -8,7 +8,7 @@ import { Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
-import { SettingsGroupSpec, SettingSpec, SettingsSpecRegistry } from "../../workspace/SettingsSpecRegistry";
+import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 /// cspell:ignore devstoreaccount1
@@ -26,7 +26,7 @@ describe("Settings", () => {
     iModel.close();
   });
 
-  const app1: SettingsGroupSpec = {
+  const app1: SettingSchemaGroup = {
     groupName: "app1",
     title: "group 1 settings",
     properties: {
@@ -108,7 +108,7 @@ describe("Settings", () => {
   it("settings priorities", () => {
 
     const settings = iModel.workspace.settings;
-    SettingsSpecRegistry.addGroup(app1);
+    SettingsSchemas.addGroup(app1);
     IModelHost.appWorkspace.settings.addDictionary("app1", SettingsPriority.application, app1Settings);
 
     let settingsChanged = 0;
@@ -152,8 +152,8 @@ describe("Settings", () => {
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
     expect(settingsChanged).eq(4);
 
-    (app1.properties["app1/strVal"] as Mutable<SettingSpec>).default = "new default";
-    SettingsSpecRegistry.addGroup(app1);
+    (app1.properties["app1/strVal"] as Mutable<SettingSchema>).default = "new default";
+    SettingsSchemas.addGroup(app1);
 
     // after re-registering, the new default should be updated
     expect(settings.getString("app1/strVal")).equals(app1.properties["app1/strVal"].default);

@@ -29,7 +29,7 @@ import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
-import { SettingsSpecRegistry } from "./workspace/SettingsSpecRegistry";
+import { SettingsSchemas } from "./workspace/SettingsSchemas";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -178,18 +178,19 @@ class ApplicationSettings extends BaseSettings {
   }
   private updateDefaults() {
     const defaults: SettingDictionary = {};
-    for (const [specName, val] of SettingsSpecRegistry.allSpecs) {
+    for (const [schemaName, val] of SettingsSchemas.allSchemas) {
       if (val.default)
-        defaults[specName] = val.default;
+        defaults[schemaName] = val.default;
     }
     this.addDictionary("_default_", 0, defaults);
   }
 
   public constructor() {
     super();
-    this._remove = SettingsSpecRegistry.onSpecsChanged.addListener(() => this.updateDefaults());
+    this._remove = SettingsSchemas.onSchemaChanged.addListener(() => this.updateDefaults());
     this.updateDefaults();
   }
+
   public override close() {
     if (this._remove) {
       this._remove();
@@ -337,6 +338,16 @@ export class IModelHost {
     return this._hubAccess;
   }
 
+  private static initializeWorkspace(configuration: IModelHostConfiguration) {
+    const settingAssets = path.join(KnownLocations.packageAssetsDir, "Settings");
+    SettingsSchemas.addDirectory(path.join(settingAssets, "Schemas"));
+    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+    this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
+
+    // allow subsystems to load their default settings
+    this.onWorkspaceStartup.raiseEvent();
+  }
+
   private static _isValid = false;
   /** Returns true if IModelHost is started.  */
   public static get isValid() { return this._isValid; }
@@ -394,9 +405,7 @@ export class IModelHost {
     }
 
     this.setupHostDirs(configuration);
-    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
-    // allow subsystems to load their default settings
-    IModelHost.onWorkspaceStartup.raiseEvent();
+    this.initializeWorkspace(configuration);
 
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
@@ -415,13 +424,13 @@ export class IModelHost {
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
     if (undefined !== configuration.hubAccess)
-      IModelHost._hubAccess = configuration.hubAccess;
-    IModelHost.configuration = configuration;
-    IModelHost.setupTileCache();
+      this._hubAccess = configuration.hubAccess;
+    this.configuration = configuration;
+    this.setupTileCache();
 
     this.platform.setUseTileCache(IModelHost.tileCacheService ? false : true);
-    process.once("beforeExit", IModelHost.shutdown);
-    IModelHost.onAfterStartup.raiseEvent();
+    process.once("beforeExit", () => this.shutdown);
+    this.onAfterStartup.raiseEvent();
   }
 
   private static _briefcaseCacheDir: LocalDirName;

@@ -9,7 +9,9 @@
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
-import { LocalFileName } from "@itwin/core-common";
+import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import path = require("path");
+import { IModelJsFs } from "../IModelJsFs";
 
 /** The type of a Setting, according to its schema
  * @beta
@@ -94,6 +96,8 @@ export interface Settings {
    * @note If the SettingDictionary was previously added, the new content overrides the old content.
    */
   addFile(fileName: LocalFileName, priority: SettingsPriority): void;
+
+  addDirectory(dirName: LocalDirName, priority: SettingsPriority): void;
 
   /** Add a SettingDictionary from a JSON5 stringified string. The string is parsed and the resultant object is added as a SettingDictionary.
    * @param dictionaryName the name of the SettingDictionary
@@ -211,6 +215,14 @@ export class BaseSettings implements Settings {
 
   public addFile(fileName: LocalFileName, priority: SettingsPriority) {
     this.addJson(fileName, priority, fs.readFileSync(fileName, "utf-8"));
+  }
+
+  public addDirectory(dirName: LocalDirName, priority: SettingsPriority) {
+    for (const fileName of IModelJsFs.readdirSync(dirName)) {
+      const ext = path.extname(fileName);
+      if (ext === ".json5" || ext === ".json")
+        this.addFile(path.join(dirName, fileName), priority);
+    }
   }
 
   public addJson(dictionaryName: string, priority: SettingsPriority, settingsJson: string) {

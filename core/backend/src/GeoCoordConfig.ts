@@ -11,7 +11,7 @@
 import { CloudSqlite } from "@bentley/imodeljs-native";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { IModelHost } from "./IModelHost";
-import { Settings, SettingsPriority } from "./workspace/Settings";
+import { Settings } from "./workspace/Settings";
 import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
 
 const loggerCat = "GeoCoord";
@@ -68,26 +68,7 @@ export class GeoCoordConfig {
   }
 
   private static _defaultDbsLoaded = false;
-  public static addSettings() {
-    const containerName = "gcs/container";
-    const version = "^1";
-    const allGcsDatabases = [
-      { name: "gcs/base", dbName: "base", containerName, version, priority: 10000, prefetch: true },
-      { name: "gcs/entire-earth", dbName: "allEarth", containerName, version, priority: 100 },
-    ];
-    ["Australia", "Brazil", "Canada", "France", "Germany", "Japan", "NewZealand", "Portugal", "Slovakia", "SouthAfrica", "Spain", "Switzerland", "UK", "Usa", "Venezuela"]
-      .forEach((dbName) => allGcsDatabases.push({ name: `gcs/${dbName}`, dbName, containerName, version, priority: 500 }));
-
-    const gcsSettings = {
-      "cloud/accounts": [{ name: "gcs/account", accessName: "http://gcs-data.itwin.org/", storageType: "azure?customuri=1&sas=1" }],
-      "cloud/containers": [{ name: "gcs/container", accountName: "gcs/account", containerId: "gcs" }],
-      "workspace/databases": allGcsDatabases,
-      "gcs/default/databases": ["gcs/base", "gcs/entire-earth"],
-    };
-
-    // add this as a settings dictionary so that it can be overridden externally.
-    const settings = IModelHost.appWorkspace.settings;
-    settings.addDictionary("gcs-data", SettingsPriority.defaults, gcsSettings);
+  public static onStartup() {
     this._defaultDbsLoaded = false;
   }
 
@@ -104,5 +85,5 @@ export class GeoCoordConfig {
   }
 }
 
-IModelHost.onWorkspaceStartup.addListener(() => GeoCoordConfig.addSettings());
+IModelHost.onWorkspaceStartup.addListener(() => GeoCoordConfig.onStartup());
 

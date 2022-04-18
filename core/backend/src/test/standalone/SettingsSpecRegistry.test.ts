@@ -4,25 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SettingsSpecRegistry } from "../../workspace/SettingsSpecRegistry";
+import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("SettingsRegistry", () => {
 
   it("register groups", () => {
-    SettingsSpecRegistry.reset();
+    SettingsSchemas.reset();
 
     // can't add a group with no name
-    expect(() => SettingsSpecRegistry.addGroup({} as any)).to.throw("settings group has no name");
+    expect(() => SettingsSchemas.addGroup({} as any)).to.throw("settings group has no name");
 
-    SettingsSpecRegistry.addGroup({ groupName: "app1" } as any);
+    SettingsSchemas.addGroup({ groupName: "app1" } as any);
 
-    const problems = SettingsSpecRegistry.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
+    const problems = SettingsSchemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
     expect(problems.length).equals(0);
 
-    expect(SettingsSpecRegistry.allSpecs.get("app1/list/openMode")!.type).equals("string");
-    expect(SettingsSpecRegistry.allSpecs.get("app1/list/openMode")!.default).equals("singleClick");
-    expect(SettingsSpecRegistry.allSpecs.get("app1/tree/blah")!.default).equals(true);
+    expect(SettingsSchemas.allSchemas.get("app1/list/openMode")!.type).equals("string");
+    expect(SettingsSchemas.allSchemas.get("app1/list/openMode")!.default).equals("singleClick");
+    expect(SettingsSchemas.allSchemas.get("app1/tree/blah")!.default).equals(true);
   });
 
 });

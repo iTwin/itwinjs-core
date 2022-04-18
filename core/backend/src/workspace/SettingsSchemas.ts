@@ -9,6 +9,9 @@
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
+import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import { IModelJsFs } from "../IModelJsFs";
+import path = require("path");
 
 /**
  * The properties of a Setting, used by the settings editor. This interface also includes the
@@ -16,7 +19,7 @@ import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from
  * This interface includes all members of [JSONSchema]($bentley) with the extensions added by VSCode.
  * @beta
  */
-export interface SettingSpec extends Readonly<JSONSchema> {
+export interface SettingSchema extends Readonly<JSONSchema> {
   type: JSONSchemaTypeName | JSONSchemaTypeName[];
   /** labels for items of an enum. */
   readonly enumItemLabels?: string[];
@@ -25,13 +28,13 @@ export interface SettingSpec extends Readonly<JSONSchema> {
 }
 
 /**
- * The properties of a group of [[SettingSpec]]s for an application. Groups can be added and removed from the registry
+ * The properties of a group of [[SettingSchema]]s for an application. Groups can be added and removed from the registry
  * and are identified by their (required) `groupName` member
  * @beta
  */
-export interface SettingsGroupSpec {
+export interface SettingSchemaGroup {
   readonly groupName: string;
-  readonly properties: { [name: string]: SettingSpec };
+  readonly properties: { [name: string]: SettingSchema };
   readonly order?: number;
   readonly title?: string;
   readonly description?: string;
@@ -39,17 +42,17 @@ export interface SettingsGroupSpec {
 }
 
 /**
- * The registry of available [[SettingsGroupSpec]]s.
+ * The registry of available [[SettingSchemaGroup]]s.
  * The registry is used for editing Settings files and for finding default values for settings.
  * @beta
  */
-export class SettingsSpecRegistry {
+export class SettingsSchemas {
   private constructor() { } // singleton
-  private static readonly _allGroups = new Map<string, SettingsGroupSpec>();
-  /** a map of all registered [[SettingSpec]]s */
-  public static readonly allSpecs = new Map<string, SettingSpec>();
-  /** event that signals that the values in [[allSpecs]] have changed in some way. */
-  public static readonly onSpecsChanged = new BeEvent<() => void>();
+  private static readonly _allGroups = new Map<string, SettingSchemaGroup>();
+  /** a map of all registered [[SettingSchema]]s */
+  public static readonly allSchemas = new Map<string, SettingSchema>();
+  /** event that signals that the values in [[allSchemas]] have changed in some way. */
+  public static readonly onSchemaChanged = new BeEvent<() => void>();
 
   /** Clear the contents of the registry and remove all event listeners.
    * @note This is really only necessary for tests of the Settings system.
@@ -57,45 +60,58 @@ export class SettingsSpecRegistry {
    */
   public static reset() {
     this._allGroups.clear();
-    this.allSpecs.clear();
-    this.onSpecsChanged.clear();
+    this.allSchemas.clear();
+    this.onSchemaChanged.clear();
   }
 
   /**
-   * Add one or more [[SettingsGroupSpec]]s to the registry. `SettingsGroupSpec`s must include a `groupName` member that is used
+   * Add one or more [[SettingSchemaGroup]]s to the registry. `SettingSchemaGroup`s must include a `groupName` member that is used
    * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
    * @returns an array of problems found adding properties of the supplied group(s).
    */
-  public static addGroup(settingsGroup: SettingsGroupSpec | SettingsGroupSpec[]): string[] {
+  public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): string[] {
     if (!Array.isArray(settingsGroup))
       settingsGroup = [settingsGroup];
 
     const problems: string[] = [];
     this.doAdd(settingsGroup, problems);
-    this.onSpecsChanged.raiseEvent();
+    this.onSchemaChanged.raiseEvent();
     return problems;
   }
 
-  /** Add a [[SettingsGroupSpec]] from stringified json5. */
-  public static addJson(settingSpecJson: string): string[] {
-    return this.addGroup(parse(settingSpecJson));
+  /** Add a [[SettingSchemaGroup]] from stringified json5. */
+  public static addJson(settingSchema: string): string[] {
+    return this.addGroup(parse(settingSchema));
   }
 
-  /** Add a [[SettingsGroupSpec]] from a json5 file. */
-  public static addFile(fileName: string): string[] {
+  /** Add a [[SettingSchemaGroup]] from a json5 file. */
+  public static addFile(fileName: LocalFileName): string[] {
     return this.addJson(fs.readFileSync(fileName, "utf-8"));
   }
 
-  /** Remove a previously added [[SettingsGroupSpec]] by groupName */
-  public static removeGroup(groupName: string): void {
-    this.doRemove(groupName);
-    this.onSpecsChanged.raiseEvent();
+  /** Add all files with a ".json5" extension from a supplied directory. */
+  public static addDirectory(dirName: LocalDirName): string[] {
+    const problems: string[] = [];
+    for (const fileName of IModelJsFs.readdirSync(dirName)) {
+      const ext = path.extname(fileName);
+      if (ext === ".json5" || ext === ".json")
+        problems.push(...this.addFile(path.join(dirName, fileName)));
+    }
+    return problems;
   }
 
-  private static doAdd(settingsGroup: SettingsGroupSpec[], problems?: string[]) {
+  /** Remove a previously added [[SettingSchemaGroup]] by groupName */
+  public static removeGroup(groupName: string): void {
+    this.doRemove(groupName);
+    this.onSchemaChanged.raiseEvent();
+  }
+
+  private static doAdd(settingsGroup: SettingSchemaGroup[], problems?: string[]) {
     settingsGroup.forEach((group) => {
-      if (undefined === group.groupName)
-        throw new Error("settings group has no name");
+      if (undefined === group.groupName) {
+        problems?.push(`settings group has no "groupName" member`);
+        return;
+      }
 
       this.doRemove(group.groupName);
       this.validateAndAdd(group, problems);
@@ -107,7 +123,7 @@ export class SettingsSpecRegistry {
     const group = this._allGroups.get(groupName);
     if (undefined !== group?.properties) {
       for (const key of Object.keys(group.properties))
-        this.allSpecs.delete(key);
+        this.allSchemas.delete(key);
     }
     this._allGroups.delete(groupName);
   }
@@ -115,13 +131,13 @@ export class SettingsSpecRegistry {
   private static validateProperty(property: string): string | undefined {
     if (!property.trim())
       return "empty property name";
-    if (this.allSpecs.has(property))
+    if (this.allSchemas.has(property))
       return `property "${property}" is already defined`;
 
     return undefined;
   }
 
-  private static validateAndAdd(group: SettingsGroupSpec, problems?: string[]) {
+  private static validateAndAdd(group: SettingSchemaGroup, problems?: string[]) {
     const properties = group.properties;
     if (undefined === properties)
       return;
@@ -134,9 +150,9 @@ export class SettingsSpecRegistry {
         continue;
       }
 
-      const property: Mutable<SettingSpec> = properties[key];
+      const property: Mutable<SettingSchema> = properties[key];
       property.default = property.default ?? this.getDefaultValue(property.type);
-      this.allSpecs.set(key, property);
+      this.allSchemas.set(key, property);
     }
   }
 
