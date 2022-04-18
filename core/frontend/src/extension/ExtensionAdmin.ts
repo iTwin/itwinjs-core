@@ -134,16 +134,20 @@ export class ExtensionAdmin {
           `Extension "${extension.manifest.name}" could not be loaded from "${hostName}". Please register the host for extension usage via the registerHost API`
         );
       }
-      const main = await import(/* webpackIgnore: true */ extension.jsUrl);
-      if (typeof main === "function") {
-        return main();
+      try {
+        const main = await import(/* webpackIgnore: true */ extension.jsUrl);
+        if (typeof main === "function") {
+          return main();
+        }
+        if (!main.default) {
+          throw new Error(
+            `No default export was found in remote extension "${extension.manifest.name}"`
+          );
+        }
+        return main.default();
+      } catch(error) {
+        throw new Error(`Failed to import an extension from ${extension.jsUrl}: ${error}`);
       }
-      if (!main.default) {
-        throw new Error(
-          `No default export was found in remote extension "${extension.manifest.name}"`
-        );
-      }
-      return main.default();
     }
   }
 }
