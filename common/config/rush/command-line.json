@@ -103,6 +103,16 @@
       "allowWarningsInSuccessfulBuild": true
     },
     {
+      "name": "webpack:integration",
+      "commandKind": "bulk",
+      "summary": "Run webpack:integration script for each package",
+      "description": "Iterates through each package in the monorepo and runs the 'webpack:integration' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
+      "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
       "name": "test:integration",
       "commandKind": "bulk",
       "summary": "Run test:integration script for each package",
