@@ -27,6 +27,8 @@ describe("SnapshotDb.refreshContainerSas", () => {
     accountName: "testAccount",
     containerId: "imodelblocks-123",
     sasToken: makeToken("2021-01-01T01:00:00Z"),
+    accessName: "testAccount",
+    accessToken: makeToken("2021-01-01T01:00:00Z"),
     dbName: "testDb",
     storageType: "azure?sas=1",
   };

@@ -48,6 +48,7 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 import { GeoCoordConfig } from "./GeoCoordConfig";
+import { convertOldToNewV2CheckpointAccessProps } from "./BackendHubAccess";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -2295,8 +2296,9 @@ class RefreshV2CheckpointSas {
       if (!props)
         throw new Error("can't reset checkpoint sas token");
 
-      container.accessToken = props.sasToken;
-      this.setTimestamp(props.sasToken);
+      convertOldToNewV2CheckpointAccessProps(props);
+      container.accessToken = props.accessToken;
+      this.setTimestamp(props.accessToken);
 
       Logger.logInfo(BackendLoggerCategory.Authorization, "refreshed checkpoint sasToken successfully");
     } finally {
