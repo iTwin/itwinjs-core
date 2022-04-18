@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, assert, BeEvent, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AbandonedError, assert, BeEvent, BeTimePoint, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
@@ -322,6 +322,8 @@ export class ToolAdmin {
   private _saveLocateCircle = false;
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
+  private _lastHandledMotionTime?: BeTimePoint;
+  private _mouseMoveOverTimeout?: NodeJS.Timeout;
 
   /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select", referring to [[SelectionTool]].
    * @see [[startDefaultTool]] to activate the default tool.
@@ -950,15 +952,45 @@ export class ToolAdmin {
     this._snapMotionPromise = this._toolMotionPromise = undefined;
   }
 
+  private async forceOnMotionSnap(ev: BeButtonEvent): Promise<boolean> {
+    // Make sure that we fire the motion snap event correctly
+    this._lastHandledMotionTime = undefined;
+
+    return this.onMotionSnap(ev);
+  }
+
   private async onMotionSnap(ev: BeButtonEvent): Promise<boolean> {
     try {
-      await IModelApp.accuSnap.onMotion(ev);
+      await this.onMotionSnapOrSkip(ev);
       return true;
     } catch (error) {
       if (error instanceof AbandonedError)
         return false; // expected, not a problem. Just ignore this motion and return.
       throw error; // unknown error
     }
+  }
+
+  // Call accuSnap.onMotion
+  private async onMotionSnapOrSkip(ev: BeButtonEvent): Promise<void> {
+    if (this.shouldSkipOnMotionSnap())
+      return;
+
+    await IModelApp.accuSnap.onMotion(ev);
+
+    this._lastHandledMotionTime = BeTimePoint.now();
+  }
+
+  // Should the current onMotionSnap event be skipped to avoid unnecessary ReadPixel calls?
+  private shouldSkipOnMotionSnap(): boolean {
+    if (this._lastHandledMotionTime === undefined)
+      return false;
+
+    const now = BeTimePoint.now();
+    const msSinceLastCall = now.milliseconds - this._lastHandledMotionTime.milliseconds;
+
+    const delay = 1000 / ToolSettings.maxOnMotionSnapCallPerSecond;
+
+    return msSinceLastCall < delay;
   }
 
   private async onStartDrag(ev: BeButtonEvent, tool?: InteractiveTool): Promise<EventHandled> {
@@ -977,6 +1009,11 @@ export class ToolAdmin {
       this.setIncompatibleViewportCursor(false);
       return;
     }
+
+    // Detect when the motion stops by setting a timeout
+    if (this._mouseMoveOverTimeout !== undefined)
+      clearTimeout(this._mouseMoveOverTimeout); // If a previous timeout was up, it is cancelled: the movement is not over yet
+    this._mouseMoveOverTimeout = setTimeout(async () => {await this.onMotionEnd(vp, pt2d, inputSource);}, 100);
 
     const ev = new BeButtonEvent();
     current.fromPoint(vp, pt2d, inputSource);
@@ -1034,6 +1071,17 @@ export class ToolAdmin {
         return;
       return processMotion();
     }).catch((_) => { });
+  }
+
+  // Called when we detect that the motion stopped
+  private async onMotionEnd(vp: ScreenViewport, pos: XAndY, inputSource: InputSource): Promise<void> {
+    const current = this.currentInputState;
+
+    const ev = new BeButtonEvent();
+    current.fromPoint(vp, pos, inputSource);
+    current.toEvent(ev, false);
+
+    await this.forceOnMotionSnap(ev);
   }
 
   private async onMouseMove(event: ToolEvent): Promise<any> {

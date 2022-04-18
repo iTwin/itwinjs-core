@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix view zoom jumps on touch devices",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -130,6 +130,10 @@ The API impact of these updates are listed below.
 
 The interfaces and components [ShowHideMenuProps]($components-react), [ShowHideMenu]($components-react), [ShowHideItem]($components-react)[ShowHideID]($components-react), [ShowHideDialogProps]($components-react), and [ShowHideDialog]($components-react) are all being deprecated because they were supporting components for the now deprecated [Table]($components-react) component. This `Table` component used an Open Source component that is not being maintained so it was determined to drop it from the API. The @itwin/itwinui-react package now delivers a Table component which should be used in place of the deprecated Table.
 
+## Deprecations in @itwin/core-geometry package
+
+The low-level [PolyfaceBuilder]($core-geometry) methods `findOrAddPoint`, `findOrAddPointXYZ`, `findOrAddParamXY`, and `findOrAddParamInGrowableXYArray` are deprecated in favor of the more appropriately named new methods `addPoint`, `addPointXYZ`, `addParamXY` and `addParamInGrowableXYArray`. These methods always add their inputs to the relevant builder array, rather than searching it and returning the index of a duplicate. The intent is to enable efficient `IndexedPolyface` construction by allowing duplicate data to be accumulated as facets are added, and to compress the data when done with `claimPolyface`.
+
 ## Deprecations in @itwin/core-react package
 
 Using the sprite loader for SVG icons is deprecated. This includes [SvgSprite]($core-react) and the methods getSvgIconSpec() and getSvgIconSource() methods on [IconSpecUtilities]($appui-abstract). The sprite loader has been replaced with a web component [IconWebComponent]($core-react) used by [Icon]($core-react) to load SVGs onto icons.
