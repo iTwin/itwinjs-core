@@ -3,6 +3,7 @@
 exports[`WidgetPanelProvider should render captured 1`] = `
 <div
   class="nz-widgetPanels-panel nz-left nz-captured nz-span-top nz-span-bottom"
+  style="width: 200px;"
 >
   <div
     class="nz-content"
@@ -320,6 +321,7 @@ exports[`WidgetPanelProvider should render horizontal 1`] = `
 exports[`WidgetPanelProvider should render multiple widgets 1`] = `
 <div
   class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  style="width: 200px;"
 >
   <div
     class="nz-content"
@@ -483,6 +485,7 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
 exports[`WidgetPanelProvider should render spanned 1`] = `
 <div
   class="nz-widgetPanels-panel nz-top nz-span nz-span-top nz-span-bottom"
+  style="height: 100px;"
 >
   <div
     class="nz-content"
@@ -694,6 +697,7 @@ exports[`WidgetPanelProvider should render vertical 1`] = `
 exports[`WidgetPanelProvider should render with span bottom 1`] = `
 <div
   class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  style="width: 200px;"
 >
   <div
     class="nz-content"
@@ -799,6 +803,7 @@ exports[`WidgetPanelProvider should render with span bottom 1`] = `
 exports[`WidgetPanelProvider should render with top spanned 1`] = `
 <div
   class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  style="width: 200px;"
 >
   <div
     class="nz-content"

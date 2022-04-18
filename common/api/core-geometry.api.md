@@ -1247,12 +1247,13 @@ export interface Cloneable<T> {
 export class ClusterableArray extends GrowableBlockedArray {
     constructor(numCoordinatePerPoint: number, numExtraDataPerPoint: number, initialBlockCapacity: number);
     addBlock(data: number[]): void;
-    addDirect(x0: number, x1: number, x2?: number, x3?: number, x4?: number): void;
+    addDirect(x0: number, x1?: number, x2?: number, x3?: number, x4?: number): void;
     addPoint2d(xy: Point2d, a?: number, b?: number, c?: number): void;
     addPoint3d(xyz: Point3d, a?: number, b?: number, c?: number): void;
     static clusterGrowablePoint2dArray(source: GrowableXYArray, tolerance?: number): PackedPoint2dsWithIndex;
     static clusterGrowablePoint3dArray(source: GrowableXYZArray, tolerance?: number): PackedPointsWithIndex;
     clusterIndicesLexical(clusterTolerance?: number): Uint32Array;
+    static clusterNumberArray(data: number[], tolerance?: number): PackedNumbersWithIndex;
     static clusterPoint3dArray(data: Point3d[], tolerance?: number): PackedPointsWithIndex;
     static readonly clusterTerminator = 4294967295;
     countClusters(clusteredBlocks: Uint32Array): number;
@@ -4306,16 +4307,21 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addLinearSweep(surface: LinearSweep): void;
     addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d): void;
     addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d, numFacetAround?: number): void;
+    addParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined;
+    addParamXY(x: number, y: number): number;
+    addPoint(xyz: Point3d): number;
+    addPointXYZ(x: number, y: number, z: number): number;
     addPolygon(points: Point3d[], numPointsToUse?: number): void;
     addPolygonGrowableXYZArray(points: GrowableXYZArray): void;
-    addQuadFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]): void;
+    addQuadFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[], colors?: number[]): void;
     addRotationalSweep(surface: RotationalSweep): void;
     addRuledSweep(surface: RuledSweep): boolean;
     addSphere(sphere: Sphere, strokeCount?: number): void;
+    addSweptIndexedPolyface(source: IndexedPolyface, sweepVector: Vector3d, triangulateSides?: boolean): boolean;
     addTorusPipe(surface: TorusPipe, phiStrokeCount?: number, thetaStrokeCount?: number): void;
     addTransformedRangeMesh(transform: Transform, range: Range3d, faceSelector?: boolean[]): void;
     addTransformedUnitBox(transform: Transform): void;
-    addTriangleFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]): void;
+    addTriangleFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[], colors?: number[]): void;
     addTriangleFan(conePoint: Point3d, ls: LineString3d, toggle: boolean): void;
     addTrianglesInUncheckedConvexPolygon(ls: LineString3d, toggle: boolean): void;
     addTriangulatedRegion(region: AnyRegion): void;
@@ -4326,12 +4332,16 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     endFace(): boolean;
     findOrAddNormalInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined;
     findOrAddNormalInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined;
+    // @deprecated
     findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined;
     findOrAddParamInLineString(ls: LineString3d, index: number, v: number, priorIndexA?: number, priorIndexB?: number): number | undefined;
+    // @deprecated
     findOrAddParamXY(x: number, y: number): number;
+    // @deprecated
     findOrAddPoint(xyz: Point3d): number;
     findOrAddPointInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined;
     findOrAddPointInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndex?: number): number | undefined;
+    // @deprecated
     findOrAddPointXYZ(x: number, y: number, z: number): number;
     // @internal
     static graphFacesToPolyface(graph: HalfEdgeGraph, faces: HalfEdge[]): IndexedPolyface;
@@ -4464,7 +4474,7 @@ export class PolyfaceQuery {
     // @internal
     static setAsyncWorkLimit(value: number): number;
     static setSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number, value: boolean): void;
-    static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined): number;
+    static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined, vectorToEye?: Vector3d): number;
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;

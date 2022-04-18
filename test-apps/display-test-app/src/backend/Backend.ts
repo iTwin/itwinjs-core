@@ -22,7 +22,6 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
-import { app } from "electron";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -64,6 +63,31 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
     const esvFileName = this.createEsvFilename(bimFileName);
     return this.writeExternalFile(esvFileName, namedViews);
+  }
+
+  public override async readExternalCameraPaths(bimFileName: string): Promise<string> {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+      const docPath = process.env.DOCS;
+      bimFileName = path.join(docPath, bimFileName);
+    }
+
+    const cameraPathsFileName = this.createCameraPathsFilename(bimFileName);
+    if (!fs.existsSync(cameraPathsFileName))
+      return "";
+
+    const jsonStr = fs.readFileSync(cameraPathsFileName).toString();
+    return jsonStr ?? "";
+  }
+
+  public override async writeExternalCameraPaths(bimFileName: string, cameraPaths: string): Promise<void> {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+      // Used to set a writeable directory on an iOS or Android device.
+      const docPath = process.env.DOCS;
+      bimFileName = path.join(docPath, bimFileName);
+    }
+
+    const cameraPathsFileName = this.createCameraPathsFilename(bimFileName);
+    return this.writeExternalFile(cameraPathsFileName, cameraPaths);
   }
 
   public override async readExternalFile(txtFileName: string): Promise<string> {
@@ -120,6 +144,13 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return `${fileName}.sv`;
   }
 
+  private createCameraPathsFilename(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf(".");
+    if (-1 !== dotIndex)
+      return `${fileName.substring(0, dotIndex)}_cameraPaths.json`;
+    return `${fileName}.cameraPaths.json`;
+  }
+
   private createTxtFilename(fileName: string): string {
     const dotIndex = fileName.lastIndexOf(".");
     if (-1 === dotIndex)
@@ -131,7 +162,12 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     await IModelHost.shutdown();
 
     // Electron only
-    if (app !== undefined) app.exit();
+    try {
+      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
+      if (app !== undefined) app.exit();
+    } catch {
+
+    }
 
     // Browser only
     if (DtaRpcInterface.backendServer) DtaRpcInterface.backendServer.close();
@@ -167,7 +203,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     const hubClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
     iModelHost.hubAccess = new IModelHubBackend(hubClient);
   } else {
-    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   }
 

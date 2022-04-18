@@ -136,7 +136,7 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /extensions                           @bsteinbk @calebmshafer
 /extensions/test-extension            @calebmshafer @wgoehrig @aruniverse @kckst8
-/extensions/map-layers                @bsteinbk @mdastous-bentley
+/extensions/map-layers                @mdastous-bentley @MarcBedard8
 
 /full-stack-tests/core                @iTwin/itwinjs-core-admins
 /full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig

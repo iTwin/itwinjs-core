@@ -25,6 +25,7 @@ import { ManipulatorToolEvent } from "./ToolAdmin";
  * - Respond to selection changed event to create control handles as pickable decorations when the desired element(s) or pickable decoration is selected.
  * - Respond to button events on the control handle decoration and run a sub-class of [[EditManipulator.HandleTool]] to modify.
  * @public
+ * @extensions
 */
 export namespace EditManipulator {
   /** Specifies the event for [[EditManipulator.HandleProvider.onManipulatorEvent]] */

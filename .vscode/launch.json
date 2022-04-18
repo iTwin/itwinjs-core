@@ -1341,7 +1341,18 @@
         "--timeout 50000" // for easier debugging
       ],
       "console": "integratedTerminal",
-    }
+    },
+    {
+      "name": "Extension API Generator",
+      "cwd": "${workspaceFolder}/core/extension/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "generate"
+      ],
+    },
   ],
   "compounds": [
     {

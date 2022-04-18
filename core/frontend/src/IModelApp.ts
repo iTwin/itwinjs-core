@@ -59,6 +59,7 @@ require("./IModeljs-css");
 
 /** Options that can be supplied with [[IModelAppOptions]] to customize frontend security.
  * @public
+ * @extensions
  */
 export interface FrontendSecurityOptions {
   /** Configures protection from Cross Site Request Forgery attacks. */
@@ -280,7 +281,7 @@ export class IModelApp {
   public static readonly telemetry: TelemetryManager = new TelemetryManager();
 
   /** @alpha */
-  public static readonly extensionAdmin = new ExtensionAdmin();
+  public static readonly extensionAdmin = this._createExtensionAdmin();
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -726,5 +727,16 @@ export class IModelApp {
     }
 
     return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
+  }
+
+  /**
+   * Creates an instance of the ExtensionAdmin
+   * and registers an event to execute after startup is complete
+   * @returns an instance of ExtensionAdmin
+   */
+  private static _createExtensionAdmin(): ExtensionAdmin {
+    const extensionAdmin = new ExtensionAdmin();
+    IModelApp.onAfterStartup.addListener(extensionAdmin.onStartup);
+    return extensionAdmin;
   }
 }

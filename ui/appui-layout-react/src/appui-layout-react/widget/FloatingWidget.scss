@@ -28,6 +28,10 @@
     }
   }
 
+  &.nz-hidden {
+    display: none;
+  }
+
   &.nz-dragged {
     pointer-events: none;
     opacity: $nz-dragged-widget-opacity;

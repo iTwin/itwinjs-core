@@ -103,6 +103,14 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
 
 Enums in TypeScript have some shortcomings, one of which resulted in a bug that caused [ColorDef.fromString]($common) to return [ColorDef.black]($common) for some valid color strings like "aqua". This is due to several standard color names ("aqua" and "cyan", "magenta" and "fuschia", and several "grey" vs "gray" variations) having the same numeric values. To address this, [ColorByName]($common) has been converted from an `enum` to a `namespace`. Code that accesses `ColorByName` members by name will continue to compile with no change.
 
+## UiItemsManager Changes
+
+When registering a UiItemsProvider with the [UiItemsManager]($appui-abstract) it is now possible to pass an additional argument to limit when the provider is called to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) define the parameters that can be used to limit the provider. The example registration below will limit a provider to only be used if the active stage has an Id of "redlining".
+
+```ts
+    UiItemsManager.register(commonToolProvider, {stageIds: ["redlining"]});
+```
+
 ## Widget Panel Changes
 
 Based on usability testing, the following changes to widget panels have been implemented.
@@ -121,6 +129,10 @@ The API impact of these updates are listed below.
 ## Deprecations in @itwin/components-react package
 
 The interfaces and components [ShowHideMenuProps]($components-react), [ShowHideMenu]($components-react), [ShowHideItem]($components-react)[ShowHideID]($components-react), [ShowHideDialogProps]($components-react), and [ShowHideDialog]($components-react) are all being deprecated because they were supporting components for the now deprecated [Table]($components-react) component. This `Table` component used an Open Source component that is not being maintained so it was determined to drop it from the API. The @itwin/itwinui-react package now delivers a Table component which should be used in place of the deprecated Table.
+
+## Deprecations in @itwin/core-geometry package
+
+The low-level [PolyfaceBuilder]($core-geometry) methods `findOrAddPoint`, `findOrAddPointXYZ`, `findOrAddParamXY`, and `findOrAddParamInGrowableXYArray` are deprecated in favor of the more appropriately named new methods `addPoint`, `addPointXYZ`, `addParamXY` and `addParamInGrowableXYArray`. These methods always add their inputs to the relevant builder array, rather than searching it and returning the index of a duplicate. The intent is to enable efficient `IndexedPolyface` construction by allowing duplicate data to be accumulated as facets are added, and to compress the data when done with `claimPolyface`.
 
 ## Deprecations in @itwin/core-react package
 

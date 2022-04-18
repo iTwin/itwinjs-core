@@ -211,11 +211,11 @@ The iTwin.js UI layer is based in React, so its UI controls can be added to exis
 
 Controls built to implement a UI using the 9-zone pattern.
 
-- ✔️ [Widgets](./learning/ui/framework/Widgets.md)
+- ✔️ [Widgets](./learning/ui/appui-react/Widgets.md)
 - ✔️ Toolbars
-- ✔️ [Backstage](./learning/ui/framework/Backstage.md)
-- ✔️ [Frontstages](./learning/ui/framework/Frontstages.md)
-- ✔️ [Stage Panels](./learning/ui/framework/StagePanels.md)
+- ✔️ [Backstage](./learning/ui/appui-react/Backstage.md)
+- ✔️ [Frontstages](./learning/ui/appui-react/Frontstages.md)
+- ✔️ [Stage Panels](./learning/ui/appui-react/StagePanels.md)
 - ✔️ View Layout system to configure the working area.
 
 ### Data-driven controls
