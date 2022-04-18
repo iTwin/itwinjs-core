@@ -17,7 +17,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { V2CheckpointAccessProps } from "./BackendHubAccess";
+import { convertOldToNewV2CheckpointAccessProps, V2CheckpointAccessProps } from "./BackendHubAccess";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -110,17 +110,38 @@ export class Downloads {
 export class V2CheckpointManager {
   private static _daemonCache?: IModelJsNative.CloudCache;
   private static containers = new Map<string, IModelJsNative.CloudContainer>();
+  /** The name of the CloudCache instance which V2CheckpointManager initializes. */
+  public static readonly cloudCacheName = "v2Checkpoints";
+
+  public static getFolder(): LocalDirName {
+    return path.join(BriefcaseManager.cacheDir, V2CheckpointManager.cloudCacheName);
+  }
+
+  public static getFileName(checkpoint: CheckpointProps): LocalFileName {
+    const changesetId = checkpoint.changeset.id || "first";
+    return path.join(this.getFolder(), `${changesetId}.bim`);
+  }
 
   private static get daemonCache(): IModelJsNative.CloudCache {
     if (!this._daemonCache) {
-      const rootDir = process.env.BLOCKCACHE_DIR;
+      let rootDir = process.env.BLOCKCACHE_DIR;
       if (!rootDir)
         throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
-      this._daemonCache = new IModelHost.platform.CloudCache({ name: "v2Checkpoints", rootDir });
+
+      // If no
+      if (!rootDir) {
+        rootDir = V2CheckpointManager.getFolder();
+        Logger.logWarning(loggerCategory, `No BLOCKCACHE_DIR found in process.env, using ${rootDir} instead.`);
+        this._daemonCache = new IModelHost.platform.CloudCache({name: V2CheckpointManager.cloudCacheName, rootDir});
+
+      }
+      this._daemonCache = new IModelHost.platform.CloudCache({ name: V2CheckpointManager.cloudCacheName, rootDir });
+      // Its fine if its not a daemon, but lets just log a warning instead
       if (!this._daemonCache.isDaemon)
-        throw new IModelError(IModelStatus.BadRequest, "iTwinDaemon is not running");
+        Logger.logWarning(loggerCategory, "Initialized Cloud Cache but iTwinDaemon is not running.");
+      // throw new IModelError(IModelStatus.BadRequest, "iTwinDaemon is not running");
     }
-    return this.daemonCache;
+    return this._daemonCache;
   }
   private static getContainer(props: CloudSqlite.ContainerAccessProps) {
     let container = this.containers.get(props.containerId);
@@ -131,7 +152,7 @@ export class V2CheckpointManager {
     return container;
   }
   private static toCloudContainerProps(from: V2CheckpointAccessProps): CloudSqlite.ContainerAccessProps {
-    return { ...from, accessName: from.accountName, accessToken: from.sasToken };
+    return { ...from, accessName: from.accessName, accessToken: from.accessToken };
 
   }
 
@@ -142,13 +163,16 @@ export class V2CheckpointManager {
       v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
       if (!v2props)
         throw new Error("no checkpoint");
+      convertOldToNewV2CheckpointAccessProps(v2props);
     } catch (err: any) {
       throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
 
     try {
       const container = this.getContainer(this.toCloudContainerProps(v2props));
-      container.connect(this.daemonCache);
+      if (!container.isConnected)
+        container.connect(this.daemonCache);
+      void CloudSqlite.prefetch(container, v2props.dbName);
       return { dbName: v2props.dbName, container };
     } catch (e: any) {
       const error = `Daemon connect failed: ${e.message}`;
@@ -164,6 +188,8 @@ export class V2CheckpointManager {
     const v2props = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
+
+    convertOldToNewV2CheckpointAccessProps(v2props);
 
     CheckpointManager.onDownloadV2.raiseEvent(job);
     const container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2props));
@@ -249,8 +275,8 @@ export class CheckpointManager {
       // Open checkpoint for write
       const db = SnapshotDb.openForApplyChangesets(targetFile);
       const nativeDb = db.nativeDb;
-
       try {
+
         if (nativeDb.hasPendingTxns()) {
           Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => traceInfo);
           nativeDb.deleteAllTxns();
