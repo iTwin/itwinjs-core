@@ -217,8 +217,17 @@ export interface Workspace {
   readonly settings: Settings;
   readonly cloudCache?: IModelJsNative.CloudCache;
 
+  /** search for a previously opened container.
+   * @param containerId the id of the container
+   * @returns the [[WorkspaceContainer]] for `containerId` if it was not previously opened with [[getContainer]]
+   */
   findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
 
+  /** get the [[WorkspaceContainer]] by [[WorkspaceContainer.Props]]
+   * @param props the properties of the `WorkspaceContainer`. If `props.containerId` was already opened, its WorkspaceContainer is returned.
+   * Otherwise
+   * @param
+  */
   getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
 
   resolveAccount(accountName: string): WorkspaceAccount.Props;
@@ -256,7 +265,6 @@ export interface Workspace {
  * @beta
  */
 export interface WorkspaceContainer {
-  readonly dirName: LocalDirName;
   /** the local directory where this WorkspaceContainer will store temporary files extracted for file-resources. */
   readonly filesDir: LocalDirName;
   /** The unique identifier for a WorkspaceContainer a cloud storage account. */
