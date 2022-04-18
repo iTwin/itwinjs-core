@@ -24,12 +24,17 @@ steps:
     displayName: rush install
 
   - script: |
+      # full-stack-tests/backend/package.json
       node ./common/scripts/install-run-rush build -v --to backend-integration-tests
-
+      # full-stack-tests/core/package.json
       node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
-
+      # full-stack-tests/ecschema-rpc-interface/package.json
+      node ./common/scripts/install-run-rush build -v --to @itwin/ecschema-rpcinterface-tests
+      # full-stack-tests/rpc/package.json
+      node ./common/scripts/install-run-rush build -v --to rpc-full-stack-tests
+      # full-stack-tests/rpc-interface/package.json
       node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
-
+      # full-stack-tests/presentation/package.json
       node ./common/scripts/install-run-rush build -v --to presentation-full-stack-tests
 
       node ./common/scripts/install-run-rush webpack:integration -v
@@ -53,6 +58,16 @@ steps:
     condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
 
   - script: npm run test:integration
+    workingDirectory: "full-stack-tests/ecschema-rpc-interface"
+    displayName: "Run ECSchema RPC Interface Tests"
+    condition: succeededOrFailed()
+
+  - script: npm run test:integration
+    workingDirectory: "full-stack-tests/rpc"
+    displayName: "Run RPC Full Stack Tests"
+    condition: succeededOrFailed()
+
+  - script: npm run test:integration
     workingDirectory: "full-stack-tests/rpc-interface"
     displayName: "Run RPC Interface Full Stack Tests"
     condition: succeededOrFailed()
@@ -74,6 +89,20 @@ steps:
     displayName: "Publish Core Integration Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
+      testRunTitle: "Core - Integration Tests - ${{ parameters.Node_Version }}"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish ECSchema Rpc Interface Integration Test Results"
+    inputs:
+      testResultsFiles: "full-stack-tests/ecschema-rpc-interface/ecschema-rpcinterface-tests-result/ecschema-rpcinterface-tests-result.xml"
+      testRunTitle: "Core - Integration Tests - ${{ parameters.Node_Version }}"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish Rpc Integration Test Results"
+    inputs:
+      testResultsFiles: "full-stack-tests/rpc/lib/test/junit_results.xml"
       testRunTitle: "Core - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
