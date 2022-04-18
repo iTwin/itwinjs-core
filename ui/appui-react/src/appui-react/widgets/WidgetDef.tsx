@@ -136,7 +136,7 @@ export class WidgetDef {
   private _widgetType: WidgetType = WidgetType.Rectangular;
   private _applicationData?: any;
   private _iconSpec?: string | ConditionalStringValue | React.ReactNode;
-  private _internalData?: Map<string,any>;
+  private _internalData?: Map<string, any>;
   private _badgeType?: BadgeType;
   private _onWidgetStateChanged?: () => void;
   private _saveTransientState?: () => void;
@@ -184,7 +184,7 @@ export class WidgetDef {
   public get applicationData(): any | undefined { return this._applicationData; }
   public get isFloating(): boolean { return this.state === WidgetState.Floating; }
   public get iconSpec(): IconSpec { return this._iconSpec === IconHelper.reactIconKey ? IconHelper.getIconReactNode(this._iconSpec, this._internalData) : this._iconSpec; }
-  public set iconSpec(spec: IconSpec )  { this._iconSpec = this._internalData ? IconHelper.getIconData(spec, this._internalData) : spec; }
+  public set iconSpec(spec: IconSpec) { this._iconSpec = this._internalData ? IconHelper.getIconData(spec, this._internalData) : spec; }
   public get badgeType(): BadgeType | undefined { return this._badgeType; }
   public get initialProps(): WidgetProps | undefined { return this._initialProps; }
 
@@ -274,7 +274,7 @@ export class WidgetDef {
       me._iconSpec = widgetProps.iconSpec;
     if (widgetProps.internalData)
       me._internalData = widgetProps.internalData;
-    // istanbul ignore if
+    // istanbul ignore next
     if (widgetProps.icon !== undefined && me._iconSpec === undefined)
       me._iconSpec = widgetProps.icon;
 

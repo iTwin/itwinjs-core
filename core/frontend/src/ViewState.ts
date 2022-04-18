@@ -14,6 +14,7 @@ import {
 } from "@itwin/core-geometry";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GridOrientationType,
+  HydrateViewStateRequestProps, HydrateViewStateResponseProps, IModelReadRpcInterface,
   ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
   ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
@@ -46,6 +47,7 @@ import { EnvironmentDecorations } from "./EnvironmentDecorations";
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
  * @public
+ * @extensions
  */
 export interface ExtentLimits {
   /** The smallest allowed extent in any dimension. */
@@ -175,6 +177,7 @@ export interface AttachToViewportArgs {
  * discouraged - changes made to the style by one Viewport will affect the contents of the other Viewport.
  * * @see [Views]($docs/learning/frontend/Views.md)
  * @public
+ * @extensions
  */
 export abstract class ViewState extends ElementState {
   /** @internal */
@@ -329,21 +332,39 @@ export abstract class ViewState extends ElementState {
     }
   }
 
+  /**
+   * Populates the hydrateRequest object stored on the ViewState with:
+   *  not loaded categoryIds based off of the ViewStates categorySelector.
+   *  Auxiliary coordinate system id if valid.
+   */
+  protected preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    const acsId = this.getAuxiliaryCoordinateSystemId();
+    if (Id64.isValid(acsId))
+      hydrateRequest.acsId = acsId;
+    this.iModel.subcategories.preload(hydrateRequest, this.categorySelector.categories);
+  }
+
   /** Asynchronously load any required data for this ViewState from the backend.
+   * FINAL, No subclass should override load. If additional load behavior is needed, see preload and postload.
    * @note callers should await the Promise returned by this method before using this ViewState.
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
+    const hydrateRequest: HydrateViewStateRequestProps = {};
+    this.preload(hydrateRequest);
     const promises = [
-      this.loadAcs(),
+      IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest),
       this.displayStyle.load(),
     ];
+    const result = await Promise.all<any>(promises);
+    const hydrateResponse = result[0];
+    await this.postload(hydrateResponse);
+  }
 
-    const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
-    if (undefined !== subcategories)
-      promises.push(subcategories.promise.then((_) => { }));
-
-    await Promise.all(promises);
+  protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    this.iModel.subcategories.postload(hydrateResponse);
+    if (hydrateResponse.acsElementProps)
+      this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
   }
 
   /** Returns true if all [[TileTree]]s required by this view have been loaded.
@@ -1286,6 +1307,7 @@ export abstract class ViewState extends ElementState {
 /** Defines the state of a view of 3d models.
  * @see [ViewState Parameters]($docs/learning/frontend/views#viewstate-parameters)
  * @public
+ * @extensions
  */
 export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
@@ -2157,6 +2179,7 @@ export abstract class ViewState3d extends ViewState {
 
 /** Defines the state of a view of a single 2d model.
  * @public
+ * @extensions
  */
 export abstract class ViewState2d extends ViewState {
   private readonly _details: ViewDetails;
@@ -2244,9 +2267,20 @@ export abstract class ViewState2d extends ViewState {
     return this.getViewedExtents();
   }
 
-  public override async load(): Promise<void> {
-    await super.load();
-    return this.iModel.models.load(this.baseModelId);
+  /** @internal */
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    super.preload(hydrateRequest);
+    if (this.iModel.models.getLoaded(this.baseModelId) === undefined)
+      hydrateRequest.baseModelId = this.baseModelId;
+  }
+
+  /** @internal */
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    const promises = [];
+    promises.push(super.postload(hydrateResponse));
+    if (hydrateResponse.baseModelProps !== undefined)
+      promises.push(this.iModel.models.updateLoadedWithModelProps([hydrateResponse.baseModelProps]));
+    await Promise.all(promises);
   }
 
   /** Provides access to optional detail settings for this view. */

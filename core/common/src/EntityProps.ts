@@ -15,6 +15,7 @@ import { RelatedElement } from "./ElementProps";
  * EntityProps and all of its sub-types like [[ElementProps]] are "plain old Javascript objects" - that is, objects containing
  * no methods and no properties of `class` type.
  * @public
+ * @extensions
  */
 export interface EntityProps {
   /** A non-existent property used to discriminate between [[EntityProps]] and [Entity]($backend).
@@ -31,6 +32,7 @@ export interface EntityProps {
 
 /** Specifies the source and target elements of a [[Relationship]] instance.
  * @public
+ * @extensions
  */
 export interface SourceAndTarget {
   sourceId: Id64String;
@@ -39,12 +41,14 @@ export interface SourceAndTarget {
 
 /** Properties that are common to all types of link table ECRelationships
  * @public
+ * @extensions
  */
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 /** Parameters for performing a query on [Entity]($backend) classes.
  * @public
+ * @extensions
  */
 export interface EntityQueryParams {
   /** The sql className, in the form "Schema.ClassName", of the class to search. */

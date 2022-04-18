@@ -14,7 +14,9 @@ import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
-import { FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
+import {
+  FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, PositionType, TechniqueFlags,
+} from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addAnimation } from "./Animation";
@@ -218,10 +220,10 @@ const computePositionPostlude = `
   return u_proj * pos;
 `;
 
-function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isThematic: IsThematic, isHiliter: boolean): ProgramBuilder {
+function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isThematic: IsThematic, isHiliter: boolean, positionType: PositionType): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, instanced);
-  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 6, instanced });
+  const builder = new ProgramBuilder(attrMap, { positionType, instanced });
   const vert = builder.vert;
 
   if (animated)
@@ -250,8 +252,8 @@ function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable
 }
 
 /** @internal */
-export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
-  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No, IsThematic.No, true);
+export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified, posType: PositionType): ProgramBuilder {
+  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No, IsThematic.No, true, posType);
 
   addSurfaceFlags(builder, true, false);
   addTexture(builder, IsAnimated.No, IsThematic.No);
@@ -358,31 +360,48 @@ vec3 octDecodeNormal(vec2 e) {
 }
 `;
 
-const computeNormal = `
+function getComputeNormal(quantized: boolean): string {
+  const a = quantized ? "g_vertLutData3.xy" : "g_vertLutData4.zw";
+  const b = quantized ? "g_vertLutData1.zw" : "g_vertLutData5.xy";
+  return `
   if (!u_surfaceFlags[kSurfaceBitIndex_HasNormals])
     return vec3(0.0);
-  vec2 normal = (u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal]) ? g_vertLutData3.xy : g_vertLutData1.zw;
+
+  vec2 normal = (u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal]) ? ${a} : ${b};
   return normalize(MAT_NORM * octDecodeNormal(normal));
 `;
+}
 
-const computeAnimatedNormal = `
+function getComputeAnimatedNormal(quantized: boolean): string {
+  return `
   if (u_animNormalParams.x >= 0.0)
     return normalize(MAT_NORM * computeAnimationNormal(u_animNormalParams.x, u_animNormalParams.y, u_animNormalParams.z));
-${computeNormal}`;
+
+  ${getComputeNormal(quantized)}`;
+}
 
 const applyBackgroundColor = `
   return u_surfaceFlags[kSurfaceBitIndex_BackgroundFill] ? vec4(u_bgColor.rgb, baseColor.a) : baseColor;
 `;
 
-const computeTexCoord = `
-  vec4 rgba = g_vertLutData3;
+function getComputeTexCoord(quantized: boolean): string {
+  const vertData = quantized ? "g_vertLutData3" : "g_vertLutData4";
+  return `
+  vec4 rgba = ${vertData};
   vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
   return chooseVec2WithBitFlag(vec2(0.0), unquantize2d(qcoords, u_qTexCoordParams), surfaceFlags, kSurfaceBit_HasTexture);
 `;
-const computeAnimatedTexCoord = `
+}
+
+function getComputeAnimatedTexCoord(quantized: boolean): string {
+  return `
   if (u_animScalarQParams.x >= 0.0)
     return computeAnimationParam(u_animScalarParams.x, u_animScalarParams.y, u_animScalarParams.z, u_animScalarQParams.x, u_animScalarQParams.y);
-${computeTexCoord}`;
+
+  ${getComputeTexCoord(quantized)}
+`;
+}
+
 const getSurfaceColor = `
 vec4 getSurfaceColor() { return v_color; }
 `;
@@ -440,10 +459,11 @@ export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: b
 function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: IsAnimated) {
   addNormalMatrix(builder.vert, instanced);
 
+  const quantized = "quantized" === builder.vert.positionType;
   builder.vert.addFunction(octDecodeNormal);
   addChooseWithBitFlagFunctions(builder.vert);
-  builder.vert.addFunction("vec3 computeSurfaceNormal()", computeNormal);
-  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : "return computeSurfaceNormal();");
+  builder.vert.addFunction("vec3 computeSurfaceNormal()", getComputeNormal(quantized));
+  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? getComputeAnimatedNormal(quantized) : "return computeSurfaceNormal();");
 
   // Set to true to colorize surfaces based on normals (in world space).
   // You must also set checkMaxVarying to false in ProgramBuilder.buildProgram to avoid assertions, if using a non-optimized build.
@@ -461,7 +481,8 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
   } else {
     builder.vert.addFunction(unquantize2d);
     addChooseWithBitFlagFunctions(builder.vert);
-    builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);
+    const quantized = "quantized" === builder.vert.positionType;
+    builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? getComputeAnimatedTexCoord(quantized) : getComputeTexCoord(quantized));
     builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
       prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
         const surfGeom = params.geometry.asSurface!;
@@ -533,7 +554,7 @@ function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
 
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
-  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable, flags.isThematic, false);
+  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable, flags.isThematic, false, flags.positionType);
   addShaderFlags(builder);
 
   const feat = flags.featureMode;

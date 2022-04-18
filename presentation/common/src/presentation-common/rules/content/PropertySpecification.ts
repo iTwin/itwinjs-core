@@ -42,8 +42,10 @@ export interface PropertyOverrides {
    *   If this behavior is not desirable, set [[doNotHideOtherPropertiesOnDisplayOverride]] attribute to `true`.
    *
    * - `false`: property is made hidden.
+   *
+   * The value can also be set using an ECExpression.
    */
-  isDisplayed?: boolean;
+  isDisplayed?: boolean | string;
 
   /**
    * Custom property [renderer specification]($docs/presentation/content/RendererSpecification.md) that allows assigning a

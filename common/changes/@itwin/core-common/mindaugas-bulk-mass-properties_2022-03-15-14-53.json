@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added \"getMassPropertiesPerCandidate\" RPC operation to IModelReadRpcInterface which returns mass properties for each candidate separately.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
