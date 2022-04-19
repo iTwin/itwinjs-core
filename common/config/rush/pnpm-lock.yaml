@@ -68,7 +68,7 @@ importers:
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
       '@types/jsonwebtoken': 8.5.8
-      '@types/lodash': 4.14.181
+      '@types/lodash': 4.14.182
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/proper-lockfile': 4.1.2
@@ -620,7 +620,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/deep-assign': 0.1.1
-      '@types/lodash': 4.14.181
+      '@types/lodash': 4.14.182
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/qs': 6.9.7
@@ -885,7 +885,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
-      '@types/lodash': 4.14.181
+      '@types/lodash': 4.14.182
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/qs': 6.9.7
@@ -1516,7 +1516,7 @@ importers:
       '@itwin/core-react': link:../../ui/core-react
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
-      '@itwin/itwinui-css': 0.54.1
+      '@itwin/itwinui-css': 0.55.0
       '@itwin/itwinui-react': 1.36.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@testing-library/react': 12.1.5_react-dom@17.0.2+react@17.0.2
@@ -2862,7 +2862,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/fs-extra': 4.0.12
-      '@types/lodash': 4.14.181
+      '@types/lodash': 4.14.182
       '@types/node': 14.14.31
       '@types/yargs': 12.0.20
       eslint: 7.32.0
@@ -2930,7 +2930,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/fs-extra': 4.0.12
-      '@types/lodash': 4.14.181
+      '@types/lodash': 4.14.182
       '@types/node': 14.14.31
       '@types/yargs': 12.0.20
       eslint: 7.32.0
@@ -3057,7 +3057,7 @@ importers:
       '@itwin/electron-authorization': 0.8.3
       '@itwin/express-server': link:../../core/express-server
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
-      '@itwin/itwinui-css': 0.54.1
+      '@itwin/itwinui-css': 0.55.0
       '@itwin/itwinui-react': 1.36.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
@@ -3135,7 +3135,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
-      '@itwin/itwinui-css': 0.54.1
+      '@itwin/itwinui-css': 0.55.0
       '@itwin/itwinui-icons-react': 1.9.0_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.36.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
@@ -3273,7 +3273,7 @@ importers:
       '@itwin/imodels-access-frontend': 1.0.1
       '@itwin/imodels-client-authoring': 1.0.1
       '@itwin/imodels-client-management': 1.0.1
-      '@itwin/itwinui-css': 0.54.1
+      '@itwin/itwinui-css': 0.55.0
       '@itwin/itwinui-icons-react': 1.9.0_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.36.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../extensions/map-layers
@@ -3292,7 +3292,7 @@ importers:
       react-resize-detector: 6.7.8_react-dom@17.0.2+react@17.0.2
       react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
       react-table: 7.7.0_react@17.0.2
-      redux: 4.1.2
+      redux: 4.2.0
       semver: 5.7.1
     devDependencies:
       '@axe-core/react': 4.3.1
@@ -3442,7 +3442,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/detect-port': 1.1.0
       '@types/express': 4.17.13
-      '@types/lodash': 4.14.181
+      '@types/lodash': 4.14.182
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/puppeteer': 2.0.1
@@ -3774,7 +3774,7 @@ importers:
       uuid: ^7.0.3
       xmlhttprequest: ^1.8.0
     dependencies:
-      '@itwin/itwinui-css': 0.54.1
+      '@itwin/itwinui-css': 0.55.0
       '@itwin/itwinui-react': 1.36.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       immer: 9.0.6
@@ -3906,7 +3906,7 @@ importers:
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/core-telemetry': link:../../core/telemetry
-      '@itwin/itwinui-css': 0.54.1
+      '@itwin/itwinui-css': 0.55.0
       '@itwin/itwinui-icons-react': 1.9.0_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.36.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-components': link:../../presentation/components
@@ -3941,7 +3941,7 @@ importers:
       '@types/chai-spies': 1.0.3
       '@types/enzyme': 3.9.3
       '@types/faker': 4.1.12
-      '@types/lodash': 4.14.181
+      '@types/lodash': 4.14.182
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/react': 17.0.44
@@ -3971,7 +3971,7 @@ importers:
       react-dom: 17.0.2_react@17.0.2
       react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
       react-test-renderer: 17.0.2_react@17.0.2
-      redux: 4.1.2
+      redux: 4.2.0
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
@@ -4064,7 +4064,7 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/itwinui-css': 0.54.1
+      '@itwin/itwinui-css': 0.55.0
       '@itwin/itwinui-react': 1.36.0_react-dom@17.0.2+react@17.0.2
       '@types/shortid': 0.0.29
       callable-instance2: 1.0.0
@@ -4104,7 +4104,7 @@ importers:
       '@types/enzyme': 3.9.3
       '@types/faker': 4.1.12
       '@types/linkify-it': 2.1.0
-      '@types/lodash': 4.14.181
+      '@types/lodash': 4.14.182
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/react': 17.0.44
@@ -4209,7 +4209,7 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/itwinui-css': 0.54.1
+      '@itwin/itwinui-css': 0.55.0
       '@itwin/itwinui-react': 1.36.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       dompurify: 2.3.6
@@ -4234,7 +4234,7 @@ importers:
       '@types/chai-spies': 1.0.3
       '@types/dompurify': 2.3.3
       '@types/enzyme': 3.9.3
-      '@types/lodash': 4.14.181
+      '@types/lodash': 4.14.182
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/react': 17.0.44
@@ -4338,7 +4338,7 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/itwinui-css': 0.54.1
+      '@itwin/itwinui-css': 0.55.0
       '@itwin/itwinui-react': 1.36.0_react-dom@17.0.2+react@17.0.2
       callable-instance2: 1.0.0
       classnames: 2.3.1
@@ -4368,7 +4368,7 @@ importers:
       '@types/chai-string': 1.4.2
       '@types/enzyme': 3.9.3
       '@types/faker': 4.1.12
-      '@types/lodash': 4.14.181
+      '@types/lodash': 4.14.182
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/react': 17.0.44
@@ -7090,7 +7090,7 @@ packages:
       eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
       eslint-plugin-testing-library: 3.10.2_eslint@7.32.0+typescript@4.4.4
       eslint-webpack-plugin: 2.6.0_eslint@7.32.0+webpack@4.44.2
-      fast-sass-loader: 2.0.1_sass@1.50.0+webpack@4.44.2
+      fast-sass-loader: 2.0.1_sass@1.50.1+webpack@4.44.2
       file-loader: 6.1.1_webpack@4.44.2
       fs-extra: 9.1.0
       html-webpack-plugin: 4.5.0_webpack@4.44.2
@@ -7114,8 +7114,8 @@ packages:
       react-refresh: 0.8.3
       resolve: 1.18.1
       resolve-url-loader: 3.1.4
-      sass: 1.50.0
-      sass-loader: 10.2.1_sass@1.50.0+webpack@4.44.2
+      sass: 1.50.1
+      sass-loader: 10.2.1_sass@1.50.1+webpack@4.44.2
       semver: 7.3.2
       source-map-loader: 1.1.3_webpack@4.44.2
       speed-measure-webpack-plugin: 1.5.0_webpack@4.44.2
@@ -7190,7 +7190,7 @@ packages:
       eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
       eslint-plugin-testing-library: 3.10.2_eslint@7.32.0+typescript@4.4.4
       eslint-webpack-plugin: 2.6.0_eslint@7.32.0+webpack@4.44.2
-      fast-sass-loader: 2.0.1_sass@1.50.0+webpack@4.44.2
+      fast-sass-loader: 2.0.1_sass@1.50.1+webpack@4.44.2
       file-loader: 6.1.1_webpack@4.44.2
       fs-extra: 9.1.0
       html-webpack-plugin: 4.5.0_webpack@4.44.2
@@ -7213,8 +7213,8 @@ packages:
       react-refresh: 0.8.3
       resolve: 1.18.1
       resolve-url-loader: 3.1.4
-      sass: 1.50.0
-      sass-loader: 10.2.1_sass@1.50.0+webpack@4.44.2
+      sass: 1.50.1
+      sass-loader: 10.2.1_sass@1.50.1+webpack@4.44.2
       semver: 7.3.2
       source-map-loader: 1.1.3_webpack@4.44.2
       speed-measure-webpack-plugin: 1.5.0_webpack@4.44.2
@@ -7602,6 +7602,9 @@ packages:
 
   /@itwin/itwinui-css/0.54.1:
     resolution: {integrity: sha512-oRBo7g6GR7eoADggNhYAx/ctGXlt0F7uBVSxG3YbTo1hnpsZpHZEtyj6LcxwNjbS2m3uAoiGk5zL9EqYumapfA==}
+
+  /@itwin/itwinui-css/0.55.0:
+    resolution: {integrity: sha512-DOO0tuVyx7bmBlCcnz1PA0cOBnm9CWHKPnO2PG+wMXiRSa+aWmlLsgec6x6eJvAuAUenO2LdjQFNTTTKuW3GuA==}
 
   /@itwin/itwinui-icons-react/1.9.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-j62c8/nlE0gGCmB0z3V6mxagUYOJR6/EPIeg7pFyfAT1x15VL24/F4QpkdNj/CbJtsj9a/kwkUBxrmNFKNnDTA==}
@@ -8139,8 +8142,8 @@ packages:
       immer: 9.0.12
       react: 17.0.2
       react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
-      redux: 4.1.2
-      redux-thunk: 2.4.1_redux@4.1.2
+      redux: 4.2.0
+      redux-thunk: 2.4.1_redux@4.2.0
       reselect: 4.1.5
     dev: false
 
@@ -8777,8 +8780,8 @@ packages:
     resolution: {integrity: sha512-Q7DYAOi9O/+cLLhdaSvKdaumWyHbm7HAk/bFwwyTuU0arR5yyCeW5GOoqt4tJTpDRxhpx9Q8kQL6vMpuw9hDSw==}
     dev: true
 
-  /@types/lodash/4.14.181:
-    resolution: {integrity: sha512-n3tyKthHJbkiWhDZs3DkhkCzt2MexYHXlX0td5iMplyfwketaOeKboEVBqzceH7juqvEg3q5oUoBFxSLu7zFag==}
+  /@types/lodash/4.14.182:
+    resolution: {integrity: sha512-/THyiqyQAP9AfARo4pF+aCGcyiQ94tX/Is2I7HofNRqoYLgN1PBoOWu2/zTA5zMxzP5EFutMtWtGAFRKUe961Q==}
     dev: true
 
   /@types/lolex/2.1.3:
@@ -8897,7 +8900,7 @@ packages:
       '@types/hoist-non-react-statics': 3.3.1
       '@types/react': 17.0.44
       hoist-non-react-statics: 3.3.2
-      redux: 4.1.2
+      redux: 4.2.0
 
   /@types/react-select/3.0.26:
     resolution: {integrity: sha512-rAaiD0SFkBi3PUwp1DrJV04CobPl2LuZXF+kv6MKw8kaeGo82xTOZzjM8DDi4lrdkqGbInZiE2QO9nIJm3bqgw==}
@@ -10783,7 +10786,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001332
-      electron-to-chromium: 1.4.111
+      electron-to-chromium: 1.4.113
     dev: true
 
   /browserslist/4.14.2:
@@ -10792,7 +10795,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001332
-      electron-to-chromium: 1.4.111
+      electron-to-chromium: 1.4.113
       escalade: 3.1.1
       node-releases: 1.1.77
     dev: true
@@ -10803,7 +10806,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001332
-      electron-to-chromium: 1.4.111
+      electron-to-chromium: 1.4.113
       escalade: 3.1.1
       node-releases: 2.0.3
       picocolors: 1.0.0
@@ -12410,7 +12413,7 @@ packages:
     dependencies:
       '@react-dnd/asap': 4.0.1
       '@react-dnd/invariant': 2.0.0
-      redux: 4.1.2
+      redux: 4.2.0
 
   /dns-equal/1.0.0:
     resolution: {integrity: sha1-s55/HabrCnW6nBcySzR1PEfgZU0=}
@@ -12599,8 +12602,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.4.111:
-    resolution: {integrity: sha512-/s3+fwhKf1YK4k7btOImOzCQLpUjS6MaPf0ODTNuT4eTM1Bg4itBpLkydhOzJmpmH6Z9eXFyuuK5czsmzRzwtw==}
+  /electron-to-chromium/1.4.113:
+    resolution: {integrity: sha512-s30WKxp27F3bBH6fA07FYL2Xm/FYnYrKpMjHr3XVCTUb9anAyZn/BeZfPWgTZGAbJeT4NxNwISSbLcYZvggPMA==}
 
   /electron/14.2.9:
     resolution: {integrity: sha512-7LdJFmqVzO9NLKO0hwOwPA6Kv4GSybGMcej8f2q7fVT4O8mIfL9oo/v4axVjVWm0+58ROQtHv8hYnnAs3ygG0Q==}
@@ -13142,7 +13145,7 @@ packages:
       eslint-module-utils: 2.7.3
       find-up: 2.1.0
       has: 1.0.3
-      is-core-module: 2.8.1
+      is-core-module: 2.9.0
       minimatch: 3.1.2
       object.values: 1.1.5
       pkg-up: 2.0.0
@@ -13654,7 +13657,7 @@ packages:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
     dev: false
 
-  /fast-sass-loader/2.0.1_sass@1.50.0+webpack@4.44.2:
+  /fast-sass-loader/2.0.1_sass@1.50.1+webpack@4.44.2:
     resolution: {integrity: sha512-RGQNKA9d7OiF9dIa65QOabz4guGRZGg4CS2uXvLyWdmy5A6VLK8ZZEQKKlJ54ILmOpdFyaAq8u3Fj3oNkSmdug==}
     peerDependencies:
       sass: 1.x
@@ -13665,7 +13668,7 @@ packages:
       co: 4.6.0
       fs-extra: 3.0.1
       loader-utils: 1.4.0
-      sass: 1.50.0
+      sass: 1.50.1
       webpack: 4.44.2
     dev: true
 
@@ -14092,14 +14095,14 @@ packages:
       call-bind: 1.0.2
       define-properties: 1.1.4
       es-abstract: 1.19.5
-      functions-have-names: 1.2.2
+      functions-have-names: 1.2.3
     dev: true
 
   /functional-red-black-tree/1.0.1:
     resolution: {integrity: sha1-GwqzvVU7Kg1jmdKcDj6gslIHgyc=}
 
-  /functions-have-names/1.2.2:
-    resolution: {integrity: sha512-bLgc3asbWdwPbx2mNk2S49kmJCuQeu0nfmaOgbs8WIyzzkw3r4htszdIi9Q9EMezDPTYuJx2wvjZ/EwgAthpnA==}
+  /functions-have-names/1.2.3:
+    resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
 
   /fuse.js/3.6.1:
     resolution: {integrity: sha512-hT9yh/tiinkmirKrlv4KWOjztdoZo1mx9Qh4KvWqC7isoXwdUY3PNWUxceF4/qO9R6riA2C29jdTOeQOIROjgw==}
@@ -15138,8 +15141,8 @@ packages:
       rgba-regex: 1.0.0
     dev: true
 
-  /is-core-module/2.8.1:
-    resolution: {integrity: sha512-SdNCUs284hr40hFTFP6l0IfZ/RSrMXF3qgoRHd3/79unUTvrFO/JoXwkGm+5J/Oe3E/b5GsnG330uUNgRpu1PA==}
+  /is-core-module/2.9.0:
+    resolution: {integrity: sha512-+5FPy5PnwmO3lvfMb0AsoPaBG+5KHUI0wYFXOtYPnVVVspTFUuMZNfNaNVRt3FZadstu2c8x23vykRW/NBoU6A==}
     dependencies:
       has: 1.0.3
 
@@ -17420,8 +17423,8 @@ packages:
       - supports-color
     dev: true
 
-  /node-abi/3.8.0:
-    resolution: {integrity: sha512-tzua9qWWi7iW4I42vUPKM+SfaF0vQSLAm4yO5J83mSwB7GeoWrDKC/K+8YCnYNwqP5duwazbw2X9l4m8SC2cUw==}
+  /node-abi/3.15.0:
+    resolution: {integrity: sha512-Ic6z/j6I9RLm4ov7npo1I48UQr2BEyFCqh6p7S1dhEx9jPO0GPGq/e2Rb7x7DroQrmiVMz/Bw1vJm9sPAl2nxA==}
     engines: {node: '>=10'}
     dependencies:
       semver: 7.3.7
@@ -19051,7 +19054,7 @@ packages:
       minimist: 1.2.6
       mkdirp-classic: 0.5.3
       napi-build-utils: 1.0.2
-      node-abi: 3.8.0
+      node-abi: 3.15.0
       npmlog: 4.1.2
       pump: 3.0.0
       rc: 1.2.8
@@ -19466,7 +19469,7 @@ packages:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-redux: 7.2.8_react-dom@17.0.2+react@17.0.2
-      redux: 4.1.2
+      redux: 4.2.0
       use-memo-one: 1.1.2_react@17.0.2
     transitivePeerDependencies:
       - react-native
@@ -19817,16 +19820,16 @@ packages:
     dependencies:
       minimatch: 3.0.4
 
-  /redux-thunk/2.4.1_redux@4.1.2:
+  /redux-thunk/2.4.1_redux@4.2.0:
     resolution: {integrity: sha512-OOYGNY5Jy2TWvTL1KgAlVy6dcx3siPJ1wTq741EPyUKfn6W6nChdICjZwCd0p8AZBs5kWpZlbkXW2nE/zjUa+Q==}
     peerDependencies:
       redux: ^4
     dependencies:
-      redux: 4.1.2
+      redux: 4.2.0
     dev: false
 
-  /redux/4.1.2:
-    resolution: {integrity: sha512-SH8PglcebESbd/shgf6mii6EIoRM0zrQyjcuQ+ojmfxjTtE0z9Y8pa62iA/OJ58qjP6j27uyW4kUF4jl/jd6sw==}
+  /redux/4.2.0:
+    resolution: {integrity: sha512-oSBmcKKIuIR4ME29/AeNUnl5L+hvBq7OaJWzaptTQJAntaPvxIJqfnjbaEiCzzaIz+XmVILfqAM3Ob0aXLPfjA==}
     dependencies:
       '@babel/runtime': 7.17.9
 
@@ -19871,7 +19874,7 @@ packages:
     dependencies:
       call-bind: 1.0.2
       define-properties: 1.1.4
-      functions-have-names: 1.2.2
+      functions-have-names: 1.2.3
 
   /regexpp/3.2.0:
     resolution: {integrity: sha512-pq2bWo9mVD43nbts2wGv17XLiNLya+GklZ8kaDLV2Z08gDCsGpnKn9BFMepvWuHCbyVvY7J5o5+BVvoQbmlJLg==}
@@ -20062,21 +20065,21 @@ packages:
   /resolve/1.18.1:
     resolution: {integrity: sha512-lDfCPaMKfOJXjy0dPayzPdF1phampNWr3qFCjAu+rw/qbQmr5jWH5xN2hwh9QKfw9E5v4hwV7A+jrCmL8yjjqA==}
     dependencies:
-      is-core-module: 2.8.1
+      is-core-module: 2.9.0
       path-parse: 1.0.7
     dev: true
 
   /resolve/1.19.0:
     resolution: {integrity: sha512-rArEXAgsBG4UgRGcynxWIWKFvh/XZCcS8UJdHhwy91zwAvCZIbcs+vAbflgBnNjYMs/i/i+/Ux6IZhML1yPvxg==}
     dependencies:
-      is-core-module: 2.8.1
+      is-core-module: 2.9.0
       path-parse: 1.0.7
 
   /resolve/1.22.0:
     resolution: {integrity: sha512-Hhtrw0nLeSrFQ7phPp4OOcVjLPIeMnRlr5mcnVuMe7M/7eBn98A3hmFRLoFo3DLZkivSYwhRUJTyPyWAk56WLw==}
     hasBin: true
     dependencies:
-      is-core-module: 2.8.1
+      is-core-module: 2.9.0
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
@@ -20089,7 +20092,7 @@ packages:
   /resolve/2.0.0-next.3:
     resolution: {integrity: sha512-W8LucSynKUIDu9ylraa7ueVZ7hc0uAgJBxVsQSKOXOyle8a93qXhcz+XAXZ8bIq2d6i4Ehddn6Evt+0/UwKk6Q==}
     dependencies:
-      is-core-module: 2.8.1
+      is-core-module: 2.9.0
       path-parse: 1.0.7
 
   /responselike/1.0.2:
@@ -20286,7 +20289,7 @@ packages:
     resolution: {integrity: sha512-vTxrZz4dX5W86M6oVWVdOVe72ZiPs41Oi7Z6Km4W5Turyz28mrXSJhhEBZoRtzJWIv3833WKVwLSDWWkEfupMg==}
     dev: true
 
-  /sass-loader/10.2.1_sass@1.50.0+webpack@4.44.2:
+  /sass-loader/10.2.1_sass@1.50.1+webpack@4.44.2:
     resolution: {integrity: sha512-RRvWl+3K2LSMezIsd008ErK4rk6CulIMSwrcc2aZvjymUgKo/vjXGp1rSWmfTUX7bblEOz8tst4wBwWtCGBqKA==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
@@ -20305,14 +20308,14 @@ packages:
       klona: 2.0.5
       loader-utils: 2.0.2
       neo-async: 2.6.2
-      sass: 1.50.0
+      sass: 1.50.1
       schema-utils: 3.1.1
       semver: 7.3.2
       webpack: 4.44.2
     dev: true
 
-  /sass/1.50.0:
-    resolution: {integrity: sha512-cLsD6MEZ5URXHStxApajEh7gW189kkjn4Rc8DQweMyF+o5HF5nfEz8QYLMlPsTOD88DknatTmBWkOcw5/LnJLQ==}
+  /sass/1.50.1:
+    resolution: {integrity: sha512-noTnY41KnlW2A9P8sdwESpDmo+KBNkukI1i8+hOK3footBUcohNHtdOJbckp46XO95nuvcHDDZ+4tmOnpK3hjw==}
     engines: {node: '>=12.0.0'}
     hasBin: true
     dependencies:
