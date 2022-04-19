@@ -134,9 +134,9 @@ export class V2CheckpointManager {
 
       this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir });
 
-      // Its fine if its not a daemon, but lets just log a warning instead
+      // Its fine if its not a daemon, but lets just log an info message
       if (!this._cloudCache.isDaemon)
-        Logger.logWarning(loggerCategory, "V2Checkpoint manager tunning with no iTwinDaemon.");
+        Logger.logInfo(loggerCategory, "V2Checkpoint manager running with no iTwinDaemon.");
     }
     return this._cloudCache;
   }
