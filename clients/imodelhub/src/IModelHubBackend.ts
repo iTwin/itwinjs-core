@@ -338,8 +338,6 @@ export class IModelHubBackend implements BackendHubAccess {
       sasToken: containerAccessKeyAccount,
       dbName: containerAccessKeyDbName,
       storageType: "azure?sas=1",
-      accessToken: containerAccessKeySAS,
-      accessName: containerAccessKeyAccount,
     };
   }
 

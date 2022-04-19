@@ -7,11 +7,11 @@ import { assert } from "chai";
 import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { CloudSqlite, IModelHost, IModelJsFs, SnapshotDb, V2CheckpointManager } from "@itwin/core-backend";
+import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { CloudSqlite, convertOldToNewV2CheckpointAccessProps, IModelHost, IModelJsFs, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { HubUtility } from "../HubUtility";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
@@ -36,7 +36,7 @@ describe.skip("Checkpoints", () => {
   const startDaemon = async () => {
     // Start daemon process and wait for it to be ready
     fs.chmodSync((CloudSqlite.Daemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
-    daemon = CloudSqlite.Daemon.start({...daemonProps, ...cacheProps});
+    daemon = CloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...accountProps });
     while (!IModelJsFs.existsSync(path.join(blockcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));
     }
@@ -82,12 +82,12 @@ describe.skip("Checkpoints", () => {
     testITwinId = await HubUtility.getTestITwinId(accessToken);
     testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
     testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId });
-    testChangeSetFirstVersion = await IModelHost.hubAccess.getChangesetFromVersion({accessToken, iModelId: testIModelId, version: IModelVersion.first()});
+    testChangeSetFirstVersion = await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId: testIModelId, version: IModelVersion.first() });
     testITwinId2 = await HubUtility.getTestITwinId(accessToken);
     testIModelId2 = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
     testChangeSet2 = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId2 });
 
-    let checkpoint = await IModelHost.hubAccess.queryV2Checkpoint({
+    const checkpoint = await IModelHost.hubAccess.queryV2Checkpoint({
       expectV2: true,
       iTwinId: testITwinId,
       iModelId: testIModelId,
@@ -97,13 +97,12 @@ describe.skip("Checkpoints", () => {
       },
     });
     assert.isDefined(checkpoint, "checkpoint missing");
-    checkpoint = convertOldToNewV2CheckpointAccessProps(checkpoint!);
-    console.log(`checkpoint: ${JSON.stringify(checkpoint)}`);
+    // console.log(`checkpoint: ${JSON.stringify(checkpoint)}`);
 
     await startDaemon();
 
-    assert.isDefined(checkpoint?.accessName, "checkpoint storage account is invalid");
-    assert.isDefined(checkpoint?.accessToken, "checkpoint accessToken is invalid");
+    assert.isDefined(checkpoint?.accountName, "checkpoint storage account is invalid");
+    assert.isDefined(checkpoint?.sasToken, "checkpoint accessToken is invalid");
 
   });
 

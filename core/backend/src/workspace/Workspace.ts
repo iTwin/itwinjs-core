@@ -211,7 +211,7 @@ export interface WorkspaceOpts {
  * @beta
  */
 export interface Workspace {
-  /** The local directory for the WorkspaceDb files with the name `${containerId}.itwin-workspace`. */
+  /** The directory for local WorkspaceDb files with the name `${containerId}.itwin-workspace`. */
   readonly containerDir: LocalDirName;
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;

@@ -42,33 +42,16 @@ export class LockConflict extends IModelError {
     super(IModelHubStatus.LockOwnedByAnotherBriefcase, msg);
   }
 }
-/**
- * Converts the old deprecated properties, sasToken and accountName, if present to the new properties accessToken and accessName
- * @param checkpoint v2checkpointaccessprops
- * @returns updated checkpoint
- * @internal
- */
-export function convertOldToNewV2CheckpointAccessProps(checkpoint: V2CheckpointAccessProps): V2CheckpointAccessProps {
-  if (checkpoint.sasToken && checkpoint.accountName) {
-    checkpoint.accessToken = checkpoint.sasToken;
-    checkpoint.accessName = checkpoint.accountName;
-  }
-  return checkpoint;
-}
 
 /**
  * The properties to access a V2 checkpoint through a daemon.
  * @internal
  */
 export interface V2CheckpointAccessProps {
-  /** DEPRECATED see accessName */
-  readonly accountName?: string;
-  /** DEPRECATED see accessToken */
-  readonly sasToken?: AccessToken;
   /** blob store account name. */
-  accessName: string;
+  readonly accountName: string;
   /** AccessToken that grants access to the container. */
-  accessToken: AccessToken;
+  readonly sasToken: AccessToken;
   /** The name of the iModel's blob store container holding all checkpoints. */
   readonly containerId: string;
   /** The name of the virtual file within the container, used for the checkpoint */

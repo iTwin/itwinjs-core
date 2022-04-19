@@ -2043,8 +2043,6 @@ describe("iModel", () => {
       accountName: "testAccount",
       containerId: "imodelblocks-123",
       sasToken: "testSAS",
-      accessToken: "testSAS",
-      accessName: "testAccount",
       dbName: "testDb",
       storageType: "azure?sas=1",
     };

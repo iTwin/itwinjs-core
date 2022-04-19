@@ -17,7 +17,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { convertOldToNewV2CheckpointAccessProps, V2CheckpointAccessProps } from "./BackendHubAccess";
+import { V2CheckpointAccessProps } from "./BackendHubAccess";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -132,7 +132,7 @@ export class V2CheckpointManager {
       if (!rootDir) {
         rootDir = V2CheckpointManager.getFolder();
         Logger.logWarning(loggerCategory, `No BLOCKCACHE_DIR found in process.env, using ${rootDir} instead.`);
-        this._daemonCache = new IModelHost.platform.CloudCache({name: V2CheckpointManager.cloudCacheName, rootDir});
+        this._daemonCache = new IModelHost.platform.CloudCache({ name: V2CheckpointManager.cloudCacheName, rootDir });
 
       }
       this._daemonCache = new IModelHost.platform.CloudCache({ name: V2CheckpointManager.cloudCacheName, rootDir });
@@ -152,7 +152,7 @@ export class V2CheckpointManager {
     return container;
   }
   private static toCloudContainerProps(from: V2CheckpointAccessProps): CloudSqlite.ContainerAccessProps {
-    return { ...from, accessName: from.accessName, accessToken: from.accessToken };
+    return { ...from, accessName: from.accountName, accessToken: from.sasToken };
 
   }
 
@@ -163,7 +163,6 @@ export class V2CheckpointManager {
       v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
       if (!v2props)
         throw new Error("no checkpoint");
-      convertOldToNewV2CheckpointAccessProps(v2props);
     } catch (err: any) {
       throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
@@ -188,8 +187,6 @@ export class V2CheckpointManager {
     const v2props = await IModelHost.hubAccess.queryV2Checkpoint(request.checkpoint);
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
-
-    convertOldToNewV2CheckpointAccessProps(v2props);
 
     CheckpointManager.onDownloadV2.raiseEvent(job);
     const container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2props));
