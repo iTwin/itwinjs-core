@@ -33,7 +33,7 @@ export class WebAppRpcRequest extends RpcRequest {
   /** The maximum size permitted for an encoded component in a URL.
    * @note This is used for features like encoding the payload of a cacheable request in the URL.
    */
-  public static maxUrlComponentSize = 1024;
+  public static maxUrlComponentSize = 4096;
 
   /** The HTTP method for this request. */
   public override method: HttpMethod_T;

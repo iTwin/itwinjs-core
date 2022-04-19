@@ -24,7 +24,7 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
-alpha;ActivationEvent
+alpha;ActivationEvent = "onStartup"
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
@@ -160,9 +160,6 @@ public;EntityState
 internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
-alpha;ExtensionAdmin
-alpha;ExtensionHost
-alpha;ExtensionImpl
 alpha;ExtensionLoader
 alpha;ExtensionLoaderProps
 alpha;ExtensionManifest
@@ -651,7 +648,6 @@ public;ToolAssistanceInstructions
 public;ToolAssistanceKeyboardInfo
 public;ToolAssistanceSection
 public;ToolList = ToolType[]
-alpha;ToolProvider 
 public;ToolRegistry
 public;ToolSettings
 internal;ToolSettingsState

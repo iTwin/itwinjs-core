@@ -55,7 +55,7 @@ import { System } from "./System";
 import { TargetUniforms } from "./TargetUniforms";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
-import { TextureHandle } from "./Texture";
+import { Texture2DHandle, TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
@@ -87,6 +87,11 @@ class EmptyHiliteSet {
   }
 }
 
+interface ReadPixelResources {
+  readonly texture: Texture2DHandle;
+  readonly fbo: FrameBuffer;
+}
+
 /** @internal */
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
   public readonly graphics = new TargetGraphics();
@@ -116,6 +121,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _animationBranches?: AnimationBranchStates;
   private _isReadPixelsInProgress = false;
   private _readPixelsSelector = Pixel.Selector.None;
+  private _readPixelReusableResources?: ReadPixelResources;
   private _drawNonLocatable = true;
   private _currentlyDrawingClassifier?: PlanarClassifier;
   private _analysisFraction: number = 0;
@@ -739,30 +745,78 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.
-    const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === texture) {
+    const resources = this.createOrReuseReadPixelResources(rect);
+    if (resources === undefined) {
       receiver(undefined);
       return;
     }
 
     let result: Pixel.Buffer | undefined;
-    const fbo = FrameBuffer.create([texture]);
-    if (undefined !== fbo) {
-      this.renderSystem.frameBufferStack.execute(fbo, true, false, () => {
-        this._drawNonLocatable = !excludeNonLocatable;
-        result = this.readPixelsFromFbo(rect, selector);
-        this._drawNonLocatable = true;
-      });
 
-      dispose(fbo);
-    }
+    this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
+      this._drawNonLocatable = !excludeNonLocatable;
+      result = this.readPixelsFromFbo(rect, selector);
+      this._drawNonLocatable = true;
+    });
 
-    dispose(texture);
+    this.disposeOrReuseReadPixelResources(resources);
 
     receiver(result);
 
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
+  }
+
+  private createOrReuseReadPixelResources(rect: ViewRect): ReadPixelResources | undefined {
+    if (this._readPixelReusableResources !== undefined) {
+
+      // To reuse a texture, we need it to be the same size or bigger than what we need
+      if (this._readPixelReusableResources.texture.width >= rect.width && this._readPixelReusableResources.texture.height >= rect.height) {
+        const resources = this._readPixelReusableResources;
+        this._readPixelReusableResources = undefined;
+
+        return resources;
+      }
+    }
+
+    // Create a new texture/fbo
+    const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (texture === undefined)
+      return undefined;
+
+    const fbo = FrameBuffer.create([texture]);
+    if (fbo === undefined) {
+      dispose(texture);
+      return undefined;
+    }
+
+    return { texture, fbo };
+  }
+
+  private disposeOrReuseReadPixelResources({texture, fbo}: ReadPixelResources) {
+    const maxReusableTextureSize = 256;
+    const isTooBigToReuse = texture.width > maxReusableTextureSize || texture.height > maxReusableTextureSize;
+
+    let reuseResources = !isTooBigToReuse;
+
+    if (reuseResources && this._readPixelReusableResources !== undefined) {
+
+      // Keep the biggest texture
+      if (this._readPixelReusableResources.texture.width > texture.width && this._readPixelReusableResources.texture.height > texture.height) {
+        reuseResources = false; // The current resources being reused are better
+      } else {
+        // Free memory of the current reusable resources before replacing them
+        dispose(this._readPixelReusableResources.fbo);
+        dispose(this._readPixelReusableResources.texture);
+      }
+    }
+
+    if (reuseResources) {
+      this._readPixelReusableResources = {texture, fbo};
+    } else {
+      dispose(fbo);
+      dispose(texture);
+    }
   }
 
   private beginReadPixels(selector: Pixel.Selector, cullingFrustum?: Frustum): void {

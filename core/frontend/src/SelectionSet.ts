@@ -11,6 +11,7 @@ import { IModelConnection } from "./IModelConnection";
 
 /** Identifies the type of changes made to the [[SelectionSet]] to produce a [[SelectionSetEvent]].
  * @public
+ * @extensions
  */
 export enum SelectionSetEventType {
   /** Elements have been added to the set. */
@@ -25,6 +26,7 @@ export enum SelectionSetEventType {
 
 /** Passed to [[SelectionSet.onChanged]] event listeners when elements are added to the selection set.
  * @public
+ * @extensions
  */
 export interface SelectAddEvent {
   type: SelectionSetEventType.Add;
@@ -36,6 +38,7 @@ export interface SelectAddEvent {
 
 /** Passed to [[SelectionSet.onChanged]] event listeners when elements are removed from the selection set.
  * @public
+ * @extensions
  */
 export interface SelectRemoveEvent {
   /** The type of operation that produced this event. */
@@ -48,6 +51,7 @@ export interface SelectRemoveEvent {
 
 /** Passed to [[SelectionSet.onChanged]] event listeners when elements are simultaneously added to and removed from the selection set.
  * @public
+ * @extensions
  */
 export interface SelectReplaceEvent {
   type: SelectionSetEventType.Replace;
@@ -71,6 +75,7 @@ export interface SelectReplaceEvent {
  *  }
  *  ```
  * @public
+ * @extensions
  */
 export type SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent;
 
@@ -172,6 +177,7 @@ class HilitedElementIds extends HilitedIds {
  * @see [[IModelConnection.hilited]] for the HiliteSet associated with an iModel.
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
  * @public
+ * @extensions
  */
 export class HiliteSet {
   private readonly _elements: HilitedElementIds;
@@ -236,6 +242,7 @@ export class HiliteSet {
  * Selected elements are displayed with a customizable hilite effect within a [[Viewport]].
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
  * @public
+ * @extensions
  */
 export class SelectionSet {
   private _elements = new Set<string>();

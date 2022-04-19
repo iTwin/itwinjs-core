@@ -523,6 +523,15 @@ export class UiFramework {
 
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetShowWidgetIcon, value, true);
   }
+  /** Animate Tool Settings on appear  */
+  public static get animateToolSettings(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.animateToolSettings : /* istanbul ignore next */ false;
+  }
+  public static setAnimateToolSettings(value: boolean) {
+    if (UiFramework.animateToolSettings === value)
+      return;
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.AnimateToolSettings, value, true);
+  }
 
   /** @alpha */
   public static get autoCollapseUnpinnedPanels(): boolean {
@@ -533,6 +542,7 @@ export class UiFramework {
    * mouse leaves the widget panel. The default behavior is to require a mouse click outside
    * the panel before it is closed.
    * @alpha */
+
   public static setAutoCollapseUnpinnedPanels(value: boolean) {
     if (UiFramework.autoCollapseUnpinnedPanels === value)
       return;
