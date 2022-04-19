@@ -254,6 +254,9 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta viewport sync *viewportId1* *viewportId2*` - Synchronize the contents of two viewports, specifying them by integer Id displayed in their title bars. Omit the Ids to disconnect two previously synchronized viewports.
 * `dta frustum sync *viewportId1* *viewportId2*` - Like `dta viewport sync but synchronizes only the frusta of the viewports.
 * `dta gen tile *modelId=<modelId>* *contentId=<contentId>*` - Trigger a request to obtain tile content for the specified tile. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
+* `dta gen graphics` - Trigger a requestElementGraphics call to generate graphics for a single element. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
+  * `elementId=Id` The element for which to obtain graphics
+  * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
 
 ## Editing
 
