@@ -136,8 +136,7 @@
         "files": [
           "*.test.ts",
           "*.test.tsx",
-          "**/test/**/*.ts",
-          "**/test/**/*.tsx"
+          "**/test/**/*.ts"
         ],
         "rules": {
           "@itwin/no-internal-barrel-imports": "off"
