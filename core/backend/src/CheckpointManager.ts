@@ -254,11 +254,11 @@ export class CheckpointManager {
       else
         Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
       return changesetId;
-    } catch (error) {
-      if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
+    } catch (error: any) {
+      if (error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
         return V1CheckpointManager.downloadCheckpoint(request);
 
-      throw (error); // most likely, was aborted
+      throw error; // most likely, was aborted
     }
   }
 
