@@ -14,7 +14,7 @@ import {
 import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
 import { MeshArgs, Point3dList, PolylineArgs } from "./mesh/MeshPrimitives";
-import { createSurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
+import { createSurfaceMaterial, SurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
 
 /**
@@ -254,6 +254,7 @@ export class VertexTable implements VertexTableProps {
 export interface VertexTableWithIndices {
   vertices: VertexTable;
   indices: VertexIndices;
+  material?: SurfaceMaterial;
 }
 
 /**

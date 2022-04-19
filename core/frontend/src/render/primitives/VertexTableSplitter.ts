@@ -7,13 +7,15 @@
  */
 
 import { assert, Constructor, Id64 } from "@itwin/core-bentley";
-import { ColorDef, PackedFeatureTable } from "@itwin/core-common";
+import { ColorDef, PackedFeatureTable, RenderMaterial } from "@itwin/core-common";
 import {
   computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,
 } from "./VertexTable";
 import { PointStringParams } from "./PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
 import { EdgeParams } from "./EdgeParams";
+import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
+import { IModelApp } from "../../IModelApp";
 
 export type ComputeNodeId = (elementId: Id64.Uint32Pair) => number;
 
@@ -127,7 +129,7 @@ export class IndexBuffer {
   }
 
   public get numIndices(): number {
-    assert((this._builder.length % 3) === 0);;;;
+    assert((this._builder.length % 3) === 0);
     return this._builder.length / 3;
   }
 
@@ -170,8 +172,7 @@ class VertexBuffer {
   }
 
   /** Construct the finished vertex table. */
-  public buildVertexTable(maxDimension: number, colorTable: ColorTable | undefined): VertexTable {
-    // ###TODO support material atlas.
+  public buildVertexTable(maxDimension: number, colorTable: ColorTable | undefined, materialAtlasTable: MaterialAtlasTable): VertexTable {
     const source = this._source;
     colorTable = colorTable ?? source.uniformColor;
     assert(undefined !== colorTable);
@@ -186,8 +187,14 @@ class VertexBuffer {
       rgbaData.set(prevData, 0);
     }
 
-    if (colorTable instanceof Uint32Array)
-      rgbaData.set(colorTable, this.vertexSize * this.length);
+    let tableSize = this.vertexSize * this.length;
+    if (colorTable instanceof Uint32Array) {
+      rgbaData.set(colorTable, tableSize);
+      tableSize += colorTable.length;
+    }
+
+    if (materialAtlasTable instanceof Uint32Array)
+      rgbaData.set(materialAtlasTable, tableSize);
 
     const tableProps: VertexTableProps = {
       data: new Uint8Array(rgbaData.buffer, rgbaData.byteOffset, rgbaData.byteLength),
@@ -223,9 +230,11 @@ class ColorTableRemapper {
   }
 
   /** Extract the color index stored in `vertex`, ensure it is present in the remapped color table, and return its index in that table. */
-  public remap(vertex: Uint32Array): void {
-    this._32[0] = vertex[1];
-    const oldIndex = this._16[1];
+  public remap(vertex: Uint32Array, usesUnquantizedPositions: boolean | undefined): void {
+    const vertIndex = usesUnquantizedPositions ? 4 : 1;
+    const shortIndex = usesUnquantizedPositions ? 0 : 1;
+    this._32[0] = vertex[vertIndex];
+    const oldIndex = this._16[shortIndex];
     let newIndex = this._remappedIndices.get(oldIndex);
     if (undefined === newIndex) {
       newIndex = this.colors.length;
@@ -234,8 +243,8 @@ class ColorTableRemapper {
       this.colors.push(color);
     }
 
-    this._16[1] = newIndex;
-    vertex[1] = this._32[0];
+    this._16[shortIndex] = newIndex;
+    vertex[vertIndex] = this._32[0];
   }
 
   /** Construct the finished color table. */
@@ -245,19 +254,98 @@ class ColorTableRemapper {
   }
 }
 
+type MaterialAtlasTable = Uint32Array | SurfaceMaterial | undefined;
+
+class MaterialAtlasRemapper {
+  private readonly _remappedIndices = new Map<number, number>();
+  private readonly _atlasTable: Uint32Array;
+  public readonly materials: number[] = [];
+  private readonly _32 = new Uint32Array(1);
+  private readonly _8 = new Uint8Array(this._32.buffer);
+
+  public constructor(_atlasTable: Uint32Array) {
+    this._atlasTable = _atlasTable;
+  }
+
+  /** Extract the mat index stored in `vertex`, ensure it is present in the remapped atlas table, and return its index in that table. */
+  public remap(vertex: Uint32Array, usesUnquantizedPositions: boolean | undefined): void {
+    const vertIndex = usesUnquantizedPositions ? 3 : 2;
+    this._32[0] = vertex[vertIndex];
+    const oldIndex = this._8[3];
+    let newIndex = this._remappedIndices.get(oldIndex);
+    if (undefined === newIndex) {
+      newIndex = this.materials.length / 4;
+      this._remappedIndices.set(oldIndex, newIndex);
+      let index = oldIndex * 4;
+      this.materials.push(this._atlasTable[index++]);
+      this.materials.push(this._atlasTable[index++]);
+      this.materials.push(this._atlasTable[index++]);
+      this.materials.push(this._atlasTable[index]);
+    }
+
+    this._8[3] = newIndex;
+    vertex[vertIndex] = this._32[0];
+  }
+
+  private unpackFloat(value: number): number {
+    const valUint32 = new Uint32Array(value);
+    const bias = 38.0;
+    const temp = (valUint32[0] >>> 24) / 2.0;
+    let exponent = Math.floor(temp);
+    let sign = (temp - exponent) * 2.0;
+    sign = -(sign * 2.0 - 1.0);
+    const base = sign * (valUint32[0] & 0xffffff) / 16777216.0;
+    exponent = exponent - bias;
+    return base * Math.pow (10.0, exponent);
+  }
+
+  private materialFromAtlasEntry(entry: Uint32Array): SurfaceMaterial | undefined {
+    // eslint-disable-next-line deprecation/deprecation
+    const materialParams = new RenderMaterial.Params();
+    const rgbOverridden = (entry[1] & 1) !== 0;
+    const alphaOverridden = (entry[1] & 2) !== 0;
+    // ###TODO: do we need a key?
+    materialParams.diffuseColor = rgbOverridden ? ColorDef.fromTbgr(entry[0] & 0xffffff) : undefined;
+    materialParams.alpha = alphaOverridden ? (entry[0] >>> 24) / 255.0 : undefined;
+    materialParams.diffuse = (entry[1] >>> 24) / 255.0;
+    materialParams.specular = ((entry[1] >>> 16) & 0xff) / 255.0;
+    materialParams.specularColor = ColorDef.fromTbgr(entry[2]);
+    materialParams.specularExponent = this.unpackFloat (entry[3]);
+
+    // ###TODO: figure out best way to get iModel
+    const view = IModelApp.viewManager.selectedView;
+    if (view === undefined)
+      return undefined;
+    // eslint-disable-next-line deprecation/deprecation
+    const material = IModelApp.renderSystem.createMaterial(materialParams, view.iModel);
+    return createSurfaceMaterial (material);
+  }
+
+  /** Construct the finished color table. */
+  public buildAtlasTable(): MaterialAtlasTable {
+    assert(this.materials.length > 0);
+    const m = new Uint32Array(this.materials);
+    return this.materials.length > 4 ? m : this.materialFromAtlasEntry (m);
+  }
+}
+
 /** A node in a split vertex table. Each node corresponds to one or more elements. */
 class Node {
   public readonly vertices: VertexBuffer;
   public readonly remappedIndices = new Map<number, number>();
   public readonly indices = new IndexBuffer();
   public readonly colors?: ColorTableRemapper;
-  // ###TODO remap material indices.
+  public readonly atlas?: MaterialAtlasRemapper;
+  public readonly usesUnquantizedPositions?: boolean;
 
   /** `vertexTable` is the source table containing vertex data for all nodes, from which this node will extract the vertices belong to it. */
-  public constructor(vertexTable: VertexTable) {
+  public constructor(vertexTable: VertexTable, atlasOffset: number | undefined) {
     this.vertices = new VertexBuffer(vertexTable);
-    if (undefined == vertexTable.uniformColor)
+    if (undefined === vertexTable.uniformColor)
       this.colors = new ColorTableRemapper(new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + 4 * vertexTable.numVertices * vertexTable.numRgbaPerVertex));
+    if (undefined !== atlasOffset)
+      this.atlas = new MaterialAtlasRemapper(new Uint32Array(vertexTable.data.buffer, atlasOffset));
+    this.usesUnquantizedPositions = vertexTable.usesUnquantizedPositions;
   }
 
   public addVertex(originalIndex: number, vertex: Uint32Array): void {
@@ -266,7 +354,8 @@ class Node {
       newIndex = this.vertices.length;
       this.remappedIndices.set(originalIndex, newIndex);
 
-      this.colors?.remap(vertex);
+      this.colors?.remap(vertex, this.usesUnquantizedPositions);
+      this.atlas?.remap(vertex, this.usesUnquantizedPositions);
       this.vertices.push(vertex);
     }
 
@@ -274,15 +363,19 @@ class Node {
   }
 
   public buildOutput(maxDimension: number): VertexTableWithIndices {
+    const materialAtlas = this.atlas?.buildAtlasTable();
+    const material: SurfaceMaterial | undefined = (materialAtlas instanceof Uint32Array) ? undefined : materialAtlas;
     return {
       indices: this.indices.toVertexIndices(),
-      vertices: this.vertices.buildVertexTable(maxDimension, this.colors?.buildColorTable()),
+      vertices: this.vertices.buildVertexTable(maxDimension, this.colors?.buildColorTable(), materialAtlas),
+      material,
     };
   }
 }
 
 interface VertexTableSplitArgs extends VertexTableWithIndices {
   featureTable: PackedFeatureTable;
+  atlasOffset?: number;
 }
 
 class VertexTableSplitter {
@@ -302,11 +395,10 @@ class VertexTableSplitter {
     return splitter._nodes;
   }
 
-  // ###TODO: Produce new material atlases, remapping indices.
   private split(): void {
     // Track the most recent feature and corresponding node to avoid repeated lookups - vertices for
     // individual features are largely contiguous.
-    let curState = {
+    const curState = {
       featureIndex: -1,
       node: undefined as unknown as Node,
     };
@@ -329,7 +421,7 @@ class VertexTableSplitter {
         const nodeId = this._computeNodeId(elemId);
         let node = this._nodes.get(nodeId);
         if (undefined === node)
-          this._nodes.set(nodeId, node = new Node(this._input.vertices));
+          this._nodes.set(nodeId, node = new Node(this._input.vertices, this._input.atlasOffset));
 
         curState.node = node;
       }
@@ -445,7 +537,7 @@ function remapSegmentEdges(type: "segments" | "silhouettes", source: EdgeParams,
 
         entry.silhouettes.normalPairs.push(srcNormalPairs[curIndexIndex]);
       } else if (!entry.segments) {
-          entry.segments = { indices: new IndexBuffer(), endPointAndQuadIndices: new Uint32ArrayBuilder() };
+        entry.segments = { indices: new IndexBuffer(), endPointAndQuadIndices: new Uint32ArrayBuilder() };
       }
 
       const segments = entry[type];
@@ -538,16 +630,20 @@ export interface SplitMeshArgs extends SplitVertexTableArgs {
 export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
   const result = new Map<number, MeshParams>();
 
+  const mat = args.params.surface.material;
+  const atlasOffset = undefined !== mat && mat.isAtlas ? mat.vertexTableOffset : undefined;
+
   const nodes = VertexTableSplitter.split({
     indices: args.params.surface.indices,
     vertices: args.params.vertices,
     featureTable: args.featureTable,
+    atlasOffset,
   }, args.computeNodeId);
 
-  let edges = args.params.edges ? splitEdges(args.params.edges, nodes) : undefined;
+  const edges = args.params.edges ? splitEdges(args.params.edges, nodes) : undefined;
 
   for (const [id, node] of nodes) {
-    const { vertices, indices } = node.buildOutput(args.maxDimension);
+    const { vertices, indices, material } = node.buildOutput(args.maxDimension);
     const params = new MeshParams(
       vertices, {
         type: args.params.surface.type,
@@ -556,8 +652,7 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
         hasBakedLighting: args.params.surface.hasBakedLighting,
         hasFixedNormals: args.params.surface.hasFixedNormals,
         textureMapping: args.params.surface.textureMapping,
-        // ###TODO handle material atlases
-        material: args.params.surface.material,
+        material: material !== undefined ? material : args.params.surface.material,
       },
       edges?.get(id),
       args.params.isPlanar,
@@ -630,7 +725,7 @@ export function splitPolylineParams(args: SplitPolylineArgs): Map<number, Polyli
       args.params.isPlanar,
       args.params.type);
 
-      result.set(id, params);
+    result.set(id, params);
   }
 
   return result;
