@@ -104,7 +104,8 @@ export class Downloads {
   }
 }
 
-/** Utility class for attaching to Daemon, opening V2 checkpoints, and downloading them.
+/**
+ * Utility class for opening V2 checkpoints from cloud containers, and also for downloading them.
  * @internal
 */
 export class V2CheckpointManager {
@@ -140,18 +141,18 @@ export class V2CheckpointManager {
     return this._cloudCache;
   }
 
-  private static getContainer(props: CloudSqlite.ContainerAccessProps) {
-    let container = this.containers.get(props.containerId);
-    if (!container) {
-      container = new IModelHost.platform.CloudContainer(props);
-      this.containers.set(props.containerId, container);
-    }
-    return container;
-  }
-
-  // Names differ slightly between the checkpoint api and the CloudSqlite api. Add  members `accountName` from `accessName` and `sasToken` from `accessToken`
+  /** Member names differ slightly between the V2Checkpoint api and the CloudSqlite api. Add aliases `accessName` for `accountName` and `accessToken` for `sasToken` */
   private static toCloudContainerProps(from: V2CheckpointAccessProps): CloudSqlite.ContainerAccessProps {
     return { ...from, accessName: from.accountName, accessToken: from.sasToken };
+  }
+
+  private static getContainer(v2Props: V2CheckpointAccessProps) {
+    let container = this.containers.get(v2Props.containerId);
+    if (!container) {
+      container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2Props));
+      this.containers.set(v2Props.containerId, container);
+    }
+    return container;
   }
 
   public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: IModelJsNative.CloudContainer }> {
@@ -165,10 +166,10 @@ export class V2CheckpointManager {
     }
 
     try {
-      const container = this.getContainer(this.toCloudContainerProps(v2props));
+      const container = this.getContainer(v2props);
       if (!container.isConnected)
         container.connect(this.cloudCache);
-      void CloudSqlite.prefetch(container, v2props.dbName);
+      void CloudSqlite.prefetch(container, v2props.dbName); // don't await this Promise!
       return { dbName: v2props.dbName, container };
     } catch (e: any) {
       const error = `Daemon connect failed: ${e.message}`;
