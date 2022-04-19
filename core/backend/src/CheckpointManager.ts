@@ -108,10 +108,9 @@ export class Downloads {
  * @internal
 */
 export class V2CheckpointManager {
-  private static _daemonCache?: IModelJsNative.CloudCache;
-  private static containers = new Map<string, IModelJsNative.CloudContainer>();
-  /** The name of the CloudCache instance which V2CheckpointManager initializes. */
   public static readonly cloudCacheName = "v2Checkpoints";
+  private static _cloudCache?: IModelJsNative.CloudCache;
+  private static containers = new Map<string, IModelJsNative.CloudContainer>();
 
   public static getFolder(): LocalDirName {
     return path.join(BriefcaseManager.cacheDir, V2CheckpointManager.cloudCacheName);
@@ -122,27 +121,25 @@ export class V2CheckpointManager {
     return path.join(this.getFolder(), `${changesetId}.bim`);
   }
 
-  private static get daemonCache(): IModelJsNative.CloudCache {
-    if (!this._daemonCache) {
+  private static get cloudCache(): IModelJsNative.CloudCache {
+    if (!this._cloudCache) {
       let rootDir = process.env.BLOCKCACHE_DIR;
-      if (!rootDir)
-        throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
 
-      // If no
+      // If no rootDir, use the folder from CheckpointManager
       if (!rootDir) {
-        rootDir = V2CheckpointManager.getFolder();
+        rootDir = this.getFolder();
         Logger.logWarning(loggerCategory, `No BLOCKCACHE_DIR found in process.env, using ${rootDir} instead.`);
-        this._daemonCache = new IModelHost.platform.CloudCache({ name: V2CheckpointManager.cloudCacheName, rootDir });
-
       }
-      this._daemonCache = new IModelHost.platform.CloudCache({ name: V2CheckpointManager.cloudCacheName, rootDir });
+
+      this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir });
+
       // Its fine if its not a daemon, but lets just log a warning instead
-      if (!this._daemonCache.isDaemon)
-        Logger.logWarning(loggerCategory, "Initialized Cloud Cache but iTwinDaemon is not running.");
-      // throw new IModelError(IModelStatus.BadRequest, "iTwinDaemon is not running");
+      if (!this._cloudCache.isDaemon)
+        Logger.logWarning(loggerCategory, "V2Checkpoint manager tunning with no iTwinDaemon.");
     }
-    return this._daemonCache;
+    return this._cloudCache;
   }
+
   private static getContainer(props: CloudSqlite.ContainerAccessProps) {
     let container = this.containers.get(props.containerId);
     if (!container) {
@@ -151,13 +148,13 @@ export class V2CheckpointManager {
     }
     return container;
   }
+
+  // Names differ slightly between the checkpoint api and the CloudSqlite api. Add  members `accountName` from `accessName` and `sasToken` from `accessToken`
   private static toCloudContainerProps(from: V2CheckpointAccessProps): CloudSqlite.ContainerAccessProps {
     return { ...from, accessName: from.accountName, accessToken: from.sasToken };
-
   }
 
   public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: IModelJsNative.CloudContainer }> {
-
     let v2props: V2CheckpointAccessProps | undefined;
     try {
       v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
@@ -170,7 +167,7 @@ export class V2CheckpointManager {
     try {
       const container = this.getContainer(this.toCloudContainerProps(v2props));
       if (!container.isConnected)
-        container.connect(this.daemonCache);
+        container.connect(this.cloudCache);
       void CloudSqlite.prefetch(container, v2props.dbName);
       return { dbName: v2props.dbName, container };
     } catch (e: any) {
