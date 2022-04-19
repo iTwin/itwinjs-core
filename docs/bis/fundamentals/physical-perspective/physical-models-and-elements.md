@@ -50,7 +50,7 @@ PhysicalTypes are often used when a particular PhysicalElement can be ordered fr
 PhysicalTypes can provide geometry and properties to the PhysicalElements to which they are related.
 Each PhysicalElement can be related to a maximum of one PhysicalType.
 
-See [Type Definitions](./type-definitions.md).
+See [Type Definitions](../foundation/type-definitions.md).
 
 ## PhysicalModels
 
@@ -90,5 +90,5 @@ As discussed in [Modeling with BIS](../intro/modeling-with-bis.md), there are ma
 -->
 
 ---
-| Next: [Type Definitions](./type-definitions.md)
+| Next: [Physical Materials](./physical-materials.md)
 |:---
