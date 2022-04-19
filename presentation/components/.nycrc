@@ -8,7 +8,7 @@
     "source-map-support/register",
     "ts-node/register",
     "ignore-styles",
-    "global-jsdom/register"
+    "jsdom-global/register"
   ],
   "exclude": [
     "src/presentation-components.ts",

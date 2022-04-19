@@ -42,7 +42,7 @@
     "extract-api": "betools extract-api --entry=presentation-components",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
-    "test": "mocha --config ../.mocharc.json -r ignore-styles -r global-jsdom/register --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json -r ignore-styles -r jsdom-global/register --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
@@ -103,7 +103,7 @@
     "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
     "jsdom": "^19.0.0",
-    "global-jsdom": "8.4.0",
+    "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "react": "^17.0.0",

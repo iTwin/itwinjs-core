@@ -73,7 +73,7 @@
     "enzyme-to-json": "^3.3.4",
     "eslint": "^7.11.0",
     "jsdom": "^19.0.0",
-    "global-jsdom": "8.4.0",
+    "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "react": "^17.0.0",
@@ -118,7 +118,7 @@
       "scripts/copy-test-setup.js",
       "raf/polyfill",
       "source-map-support/register",
-      "global-jsdom/register",
+      "jsdom-global/register",
       "ignore-styles"
     ],
     "checkLeaks": true,

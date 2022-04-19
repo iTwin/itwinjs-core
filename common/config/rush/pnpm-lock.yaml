@@ -1487,8 +1487,8 @@ importers:
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
-      global-jsdom: 8.4.0
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       mocha: ^8.3.2
       nyc: ^15.1.0
       react: ^17.0.0
@@ -1538,8 +1538,8 @@ importers:
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       react: 17.0.2
@@ -1923,11 +1923,11 @@ importers:
       eslint: ^7.11.0
       faker: ^4.1.0
       fast-sort: ^3.0.2
-      global-jsdom: 8.4.0
       ignore-styles: ^5.0.1
       immer: 9.0.6
       internal-tools: workspace:*
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       mocha: ^8.3.2
       react: ^17.0.0
       react-dom: ^17.0.0
@@ -1995,10 +1995,10 @@ importers:
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       ignore-styles: 5.0.1
       internal-tools: link:../../tools/internal
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       typescript: 4.4.4
 
   ../../full-stack-tests/rpc:
@@ -2348,9 +2348,9 @@ importers:
       faker: ^4.1.0
       fast-deep-equal: ^3.1.3
       fast-sort: ^3.0.2
-      global-jsdom: 8.4.0
       ignore-styles: ^5.0.1
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       micro-memoize: ^4.0.9
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -2406,9 +2406,9 @@ importers:
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
       faker: 4.1.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       react: 17.0.2
@@ -2448,8 +2448,8 @@ importers:
       deep-equal: ^1
       eslint: ^7.11.0
       faker: ^4.1.0
-      global-jsdom: 8.4.0
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       mocha: ^8.3.2
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -2484,8 +2484,8 @@ importers:
       deep-equal: 1.1.1
       eslint: 7.32.0
       faker: 4.1.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -2525,9 +2525,9 @@ importers:
       cross-env: ^5.1.4
       eslint: ^7.11.0
       faker: ^4.1.0
-      global-jsdom: 8.4.0
       ignore-styles: ^5.0.1
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       make-dir: ^1.3.0
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -2564,9 +2564,9 @@ importers:
       cross-env: 5.2.1
       eslint: 7.32.0
       faker: 4.1.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       make-dir: 1.3.0
       mocha: 8.4.0
       nyc: 15.1.0
@@ -3677,9 +3677,9 @@ importers:
       chai-spies: 1.0.0
       cpx2: ^3.0.0
       eslint: ^7.11.0
-      global-jsdom: 8.4.0
       ignore-styles: ^5.0.1
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       mocha: ^8.3.2
       nyc: ^15.1.0
       raf: ^3.4.0
@@ -3709,9 +3709,9 @@ importers:
       chai-spies: 1.0.0_chai@4.3.6
       cpx2: 3.0.2
       eslint: 7.32.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
@@ -3755,10 +3755,10 @@ importers:
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
-      global-jsdom: 8.4.0
       ignore-styles: ^5.0.1
       immer: 9.0.6
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       mocha: ^8.3.2
       nyc: ^15.1.0
       raf: ^3.4.0
@@ -3809,9 +3809,9 @@ importers:
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
@@ -3878,10 +3878,10 @@ importers:
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
       faker: ^4.1.0
-      global-jsdom: 8.4.0
       ignore-styles: ^5.0.1
       immer: 9.0.6
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       lodash: ^4.17.10
       mocha: ^8.3.2
       npm-run-all: ^4.1.5
@@ -3960,9 +3960,9 @@ importers:
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
       faker: 4.1.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 8.4.0
       npm-run-all: 4.1.5
       nyc: 15.1.0
@@ -4030,12 +4030,12 @@ importers:
       eslint: ^7.11.0
       eventemitter2: ^5.0.1
       faker: ^4.1.0
-      global-jsdom: 8.4.0
       ignore-styles: ^5.0.1
       immer: 9.0.6
       immutable: ^3.8.2
       inspire-tree: ^5.0.1
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       linkify-it: ~2.2.0
       lodash: ^4.17.10
       mocha: ^8.3.2
@@ -4126,9 +4126,9 @@ importers:
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
       faker: 4.1.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
@@ -4186,9 +4186,9 @@ importers:
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
-      global-jsdom: 8.4.0
       ignore-styles: ^5.0.1
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       lodash: ^4.17.10
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -4252,9 +4252,9 @@ importers:
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
@@ -4317,11 +4317,11 @@ importers:
       eslint: ^7.11.0
       eventemitter2: ^5.0.1
       faker: ^4.1.0
-      global-jsdom: 8.4.0
       ignore-styles: ^5.0.1
       immer: 9.0.6
       immutable: ^3.8.2
       jsdom: ^19.0.0
+      jsdom-global: 3.0.2
       mocha: ^8.3.2
       nyc: ^15.1.0
       raf: ^3.4.0
@@ -4386,9 +4386,9 @@ importers:
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
       faker: 4.1.0
-      global-jsdom: 8.4.0_jsdom@19.0.0
       ignore-styles: 5.0.1
       jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 8.4.0
       nyc: 15.1.0
       raf: 3.4.1
@@ -14247,14 +14247,6 @@ packages:
       ini: 2.0.0
     dev: false
 
-  /global-jsdom/8.4.0_jsdom@19.0.0:
-    resolution: {integrity: sha512-0wBpSA/uTbPwMUldVKvPkJmQ30PZacTY8LzXSnTYlptZl6c5OFAVXSb24o1vdvjUNAmIksj+BAJb/c/KSPlLCQ==}
-    engines: {node: '>=12'}
-    peerDependencies:
-      jsdom: '>=10.0.0 || <20'
-    dependencies:
-      jsdom: 19.0.0
-
   /global-modules/1.0.0:
     resolution: {integrity: sha512-sKzpEkf11GpOFuw0Zzjzmt4B4UZwjOcG757PPvrfhxcLFbq0wpsgpOqxpxtxFiCG4DtG93M6XRVbF2oGdev7bg==}
     engines: {node: '>=0.10.0'}
@@ -16131,6 +16123,13 @@ packages:
     resolution: {integrity: sha512-4STjeF14jp4bqha44nKMY1OUI6d2/g6uclHWUCZ7B4DoLzaB5bmpTkQrpqU+vSVzMD0LsKAOskcnI3I3VfIpmg==}
     engines: {node: '>=12.0.0'}
     dev: false
+
+  /jsdom-global/3.0.2_jsdom@19.0.0:
+    resolution: {integrity: sha1-a9KZwTsMRiay2iwDk81DhdYGrLk=}
+    peerDependencies:
+      jsdom: '>=10.0.0'
+    dependencies:
+      jsdom: 19.0.0
 
   /jsdom/16.7.0:
     resolution: {integrity: sha512-u9Smc2G1USStM+s/x1ru5Sxrl6mPYCbByG1U/hUmqaVsm4tbNyS7CicOSRyuGQYZhTu0h84qkZZQ/I+dzizSVw==}
