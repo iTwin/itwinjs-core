@@ -170,6 +170,7 @@ public;UiEventDispatcher
 public;UiFlags
 public;UiItemProviderRegisteredEventArgs
 public;UiItemsApplicationAction
+deprecated;UiItemsApplicationAction
 public;UiItemsManager
 public;UiItemsProvider
 public;class UiLayoutDataProvider 

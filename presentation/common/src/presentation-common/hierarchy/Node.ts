@@ -22,22 +22,22 @@ export interface Node {
   description?: string;
   /**
    * Image ID
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   imageId?: string;
   /**
    * Foreground color
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   foreColor?: string;
   /**
    * Background color
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   backColor?: string;
   /**
    * Font style
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   fontStyle?: string;
   /** Does this node have child nodes */
@@ -50,17 +50,17 @@ export interface Node {
   isExpanded?: boolean;
   /**
    * Is checkbox visible for this node
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   isCheckboxVisible?: boolean;
   /**
    * Is this node's checkbox checked
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   isChecked?: boolean;
   /**
    * Is this node's checkbox enabled
-   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/Customization/ExtendedDataUsage.md) for more details.
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   isCheckboxEnabled?: boolean;
   /** Extended data injected into this node */
