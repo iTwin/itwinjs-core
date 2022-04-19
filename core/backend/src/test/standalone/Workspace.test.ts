@@ -146,14 +146,14 @@ describe("WorkspaceFile", () => {
     compareFiles(inFile2, outFile);
   });
 
-  it("resolve workspace alias", async () => {
+  it("resolve workspace alias", () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1" });
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
     defaultDb.close();
 
     const settings = workspace.settings;
-    const wsDb = await workspace.getWorkspaceDbFromProps({ dbName: "db1" }, { containerId: "default" });
+    const wsDb = workspace.getWorkspaceDbFromProps({ dbName: "db1" }, { containerId: "default" });
     workspace.loadSettingsDictionary({ rscName: "default-settings" }, wsDb, SettingsPriority.defaults);
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
@@ -164,7 +164,7 @@ describe("WorkspaceFile", () => {
     fontsDb.close();
 
     const fontList = settings.getArray<string>("workspace/fontDbs")!;
-    const fonts = await workspace.getWorkspaceDb(fontList[0]);
+    const fonts = workspace.getWorkspaceDb(fontList[0]);
     expect(fonts).to.not.be.undefined;
     const fontFile = fonts.getFile("Helvetica.ttf")!;
     expect(fontFile).contains(".ttf");

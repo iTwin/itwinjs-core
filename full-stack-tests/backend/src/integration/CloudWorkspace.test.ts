@@ -69,7 +69,7 @@ describe("Cloud workspace containers", () => {
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => ws2Cloud.acquireWriteLock("other session")).to.throw("container is not writeable");
 
-    let ws2 = await wsCont2.getWorkspaceDb({ dbName: testDbName });
+    let ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName });
     expect(ws2.getString("string 1")).equals("value of string 1");
     ws2.container.dropWorkspaceDb(ws2);
 
@@ -91,13 +91,13 @@ describe("Cloud workspace containers", () => {
     expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: ">1.0.0 <3.0.0" })).contains("1.2.4");
     expect(wsCont2.resolveDbFileName({ dbName: testDbName, version: "1.0.0" })).contains("1.0.0");
 
-    ws2 = await wsCont2.getWorkspaceDb({ dbName: testDbName, version: "~1.1.0", includePrerelease: true });
+    ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName, version: "~1.1.0", includePrerelease: true });
     expect(ws2.dbFileName).contains("1.1.4-beta");
     expect(ws2.getString("string 1")).equals(newVal);
     expect(ws2.getString("myVersion")).equals("1.1.4-beta");
     ws2.container.dropWorkspaceDb(ws2);
 
-    ws2 = await wsCont2.getWorkspaceDb({ dbName: testDbName });
+    ws2 = wsCont2.getWorkspaceDb({ dbName: testDbName });
     expect(ws2.dbFileName).contains("3.0.0");
     expect(ws2.getString("string 1")).equals("value of string 1");
     expect(ws2.getString("myVersion")).equals("3.0.0");
