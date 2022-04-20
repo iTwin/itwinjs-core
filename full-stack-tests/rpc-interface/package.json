@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "build:ci": "npm run -s build && npm run -s webpack:integration",
+    "build:ci": "npm run -s build && npm run -s webpack:test",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
     "cover": "",
@@ -16,7 +16,7 @@
     "test": "",
     "test:integration": "npm-run-all -r -p start:backend test:integration:chrome",
     "test:integration:chrome": "certa -r chrome",
-    "webpack:integration": "webpack --config webpack.config.js 1>&2"
+    "webpack:test": "webpack --config webpack.config.js 1>&2"
   },
   "repository": {
     "type": "git",

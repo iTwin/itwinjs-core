@@ -37,7 +37,7 @@ steps:
       # full-stack-tests/presentation/package.json
       node ./common/scripts/install-run-rush build -v --to presentation-full-stack-tests
 
-      node ./common/scripts/install-run-rush webpack:integration -v
+      node ./common/scripts/install-run-rush webpack:test -v
     displayName: "Rush build"
 
   - script: npm run test:integration
@@ -60,6 +60,11 @@ steps:
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/ecschema-rpc-interface"
     displayName: "Run ECSchema RPC Interface Tests"
+    condition: succeededOrFailed()
+
+  - script: npm run test
+    workingDirectory: "full-stack-tests/rpc"
+    displayName: "Run RPC Full Stack Tests"
     condition: succeededOrFailed()
 
   - script: npm run test:integration
@@ -92,6 +97,14 @@ steps:
     inputs:
       testResultsFiles: "full-stack-tests/ecschema-rpc-interface/ecschema-rpcinterface-tests-result/ecschema-rpcinterface-tests-result.xml"
       testRunTitle: "ECSchema Rpc Interface - Integration Tests - ${{ parameters.Node_Version }}"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish RPC Full Stack Test Results"
+    inputs:
+      testResultsFiles: "full-stack-tests/rpc/lib/test/junit_results.xml"
+      testRunTitle: "RPC Full Stack - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
