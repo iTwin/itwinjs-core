@@ -1,7 +1,5 @@
 # This template handles gathering all of the raw docs artifacts into a single staging directory
 # to allow them to be processed for publication.
-#
-# Note: This step has a dependency on the
 
 parameters:
   - name: workingDir
@@ -32,11 +30,12 @@ steps:
     displayName: Copy Reference files to Staging
     failOnStderr: false
     continueOnError: true
+
   - script: dir /S
     workingDirectory: ${{ parameters.stagingDir }}
     displayName: Log files
 
-  # BIS Docs are pulled from a separate internal build currently. This will change in the future
+  # BIS Docs are pulled from a separate internal build
   - task: DownloadBuildArtifacts@0
     displayName: Download Bis Docs Artifacts
     inputs:
@@ -66,9 +65,9 @@ steps:
       TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
   # The .updated.json is cached in order to let BeMetalsmith know what needs to be re-built.
-  # - task: DownloadPipelineArtifact@2
-  #   displayName: Download Pipeline Artifact - .updated.json
-  #   inputs:
-  #     runVersion: latestFromBranch
-  #     artifactName: .updated.json
-  #     targetPath: ${{ parameters.stagingDir }}/config/
+  - task: DownloadPipelineArtifact@2
+    displayName: Download Pipeline Artifact - .updated.json
+    inputs:
+      runVersion: latestFromBranch
+      artifactName: .updated.json
+      targetPath: ${{ parameters.stagingDir }}/config/
