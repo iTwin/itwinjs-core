@@ -16,6 +16,7 @@ import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
 import { EdgeParams } from "./EdgeParams";
 import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
 import { IModelApp } from "../../IModelApp";
+import { CreateRenderMaterialArgs } from "../RenderMaterial";
 
 export type ComputeNodeId = (elementId: Id64.Uint32Pair) => number;
 
@@ -300,24 +301,21 @@ class MaterialAtlasRemapper {
   }
 
   private materialFromAtlasEntry(entry: Uint32Array): SurfaceMaterial | undefined {
-    // eslint-disable-next-line deprecation/deprecation
-    const materialParams = new RenderMaterial.Params();
     const rgbOverridden = (entry[1] & 1) !== 0;
     const alphaOverridden = (entry[1] & 2) !== 0;
-    // ###TODO: do we need a key?
-    materialParams.diffuseColor = rgbOverridden ? ColorDef.fromTbgr(entry[0] & 0xffffff) : undefined;
-    materialParams.alpha = alphaOverridden ? (entry[0] >>> 24) / 255.0 : undefined;
-    materialParams.diffuse = (entry[1] >>> 24) / 255.0;
-    materialParams.specular = ((entry[1] >>> 16) & 0xff) / 255.0;
-    materialParams.specularColor = ColorDef.fromTbgr(entry[2]);
-    materialParams.specularExponent = this.unpackFloat (entry[3]);
-
-    // ###TODO: figure out best way to get iModel
-    const view = IModelApp.viewManager.selectedView;
-    if (view === undefined)
-      return undefined;
-    // eslint-disable-next-line deprecation/deprecation
-    const material = IModelApp.renderSystem.createMaterial(materialParams, view.iModel);
+    const args: CreateRenderMaterialArgs = {
+      alpha: alphaOverridden ? (entry[0] >>> 24) / 255.0 : undefined,
+      diffuse: {
+        color: rgbOverridden ? ColorDef.fromTbgr(entry[0] & 0xffffff) : undefined,
+        weight: (entry[1] >>> 24) / 255.0,
+      },
+      specular: {
+        color: ColorDef.fromTbgr(entry[2]),
+        weight: ((entry[1] >>> 16) & 0xff) / 255.0,
+        exponent: this.unpackFloat (entry[3]),
+      },
+    };
+    const material = IModelApp.renderSystem.createRenderMaterial(args);
     return createSurfaceMaterial (material);
   }
 
