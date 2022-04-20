@@ -152,6 +152,24 @@ describe("Descriptor", () => {
             }],
           }],
           autoExpand: false,
+        }, {
+          name: "test-properties-field-with-navigation-property-info",
+          label: "Test Properties Field With Navigation Property Info",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "navigation" },
+          category: category.name,
+          isReadonly: false,
+          priority: 0,
+          properties: [{
+            property: {
+              classInfo: ids[1],
+              name: "PropertyName",
+              type: "TestPropertyType",
+              navigationPropertyInfo: {
+                classInfo: ids[3],
+                isForwardRelationship: true,
+              },
+            },
+          }],
         }],
       };
       const descriptor = Descriptor.fromJSON(json);
