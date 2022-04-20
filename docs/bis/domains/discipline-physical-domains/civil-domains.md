@@ -1,6 +1,6 @@
 ## Civil domains
 
-The following domains are considered part of the [Discipline-Physical layer](../fundamentals/intro/bis-organization.md) in the BIS hierarchy. They are primarily used in Civil disciplines - i.e. Bridges, Roads, Rail and Site.
+The following domains are considered part of the [Discipline-Physical layer](../../fundamentals/intro/bis-organization.md) in the BIS hierarchy. They are primarily used in Civil disciplines - i.e. Bridges, Roads, Rail and Site.
 
 ### [BridgePhysical](../BridgePhysical.ecschema.md)
 
