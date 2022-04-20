@@ -4,4 +4,4 @@ The following domains lay out the [Discipline-Other layer](../fundamentals/intro
 
 ### Structural domains
 
-[Structural domains](./discipline-other-domains/structural-domains.md
+[Structural domains](./discipline-other-domains/structural-domains.md)
