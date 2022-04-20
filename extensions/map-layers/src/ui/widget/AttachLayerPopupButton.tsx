@@ -333,12 +333,16 @@ function AttachLayerPanel({ isOverlay, onLayerAttached, onHandleOutsideClick }: 
                   (!!iTwinId && !!iModelId && layerNameUnderCursor && layerNameUnderCursor === source.name) &&
                   <>
                     <Button
+                      size="small"
+                      styleType="borderless"
                       className="map-source-list-entry-button"
                       title={editLayerDefButtonTitle}
                       onClick={onItemEditButtonClicked}>
                       <UiCore.Icon iconSpec="icon-edit" />
                     </Button>
                     <Button
+                      size="small"
+                      styleType="borderless"
                       className="map-source-list-entry-button"
                       title={removeLayerDefButtonTitle}
                       onClick={(event: React.MouseEvent) => { onItemRemoveButtonClicked(source, event); }}>
@@ -436,10 +440,10 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
 
     if (props.buttonType === undefined || props.buttonType === AttachLayerButtonType.Icon) {
       button = (
-        <button ref={buttonRef} className="map-manager-attach-layer-button" title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
+        <Button size="small" styleType="borderless" ref={buttonRef} className="map-manager-attach-layer-button" title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
           onClick={togglePopup}>
           <UiCore.WebFontIcon iconName="icon-add" />
-        </button>
+        </Button>
       );
     } else {
       const determineStyleType = () => {

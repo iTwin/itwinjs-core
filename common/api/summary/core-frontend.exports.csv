@@ -24,7 +24,7 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
-alpha;ActivationEvent
+alpha;ActivationEvent = "onStartup"
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
@@ -72,6 +72,7 @@ internal;BingMapsImageryLayerProvider
 public;BlankConnection 
 public;BlankConnectionProps
 public;BriefcaseConnection 
+alpha;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
 alpha;BuildExtensionManifest 
@@ -159,9 +160,6 @@ public;EntityState
 internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
-alpha;ExtensionAdmin
-alpha;ExtensionHost
-alpha;ExtensionImpl
 alpha;ExtensionLoader
 alpha;ExtensionLoaderProps
 alpha;ExtensionManifest
@@ -281,7 +279,7 @@ public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolea
 public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
-public;imageElementFromUrl(url: string): Promise
+public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 internal;ImageryMapLayerFormat 
 internal;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
@@ -321,6 +319,7 @@ public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => it
 public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
 beta;ITwinIdArg
+public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
@@ -641,8 +640,6 @@ public;TileVisibility
 beta;TokenArg
 public;Tool
 public;ToolAdmin
-public;ToolAdmin
-alpha;ActiveSettings
 public;ToolAssistance
 public;ToolAssistanceImage
 public;ToolAssistanceInputMethod
@@ -651,7 +648,6 @@ public;ToolAssistanceInstructions
 public;ToolAssistanceKeyboardInfo
 public;ToolAssistanceSection
 public;ToolList = ToolType[]
-alpha;ToolProvider 
 public;ToolRegistry
 public;ToolSettings
 internal;ToolSettingsState
@@ -663,7 +659,7 @@ internal;TouchCursor
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
-public;tryImageElementFromUrl(url: string): Promise
+public;tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
 public;Uniform

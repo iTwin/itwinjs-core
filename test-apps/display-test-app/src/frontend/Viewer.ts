@@ -15,6 +15,7 @@ import { DebugWindow } from "./DebugWindow";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
 import { SavedViewPicker } from "./SavedViews";
+import { CameraPathsMenu } from "./CameraPaths";
 import { SectionsPanel } from "./SectionTools";
 import { StandardRotations } from "./StandardRotations";
 import { Surface } from "./Surface";
@@ -235,6 +236,16 @@ export class Viewer extends Window {
       },
     });
 
+    this.toolBar.addDropDown({
+      iconUnicode: "\ue932",
+      tooltip: "Saved camera paths",
+      createDropDown: async (container: HTMLElement) => {
+        const picker = new CameraPathsMenu(this.viewport, container);
+        await picker.populate();
+        return picker;
+      },
+    });
+
     this.toolBar.addItem(createImageButton({
       src: "zoom.svg",
       click: async () => IModelApp.tools.run("SVTSelect"),
@@ -348,8 +359,10 @@ export class Viewer extends Window {
   private updateActiveSettings(): void {
     // NOTE: First category/model is fine for testing purposes...
     const view = this.viewport.view;
-    const settings = IModelApp.toolAdmin.activeSettings;
+    if (!view.iModel.isBriefcaseConnection())
+      return;
 
+    const settings = view.iModel.editorToolSettings;
     if (undefined === settings.category || !view.viewsCategory(settings.category)) {
       settings.category = undefined;
       for (const catId of view.categorySelector.categories) {

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Ensure the render loop is processed immediately after the selection set changes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

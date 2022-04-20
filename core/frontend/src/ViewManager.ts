@@ -19,6 +19,7 @@ import { System } from "./render/webgl/System";
 /** Interface for drawing [decoration graphics]($docs/learning/frontend/ViewDecorations.md) into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].
  * Decorators generate [[Decorations]].
  * @public
+ * @extensions
  */
 export interface Decorator extends ViewportDecorator {
   /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator.
@@ -62,6 +63,7 @@ export interface Decorator extends ViewportDecorator {
 
 /** Argument for [[ViewManager.onSelectedViewportChanged]]
  * @public
+ * @extensions
  */
 export interface SelectedViewportChangedArgs {
   current?: ScreenViewport;
@@ -85,6 +87,7 @@ export interface ToolTipProvider {
  *
  * The ViewManager controls the render loop, which causes the contents of each registered [[Viewport]] to update on the screen.
  * @public
+ * @extensions
  */
 export class ViewManager implements Iterable<ScreenViewport> {
   public inDynamicsMode = false;
@@ -350,6 +353,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
   public onSelectionSetChanged(_iModel: IModelConnection) {
     for (const vp of this)
       vp.markSelectionSetDirty();
+
+    IModelApp.requestNextAnimation();
   }
 
   /** @internal */

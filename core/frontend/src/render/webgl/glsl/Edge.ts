@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
-import { IsAnimated, IsInstanced, IsThematic } from "../TechniqueFlags";
+import { IsAnimated, IsInstanced, IsThematic, PositionType } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { TextureUnit } from "../RenderFlags";
 import { addAnimation } from "./Animation";
@@ -18,7 +18,7 @@ import { addFrustum, addShaderFlags } from "./Common";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addAdjustWidth, addLineCode } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
-import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix, addSamplePosition } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 import { addLookupTable } from "./LookupTable";
 import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
@@ -26,21 +26,7 @@ import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
 export type EdgeBuilderType = "SegmentEdge" | "Silhouette" | "IndexedEdge";
 
 const computeOtherPos = `
-  vec2 tc = computeLUTCoords(g_otherIndex, u_vertParams.xy, g_vert_center, u_vertParams.z);
-  if (g_usesQuantizedPosition) {
-    vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    tc.x += g_vert_stepX;
-    vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
-    g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
-  } else {
-    for (int i = 0; i < 3; i++) {
-      g_otherPos[i] = decodeFloat32(floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5));
-      tc.x += g_vert_stepX;
-    }
-
-    g_otherPos.w = 1.0;
-  }
+  g_otherPos = samplePosition(g_otherIndex);
 `;
 
 const decodeEndPointAndQuadIndices = `
@@ -229,14 +215,14 @@ export function addEdgeContrast(vert: VertexShaderBuilder): void {
 
 const edgeLutParams = new Float32Array(4);
 
-function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
+function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated, positionType: PositionType): ProgramBuilder {
   const isInstanced = IsInstanced.Yes === instanced;
   const isSilhouette = "Silhouette" === type;
   const isIndexed = "IndexedEdge" === type;
   const techId = isSilhouette ? TechniqueId.SilhouetteEdge : (isIndexed ? TechniqueId.IndexedEdge : TechniqueId.Edge);
   const attrMap = AttributeMap.findAttributeMap(techId, isInstanced);
 
-  const builder = new ProgramBuilder(attrMap, { maxRgbaPerVertex: 5, instanced: isInstanced });
+  const builder = new ProgramBuilder(attrMap, { positionType, instanced: isInstanced });
   const vert = builder.vert;
 
   vert.addGlobal("g_otherPos", VariableType.Vec4);
@@ -244,6 +230,8 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
   vert.addGlobal("g_windowPos", VariableType.Vec4);
   vert.addGlobal("g_windowDir", VariableType.Vec2);
   vert.addGlobal("g_otherIndex", VariableType.Float);
+
+  addSamplePosition(vert);
 
   if (isIndexed) {
     vert.addGlobal("g_vertexId", VariableType.Int);
@@ -315,8 +303,8 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
 }
 
 /** @internal */
-export function createEdgeBuilder(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
-  const builder = createBase(type, instanced, isAnimated);
+export function createEdgeBuilder(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated, posType: PositionType): ProgramBuilder {
+  const builder = createBase(type, instanced, isAnimated, posType);
   addShaderFlags(builder);
   addColor(builder);
   addEdgeContrast(builder.vert);

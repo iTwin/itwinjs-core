@@ -20,8 +20,8 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { AccuDrawSetCompassModeEventArgs, AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldLockEventArgs, FrameworkAccuDraw } from "./FrameworkAccuDraw";
 import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
 
-import angleIconSvg from "./angle.svg?sprite";
-import distanceIconSvg from "./distance.svg?sprite";
+import angleIconSvg from "./angle.svg";
+import distanceIconSvg from "./distance.svg";
 
 /** Properties for [[AccuDrawFieldContainer]] component
  * @beta */
@@ -44,8 +44,8 @@ function determineShowZ(vp?: ScreenViewport): boolean {
 const defaultXLabel = "X";
 const defaultYLabel = "Y";
 const defaultZLabel = "Z";
-const defaultAngleIcon = IconSpecUtilities.createSvgIconSpec(angleIconSvg);
-const defaultDistanceIcon = IconSpecUtilities.createSvgIconSpec(distanceIconSvg);
+const defaultAngleIcon = IconSpecUtilities.createWebComponentIconSpec(angleIconSvg);
+const defaultDistanceIcon = IconSpecUtilities.createWebComponentIconSpec(distanceIconSvg);
 
 /** AccuDraw Ui Field Container displays [[AccuDrawInputField]] for each field
  * @beta */

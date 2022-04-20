@@ -141,8 +141,8 @@ export interface CategoryDescriptionJSON {
 // @public
 export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier;
 
-// @public
-export interface CheckBoxRule extends RuleBase, ConditionContainer {
+// @public @deprecated
+export interface CheckBoxRule extends RuleBase {
     condition?: string;
     defaultValue?: boolean;
     isEnabled?: string | boolean;
@@ -152,7 +152,7 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
 }
 
 // @public
-export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
+export interface ChildNodeRule extends NavigationRuleBase {
     ruleType: RuleTypes.ChildNodes;
 }
 
@@ -236,7 +236,7 @@ export interface CompressedClassInfoJSON {
 // @public
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
-// @public
+// @public @deprecated
 export interface ConditionContainer {
     condition?: string;
 }
@@ -270,6 +270,7 @@ export enum ContentFlags {
     KeysOnly = 1,
     MergeResults = 8,
     NoFields = 32,
+    // @deprecated
     ShowImages = 2,
     ShowLabels = 4
 }
@@ -333,7 +334,7 @@ export interface ContentRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVa
 export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequestOptions<never, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>;
 
 // @public
-export interface ContentRule extends RuleBase, ConditionContainer {
+export interface ContentRule extends RuleBase {
     condition?: string;
     ruleType: RuleTypes.Content;
     specifications: ContentSpecification[];
@@ -363,6 +364,7 @@ export interface ContentSpecificationBase extends ContentModifiersList {
     onlyIfNotHandled?: boolean;
     priority?: number;
     relatedInstances?: RelatedInstanceSpecification[];
+    // @deprecated
     showImages?: boolean;
     specType: ContentSpecificationTypes;
 }
@@ -384,8 +386,11 @@ export type ContentUpdateInfo = typeof UPDATE_FULL;
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[];
 
 // @public
-export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | // eslint-disable-line deprecation/deprecation
-SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
+export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | // eslint-disable-line deprecation/deprecation
+GroupingRule | ImageIdOverride | // eslint-disable-line deprecation/deprecation
+LabelOverride | // eslint-disable-line deprecation/deprecation
+SortingRule | StyleOverride | // eslint-disable-line deprecation/deprecation
+ExtendedDataRule | NodeArtifactsRule;
 
 // @public
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
@@ -826,7 +831,7 @@ export interface ExpandedNodeUpdateRecordJSON {
 }
 
 // @public
-export interface ExtendedDataRule extends RuleBase, ConditionContainer {
+export interface ExtendedDataRule extends RuleBase {
     condition?: string;
     items: {
         [key: string]: string;
@@ -927,9 +932,6 @@ export const getFieldByName: (fields: Field[], name: string | undefined, recurse
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
 
-// @internal (undocumented)
-export const getLocalesDirectory: (assetsDirectory: string) => string;
-
 // @public
 export interface GroupingNodeKey extends BaseNodeKey {
     groupedInstancesCount: number;
@@ -942,7 +944,7 @@ export interface GroupingNodeKeyJSON extends BaseNodeKeyJSON {
 }
 
 // @public
-export interface GroupingRule extends RuleBase, ConditionContainer {
+export interface GroupingRule extends RuleBase {
     class: SingleSchemaClassSpecification;
     condition?: string;
     groups: GroupingSpecification[];
@@ -1129,8 +1131,8 @@ export interface IdCategoryIdentifier {
     type: "Id";
 }
 
-// @public
-export interface ImageIdOverride extends RuleBase, ConditionContainer {
+// @public @deprecated
+export interface ImageIdOverride extends RuleBase {
     condition?: string;
     imageIdExpression: string;
     ruleType: RuleTypes.ImageIdOverride;
@@ -1313,6 +1315,7 @@ export class Item {
         [key: string]: any;
     };
     static fromJSON(json: ItemJSON | string | undefined): Item | undefined;
+    // @deprecated
     imageId: string;
     // @beta
     inputKeys?: InstanceKey[];
@@ -1336,7 +1339,7 @@ export interface ItemJSON {
     extendedData?: {
         [key: string]: any;
     };
-    // (undocumented)
+    // @deprecated (undocumented)
     imageId: string;
     // @beta (undocumented)
     inputKeys?: InstanceKeyJSON[];
@@ -1472,8 +1475,8 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
     type: StandardNodeTypes.DisplayLabelGroupingNode;
 }
 
-// @public
-export interface LabelOverride extends RuleBase, ConditionContainer {
+// @public @deprecated
+export interface LabelOverride extends RuleBase {
     condition?: string;
     description?: string;
     label?: string;
@@ -1504,6 +1507,29 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
     fieldName: string;
     // (undocumented)
     type: FieldDescriptorType.Name;
+}
+
+// @beta
+export interface NavigationPropertyInfo {
+    classInfo: ClassInfo;
+    isForwardRelationship: boolean;
+}
+
+// @beta (undocumented)
+export namespace NavigationPropertyInfo {
+    export function fromJSON(json: NavigationPropertyInfo): NavigationPropertyInfo;
+    export function toCompressedJSON(navigationPropertyInfo: NavigationPropertyInfo, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): NavigationPropertyInfoJSON<string>;
+    export function toJSON(info: NavigationPropertyInfo): NavigationPropertyInfoJSON;
+}
+
+// @beta
+export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+    // (undocumented)
+    classInfo: TClassInfoJSON;
+    // (undocumented)
+    isForwardRelationship: boolean;
 }
 
 // @public
@@ -1592,17 +1618,24 @@ export interface NoCategoryIdentifier {
 
 // @public
 export interface Node {
+    // @deprecated
     backColor?: string;
     description?: string;
     extendedData?: {
         [key: string]: any;
     };
+    // @deprecated
     fontStyle?: string;
+    // @deprecated
     foreColor?: string;
     hasChildren?: boolean;
+    // @deprecated
     imageId?: string;
+    // @deprecated
     isCheckboxEnabled?: boolean;
+    // @deprecated
     isCheckboxVisible?: boolean;
+    // @deprecated
     isChecked?: boolean;
     isEditable?: boolean;
     isExpanded?: boolean;
@@ -1628,7 +1661,7 @@ export namespace Node {
 }
 
 // @public
-export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
+export interface NodeArtifactsRule extends RuleBase {
     condition?: string;
     items: {
         [key: string]: string;
@@ -1675,7 +1708,7 @@ export interface NodeInsertionInfoJSON {
 
 // @public
 export interface NodeJSON {
-    // (undocumented)
+    // @deprecated (undocumented)
     backColor?: string;
     // (undocumented)
     description?: string;
@@ -1683,19 +1716,19 @@ export interface NodeJSON {
     extendedData?: {
         [key: string]: any;
     };
-    // (undocumented)
+    // @deprecated (undocumented)
     fontStyle?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     foreColor?: string;
     // (undocumented)
     hasChildren?: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     imageId?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     isCheckboxEnabled?: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     isCheckboxVisible?: boolean;
-    // (undocumented)
+    // @deprecated (undocumented)
     isChecked?: boolean;
     // (undocumented)
     isEditable?: boolean;
@@ -2141,6 +2174,8 @@ export interface PropertyInfo {
     // @alpha
     kindOfQuantity?: KindOfQuantityInfo;
     name: string;
+    // @beta
+    navigationPropertyInfo?: NavigationPropertyInfo;
     type: string;
 }
 
@@ -2163,6 +2198,8 @@ export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     kindOfQuantity?: KindOfQuantityInfo;
     // (undocumented)
     name: string;
+    // @beta (undocumented)
+    navigationPropertyInfo?: NavigationPropertyInfoJSON<TClassInfoJSON>;
     // (undocumented)
     type: string;
 }
@@ -2178,7 +2215,7 @@ export interface PropertyOverrides {
     categoryId?: string | CategoryIdentifier;
     doNotHideOtherPropertiesOnDisplayOverride?: boolean;
     editor?: PropertyEditorSpecification;
-    isDisplayed?: boolean;
+    isDisplayed?: boolean | string;
     labelOverride?: string;
     overridesPriority?: number;
     renderer?: CustomRendererSpecification;
@@ -2326,6 +2363,7 @@ export enum RelatedPropertiesSpecialValues {
 export interface RelatedPropertiesSpecification {
     autoExpand?: boolean;
     handleTargetClassPolymorphically?: boolean;
+    instanceFilter?: string;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
     properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     propertiesSource: RelationshipPathSpecification;
@@ -2687,7 +2725,7 @@ export enum SortDirection {
 export type SortingRule = PropertySortingRule | DisabledSortingRule;
 
 // @public
-export interface SortingRuleBase extends RuleBase, ConditionContainer {
+export interface SortingRuleBase extends RuleBase {
     class?: SingleSchemaClassSpecification;
     condition?: string;
     isPolymorphic?: boolean;
@@ -2807,8 +2845,8 @@ export interface StructTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Struct;
 }
 
-// @public
-export interface StyleOverride extends RuleBase, ConditionContainer {
+// @public @deprecated
+export interface StyleOverride extends RuleBase {
     backColor?: string;
     condition?: string;
     fontStyle?: string;
@@ -2817,7 +2855,7 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
 }
 
 // @public
-export interface SubCondition extends ConditionContainer {
+export interface SubCondition {
     condition?: string;
     // @beta
     requiredSchemas?: RequiredSchemaSpecification[];

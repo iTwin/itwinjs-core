@@ -5,7 +5,7 @@
 import { UiFramework } from "@itwin/appui-react";
 import { BeEvent, Id64Array, Id64String, IModelStatus, UnexpectedErrors } from "@itwin/core-bentley";
 import { IModelError, QueryRowFormat } from "@itwin/core-common";
-import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
+import { BriefcaseConnection, IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
 
 export const iModelInfoAvailableEvent = new BeEvent();
 
@@ -67,6 +67,7 @@ export class CategoryNameCache extends NamedElementCache {
 export class ActiveSettingsManager {
   public static categories: CategoryNameCache;
   public static models: ModelNameCache;
+  public static briefcase?: BriefcaseConnection;
 
   public static onViewOpened(view: ViewState) {
     this.computeActiveSettingsFromView(view);
@@ -84,6 +85,7 @@ export class ActiveSettingsManager {
   }
 
   private static computeActiveSettingsFromView(view: ViewState) {
+    this.briefcase = view.iModel.isBriefcaseConnection() ? view.iModel : undefined;
     const promises = [this._computeCategoriesOnViewChanged(view), this._computeModelsOnViewChanged(view)];
     Promise.all(promises)
       .then(() => iModelInfoAvailableEvent.raiseEvent())
@@ -91,51 +93,41 @@ export class ActiveSettingsManager {
   }
 
   private static async _computeCategoriesOnViewChanged(view: ViewState) {
-
-    const categories = Array.from(view.categorySelector.categories);
-
-    if (categories.length === 0) {
-      // new categories are turned on. What to do? Just leave the active settings as they are.
-      return;
-    }
-
+    const categories = this.briefcase ? Array.from(view.categorySelector.categories) : [];
     this.categories = new CategoryNameCache(categories);
 
-    if (!IModelApp.toolAdmin.activeSettings.category || !this.categories.getNameFromId(IModelApp.toolAdmin.activeSettings.category))
-      IModelApp.toolAdmin.activeSettings.category = (categories.length !== 0) ? categories[0] : undefined;
+    if (this.briefcase && (!this.briefcase.editorToolSettings.category || !this.categories.getNameFromId(this.briefcase.editorToolSettings.category)))
+      this.briefcase.editorToolSettings.category = categories[0];
 
     return this.categories.findAll();
   }
 
   private static async _computeModelsOnViewChanged(view: ViewState) {
-    let models: Id64Array;
-    if (view instanceof ViewState2d)
-      models = [view.baseModelId];
-    else if (view instanceof SpatialViewState)
-      models = Array.from(view.modelSelector.models);
-    else {
-      throw new IModelError(IModelStatus.BadArg, "only 2d and spatial views are supported");
-    }
-
-    if (models.length === 0) {
-      // new models are turned on. What to do? Just leave the active settings as they are.
-      return;
+    let models: Id64Array = [];
+    if (this.briefcase) {
+      if (view instanceof ViewState2d)
+        models = [view.baseModelId];
+      else if (view instanceof SpatialViewState)
+        models = Array.from(view.modelSelector.models);
+      else
+        throw new IModelError(IModelStatus.BadArg, "only 2d and spatial views are supported");
     }
 
     this.models = new ModelNameCache(models);
-
-    if (!IModelApp.toolAdmin.activeSettings.model || !this.models.getNameFromId(IModelApp.toolAdmin.activeSettings.model))
-      IModelApp.toolAdmin.activeSettings.model = (models.length !== 0) ? models[0] : undefined;
+    if (this.briefcase && (!this.briefcase.editorToolSettings.model || !this.models.getNameFromId(this.briefcase.editorToolSettings.model)))
+      this.briefcase.editorToolSettings.model = models[0];
 
     return this.models.findAll();
   }
 
+  /* Nobody calls this.
   public static onModelCreated(id: Id64String, name: string, makeActive: boolean) {
     this.models.cache.push({ id, name });
     if (makeActive)
       IModelApp.toolAdmin.activeSettings.model = id;
     iModelInfoAvailableEvent.raiseEvent();
   }
+  */
 
   // private static async onIModelClose() {
   //   this.categories.clear();
