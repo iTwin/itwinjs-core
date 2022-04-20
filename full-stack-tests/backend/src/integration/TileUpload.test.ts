@@ -58,7 +58,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
   return undefined;
 }
 
-describe.only("TileUpload", () => {
+describe("TileUpload", () => {
   let accessToken: AccessToken;
   let testITwinId: GuidString;
   let testIModelId: GuidString;

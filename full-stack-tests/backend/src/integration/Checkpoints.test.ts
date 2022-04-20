@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { CloudSqlite, IModelHost, IModelJsFs, SnapshotDb, V2CheckpointManager } from "@itwin/core-backend";
+import * as sinon from "sinon";
+import { CloudSqlite, IModelHost, IModelJsFs, IModelJsNative, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
@@ -15,7 +16,7 @@ import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
-describe.skip("Checkpoints", () => {
+describe("Checkpoints", () => {
   let daemon: ChildProcess;
   let accountProps: CloudSqlite.AccountAccessProps;
   let cacheProps: CloudSqlite.CacheProps;
@@ -25,6 +26,7 @@ describe.skip("Checkpoints", () => {
   let testITwinId: GuidString;
   let testChangeSet: ChangesetProps;
   let testChangeSetFirstVersion: ChangesetProps;
+  let checkpoint: V2CheckpointAccessProps | undefined;
 
   let testIModelId2: GuidString;
   let testITwinId2: GuidString;
@@ -87,7 +89,7 @@ describe.skip("Checkpoints", () => {
     testIModelId2 = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
     testChangeSet2 = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId2 });
 
-    const checkpoint = await IModelHost.hubAccess.queryV2Checkpoint({
+    checkpoint = await IModelHost.hubAccess.queryV2Checkpoint({
       expectV2: true,
       iTwinId: testITwinId,
       iModelId: testIModelId,
@@ -106,14 +108,43 @@ describe.skip("Checkpoints", () => {
 
   });
 
+  afterEach(async () => {
+    // need to cleanup the v2checkpointmanager after each run.
+    (V2CheckpointManager as any).cleanup();
+  });
+
   after(async () => {
     process.env = originalEnv;
 
     await shutdownDaemon(true);
   });
+  it("should use fallback directory when blockcache_dir has no daemon in it", async () => {
+    await shutdownDaemon(true);
+    const v2Manager = sinon.spy(V2CheckpointManager, "getFolder");
+    const iModel = await SnapshotDb.openCheckpointV2({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      changeset: testChangeSet,
+    });
+    assert.isTrue(v2Manager.calledOnce);
+    iModel.close();
+    await startDaemon();
+  });
+  it("should fail to open v2 checkpoint when daemon no longer running in the directory", async () => {
+    await shutdownDaemon(false); // pass false, so old daemondir sticks around
+    await expect(SnapshotDb.openCheckpointV2({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      changeset: testChangeSet,
+    })).eventually.rejectedWith("Cannot create CloudCache: invalid cache directory or directory does not exist");
+
+    await startDaemon();
+  });
 
   it("should be able to open and read V2 checkpoints without the daemon ", async () => {
-    await shutdownDaemon(false);
+    await shutdownDaemon(true);
     let iModel = await SnapshotDb.openCheckpointV2({
       accessToken,
       iTwinId: testITwinId,
@@ -179,12 +210,10 @@ describe.skip("Checkpoints", () => {
     iModel2.close();
     iModel3.close();
 
+    // start it back up for other tests
     await startDaemon();
   });
-  it.skip("should be able to have multiple V2 checkpoints open from the same container", async () => {
-    // Could have two v2 checkpoints open in the same container that'd be a nice test.
-  });
-  it("should be able to open and read V2 checkpoint", async () => {
+  it("should be able to open and read V2 checkpoint with daemon running", async () => {
     let iModel = await SnapshotDb.openCheckpointV2({
       accessToken,
       iTwinId: testITwinId,
