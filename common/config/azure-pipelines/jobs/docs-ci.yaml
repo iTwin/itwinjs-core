@@ -34,7 +34,7 @@ jobs:
 
       - template: ../templates/docs-build.yaml
 
-      - publish: $(Agent.BuildDirectory)/tempDocsBuild/public_build/
+      - publish: $(Agent.BuildDirectory)/tempDocsBuild/
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - Docs build
         condition: and(succeeded(), or(True, eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
