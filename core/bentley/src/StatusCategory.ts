@@ -73,8 +73,6 @@ namespace HTTP {
   export class Unauthorized extends ErrorCategory { public name = "Unauthorized"; public code = 401; }
   export class Forbidden extends ErrorCategory { public name = "Forbidden"; public code = 403; }
   export class NotFound extends ErrorCategory { public name = "NotFound"; public code = 404; }
-  export class MethodNotAllowed extends ErrorCategory { public name = "MethodNotAllowed"; public code = 405; }
-  export class NotAcceptable extends ErrorCategory { public name = "NotAcceptable"; public code = 406; }
   export class RequestTimeout extends ErrorCategory { public name = "RequestTimeout"; public code = 408; }
   export class Conflict extends ErrorCategory { public name = "Conflict"; public code = 409; }
   export class Gone extends ErrorCategory { public name = "Gone"; public code = 410; }
@@ -82,8 +80,6 @@ namespace HTTP {
   export class ExpectationFailed extends ErrorCategory { public name = "ExpectationFailed"; public code = 417; }
   export class MisdirectedRequest extends ErrorCategory { public name = "MisdirectedRequest"; public code = 421; }
   export class UnprocessableEntity extends ErrorCategory { public name = "UnprocessableEntity"; public code = 422; }
-  export class Locked extends ErrorCategory { public name = "Locked"; public code = 423; }
-  export class FailedDependency extends ErrorCategory { public name = "FailedDependency"; public code = 424; }
   export class UpgradeRequired extends ErrorCategory { public name = "UpgradeRequired"; public code = 426; }
   export class PreconditionRequired extends ErrorCategory { public name = "PreconditionRequired"; public code = 428; }
   export class TooManyRequests extends ErrorCategory { public name = "TooManyRequests"; public code = 429; }
@@ -107,30 +103,28 @@ class ReadOnly extends HTTP.Forbidden { }
 
 class NotFound extends HTTP.NotFound { }
 
-class NotEnabled extends HTTP.MethodNotAllowed { }
-class NotSupported extends HTTP.MethodNotAllowed { }
+class NotEnabled extends HTTP.UnprocessableEntity { }
+class NotSupported extends HTTP.UnprocessableEntity { }
 
-class ValidationError extends HTTP.NotAcceptable { }
+class ValidationError extends HTTP.UnprocessableEntity { }
 
 class Timeout extends HTTP.RequestTimeout { }
 
 class Conflict extends HTTP.Conflict { }
-class StateViolation extends HTTP.Conflict { }
 
 class Cancelled extends HTTP.Gone { }
 
-class ConstraintViolation extends HTTP.ExpectationFailed { }
-class VersioningViolation extends HTTP.ExpectationFailed { }
+class ConstraintViolation extends HTTP.Forbidden { }
+class VersioningViolation extends HTTP.Forbidden { }
 
-class Directive extends HTTP.PreconditionRequired { }
+class Corruption extends HTTP.InternalServerError { }
+class InvalidData extends HTTP.InternalServerError { }
+class OperationFailed extends HTTP.InternalServerError { }
+class StateViolation extends HTTP.InternalServerError { }
 
-class Corruption extends HTTP.UnprocessableEntity { }
-class InvalidData extends HTTP.UnprocessableEntity { }
-class OperationFailed extends HTTP.UnprocessableEntity { }
+class Locked extends HTTP.Conflict { }
 
-class Locked extends HTTP.Locked { }
-
-class NetworkError extends HTTP.FailedDependency { }
+class NetworkError extends HTTP.InternalServerError { }
 
 class Throttled extends HTTP.TooManyRequests { }
 
@@ -250,9 +244,9 @@ function lookupCategory(error: BentleyError): StatusCategory {
     case ChangeSetStatus.SQLiteError: return new InternalError();
     case ChangeSetStatus.WrongDgnDb: return new ValidationError();
     case ChangeSetStatus.CouldNotOpenDgnDb: return new OperationFailed();
-    case ChangeSetStatus.MergeSchemaChangesOnOpen: return new Directive();
-    case ChangeSetStatus.ReverseOrReinstateSchemaChanges: return new Directive();
-    case ChangeSetStatus.ProcessSchemaChangesOnOpen: return new Directive();
+    case ChangeSetStatus.MergeSchemaChangesOnOpen: return new BadRequest();
+    case ChangeSetStatus.ReverseOrReinstateSchemaChanges: return new Conflict();
+    case ChangeSetStatus.ProcessSchemaChangesOnOpen: return new BadRequest();
     case ChangeSetStatus.CannotMergeIntoReadonly: return new ValidationError();
     case ChangeSetStatus.CannotMergeIntoMaster: return new ValidationError();
     case ChangeSetStatus.CannotMergeIntoReversed: return new ValidationError();
