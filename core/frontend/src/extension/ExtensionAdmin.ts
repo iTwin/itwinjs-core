@@ -83,7 +83,10 @@ export class ExtensionAdmin {
    * @param hostUrl
    */
   public registerHost(hostUrl: string) {
-    this._hosts.push(new URL(hostUrl).hostname.replace("www", ""));
+    const url = new URL(hostUrl).hostname.replace("www", "");
+    if (this._hosts.indexOf(url) < 0) {
+      this._hosts.push(url);
+    }
   }
 
   /** Loops over all enabled Extensions and triggers each one if the provided event is defined. */
@@ -145,7 +148,7 @@ export class ExtensionAdmin {
           );
         }
         return main.default();
-      } catch(error) {
+      } catch (error) {
         throw new Error(`Failed to import an extension from ${extension.jsUrl}: ${error}`);
       }
     }
