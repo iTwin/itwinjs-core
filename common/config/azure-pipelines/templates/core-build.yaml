@@ -25,11 +25,11 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js build:ci -v -p max
-    displayName: rush build
+    displayName: rush build:ci
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
-  - script: node common/scripts/install-run-rush.js build -v -p max
-    displayName: rush build
+  - script: node common/scripts/install-run-rush.js build:ci -v -p max
+    displayName: rush build:ci
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js lint
