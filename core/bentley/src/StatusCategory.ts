@@ -106,7 +106,7 @@ class NotFound extends HTTP.NotFound { }
 class NotEnabled extends HTTP.UnprocessableEntity { }
 class NotSupported extends HTTP.UnprocessableEntity { }
 
-class ValidationError extends HTTP.UnprocessableEntity { }
+class ValidationError extends HTTP.BadRequest { }
 
 class Timeout extends HTTP.RequestTimeout { }
 
