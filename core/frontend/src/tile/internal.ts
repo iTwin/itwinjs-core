@@ -49,6 +49,7 @@ export * from "./GltfReader";
 export * from "./I3dmReader";
 export * from "./B3dmReader";
 export * from "./ImdlReader";
+export * from "./map/ArcGisAccessClient";
 export * from "./map/ArcGISTileMap";
 export * from "./map/MapLayerAuthentication";
 export * from "./map/EsriOAuth2";

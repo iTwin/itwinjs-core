@@ -3,19 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { request, RequestOptions } from "../../request/Request";
+import { MapLayerAccessToken } from "../internal";
 
 /** @packageDocumentation
  * @module Tiles
  */
 
 /** @internal */
-export interface ArcGisBaseToken {
-  // The generated token.
-  token: string;
-}
-
-/** @internal */
-export interface ArcGisOAuth2Token extends ArcGisBaseToken {
+export interface ArcGisOAuth2Token extends MapLayerAccessToken {
 
   // The expiration time of the token in milliseconds (UNIX time)
   expiresAt: number;
@@ -31,7 +26,7 @@ export interface ArcGisOAuth2Token extends ArcGisBaseToken {
 }
 
 /** @internal */
-export interface ArcGisToken extends ArcGisBaseToken {
+export interface ArcGisToken extends MapLayerAccessToken {
   // The expiration time of the token in milliseconds since January 1, 1970 (UTC).
   expires: number;
 

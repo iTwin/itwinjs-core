@@ -6,8 +6,8 @@ import { Angle } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import {
-  ArcGisBaseToken, ArcGisOAuth2Token, ArcGisTokenClientType, ArcGisTokenManager,EsriOAuth2, EsriOAuth2Endpoint, EsriOAuth2EndpointType,
-  MapCartoRectangle, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
+  ArcGisOAuth2Token, ArcGisTokenClientType, ArcGisTokenManager, EsriOAuth2,EsriOAuth2Endpoint, EsriOAuth2EndpointType, MapCartoRectangle,
+  MapLayerAccessToken, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
 } from "../internal";
 
 /** @packageDocumentation
@@ -124,8 +124,8 @@ export class ArcGisUtilities {
 
   public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
 
-    let authMethod: MapLayerAuthType = MapLayerAuthType.None;
-    let tokenEndpoint: EsriOAuth2Endpoint | undefined;
+    // const authMethod: MapLayerAuthType = MapLayerAuthType.None;
+    // let tokenEndpoint: EsriOAuth2Endpoint | undefined;
     const json = await this.getServiceJson(url, credentials, ignoreCache);
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -135,15 +135,16 @@ export class ArcGisUtilities {
       // and return information needed to initiate the authentification process... the end-user
       // will have to provide his credentials before we can fully validate this source.
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
-        authMethod = MapLayerAuthType.EsriToken; // In case we failed to get the Oauth2 token endpoint, fall back to the legacy ESRI token method
-        try {
-          tokenEndpoint = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(url, EsriOAuth2EndpointType.Authorize);
-          if (tokenEndpoint) {
-            authMethod = MapLayerAuthType.EsriOAuth2;
-          }
-        } catch { }
+        // authMethod = MapLayerAuthType.EsriToken; // In case we failed to get the Oauth2 token endpoint, fall back to the legacy ESRI token method
+        // try {
+        //   tokenEndpoint = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(url, EsriOAuth2EndpointType.Authorize);
+        //   if (tokenEndpoint) {
+        //     authMethod = MapLayerAuthType.EsriOAuth2;
+        //   }
+        // } catch { }
 
-        return { status: MapLayerSourceStatus.RequireAuth, authInfo: { authMethod, tokenEndpoint } };
+        // return { status: MapLayerSourceStatus.RequireAuth, authInfo: { authMethod, tokenEndpoint } };
+        return { status: MapLayerSourceStatus.RequireAuth};
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
         return { status: MapLayerSourceStatus.InvalidCredentials, authInfo: { authMethod: MapLayerAuthType.EsriToken } };
     }
@@ -233,7 +234,7 @@ export class ArcGisUtilities {
       } catch { }
 
       if (credentials || oauth2Token) {
-        const token: ArcGisBaseToken = (credentials ? await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer }) : oauth2Token);
+        const token: MapLayerAccessToken = (credentials ? await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer }) : oauth2Token);
         if (token?.token)
           tokenParam = `&token=${token.token}`;
       }

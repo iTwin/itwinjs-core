@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Localization } from "@itwin/core-common";
-import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
+import { ArcGisAccessClient, IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
@@ -58,6 +58,8 @@ export class MapLayersUI {
     MapLayersUI._uiItemsProviders.forEach((uiProvider) => {
       UiItemsManager.register(uiProvider);
     });
+
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", new ArcGisAccessClient());
   }
 
   /** Unregisters internationalization service namespace and UiItemManager  */

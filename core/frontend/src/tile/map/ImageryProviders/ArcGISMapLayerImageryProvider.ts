@@ -11,12 +11,13 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerE
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 import {
-  ArcGisBaseToken, ArcGisErrorCode, ArcGisOAuth2Token, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, EsriOAuth2, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
+  ArcGisErrorCode, ArcGisOAuth2Token, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, EsriOAuth2, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
   MapFeatureInfoRecord,
   MapLayerFeatureInfo,
   MapLayerImageryProvider, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
+import { MapLayerAccessToken } from "../../internal";
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
@@ -26,9 +27,11 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   private _querySupported = false;
   private _tileMapSupported = false;
   private _tileMap: ArcGISTileMap|undefined;
+  private _accessClient: any|undefined;
   public serviceJson: any;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
+    this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(settings.formatId);
   }
 
   protected override get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)
@@ -137,6 +140,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public override async initialize(): Promise<void> {
+
     const json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
     if (json === undefined)
       throw new ServerError(IModelStatus.ValidationFailed, "");
@@ -321,7 +325,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     const hasCredentials = (this._settings.userName && this._settings.password);
     if (oauth2Token || hasCredentials) {
       try {
-        const token: ArcGisBaseToken = (hasCredentials ? await ArcGisTokenManager.getToken(url, this._settings.userName!, this._settings.password!, { client: ArcGisTokenClientType.referer }) : oauth2Token);
+        const token: MapLayerAccessToken = (hasCredentials ? await ArcGisTokenManager.getToken(url, this._settings.userName!, this._settings.password!, { client: ArcGisTokenClientType.referer }) : oauth2Token);
         if (token?.token) {
           const urlObj = new URL(url);
           urlObj.searchParams.append("token", token.token);
