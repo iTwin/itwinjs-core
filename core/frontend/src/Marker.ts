@@ -21,16 +21,26 @@ import { ViewRect } from "./ViewRect";
 
 /** The types that may be used for Markers
  * @public
+ * @extensions
  */
 export type MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap;
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export type MarkerFillStyle = string | CanvasGradient | CanvasPattern;
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
 function getMinScaleViewW(vp: Viewport): number {
@@ -55,6 +65,7 @@ function getMinScaleViewW(vp: Viewport): number {
  * Markers draw on top of all scene graphics, and show visual cues about locations of interest.
  * @see [Markers]($docs/learning/frontend/Markers)
  * @public
+ * @extensions
  */
 export class Marker implements CanvasDecoration {
   protected _scaleFactor?: Point2d;
@@ -304,6 +315,7 @@ export class Marker implements CanvasDecoration {
 /** A cluster of one or more Markers that overlap one another in the view. The cluster's screen position is taken from its first entry.
  * Clusters also have a Marker themselves, that represents the whole group. The cluster marker isn't created until all entries have been added.
  * @public
+ * @extensions
  */
 export class Cluster<T extends Marker> {
   public readonly markers: T[];
@@ -335,6 +347,7 @@ export class Cluster<T extends Marker> {
 /** A *set* of Markers that are logically related, such that they *cluster* when they overlap one another in screen space.
  * In that case, a *cluster marker* is drawn instead of the overlapping Markers.
  * @public
+ * @extensions
  */
 export abstract class MarkerSet<T extends Marker> {
   private _viewport?: ScreenViewport;

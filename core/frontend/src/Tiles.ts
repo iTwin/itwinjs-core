@@ -72,6 +72,7 @@ class TreeOwner implements TileTreeOwner {
  * change.
  * @see [[IModelConnection.tiles]].
  * @public
+ * @extensions
  */
 export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
   private _iModel: IModelConnection;

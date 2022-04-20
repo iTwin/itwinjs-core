@@ -14,6 +14,8 @@ import { assert } from "@itwin/core-bentley";
 import { DockedToolSettingsHandle } from "./Handle";
 import { DockedToolSettingsOverflow } from "./Overflow";
 import { ToolSettingsOverflowPanel } from "./Panel";
+import { AnimateDockedToolSettingsContext } from "../base/NineZone";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 /** @internal */
 export function onOverflowLabelAndEditorResize() {
@@ -54,6 +56,8 @@ export interface DockedToolSettingsProps extends CommonProps {
  */
 export function DockedToolSettings(props: DockedToolSettingsProps) {
   const [open, setOpen] = React.useState(false);
+  const animateToolSettings = React.useContext(AnimateDockedToolSettingsContext);
+
   const ref = React.useRef<HTMLDivElement>(null);
   const width = React.useRef<number | undefined>(undefined);
   const handleWidth = React.useRef<number | undefined>(undefined);
@@ -112,13 +116,30 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
       />
       {dockedChildren.map(([key, child]) => {
         return (
-          <DockedToolSettingsEntry
+          <TransitionGroup
+            appear={animateToolSettings}
+            enter={animateToolSettings}
             key={key}
-            entryKey={key}
-            getOnResize={handleEntryResize}
           >
-            {child}
-          </DockedToolSettingsEntry>
+            <CSSTransition
+              in={animateToolSettings}
+              timeout={400}
+              classNames={{
+                appear: "toolsettings-appear",
+                enter: "toolsettings-appear",
+                appearActive: "toolsettings-appear-active",
+                enterActive: "toolsettings-appear-active",
+              }}
+            >
+              <DockedToolSettingsEntry
+                key={key}
+                entryKey={key}
+                getOnResize={handleEntryResize}
+              >
+                {child}
+              </DockedToolSettingsEntry>
+            </CSSTransition>
+          </TransitionGroup>
         );
       })}
       {(!overflown || overflown.length > 0) && (

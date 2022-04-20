@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.2.0-dev.26",
+  "version": "3.2.0-dev.49",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -20,7 +20,10 @@
     "cover": "nyc npm -s test",
     "extract-api": "betools extract-api --entry=core-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha"
+    "test": "mocha",
+    "ios:webpack:tests": "TESTS_GLOB=./lib/**/*.test.js webpack --config ../../tools/internal/ios/ios.webpack.config.js",
+    "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
+    "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets"
   },
   "repository": {
     "type": "git",
@@ -38,10 +41,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.2.0-dev.26",
-    "@itwin/core-common": "workspace:^3.2.0-dev.26",
-    "@itwin/core-geometry": "workspace:^3.2.0-dev.26",
-    "@itwin/ecschema-metadata": "workspace:^3.2.0-dev.26"
+    "@itwin/core-bentley": "workspace:^3.2.0-dev.49",
+    "@itwin/core-common": "workspace:^3.2.0-dev.49",
+    "@itwin/core-geometry": "workspace:^3.2.0-dev.49",
+    "@itwin/ecschema-metadata": "workspace:^3.2.0-dev.49"
   },
   "peerDependenciesMeta": {
     "@itwin/ecschema-metadata": {
@@ -57,6 +60,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
@@ -74,16 +78,20 @@
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint": "^7.11.0",
+    "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
     "mocha": "^8.3.2",
+    "null-loader": "^0.1.1",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.4.0"
+    "source-map-loader": "^1.0.0",
+    "typescript": "~4.4.0",
+    "webpack": "4.42.0"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
-    "@bentley/imodeljs-native": "3.2.3",
+    "@bentley/imodeljs-native": "3.2.6",
     "@itwin/core-telemetry": "workspace:*",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
