@@ -8,7 +8,7 @@
 
 import { AccessToken, assert, BeDuration, BentleyError, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
+  BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";

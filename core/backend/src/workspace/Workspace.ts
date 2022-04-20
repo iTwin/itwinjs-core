@@ -22,7 +22,7 @@ import { Settings, SettingsPriority } from "./Settings";
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore rowid primarykey
 
-/** The names of Settings used by Workspace
+/** The Settings used by Workspace api
  * @beta
  */
 export const WorkspaceSetting = {
@@ -32,7 +32,13 @@ export const WorkspaceSetting = {
 };
 
 export namespace WorkspaceAccount {
-  /** A member named `accountName` that specifies by a "cloud/accounts" setting */
+  /**
+   * The name of a WorkspaceAccount in a "cloud/accounts" setting.
+   * @beta
+   */
+  export type Name = string;
+
+  /** A member named `accountName` that specifies by an entry in a "cloud/accounts" setting */
   export interface Alias { accountName: string }
 
   /** The properties of a cloud account required to open containers with CloudSqlite. Usually supplied via a "cloud/accounts" setting.
@@ -59,7 +65,7 @@ export namespace WorkspaceContainer {
    */
   export type Id = string;
 
-  /** A member named `containerName` that specifies by a "cloud/containers" setting */
+  /** A member named `containerName` that specifies by an entry in a "cloud/containers" setting */
   export interface Alias { containerName: string }
 
   /**
@@ -67,19 +73,14 @@ export namespace WorkspaceContainer {
    * @beta
    */
   export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
+    /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. */
     syncOnConnect?: boolean;
   }
 }
 
 export namespace WorkspaceDb {
-  export type Alias = string;
-
   /**
-   * The name of a WorkspaceDb. This is the user-supplied name of a WorkspaceDb, used to specify its *purpose* within a workspace.
-   * WorkspaceDb.Name can be "aliased" by [[WorkspaceSetting.Databases]] settings so that the resolved WorkspaceDb properties may vary.
-   * Also note that more than one WorkspaceDb.Name may resolve to the same WorkspaceDb properties.
-   * @note there are no constraints on the contents or length of `WorkspaceDb.Name`s, although descriptive names using "path-like" syntax (using the "/" delimiter)
-   * to ensure uniqueness is recommended.
+   * The name of a WorkspaceDb in a "workspace/databases" setting.
    * @beta
    */
   export type Name = string;
@@ -91,11 +92,22 @@ export namespace WorkspaceDb {
   export type DbName = string;
 
   /**
-   * The semver-format version identifier for a WorkspaceDb. More than one version of a WorkspaceDb may be stored in the same WorkspaceContainer. This
-   * string identifies a specific version or a range of acceptable versions according to [semver Range format](https://github.com/npm/node-semver)
+   * The  name of a WorkspaceDb within a WorkspaceContainer, including the version identifier
+   * @beta
+   */
+  export type DbFullName = string;
+
+  /**
+   * The semver-format version identifier for a WorkspaceDb.
    * @beta
    */
   export type Version = string;
+
+  /**
+   * The [semver range format](https://github.com/npm/node-semver) identifier for a range of acceptable versions.
+   * @beta
+   */
+  export type VersionRange = string;
 
   /**
    * Properties that specify how to load a WorkspaceDb within a [[WorkspaceContainer]].
@@ -103,13 +115,13 @@ export namespace WorkspaceDb {
    */
   export interface Props extends CloudSqlite.DbNameProp {
     /** a semver version range specifier that determines the acceptable range of versions to load. If not present, use the newest version. */
-    version?: Version;
+    version?: VersionRange;
     /** if true, allow semver *prerelease* versions. By default only released version are allowed. */
     includePrerelease?: boolean;
   }
 
   /**
-   * Scope of increment for a version number.
+   * Scope to increment for a version number.
    * @see semver.ReleaseType
    */
   export type VersionIncrement = "major" | "minor" | "patch";
@@ -143,12 +155,13 @@ export namespace WorkspaceResource {
  * @beta
  */
 export interface WorkspaceDb {
+  /** The WorkspaceContainer holding this WorkspaceDb. */
   readonly container: WorkspaceContainer;
   /** The base name of this WorkspaceDb, without version */
   readonly dbName: WorkspaceDb.DbName;
   /** event raised before this WorkspaceDb is closed. */
   readonly onClose: BeEvent<() => void>;
-  /** either a local file name or the name of a database in a cloud container */
+  /** Name by which a WorkspaceDb may be opened. This will be either a local file name or the name of a database in a cloud container */
   readonly dbFileName: string;
   /** Get a string resource from this WorkspaceDb, if present. */
   getString(rscName: WorkspaceResource.Name): string | undefined;
@@ -176,12 +189,13 @@ export interface WorkspaceDb {
 
   /**
    * Ensure that the contents of a `WorkspaceDb` are downloaded into the local cache so that it may be accessed offline.
-   * Until the promise is resolved, the `WorkspaceDb` is not fully downloaded, but it may be safely accessed during the download.
+   * Until the promise is resolved, the `WorkspaceDb` is not fully downloaded, but it *may* be safely accessed during the download.
    * To determine the progress of the download, use the `localBlocks` and `totalBlocks` values returned by `CloudContainer.queryDatabase`.
    */
   prefetch(): Promise<void>;
 }
 
+/** The properties of the CloudCache used for Workspaces. */
 export interface WorkspaceCloudCacheProps extends Optional<CloudSqlite.CacheProps, "name" | "rootDir"> {
   /** if true, empty the cache before using it. */
   clearContents?: boolean;
@@ -201,7 +215,7 @@ export interface WorkspaceOpts {
   /** Properties for the cloud cache for the `WorkspaceContainers` of the Workspace. */
   cloudCacheProps?: WorkspaceCloudCacheProps;
 
-  /** the name of one or more settings files to load. */
+  /** the local fileName of one or more settings files to load after the Workspace is first created. */
   settingsFiles?: LocalFileName | [LocalFileName];
 }
 
@@ -215,6 +229,7 @@ export interface Workspace {
   readonly containerDir: LocalDirName;
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
+  /** The CloudCache for cloud-based WorkspaceContainers */
   readonly cloudCache?: IModelJsNative.CloudCache;
 
   /** search for a previously opened container.
@@ -223,30 +238,33 @@ export interface Workspace {
    */
   findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
 
-  /** get the [[WorkspaceContainer]] by [[WorkspaceContainer.Props]]
+  /** get a [[WorkspaceContainer]] by [[WorkspaceContainer.Props]]
    * @param props the properties of the `WorkspaceContainer`. If `props.containerId` was already opened, its WorkspaceContainer is returned.
-   * Otherwise
-   * @param
+   * Otherwise it is created.
+   * @param account If present, the properties for this container if it is to be opened from the cloud. If not present, the container is just a local directory.
   */
   getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
 
-  resolveAccount(accountName: string): WorkspaceAccount.Props;
+  /** get the properties for the supplied account name by searching for an entry with that name in a `cloud/accounts` setting. */
+  resolveAccount(accountName: WorkspaceAccount.Name): WorkspaceAccount.Props;
 
-  /**
-   * Resolve a WorkspaceContainer.Name to a WorkspaceContainer.Props.
-   * The highest priority [[WorkspaceSetting.Containers]] setting with an entry for `containerName` is used.
-   */
+  /** get the properties for the supplied container name by searching for an entry with that name in a `cloud/containers` setting. */
   resolveContainer(containerName: WorkspaceContainer.Name): WorkspaceContainer.Props & WorkspaceAccount.Alias;
 
-  resolveDatabase(databaseName: string): WorkspaceDb.Props & WorkspaceContainer.Alias;
+  /** get the properties for the supplied workspace database name by searching for an entry with that name in a `workspace/databases` setting. */
+  resolveDatabase(databaseAlias: WorkspaceDb.Name): WorkspaceDb.Props & WorkspaceContainer.Alias;
 
   /**
-   * Get an open [[WorkspaceDb]]. If the WorkspaceDb is present but not open, it is opened first.
-   * If `cloudProps` are supplied, and if container is not  present or not up-to-date, it is downloaded first.
-   * @returns a Promise that is resolved when the container is local, opened, and available for access.
+   * Get an opened [[WorkspaceDb]]. If the WorkspaceDb is present but not open, it is opened first.
+   * If `cloudProps` are supplied, a CloudContainer will be used to open the WorkspaceDb.
    */
-  getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): Promise<WorkspaceDb>;
-  getWorkspaceDb(dbAlias: WorkspaceDb.Alias): Promise<WorkspaceDb>;
+  getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
+
+  /** Get an opened [[WorkspaceDb]] from a WorkspaceDb name.
+   * @param databaseName the database name, resolved via [[resolveDatabase]].
+   * @see [[getWorkspaceDbFromProps]]
+   */
+  getWorkspaceDb(databaseName: WorkspaceDb.Name): WorkspaceDb;
 
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
@@ -280,7 +298,7 @@ export interface WorkspaceContainer {
   resolveDbFileName(props: WorkspaceDb.Props): string;
 
   /** find or open a WorkspaceDb from this WorkspaceContainer. */
-  getWorkspaceDb(props: WorkspaceDb.Props): Promise<WorkspaceDb>;
+  getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb;
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace. */
   dropWorkspaceDb(container: WorkspaceDb): void;
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
@@ -337,11 +355,11 @@ export class ITwinWorkspace implements Workspace {
     return this.findContainer(props.containerId) ?? new ITwinWorkspaceContainer(this, props, account);
   }
 
-  public async getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): Promise<WorkspaceDb> {
+  public getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb {
     return this.getContainer(containerProps, account).getWorkspaceDb(dbProps);
   }
 
-  public async getWorkspaceDb(dbAlias: string) {
+  public getWorkspaceDb(dbAlias: string) {
     const dbProps = this.resolveDatabase(dbAlias);
     const containerProps = this.resolveContainer(dbProps.containerName);
     const account = containerProps.accountName !== "" ? this.resolveAccount(containerProps.accountName) : undefined;
@@ -488,7 +506,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     }
   }
 
-  public static validateVersion(version?: string) {
+  public static validateVersion(version?: WorkspaceDb.Version) {
     version = version ?? "1.0.0";
     if (version) {
       const opts = { loose: true, includePrerelease: true };
@@ -501,16 +519,16 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     return version;
   }
 
-  public static parseDbFileName(dbFileName: string): { dbName: string, version: string } {
+  public static parseDbFileName(dbFileName: WorkspaceDb.DbFullName): { dbName: WorkspaceDb.DbName, version: WorkspaceDb.Version } {
     const parts = dbFileName.split(":");
     return { dbName: parts[0], version: parts[1] };
   }
 
-  public static makeDbFileName(dbName: string, version?: string): string {
+  public static makeDbFileName(dbName: WorkspaceDb.DbName, version?: WorkspaceDb.Version): WorkspaceDb.DbName {
     return `${dbName}:${this.validateVersion(version)}`;
   }
 
-  public static resolveCloudFileName(cloudContainer: IModelJsNative.CloudContainer, props: WorkspaceDb.Props) {
+  public static resolveCloudFileName(cloudContainer: IModelJsNative.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
     const dbName = props.dbName;
     const dbs = cloudContainer.queryDatabases(`${dbName}%`); // get all databases that start with dbName
 
@@ -558,7 +576,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
    * Convert a WorkspaceDb.Props specification into a DbFileName. For file-based containers, this returns a local filename of a
    *  WorkspaceDb file with the extension ".itwin-workspace"
    */
-  public resolveDbFileName(props: WorkspaceDb.Props): string {
+  public resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       return join(this.dirName, `${props.dbName}.${ITwinWorkspaceDb.fileExt}`); // local file, versions not allowed
@@ -572,7 +590,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this._wsDbs.set(toAdd.dbName, toAdd);
   }
 
-  public async getWorkspaceDb(props: WorkspaceDb.Props): Promise<WorkspaceDb> {
+  public getWorkspaceDb(props: WorkspaceDb.Props): WorkspaceDb {
     const db = this._wsDbs.get(props.dbName) ?? new ITwinWorkspaceDb(props, this);
     if (!db.isOpen)
       db.open();

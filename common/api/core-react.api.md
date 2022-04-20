@@ -943,7 +943,7 @@ export function Icon(props: IconProps): JSX.Element | null;
 
 // @public
 export class IconHelper {
-    static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
+    static getIconData(iconSpec: IconSpec, internalData?: Map<string, any>): string | ConditionalStringValue;
     static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
     // (undocumented)
     static get reactIconKey(): string;
@@ -2474,7 +2474,7 @@ export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T |
 export function useRefState<T>(): [React.Ref<T>, T | undefined];
 
 // @internal
-export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
+export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: Element | null) => void;
 
 // @public
 export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void;

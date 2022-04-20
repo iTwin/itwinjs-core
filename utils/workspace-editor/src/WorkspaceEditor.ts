@@ -47,7 +47,7 @@ interface InitializeOpts extends EditorOpts {
 
 /** options for performing an operation on a WorkspaceDb */
 interface WorkspaceDbOpt extends EditorOpts {
-  dbName: WorkspaceDb.Name;
+  dbName: WorkspaceDb.DbFullName;
   dbFileName: string;
   version?: string;
   like?: string;
@@ -55,7 +55,7 @@ interface WorkspaceDbOpt extends EditorOpts {
 
 /** options for copying a WorkspaceDb to a new name */
 interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
-  newDbName: WorkspaceDb.Name;
+  newDbName: WorkspaceDb.DbFullName;
 }
 
 /** options for creating a new version of a WorkspaceDb */

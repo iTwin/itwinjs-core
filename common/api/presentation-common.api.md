@@ -142,7 +142,7 @@ export interface CategoryDescriptionJSON {
 export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier;
 
 // @public @deprecated
-export interface CheckBoxRule extends RuleBase, ConditionContainer {
+export interface CheckBoxRule extends RuleBase {
     condition?: string;
     defaultValue?: boolean;
     isEnabled?: string | boolean;
@@ -152,7 +152,7 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
 }
 
 // @public
-export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
+export interface ChildNodeRule extends NavigationRuleBase {
     ruleType: RuleTypes.ChildNodes;
 }
 
@@ -236,7 +236,7 @@ export interface CompressedClassInfoJSON {
 // @public
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
-// @public
+// @public @deprecated
 export interface ConditionContainer {
     condition?: string;
 }
@@ -334,7 +334,7 @@ export interface ContentRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVa
 export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequestOptions<never, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>;
 
 // @public
-export interface ContentRule extends RuleBase, ConditionContainer {
+export interface ContentRule extends RuleBase {
     condition?: string;
     ruleType: RuleTypes.Content;
     specifications: ContentSpecification[];
@@ -831,7 +831,7 @@ export interface ExpandedNodeUpdateRecordJSON {
 }
 
 // @public
-export interface ExtendedDataRule extends RuleBase, ConditionContainer {
+export interface ExtendedDataRule extends RuleBase {
     condition?: string;
     items: {
         [key: string]: string;
@@ -944,7 +944,7 @@ export interface GroupingNodeKeyJSON extends BaseNodeKeyJSON {
 }
 
 // @public
-export interface GroupingRule extends RuleBase, ConditionContainer {
+export interface GroupingRule extends RuleBase {
     class: SingleSchemaClassSpecification;
     condition?: string;
     groups: GroupingSpecification[];
@@ -1132,7 +1132,7 @@ export interface IdCategoryIdentifier {
 }
 
 // @public @deprecated
-export interface ImageIdOverride extends RuleBase, ConditionContainer {
+export interface ImageIdOverride extends RuleBase {
     condition?: string;
     imageIdExpression: string;
     ruleType: RuleTypes.ImageIdOverride;
@@ -1476,7 +1476,7 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
 }
 
 // @public @deprecated
-export interface LabelOverride extends RuleBase, ConditionContainer {
+export interface LabelOverride extends RuleBase {
     condition?: string;
     description?: string;
     label?: string;
@@ -1507,6 +1507,29 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
     fieldName: string;
     // (undocumented)
     type: FieldDescriptorType.Name;
+}
+
+// @beta
+export interface NavigationPropertyInfo {
+    classInfo: ClassInfo;
+    isForwardRelationship: boolean;
+}
+
+// @beta (undocumented)
+export namespace NavigationPropertyInfo {
+    export function fromJSON(json: NavigationPropertyInfo): NavigationPropertyInfo;
+    export function toCompressedJSON(navigationPropertyInfo: NavigationPropertyInfo, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): NavigationPropertyInfoJSON<string>;
+    export function toJSON(info: NavigationPropertyInfo): NavigationPropertyInfoJSON;
+}
+
+// @beta
+export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+    // (undocumented)
+    classInfo: TClassInfoJSON;
+    // (undocumented)
+    isForwardRelationship: boolean;
 }
 
 // @public
@@ -1638,7 +1661,7 @@ export namespace Node {
 }
 
 // @public
-export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
+export interface NodeArtifactsRule extends RuleBase {
     condition?: string;
     items: {
         [key: string]: string;
@@ -2151,6 +2174,8 @@ export interface PropertyInfo {
     // @alpha
     kindOfQuantity?: KindOfQuantityInfo;
     name: string;
+    // @beta
+    navigationPropertyInfo?: NavigationPropertyInfo;
     type: string;
 }
 
@@ -2173,6 +2198,8 @@ export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     kindOfQuantity?: KindOfQuantityInfo;
     // (undocumented)
     name: string;
+    // @beta (undocumented)
+    navigationPropertyInfo?: NavigationPropertyInfoJSON<TClassInfoJSON>;
     // (undocumented)
     type: string;
 }
@@ -2698,7 +2725,7 @@ export enum SortDirection {
 export type SortingRule = PropertySortingRule | DisabledSortingRule;
 
 // @public
-export interface SortingRuleBase extends RuleBase, ConditionContainer {
+export interface SortingRuleBase extends RuleBase {
     class?: SingleSchemaClassSpecification;
     condition?: string;
     isPolymorphic?: boolean;
@@ -2819,7 +2846,7 @@ export interface StructTypeDescription extends BaseTypeDescription {
 }
 
 // @public @deprecated
-export interface StyleOverride extends RuleBase, ConditionContainer {
+export interface StyleOverride extends RuleBase {
     backColor?: string;
     condition?: string;
     fontStyle?: string;
@@ -2828,7 +2855,7 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
 }
 
 // @public
-export interface SubCondition extends ConditionContainer {
+export interface SubCondition {
     condition?: string;
     // @beta
     requiredSchemas?: RequiredSchemaSpecification[];

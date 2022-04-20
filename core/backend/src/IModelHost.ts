@@ -429,7 +429,7 @@ export class IModelHost {
     this.setupTileCache();
 
     this.platform.setUseTileCache(IModelHost.tileCacheService ? false : true);
-    process.once("beforeExit", async () => this.shutdown());
+    process.once("beforeExit", IModelHost.shutdown);
     this.onAfterStartup.raiseEvent();
   }
 

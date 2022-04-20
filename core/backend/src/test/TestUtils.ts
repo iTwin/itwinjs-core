@@ -8,7 +8,6 @@ import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { BentleyLoggerCategory, IDisposable, Logger, LogLevel } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostConfiguration } from "../IModelHost";
-import { SettingsPriority } from "../workspace/Settings";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Class for simple test timing */
