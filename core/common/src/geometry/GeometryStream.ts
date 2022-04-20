@@ -27,6 +27,7 @@ import { Placement2d, Placement3d } from "./Placement";
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
  * @see [[GeometryStreamEntryProps]]
  * @public
+ * @extensions
  */
 export interface GeometryAppearanceProps {
   /** Optional [[SubCategory]] id for subsequent geometry. Use to create a GeometryStream with geometry that is not on the default [[SubCategory]] for the element's [[Category]] or is has geometry on multiple subCategories. */
@@ -49,6 +50,7 @@ export interface GeometryAppearanceProps {
  * Only one value among [[gradient]], [[backgroundFill]], and [[color]] should be set.
  * @see [[GeometryStreamEntryProps]]
  * @public
+ * @extensions
  */
 export interface AreaFillProps {
   /** Fill display type, must be set to something other than [[FillDisplay.Never]] to display fill */
@@ -66,6 +68,7 @@ export interface AreaFillProps {
 /** Override [[SubCategoryAppearance.materialId]] for subsequent surface and solid geometry.
  * @see [[GeometryStreamEntryProps]]
  * @public
+ * @extensions
  */
 export interface MaterialProps {
   /** Material id to use, specify an invalid [[Id64]] to override [[SubCategoryAppearance.materialId]] with no material. */
@@ -120,6 +123,7 @@ export namespace BRepEntity {
 /** Add a reference to a [[GeometryPart]] from the GeometryStream of a [[GeometricElement]].
  * @see [[GeometryStreamEntryProps]]
  * @public
+ * @extensions
  */
 export interface GeometryPartInstanceProps {
   /** GeometryPart id */
@@ -135,6 +139,7 @@ export interface GeometryPartInstanceProps {
 /** Flags applied to the entire contents of a [[GeometryStreamProps]].
  * @see GeometryStreamHeaderProps
  * @public
+ * @extensions
  */
 export enum GeometryStreamFlags {
   /** No flags. */
@@ -148,6 +153,7 @@ export enum GeometryStreamFlags {
 /** An entry in a [[GeometryStreamProps]] containing [[GeometryStreamFlags]] that apply to the geometry stream as a whole.
  * If this entry exists in the [[GeometryStreamProps]] array, it will always be the *first* entry.
  * @public
+ * @extensions
  */
 export interface GeometryStreamHeaderProps {
   /** The flags applied to the geometry stream. */
@@ -157,6 +163,7 @@ export interface GeometryStreamHeaderProps {
 /** Allowed GeometryStream entries - should only set one value.
  * @see [GeometryStream]($docs/learning/common/geometrystream.md)
  * @public
+ * @extensions
  */
 export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   header?: GeometryStreamHeaderProps;
@@ -174,6 +181,7 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
 
 /** A [[GeometricElement]]'s GeometryStream is represented by an array of [[GeometryStreamEntryProps]].
  * @public
+ * @extensions
  */
 export type GeometryStreamProps = GeometryStreamEntryProps[];
 
@@ -412,6 +420,7 @@ export class GeometryStreamBuilder {
 
 /** Represents a text string within a GeometryStream.
  * @public
+ * @extensions
  */
 export interface TextStringPrimitive {
   type: "textString";
@@ -420,6 +429,7 @@ export interface TextStringPrimitive {
 
 /** Represents an image within a GeometryStream.
  * @public
+ * @extensions
  */
 export interface ImagePrimitive {
   type: "image";
@@ -428,6 +438,7 @@ export interface ImagePrimitive {
 
 /** Represents a reference to a GeometryPart within a GeometryStream.
  * @public
+ * @extensions
  */
 export interface PartReference {
   type: "partReference";
@@ -439,6 +450,7 @@ export interface PartReference {
 
 /** Represents a BRep within a GeometryStream.
  * @public
+ * @extensions
  */
 export interface BRepPrimitive {
   type: "brep";
@@ -448,6 +460,7 @@ export interface BRepPrimitive {
 
 /** Represents one of a variety of GeometryQuery objects within a GeometryStream.
  * @public
+ * @extensions
  */
 export interface GeometryPrimitive {
   type: "geometryQuery";
@@ -456,11 +469,13 @@ export interface GeometryPrimitive {
 
 /** Union of all possible geometric primitive types that may appear within a GeometryStream.
  * @public
+ * @extensions
  */
 export type GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive;
 
 /** Holds current state information for [[GeometryStreamIterator]]. Each entry represents exactly one geometry primitive in the stream.
  * @public
+ * @extensions
  */
 export interface GeometryStreamIteratorEntry {
   /** A [[GeometryParams]] representing the appearance of the current geometric entry */

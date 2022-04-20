@@ -16,6 +16,7 @@ import { Geometry } from "@itwin/core-geometry";
  *  Y = b * x + a * y + translationY
  *  Z = z + translationZ
  *  @public
+ *  @extensions
  */
 export interface Helmert2DWithZOffsetProps {
   /** The X post translation */
@@ -87,6 +88,7 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
 
 /** Additional Transform definition
  * @public
+ * @extensions
  */
 export interface AdditionalTransformProps {
   /** The properties of a 2D Helmert transform with Z offset if one is defined. */

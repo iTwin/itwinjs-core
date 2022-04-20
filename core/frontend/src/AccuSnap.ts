@@ -171,6 +171,7 @@ export class TouchCursor implements CanvasDecoration {
 /** AccuSnap is an aide for snapping to interesting points on elements or decorations as the cursor moves over them.
  * @see [Using AccuSnap]($docs/learning/frontend/primitivetools.md#AccuSnap)
  * @public
+ * @extensions
  */
 export class AccuSnap implements Decorator {
   /** Currently active hit */

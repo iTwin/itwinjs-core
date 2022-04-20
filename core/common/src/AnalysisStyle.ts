@@ -13,6 +13,7 @@ import { Gradient } from "./Gradient";
 /** JSON representation of an [[AnalysisStyleDisplacement]].
  * @see [[AnalysisStyleProps.displacement]].
  * @public
+ * @extensions
  */
 export interface AnalysisStyleDisplacementProps {
   /** @see [[AnalysisStyleDisplacement.channelName]]. */
@@ -64,6 +65,7 @@ export class AnalysisStyleDisplacement {
 /** JSON representation of an [[AnalysisStyleThematic]].
  * @see [[AnalysisStyleProps.scalar]].
  * @public
+ * @extensions
  */
 export interface AnalysisStyleThematicProps {
   /** @see [[AnalysisStyleThematic.channelName]]. */
@@ -134,6 +136,7 @@ export class AnalysisStyleThematic {
 
 /** JSON representation of an [[AnalysisStyle]].
  * @public
+ * @extensions
  */
 export interface AnalysisStyleProps {
   /** @see [[AnalysisStyle.displacement]]. */
@@ -229,7 +232,7 @@ export class AnalysisStyle {
 
   /** Convert this style to its JSON representation. */
   public toJSON(): AnalysisStyleProps {
-    const props: AnalysisStyleProps = { };
+    const props: AnalysisStyleProps = {};
     if (this === AnalysisStyle.defaults)
       return props;
 
@@ -269,5 +272,5 @@ export class AnalysisStyle {
     return undefined === this.thematic || this.thematic.equals(other.thematic!);
   }
 
-  public static readonly defaults = new AnalysisStyle({ });
+  public static readonly defaults = new AnalysisStyle({});
 }

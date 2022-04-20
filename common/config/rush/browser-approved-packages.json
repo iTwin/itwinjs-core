@@ -196,7 +196,7 @@
     },
     {
       "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
@@ -284,6 +284,10 @@
     },
     {
       "name": "@itwin/map-layers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/node-cli-authorization",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -768,7 +772,7 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "nyc",
@@ -879,6 +883,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-transition-group",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-window",
       "allowedCategories": [ "frontend" ]
     },
@@ -932,7 +940,7 @@
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "source-map-support",
@@ -1004,7 +1012,7 @@
     },
     {
       "name": "webpack",
-      "allowedCategories": [ "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "webpack-cli",

@@ -16,6 +16,7 @@ import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
 
 /** Provides an interface to the [Bing Maps elevation services](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/).
  * @public
+ * @extensions
  */
 export class BingElevationProvider {
   private _heightRangeRequestTemplate: string;

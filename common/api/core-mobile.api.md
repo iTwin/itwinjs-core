@@ -236,6 +236,8 @@ export class MobileFileHandler {
 
 // @beta (undocumented)
 export class MobileHost {
+    // @internal (undocumented)
+    static get authorization(): import("@itwin/core-common").AuthorizationClient | undefined;
     // (undocumented)
     static get device(): MobileDevice;
     // @internal (undocumented)
@@ -264,6 +266,7 @@ export interface MobileHostOpts extends NativeHostOpts {
         device?: MobileDevice;
         rpcInterfaces?: RpcInterfaceDefinition[];
         authConfig?: MobileAppAuthorizationConfiguration;
+        noInitializeAuthClient?: boolean;
     };
 }
 

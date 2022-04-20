@@ -13,6 +13,7 @@ import { RenderGraphic } from "../render/RenderGraphic";
  * Describes the contents of a [[Tile]]. Specific sub-types of [[Tile]] may describe their content using sub-types of this interface.
  * @see [[Tile.readContent]].
  * @public
+ * @extensions
  */
 export interface TileContent {
   /** Graphical representation of the tile's geometry. */
