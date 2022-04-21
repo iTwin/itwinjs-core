@@ -75,7 +75,7 @@ export class SampleToolWithSetting extends PrimitiveTool {
 }
 ```
 
-### Example using latest ToolSettings helper methods to simplify setting up properties for Tool Settings UI
+### Example using ToolSettings helper methods to simplify setting up properties for Tool Settings UI
 
 ```tsx
 export class ToolWithSettings extends PrimitiveTool {
