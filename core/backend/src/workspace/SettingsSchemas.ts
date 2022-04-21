@@ -8,27 +8,29 @@
 
 import * as fs from "fs-extra";
 import { parse } from "json5";
-import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
+import { extname, join } from "path";
+import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, MarkRequired, Mutable } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../IModelJsFs";
-import path = require("path");
 
 /**
- * The properties of a Setting, used by the settings editor. This interface also includes the
+ * The properties of a single Setting, used by the settings editor. This interface also includes the
  * default value if it is not specified in any Settings file.
  * This interface includes all members of [JSONSchema]($bentley) with the extensions added by VSCode.
+ * @note the `type` member is marked optional in JSONSchema but is required for Settings.
  * @beta
  */
-export interface SettingSchema extends Readonly<JSONSchema> {
-  type: JSONSchemaTypeName | JSONSchemaTypeName[];
+export interface SettingSchema extends Readonly<MarkRequired<JSONSchema, "type">> {
   /** labels for items of an enum. */
   readonly enumItemLabels?: string[];
   /** whether the editor should show multiple lines. */
   readonly multilineEdit?: true;
+  /** whether the setting replaces lower priority entries with the same name or combines with them. */
+  readonly cumulative?: true;
 }
 
 /**
- * The properties of a group of [[SettingSchema]]s for an application. Groups can be added and removed from the registry
+ * The properties of a group of [[SettingSchema]]s for an application. Groups can be added and removed from [[SettingsSchemas]]
  * and are identified by their (required) `groupName` member
  * @beta
  */
@@ -89,13 +91,13 @@ export class SettingsSchemas {
     return this.addJson(fs.readFileSync(fileName, "utf-8"));
   }
 
-  /** Add all files with a ".json5" extension from a supplied directory. */
+  /** Add all files with a either ".json" or ".json5" extension from a supplied directory. */
   public static addDirectory(dirName: LocalDirName): string[] {
     const problems: string[] = [];
     for (const fileName of IModelJsFs.readdirSync(dirName)) {
-      const ext = path.extname(fileName);
+      const ext = extname(fileName);
       if (ext === ".json5" || ext === ".json")
-        problems.push(...this.addFile(path.join(dirName, fileName)));
+        problems.push(...this.addFile(join(dirName, fileName)));
     }
     return problems;
   }
