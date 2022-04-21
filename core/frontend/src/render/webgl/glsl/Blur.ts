@@ -48,7 +48,7 @@ const computeBlur = `
   return result;
 `;
 
-// This optionally skips adding in the blurr texture result if the current pixel is a linear/edge/silhouette.
+// This optionally skips adding in the blur texture result if the current pixel is a linear/edge/silhouette.
 const testRenderOrder = `
   vec2 rotc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec4 pdo = TEXTURE(u_pickDepthAndOrder, rotc);
