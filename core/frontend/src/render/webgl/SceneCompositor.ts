@@ -2409,6 +2409,11 @@ class MPCompositor extends Compositor {
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
+    if (CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion) && !renderForReadPixels) {
+      this.renderOpaqueAO(commands);
+      return;
+    }
+
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
     const needComposite = CompositeFlags.None !== compositeFlags;
@@ -2416,49 +2421,64 @@ class MPCompositor extends Compositor {
     const colorFbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueLinear, false);
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
-    if (renderForReadPixels || needAO) {
-      if (needAO)
-        this._primitiveDrawState = PrimitiveDrawState.Pickable;
+    if (renderForReadPixels || needAO)
       this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
-      this._primitiveDrawState = PrimitiveDrawState.Both;
-    }
-
     this._readPickDataFromPingPong = false;
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
     if (!renderForReadPixels) {
       System.instance.frameBufferStack.execute(colorFbo, true, false, () => {
         this._drawMultiPassDepth = true;  // for OpaqueGeneral
-        if (needAO)
-          this._primitiveDrawState = PrimitiveDrawState.NonPickable;
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
-        this._primitiveDrawState = PrimitiveDrawState.Both;
       });
-      if (needAO) {
-        // First copy the depthAndOrder texture to the revealage texture which we will use for the hidden edge pick data (don't need full pick with featureIds).
-        System.instance.applyRenderState(this._noDepthMaskRenderState);
-        this.copyFbo(this._textures.depthAndOrder!, this._fbos.revealage!);
-        // So far only the non-pickable hidden edges have been drawn for AO, so we need to draw the pickable ones to the hidden depthAndOrder (revealage).
-        this._primitiveDrawState = PrimitiveDrawState.Pickable;
-        // Since we only need to draw color and depthAndOrder instead of calling drawOpaquePass just do what we need here.
-        const stack = System.instance.frameBufferStack;
-        this._drawMultiPassDepth = true;
-        stack.execute(colorFbo, true, false, () => this.drawPass(commands, RenderPass.HiddenEdge, false));
-        this._drawMultiPassDepth = false;
-        this._currentRenderTargetIndex = 2;
-        stack.execute(this._fbos.revealage!, true, false, () => this.drawPass(commands, RenderPass.HiddenEdge, false));
-        this._currentRenderTargetIndex = 0;
-        this._readPickDataFromPingPong = false;
-        this._primitiveDrawState = PrimitiveDrawState.Both;
-      }
+    }
+  }
+
+  protected renderOpaqueAO(commands: RenderCommands): void {
+    const fbStack = System.instance.frameBufferStack;
+    const haveHiddenEdges = 0 !== commands.getCommands(RenderPass.HiddenEdge).length;
+
+    // Output the linear, planar, and pickable surfaces to color and pick data buffers.
+    this._readPickDataFromPingPong = true;
+    const colorFbo = this._fbos.opaqueAndCompositeColor!;
+    this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueLinear, false);
+    this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
+    this._primitiveDrawState = PrimitiveDrawState.Pickable;
+    this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
+    this._primitiveDrawState = PrimitiveDrawState.Both;
+    this._readPickDataFromPingPong = false;
+
+    // Output the non-pickable surfaces and hidden edges to just the color buffer.
+    fbStack.execute(colorFbo, true, false, () => {
+      this._drawMultiPassDepth = true;  // for OpaqueGeneral
+      this._primitiveDrawState = PrimitiveDrawState.NonPickable;
+      this.drawPass(commands, RenderPass.OpaqueGeneral, false);
+      if (haveHiddenEdges)
+        this.drawPass(commands, RenderPass.HiddenEdge, false);
+      this._primitiveDrawState = PrimitiveDrawState.Both;
+    });
+
+    if (haveHiddenEdges) {
+      // First copy the depthAndOrder texture to the revealage texture which we will use for the hidden edge pick data (don't need full pick with featureIds).
+      System.instance.applyRenderState(this._noDepthMaskRenderState);
+      this.copyFbo(this._textures.depthAndOrder!, this._fbos.revealage!);
+      // So far only the non-pickable hidden edges have been drawn for AO, so we need to draw the pickable ones to the hidden depthAndOrder (revealage).
+      this._primitiveDrawState = PrimitiveDrawState.Pickable;
+      // Since we only need to draw color and depthAndOrder instead of calling drawOpaquePass just do what we need here.
+      this._drawMultiPassDepth = true;
+      fbStack.execute(colorFbo, true, false, () => this.drawPass(commands, RenderPass.HiddenEdge, false));
+      this._drawMultiPassDepth = false;
+      this._currentRenderTargetIndex = 2;
+      fbStack.execute(this._fbos.revealage!, true, false, () => this.drawPass(commands, RenderPass.HiddenEdge, false));
+      this._currentRenderTargetIndex = 0;
+      this._readPickDataFromPingPong = false;
+      this._primitiveDrawState = PrimitiveDrawState.Both;
     }
 
-    if (needAO) {
-      this._needHiddenEdges = true; // this will cause the alternate renderAndOrder texture to be read for the 2nd AO blur pass.
-      this.renderAmbientOcclusion();
-      this._needHiddenEdges = false;
-    }
+    this._needHiddenEdges = haveHiddenEdges; // this will cause the alternate renderAndOrder texture to be read for the 2nd AO blur pass.
+    this.renderAmbientOcclusion();
+    this._needHiddenEdges = false;
   }
 
   protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
