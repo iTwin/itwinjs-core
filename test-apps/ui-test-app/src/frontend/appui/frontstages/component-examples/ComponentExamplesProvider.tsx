@@ -8,11 +8,13 @@ import * as React from "react";
 import { BeDuration, Logger } from "@itwin/core-bentley";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
+import moreWebSvg from "@bentley/icons-generic/icons/more-circular.svg";
+import moreVerticalWebSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
 } from "@itwin/core-frontend";
-import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { Format, FormatProps, FormatterSpec, FormatTraits, getTraitString, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@itwin/appui-abstract";
 import {
   adjustDateToTimezone, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
@@ -38,7 +40,7 @@ import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExam
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { ButtonWithContextMenu, ContextMenuInPopup, GlobalContextMenuInPopup, PopupContextMenuInPopup, SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { ButtonWithContextMenu, ButtonWithDropdownMenu, ContextMenuInPopup, DropdownMenuInPopup, GlobalContextMenuInPopup, GlobalItwinContextMenuInPopup, PopupContextMenuInPopup, SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
@@ -83,7 +85,7 @@ function MySettingsPage() {
 }
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
-  const traitStr = Format.getTraitString(trait);
+  const traitStr = getTraitString(trait);
   if (undefined === traitStr)
     return;
   let formatTraits: string[] | undefined;
@@ -642,10 +644,13 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Abstract ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
         createComponentExample("ContextMenu", undefined, <ButtonWithContextMenu />),
+        createComponentExample("iTwinUI DropdownMenu", "similar to ContextMenu", <ButtonWithDropdownMenu />),
         createComponentExample("ContextMenu in Popup", undefined, <ContextMenuInPopup />),
+        createComponentExample("iTwinUi DropdownMenu in Popup", "similar to ContextMenu in Popup", <DropdownMenuInPopup />),
         createComponentExample("Popup ContextMenu", undefined, <SamplePopupContextMenu />),
         createComponentExample("PopupContextMenu in Popup", undefined, <PopupContextMenuInPopup />),
         createComponentExample("Global ContextMenu", undefined, <GlobalContextMenuInPopup />),
+        createComponentExample("iTwinUI Menu at cursor", "similar to GlobalContextMenu", <GlobalItwinContextMenuInPopup />),
       ],
     };
   }
@@ -812,7 +817,8 @@ export class ComponentExamplesProvider {
         createComponentExample("Labeled Textarea", "Labeled Textarea component", <LabeledTextarea label="Labeled Textarea" placeholder="Labeled Textarea" className="uicore-full-width" />),
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
-        createComponentExample("Image Checkbox", "ImageCheckbox with SVG fonts", <SampleImageCheckBox imageOn={IconSpecUtilities.createSvgIconSpec(moreSvg)} imageOff={IconSpecUtilities.createSvgIconSpec(moreVerticalSvg)} />),
+        createComponentExample("Image Checkbox", "ImageCheckbox with SVG (deprecate sprite)", <SampleImageCheckBox imageOn={IconSpecUtilities.createSvgIconSpec(moreSvg)} imageOff={IconSpecUtilities.createSvgIconSpec(moreVerticalSvg)} />),
+        createComponentExample("Image Checkbox", "ImageCheckbox with SVG using web component", <SampleImageCheckBox imageOn={IconSpecUtilities.createWebComponentIconSpec(moreWebSvg)} imageOff={IconSpecUtilities.createWebComponentIconSpec(moreVerticalWebSvg)} />),
 
         createComponentExample("Input Described By", "Input with aria-describedby",
           <div>
@@ -1286,7 +1292,7 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Basic Listbox", undefined,
           <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
-            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            onKeyDown={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
             {
               listItems?.map((cityName) =>
                 <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>
@@ -1296,7 +1302,7 @@ export class ComponentExamplesProvider {
           </Listbox>),
         createComponentExample("Listbox with disabled entries", undefined,
           <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
-            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            onKeyDown={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
             {
               listItems?.map((cityName, index) =>
                 <ListboxItem key={cityName} className="map-source-list-entry" value={cityName} disabled={0 === index % 2}>

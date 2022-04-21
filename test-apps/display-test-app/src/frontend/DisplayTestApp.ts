@@ -16,20 +16,31 @@ import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 
 const configuration: DtaConfiguration = {};
+
 const getFrontendConfig = () => {
   if (ProcessDetector.isMobileAppFrontend) {
     if (window) {
       const urlParams = new URLSearchParams(window.location.hash);
       urlParams.forEach((val, key) => {
         (configuration as any)[key] = val;
-        Object.assign(configuration, { iModelName: urlParams.get("iModelName") });
       });
     }
-    const newConfigurationInfo = JSON.parse(window.localStorage.getItem("imodeljs:env")!);
-    Object.assign(configuration, newConfigurationInfo);
+  } else {
+    Object.assign(configuration, getConfig());
   }
 
-  Object.assign(configuration, getConfig());
+  // Overriding the configuration generally requires setting environment variables, rebuilding the app, and restarting the app from scratch -
+  // and sometimes that doesn't even work.
+  // If you want to quickly adjust aspects of the configuration on the frontend, you can instead add your overrides below and just hot-reload the app in the browser/electron.
+  // Obviously, don't commit such changes.
+  const configurationOverrides: DtaConfiguration = {
+    /* For example:
+    iModelName: "d:\\bim\\Constructions.bim",
+    disableInstancing: true,
+    */
+  };
+  Object.assign(configuration, configurationOverrides);
+
   console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
 };
 

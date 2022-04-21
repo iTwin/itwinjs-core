@@ -46,9 +46,10 @@ import {
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
-import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { MarkupTool, ModelClipTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { MacroTool } from "./MacroTools";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
+import { SaveImageTool } from "./SaveImageTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -235,7 +236,7 @@ export class DisplayTestApp {
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
-          MapBoxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
+          MapboxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
           BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */

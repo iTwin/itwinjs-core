@@ -117,7 +117,7 @@ export class SweepContour {
   }
   /** Return a deep clone. */
   public clone(): SweepContour {
-    return new SweepContour(this.curves.clone() as CurveCollection, this.localToWorld.clone(), this.axis);
+    return new SweepContour(this.curves.clone(), this.localToWorld.clone(), this.axis);
   }
   /** Return a transformed clone. */
   public cloneTransformed(transform: Transform): SweepContour | undefined {

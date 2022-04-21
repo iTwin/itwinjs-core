@@ -29,7 +29,11 @@
     filter: $arrow-shadow;
     pointer-events: none;
 
-    @include triangle-bottom-right($width: $triangle-width, $height: $triangle-height, $color: $buic-icon-color);
+    @include triangle-bottom-right(
+      $width: $triangle-width,
+      $height: $triangle-height,
+      $color: $buic-icon-color
+    );
   }
 
   &:active>.components-triangle {
@@ -73,4 +77,11 @@
   border-width: 1px;
   border-style: solid;
   border-radius: 3px;
+
+  transition: visibility 0.5s ease, opacity 0.5s ease;
+
+  &.nz-hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
 }

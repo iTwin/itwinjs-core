@@ -41,6 +41,7 @@ export enum AnimationNodeId {
  * Branches can be nested to build an arbitrarily-complex scene graph.
  * @see [[RenderSystem.createBranch]]
  * @public
+ * @extensions
  */
 export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ {
   /** The child nodes of this branch */
@@ -119,6 +120,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
 
 /** Options passed to [[RenderSystem.createGraphicBranch]].
  * @public
+ * @extensions
  */
 export interface GraphicBranchOptions {
   /** Clip applied to the graphics in the branch. */
@@ -133,6 +135,8 @@ export interface GraphicBranchOptions {
   frustum?: GraphicBranchFrustum;
   /** Supplements the view's [[FeatureSymbology.Overrides]] for graphics in the branch. */
   appearanceProvider?: FeatureAppearanceProvider;
+  /** @internal Secondary planar classifiers (map layers) */
+  secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
 }
 
 /** Clip/Transform for a branch that are varied over time.

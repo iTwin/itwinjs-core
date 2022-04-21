@@ -12,32 +12,34 @@ import { addInstanceColor } from "./Instancing";
 // Vertex
 // Color table is appended to vertex data. Compute the index of the vertex one-past-the-end of the vertex data
 // NB: Color in color table has pre-multiplied alpha - revert it.
-const computeElementColor = `
+function getComputeElementColor(quantized: boolean): string {
+  const vertData = quantized ? "g_vertLutData1.zw" : "g_vertLutData4.xy";
+  return `
   float colorTableStart = u_vertParams.z * u_vertParams.w; // num rgba per-vertex times num vertices
-  float colorIndex = decodeUInt16(g_vertexData2);
+  float colorIndex = decodeUInt16(${vertData});
   vec2 tc = computeLUTCoords(colorTableStart+colorIndex, u_vertParams.xy, g_vert_center, 1.0);
   vec4 lutColor = TEXTURE(u_vertLUT, tc);
   lutColor.rgb /= max(0.0001, lutColor.a);
   vec4 color = (u_shaderFlags[kShaderBit_NonUniformColor] ? lutColor : u_color);
 `;
+}
+
 const returnColor = `
   return color;
 `;
+
 const applyInstanceColor = `
   color.rgb = mix(color.rgb, a_instanceRgba.rgb / 255.0, u_applyInstanceColor * extractInstanceBit(kOvrBit_Rgb));
   color.a = mix(color.a, a_instanceRgba.a / 255.0, u_applyInstanceColor * extractInstanceBit(kOvrBit_Alpha));
 `;
 
-const computeInstancedElementColor = computeElementColor + applyInstanceColor;
-const computeColor = computeElementColor + returnColor;
-const computeInstancedColor = computeInstancedElementColor + returnColor;
-
 function getComputeColor(vert: VertexShaderBuilder): string {
+  const quantized = "quantized" === vert.positionType;
   if (vert.usesInstancedGeometry) {
     addInstanceColor(vert);
-    return computeInstancedColor;
+    return `${getComputeElementColor(quantized)}${applyInstanceColor}${returnColor}`;
   } else {
-    return computeColor;
+    return `${getComputeElementColor(quantized)}${returnColor}`;
   }
 }
 

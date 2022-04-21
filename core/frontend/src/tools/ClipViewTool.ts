@@ -31,6 +31,7 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 
 /** An object that can react to a view's clip being changed by tools or modify handles.
  * @public
+ * @extensions
  */
 export interface ViewClipEventHandler {
   /** Add newly created clip geometry to selection set and show modify controls. */
@@ -70,7 +71,7 @@ export interface DrawClipOptions {
 }
 
 /** A tool to define a clip volume for a view
- * @public
+ * @public @extensions
  */
 export class ViewClipTool extends PrimitiveTool {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { super(); }
@@ -428,7 +429,7 @@ export class ViewClipTool extends PrimitiveTool {
 }
 
 /** A tool to remove a clip volume for a view
- * @public
+ * @public @extensions
  */
 export class ViewClipClearTool extends ViewClipTool {
   public static override toolId = "ViewClip.Clear";
@@ -1900,11 +1901,12 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
 /** Event types for ViewClipDecorationProvider.onActiveClipChanged \
  * @public
+ * @extensions
  */
 export enum ClipEventType { New, NewPlane, Modify, Clear }
 
 /** An implementation of ViewClipEventHandler that responds to new clips by presenting clip modification handles
- * @public
+ * @public @extensions
  */
 export class ViewClipDecorationProvider implements ViewClipEventHandler {
   private static _provider?: ViewClipDecorationProvider;

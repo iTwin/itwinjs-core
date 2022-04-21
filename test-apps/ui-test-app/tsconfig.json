@@ -25,8 +25,7 @@
   },
   "include": [
     "./src/**/*.ts",
-    "./src/**/*.tsx",
-    "../../ui/framework/src/test/frontstage/StandardFrontstage.tsx"
+    "./src/**/*.tsx"
   ],
   "exclude": [
     "./src/backend/**/*.ts"

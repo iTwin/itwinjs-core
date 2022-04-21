@@ -10,6 +10,7 @@ beta;AttachArcGISMapLayerByUrlTool
 beta;AttachCesiumAssetTool 
 beta;AttachMapLayerTool 
 beta;AttachMapOverlayTool 
+beta;AttachModelMapLayerTool 
 beta;AttachRealityModelTool 
 beta;AttachTileURLMapLayerByUrlTool 
 beta;AttachWmsMapLayerByUrlTool 

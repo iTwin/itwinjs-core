@@ -547,7 +547,7 @@ export namespace RealityModelTileTree {
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
     public get modelId() { return this._modelId; }
-    public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+    // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
     public get planarClipMaskPriority(): number {

@@ -1,6 +1,46 @@
-# Change Log - @bentley/imodelhub-client
+# Change Log - @bentley/imodelbank-client
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Fri, 15 Apr 2022 13:49:25 GMT and should not be manually modified.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:46 GMT
+
+_Version update only_
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:01 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:12 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+_Version update only_
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+_Version update only_
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -495,7 +535,7 @@ Fri, 02 Oct 2020 18:03:32 GMT
 
 ### Updates
 
-- Fixed lint warnings.
+- Fixed lint warnings. 
 - Changed the bulk lock deletion to use the new chunked bulk lock delete API
 
 ## 2.6.5
@@ -625,17 +665,17 @@ Thu, 28 May 2020 22:48:59 GMT
 
 - Added FailedToGetProductSettings error
 - Download ChangeSets in chunks
-- Simplified logging for monitoring briefcase operations.
+- Simplified logging for monitoring briefcase operations. 
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
 - Changed ChangeSets download API
 - Added unlink for file handler
-- Updated docs.
+- Updated docs. 
 - Changeset download get sas url just before starting download
 - react to changes in imodeljs-clients
 - update imodelbank auth clients to implement FrontendAuthorizationClient

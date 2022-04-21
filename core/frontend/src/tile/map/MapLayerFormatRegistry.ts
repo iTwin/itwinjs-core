@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
+import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
@@ -36,16 +36,20 @@ export interface MapLayerSourceValidation {
 }
 
 /**
- * Options to be passed to the IModelApp on startup which contain access keys for various layer formats
+ * Options supplied at startup via [[IModelAppOptions.mapLayerOptions]] to specify access keys for various map layer formats.
  * @beta
  */
 export interface MapLayerOptions {
+  /** Access key for Azure Maps in the format `{ key: "subscription-key", value: "your-azure-maps-key" }`. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   AzureMaps?: MapLayerKey;
+  /** Access key for Mapbox in the format `{ key: "access_token", value: "your-mapbox-key" }`. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  MapBoxImagery?: MapLayerKey;
+  MapboxImagery?: MapLayerKey;
+  /** Access key for Bing Maps in the format `{ key: "key", value: "your-bing-maps-key" }`. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   BingMaps?: MapLayerKey;
+  /** Access keys for additional map layer formats. */
   [format: string]: MapLayerKey | undefined;
 }
 
@@ -66,11 +70,11 @@ export class MapLayerFormatRegistry {
   public get configOptions(): MapLayerOptions {
     return this._configOptions;
   }
-  public createImageryMapLayerTree(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
+  public createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
     const format = this._formats.get(layerSettings.formatId);
     return format !== undefined ? (format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference) : undefined;
   }
-  public createImageryProvider(layerSettings: MapLayerSettings): MapLayerImageryProvider | undefined {
+  public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     const format = this._formats.get(layerSettings.formatId);
     if (this._configOptions[layerSettings.formatId] !== undefined) {
       const keyValuePair = this._configOptions[layerSettings.formatId]!;

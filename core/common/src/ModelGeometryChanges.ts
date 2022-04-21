@@ -15,6 +15,7 @@ import { Range3d, Range3dProps } from "@itwin/core-geometry";
  * @see [[ElementGeometryChange]] for a more useful representation of an individual element change.
  * @see [[ModelGeometryChanges.iterable]] to iterate over [[ElementGeometryChange]]s.
  * @public
+ * @extensions
  */
 export interface ElementIdsAndRangesProps {
   /** The Ids of the elements, compressed and sorted in ascending order. */
@@ -27,6 +28,7 @@ export interface ElementIdsAndRangesProps {
  * A given element Id will appear in no more than one of [[inserted]], [[updated]], or [[deleted]].
  * @see [[ModelGeometryChanges]] for a more useful representation.
  * @public
+ * @extensions
  */
 export interface ModelGeometryChangesProps {
   /** The Id of the model. */
@@ -46,6 +48,7 @@ export interface ModelGeometryChangesProps {
 /** Represents the insertion of a new [GeometricElement]($backend), or a change to the geometric properties of an existing [GeometricElement]($backend).
  * @see [[ElementGeometryChange]].
  * @public
+ * @extensions
  */
 export interface ExtantElementGeometryChange {
   /** Indicates whether this change resulted from the insertion of a new element or modification of an existing one.
@@ -61,6 +64,7 @@ export interface ExtantElementGeometryChange {
 /** Represents the deletion of a [GeometricElement]($backend).
  * @see [[ElementGeometryChange]].
  * @public
+ * @extensions
  */
 export interface DeletedElementGeometryChange {
   /** Discriminant for [[ElementGeometryChange]] union. */
@@ -69,7 +73,10 @@ export interface DeletedElementGeometryChange {
   readonly id: Id64String;
 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
 /** Represents a change to the geometry of a [GeometricElement]($backend), as exposed by [[ModelGeometryChanges.elements]].
@@ -112,6 +119,7 @@ export namespace ElementGeometryChange { // eslint-disable-line @typescript-esli
 
 /** Represents geometric changes to a set of [GeometricElement]($backend)s belonging to a single [GeometricModel]($backend).
  * @public
+ * @extensions
  */
 export interface ModelGeometryChanges {
   /** The model's Id. */

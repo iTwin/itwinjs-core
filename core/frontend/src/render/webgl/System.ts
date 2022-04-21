@@ -7,11 +7,8 @@
  */
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
+import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
-import {
-  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable,
-  RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
-} from "@itwin/core-common";
 import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
@@ -22,51 +19,50 @@ import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
-import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
+import { RealityMeshGraphicParams, RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { MeshParams } from "../primitives/VertexTable";
 import { PointStringParams } from "../primitives/PointStringParams";
 import { PolylineParams } from "../primitives/PolylineParams";
+import { MeshParams } from "../primitives/VertexTable";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
-import { RenderMemory } from "../RenderMemory";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
 import { CreateRenderMaterialArgs } from "../RenderMaterial";
+import { RenderMemory } from "../RenderMemory";
 import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams,
-  RenderSystem, RenderSystemDebugControl, TerrainTexture,
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
-import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
+import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
 import { MeshGraphic, MeshRenderGeometry } from "./Mesh";
+import { PlanarGridGeometry } from "./PlanarGrid";
 import { PointCloudGeometry } from "./PointCloud";
 import { PointStringGeometry } from "./PointString";
 import { PolylineGeometry } from "./Polyline";
 import { Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
+import { RealityMeshGeometry } from "./RealityMesh";
 import { RenderBuffer, RenderBufferMultiSample } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
-import { RealityMeshGeometry } from "./RealityMesh";
 import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
-import { PlanarGridGeometry } from "./PlanarGrid";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -536,8 +532,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return RealityMeshGeometry.createFromTerrainMesh(terrainMesh, transform);
   }
 
-  public override createRealityMeshGraphic(terrainGeometry: RealityMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
-    return RealityMeshGeometry.createGraphic(this, terrainGeometry, featureTable, tileId, baseColor, baseTransparent, textures);
+  public override createRealityMeshGraphic(params: RealityMeshGraphicParams): RenderGraphic | undefined {
+    return RealityMeshGeometry.createGraphic(this, params);
   }
   public override createRealityMesh(realityMesh: RealityMeshPrimitive): RenderGraphic | undefined {
     const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh);

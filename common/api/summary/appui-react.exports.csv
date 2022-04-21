@@ -431,7 +431,6 @@ internal;PanelSizeChangedEvent
 internal;PanelSizeChangedEventArgs
 beta;PanelStateChangedEvent 
 public;PanelStateChangedEventArgs
-deprecated;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
 public;PointerMessage 
 public;PointerMessageChangedEvent 
@@ -540,14 +539,17 @@ internal;StagePanelZonesDef
 public;StagePanelZonesProps
 deprecated;StagePanelZonesProps
 public;StandardContentToolsProvider 
+beta;StandardContentToolsUiItemsProvider 
 public;StandardFrontstageProps
 public;StandardFrontstageProvider 
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
 public;StandardNavigationToolsProvider 
+beta;StandardNavigationToolsUiItemsProvider 
 alpha;StandardRotationNavigationAid 
 alpha;StandardRotationNavigationAidControl 
 public;StandardStatusbarItemsProvider 
+beta;StandardStatusbarUiItemsProvider 
 public;StateManager
 public;StateType
 public;StatusBar 
@@ -705,6 +707,7 @@ internal;useSavedFrontstageState(frontstageDef: FrontstageDef): void
 internal;useSaveFrontstageSettings(frontstageDef: FrontstageDef): void
 public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined
 beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined
+public;useSpecificWidgetDef(widgetId: string): WidgetDef | undefined
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
 internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElement
 public;useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]

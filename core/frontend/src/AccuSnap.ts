@@ -171,6 +171,7 @@ export class TouchCursor implements CanvasDecoration {
 /** AccuSnap is an aide for snapping to interesting points on elements or decorations as the cursor moves over them.
  * @see [Using AccuSnap]($docs/learning/frontend/primitivetools.md#AccuSnap)
  * @public
+ * @extensions
  */
 export class AccuSnap implements Decorator {
   /** Currently active hit */
@@ -417,7 +418,7 @@ export class AccuSnap implements Decorator {
     if (!this.errorKey)
       return;
 
-    this.explanation = IModelApp.localization.getLocalizedString(this.errorKey);
+    this.explanation = IModelApp.localization.getLocalizedString(`iModelJs:${this.errorKey}`);
     if (!this.explanation)
       return;
 
@@ -642,7 +643,7 @@ export class AccuSnap implements Decorator {
       if (appearance.dontSnap) {
         if (out) {
           out.snapStatus = SnapStatus.NotSnappable;
-          out.explanation = IModelApp.localization.getLocalizedString(ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory"));
+          out.explanation = IModelApp.localization.getLocalizedString(`iModelJs:${ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory")}`);
         }
         return undefined;
       }

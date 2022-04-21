@@ -399,9 +399,9 @@ export class PolyfaceData {
     return undefined === this.auxData || this.auxData.tryTransformInPlace(transform);
   }
   /**
-   * * Search for duplication of coordinates within points, normals, and params.
-   * * compress the coordinate arrays.
-   * * revise all indexing for the relocated coordinates
+   * * Search for duplicates within points, normals, params, and colors.
+   * * compress the data arrays.
+   * * revise all indexing for the relocated data.
    */
   public compress() {
     const packedPoints = ClusterableArray.clusterGrowablePoint3dArray(this.point);
@@ -419,6 +419,12 @@ export class PolyfaceData {
       const packedParams = ClusterableArray.clusterGrowablePoint2dArray(this.param);
       this.param = packedParams.growablePackedPoints;
       packedParams.updateIndices(this.paramIndex);
+    }
+
+    if (this.colorIndex && this.color) {
+      const packedColors = ClusterableArray.clusterNumberArray(this.color);
+      this.color = packedColors.packedNumbers;
+      packedColors.updateIndices(this.colorIndex);
     }
   }
 

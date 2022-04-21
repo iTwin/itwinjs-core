@@ -12,6 +12,7 @@ public;AbstractWidgetProps
 public;AbstractZoneLocation
 deprecated;AbstractZoneLocation
 public;ActionButton 
+public;AllowedUiItemProviderOverrides
 public;AlternateDateFormats
 public;ArrayValue 
 public;BackstageActionItem 
@@ -170,6 +171,7 @@ public;UiEventDispatcher
 public;UiFlags
 public;UiItemProviderRegisteredEventArgs
 public;UiItemsApplicationAction
+deprecated;UiItemsApplicationAction
 public;UiItemsManager
 public;UiItemsProvider
 public;class UiLayoutDataProvider 

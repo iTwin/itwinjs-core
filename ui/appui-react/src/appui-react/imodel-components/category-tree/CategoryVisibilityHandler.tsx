@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import { BeEvent } from "@itwin/core-bentley";
+import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, PerModelCategoryVisibility, ViewManager, Viewport } from "@itwin/core-frontend";
 import { NodeKey } from "@itwin/presentation-common";
 import { TreeNodeItem, useAsyncValue } from "@itwin/components-react";
@@ -40,7 +41,7 @@ export async function loadCategoriesFromViewport(iModel?: IModelConnection, vp?:
 
   // istanbul ignore else
   if (iModel) {
-    const rowIterator = iModel.query(ecsql2);
+    const rowIterator = iModel.query(ecsql2, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
     // istanbul ignore next
     for await (const row of rowIterator) {
       const subCategoryIds = iModel.subcategories.getSubCategories(row.id);

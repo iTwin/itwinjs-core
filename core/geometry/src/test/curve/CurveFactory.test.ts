@@ -5,6 +5,8 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
+import { AxisOrder } from "../../Geometry";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
@@ -232,6 +234,9 @@ describe("PipeConnections", () => {
     let x0 = 0.0;
     let y0 = 0.0;
     const radius = 0.25;
+    const eccentricity = 0.75;
+    const minorFraction = Math.sqrt(1 - eccentricity * eccentricity);
+    const v0Angle = Angle.createRadians(0.7);
     const allPaths: Array<Point3dArrayCarrier | CurvePrimitive> = [];
     for (const numPoints of [8, 20, 40]) {
       const path = new Point3dArrayCarrier(
@@ -244,14 +249,34 @@ describe("PipeConnections", () => {
     for (const b of bsplines)
       allPaths.push(b);
     for (const path of allPaths) {
-      y0 = 0;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
-      y0 += 10.0;
-      const builder = PolyfaceBuilder.create();
-      builder.addMiteredPipes(path, radius);
-      const mesh = builder.claimPolyface();
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+
+      // create elliptical cross section perpendicular to path start
+      const startPoint = Point3d.create();
+      const startTangent = Vector3d.create();
+      if (path instanceof Point3dArrayCarrier) {
+        path.front(startPoint);
+        startPoint.unitVectorTo(path.getPoint3dAtUncheckedPointIndex(1), startTangent);
+      } else {
+        const startRay = path.fractionToPointAndUnitTangent(0.0);
+        startPoint.setFrom(startRay.origin);
+        startTangent.setFrom(startRay.direction);
+      }
+      const startFrame = Matrix3d.createRotationAroundVector(startTangent, v0Angle)!.multiplyMatrixMatrix(Matrix3d.createRigidHeadsUp(startTangent, AxisOrder.ZXY));
+      const v0 = startFrame.columnX().scaleToLength(radius)!;
+      const v90 = startFrame.columnY().scaleToLength(radius * minorFraction)!;
+
+      for (const sectionData of [radius,
+                                 {x: radius, y: radius * minorFraction},
+                                 Arc3d.create(startPoint, v0, v90, AngleSweep.create360())]) {
+        y0 += 10.0;
+        const builder = PolyfaceBuilder.create();
+        builder.addMiteredPipes(path, sectionData);
+        const mesh = builder.claimPolyface();
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+      }
       x0 += 10;
+      y0 = 0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredPipeSections");
     expect(ck.getNumErrors()).equals(0);

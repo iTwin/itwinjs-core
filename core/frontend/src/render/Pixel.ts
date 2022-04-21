@@ -13,6 +13,7 @@ import { IModelConnection } from "../IModelConnection";
 /** Describes aspects of a pixel as read from a [[Viewport]].
  * @see [[Viewport.readPixels]].
  * @public
+ * @extensions
  */
 export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */

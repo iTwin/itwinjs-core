@@ -19,14 +19,16 @@ import {
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
-  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
+  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
+  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
+  assertIdentityTransformation,
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
+import { IModelTransformOptions } from "../../IModelTransformer";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -620,7 +622,7 @@ describe("IModelTransformer", () => {
       await transformerS2C.processModel(definitionB);
       await transformerS2C.processModel(physicalA);
       await transformerS2C.processModel(physicalB);
-      await transformerS2C.processDeferredElements();
+      await transformerS2C.processDeferredElements(); // eslint-disable-line deprecation/deprecation
       await transformerS2C.processRelationships(ElementRefersToElements.classFullName);
       transformerS2C.dispose();
       IModelTransformerTestUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
@@ -1035,10 +1037,11 @@ describe("IModelTransformer", () => {
 
     // check if target imodel has the elements that source imodel had
     expect(targetDb.codeSpecs.hasName("MyCodeSpec")).to.be.true;
-    const drawingIdTarget = targetDb.elements.queryElementIdByCode(Drawing.createCode(targetDb, documentListModelId, "Drawing"));
-    expect(drawingIdTarget).to.not.be.undefined;
-    expect(Id64.isValidId64((drawingIdTarget as string))).to.be.true;
-    const physicalMaterialIdTarget = targetDb.elements.queryElementIdByCode(new Code({ spec: myCodeSpecId, scope: drawingId, value: "physical material" }));
+    const myCodeSpecIdTarget = targetDb.codeSpecs.getByName("MyCodeSpec").id;
+    expect(myCodeSpecIdTarget).to.not.be.undefined;
+    const drawingIdTarget = targetDb.elements.queryElementIdByCode(Drawing.createCode(targetDb, documentListModelId, "Drawing")) as string;
+    expect(Id64.isValidId64(drawingIdTarget)).to.be.true;
+    const physicalMaterialIdTarget = targetDb.elements.queryElementIdByCode(new Code({ spec: myCodeSpecIdTarget, scope: drawingIdTarget, value: "physical material" }));
     expect(physicalMaterialIdTarget).to.not.be.undefined;
     expect(Id64.isValidId64((physicalMaterialIdTarget as string))).to.be.true;
 
@@ -1463,48 +1466,56 @@ describe("IModelTransformer", () => {
       { displayStyleId, physicalObjects },
     ] = createIModelWithDanglingPredecessor({ name: "DanglingPredecessors", path: sourceDbPath });
 
-    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorTarget.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorTarget-reject.bim");
+    const targetDbForRejected = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
-    const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb);
+    const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected);
     await expect(defaultTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const ignoreDanglingPredecessorsDisabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { danglingPredecessorsBehavior: "reject" });
-    await expect(ignoreDanglingPredecessorsDisabledTransformer.processAll()).to.be.rejectedWith(
+    const rejectDanglingPredecessorsTransformer = new ShiftElemIdsTransformer(sourceDb, targetDbForRejected, { danglingPredecessorsBehavior: "reject" });
+    await expect(rejectDanglingPredecessorsTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const ignoreDanglingPredecessorsEnabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { danglingPredecessorsBehavior: "ignore" });
-    await expect(ignoreDanglingPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
-    targetDb.saveChanges();
+    const runTransform = async (opts: Pick<IModelTransformOptions, "danglingPredecessorsBehavior">) => {
+      const thisTransformTargetPath  = IModelTestUtils.prepareOutputFile("IModelTransformer", `DanglingPredecessorTarget-${opts.danglingPredecessorsBehavior}.bim`);
+      const targetDb = SnapshotDb.createEmpty(thisTransformTargetPath, { rootSubject: sourceDb.rootSubject });
+      const transformer = new ShiftElemIdsTransformer(sourceDb, targetDb, opts);
+      await expect(transformer.processAll()).not.to.be.rejected;
+      targetDb.saveChanges();
 
-    expect(sourceDb.elements.tryGetElement(physicalObjects[1].id)).to.be.undefined;
-    const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
-    expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
+      expect(sourceDb.elements.tryGetElement(physicalObjects[1].id)).to.be.undefined;
+      const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
+      expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
 
-    const displayStyleInTargetId = ignoreDanglingPredecessorsEnabledTransformer.context.findTargetElementId(displayStyleId);
-    const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
+      const displayStyleInTargetId = transformer.context.findTargetElementId(displayStyleId);
+      const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
 
-    const physObjsInTarget = physicalObjects.map((physObjInSource) => {
-      const physObjInTargetId = ignoreDanglingPredecessorsEnabledTransformer.context.findTargetElementId(physObjInSource.id);
-      return { ...physObjInSource, id: physObjInTargetId };
-    });
+      const physObjsInTarget = physicalObjects.map((physObjInSource) => {
+        const physObjInTargetId = transformer.context.findTargetElementId(physObjInSource.id);
+        return { ...physObjInSource, id: physObjInTargetId };
+      });
 
-    expect(Id64.isValidId64(physObjsInTarget[0].id)).to.be.true;
-    expect(Id64.isValidId64(physObjsInTarget[1].id)).not.to.be.true;
+      expect(Id64.isValidId64(physObjsInTarget[0].id)).to.be.true;
+      expect(Id64.isValidId64(physObjsInTarget[1].id)).not.to.be.true;
+
+      return { displayStyleInTarget, physObjsInTarget };
+    };
+
+    const ignoreResult = await runTransform({danglingPredecessorsBehavior: "ignore"});
 
     expect(
-      [...displayStyleInTarget.settings.excludedElementIds]
+      [...ignoreResult.displayStyleInTarget.settings.excludedElementIds]
     ).to.deep.equal(
-      physObjsInTarget
+      ignoreResult.physObjsInTarget
         .filter(({id}) => Id64.isValidId64(id))
         .map(({id}) => id)
     );
 
     sourceDb.close();
-    targetDb.close();
+    targetDbForRejected.close();
   });
 
   it("exports aspects of deferred elements", async () => {
@@ -1565,21 +1576,13 @@ describe("IModelTransformer", () => {
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
-    class PublicSkipElementTransformer extends IModelTransformer {
-      public override skipElement(...args: Parameters<IModelTransformer["skipElement"]>) {
-        super.skipElement(...args);
-      }
-    }
-
-    const transformer = new PublicSkipElementTransformer(sourceDb, targetDb, {
+    const transformer = new IModelTransformer(sourceDb, targetDb, {
       includeSourceProvenance: true,
       noProvenance: true, // don't add transformer provenance aspects, makes querying for aspects later simpler
     });
-    const skipElementSpy = sinon.spy(transformer, "skipElement");
 
     await transformer.processSchemas();
     await transformer.processAll();
-    assert(skipElementSpy.called); // make sure an element was deferred during the transformation
 
     targetDb.saveChanges();
 
@@ -1594,6 +1597,281 @@ describe("IModelTransformer", () => {
     expect(targetExternalSourceAspects[0].identifier).to.equal(multiAspectProps.identifier);
 
     sinon.restore();
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("IModelTransformer processes nav property predecessors even in generated classes", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Source.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropPredecessors" } });
+
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestGeneratedClasses" alias="tgc" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestEntity" description="a sample entity for the end of the test relationships">
+          <BaseClass>bis:DefinitionElement</BaseClass>
+          <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
+        </ECEntityClass>
+        <ECRelationshipClass typeName="ElemRel" strength="referencing" description="elem rel 1" modifier="sealed">
+          <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="TestElementWithNavProp"/>
+          </Source>
+          <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestEntity"/>
+          </Target>
+        </ECRelationshipClass>
+        <ECEntityClass typeName="TestElementWithNavProp">
+          <BaseClass>bis:DefinitionElement</BaseClass>
+          <ECNavigationProperty propertyName="navProp" relationshipName="ElemRel" direction="Forward" />
+        </ECEntityClass>
+      </ECSchema>`
+    );
+
+    await sourceDb.importSchemas([testSchema1Path]);
+
+    const navPropTargetId = sourceDb.elements.insertElement({
+      classFullName: "TestGeneratedClasses:TestEntity",
+      prop: "sample-value",
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    const elemWithNavPropId = sourceDb.elements.insertElement({
+      classFullName: "TestGeneratedClasses:TestElementWithNavProp",
+      navProp: {
+        id: navPropTargetId,
+        relClassName: "TestGeneratedClasses:ElemRel",
+      },
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    class ProcessTargetLastTransformer extends IModelTransformer {
+      public constructor(source: IModelDb, target: IModelDb, opts?: IModelTransformOptions) {
+        super(
+          new (
+            class extends IModelExporter {
+              public override async exportElement(elementId: string) {
+                if (elementId === navPropTargetId) {
+                  // don't export it, we'll export it later, after the holder
+                } else if (elementId === elemWithNavPropId) {
+                  await super.exportElement(elemWithNavPropId);
+                  await super.exportElement(navPropTargetId);
+                } else {
+                  await super.exportElement(elementId);
+                }
+              }
+            }
+          )(source),
+          target,
+          opts
+        );
+      }
+    }
+
+    const transformer = new ProcessTargetLastTransformer(sourceDb, targetDb);
+    await transformer.processSchemas();
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    function getNavPropContent(db: IModelDb) {
+      let results = new Array<{ id: Id64String, navProp: RelatedElement }>();
+      db.withPreparedStatement(
+        "SELECT ECInstanceId, navProp FROM TestGeneratedClasses.TestElementWithNavProp",
+        (stmt) => { results = [...stmt]; }
+      );
+      return results;
+    }
+
+    for (const navPropHolderInSource of getNavPropContent(sourceDb)) {
+      const navPropHolderInTargetId = transformer.context.findTargetElementId(navPropHolderInSource.id);
+      const navPropHolderInTarget = targetDb.elements.getElement(navPropHolderInTargetId);
+      const navPropTargetInTarget = transformer.context.findTargetElementId(navPropHolderInSource.navProp.id);
+      // cast to any to access untyped instance properties
+      expect((navPropHolderInTarget as any)?.navProp?.id).to.equal(navPropTargetInTarget);
+      expect((navPropHolderInTarget as any)?.navProp?.id).not.to.equal(Id64.invalid);
+      expect((navPropHolderInTarget as any)?.navProp?.id).not.to.be.undefined;
+    }
+
+    expect(getNavPropContent(sourceDb)).to.have.length(1);
+    expect(getNavPropContent(targetDb)).to.have.length(1);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("exhaustive identity transform", async () => {
+    const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformSource.bim");
+    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
+
+    // previously there was a bug where json display properties of models would not be transformed. This should expose that
+    const [physicalModelId] = sourceDb.queryEntityIds({ from: "BisCore.PhysicalModel", limit: 1 });
+    const physicalModel = sourceDb.models.getModel(physicalModelId);
+    physicalModel.jsonProperties.formatter.fmtFlags.linPrec = 100;
+    physicalModel.update();
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processSchemas();
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    await assertIdentityTransformation(sourceDb, targetDb, transformer);
+
+    const physicalModelInTargetId = transformer.context.findTargetElementId(physicalModelId);
+    const physicalModelInTarget = targetDb.models.getModel(physicalModelInTargetId);
+    expect(physicalModelInTarget.jsonProperties.formatter.fmtFlags.linPrec).to.equal(100);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("deferred element relationships get exported", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeferredElementWithRelationships-Source.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "deferred-element-with-relationships"} });
+
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    // the only two ElementUniqueAspect's in bis are ignored by the transformer, so we add our own to test their export
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECRelationshipClass typeName="MyElemRefersToElem" strength="referencing" modifier="None">
+          <BaseClass>bis:ElementRefersToElements</BaseClass>
+          <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
+          <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+            <Class class="bis:Element"/>
+          </Source>
+          <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="bis:Element"/>
+          </Target>
+        </ECRelationshipClass>
+      </ECSchema>`
+    );
+
+    await sourceDb.importSchemas([testSchema1Path]);
+
+    const myPhysicalModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, "MyPhysicalModel");
+    const mySpatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
+    const myPhysicalObjId = sourceDb.elements.insertElement({
+      classFullName: PhysicalObject.classFullName,
+      model: myPhysicalModelId,
+      category: mySpatialCategId,
+      code: Code.createEmpty(),
+      userLabel: `MyPhysicalObject`,
+      geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 1 }, angles: {} }),
+    } as PhysicalElementProps);
+    // because they are definition elements, display styles will be transformed first, but deferred until the excludedElements
+    // (which are predecessors) are inserted
+    const myDisplayStyleId = DisplayStyle3d.insert(sourceDb, IModelDb.dictionaryId, "MyDisplayStyle3d", {
+      excludedElements: [myPhysicalObjId],
+    });
+    const relProps = {
+      sourceId: myDisplayStyleId,
+      targetId: myPhysicalObjId,
+      classFullName: "TestSchema1:MyElemRefersToElem",
+      prop: "prop",
+    };
+    const _relInstId = sourceDb.relationships.insertInstance(relProps as RelationshipProps);
+
+    sourceDb.saveChanges();
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeferredElementWithRelationships-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+
+    await transformer.processSchemas();
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    const targetRelationships = new Array<any>();
+    targetDb.withStatement("SELECT * FROM ts1.MyElemRefersToElem", (stmt) => targetRelationships.push(...stmt));
+
+    expect(targetRelationships).to.have.lengthOf(1);
+    expect(targetRelationships[0].prop).to.equal(relProps.prop);
+
+    sinon.restore();
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("IModelTransformer handles generated class nav property cycle", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "NavPropCycleSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropPredecessors" } });
+
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="A" description="an A">
+          <BaseClass>bis:DefinitionElement</BaseClass>
+          <ECNavigationProperty propertyName="anotherA" relationshipName="AtoA" direction="Forward" displayLabel="Horizontal Alignment" />
+        </ECEntityClass>
+        <ECRelationshipClass typeName="AtoA" strength="referencing" description="a to a" modifier="sealed">
+          <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="A"/>
+          </Source>
+          <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="A"/>
+          </Target>
+        </ECRelationshipClass>
+      </ECSchema>`
+    );
+
+    await sourceDb.importSchemas([testSchema1Path]);
+
+    const a1Id = sourceDb.elements.insertElement({
+      classFullName: "TestSchema:A",
+      // will be updated later to include this
+      // anotherA: { id: a3Id, relClassName: "TestSchema:AtoA", },
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    const a2Id = sourceDb.elements.insertElement({
+      classFullName: "TestSchema:A",
+      anotherA: { id: a1Id, relClassName: "TestSchema:AtoA" },
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    sourceDb.elements.updateElement({id: a1Id, anotherA: {id: a2Id, relClassName: "TestSchema:AtoA"}} as any);
+
+    const a4Id = sourceDb.elements.insertElement({
+      classFullName: "TestSchema:A",
+      // will be updated later to include this
+      // anotherA: { id: a4Id, relClassName: "TestSchema:AtoA", },
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    sourceDb.elements.updateElement({id: a4Id, anotherA: {id: a4Id, relClassName: "TestSchema:AtoA"}} as any);
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "NavPropCycleTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processSchemas();
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    await assertIdentityTransformation(sourceDb, targetDb, transformer);
+
     sourceDb.close();
     targetDb.close();
   });

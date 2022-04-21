@@ -37,6 +37,10 @@ describe("<SpeedTimeline />", () => {
 
   });
 
+  after(() => {
+    TestUtils.terminateUiIModelComponents();
+  });
+
   it("should render", async () => {
     let valueChanged = false;
     const onChange = (_value: number) => {
@@ -75,6 +79,7 @@ describe("<SolarTimeline />", () => {
 
   after(() => {
     sinon.restore();
+    TestUtils.terminateUiIModelComponents();
   });
 
   it("should  create provider for time zone GMT -0500 (May)", async () => {

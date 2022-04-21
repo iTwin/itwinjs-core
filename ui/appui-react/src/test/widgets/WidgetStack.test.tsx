@@ -34,7 +34,7 @@ describe("WidgetStack", () => {
   before(async () => {
     await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
 
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);

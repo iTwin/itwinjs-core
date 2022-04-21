@@ -3,48 +3,147 @@ publish: false
 ---
 # NextVersion
 
-## Simplified material creation
+## Optimization of geometry in IModelImporter
 
-[RenderSystem.createMaterial]($frontend) presents an awkward API requiring the instantiation of several related objects to create even a simple [RenderMaterial]($common). It also requires an [IModelConnection]($frontend). It has been deprecated in favor of [RenderSystem.createRenderMaterial]($frontend), which accepts a single [CreateRenderMaterialArgs]($frontend) object concisely specifying only the properties of interest to the caller. For example, the following:
+The geometry produced by [connectors](https://www.itwinjs.org/learning/imodel-connectors/) and [transformation workflows](../learning/transformer/index.md) is not always ideal. One common issue is a proliferation of [GeometryPart]($backend)s to which only one reference exists. In most cases, it would be more efficient to embed the part's geometry directly into the referencing element's [geometry stream](https://www.itwinjs.org/learning/common/geometrystream/).
 
-```ts
-  const params = new RenderMaterial.Params();
-  params.alpha = 0.5;
-  params.diffuseColor = ColorDef.blue;
-  params.diffuse = 0.4;
+[IModelImporter.optimizeGeometry]($transformer) has been introduced to enable this kind of optimization. It takes an [OptimizeGeometryOptions]($transformer) object specifying which optimizations to apply, and applies them to all of the 3d geometry in the iModel. Currently, only the optimization described above is supported, but more are expected to be added in the future.
 
-  const mapParams = new TextureMapping.Params({ textureWeight: 0.25 });
-  params.textureMapping = new TextureMapping(texture, mapParams);
-  const material = IModelApp.renderSystem.createMaterial(params, iModel);
-```
-
-Can now be expressed as follows (note no IModelConnection is required):
+If you are using [IModelImporter]($transformer) directly, you can call `optimizeGeometry` directly. Typically you would want to do so as a post-processing step. It's simple:
 
 ```ts
-  const material = IModelApp.renderSystem.createRenderMaterial({
-    alpha: 0.5,
-    diffuse: { color: ColorDef.blue, weight: 0.4 },
-    textureMapping: { texture, weight: 0.25 },
-  });
+  // Import all of your geometry, then:
+  importer.optimizeGeometry({ inlineUniqueGeometryParts: true });
 ```
 
-## Obtain geometry from terrain and reality models
+If you are using [IModelTransformer]($transformer), you can configure automatic geometry optimization via [IModelTransformOptions.optimizeGeometry]($transformer). If this property is defined, then [IModelTransformer.processAll]($transformer) and [IModelTransformer.processChanges]($transformer) will apply the specified optimizations after the transformation process completes. For example:
 
-When terrain or reality models are displayed in a [Viewport]($frontend), their geometry is downloaded as meshes to create [RenderGraphic]($frontend)s. But those meshes can be useful for purposes other than display, such as analyzing geography or producing customized decorations. @itwin/core-frontend 3.1.0 introduces two related `beta` APIs for obtaining [Polyface]($core-geometry)s from reality models and terrain meshes:
+```ts
+  const options = { inlineUniqueGeometryParts: true };
+  const transformer = new IModelTransformer(sourceIModel, targetIModel, options);
+  transformer.processAll();
+```
 
-- [TileGeometryCollector]($core-frontend), which specifies the level of detail, spatial volume, and other criteria for determining which tile meshes to obtain; and
-- [GeometryTileTreeReference]($core-frontend), a [TileTreeReference]($core-frontend) that can supply [Polyface]($core-geometry) for its tiles.
+## Presentation
 
-A [GeometryTileTreeReference]($core-frontend) can be obtained from an existing [TileTreeReference]($core-frontend) via [TileTreeReference.createGeometryTreeReference]($core-frontend). You can then supply a [TileGeometryCollector]($core-frontend) to [GeometryTileTreeReference.collectTileGeometry]($core-frontend) to collect the polyfaces. Because tile contents are downloaded asynchronously, you will need to repeat this process over successive frames until [TileGeometryCollector.isAllGeometryLoaded]($core-frontend) evaluates `true`.
+### Filtering related property instances
 
-display-test-app provides [an example tool](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/TerrainDrapeTool.ts) that uses these APIs to allow the user to drape line strings onto terrain and reality models.
+The [related properties specification](../presentation/Content/RelatedPropertiesSpecification.md) allows including properties of related instances when requesting content  for the primary instance. However, sometimes there's a need show properties of only a few related instances rather than all of them. That can now be done by supplying an instance filter - see the [`instanceFilter` attribute section](../presentation/Content/RelatedPropertiesSpecification.md#attribute-instancefilter) for more details.
 
-## Draco compression
+### ECExpressions for property overrides
 
-[Draco compression](https://codelabs.developers.google.com/codelabs/draco-3d) can significantly reduce the sizes of meshes and point clouds. iTwin.js has been enhanced to correctly decompress reality models, point clouds, and glTF models that contain draco-encoded data, reducing download time and bandwidth usage.
+It is now possible to set property specification [`isDisplayed` attribute](../presentation/Content/PropertySpecification.md#attribute-isdisplayed) value using [ECExpressions](../presentation/Content/ECExpressions.md#property-overrides).
 
-## Floating content views in AppUI
+### Fixed nested hierarchy rules handling
 
-The [FloatingViewportContent]($appui-react) component has been added to support the display an IModel view within a modeless [ContentDialog]($appui-react). These "floating" viewports are displayed above the "fixed" viewports and below other UI items. See example `OpenViewDialogTool` in `ui-test-app` that opens a "floating" viewport in file [ImmediateTools.tsx](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/tools/ImmediateTools.tsx). See example below with floating content in dialog labeled "IModel View (1)".
+There was a bug with how [nested child node rules](../presentation/Hierarchies/Terminology.md#nested-rule) were handled. When creating children for a node created by a nested child node rule, the bug caused the library to only look for child node rules that are nested under the rule that created the parent node. The issue is now fixed and the library looks for child node rules nested under the parent node rule and at the root level of the ruleset.
 
-![Floating iModel Content Dialog](../learning/ui/appui/images/FloatingViewport.png "Floating iModel Content Dialog")
+Example:
+
+```jsonc
+{
+  "id": "example",
+  "rules": [{
+    "ruleType": "RootNodes",
+    "specifications": [{
+      "specType": "CustomNode",
+      "type": "child-1",
+      "label": "Child 1",
+      "nestedRules": [{
+        "ruleType": "ChildNodes",
+        "specifications": [{
+          "specType": "CustomNode",
+          "type": "child-1.1",
+          "label": "Child 1.1"
+        }, {
+          "specType": "CustomNode",
+          "type": "child-1.2",
+          "label": "Child 1.2",
+          "nestedRules": [{
+            "ruleType": "ChildNodes",
+            "specifications": [{
+              "specType": "CustomNode",
+              "type": "child-1.2.1",
+              "label": "Child 1.2.1"
+            }]
+          }]
+        }]
+      }]
+    }]
+  }, {
+    "ruleType": "ChildNodes", // this rule now also returns children for `Child 1.2.1`
+    "specifications": [{
+      "specType": "CustomNode",
+      "type": "child-2",
+      "label": "Child 2"
+    }]
+  }]
+}
+```
+
+With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at child node rules at the root level of the ruleset. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
+
+### Detecting integrated graphics
+
+Many computers - especially laptops - contain two graphics processing units: a low-powered "integrated" GPU such as those manufactured by Intel, and a more powerful "discrete" GPU typically manufactured by NVidia or AMD. Operating systems and web browsers often default to using the integrated GPU to reduce power consumption, but this can produce poor performance in graphics-heavy applications like those built with iTwin.js.  We recommend that users adjust their settings to use the discrete GPU if one is available.
+
+iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegratedGraphics]($webgl-compatibility) to see if the user might experience degraded performance due to the use of integrated graphics. Because WebGL does not provide access to information about specific graphics hardware, this property is only a heuristic. But it will accurately identify integrated Intel chips manufactured within the past 10 years or so, and allow the application to suggest that the user verify whether a discrete GPU is available to use instead. As a simple example:
+
+```ts
+  const compatibility = IModelApp.queryRenderCompatibility();
+  if (compatibility.usingIntegratedGraphics)
+    alert("Integrated graphics are in use. If a discrete GPU is available, consider switching your device or browser to use it.");
+```
+
+## ColorDef validation
+
+[ColorDef.fromString]($common) returns [ColorDef.black]($common) if the input is not a valid color string. [ColorDef.create]($common) coerces the input numeric representation into a 32-bit unsigned integer. In either case, this occurs silently. Now, you can use [ColorDef.isValidColor]($common) to determine if your input is valid.
+
+## ColorByName is an object, not an enum
+
+Enums in TypeScript have some shortcomings, one of which resulted in a bug that caused [ColorDef.fromString]($common) to return [ColorDef.black]($common) for some valid color strings like "aqua". This is due to several standard color names ("aqua" and "cyan", "magenta" and "fuschia", and several "grey" vs "gray" variations) having the same numeric values. To address this, [ColorByName]($common) has been converted from an `enum` to a `namespace`. Code that accesses `ColorByName` members by name will continue to compile with no change.
+
+## UiItemsManager Changes
+
+When registering a UiItemsProvider with the [UiItemsManager]($appui-abstract) it is now possible to pass an additional argument to limit when the provider is called to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) define the parameters that can be used to limit the provider. The example registration below will limit a provider to only be used if the active stage has an Id of "redlining".
+
+```ts
+    UiItemsManager.register(commonToolProvider, {stageIds: ["redlining"]});
+```
+
+## Widget Panel Changes
+
+Based on usability testing, the following changes to widget panels have been implemented.
+
+1. Only two widget panel sections will be shown in any widget panel.
+2. A splitter is now provided that allows user to set the size of the widget panel sections.
+3. There is no special processing of double clicks on widget tabs when the widget tab is shown in a widget panel.
+4. The Widget Panel Unpin icon has been updated to make it more clear the action to be performed when the toggle is clicked.
+
+The API impact of these updates are listed below.
+
+1. The [UiItemsManager]($appui-abstract) will still query the [UiItemsProvider]($appui-abstract)s for widgets for the [StagePanelSection]($appui-abstract).Center but the returned widgets will be shown in the bottom panel sections. The StagePanelSection.Center enum entry has been deprecated and UiItemProviders should start using only `StagePanelSection.Start` and `StagePanelSection.End`.
+2. Widgets in panels only support the [WidgetState]($appui-abstract)s WidgetState.Open or WidgetState.Hidden.
+3. The UiItemProviders `provideWidgets` call can now return [AbstractWidgetProps]($appui-abstract) that specify a `defaultFloatingSize` that can be used for Widgets that use components that do not have an intrinsic size. For more details see [WidgetItem](../learning/ui/AugmentingUI.md).
+
+## Deprecations in @itwin/components-react package
+
+The interfaces and components [ShowHideMenuProps]($components-react), [ShowHideMenu]($components-react), [ShowHideItem]($components-react)[ShowHideID]($components-react), [ShowHideDialogProps]($components-react), and [ShowHideDialog]($components-react) are all being deprecated because they were supporting components for the now deprecated [Table]($components-react) component. This `Table` component used an Open Source component that is not being maintained so it was determined to drop it from the API. The @itwin/itwinui-react package now delivers a Table component which should be used in place of the deprecated Table.
+
+## Deprecations in @itwin/core-geometry package
+
+The low-level [PolyfaceBuilder]($core-geometry) methods `findOrAddPoint`, `findOrAddPointXYZ`, `findOrAddParamXY`, and `findOrAddParamInGrowableXYArray` are deprecated in favor of the more appropriately named new methods `addPoint`, `addPointXYZ`, `addParamXY` and `addParamInGrowableXYArray`. These methods always add their inputs to the relevant builder array, rather than searching it and returning the index of a duplicate. The intent is to enable efficient `IndexedPolyface` construction by allowing duplicate data to be accumulated as facets are added, and to compress the data when done with `claimPolyface`.
+
+## Deprecations in @itwin/core-react package
+
+Using the sprite loader for SVG icons is deprecated. This includes [SvgSprite]($core-react) and the methods getSvgIconSpec() and getSvgIconSource() methods on [IconSpecUtilities]($appui-abstract). The sprite loader has been replaced with a web component [IconWebComponent]($core-react) used by [Icon]($core-react) to load SVGs onto icons.
+
+## React icons support
+
+In addition to toolbar buttons, React icons are now supported for use in [Widget]($appui-react) tabs, [Backstage]($appui-react) items, and [StatusBar]($appui-react) items.
+
+## Deprecations in @itwin/core-transformer package
+
+The beta transformer API functions [IModelTransformer.skipElement]($transformer) and [IModelTransformer.processDeferredElements]($transformer)
+have been deprecated, as the transformer no longer "defers" elements until all of its references have been transformed. These now have no effect,
+since no elements will be deferred, and elements will always be transformed, so skipping them to transform them later is not necessary.

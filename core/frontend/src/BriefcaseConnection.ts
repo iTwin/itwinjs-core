@@ -146,6 +146,57 @@ class ModelChangeMonitor {
   }
 }
 
+/** Settings that can be used to control the behavior of [[Tool]]s that modify a [[BriefcaseConnection]].
+ * For example, tools that want to create new elements can consult the briefcase's editor tool settings to
+ * determine into which model and category to insert the elements.
+ * Specialized tools are free to ignore these settings.
+ * @see [[BriefcaseConnection.editorToolSettings]] to query or modify the current settings for a briefcase.
+ * @see [CreateElementTool]($editor-frontend) for an example of a tool that uses these settings.
+ * @alpha
+ */
+export class BriefcaseEditorToolSettings {
+  private _category?: Id64String;
+  private _model?: Id64String;
+
+  /** An event raised just after the default [[category]] is changed. */
+  public readonly onCategoryChanged = new BeEvent<(previousCategory: Id64String | undefined) => void>();
+
+  /** An event raised just after the default [[model]] is changed. */
+  public readonly onModelChanged = new BeEvent<(previousModel: Id64String | undefined) => void>();
+
+  /** The [Category]($backend) into which new elements should be inserted by default.
+   * Specialized tools are free to ignore this setting and instead use their own logic to select an appropriate category.
+   * @see [[onCategoryChanged]] to be notified when this property is modified.
+   * @see [CreateElementTool.targetCategory]($editor-frontend) for an example of a tool that uses this setting.
+   */
+  public get category(): Id64String | undefined {
+    return this._category;
+  }
+  public set category(category: Id64String | undefined) {
+    const previousCategory = this.category;
+    if (category !== this.category) {
+      this._category = category;
+      this.onCategoryChanged.raiseEvent(previousCategory);
+    }
+  }
+
+  /** The [Model]($backend) into which new elements should be inserted by default.
+   * Specialized tools are free to ignore this setting and instead use their own logic to select an appropriate model.
+   * @see [[onModelChanged]] to be notified when this property is modified.
+   * @see [CreateElementTool.targetModel]($editor-frontend) for an example of a tool that uses this setting.
+   */
+  public get model(): Id64String | undefined {
+    return this._model;
+  }
+  public set model(model: Id64String | undefined) {
+    const previousModel = this.model;
+    if (model !== this.model) {
+      this._model = model;
+      this.onModelChanged.raiseEvent(previousModel);
+    }
+  }
+}
+
 /** A connection to an editable briefcase on the backend. This class uses [Ipc]($docs/learning/IpcInterface.md) to communicate
  * to the backend and may only be used by [[IpcApp]]s.
  * @public
@@ -153,6 +204,10 @@ class ModelChangeMonitor {
 export class BriefcaseConnection extends IModelConnection {
   protected _isClosed?: boolean;
   private readonly _modelsMonitor: ModelChangeMonitor;
+  /** Default settings that can be used to control the behavior of [[Tool]]s that modify this briefcase.
+   * @alpha
+   */
+  public readonly editorToolSettings = new BriefcaseEditorToolSettings();
 
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;

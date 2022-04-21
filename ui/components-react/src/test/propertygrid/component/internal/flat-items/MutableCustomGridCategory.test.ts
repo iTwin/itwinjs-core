@@ -59,6 +59,7 @@ describe("MutableCustomGridCategory", () => {
   describe("getChildCategories", () => {
     it("returns empty array", () => {
       const categoryItem = new MutableCustomGridCategory(category, recordsDict, factoryStub, undefined, 0);
+      // eslint-disable-next-line deprecation/deprecation
       expect(categoryItem.getChildCategories()).to.be.empty;
     });
   });
@@ -66,6 +67,7 @@ describe("MutableCustomGridCategory", () => {
   describe("getDescendantCategoriesAndSelf", () => {
     it("returns array containing only this object", () => {
       const categoryItem = new MutableCustomGridCategory(category, recordsDict, factoryStub, undefined, 0);
+      // eslint-disable-next-line deprecation/deprecation
       expect(categoryItem.getDescendantCategoriesAndSelf()).to.be.deep.equal([categoryItem]);
     });
   });

@@ -14,47 +14,48 @@ import { RootNodeRule } from "./RootNodeRule";
 import { SubCondition } from "./SubCondition";
 
 /**
- * Base class for all [[NavigationRule]] implementations. Not
- * meant to be used directly, see `NavigationRule`.
+ * Base class for all [[NavigationRule]] implementations.
  *
+ * @see [Hierarchies reference documentation page]($docs/presentation/hierarchies/index.md)
  * @public
  */
 export interface NavigationRuleBase extends RuleBase {
   /**
-   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/presentation/Hierarchies/ECExpressions.md#rule-condition).
+   * Defines a condition which needs to be met in order for the rule to be used. The condition is an
+   * [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#rule-condition) which has to evaluate
+   * to a boolean value.
    */
   condition?: string;
 
   /**
-   * Specifications that define what content the rule returns.
+   * A list of hierarchy specifications that define what nodes are going to be returned.
    */
   specifications?: ChildNodeSpecification[];
 
   /**
-   * Customization rules that are applied for the content returned by
-   * this rule.
+   * A list of [customization rules]($docs/presentation/hierarchies/index.md#hierarchy-customization) that
+   * apply only to nodes produced by this rule.
    */
   customizationRules?: CustomizationRule[];
 
   /**
-   * Specifies child node rules which are only used when specific condition
-   * is satisfied.
+   * A list of sub-rules which share *placement attributes* and
+   * [nested customization rules]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-customizationrules)
+   * of the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules
+   * can add additional condition of their own.
    */
   subConditions?: SubCondition[];
 
   /**
-   * Stop processing rules that have lower priority. Used in cases when recursion
-   * suppression is needed.
-   *
-   * **Note:** If this flag is set, [[specifications]] and [[subConditions]] are not processed.
+   * Stop processing rules that have lower priority. Used in cases when recursion suppression is needed.
    */
   stopFurtherProcessing?: boolean;
 }
 
 /**
- * Navigation rules define the hierarchy that's created for navigation controls.
+ * Navigation rules are used to define hierarchies displayed in tree components.
+ *
+ * @see [Hierarchies reference documentation page]($docs/presentation/hierarchies/index.md)
  * @public
  */
 export type NavigationRule = RootNodeRule | ChildNodeRule;

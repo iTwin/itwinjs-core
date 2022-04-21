@@ -71,8 +71,8 @@ export const storageMock = () => {
  */
 export const selectChangeValueByText = (select: HTMLElement, label: string, onError?: (msg: string) => void): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const tippy = select.ownerDocument.querySelector("[data-tippy-root]") as HTMLElement;
+  const menu = tippy.querySelector(".iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;

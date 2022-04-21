@@ -38,6 +38,123 @@ interface PointCloudProps {
   colors?: Uint8Array;
 }
 
+interface BinaryBodyReference {
+  byteOffset: number;
+}
+
+/** [3D tiles specification section 10.3](https://docs.opengeospatial.org/cs/18-053r2/18-053r2.html#199).
+ * [JSON schema](https://github.com/CesiumGS/3d-tiles/blob/main/specification/schema/pnts.featureTable.schema.json).
+ */
+interface CommonPntsProps {
+  POINTS_LENGTH: number; // eslint-disable-line @typescript-eslint/naming-convention
+  RTC_CENTER?: number[]; // eslint-disable-line @typescript-eslint/naming-convention
+  CONSTANT_RGBA?: number[]; // eslint-disable-line @typescript-eslint/naming-convention
+  RGB?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  RGBA?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  RGB565?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+
+  extensions?: {
+    "3DTILES_draco_point_compression"?: DracoPointCloud; // eslint-disable-line @typescript-eslint/naming-convention
+  };
+
+  // The following are currently ignored.
+  NORMAL?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  NORMAL_OCT16P?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  BATCH_ID?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  BATCH_LENGTH?: number; // eslint-disable-line @typescript-eslint/naming-convention
+}
+
+type QuantizedPntsProps = CommonPntsProps & {
+  POSITION_QUANTIZED: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+  QUANTIZED_VOLUME_OFFSET: number[]; // eslint-disable-line @typescript-eslint/naming-convention
+  QUANTIZED_VOLUME_SCALE: number[]; // eslint-disable-line @typescript-eslint/naming-convention
+
+  POSITION?: never; // eslint-disable-line @typescript-eslint/naming-convention
+};
+
+type UnquantizedPntsProps = CommonPntsProps & {
+  POSITION: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
+
+  POSITION_QUANTIZED?: never; // eslint-disable-line @typescript-eslint/naming-convention
+  QUANTIZED_VOLUME_OFFSET?: never; // eslint-disable-line @typescript-eslint/naming-convention
+  QUANTIZED_VOLUME_SCALE?: never; // eslint-disable-line @typescript-eslint/naming-convention
+};
+
+type PntsProps = QuantizedPntsProps | UnquantizedPntsProps;
+
+function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps): Uint8Array | undefined {
+  const nPts = pnts.POINTS_LENGTH;
+  const nComponents = 3 * nPts;
+  if (pnts.RGB)
+    return new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGB.byteOffset, nComponents);
+
+  if (pnts.RGBA) {
+    // ###TODO support point cloud transparency.
+    const rgb = new Uint8Array(nComponents);
+    const rgba = new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGBA.byteOffset, nComponents);
+    for (let i = 0; i < nComponents; i += 4) {
+      rgb[i + 0] = rgba[i + 0];
+      rgb[i + 1] = rgba[i + 1];
+      rgb[i + 2] = rgba[i + 2];
+    }
+
+    return rgb;
+  } else if (pnts.RGB565) {
+    // Each color is 16 bits: 5 red, 6 green, 5 blue.
+    const crgb = new Uint16Array(stream.arrayBuffer, dataOffset + pnts.RGB565.byteOffset, nPts);
+    const rgb = new Uint8Array(nComponents);
+    for (let i = 0; i < nPts; i++) {
+      const c = crgb[i];
+      rgb[i + 0] = (c >> 11) & 0x1f;
+      rgb[i + 1] = (c >> 5) & 0x3f;
+      rgb[i + 2] = c & 0x1f;
+    }
+
+    return rgb;
+  }
+
+  return undefined;
+}
+
+function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): PointCloudProps | undefined {
+  const nPts = pnts.POINTS_LENGTH;
+  let params: QParams3d;
+  let points: Uint16Array;
+
+  if (pnts.POSITION_QUANTIZED) {
+    const qpos = pnts.POSITION_QUANTIZED;
+    const offset = pnts.QUANTIZED_VOLUME_OFFSET;
+    const scale = pnts.QUANTIZED_VOLUME_SCALE;
+
+    const qOrigin = new Point3d(offset[0], offset[1], offset[2]);
+    const qScale = new Point3d(Quantization.computeScale(scale[0]), Quantization.computeScale(scale[1]), Quantization.computeScale(scale[2]));
+
+    params = QParams3d.fromOriginAndScale(qOrigin, qScale);
+    points = new Uint16Array(stream.arrayBuffer, dataOffset + qpos.byteOffset, 3 * nPts);
+  } else {
+    const nCoords = nPts * 3;
+    const fpts = new Float32Array(stream.arrayBuffer, dataOffset + pnts.POSITION.byteOffset, 3 * nPts);
+    const range = Range3d.createNull();
+    for (let i = 0; i < nCoords; i += 3)
+      range.extendXYZ(fpts[i], fpts[i + 1], fpts[i + 2]);
+
+    params = QParams3d.fromRange(range);
+    const qpt = new QPoint3d();
+    const fpt = new Point3d();
+    points = new Uint16Array(3 * nPts);
+    for (let i = 0; i < nCoords; i += 3) {
+      fpt.set(fpts[i], fpts[i + 1], fpts[i + 2]);
+      qpt.init(fpt, params);
+      points[i] = qpt.x;
+      points[i + 1] = qpt.y;
+      points[i + 2] = qpt.z;
+    }
+  }
+
+  const colors = readPntsColors(stream, dataOffset, pnts);
+  return { params, points, colors };
+}
+
 async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps | undefined> {
   try {
     const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
@@ -51,6 +168,7 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
 
     let colors = mesh.attributes.RGB?.value ?? mesh.attributes.COLOR_0?.value;
     if (!colors) {
+      // ###TODO support point cloud transparency.
       const rgba = mesh.attributes.RGBA?.value;
       if (rgba && (rgba.length % 4) === 0) {
         // We currently don't support alpha channel for point clouds - strip it.
@@ -94,32 +212,6 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
   }
 }
 
-interface PntsProps {
-  POSITION_QUANTIZED?: { byteOffset: number }; // eslint-disable-line @typescript-eslint/naming-convention
-  QUANTIZED_VOLUME_OFFSET?: number[]; // eslint-disable-line @typescript-eslint/naming-convention
-  QUANTIZED_VOLUME_SCALE?: number[]; // eslint-disable-line @typescript-eslint/naming-convention
-  POINTS_LENGTH?: number; // eslint-disable-line @typescript-eslint/naming-convention
-  RGB?: { byteOffset: number }; // eslint-disable-line @typescript-eslint/naming-convention
-}
-
-function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): PointCloudProps | undefined {
-  const offset = pnts.QUANTIZED_VOLUME_OFFSET;
-  const scale = pnts.QUANTIZED_VOLUME_SCALE;
-  const qpos = pnts.POSITION_QUANTIZED;
-  const nPts = pnts.POINTS_LENGTH;
-  if (!offset || !scale || !qpos || !nPts)
-    return undefined;
-
-  const qOrigin = new Point3d(offset[0], offset[1], offset[2]);
-  const qScale = new Point3d(Quantization.computeScale(scale[0]), Quantization.computeScale(scale[1]), Quantization.computeScale(scale[2]));
-
-  return {
-    params: QParams3d.fromOriginAndScale(qOrigin, qScale),
-    points: new Uint16Array(stream.arrayBuffer, dataOffset + qpos.byteOffset, 3 * nPts),
-    colors: pnts.RGB ? new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGB.byteOffset, 3 * nPts) : undefined,
-  };
-}
-
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
  */
@@ -131,14 +223,14 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   const featureTableJsonOffset = stream.curPos;
   const featureStrData = stream.nextBytes(header.featureTableJsonLength);
   const featureStr = utf8ToString(featureStrData);
-  const featureValue = JSON.parse(featureStr as string);
+  const featureValue = JSON.parse(featureStr as string) as PntsProps;
 
   if (undefined === featureValue)
     return undefined;
 
   let props: PointCloudProps | undefined;
   const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
-  const draco: DracoPointCloud | undefined = featureValue.extensions ? featureValue.extensions["3DTILES_draco_point_compression"] : undefined;
+  const draco = featureValue.extensions ? featureValue.extensions["3DTILES_draco_point_compression"] : undefined;
   if (draco) {
     try {
       const buf = new Uint8Array(stream.arrayBuffer, dataOffset + draco.byteOffset, draco.byteLength);
@@ -157,11 +249,22 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     props.params = QParams3d.fromOriginAndScale(props.params.origin.plus(Vector3d.fromJSON(featureValue.RTC_CENTER)), props.params.scale);
 
   if (!props.colors) {
+    // ###TODO we really should support uniform color instead of allocating an RGB value per point...
     props.colors = new Uint8Array(3 * featureValue.POINTS_LENGTH);
-    props.colors.fill(0xff, 0, props.colors.length);    // TBD... Default color?
+    const rgba = featureValue.CONSTANT_RGBA;
+    if (rgba) {
+      // ###TODO support point cloud transparency.
+      for (let i = 0; i < featureValue.POINTS_LENGTH * 3; i += 3) {
+        props.colors[i] = rgba[0];
+        props.colors[i + 1] = rgba[1];
+        props.colors[i + 2] = rgba[2];
+      }
+    } else {
+      // Default to white.
+      props.colors.fill(0xff, 0, props.colors.length);
+    }
   }
 
-  // ###TODO? Do we expect a batch table? not currently handled...
   const featureTable = new FeatureTable(1, modelId, BatchType.Primary);
   const features = new Mesh.Features(featureTable);
   features.add(new Feature(modelId), 1);

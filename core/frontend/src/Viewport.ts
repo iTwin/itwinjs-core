@@ -48,11 +48,11 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
-import { Animator, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
+import { Animator, MarginOptions, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -796,7 +796,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * the Model of baseModelId should be the same type (Drawing or Sheet) as the current view.
    * @note this method clones the current ViewState2d and sets its baseModelId to the supplied value. The DisplayStyle and CategorySelector remain unchanged.
    */
-  public async changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void> {
+  public async changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions & MarginOptions): Promise<void> {
     if (!this.view.is2d())
       return;
 
@@ -930,7 +930,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     const promises = new Array<Promise<string | HTMLElement | undefined>>();
     if (this.displayStyle) {
       this.displayStyle.forEachTileTreeRef(async (tree) => {
-        promises.push(tree.getToolTip(hit));
+        promises.push(tree.getToolTip(hit).catch(() => undefined));
       });
     }
     this.forEachMapTreeRef(async (tree) => promises.push(tree.getToolTip(hit)));
@@ -941,6 +941,34 @@ export abstract class Viewport implements IDisposable, TileUser {
         return result;
 
     return "";
+  }
+
+  /** @alpha */
+  public async getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo> {
+    const promises = new Array<Promise<MapLayerFeatureInfo[]  | undefined>>();
+
+    // Execute 'getMapFeatureInfo' on every tree, and make sure to handle exception for each call,
+    // so that we get still get results even though a tree has failed.
+    this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit).catch(() => undefined)));
+    const featureInfo: MapFeatureInfo = {};
+
+    const worldPoint = hit.hitPoint.clone();
+    const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
+    if (undefined !== backgroundMapGeometry) {
+      featureInfo.hitPoint = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+    }
+
+    const results = await Promise.all(promises);
+    for (const result of results)
+      if (result !== undefined) {
+
+        if (featureInfo.layerInfo === undefined) {
+          featureInfo.layerInfo = [];
+        }
+
+        featureInfo.layerInfo.push(...result);
+      }
+    return featureInfo;
   }
 
   /** If this event has one or more listeners, collection of timing statistics related to rendering frames is enabled. Frame statistics will be received by the listeners whenever a frame is finished rendering.
@@ -984,7 +1012,12 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.attachToView();
   }
 
-  private attachToView(): void {
+  /** @internal Invoked when the viewport becomes associated with a new ViewState to register event listeners with the view
+   * and allow the ViewState to set up internal state that is only relevant when associated with a Viewport.
+   * Also invoked after changing OffScreenViewport.drawingToSheetTransform.
+   * @internal
+   */
+  protected attachToView(): void {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
     this.view.attachToViewport(this);
@@ -1125,7 +1158,13 @@ export abstract class Viewport implements IDisposable, TileUser {
     }
   }
 
-  private detachFromView(): void {
+  /** @internal Invoked when the viewport becomes associated with a new ViewState to unregister event listeners for
+   * the previous ViewState and allow the previous ViewState to clean up any internal state that is only relevant while
+   * associated with a Viewport.
+   * Also invoked after changing OffScreenViewport.drawingToSheetTransform.
+   * @internal
+   */
+  protected detachFromView(): void {
     this._detachFromView.forEach((f) => f());
     this._detachFromView.length = 0;
 
@@ -1847,7 +1886,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param factor the zoom factor.
    * @param options options for behavior of view change
    */
-  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & OnViewExtentsError): ViewStatus {
+  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & MarginOptions & OnViewExtentsError): ViewStatus {
     const view = this.view;
     if (undefined === view)
       return ViewStatus.InvalidViewport;
@@ -1893,7 +1932,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   /** @see [[zoomToPlacements]]. */
-  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void {
+  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void {
     const placements = placementProps.map((props) => isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props));
     this.zoomToPlacements(placements, options);
   }
@@ -1905,7 +1944,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[zoomToElements]] to zoom to a set of elements.
    * @see [[IModelConnection.Elements.getPlacements]] to obtain the placements for a set of elements.
    */
-  public zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & ZoomToOptions): void {
+  public zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void {
     placements = placements.filter((x) => x.isValid);
     if (placements.length === 0)
       return;
@@ -1929,7 +1968,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     for (const placement of placements)
       viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
 
-    const ignoreError: ViewChangeOptions & OnViewExtentsError = {
+    const ignoreError: ViewChangeOptions & MarginOptions & OnViewExtentsError = {
       ...options,
       onExtentsError: () => ViewStatus.Success,
     };
@@ -1943,7 +1982,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param options options that control how the view change works and whether to change view rotation.
    * @note Do not query for ElementProps just to zoom to their placements - [[zoomToElements]] is much more efficient because it queries only for the placement properties.
    */
-  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions): void {
+  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void {
     if (elementProps.length === 0)
       return;
 
@@ -1961,7 +2000,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param ids the element id(s) to include. Will zoom to the union of the placements.
    * @param options options that control how the view change works and whether to change view rotation.
    */
-  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void> {
+  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & MarginOptions & ZoomToOptions): Promise<void> {
     const placements = await this.iModel.elements.getPlacements(ids, { type: this.view.is3d() ? "3d" : "2d" });
     this.zoomToPlacements(placements, options);
   }
@@ -1970,7 +2009,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param volume The low and high corners, in world coordinates.
    * @param options options that control how the view change works
    */
-  public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
+  public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions & MarginOptions) {
     this.view.lookAtVolume(volume, this.viewRect.aspect, options);
     this.synchWithView(options);
   }
@@ -3317,7 +3356,11 @@ export class ScreenViewport extends Viewport {
       _clear2dCanvas(this.canvas);
     }
 
-    this.target.updateViewRect();
+    const resized = this.target.updateViewRect();
+    if (resized) {
+      this.target.onResized();
+      this.invalidateController();
+    }
     this.invalidateRenderPlan();
   }
 }
@@ -3351,6 +3394,17 @@ export interface OffScreenViewportOptions {
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
+  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
+  private _drawingToSheetTransform?: Transform;
+  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
+  public get drawingToSheetTransform(): Transform | undefined {
+    return this._drawingToSheetTransform;
+  }
+  public set drawingToSheetTransform(transform: Transform | undefined) {
+    this.detachFromView();
+    this._drawingToSheetTransform = transform;
+    this.attachToView();
+  }
 
   public static create(options: OffScreenViewportOptions): OffScreenViewport {
     return this.createViewport(options.view, IModelApp.renderSystem.createOffscreenTarget(options.viewRect), options.lockAspectRatio);

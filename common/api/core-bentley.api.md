@@ -955,6 +955,12 @@ export function isIDisposable(obj: unknown): obj is IDisposable;
 // @public
 export function isInstanceOf<T>(obj: any, constructor: Constructor<T>): boolean;
 
+// @internal
+export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass;
+
+// @internal
+export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
+
 // @public (undocumented)
 export interface JSONSchema {
     // (undocumented)
@@ -1422,6 +1428,16 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     protected _remove(value: T): number;
 }
 
+// @alpha
+export enum RealityDataStatus {
+    // (undocumented)
+    InvalidData = 151553,
+    // (undocumented)
+    REALITYDATA_ERROR_BASE = 151552,
+    // (undocumented)
+    Success = 0
+}
+
 // @beta
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
@@ -1510,6 +1526,23 @@ export function utf8ToString(utf8: Uint8Array): string | undefined;
 
 // @internal
 export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
+
+// @internal
+export class YieldManager {
+    constructor(options?: YieldManagerOptions);
+    // (undocumented)
+    protected actualYield(): Promise<void>;
+    // (undocumented)
+    allowYield(): Promise<void>;
+    // (undocumented)
+    options: Readonly<Required<YieldManagerOptions>>;
+}
+
+// @internal
+export interface YieldManagerOptions {
+    // (undocumented)
+    iterationsBeforeYield?: number;
+}
 
 
 // (No @packageDocumentation comment for this package)

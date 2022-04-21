@@ -15,7 +15,7 @@ import { PresentationError, PresentationStatus } from "@itwin/presentation-commo
  */
 export interface TemporaryStorageProps<T> {
   /** A method that's called for every value before it's removed from storage */
-  cleanupHandler?: (id: string, value: T) => void;
+  cleanupHandler?: (id: string, value: T, reason: "timeout" | "dispose" | "request") => void;
 
   onDisposedSingle?: (id: string) => void;
   onDisposedAll?: () => void;
@@ -90,7 +90,7 @@ export class TemporaryStorage<T> implements IDisposable {
 
     if (this.props.cleanupHandler) {
       this._values.forEach((v, id) => {
-        this.props.cleanupHandler!(id, v.value);
+        this.props.cleanupHandler!(id, v.value, "dispose");
       });
     }
     this._values.clear();
@@ -119,12 +119,12 @@ export class TemporaryStorage<T> implements IDisposable {
       }
     }
     for (const id of valuesToDispose)
-      this.deleteExistingEntry(id);
+      this.deleteExistingEntry(id, true);
   };
 
-  private deleteExistingEntry(id: string) {
+  private deleteExistingEntry(id: string, isTimeout: boolean) {
     assert(this._values.has(id));
-    this.props.cleanupHandler && this.props.cleanupHandler(id, this._values.get(id)!.value);
+    this.props.cleanupHandler && this.props.cleanupHandler(id, this._values.get(id)!.value, isTimeout ? "timeout" : "request");
     this._values.delete(id);
     this.props.onDisposedSingle && this.props.onDisposedSingle(id);
   }
@@ -164,7 +164,7 @@ export class TemporaryStorage<T> implements IDisposable {
   public deleteValue(id: string) {
     // istanbul ignore else
     if (this._values.has(id))
-      this.deleteExistingEntry(id);
+      this.deleteExistingEntry(id, false);
   }
 
   /**

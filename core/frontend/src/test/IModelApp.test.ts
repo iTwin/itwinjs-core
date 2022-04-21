@@ -161,20 +161,4 @@ describe("IModelApp", () => {
     expect(IModelApp.hasRenderSystem).to.be.true;
     expect(IModelApp.renderSystem).instanceof(MockRender.System);
   });
-
-  it("Is globally accessible via window while active", async () => {
-    const debug = window as { iModelAppForDebugger?: typeof IModelApp };
-    expect(debug.iModelAppForDebugger).not.to.be.undefined;
-    expect(debug.iModelAppForDebugger).to.equal(IModelApp);
-    const viewMgr = debug.iModelAppForDebugger!.viewManager;
-    expect(viewMgr).to.equal(IModelApp.viewManager);
-
-    await TestApp.shutdown();
-    expect(debug.iModelAppForDebugger).to.be.undefined;
-
-    await TestApp.startup();
-    expect(debug.iModelAppForDebugger).not.to.be.undefined;
-    expect(debug.iModelAppForDebugger!.viewManager).to.equal(IModelApp.viewManager);
-    expect(debug.iModelAppForDebugger!.viewManager).not.to.equal(viewMgr);
-  });
 });

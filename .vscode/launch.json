@@ -65,7 +65,8 @@
       ],
       "outFiles": [
         "${workspaceFolder}/core/transformer/lib/**/*.js"
-      ]
+      ],
+      "console": "integratedTerminal"
     },
     {
       "name": "Transformer Tests (Standalone)",
@@ -82,7 +83,8 @@
       ],
       "outFiles": [
         "${workspaceFolder}/core/transformer/lib/**/*.js"
-      ]
+      ],
+      "console": "integratedTerminal"
     },
     {
       "name": "Bentley Tests",
@@ -612,14 +614,11 @@
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
-        "-r",
-        "jsdom-global/register",
-        "-r",
-        "ignore-styles",
-        "lib/**/*.js"
+        "--no-config",
+        "--no-timeouts"
       ],
       "env": {
-        "NODE_ENV": "development",
+        "NODE_ENV": "development"
       },
       "outFiles": [
         "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js",
@@ -1343,7 +1342,18 @@
         "--timeout 50000" // for easier debugging
       ],
       "console": "integratedTerminal",
-    }
+    },
+    {
+      "name": "Extension API Generator",
+      "cwd": "${workspaceFolder}/core/extension/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "generate"
+      ],
+    },
   ],
   "compounds": [
     {

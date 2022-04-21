@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix bug where widgets from UiItemProviders were not honoring Center Zonelocation in UI 1.0 mode.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

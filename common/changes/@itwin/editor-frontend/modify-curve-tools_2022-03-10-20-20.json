@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "Tools for modifying path/region geometry.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}

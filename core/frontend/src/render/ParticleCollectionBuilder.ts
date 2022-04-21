@@ -9,7 +9,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import {
-  ColorDef, Feature, FeatureTable, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
+  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
 } from "@itwin/core-common";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
@@ -20,6 +20,7 @@ import { DisplayParams } from "./primitives/DisplayParams";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
  * @public
+ * @extensions
  */
 export interface ParticleCollectionBuilderParams {
   /** The image mapped to each particle quad.
@@ -57,6 +58,7 @@ export interface ParticleCollectionBuilderParams {
 /** Describes a particle to to add to a particle collection via [[ParticleCollectionBuilder.addParticle]].
  * The x, y, and z coordinates represent the centroid of the particle quad in the collection's coordinate space.
  * @public
+ * @extensions
  */
 export interface ParticleProps extends XYAndZ {
   /** The size of the particle, in the collection's coordinate space. If omitted, it defaults to the size supplied to the collection by [[ParticleCollectionBuilderParams.size]].
@@ -82,6 +84,7 @@ export interface ParticleProps extends XYAndZ {
    * [Fire and Smoke](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=fire-sample&imodel=Villa) particle effects.
  * @see [SnowEffect]($frontend-devtools) for an example of a particle effect.
  * @public
+ * @extensions
  */
 export interface ParticleCollectionBuilder {
   /** The default transparency for newly-added particles as an integer in [0,255], used by [[ParticleCollectionBuilder.addParticle]] if [[ParticleProps.transparency]] is omitted.
@@ -343,19 +346,29 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number): 
     new Point3d(-halfWidth, halfHeight, 0), new Point3d(halfWidth, halfHeight, 0),
   ];
 
-  const quadArgs = new MeshArgs();
   const range = new Range3d();
   range.low = corners[0];
   range.high = corners[3];
-  quadArgs.points = new QPoint3dList(QParams3d.fromRange(range));
-  for (const corner of corners)
-    quadArgs.points.add(corner);
 
-  quadArgs.vertIndices = [0, 1, 2, 2, 1, 3];
-  quadArgs.textureUv = [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)];
-  quadArgs.texture = texture;
-  quadArgs.colors.initUniform(ColorDef.white.withTransparency(transparency));
-  quadArgs.isPlanar = true;
+  const points = new QPoint3dList(QParams3d.fromRange(range));
+  for (const corner of corners)
+    points.add(corner);
+
+  const colors = new ColorIndex();
+  colors.initUniform(ColorDef.white.withTransparency(transparency));
+
+  const quadArgs: MeshArgs = {
+    points,
+    vertIndices: [0, 1, 2, 2, 1, 3],
+    fillFlags: FillFlags.None,
+    isPlanar: true,
+    colors,
+    features: new FeatureIndex(),
+    textureMapping: {
+      texture,
+      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)],
+    },
+  };
 
   return MeshParams.create(quadArgs);
 }

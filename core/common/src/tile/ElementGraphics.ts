@@ -16,6 +16,7 @@ import { ContentFlags, EdgeType, TreeFlags } from "../tile/TileMetadata";
 /** Wire format describing properties common to [[PersistentGraphicsRequestProps]] and [[DynamicGraphicsRequestProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @public
+ * @extensions
  */
 export interface GraphicsRequestProps {
   /** Uniquely identifies this request among all [[ElementGraphicsRequestProps]] for a given [[IModel]]. */
@@ -51,6 +52,7 @@ export interface GraphicsRequestProps {
 /** Wire format describing a request to produce graphics in "iMdl" format for a single element.
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @public
+ * @extensions
  */
 export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
   /** The element whose geometry is to be used to generate the graphics. */
@@ -59,6 +61,7 @@ export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
 
 /** As part of a [[DynamicGraphicsRequestProps]], specifies the geometry from which to generate the graphics in JSON format.
  * @public
+ * @extensions
  */
 export interface JsonGeometryStream {
   /** Discriminator for [[DynamicGraphicsRequestProps.geometry]]. */
@@ -69,6 +72,7 @@ export interface JsonGeometryStream {
 
 /** As part of a [[DynamicGraphicsRequestProps]], specifies the geometry from which to generate the graphics in binary flatbuffer-encoded format.
  * @public
+ * @extensions
  */
 export interface FlatBufferGeometryStream {
   /** Discriminator for [[DynamicGraphicsRequestProps.geometry]]. */
@@ -81,6 +85,7 @@ export interface FlatBufferGeometryStream {
  * @see [[DynamicGraphicsRequest2dProps]] and [[DynamicGraphicsRequest3dProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @public
+ * @extensions
  */
 export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
   /** The geometry from which to generate the graphics. */
@@ -101,6 +106,7 @@ export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
 /** Wire format describing a request to produce graphics in "iMdl" format for a 2d geometry stream.
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @public
+ * @extensions
  */
 export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
   /** Specifies the geometry is 2d. */
@@ -112,6 +118,7 @@ export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestPro
 /** Wire format describing a request to produce graphics in "iMdl" format for a 3d geometry stream.
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @public
+ * @extensions
  */
 export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
   /** Specifies the geometry is 3d. */
@@ -125,5 +132,6 @@ export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestPro
  * @see [TileAdmin.requestElementGraphics]($frontend) and [IModelDb.generateElementGraphics]($backend) to fulfill such a request.
  * @see [readElementGraphics]($frontend) to convert the result of a request to a [RenderGraphic]($frontend) for display.
  * @public
+ * @extensions
  */
 export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps;
