@@ -40,6 +40,8 @@ Extensions developed targeting a particular discipline may depend on and underst
 
 The top layer is for the Application schemas. These schemas contain no data that any other application would need or want to access. Product and iModel Connector schemas are examples of this layer.
 
+A BIS schema shall advertise its author's intended layer for it by applying the `SchemaLayerInfo` custom-attribute, defined in the [BisCustomAttributes](../../domains/BisCustomAttributes.ecschema.md) schema.
+
 ## BIS Compatibility Grades for Schemas
 
 The conversion of products to use BIS Domain Schemas can occur incrementally, but an ecosystem of BIS-based infrastructure (including iModelHub and Design Review) is rapidly expanding. This creates a short-term need for BIS-based “compatibility” schemas that have not been as rigorously designed as true BIS schemas but allow usage and some level of interoperability with the BIS ecosystem. For this reason, a grading level for BIS schemas has been created:
@@ -50,8 +52,6 @@ The conversion of products to use BIS Domain Schemas can occur incrementally, bu
   - New BIS schemas, with one-way conversion to BIS in mind, but not intended for editing (native format).
 - *Grade C*: Legacy schema with software-discoverable semantics, intelligently converted to follow relevant BIS rules and patterns.
 - *Grade D*: Legacy schema with minimim or no software-discoverable semantics, typically auto-converted, following basic BIS rules and patterns.
-
-A BIS schema shall advertise its author's intended layer and grade for it by applying the `SchemaInfo` `BisCustomAttribute`.
 
 ---
 | Next: [Fabric of the Universe](./fabric-of-the-universe.md)

@@ -2,7 +2,8 @@
 
 ## General Recommendations
 
-- Focus on one modeling perspective per schema. That is, separate concepts focusing on *Physical* modeling from concepts implementing *Analytical* or *Functional* modeling.
+- Focus on one modeling perspective per schema. That is, separate concepts focusing on *Physical* modeling from concepts implementing *Analytical* or *Functional* modeling, each into their own schema. This separation becomes mandatory if the target schemas are meant to be shared. In that case, the target [schema-layer](../intro/bis-organization.md) for the resulting schemas will be different (e.g. *Discipline-Physical* vs. *Discipline-Other*).
+- Concepts introduced only as helpers of an authoring workflow are typically considered application-specific. Separate them into their own Application-layer schema from other concepts focusing on the result (e.g. modeling of Physical objects in light of a given discipline).
 - In general, mix-ins should not have any properties defined in them. They lead to complex UNION queries, causing a slow-down in data retrieval from them.
 - Only make use of dynamic schemas (generated at runtime) to capture concepts that truly vary per iModel.
 
@@ -23,10 +24,13 @@ Schemas at the Core, Common or Discipline layers are meant to be shared by multi
 
 - Make use of Type-Definitions when appropriate in order to avoid an unnecessary large number of classes in a schema.
 - Categorize properties from the source format into:
+
   1) Standard - intrinsic to the primary or secondary classification of its owning concept.
   2) Standard - not intrinsic to the classification of its owning concept.
   3) User-defined.
 
-  Properties categorized as #1 are candidates to be first-class properties on an *Element* or *TypeDefinition* class.
-  Properties categorized as #2 are candidates to be captured in an *Aspect* class.
-  Properties categorized as #3 should be captured by an *Aspect* class in a schema generated at runtime (dynamic).
+Properties categorized as #1 are candidates to be first-class properties on an *Element* or *TypeDefinition* class.
+
+Properties categorized as #2 are candidates to be captured in an *Aspect* class.
+
+Properties categorized as #3 should be captured by an *Aspect* class in a schema generated at runtime (dynamic).
