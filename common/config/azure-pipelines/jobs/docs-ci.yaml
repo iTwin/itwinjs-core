@@ -1,8 +1,13 @@
 # iTwin.js Docs CI Build
 
 trigger:
-  - master
-  - release/*
+  branches:
+    include:
+      - master
+      - release/*
+    exclude:
+      - release/2*
+      - release/1*
 
 pr:
   drafts: false
@@ -10,6 +15,9 @@ pr:
     include:
       - master
       - release/*
+    exclude:
+      - release/2*
+      - release/1*
 
 jobs:
   - job:
