@@ -62,7 +62,8 @@ steps:
     displayName: "Run ECSchema RPC Interface Tests"
     condition: succeededOrFailed()
 
-  - script: npm run test
+  # By default linux agents do not have a real display so use the virtual framebuffer
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test
     workingDirectory: "full-stack-tests/rpc"
     displayName: "Run RPC Full Stack Tests"
     condition: succeededOrFailed()
