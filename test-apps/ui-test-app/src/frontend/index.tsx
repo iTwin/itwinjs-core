@@ -26,7 +26,7 @@ import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfig
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  AccuSnap, BriefcaseConnection, EsriOAuth2, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
@@ -34,7 +34,7 @@ import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { EsriOAuth2Callback, DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
+import { DefaultMapFeatureInfoTool, EsriOAuth2, EsriOAuth2Callback, MapLayersUI } from "@itwin/map-layers";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";

@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { EmptyLocalization, ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { DisplayStyle3dState, EsriOAuth2, EsriOAuth2Endpoint, IModelApp, IModelConnection, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { Select } from "@itwin/itwinui-react";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { EsriOAuth2, EsriOAuth2Endpoint } from "../auth/EsriOAuth2";
 import { MapLayersUI } from "../mapLayers";
 import { MapUrlDialog } from "../ui/widget/MapUrlDialog";
 import { TestUtils } from "./TestUtils";

@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Angle } from "@itwin/core-geometry";
-import { MapSubLayerProps } from "@itwin/core-common";
+import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
-import {
-  ArcGisOAuth2Token, ArcGisTokenClientType, ArcGisTokenManager, EsriOAuth2,EsriOAuth2Endpoint, EsriOAuth2EndpointType, MapCartoRectangle,
-  MapLayerAccessToken, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
-} from "../internal";
+import {MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
+import { IModelApp } from "../../IModelApp";
+import { MapLayerAccessTokenParams } from "../internal";
 
 /** @packageDocumentation
  * @module Tiles
@@ -190,22 +189,14 @@ export class ArcGisUtilities {
         method: "GET",
         responseType: "json",
       };
-      let tokenParam = "";
 
-      let oauth2Token: ArcGisOAuth2Token | undefined;
-      try {
-        oauth2Token = await EsriOAuth2.getOAuthTokenForMapLayerUrl(url);
-      } catch { }
-
-      if (credentials || oauth2Token !== undefined) {
-        const token = (credentials ? await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer }) : oauth2Token);
-        if (token?.token) {
-          tokenParam = `&token=${token.token}`;
-        } else if (token?.error)
-          return token;   // An error occurred, return immediately
+      const tmpUrl = new URL(url);
+      tmpUrl.searchParams.append("f", "json");
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
+      if (accessClient) {
+        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: tmpUrl, userName: credentials?.user, password: credentials?.password });
       }
-      const finalUrl = `${url}?f=json${tokenParam}`;
-      const data = await request(finalUrl, options);
+      const data = await request(tmpUrl.toString(), options);
       const json = data.body ?? undefined;
 
       // Cache the response only if it doesn't contain a token error.
@@ -227,24 +218,39 @@ export class ArcGisUtilities {
       return cached;
 
     try {
-      let tokenParam = "";
-      let oauth2Token: ArcGisOAuth2Token | undefined;
-      try {
-        oauth2Token = await EsriOAuth2.getOAuthTokenForMapLayerUrl(url);
-      } catch { }
-
-      if (credentials || oauth2Token) {
-        const token: MapLayerAccessToken = (credentials ? await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer }) : oauth2Token);
-        if (token?.token)
-          tokenParam = `&token=${token.token}`;
+      const tmpUrl = new URL(url);
+      tmpUrl.searchParams.append("f", "json");
+      tmpUrl.searchParams.append("option", "footprints");
+      tmpUrl.searchParams.append("outSR", "4326");
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
+      if (accessClient) {
+        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: tmpUrl, userName: credentials?.user, password: credentials?.password });
       }
-      const json = await getJson(`${url}?f=json&option=footprints&outSR=4326${tokenParam}`);
+
+      const json = await getJson(tmpUrl.toString());
       ArcGisUtilities._footprintCache.set(url, json);
       return json;
     } catch (_error) {
       ArcGisUtilities._footprintCache.set(url, undefined);
       return undefined;
     }
+  }
+
+  // return the appended access token if available.
+  public static async appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined> {
+
+    // Append security token if available
+    let accessToken: MapLayerAccessToken|undefined;
+    try {
+      accessToken = await accessClient.getAccessToken(accessTokenParams);
+    } catch {}
+
+    if (accessToken?.token) {
+      url.searchParams.append("token", accessToken.token);
+      return accessToken;
+    }
+
+    return undefined;
   }
 
   private static extractRestBaseUrl(url: string) {
@@ -276,101 +282,6 @@ export class ArcGisUtilities {
       return undefined;
     }
     return ArcGisUtilities.extractRestBaseUrl(tokenServicesUrl);
-  }
-
-  // Test if Oauth2 endpoint is accessible and has an associated appId
-  public static async validateOAuth2Endpoint(endpointUrl: string): Promise<boolean> {
-
-    // Check if we got a matching appId for that endpoint, otherwise its not worth going further
-    if (undefined === EsriOAuth2.getMatchingEnterpriseClientId(endpointUrl)) {
-      return false;
-    }
-
-    let status: number | undefined;
-    try {
-      const data = await request(endpointUrl, { method: "GET" });
-      status = data.status;
-    } catch (error: any) {
-      status = error.status;
-    }
-    return status === 400;    // Oauth2 API returns 400 (Bad Request) when there are missing parameters
-  }
-
-  // Derive the Oauth URL from a typical MapLayerURL
-  // i.e. 	  https://hostname/server/rest/services/NewYork/NewYork3857/MapServer
-  //      =>  https://hostname/portal/sharing/oauth2/authorize
-  private static _oauthAuthorizeEndPointsCache = new Map<string, any>();
-  private static _oauthTokenEndPointsCache = new Map<string, any>();
-
-  public static async getOAuth2EndpointFromMapLayerUrl(url: string, endpoint: EsriOAuth2EndpointType): Promise<EsriOAuth2Endpoint | undefined> {
-
-    // Return from cache if available
-    const cachedEndpoint = (endpoint === EsriOAuth2EndpointType.Authorize ? this._oauthAuthorizeEndPointsCache.get(url) : this._oauthTokenEndPointsCache.get(url));
-    if (cachedEndpoint !== undefined) {
-      return cachedEndpoint;
-    }
-
-    const cacheResult = (obj: EsriOAuth2Endpoint) => {
-      if (endpoint === EsriOAuth2EndpointType.Authorize) {
-        this._oauthAuthorizeEndPointsCache.set(url, obj);
-      } else {
-        this._oauthTokenEndPointsCache.set(url, obj);
-      }
-    };
-
-    const endpointStr = (endpoint === EsriOAuth2EndpointType.Authorize ? "authorize" : "token");
-    const urlObj = new URL(url);
-    if (urlObj.hostname.toLowerCase().endsWith("arcgis.com")) {
-      // ArcGIS Online (fixed)
-      // Doc: https://developers.arcgis.com/documentation/mapping-apis-and-services/security/oauth-2.0/
-
-      if (EsriOAuth2.arcGisOnlineClientId === undefined) {
-        return undefined;
-      }
-
-      return new EsriOAuth2Endpoint(`https://www.arcgis.com/sharing/rest/oauth2/${endpointStr}`, true);
-    } else {
-
-      // First attempt: derive the Oauth2 token URL from the 'tokenServicesUrl', exposed by the 'info request'
-      let restUrlFromTokenService: string | undefined;
-      try {
-        restUrlFromTokenService = await ArcGisUtilities.getRestUrlFromGenerateTokenUrl(url);
-      } catch { }
-
-      if (restUrlFromTokenService !== undefined) {
-        // Validate the URL we just composed
-        try {
-          const oauth2Url = `${restUrlFromTokenService}oauth2/${endpointStr}`;
-          if (await this.validateOAuth2Endpoint(oauth2Url)) {
-            const oauthEndpoint = new EsriOAuth2Endpoint(oauth2Url, false);
-            cacheResult(oauthEndpoint);
-            return oauthEndpoint;
-          }
-        } catch { }
-      }
-
-      // If reach this point, that means we could not derive the token endpoint from 'tokenServicesUrl'
-      // lets use another approach.
-      // ArcGIS Enterprise Format https://<host>:<port>/<subdirectory>/sharing/rest/oauth2/authorize
-      const regExMatch = url.match(new RegExp(/([^&\/]+)\/rest\/services\/.*/, "i"));
-      if (regExMatch !== null && regExMatch.length >= 2) {
-        const subdirectory = regExMatch[1];
-        const port = (urlObj.port !== "80" && urlObj.port !== "443") ? `:${urlObj.port}` : "";
-        const newUrlObj = new URL(`${urlObj.protocol}//${urlObj.hostname}${port}/${subdirectory}/sharing/rest/oauth2/${endpointStr}`);
-
-        // Check again the URL we just composed
-        try {
-          const newUrl = newUrlObj.toString();
-          if (await this.validateOAuth2Endpoint(newUrl)) {
-            const oauthEndpoint = new EsriOAuth2Endpoint(newUrl, false);
-            cacheResult(oauthEndpoint);
-            return oauthEndpoint;
-          }
-        } catch { }
-      }
-
-    }
-    return undefined;   // we could not find any valid oauth2 endpoint
   }
 
 }

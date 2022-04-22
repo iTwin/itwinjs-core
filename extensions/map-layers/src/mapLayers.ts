@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Localization } from "@itwin/core-common";
-import { ArcGisAccessClient, IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
+import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
 import { MapFeatureInfoOptions, MapLayerOptions } from "./ui/Interfaces";
+import { ArcGisAccessClient } from "./auth/ArcGisAccessClient";
 
 export interface MapLayersConfig {
   localization?: Localization;

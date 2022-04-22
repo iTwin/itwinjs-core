@@ -8,8 +8,7 @@ import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { Button, Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
 import { ImageMapLayerProps } from "@itwin/core-common";
-import {
-  EsriOAuth2, IModelApp, MapLayerAuthType, MapLayerImageryProviderStatus, MapLayerSource,
+import { IModelApp, MapLayerImageryProviderStatus, MapLayerSource,
   MapLayerSourceStatus, MapLayerSourceValidation, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
 import { Dialog, Icon, useCrossOriginPopup } from "@itwin/core-react";
@@ -19,6 +18,7 @@ import { MapLayersUI } from "../../mapLayers";
 import { MapTypesOptions } from "../Interfaces";
 import "./MapUrlDialog.scss";
 import { Guid } from "@itwin/core-bentley";
+import { EsriOAuth2 } from "../../auth/EsriOAuth2";
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -100,10 +100,10 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [userNameLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:AuthenticationInputs.Username"));
   const [userNameRequiredLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:AuthenticationInputs.UsernameRequired"));
   const [settingsStorage, setSettingsStorageRadio] = React.useState("iTwin");
-  const [layerAuthMethod, setLayerAuthMethod] = React.useState(MapLayerAuthType.None);
+  // const [layerAuthMethod, setLayerAuthMethod] = React.useState(MapLayerAuthType.None);
   const [esriOAuth2Succeeded, setEsriOAuth2Succeeded] = React.useState<undefined|boolean>(undefined);
   const [showEsriOauth2Popup, setShowEsriOauth2Popup] = React.useState(false);
-  const [authTokenUrl, setAuthTokenUrl] = React.useState<string|undefined>();
+  const [externalLoginUrl, setExternalLoginUrl] = React.useState<string|undefined>();
 
   const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
 
@@ -164,11 +164,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       setShowEsriOauth2Popup(false);
       setEsriOAuth2Succeeded(undefined);
     }
-    if (layerAuthMethod !== MapLayerAuthType.None) {
-      setLayerAuthMethod(MapLayerAuthType.None);
+    if (externalLoginUrl !== undefined) {
+      setExternalLoginUrl(undefined);
     }
 
-  }, [esriOAuth2Succeeded, invalidCredentialsProvided, layerAuthMethod]);
+  }, [esriOAuth2Succeeded, invalidCredentialsProvided, externalLoginUrl]);
 
   const handleCancel = React.useCallback(() => {
     if (props.onCancelResult) {
@@ -200,17 +200,26 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [esriOAuth2Succeeded]);
 
   // return true if authorization is needed
-  const updateAuthState = React.useCallback((sourceValidation: MapLayerSourceValidation) => {
+  const updateAuthState = React.useCallback(async (source: MapLayerSource, sourceValidation: MapLayerSourceValidation)  => {
     const sourceRequireAuth = (sourceValidation.status === MapLayerSourceStatus.RequireAuth);
     const invalidCredentials = (sourceValidation.status === MapLayerSourceStatus.InvalidCredentials);
-    if (sourceRequireAuth && sourceValidation.authInfo?.authMethod !== undefined) {
-      if (sourceValidation.authInfo.tokenEndpoint && sourceValidation.authInfo?.authMethod === MapLayerAuthType.EsriOAuth2) {
-        const stateData = new URL(sourceValidation.authInfo.tokenEndpoint.getUrl()).origin;
-        setAuthTokenUrl(sourceValidation.authInfo.tokenEndpoint.getLoginUrl(stateData));
+    if (sourceRequireAuth) {
+      const settings = source.toLayerSettings();
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(source.formatId);
+      if (accessClient !== undefined && accessClient.getTokenServiceEndPoint !== undefined && settings !== undefined) {
+        try {
+          const tokenEndpoint = await accessClient.getTokenServiceEndPoint(settings.url);
+          if (tokenEndpoint && tokenEndpoint.getUrl() !== undefined ) {
+            const stateData = new URL(tokenEndpoint.getUrl()).origin;
+            setExternalLoginUrl(tokenEndpoint.getLoginUrl(stateData));
+          }
+        } catch (_error){
+
+        }
       }
 
-      setLayerAuthMethod(sourceValidation.authInfo?.authMethod);
     }
+    setServerRequireCredentials(sourceRequireAuth);
     if (invalidCredentials) {
       setInvalidCredentialsProvided(true);
     } else if (invalidCredentialsProvided) {
@@ -301,12 +310,15 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         } else {
           return await updateAttachedLayer(source, validation);
         }
-      } else if (updateAuthState(validation)) {
-        return false;
       } else {
-        const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ValidationError");
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `${msg} ${source.url}`));
-        return true;
+        const authNeeded = await updateAuthState(source, validation);
+        if (authNeeded) {
+          return false;
+        } else {
+          const msg = MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ValidationError");
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `${msg} ${source.url}`));
+          return true;
+        }
       }
       return false;
     } catch (error) {
@@ -414,7 +426,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             if (isMounted.current) {
               setLayerAttachPending(false);
             }
-            updateAuthState(validation);
+            await updateAuthState(source, validation);
           }
         } catch (_error) {}
       }
@@ -432,8 +444,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       && !layerAttachPending
       && (!serverRequireCredentials || credentialsSet)
       && !invalidCredentialsProvided
-      && (layerAuthMethod !== MapLayerAuthType.EsriOAuth2  ||  esriOAuth2Succeeded);
-  }, [userName, password, mapUrl, mapName, serverRequireCredentials, layerAttachPending, invalidCredentialsProvided, layerAuthMethod, esriOAuth2Succeeded]);
+      && (externalLoginUrl === undefined || (externalLoginUrl !== undefined && esriOAuth2Succeeded));
+  }, [userName, password, mapUrl, mapName, serverRequireCredentials, layerAttachPending, invalidCredentialsProvided, externalLoginUrl, esriOAuth2Succeeded]);
 
   const buttonCluster = React.useMemo(() => [
     { type: DialogButtonType.OK, onClick: handleOk, disabled: !readyToSave() },
@@ -473,12 +485,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   //
   // Monitors authentication method changes
   React.useEffect(() => {
-    setServerRequireCredentials(layerAuthMethod === MapLayerAuthType.Basic || layerAuthMethod === MapLayerAuthType.EsriToken);
 
-    if (esriOAuth2Succeeded === undefined && layerAuthMethod === MapLayerAuthType.EsriOAuth2) {
+    if (serverRequireCredentials && esriOAuth2Succeeded === undefined && externalLoginUrl !== undefined) {
       handleArcGisLogin();
     }
-  }, [esriOAuth2Succeeded, handleArcGisLogin, layerAuthMethod]);
+  }, [esriOAuth2Succeeded, externalLoginUrl, handleArcGisLogin, serverRequireCredentials]);
 
   // Monitors Oauth2 popup was closed
   const handleEsriOAuth2PopupClose = React.useCallback(() => {
@@ -529,7 +540,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   // Use a hook to display the popup.
   // The display of the popup is controlled by the 'showEsriOauth2Popup' state variable.
-  useCrossOriginPopup(showEsriOauth2Popup, authTokenUrl, externalLoginTitle, 450, 450, handleEsriOAuth2PopupClose);
+  useCrossOriginPopup(showEsriOauth2Popup, externalLoginUrl, externalLoginTitle, 450, 450, handleEsriOAuth2PopupClose);
   return (
     <div ref={dialogContainer}>
       <Dialog
@@ -563,7 +574,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             <span className="map-layer-source-label">{urlLabel}</span>
             <Input className="map-layer-source-input" placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending} value={mapUrl} />
             {serverRequireCredentials
-             && (layerAuthMethod === MapLayerAuthType.Basic ||  layerAuthMethod === MapLayerAuthType.EsriToken)
+             && externalLoginUrl === undefined  // external login is handled in popup
              && props.mapLayerSourceToEdit === undefined &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>

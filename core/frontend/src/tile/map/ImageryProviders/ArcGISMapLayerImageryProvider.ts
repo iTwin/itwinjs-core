@@ -11,13 +11,11 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerE
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 import {
-  ArcGisErrorCode, ArcGisOAuth2Token, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, EsriOAuth2, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
-  MapFeatureInfoRecord,
-  MapLayerFeatureInfo,
+  ArcGisErrorCode, ArcGISTileMap, ArcGisUtilities,
+  ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoRecord, MapLayerAccessClient, MapLayerAccessToken, MapLayerFeatureInfo,
   MapLayerImageryProvider, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
-import { MapLayerAccessToken } from "../../internal";
 
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
@@ -27,7 +25,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   private _querySupported = false;
   private _tileMapSupported = false;
   private _tileMap: ArcGISTileMap|undefined;
-  private _accessClient: any|undefined;
+  private _accessClient: MapLayerAccessClient|undefined;
+  private _lastAccessToken: MapLayerAccessToken|undefined;
   public serviceJson: any;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
@@ -69,16 +68,14 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       // Skip if the layer state was already invalid
       if (ArcGisUtilities.hasTokenError(tileResponse)) {
 
+        if (this._accessClient?.invalidateToken !== undefined && this._lastAccessToken !== undefined)
+          this._accessClient.invalidateToken(this._lastAccessToken);
+
         // Token might have expired, make a second attempt by forcing new token.
-        if (this._settings.userName && this._settings.userName.length > 0) {
-          ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
+        if (this._settings.userName && this._settings.userName.length > 0 && this._lastAccessToken) {
           tileResponse = await this.fetchTile(row, column, zoomLevel);
           if (tileResponse === undefined)
             return undefined;
-        } else {
-          // If there is a token error and we dont have credentials set,
-          // layer might be using Oauth, so make sure previous token is not used again.
-          ArcGisTokenManager.invalidateOAuth2Token(this._settings.url);
         }
 
         // OK at this point, if response still contain a token error, we assume end-user will
@@ -204,18 +201,32 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     const x = this.getEPSG3857X(carto.longitudeDegrees);
     const y = this.getEPSG3857Y(carto.latitudeDegrees);
     const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=${tolerance}&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
-    const url = await this.appendSecurityToken(tmpUrl);
+    const urlObj = new URL(tmpUrl);
 
-    let json = await getJson(url);
+    if (this._accessClient) {
+      try {
+        this._lastAccessToken = undefined;  // reset any previous accessToken, and rely on access client's cache
+        this._lastAccessToken  = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {mapLayerUrl: urlObj, userName: this._settings.userName, password: this._settings.password });
+      } catch {
+      }
+    }
+
+    let json = await getJson(urlObj.toString());
     if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
-    // Token might have expired, make a second attempt by forcing new token.
-      if (this._settings.userName && this._settings.userName.length > 0) {
-        ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
-        json = await getJson(url);
-      } else {
-        // If there is a token error and we don't have credentials set,
-        // layer might be using Oauth, so make sure previous token is not used again.
-        ArcGisTokenManager.invalidateOAuth2Token(this._settings.url);
+
+      if (this._accessClient?.invalidateToken !== undefined && this._lastAccessToken !== undefined)
+        this._accessClient.invalidateToken(this._lastAccessToken);
+
+      // Token might have expired, make a second attempt by forcing new token.
+      if (this._settings.userName && this._settings.userName.length > 0 && this._lastAccessToken ) {
+        const urlObj2 = new URL(tmpUrl);
+        if (this._accessClient) {
+          try {
+            await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {mapLayerUrl: urlObj, userName: this._settings.userName, password: this._settings.password });
+          } catch {
+          }
+        }
+        json = await getJson(urlObj2.toString());
       }
 
       // OK at this point, if response still contain a token error, we assume end-user will
@@ -229,7 +240,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 
-        return undefined;
+        json =  undefined;
       }
     }
 
@@ -303,6 +314,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     this._settings.subLayers.forEach((subLayer) => { if (this._settings.isSubLayerVisible(subLayer)) layers.push(subLayer.idString); });
     return `${prefix}: ${layers.join(",")} `;
   }
+
   // construct the Url from the desired Tile
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
     let tmpUrl;
@@ -312,28 +324,15 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       const bboxString = `${this.getEPSG3857ExtentString(row, column, zoomLevel)}&bboxSR=3857`;
       tmpUrl = `${this._settings.url}/export?bbox=${bboxString}&size=${this.tileSize},${this.tileSize}&layers=${this.getLayerString()}&format=png&transparent=${this.transparentBackgroundString}&f=image&sr=3857&imagesr=3857`;
     }
-    return this.appendSecurityToken(tmpUrl);
-  }
-
-  // construct the Url from the desired Tile
-  private async appendSecurityToken(url: string): Promise<string> {
-    // Append security token if required
-    let oauth2Token: ArcGisOAuth2Token|undefined;
+    const urlObj = new URL(tmpUrl);
     try {
-      oauth2Token = await EsriOAuth2.getOAuthTokenForMapLayerUrl(this._settings.url);
-    } catch {}
-    const hasCredentials = (this._settings.userName && this._settings.password);
-    if (oauth2Token || hasCredentials) {
-      try {
-        const token: MapLayerAccessToken = (hasCredentials ? await ArcGisTokenManager.getToken(url, this._settings.userName!, this._settings.password!, { client: ArcGisTokenClientType.referer }) : oauth2Token);
-        if (token?.token) {
-          const urlObj = new URL(url);
-          urlObj.searchParams.append("token", token.token);
-          return urlObj.toString();
-        }
-      } catch {
+      if (this._accessClient) {
+        this._lastAccessToken = undefined;  // reset any previous accessToken, and rely on access client's cache
+        this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {mapLayerUrl: urlObj, userName: this._settings.userName, password: this._settings.password });
       }
+
+    } catch {
     }
-    return url;
+    return urlObj.toString();
   }
 }

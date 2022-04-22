@@ -7,6 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
+import { RequestBasicCredentials } from "../../request/Request";
 
 /** @beta */
 export enum MapLayerAuthType {
@@ -27,16 +28,25 @@ export interface MapLayerAuthenticationInfo {
   tokenEndpoint?: MapLayerTokenEndpoint;
 }
 
-/** @internal */
+/** @alpha */
 export interface MapLayerAccessToken {
   // The generated token.
   token: string;
 }
 
-/** @beta */
+/** @alpha */
+export interface MapLayerAccessTokenParams {
+  mapLayerUrl: URL;
+
+  // credentials are used to generate non-oauth tokens (i.e ArcGIS legacy tokens)
+  userName?: string;
+  password?: string;
+}
+
+/** @alpha */
 export interface MapLayerAccessClient {
-  getAccessToken(settings: ImageMapLayerSettings): Promise<MapLayerAccessToken|undefined>;
-  getTokenServiceEndPoint?(settings: ImageMapLayerSettings): Promise<MapLayerTokenEndpoint | undefined>;
-  invalidateToken?(settings: ImageMapLayerSettings): boolean;
+  getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined>;
+  getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
+  invalidateToken?(token: MapLayerAccessToken): boolean;
 }
 

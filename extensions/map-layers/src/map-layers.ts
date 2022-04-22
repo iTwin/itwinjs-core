@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./mapLayers";
 export * from "./ui/Interfaces";
-export * from "./ui/EsriOAuth2Callback";
+export * from "./auth/ArcGisAccessClient";
+export * from "./auth/EsriOAuth2";
 export * from "./ui/EsriOAuth2Callback";
 export * from "./ui/MapLayersUiItemsProvider";
 export * from "./ui/FeatureInfoUiItemsProvider";
 export * from "./ui/MapFeatureInfoTool";
 export * from "./ui/widget/MapLayersWidget";
+export * from "./auth/ArcGisAccessClient";

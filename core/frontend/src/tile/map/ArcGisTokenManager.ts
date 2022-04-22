@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { ArcGisGenerateTokenOptions, ArcGisOAuth2Token, ArcGisToken, ArcGisTokenGenerator } from "../internal";
+import { ArcGisGenerateTokenOptions, ArcGisOAuth2Token, ArcGisToken, ArcGisTokenGenerator, MapLayerAccessToken } from "../internal";
 
 /** @internal */
 interface ArcGisTokenProps {
@@ -44,9 +44,20 @@ export class ArcGisTokenManager {
     return newToken;
   }
 
+  /*
   public static invalidateToken(esriRestServiceUrl: string, userName: string): boolean {
     const tokenCacheKey = `${userName}@${esriRestServiceUrl}`;
     return ArcGisTokenManager._cache.delete(tokenCacheKey);
+  }*/
+
+  public static invalidateToken(token: MapLayerAccessToken): boolean {
+
+    for (const [key, value] of ArcGisTokenManager._cache) {
+      if (value.token === token.token)
+        return ArcGisTokenManager._cache.delete(key);
+    }
+
+    return false;
   }
 
   public static getOAuth2Token(key: string): ArcGisOAuth2Token|undefined {
@@ -66,9 +77,13 @@ export class ArcGisTokenManager {
     return cachedToken;
   }
 
-  public static invalidateOAuth2Token(key: string) {
-    if (ArcGisTokenManager._oauth2Cache !== undefined) {
-      return ArcGisTokenManager._oauth2Cache.delete(key);
+  public static invalidateOAuth2Token(token: MapLayerAccessToken) {
+
+    if (ArcGisTokenManager._oauth2Cache) {
+      for (const [key, value] of ArcGisTokenManager._oauth2Cache) {
+        if (value.token === token.token)
+          return ArcGisTokenManager._cache.delete(key);
+      }
     }
 
     return false;
