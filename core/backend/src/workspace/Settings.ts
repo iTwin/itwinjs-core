@@ -8,9 +8,9 @@
 
 import * as fs from "fs-extra";
 import { parse } from "json5";
+import { extname, join } from "path";
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import path = require("path");
 import { IModelJsFs } from "../IModelJsFs";
 
 /** The type of a Setting, according to its schema
@@ -19,7 +19,7 @@ import { IModelJsFs } from "../IModelJsFs";
 export type SettingType = JSONSchemaType;
 
 /**
- * The name of a Setting. SettingNames must be valid JavaScript property names, defined in a [[SettingSpec]].
+ * The name of a Setting. SettingNames must be valid JavaScript property names, defined in a [[SettingSchema]].
  * @see [SettingName]($docs/learning/backend/Workspace#settingnames)
  * @beta
  */
@@ -97,6 +97,9 @@ export interface Settings {
    */
   addFile(fileName: LocalFileName, priority: SettingsPriority): void;
 
+  /** Add all files in the supplied directory with the extension ".json" or ".json5"
+   * @param dirName the name of a local settings directory
+   */
   addDirectory(dirName: LocalDirName, priority: SettingsPriority): void;
 
   /** Add a SettingDictionary from a JSON5 stringified string. The string is parsed and the resultant object is added as a SettingDictionary.
@@ -219,9 +222,9 @@ export class BaseSettings implements Settings {
 
   public addDirectory(dirName: LocalDirName, priority: SettingsPriority) {
     for (const fileName of IModelJsFs.readdirSync(dirName)) {
-      const ext = path.extname(fileName);
+      const ext = extname(fileName);
       if (ext === ".json5" || ext === ".json")
-        this.addFile(path.join(dirName, fileName), priority);
+        this.addFile(join(dirName, fileName), priority);
     }
   }
 

@@ -771,6 +771,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     this.sqliteDb.saveChanges();
   }
 
+  /** @internal */
   public async createDb(version?: string) {
     if (!this.container.cloudContainer) {
       EditableWorkspaceDb.createEmpty(this.dbFileName);
@@ -796,11 +797,6 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
     db.saveChanges();
     db.closeDb();
-  }
-
-  public async upload(args: CloudSqlite.TransferDbProps) {
-    if (this.container.cloudContainer)
-      return CloudSqlite.uploadDb(this.container.cloudContainer, args);
   }
 
   /** Add a new string resource to this WorkspaceDb.

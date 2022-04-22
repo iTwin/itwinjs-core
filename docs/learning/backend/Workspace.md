@@ -4,7 +4,7 @@
 
 When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an instance of a [Workspace]($backend), in [IModelHost.appWorkspace]($backend).
 
-`IModelHost.appWorkspace` can be used to customize the session according to the choices of the host application, including the default values for its settings.
+`IModelHost.appWorkspace` can be used to customize the session according to the choices of the application, including the default values for its settings.
 
 Whenever an application opens an iModel using the [IModelDb]($backend) class, it creates an instance of a [Workspace]($backend) in [IModelDb.workspace]($backend) to customize the session according to the choices made by administrators for the iTwin and the iModel.
 
@@ -20,42 +20,45 @@ In the list above, later entries tend to change more frequently and, in the case
 [Workspace]($backend)s expresses the current state of the session in two forms:
 
   1. [Settings](#settings)
-  2. [WorkspaceDbs](#workspaceDbs)
+  2. [WorkspaceDb](#workspaceDbs)
 
-`Settings` are *named parameters* that an application defines and whose values are supplied at runtime. `WorkspaceContainers` hold *named resources* (i.e. data) that the application uses. `Settings` and `WorkspaceContainers` are often related in application logic, e.g.:
+`Settings` are *named parameters* that an application defines and whose values are supplied at runtime. `WorkspaceDb`s hold *named resources* (i.e. data) that the application uses. `Settings` and `WorkspaceDb`s are often related in application logic, e.g.:
 
 - a Setting may contain the "formula" to find a resource
-- a `WorkspaceContainer` may hold a resource that defines a group of Settings
+- a `WorkspaceDb`s may hold a resource that defines a group of `Settings`
 
-This means that there must be some way to initialize the process. That can either be in the form of [Settings stored inside an iModel](#imodel-settings) and automatically loaded when it opens, or some external (e.g. outside of WorkspaceContainer) service that supplies the initial Settings values.
+This means that there must be some way to initialize the process. That can either be in the form of [Settings stored inside an iModel](#imodel-settings) and automatically loaded when it opens, or some external file (e.g. outside of a WorkspaceDb) or service that supplies the initial Settings values.
 
 ## Settings
 
-Settings are named parameters, defined by applications but supplied at runtime so that their values may vary according to circumstances across and even within sessions.
+Settings are named parameters, defined by applications but supplied at runtime so that their values may vary according to circumstances across and even within sessions. At runtime, Settings are just JavaScript primitives, and may be accessed via [Settings.getSetting]($backend) by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they cannot get out of sync as they change.
 
-### SettingSpecs
+### SettingNames
 
-Applications can define groups of related "settings specifications" in the form of [SettingsGroupSpec]($backend)s, registered at runtime with the [SettingsSpecRegistry]($backend) class. In this way users or administrators can be aware of the list of each application's Settings. Also, each [SettingSpec]($backend) defines the type, purpose, constraints, and default values for a setting. The Settings Editor (future) is used to provide values for Settings using the [SettingSpec]($backend)s.
-
-`SettingsGroupSpec` are defined according to the rules of [JSON Schema](https://json-schema.org/).
-
-#### SettingNames
-
-A [SettingName]($backend) is defined by an application in a [SettingSpec]($backend). A `SettingName` must be unique across all applications, so it should be formed as a "path", with the parts separated by a "/". By convention, the first entry in the path is the "application id", and all Settings for an application should start with the same value. Groups of related settings for an application should have the same path prefix. The settings editor will split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
+A [SettingName]($backend) used by applications to retrieve the current value of a Setting. A `SettingName` must be unique across all applications, so it should be formed as a "path", with the parts separated by a "/". By convention, the first entry in the path is the "application id", and all Settings for an application should start with the same value. Groups of related settings for an application should have the same path prefix. The settings editor will split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
 
 For example:
 
 ```ts
 "energyAnalysis/formats/totalWork"
-"energyAnalysis/formats/generationUnits"
+"energyAnalysis/formats/totalHours"
+"energyAnalysis/units/power"
+"energyAnalysis/units/temperature"
+"energyAnalysis/startupMode"
 "iot-scan-visualization/ports/cameras"
 "vibration-map/filters/scope"
 "vibration-map/filters/prefabricated"
 ```
 
-#### SettingTypes
+`SettingNames` must be valid [JavaScript property names](https://developer.mozilla.org/en-US/docs/Glossary/property/JavaScript), but should *not* contain periods or spaces.
 
-A [SettingSpec]($backend) defines the *type* of a Setting as one of:
+### SettingSchema
+
+A single `Setting` is defined according to the rules of [JSON Schema](https://json-schema.org/). The primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for setting in a settings editor, and are presented with the information from the `SettingsSchemas` to guide their choices. In addition, `SettingSchema`s may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
+
+### SettingTypes
+
+A `SettingSchema` defines the *type* of a Setting as one of:
 
 - string
 - number
@@ -66,7 +69,11 @@ A [SettingSpec]($backend) defines the *type* of a Setting as one of:
 
 The Settings Editor will enforce that the values supplied for a Setting is the correct type.
 
-#### Example SettingGroupSec
+### SettingSchemas
+
+Applications can define groups of related `SettingSchema`s in the form of [SettingSchemaGroup]($backend)s, registered at runtime with the [SettingSchemas]($backend) class. A settings editor can present the settings for each group together, or each individually as appropriate.
+
+#### Example SettingSchemaGroup
 
 ```ts
 {
@@ -168,7 +175,7 @@ The Settings Editor will enforce that the values supplied for a Setting is the c
 
 ### SettingDictionaries
 
-The values for one or more Settings may be established by creating a JavaScript object with properties matching [SettingName]($backend)s.
+The *values* for one or more Settings may be established by creating a JavaScript object with properties matching [SettingName]($backend)s.
 
 E.g.:
 
@@ -200,27 +207,34 @@ E.g.:
 [[include:Settings.dropITwinDictionary]]
 ```
 
-Of course `SettingDictionary`s wouldn't be very useful if you could only define them in JavaScript. Their real value comes from storing them externally, in JSON. That can be either stringified JSON (via [JSON.stringify](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)) stored in a `WorkspaceContainer`, or in a `.json` file.
+Settings may also be stored externally, in JSON. That can be either stringified JSON (via [JSON.stringify](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)) stored in a `WorkspaceDb`, or in a `.json` file.
 
 > Hint: iTwin.js supports [JSON5](https://json5.org/) format to permit comments in settings files. [VSCode](https://code.visualstudio.com/) recognizes the `.json5` extension to edit JSON5 content with comments.
 
+### Settings loaded at application startup
+
+When [IModelhost.startup](#backend) is called, all files with the extension ".json" or ".json5" in the `@itwin/core-backend` package `assets\Settings` directory, plus all files listed by [IModelHostConfiguration.workspace.settingsFiles]($backend), are loaded into [IModelHost.appWorkspace.settings]($backend).
+
 ### iModel-based Settings
 
-Every iModel can hold a set of `SettingDictionary`s that are automatically loaded every time the iModel is opened. This can be used to supply values that should be present every session, for example a list of required `WorkspaceDb`s.
+Every iModel can hold a set of `SettingDictionary`s that are automatically loaded when the iModel is opened. This can be used to supply values that should be present every session, for example a list of required `WorkspaceDb`s.
 
 To save a `SettingDictionary` in an iModel, use [IModelDb.saveSettingDictionary]($backend).
+
+## WorkspaceDbs
 
 ## Cloud-based Workspaces
 
 Cloud-based `WorkspaceContainer`s provide a mechanism for storing and retrieving `Workspace` data through a secure, reliable, and highly available cloud api.
 
 Data stored in cloud-based `WorkspaceContainers`:
-  - can be versioned
-  - can have fine-grained access permissions, or may be publicly accessible
-  - can be accessed directly from cloud storage
-  - is automatically *cached* locally for fast access
-  - can be fully downloaded for offline use
-  - is automatically synched when it changes
+
+- can be versioned
+- can have fine-grained access permissions, or may be publicly accessible
+- can be accessed directly from cloud storage
+- is automatically *cached* locally for fast access
+- can be fully downloaded for offline use
+- is automatically synched when it changes
 
 The `WorkspaceContainer` apis abstract the cloud storage implementation, so the may be configured to use any cloud storage system (e.g. Azure, AWS, Google, etc.)
 
@@ -256,76 +270,96 @@ Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainer.
 ```ts
     "cloud/accounts": {
       "type": "array",
-      "description": "array of workspace container accounts",
+      "description": "array of cloud accounts",
+      "cumulative": true,
       "items": {
         "type": "object",
         "required": [
           "name",
           "accessName",
-          "storageType",
+          "storageType"
         ],
         "properties": {
           "name": {
             "type": "string",
-            "description": "the name of the workspace container account"
+            "description": "the alias name of the cloud account, referenced from setting values"
           },
           "accessName": {
             "type": "string",
-            "description": "the accessName for workspace container account"
+            "description": "the accessName for the cloud account"
           },
           "storageType": {
             "type": "string",
-            "description": "the storageType of the workspace container account"
-          },
+            "description": "the storageType of the cloud account"
+          }
         }
       }
     },
     "cloud/containers": {
       "type": "array",
-      "description": "array of workspace containers",
+      "description": "array of cloud containers",
+      "cumulative": true,
       "items": {
         "type": "object",
         "required": [
           "name",
-          "id",
-          "account",
+          "containerId"
         ],
         "properties": {
-          "id": {
-            "type": "string",
-            "description": "the id of the workspace container"
-          },
           "name": {
             "type": "string",
-            "description": "the name of the workspace container"
-          }
-          "account": {
+            "description": "the alias name of this cloud container"
+          },
+          "containerId": {
             "type": "string",
-            "description": "the account for the workspace container"
+            "description": "the containerId of this cloud container"
+          },
+          "accountName": {
+            "type": "string",
+            "description": "the account name for this cloud container. Must be an entry in \"cloud/accounts\""
           }
         }
       }
     },
     "workspace/databases": {
       "type": "array",
+      "cumulative": true,
       "description": "array of workspace databases",
       "items": {
         "type": "object",
         "required": [
+          "name",
           "dbName",
+          "containerName"
         ],
+        "name": {
+          "type": "string",
+          "description": "the alias name of the workspace database"
+        },
         "properties": {
           "dbName": {
             "type": "string",
-            "description": "the name of the workspace database"
-          }
+            "description": "the name of the database within its cloud container"
+          },
           "containerName": {
             "type": "string",
-            "description": "the workspace container name"
-          }
+            "description": "the cloud container name"
+          },
           "version": {
             "type": "string",
             "description": "the (semver) range of acceptable versions"
+          },
+          "includePrerelease": {
+            "type": "boolean",
+            "description": "include prerelease version as acceptable versions"
+          },
+          "priority": {
+            "type": "number",
+            "description": "for sorted databases, higher values are searched first"
+          },
+          "prefetch": {
+            "type": "boolean",
+            "description": "if true, pre-fetch all of the data from the cloud in the background"
           }
         }
       }
@@ -352,7 +386,6 @@ For example:
 
 #### WorkspaceContainer Locks
 
-
 ## Workspace Resources
 
 A `WorkspaceDb` holds a set of resources, each with a [WorkspaceResource.Name]($backend) and a resource type.
@@ -374,3 +407,5 @@ Possible resource types are:
 ### SettingDictionary Resources
 
 It is often useful to store `SettingDictionary`s in a `WorkspaceContainer`, so they may be distributed, versioned, aliased, and access controlled. This can be easily accomplished by storing the stringified JSON representation of the `SettingDictionary` as a `string` resource and using [Workspace.loadSettingsDictionary]($backend) to load it.
+
+## WorkspaceEditor
