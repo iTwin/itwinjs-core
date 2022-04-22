@@ -20,6 +20,7 @@ const scratchUInt32 = new Uint32Array(scratchBytes.buffer);
 
 /** The JSON representation of a [[ColorDef]] - an unsigned 32-bit integer in 0xTTBBGGRR format.
  * @public
+ * @extensions
  */
 export type ColorDefProps = number;
 
@@ -44,6 +45,7 @@ export type ColorDefProps = number;
  *  const semiTransparentBlue = ColorDef.blue.withTransparency(100);
  * ```
  * @public
+ * @extensions
  */
 export class ColorDef {
   private readonly _tbgr: number;

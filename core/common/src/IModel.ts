@@ -55,6 +55,7 @@ export interface IModelRpcProps extends IModelRpcOpenProps {
  * possibly offset in altitude by the terrain elevation above the ellipsoid but other general 3D coordinate systems
  * can be defined.
  * @public
+ * @extensions
  */
 export interface EcefLocationProps {
   /** The Origin of an iModel on the earth in ECEF coordinates */
@@ -71,6 +72,7 @@ export interface EcefLocationProps {
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
  * @public
+ * @extensions
  */
 export interface RootSubjectProps {
   /** The name of the root subject. */
@@ -192,7 +194,10 @@ export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
  */
 export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export interface FilePropertyProps {
   readonly namespace: string;
   readonly name: string;

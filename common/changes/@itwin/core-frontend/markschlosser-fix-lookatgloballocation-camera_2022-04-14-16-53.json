@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "ViewState3d.lookAtGlobalLocation should account for orthographic view points.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -943,7 +943,7 @@ export function Icon(props: IconProps): JSX.Element | null;
 
 // @public
 export class IconHelper {
-    static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
+    static getIconData(iconSpec: IconSpec, internalData?: Map<string, any>): string | ConditionalStringValue;
     static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
     // (undocumented)
     static get reactIconKey(): string;

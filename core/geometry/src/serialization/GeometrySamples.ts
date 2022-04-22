@@ -1153,7 +1153,8 @@ export class Sample {
           mesh.addParamUV(i, j);
       }
     }
-    let color = 10; // arbitrarily start at color 10 so colorIndex is different from color.
+    let color = 0xFF5CE51A; // arbitrary color so colorIndex is different from color.
+    const colorDiff = 0x12345;
     // Push elements to index array (vertices are calculated using i and j positioning for each point)
     let thisColorIndex = 0;
     for (let j = 0; j + 1 < numYVertices; j++) {
@@ -1167,7 +1168,7 @@ export class Sample {
           mesh.addPointIndex(vertex00, true); mesh.addPointIndex(vertex10, true); mesh.addPointIndex(vertex11, false);
           // make color === faceIndex
           if (createColors) {
-            thisColorIndex = mesh.addColor(color++);
+            thisColorIndex = mesh.addColor(color += colorDiff);
             mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex);
           }
           // param indexing matches points .  .
@@ -1199,7 +1200,7 @@ export class Sample {
           mesh.addPointIndex(vertex00, true); mesh.addPointIndex(vertex10, true); mesh.addPointIndex(vertex11, true); mesh.addPointIndex(vertex01, true);
           // make color === faceIndex
           if (createColors) {
-            thisColorIndex = mesh.addColor(color++);
+            thisColorIndex = mesh.addColor(color += colorDiff);
             mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex);
           }
           // param indexing matches points .  .

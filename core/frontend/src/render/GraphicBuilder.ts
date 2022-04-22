@@ -23,6 +23,7 @@ import { GraphicPrimitive } from "./GraphicPrimitive";
  *  - Within a [[GraphicList]], each [[RenderGraphic]] is rendered in the order in which it appears in the list; and
  *  - Within a single [[RenderGraphic]], each geometric primitive is rendered in the ordered in which it was added to the GraphicBuilder.
  * @public
+ * @extensions
  */
 export enum GraphicType {
   /**
@@ -81,6 +82,7 @@ export enum GraphicType {
  * For example, to prevent graphics produced by [[readElementGraphics]] from being hilited when their corresponding element is in the [[SelectionSet]],
  * pass `{ noHilite: true }` to [[readElementGraphics]].
  * @public
+ * @extensions
  */
 export interface BatchOptions {
   /** Identifies the [[Tile]] associated with the batch, chiefly for debugging purposes.
@@ -99,6 +101,7 @@ export interface BatchOptions {
 
 /** Options used as part of [[GraphicBuilderOptions]] to describe a [pickable]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations) [[RenderGraphic]].
  * @public
+ * @extensions
  */
 export interface PickableGraphicOptions extends BatchOptions {
   /** Unique identifier for the graphic.
@@ -111,6 +114,7 @@ export interface PickableGraphicOptions extends BatchOptions {
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
  * @see [[CustomGraphicBuilderOptions]] to create a graphic builder unassociated with any [[Viewport]].
  * @public
+ * @extensions
  */
 export interface GraphicBuilderOptions {
   /** The type of graphic to produce. */
@@ -161,6 +165,7 @@ export interface GraphicBuilderOptions {
  * Default values for [[GraphicBuilderOptions.wantNormals]] and [[GraphicBuilderOptions.generateEdges]] will be determined by the viewport's [ViewFlags]($common).
  * The [[GraphicBuilder.iModel]] will be set to the viewport's [[IModelConnection]].
  * @public
+ * @extensions
  */
 export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
   /** The viewport in which the resultant [[RenderGraphic]] is to be drawn. */
@@ -178,6 +183,7 @@ export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
  * For [[GraphicType.ViewOverlay]] and [[GraphicType.ViewBackground]], which already define their geometry in pixels, the chord tolerance should typically be 1.
  * @see [[CustomGraphicBuilderOptions.computeChordTolerance]].
  * @public
+ * @extensions
  */
 export interface ComputeChordToleranceArgs {
   /** The graphic builder being used to produce the graphics. */
@@ -191,6 +197,7 @@ export interface ComputeChordToleranceArgs {
  * This is primarily useful when the same graphic is to be saved and reused for display in multiple viewports and for which a chord tolerance can be computed
  * independently of each viewport's [Frustum]($common).
  * @public
+ * @extensions
  */
 export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
   /** Optionally, the IModelConnection with which the graphic is associated. */
@@ -215,6 +222,7 @@ export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
  * So, for example, if you pass an array of points to addLineString(), you should not subsequently modify that array.
  *
  * @public
+ * @extensions
  */
 export abstract class GraphicBuilder {
   /** The local coordinate system transform applied to this builder's geometry.

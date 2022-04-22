@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DgnCustomItemTypes_MyProp.dimensionlessElementAspect`] = `
+Array [
+  PropertyRecord {
+    "description": "15845.0 $",
+    "property": Object {
+      "displayLabel": "$ [dollar]",
+      "name": "pc_MyProp_dimensionlessElementAspect___x0024____x0020____x005B__dollar__x005D__",
+      "typename": "double",
+    },
+    "value": Object {
+      "displayValue": "15845.0 $",
+      "value": 15845,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

@@ -15,6 +15,7 @@ import { DebugWindow } from "./DebugWindow";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
 import { SavedViewPicker } from "./SavedViews";
+import { CameraPathsMenu } from "./CameraPaths";
 import { SectionsPanel } from "./SectionTools";
 import { StandardRotations } from "./StandardRotations";
 import { Surface } from "./Surface";
@@ -230,6 +231,16 @@ export class Viewer extends Window {
       tooltip: "External saved views",
       createDropDown: async (container: HTMLElement) => {
         const picker = new SavedViewPicker(this.viewport, container, this);
+        await picker.populate();
+        return picker;
+      },
+    });
+
+    this.toolBar.addDropDown({
+      iconUnicode: "\ue932",
+      tooltip: "Saved camera paths",
+      createDropDown: async (container: HTMLElement) => {
+        const picker = new CameraPathsMenu(this.viewport, container);
         await picker.populate();
         return picker;
       },
