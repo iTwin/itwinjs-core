@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, OpenMode, UnexpectedErrors,
@@ -2448,7 +2448,8 @@ export class SnapshotDb extends IModelDb {
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
     const snapshot = SnapshotDb.openFile(dbName, { key, tempFileBase, container });
     snapshot._iTwinId = checkpoint.iTwinId;
-
+    if (process.env.PREFETCHAFTEROPEN)
+      void CloudSqlite.prefetch(container, dbName);
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
     } catch (err: any) {
