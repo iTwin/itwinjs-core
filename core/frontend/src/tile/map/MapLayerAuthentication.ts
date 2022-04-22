@@ -6,6 +6,7 @@
  * @module MapLayers
  */
 
+import { BeEvent, Listener } from "@itwin/core-bentley";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { RequestBasicCredentials } from "../../request/Request";
 
@@ -48,5 +49,7 @@ export interface MapLayerAccessClient {
   getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined>;
   getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
   invalidateToken?(token: MapLayerAccessToken): boolean;
+
+  onOAuthProcessEnd?: BeEvent<Listener>;
 }
 

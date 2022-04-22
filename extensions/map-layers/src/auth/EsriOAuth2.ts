@@ -85,35 +85,6 @@ export class EsriOAuth2 {
   public static initialize(redirectUri: string, tokenExpiration?: number): boolean {
     EsriOAuth2._redirectUri = redirectUri;
     EsriOAuth2._expiration = tokenExpiration;
-
-    /** Define a *global* callback function that will be used by the redirect URL to pass the generated token
-   * @param redirectLocation Unmodified value of 'window.location' from the redirect_uri page.
-   */
-    (window as any).esriOAuth2Callback = (redirectLocation?: Location) => {
-      let eventSuccess = false;
-      let decodedState;
-
-      if (redirectLocation && redirectLocation.hash.length > 0) {
-        const locationHash = redirectLocation.hash;
-        const hashParams = new URLSearchParams(locationHash.substr(1));
-        const token = hashParams.get("access_token") ?? undefined;
-        const expiresInStr = hashParams.get("expires_in") ?? undefined;
-        const userName = hashParams.get("username") ?? undefined;
-        const ssl = hashParams.get("ssl") === "true";
-        const state = hashParams.get("state") ?? undefined;
-        const persist = hashParams.get("persist") === "true";
-        if ( token !== undefined && expiresInStr !== undefined && userName !== undefined && ssl !== undefined && state !== undefined) {
-          decodedState = decodeURIComponent(state);
-          const stateUrl = new URL(decodedState);
-          const expiresIn = Number(expiresInStr);
-          const expiresAt = (expiresIn * 1000) + (+new Date());   // Converts the token expiration delay (seconds) into a timestamp (UNIX time)
-          ArcGisTokenManager.setOAuth2Token(stateUrl.origin, {token, expiresAt, ssl, userName, persist});
-          eventSuccess = true;
-        }
-      }
-      this.onEsriOAuth2Callback.raiseEvent(eventSuccess, decodedState);
-    };
-
     return true;
   }
 
