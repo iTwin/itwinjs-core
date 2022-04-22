@@ -6,7 +6,7 @@
  * @module Extensions
  */
 
-import { Extension, ExtensionManifest, ExtensionProvider } from "./Extension";
+import { Extension, ExtensionProvider, LocalExtensionProvider, RemoteExtensionProvider } from "./Extension";
 
 /** The Extensions loading system has the following goals:
  *   1. Only fetch what is needed when it is required
@@ -57,13 +57,22 @@ export class ExtensionAdmin {
    * @param provider
    * @alpha
    */
-  public async addExtension(provider: ExtensionProvider): Promise<void> {
-    const manifest = await this.getManifest(provider);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { manifestPromise, manifestUrl, ...extensionContent } = provider;
+  public async addExtension(provider: LocalExtensionProvider | RemoteExtensionProvider): Promise<void> {
+    if (provider instanceof RemoteExtensionProvider) {
+      const hostName = provider.hostname;
+      if (this._hosts.indexOf(hostName) < 0) {
+        // TODO throw error if hostname wasn't registered ?
+        // (DR can register the hostname of the iframe's parent as valid)
+        // throw new Error(
+        //   `Remote extension could not be loaded from "${hostName}". Please register the host for extension usage via the registerHost API`
+        // );
+      }
+    }
+    const { manifestPromise } = provider;
+    const manifest = await manifestPromise;
     this._extensions.set(manifest.name, {
       manifest,
-      ...extensionContent,
+      provider,
     });
   }
 
@@ -95,61 +104,8 @@ export class ExtensionAdmin {
       if (!extension.manifest.activationEvents) continue;
       for (const activationEvent of extension.manifest.activationEvents) {
         if (activationEvent === event) {
-          this.execute(extension); // eslint-disable-line @typescript-eslint/no-floating-promises
+          extension.provider.main(); // eslint-disable-line @typescript-eslint/no-floating-promises
         }
-      }
-    }
-  }
-
-  /** Resolves an import function provided for build-time Extensions that should return a valid
-   * Extension Manifest.
-   */
-  private async getManifest(
-    provider: ExtensionProvider
-  ): Promise<ExtensionManifest> {
-    let manifest: ExtensionManifest;
-    if (provider.manifestPromise) {
-      manifest = await provider.manifestPromise;
-    } else if (provider.manifestUrl) {
-      manifest = await (await fetch(provider.manifestUrl)).json();
-    } else {
-      throw new Error(
-        "Please provide a method to retrieve the Extension manifest"
-      );
-    }
-    return manifest;
-  }
-
-  // Important: The Function constructor is used here to isolate the context in which the Extension javascript has access.
-  // By using the Function constructor to create and then execute the extension it will only have access to two scopes:
-  //  1. It's own function scope
-  //  2. The global scope
-  //
-  // The global scope is important for an Extension as that is where the reference to the Extension Implementation is supplied
-  // from the application side.
-  // TODO Are these comments accurate?
-  private async execute(extension: Extension): Promise<void> {
-    if (extension.main) return extension.main();
-    if (extension.jsUrl) {
-      const hostName = new URL(extension.jsUrl).hostname.replace("www", "");
-      if (this._hosts.indexOf(hostName) < 0) {
-        throw new Error(
-          `Extension "${extension.manifest.name}" could not be loaded from "${hostName}". Please register the host for extension usage via the registerHost API`
-        );
-      }
-      try {
-        const main = await import(/* webpackIgnore: true */ extension.jsUrl);
-        if (typeof main === "function") {
-          return main();
-        }
-        if (!main.default) {
-          throw new Error(
-            `No default export was found in remote extension "${extension.manifest.name}"`
-          );
-        }
-        return main.default();
-      } catch (error) {
-        throw new Error(`Failed to import an extension from ${extension.jsUrl}: ${error}`);
       }
     }
   }

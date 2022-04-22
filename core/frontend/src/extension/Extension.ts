@@ -42,57 +42,133 @@ export interface ExtensionManifest {
 }
 
 /**
- * Methods to provide an extension's content (local function vs remote function)
- * @alpha
- */
-type ExtensionContentProvider =
-  | {
-    /**
-       * A local function that is the starting execution point for the Extension.
-       * Typically used with locally installed Extensions
-       */
-    readonly main: ResolveFunc;
-    jsUrl?: never;
-  }
-  | {
-    main?: never;
-    /**
-       * The url for an endpoint that responds with a Javascript file that contains a default function that is the starting execution point for the Extension.
-       * Typically used with remote Extensions
-       */
-    readonly jsUrl: string;
-  };
-
-/**
  * A "ready to use" Extension (contains a manifest object).
  * Will be used as the type for in-memory extensions in the ExtensionAdmin
  * @alpha
  */
-export type Extension = ExtensionContentProvider & {
-  readonly manifest: ExtensionManifest;
-};
+export interface Extension {
+  provider: LocalExtensionProvider | RemoteExtensionProvider;
+  manifest: ExtensionManifest;
+}
 
 /**
- * Properties that are required to construct an Extension.
- * Is the parameter type for the "ExtensionAdmin.addExtension" method, which is the preferred method for consumers to provide/register an Extension
+ * Required methods and properties of an ExtensionProvider.
  * @alpha
  */
-export type ExtensionProvider = ExtensionContentProvider &
-(
-  | {
-    /**
-         * A local promise that resolves the manifest.
-         * Typically used with locally installed Extensions
-         */
-    readonly manifestPromise: Promise<ExtensionManifest>;
-    manifestUrl?: never;
+export interface ExtensionProvider {
+  /** returns the extension's manifest file */
+  manifestPromise: Promise<ExtensionManifest>;
+  /** runs the main entry point of the extension */
+  main: ResolveFunc;
+}
+
+/** Required props for a local extension provider */
+export interface LocalExtensionProviderProps {
+  // TODO is there a better way of getting the manifest activation events compatible with literal string type?
+  manifestPromise: Promise<any>;
+  /** runs the main entry point of the extension */
+  main: ResolveFunc;
+}
+
+/** Required props for a remote extension provider */
+export interface RemoteExtensionProviderProps {
+  /** URL where the extension entry point can be loaded from */
+  jsUrl: string;
+  /** URL where the manifest (package.json) can be loaded from */
+  manifestUrl: string;
+}
+
+/**
+ * Implements a "local" extension via LocalExtensionProps.
+ * The methods are used by the ExtensionAdmin to call and load various extension types.
+ */
+export class LocalExtensionProvider implements ExtensionProvider {
+  /**
+   * A local promise that resolves the manifest.
+   */
+  public readonly manifestPromise: Promise<ExtensionManifest>;
+  /**
+   * A local function that is the starting execution point for the Extension.
+   */
+  public readonly main: ResolveFunc;
+
+  constructor(props: LocalExtensionProviderProps) {
+    this.manifestPromise = props.manifestPromise as Promise<ExtensionManifest>;
+    this.main = props.main;
   }
-  | {
-    readonly manifestPromise?: never;
-    /**
-         * The url for an endpoint that responds with the manifest.
-         * Typically used with remote Extensions
-         */
-    manifestUrl: string;
+}
+
+/**
+ * Implements a "remote" extension via LocalExtensionProps.
+ * The methods are used by the ExtensionAdmin to call and load various extension types.
+ */
+export class RemoteExtensionProvider implements ExtensionProvider {
+  /**
+   * A local promise that resolves the manifest.
+   */
+  public readonly manifestPromise: Promise<ExtensionManifest>;
+  /**
+   * A local function that is the starting execution point for the Extension.
+   */
+  public readonly main: ResolveFunc;
+  /**
+   * A local function that is the starting execution point for the Extension.
+   */
+  public readonly hostname: string;
+
+  constructor(props: RemoteExtensionProviderProps) {
+    this.hostname = this._extractHostname(props.jsUrl);
+    this.manifestPromise = this._getManifest(props.manifestUrl);
+    this.main = this._getMainEntryPoint(props.jsUrl);
   }
-);
+
+  private _extractHostname(jsUrl: string) {
+    return new URL(jsUrl).hostname.replace("www", "");
+  }
+
+  private _getMainEntryPoint(jsUrl: string): ResolveFunc {
+    return async () => {
+      const doesUrlExist = await this._exists(jsUrl);
+      if (!doesUrlExist) {
+        throw new Error(`Extension at ${jsUrl} could not be found.`);
+      }
+      return this._loadScript(jsUrl);
+    };
+  }
+
+  private async _loadScript(jsUrl: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const head = document.getElementsByTagName("head")[0];
+      if (!head)
+        reject(new Error("no head element found"));
+      const scriptElement = document.createElement("script");
+      scriptElement.onerror = reject;
+      scriptElement.onload = resolve;
+      scriptElement.async = true;
+      scriptElement.src = jsUrl;
+      head.insertBefore(scriptElement, head.lastChild);
+    });
+  }
+
+  private async _getManifest(manifestUrl: string): Promise<ExtensionManifest> {
+    const doesUrlExist = await this._exists(manifestUrl);
+    if (!doesUrlExist) {
+      throw new Error(`Manifest at ${manifestUrl} could not be found.`);
+    }
+    return (await fetch(manifestUrl)).json();
+  }
+
+  /** check if url actually exists */
+  private async _exists(url: string): Promise<boolean> {
+    let exists = false;
+    // check if the entry point exists
+    try {
+      const response = await fetch(url, { method: "HEAD" });
+      if (response.status === 200)
+        exists = true;
+    } catch (error) {
+      exists = false;
+    }
+    return exists;
+  }
+}
