@@ -2013,8 +2013,11 @@ export abstract class GltfReader {
   /** Exposed strictly for testing. */
   public getTextureType(sampler?: GltfSampler): RenderTexture.Type {
     // ###TODO: RenderTexture currently does not support different wrapping behavior for U vs V, nor does it support mirrored repeat.
-    const wrapS = sampler?.wrapS ?? this.defaultWrapMode;
-    const wrapT = sampler?.wrapT ?? this.defaultWrapMode;
+    let wrapS = sampler?.wrapS;
+    let wrapT = sampler?.wrapT;
+    if (undefined === wrapS && undefined === wrapT)
+      wrapS = wrapT = this.defaultWrapMode;
+
     if (GltfWrapMode.ClampToEdge === wrapS || GltfWrapMode.ClampToEdge === wrapT)
       return RenderTexture.Type.TileSection;
 

@@ -309,9 +309,12 @@ describe("GltfReader", () => {
   });
 
   describe.only("textures", () => {
-    function expectTextureType(expected: RenderTexture.Type, sampler: GltfSampler | undefined): void {
+    function expectTextureType(expected: RenderTexture.Type, sampler: GltfSampler | undefined, defaultWrap?: GltfWrapMode): void {
       const reader = createReader(makeGlb(minimalJson, minimalBin))!;
       expect(reader).not.to.be.undefined;
+      if (undefined !== defaultWrap)
+        reader.defaultWrapMode = defaultWrap;
+
       expect(reader.getTextureType(sampler)).to.equal(expected);
     }
 
@@ -340,6 +343,9 @@ describe("GltfReader", () => {
     });
 
     it("overrides default texture type if unspecified by sampler", () => {
+      expectTextureType(RenderTexture.Type.TileSection, undefined, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, { }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, { magFilter: 9728, minFilter: 9987 }, GltfWrapMode.ClampToEdge);
     });
   });
 });
