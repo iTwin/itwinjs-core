@@ -2003,12 +2003,19 @@ export abstract class GltfReader {
       image.resolvedImage = await tryImageElementFromUrl(url);
   }
 
-  /** @internal exposed strictly for testing. */
+  /** The glTF spec says that if GltfSampler.wrapS/T are omitted, they default to Repeat.
+   * However, the reality data service serves tiles that lack any wrapS/T property, and we want those clamped to edge, not repeated.
+   * (We also don't want to produce mip-maps for them, which is determined indirectly from the wrap mode).
+   * Allow the default to be optionally overridden.
+   */
+  public defaultWrapMode = GltfWrapMode.Repeat;
+
+  /** Exposed strictly for testing. */
   public getTextureType(sampler?: GltfSampler): RenderTexture.Type {
-    // ###TODO: RenderTexture should support different wrapping behavior for U vs V, and support mirrored repeat.
-    // For now, repeat unless either explicitly clamps.
-    const clamp = GltfWrapMode.ClampToEdge;
-    if (sampler?.wrapS === clamp || sampler?.wrapT === clamp)
+    // ###TODO: RenderTexture currently does not support different wrapping behavior for U vs V, nor does it support mirrored repeat.
+    const wrapS = sampler?.wrapS ?? this.defaultWrapMode;
+    const wrapT = sampler?.wrapT ?? this.defaultWrapMode;
+    if (GltfWrapMode.ClampToEdge === wrapS || GltfWrapMode.ClampToEdge === wrapT)
       return RenderTexture.Type.TileSection;
 
     return RenderTexture.Type.Normal;
