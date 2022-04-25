@@ -2,7 +2,7 @@
 
 The acronym “BIS” stands for “Base Infrastructure Schema*s*” but is commonly used as a singular noun. It is pronounced “biz”. BIS is a family of modular schemas for modeling [Federated Digital Twins for Infrastructure Engineering](./fundamentals/intro/federated-digital-twins.md).
 
-BIS is a “conceptual schema” that expresses taxonomy, data structure, and relationships for modeling real-world Entities. It is written using Bentley’s open [“EC” schema language](../ec/ec-schema.md) for Entity-Relationship modeling.
+BIS is a “conceptual schema” that expresses taxonomy, data structure, and relationships for modeling real-world Entities. It is written using Bentley’s open [“EC” language](../ec/index.md) for Entity-Relationship modeling.
 
 ## Open and Extensible
 

@@ -1,6 +1,6 @@
 # Modeling with BIS
 
-This section describes how [BIS](../glossary.md#bis) models the world, and why. First, we introduce the way that BIS perceives the real world. Next, we describe the fundamental building blocks for modeling with BIS and how those blocks are used to construct the core models of a cohesive [Digital Twin](../glossary.md#digital-twin)—which is significantly different from how one would define the data model of an application-specific "silo" database.
+This section describes how [BIS](../glossary.md#bis) models the world and why. First, we introduce the way that BIS perceives the real world. Next, we describe the fundamental building blocks for modeling with BIS and how those blocks are used to construct the core models of a cohesive [Digital Twin](../glossary.md#digital-twin)—which is significantly different from how one would define the data model of an application-specific "silo" database.
 
 This section uses terms without fully defining them. See more-detailed definitions in the [BIS Glossary](../glossary.md).
 

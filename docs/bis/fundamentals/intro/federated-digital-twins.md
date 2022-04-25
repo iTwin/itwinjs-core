@@ -27,7 +27,7 @@ iModels are central to iTwins, but not all information belongs in an iModel. For
 
 There will always be existing “silos” of data which (for whatever reason) are not migrated into iModels, but which contain information that should be part of our Digital Twin.
 
-To achieve a cohesive Digital Twin encompassing both iModels and other representations, the iTwin Platform supplies services and software components that federate multiple representations into a cohesive Digital Twin.
+To achieve a cohesive Digital Twin encompassing both iModels and other representations, the [iTwin Platform](https://developer.bentley.com/itwinplatform/) supplies services and software components that federate multiple representations into a cohesive Digital Twin.
 
 ## Digital Twins for Lifecycle Phases
 
