@@ -34,28 +34,45 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * capacity in xyz triples. (not floats)
    */
   private _xyzCapacity: number;
-  /** Construct a new GrowablePoint3d array.
-   * @param numPoints [in] initial capacity.
+  /**
+   * multiplier used by ensureCapacity to expand requested reallocation size
    */
-  public constructor(numPoints: number = 8) {
+  private _growthFactor: number;
+
+  /** Construct a new GrowablePoint3d array.
+   * @param numPoints initial capacity in xyz triples (default 8)
+   * @param growthFactor used by ensureCapacity to expand requested reallocation size (default 1.5)
+   */
+  public constructor(numPoints: number = 8, growthFactor?: number) {
     super();
-    this._data = new Float64Array(numPoints * 3);   // 8 Points to start (3 values each)
+    this._data = new Float64Array(numPoints * 3);   // 3 values per point
     this._xyzInUse = 0;
     this._xyzCapacity = numPoints;
+    this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
+  }
+
+  /** Copy points from source array. Does not reallocate or change active point count.
+   * @param source array to copy from
+   * @param sourceCount copy the first sourceCount points; all points if undefined
+   * @param destOffset copy to instance array starting at this point index; zero if undefined
+   */
+  private copyData(source: Float64Array, sourceCount?: number, destOffset?: number) {
+    // convert inputs from points to entries
+    const count = (undefined !== sourceCount) ? sourceCount * 3 : source.length;
+    if (count < 0 || count > source.length)
+      return;
+    const offset = (undefined !== destOffset) ? destOffset * 3 : 0;
+    if (offset < 0 || offset + count > this._data.length)
+      return;
+    if (count === source.length)
+      this._data.set(source, offset);
+    else
+      this._data.set(source.subarray(0, count), offset);
   }
 
   /** The number of points in use. When the length is increased, the array is padded with zeroes. */
   public get length() { return this._xyzInUse; }
-  public set length(newLength: number) {
-    let oldLength = this.length;
-    if (newLength < oldLength) {
-      this._xyzInUse = newLength;
-    } else if (newLength > oldLength) {
-      this.ensureCapacity(newLength);
-      while (oldLength++ < newLength)
-        this.pushXYZ(0, 0, 0);
-    }
-  }
+  public set length(newLength: number) { this.resize(newLength, true); }
 
   /** Return the number of float64 in use. */
   public get float64Length() { return this._xyzInUse * 3; }
@@ -65,29 +82,29 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   public float64Data(): Float64Array { return this._data; }
 
   /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchanged. */
-  public ensureCapacity(pointCapacity: number) {
+  public ensureCapacity(pointCapacity: number, applyGrowthFactor: boolean = true) {
     if (pointCapacity > this._xyzCapacity) {
-      const newData = new Float64Array(pointCapacity * 3);
-      const numCopy = this.length * 3;
-      for (let i = 0; i < numCopy; i++) newData[i] = this._data[i];
-      this._data = newData;
+      if (applyGrowthFactor)
+        pointCapacity *= this._growthFactor;
+      const prevData = this._data;
+      this._data = new Float64Array(pointCapacity * 3);
+      this.copyData(prevData, this._xyzInUse);
       this._xyzCapacity = pointCapacity;
     }
   }
-  /** Resize the actual point count, preserving excess capacity. */
-  public resize(pointCount: number) {
-    if (pointCount < this.length) {
-      this._xyzInUse = pointCount >= 0 ? pointCount : 0;
-    } else if (pointCount > this._xyzCapacity) {
-      const newArray = new Float64Array(pointCount * 3);
-      // Copy contents
-      for (let i = 0; i < this._data.length; i += 3) {
-        newArray[i] = this._data[i];
-        newArray[i + 1] = this._data[i + 1];
-        newArray[i + 2] = this._data[i + 2];
-      }
-      this._data = newArray;
-      this._xyzCapacity = pointCount;
+  /**
+   * * If pointCount is less than current length, just reset current length to pointCount, effectively trimming active points but preserving original capacity.
+   * * If pointCount is greater than current length, reallocate to exactly pointCount, copy existing points, and optionally pad excess with zero.
+   * @param pointCount new number of active points in array
+   * @param padWithZero when increasing point count, whether to zero out new points (default false)
+  */
+  public resize(pointCount: number, padWithZero?: boolean) {
+    if (pointCount >= 0 && pointCount < this._xyzInUse)
+      this._xyzInUse = pointCount;
+    else if (pointCount > this._xyzInUse) {
+      this.ensureCapacity(pointCount, false);
+      if (padWithZero ?? false)
+        this._data.fill(0, this._xyzInUse * 3);
       this._xyzInUse = pointCount;
     }
   }
@@ -96,16 +113,14 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * (The clone does NOT get excess capacity)
    */
   public clone(result?: GrowableXYZArray): GrowableXYZArray {
-    const numValue = this.length * 3;
     if (!result)
       result = new GrowableXYZArray(this.length);
     else {
-      result.clear();
-      result.ensureCapacity(this.length);
+      if (result.length !== this.length)
+        result.clear();
+      result.resize(this.length);
     }
-    const newData = result._data;
-    const data = this._data;
-    for (let i = 0; i < numValue; i++) newData[i] = data[i];
+    result.copyData(this._data, this.length);
     result._xyzInUse = this.length;
     return result;
   }
@@ -142,7 +157,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
   /** push all points of an array */
   public pushAll(points: Point3d[]) {
-    for (const p of points) this.push(p);
+    for (const p of points) this.push(p);     // START HERE: cant use copyData! Ensurecap first...
   }
   /** Push points from variant sources.
    * Valid inputs are:

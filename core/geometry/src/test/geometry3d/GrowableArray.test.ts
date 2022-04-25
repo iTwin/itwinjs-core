@@ -29,7 +29,7 @@ describe("GrowableFloat64Array.HelloWorld", () => {
   it("SizeChanges", () => {
     const ck = new Checker();
     const arr = new GrowableFloat64Array();
-    arr.ensureCapacity(16);
+    arr.ensureCapacity(16, false);
     const b = 5.4;
     const c = 12.9;
     ck.testExactNumber(arr.capacity(), 16);
