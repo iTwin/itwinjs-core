@@ -163,10 +163,10 @@ async function transformWithCrashAndRecover<
         "IModelTransformerResumption",
         "transformer-state.db"
       );
-      const state = transformer.serializeStateToFile(dumpPath);
+      transformer.serializeStateToFile(dumpPath);
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const TransformerClass = transformer.constructor as typeof IModelTransformer;
-      transformer = TransformerClass.resumeTransformation(state, sourceDb, targetDb) as Transformer;
+      transformer = TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb) as Transformer;
       onResume?.(transformer);
       crashed = true;
     } catch (err) {
@@ -336,8 +336,8 @@ describe("test resuming transformations", () => {
               crashCount++;
               const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
               enableCrashes(false);
-              const state = transformer.serializeStateToFile(dumpPath);
-              transformer = CountingTransformer.resumeTransformation(state, { source: sourceDb, target: targetDb });
+              transformer.serializeStateToFile(dumpPath);
+              transformer = CountingTransformer.resumeTransformation(dumpPath, { source: sourceDb, target: targetDb });
               enableCrashes(true);
               crashableCallsMade = 0;
               console.log(`crashed after ${timer.elapsed.seconds} seconds`); // eslint-disable-line no-console

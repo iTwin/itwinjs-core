@@ -12,6 +12,7 @@ import { SubCategory } from "./Category";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
+import { SQLiteDb } from "./SQLiteDb";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -155,22 +156,16 @@ export class IModelCloneContext {
     return targetElementProps;
   }
 
-  /** serialize state to a given path */
-  public serializeState(path: string): IModelCloneContextState {
-    this._nativeContext.serializeState(path);
-    return {
-      nativeImportContextStatePath: path,
-    };
+  /**
+   * serialize state to a sqlite database at a given path
+   * assumes the database has not already had any context state serialized to it
+   */
+  public serializeStateToDb(db: SQLiteDb): void {
+    this._nativeContext.serializeStateToDb(db.nativeDb);
   }
 
-  /** serialize state to a given path */
-  public loadState(state: IModelCloneContextState): void {
-    this._nativeContext.loadState(state.nativeImportContextStatePath);
+  /** load state from a sqlite database at a given path */
+  public loadStateFromDb(db: SQLiteDb): void {
+    this._nativeContext.loadStateFromDb(db.nativeDb);
   }
-}
-
-// TODO: move to native
-export interface IModelCloneContextState {
-  /** a file storing the native state */
-  nativeImportContextStatePath: string;
 }

@@ -695,7 +695,7 @@ export class IModelExporter {
     }
   }
 
-  public loadStateFromDb(state: IModelExporterState): void {
+  public loadStateFromJson(state: IModelExporterState): void {
     this.wantGeometry = state.wantGeometry;
     this.wantTemplateModels = state.wantTemplateModels;
     this.wantSystemSchemas = state.wantSystemSchemas;
@@ -710,7 +710,7 @@ export class IModelExporter {
     this._excludedRelationshipClasses = new Set(state.excludedRelationshipClassNames.map((c) => this.sourceDb.getJsClass(c)));
   }
 
-  public serializeStateToDb(): IModelExporterState {
+  public serializeStateToJson(): IModelExporterState {
     return {
       wantGeometry: this.wantGeometry,
       wantTemplateModels: this.wantTemplateModels,

@@ -13,7 +13,7 @@ import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
-  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelCloneContextState, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
@@ -1085,6 +1085,8 @@ export class IModelTransformer extends IModelExportHandler {
     this.finalizeTransformation();
   }
 
+  public static jsStateTable = "TransformerJsState";
+
   /**
    * To "resume" an iModel Transformation you need:
    * - the sourceDb at the same changeset
@@ -1094,14 +1096,21 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public static resumeTransformation<SubClass extends new(...a: any[]) => IModelTransformer = typeof IModelTransformer>(
     this: SubClass,
-    state: TransformationState,
+    statePath: string,
     ...constructorArgs: ConstructorParameters<SubClass>
   ): InstanceType<SubClass> {
     const transformer = new this(...constructorArgs);
+    const db = new SQLiteDb();
+    db.openDb(statePath, OpenMode.Readonly);
+    const state: TransformationJsonState = db.withSqliteStatement(`SELECT data FROM ${IModelTransformer.jsStateTable}`, (stmt) => {
+      if (DbResult.BE_SQLITE_ROW !== stmt.step())
+        throw Error("");
+      return JSON.parse(stmt.getValueString(0));
+    });
     // force assign to readonly options since we do not know how the transformer subclass takes options to pass to the superclass
-    (transformer as any)["_options"] = state.options; // eslint-disable-line @typescript-eslint/dot-notation
-    transformer.context.loadState(state.importContextState);
-    return transformer as any;
+    (transformer as any)._options = state.options;
+    transformer.context.loadStateFromDb(db);
+    return transformer as InstanceType<SubClass>;
   }
 
   /**
@@ -1110,58 +1119,25 @@ export class IModelTransformer extends IModelExportHandler {
    * The serialization format is a custom sqlite database
    */
   public serializeStateToFile(nativeStatePath: string): void {
-    const r = {
-      options: this._options,
-      importContextState: this.context.serializeState(nativeStatePath),
-    };
     const db = new SQLiteDb();
+    if (IModelJsFs.existsSync(nativeStatePath))
+      IModelJsFs.unlinkSync(nativeStatePath);
     db.createDb(nativeStatePath);
-    this.exporter.serializeStateToDb(db),
-    this.importer.serializeStateToDb(db),
-    this.context.serializeState(nativeStatePath);
-    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(`
-      CREATE TABLE TransformOptions (
-        targetScopeElementId INTEGER,
-        noProvenance BOOLEAN,
-        includeSourceProvenance BOOLEAN,
-        wasSourceIModelCopiedToTarget BOOLEAN,
-        isReverseSynchronization BOOLEAN,
-        loadSourceGeometry BOOLEAN,
-        cloneUsingBinaryGeometry BOOLEAN,
-        preserveElementIdsForFiltering BOOLEAN,
-        danglingPredecessorsBehavior TEXT,
-        optimizeGeometry_inlineUniqueGeometryParts BOOLEAN
-      )
-    `)) throw Error("Failed to create the options table in the state database");
-    db.withSqliteStatement(`
-      INSERT INTO TransformOptions (
-        targetScopeElementId,
-        noProvenance,
-        includeSourceProvenance,
-        wasSourceIModelCopiedToTarget,
-        isReverseSynchronization,
-        loadSourceGeometry,
-        cloneUsingBinaryGeometry,
-        preserveElementIdsForFiltering,
-        danglingPredecessorsBehavior,
-        optimizeGeometry_inlineUniqueGeometryParts
-      ) VALUES (?,?,?,?,?,?,?,?,?,?)
-    `, (stmt) => {
-      const bindBool = (index: string | number, val: boolean) => stmt.bindInteger(index, val ? 1 : 0);
-      stmt.bindId(1, this._options.targetScopeElementId);
-      // each `??` is the default in case the option is undefined
-      bindBool(2, this._options.noProvenance ?? false);
-      bindBool(3, this._options.includeSourceProvenance ?? false);
-      bindBool(4, this._options.wasSourceIModelCopiedToTarget ?? false);
-      bindBool(5, this._options.isReverseSynchronization ?? false);
-      bindBool(6, this._options.loadSourceGeometry ?? false);
-      bindBool(7, this._options.cloneUsingBinaryGeometry ?? true);
-      bindBool(8, this._options.preserveElementIdsForFiltering ?? false);
-      stmt.bindString(9, this._options.danglingPredecessorsBehavior ?? "reject");
-      bindBool(10, this._options.optimizeGeometry?.inlineUniqueGeometryParts ?? false);
-      if (DbResult.BE_SQLITE_DONE !== stmt.step())
-        throw Error("Failed to insert options into the state database");
-    });
+    const jsonState: TransformationJsonState = {
+      options: this._options,
+      importerState: this.importer.serializeStateToJson(),
+      exporterState: this.exporter.serializeStateToJson(),
+    };
+    this.context.serializeStateToDb(db);
+    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(
+      "CREATE TABLE TransformerJsState (data TEXT)"
+    )) throw Error("Failed to create the options table in the state database");
+    db.withSqliteStatement(
+      "INSERT INTO TransformerJsState (data) VALUES (?)",
+      (stmt) => {
+        stmt.bindString(1, JSON.stringify(jsonState));
+        if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");
+      });
     db.closeDb();
   }
 
@@ -1188,20 +1164,11 @@ export class IModelTransformer extends IModelExportHandler {
   }
 }
 
-/**
- * The JSON format of a serialized IModelTransformer instance's state
- * Used for starting a transformer in the middle of a transformation,
- * such as resuming a crashed transformation
- *
- * @note Must be kept synchronized with IModelExporter
- */
-export interface TransformationState {
-  sourceDbChangeset?: string;
-  targetDbChangeset?: string;
+/** @internal the json part of a transformation's state */
+interface TransformationJsonState {
+  options: IModelTransformOptions;
   importerState: IModelImporterState;
   exporterState: IModelExporterState;
-  importContextState: IModelCloneContextState;
-  options: IModelTransformOptions;
 }
 
 /** IModelTransformer that clones the contents of a template model.
