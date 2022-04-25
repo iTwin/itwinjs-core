@@ -14,7 +14,7 @@ import { RpcInterface } from "../../RpcInterface";
 import { SessionProps } from "../../SessionProps";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
-import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
+import { RpcControlResponse, RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
@@ -162,9 +162,16 @@ export class RpcInvocation {
       (impl as any)[CURRENT_INVOCATION] = this;
       const op = this.lookupOperationFunction(impl);
 
-      return await RpcInvocation.runActivity(activity, async () => op.call(impl, ...parameters));
+      return await RpcInvocation.runActivity(activity, async () => op.call(impl, ...parameters)
+        .catch(async (error) => {
+          // this catch block is intentionally placed inside `runActivity` to attach the right logging metadata and use the correct openTelemetry span.
+          if (!(error instanceof RpcPendingResponse)) {
+            Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error) });
+            Logger.setAttributes({ error: true });
+          }
+          throw error;
+        }));
     } catch (error: unknown) {
-      Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error), ...RpcInvocation.sanitizeForLog(activity) });
       return this.reject(error);
     }
   }

@@ -33,6 +33,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
+    "@opentelemetry/api": "^1.0.4",
+    "@opentelemetry/semantic-conventions": "^1.0.4",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",

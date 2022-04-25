@@ -12,7 +12,7 @@ import * as multiparty from "multiparty";
 import * as FormData from "form-data";
 import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
-import { assert, Logger } from "@itwin/core-bentley";
+import { assert, Logger, SpanKind } from "@itwin/core-bentley";
 
 /**
  * Utility for tracing Rpc activity processing. When multiple Rpc requests are being processed asynchronously, this
@@ -41,7 +41,9 @@ export class RpcTrace {
 
   /** Start the processing of an RpcActivity. */
   public static async run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T> {
-    return RpcTrace._storage.run(activity, fn);
+    return RpcTrace._storage.run(activity, async () => {
+      return Logger.withSpan(activity.rpcMethod ?? "unknown RPC method", fn, { root: true, attributes: { ...RpcInvocation.sanitizeForLog(activity) }, kind: SpanKind.SERVER });
+    });
   }
 }
 

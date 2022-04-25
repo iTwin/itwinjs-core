@@ -20,6 +20,7 @@ import { RpcRegistry } from "./RpcRegistry";
  * @public
  */
 export abstract class RpcControlResponse {
+  public message = "RpcControlResponse";
 }
 
 /** A pending RPC operation response.
@@ -27,7 +28,7 @@ export abstract class RpcControlResponse {
  */
 export class RpcPendingResponse extends RpcControlResponse {
   /** Extended status regarding the pending operation. */
-  public message: string;
+  public override message: string;
 
   /** Constructs a pending response. */
   public constructor(message: string = "") {
@@ -40,6 +41,7 @@ export class RpcPendingResponse extends RpcControlResponse {
  * @public
  */
 export class RpcNotFoundResponse extends RpcControlResponse {
+  public override message = "Not found";
 }
 
 /** Manages requests and responses for an RPC configuration.

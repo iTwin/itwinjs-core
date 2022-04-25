@@ -9,6 +9,65 @@
 import { BentleyError, IModelStatus, LoggingMetaData } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 import { IDisposable } from "./Disposable";
+import { context, SpanAttributes, SpanAttributeValue, SpanContext, SpanOptions, trace, Tracer } from "@opentelemetry/api";
+
+// re-export so that consumers can construct full SpanOptions object without external dependencies
+export { SpanKind } from "@opentelemetry/api";
+
+function flattenStringArray(arr: any[]): SpanAttributeValue {
+  const res: string[] = [];
+  for (const el of arr) {
+    if (typeof el === "string")
+      res.push(el);
+    else
+      res.push(JSON.stringify(el));
+  }
+  return res;
+}
+
+function flattenNumberArray(arr: any[]): SpanAttributeValue {
+  const res: number[] = [];
+  for (const el of arr) {
+    if (typeof el !== "number")
+      return flattenStringArray(arr);
+    res.push(el);
+  }
+  return res;
+}
+
+function flattenBooleanArray(arr: any[]): SpanAttributeValue {
+  const res: boolean[] = [];
+  for (const el of arr) {
+    if (typeof el !== "boolean")
+      return flattenStringArray(arr);
+    res.push(el);
+  }
+  return res;
+}
+
+function flattenArray(arr: any[]): SpanAttributeValue {
+  if (typeof arr[0] === "number")
+    return flattenNumberArray(arr);
+  if (typeof arr[0] === "boolean")
+    return flattenBooleanArray(arr);
+  return flattenStringArray(arr);
+}
+
+function flattenObject(obj: any, parent?: string, res: SpanAttributes = {}): SpanAttributes {
+  for (const key of Object.keys(obj)) {
+    const propName = parent ? `${parent}.${key}` : key;
+    if (typeof obj[key] === "object") {
+      if (Array.isArray(obj[key]))
+        res[propName] = flattenArray(obj[key]);
+      else
+        flattenObject(obj[key], propName, res);
+    } else {
+      if (typeof obj[key])
+        res[propName] = obj[key];
+    }
+  }
+  return res;
+}
 
 /** Defines the *signature* for a log function.
  * @public
@@ -58,6 +117,7 @@ export class Logger {
   protected static _logTrace: LogFunction | undefined;
   private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
   private static _minLevel: LogLevel | undefined = undefined;
+  private static _tracer: Tracer | undefined;
 
   /** Should the call stack be included when an exception is logged?  */
   public static logExceptionCallstacks = false;
@@ -78,12 +138,43 @@ export class Logger {
     Logger.turnOffCategories();
   }
 
+  public static initializeOpenTelemetry(name: string, version?: string) {
+    Logger._tracer = trace.getTracer(name, version);
+  }
+
   /** Initialize the logger to output to the console. */
   public static initializeToConsole(): void {
     const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
       console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
 
     Logger.initialize(logConsole("Error"), logConsole("Warning"), logConsole("Info"), logConsole("Trace"));
+  }
+
+  public static async withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T> {
+    if (Logger._tracer === undefined)
+      return fn();
+
+    const parent = parentContext === undefined
+      ? context.active()
+      : trace.setSpanContext(context.active(), parentContext);
+
+    return context.with(
+      trace.setSpan(
+        parent,
+        Logger._tracer.startSpan(name, options, context.active())
+      ),
+      async () => {
+        try {
+          return await fn();
+        } catch (err) {
+          if (err instanceof Error) // ignore non-Error throws, such as RpcControlResponse
+            trace.getSpan(context.active())?.setAttribute("error", true);
+          throw err;
+        } finally {
+          trace.getSpan(context.active())?.end();
+        }
+      },
+    );
   }
 
   /** merge the supplied metadata with all static metadata into one object */
@@ -211,8 +302,10 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logError(category: string, message: string, metaData?: LoggingMetaData): void {
-    if (Logger._logError && Logger.isEnabled(category, LogLevel.Error))
+    if (Logger._logError && Logger.isEnabled(category, LogLevel.Error)) {
+      trace.getSpan(context.active())?.addEvent(message, { ...flattenObject(Logger.getMetaData(metaData)), error: true });
       Logger._logError(category, message, metaData);
+    }
   }
 
   private static getExceptionMessage(err: unknown): string {
@@ -240,8 +333,10 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logWarning(category: string, message: string, metaData?: LoggingMetaData): void {
-    if (Logger._logWarning && Logger.isEnabled(category, LogLevel.Warning))
+    if (Logger._logWarning && Logger.isEnabled(category, LogLevel.Warning)) {
+      trace.getSpan(context.active())?.addEvent(message, flattenObject(Logger.getMetaData(metaData)));
       Logger._logWarning(category, message, metaData);
+    }
   }
 
   /** Log the specified message to the **info** stream.
@@ -250,8 +345,10 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logInfo(category: string, message: string, metaData?: LoggingMetaData): void {
-    if (Logger._logInfo && Logger.isEnabled(category, LogLevel.Info))
+    if (Logger._logInfo && Logger.isEnabled(category, LogLevel.Info)) {
+      trace.getSpan(context.active())?.addEvent(message, flattenObject(Logger.getMetaData(metaData)));
       Logger._logInfo(category, message, metaData);
+    }
   }
 
   /** Log the specified message to the **trace** stream.
@@ -260,8 +357,17 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logTrace(category: string, message: string, metaData?: LoggingMetaData): void {
-    if (Logger._logTrace && Logger.isEnabled(category, LogLevel.Trace))
+    if (Logger._logTrace && Logger.isEnabled(category, LogLevel.Trace)) {
+      trace.getSpan(context.active())?.addEvent(message, flattenObject(Logger.getMetaData(metaData)));
       Logger._logTrace(category, message, metaData);
+    }
+  }
+
+  /** Set attributes on current openTelemetry span. Doesn't do anything if openTelemetry logging is not initialized.
+   * @param attributes  The attributes to set
+   */
+  public static setAttributes(attributes: SpanAttributes) {
+    trace.getSpan(context.active())?.setAttributes(attributes);
   }
 }
 
