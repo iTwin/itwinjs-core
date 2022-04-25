@@ -355,6 +355,14 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@opentelemetry/api",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@opentelemetry/semantic-conventions",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "@reduxjs/toolkit",
       "allowedCategories": [ "internal" ]
     },

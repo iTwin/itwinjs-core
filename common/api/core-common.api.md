@@ -4500,6 +4500,8 @@ export class IModelError extends BentleyError {
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
     // (undocumented)
     isIModelNotFoundResponse: boolean;
+    // (undocumented)
+    message: string;
 }
 
 // @public
@@ -7313,6 +7315,8 @@ export class RpcControlChannel {
 
 // @public
 export abstract class RpcControlResponse {
+    // (undocumented)
+    message: string;
 }
 
 // @internal
@@ -7444,6 +7448,8 @@ export class RpcMultipart {
 
 // @public
 export class RpcNotFoundResponse extends RpcControlResponse {
+    // (undocumented)
+    message: string;
 }
 
 // @internal

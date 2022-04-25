@@ -4,6 +4,11 @@
 
 ```ts
 
+import { SpanAttributes } from '@opentelemetry/api';
+import { SpanContext } from '@opentelemetry/api';
+import { SpanKind } from '@opentelemetry/api';
+import { SpanOptions } from '@opentelemetry/api';
+
 // @beta (undocumented)
 export class AbandonedError extends Error {
 }
@@ -1127,6 +1132,8 @@ export class Logger {
     static getLevel(category: string): LogLevel | undefined;
     static getMetaData(metaData?: LoggingMetaData): object;
     static initialize(logError?: LogFunction, logWarning?: LogFunction, logInfo?: LogFunction, logTrace?: LogFunction): void;
+    // (undocumented)
+    static initializeOpenTelemetry(name: string, version?: string): void;
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: LoggingMetaData): void;
@@ -1144,6 +1151,7 @@ export class Logger {
     // (undocumented)
     protected static _logWarning: LogFunction | undefined;
     static parseLogLevel(str: string): LogLevel;
+    static setAttributes(attributes: SpanAttributes): void;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
     // @internal
@@ -1152,6 +1160,8 @@ export class Logger {
     static turnOffCategories(): void;
     static turnOffLevelDefault(): void;
     static validateProps(config: any): void;
+    // (undocumented)
+    static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }
 
 // @public
@@ -1479,6 +1489,8 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     insert(value: T, onInsert?: (value: T) => any): number;
     remove(value: T): number;
 }
+
+export { SpanKind }
 
 // @beta
 export interface StatusCodeWithMessage<ErrorCodeType> {
