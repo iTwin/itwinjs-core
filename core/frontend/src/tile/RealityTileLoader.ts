@@ -14,7 +14,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
 import { ScreenViewport, Viewport } from "../Viewport";
 import {
-  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, I3dmReader, readPointCloudTileContent, RealityTile, RealityTileContent, Tile, TileContent,
+  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, GltfWrapMode, I3dmReader, readPointCloudTileContent, RealityTile, RealityTileContent, Tile, TileContent,
   TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "./internal";
 
@@ -82,6 +82,9 @@ export abstract class RealityTileLoader {
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
     const reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, undefined, this.getBatchIdMap());
+    if (reader)
+      reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
+
     return { geometry: reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform) };
   }
 
@@ -133,6 +136,9 @@ export abstract class RealityTileLoader {
 
     let content: TileContent = {};
     if (undefined !== reader) {
+      // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.
+      // The render system also currently only produces mip-maps for repeating textures, and we don't want mip-maps for reality tile textures.
+      reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
       try {
         content = await reader.read();
       } catch (_err) {
