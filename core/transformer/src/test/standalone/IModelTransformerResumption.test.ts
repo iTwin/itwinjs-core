@@ -217,9 +217,8 @@ describe("test resuming transformations", () => {
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCrash = 10;
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      return transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(transformer) {
-        transformer.elementExportsUntilCrash = undefined;
+      return transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(t) {
+        t.elementExportsUntilCrash = undefined;
       }});
     })();
 
@@ -245,9 +244,8 @@ describe("test resuming transformations", () => {
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCrash = 10;
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      await transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(transformer) {
-        transformer.elementExportsUntilCrash = undefined;
+      await transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(t) {
+        t.elementExportsUntilCrash = undefined;
       }, async transformerProcessing(t) {
         await t.processSchemas();
         await t.processChanges(accessToken);
@@ -286,9 +284,8 @@ describe("test resuming transformations", () => {
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCrash = Number(process.env.TRANSFORMER_RESUMPTION_TEST_SINGLE_MODEL_ELEMENTS_BEFORE_CRASH) || 2_500_000;
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      return transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(transformer) {
-        transformer.elementExportsUntilCrash = undefined;
+      return transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(t) {
+        t.elementExportsUntilCrash = undefined;
       }});
     })();
 
