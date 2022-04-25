@@ -1110,6 +1110,7 @@ export class IModelTransformer extends IModelExportHandler {
     // force assign to readonly options since we do not know how the transformer subclass takes options to pass to the superclass
     (transformer as any)._options = state.options;
     transformer.context.loadStateFromDb(db);
+    db.closeDb();
     return transformer as InstanceType<SubClass>;
   }
 
@@ -1130,14 +1131,16 @@ export class IModelTransformer extends IModelExportHandler {
     };
     this.context.serializeStateToDb(db);
     if (DbResult.BE_SQLITE_DONE !== db.executeSQL(
-      "CREATE TABLE TransformerJsState (data TEXT)"
+      `CREATE TABLE ${IModelTransformer.jsStateTable} (data TEXT)`
     )) throw Error("Failed to create the options table in the state database");
+    db.saveChanges();
     db.withSqliteStatement(
-      "INSERT INTO TransformerJsState (data) VALUES (?)",
+      `INSERT INTO ${IModelTransformer.jsStateTable} (data) VALUES (?)`,
       (stmt) => {
         stmt.bindString(1, JSON.stringify(jsonState));
         if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");
       });
+    db.saveChanges();
     db.closeDb();
   }
 
