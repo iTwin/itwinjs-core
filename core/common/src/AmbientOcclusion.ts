@@ -72,14 +72,14 @@ export namespace AmbientOcclusion {
 
     public toJSON(): Props {
       return {
-        bias: this.bias,
-        zLengthCap: this.zLengthCap,
-        maxDistance: this.maxDistance,
-        intensity: this.intensity,
-        texelStepSize: this.texelStepSize,
-        blurDelta: this.blurDelta,
-        blurSigma: this.blurSigma,
-        blurTexelStepSize: this.blurTexelStepSize,
+        bias: this.bias !== Settings._defaultBias ? this.bias : undefined,
+        zLengthCap: this.zLengthCap !== Settings._defaultZLengthCap ? this.zLengthCap : undefined,
+        maxDistance: this.maxDistance !== Settings._defaultMaxDistance ? this.maxDistance : undefined,
+        intensity: this.intensity !== Settings._defaultIntensity ? this.intensity : undefined,
+        texelStepSize: this.texelStepSize !== Settings._defaultTexelStepSize ? this.texelStepSize : undefined,
+        blurDelta: this.blurDelta !== Settings._defaultBlurDelta ? this.blurDelta : undefined,
+        blurSigma: this.blurSigma !== Settings._defaultBlurSigma ? this.blurSigma : undefined,
+        blurTexelStepSize: this.blurTexelStepSize !== Settings._defaultBlurTexelStepSize ? this.blurTexelStepSize : undefined,
       };
     }
   }
