@@ -263,9 +263,9 @@ However, when deciding how to organize workspace data, keep in mind:
 
 ### WorkspaceContainer.Name and WorkspaceContainer.Id
 
-Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainer.Id]($backend). `WorkspaceContainer.Id`s may be GUIDs or any other identifier scheme that guarantees uniqueness. Since `WorkspaceContainer.Id`s can therefore be long and hard to recognize, `WorkspaceContainer`s can also be identified with a shorter, human recognizable `WorkspaceContainer.Name`. This not only provides an easier to recognize and understand scheme for interacting with `WorkspaceContainer`s, but also provides a level of indirection that can be useful for substituting different `WorkspaceContainer`s for the same `WorkspaceContainer.Name` at runtime, for example for versioning.
+Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainer.Id]($backend). `WorkspaceContainer.Id`s may be GUIDs or any other identifier scheme that guarantees uniqueness. When the WorkspaceContainer is stored in the cloud, the `WorkspaceContainer.Id` identifies the name  con Since `WorkspaceContainer.Id`s can therefore be long and hard to recognize, `WorkspaceContainer`s can also be identified with a shorter, human recognizable `WorkspaceContainer.Name`. This not only provides an easier to recognize and understand scheme for interacting with `WorkspaceContainer`s, but also provides a level of indirection that can be useful for substituting different `WorkspaceContainer`s for the same `WorkspaceContainer.Name` at runtime, for example for versioning.
 
-#### The `workspace` Settings
+#### Workspace related SettingsSchemas
 
 ```ts
     "cloud/accounts": {
