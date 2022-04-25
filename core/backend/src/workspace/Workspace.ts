@@ -206,8 +206,8 @@ export interface WorkspaceCloudCacheProps extends Optional<CloudSqlite.CacheProp
  * @beta
  */
 export interface WorkspaceOpts {
-  /** The local directory for the WorkspaceDb files. The [[Workspace]] will look in this directory
-   * for files named `${this.containerId}/${this.dbId}.itwin-workspace`.
+  /** The local directory for non-cloud-based WorkspaceDb files. The workspace api will look in this directory
+   * for files named `${containerId}/${dbId}.itwin-workspace`.
    * @note if not supplied, defaults to `iTwin/Workspace` in the user-local folder.
    */
   containerDir?: LocalDirName;
@@ -215,7 +215,7 @@ export interface WorkspaceOpts {
   /** Properties for the cloud cache for the `WorkspaceContainers` of the Workspace. */
   cloudCacheProps?: WorkspaceCloudCacheProps;
 
-  /** the local fileName of one or more settings files to load after the Workspace is first created. */
+  /** the local fileName(s) of one or more settings files to load after the Workspace is first created. */
   settingsFiles?: LocalFileName | [LocalFileName];
 }
 
@@ -225,7 +225,7 @@ export interface WorkspaceOpts {
  * @beta
  */
 export interface Workspace {
-  /** The directory for local WorkspaceDb files with the name `${containerId}.itwin-workspace`. */
+  /** The directory for local WorkspaceDb files with the name `${containerId}/${dbId}.itwin-workspace`. */
   readonly containerDir: LocalDirName;
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
@@ -553,12 +553,12 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   }
 
   /**
-   * Create a copy of an existing [[WorkspaceDb]] in a cloud container with a new version number. The copy should be modified with
-   * new content before the write lock is released.
+   * Create a copy of an existing [[WorkspaceDb]] in a cloud container with a new version number.
    * @param cloudContainer The attached cloud container holding the existing WorkspaceDb
    * @param fromProps Properties that describe the source WorkspaceDb for the new version
    * @param versionType The type of version increment to apply to the existing version.
-   * @note this requires that the cloudContainer is attached and the write lock on the container be held.
+   * @note This requires that the cloudContainer is attached and the write lock on the container be held. The copy should be modified with
+   * new content before the write lock is released, and thereafter should never be modified again.
    */
   public static async makeNewVersion(cloudContainer: IModelJsNative.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement) {
     const oldName = this.resolveCloudFileName(cloudContainer, fromProps);
@@ -573,8 +573,8 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   }
 
   /**
-   * Convert a WorkspaceDb.Props specification into a DbFileName. For file-based containers, this returns a local filename of a
-   *  WorkspaceDb file with the extension ".itwin-workspace"
+   * Convert a WorkspaceDb.Props specification into a DbFileName. For cloud-based containers, this resolves to the dbName, incorporating the appropriate
+   * version. For file-based containers, this returns a local filename of a WorkspaceDb file with the extension ".itwin-workspace"
    */
   public resolveDbFileName(props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
     const cloudContainer = this.cloudContainer;
@@ -613,6 +613,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.cloudContainer?.disconnect();
   }
 
+  /** Delete all local files extracted by [[WorkspaceDb.getFile]] for this container. */
   public purgeContainerFiles() {
     IModelJsFs.purgeDirSync(this.filesDir);
   }
@@ -678,7 +679,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   }
 
   /** Get a BlobIO reader for a blob WorkspaceResource.
-   * @note when finished, caller must call `close` on the BlobIO.
+   * @note when finished, caller *must* call `close` on the BlobIO.
    */
   public getBlobReader(rscName: WorkspaceResource.Name): IModelJsNative.BlobIO {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {

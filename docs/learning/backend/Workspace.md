@@ -54,7 +54,7 @@ For example:
 
 ### SettingSchema
 
-A single `Setting` is defined according to the rules of [JSON Schema](https://json-schema.org/). The primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for setting in a settings editor, and are presented with the information from the `SettingsSchemas` to guide their choices. In addition, `SettingSchema`s may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
+A single `Setting` is defined according to the rules of [JSON Schema](https://json-schema.org/) via a [SettingSchema]($backend). The primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for setting using a settings editor, and are presented with the information from `SettingsSchema`s to guide their choices. In addition, `SettingSchema`s may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
 
 ### SettingTypes
 
@@ -223,18 +223,20 @@ To save a `SettingDictionary` in an iModel, use [IModelDb.saveSettingDictionary]
 
 ## WorkspaceDbs
 
+[WorkspaceDb]($backend)s are SQLite databases that hold `workspace resource`s.
+
 ## Cloud-based Workspaces
 
-Cloud-based `WorkspaceContainer`s provide a mechanism for storing and retrieving `Workspace` data through a secure, reliable, and highly available cloud api.
+Cloud-based `WorkspaceContainer`s provide a mechanism for storing and retrieving `WorkspaceDb`s through a secure, reliable, and highly available cloud api.
 
-Data stored in cloud-based `WorkspaceContainers`:
+Data stored in cloud-based `WorkspaceDb`s:
 
 - can be versioned
 - can have fine-grained access permissions, or may be publicly accessible
-- can be accessed directly from cloud storage
+- can be accessed directly from cloud storage without pre-downloading
 - is automatically *cached* locally for fast access
 - can be fully downloaded for offline use
-- is automatically synched when it changes
+- is automatically synched when changes are made
 
 The `WorkspaceContainer` apis abstract the cloud storage implementation, so the may be configured to use any cloud storage system (e.g. Azure, AWS, Google, etc.)
 
@@ -244,7 +246,7 @@ Cloud-based storage systems provide access to data through a top-level concept c
 
 ### WorkspaceContainer and WorkspaceDb
 
-A [WorkspaceContainer]($backend) is a special type of cloud container that (only) holds [WorkspaceDb]($backend)s. [WorkspaceDb]($backend)s are files that hold [workspace resources](#workspace-resources).
+A [WorkspaceContainer]($backend) is a special type of cloud container that (only) holds [WorkspaceDb]($backend)s. [WorkspaceDb]($backend)s are databases that hold [workspace resources](#workspace-resources).
 
 Conceptually, you can picture the hierarchy like this:
 
@@ -253,19 +255,27 @@ Conceptually, you can picture the hierarchy like this:
     - `WorkspaceDb`
       - `WorkspaceResource`
 
-Each `WorkspaceContainer` may hold many `WorkspaceDb`s, though it is common for `WorkspaceContainer`s to hold a single `WorkspaceDb`. There is no limit on the number of `WorkspaceDbs` within a `WorkspaceContainer` or accessed during a session, nor is there a limit on the number of resources held within a `WorkspaceDb`.
+Each `WorkspaceContainer` may hold many `WorkspaceDb`s, though it is common for `WorkspaceContainer`s to hold (versions of) a single `WorkspaceDb`. There is no limit on the number of `WorkspaceDbs` within a `WorkspaceContainer` or accessed during a session, nor is there a limit on the number of resources held within a `WorkspaceDb`.
 
 However, when deciding how to organize workspace data, keep in mind:
 
 - Access rights are per-`WorkspaceContainer`. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all `WorkspaceDb`s within it.
-- For offline access, `WorkspaceDb`s are saved as files on local computers, and must be downloaded before going offline and then re-downloaded whenever they are updated. Large downloads can be time consuming, so breaking large sets of resources into multiple `WorkspaceDb`s can be helpful.
-- `WorkspaceContainers` and `WorkspaceDb`s may be versioned. There is no versioning of individual resources within a `WorkspaceDb`.
+- For offline access, `WorkspaceDb`s are saved as files on local computers, and must be downloaded before going offline and then updated whenever new versions are created. Large downloads can be time consuming, so breaking large sets of resources into multiple `WorkspaceDb`s can be helpful.
+- `WorkspaceDb`s are versioned. There is no versioning of individual resources within a `WorkspaceDb`.
 
 ### WorkspaceContainer.Name and WorkspaceContainer.Id
 
 Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainer.Id]($backend). `WorkspaceContainer.Id`s may be GUIDs or any other identifier scheme that guarantees uniqueness. When the WorkspaceContainer is stored in the cloud, the `WorkspaceContainer.Id` identifies the name  con Since `WorkspaceContainer.Id`s can therefore be long and hard to recognize, `WorkspaceContainer`s can also be identified with a shorter, human recognizable `WorkspaceContainer.Name`. This not only provides an easier to recognize and understand scheme for interacting with `WorkspaceContainer`s, but also provides a level of indirection that can be useful for substituting different `WorkspaceContainer`s for the same `WorkspaceContainer.Name` at runtime, for example for versioning.
 
 #### Workspace related SettingsSchemas
+
+The Workspace subsystem used 3 Setting values:
+
+1. `cloud/accounts`
+2. `cloud/containers`
+3. `workspace/databases`
+
+defined by the following `SettingSchema`s:
 
 ```ts
     "cloud/accounts": {
@@ -366,25 +376,30 @@ Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainer.
     },
 ```
 
-with entries whose `name` property matches the `WorkspaceContainer.Name` value. The highest priority `workspace/container/alias` setting for a `WorkspaceContainer.Name` becomes its `WorkspaceContainer.Id`. If no matching `workspace/container/alias` setting is found, the `WorkspaceContainer.Name` becomes the `WorkspaceContainer.Id`.
-
 For example:
 
 ```ts
 [[include:Settings.containerAlias]]
 ```
 
-> Note: more than one `WorkspaceContainer.Name` may resolve to the same `WorkspaceContainer.Id`.
-
 ### CloudContainer Shared Access Signature (SAS) Tokens
+
+To access a CloudContainer, users must first obtain a Shared Access Signature (aka a "sasToken") by supplying user credentials from the container authority. A `sasToken` provides access for a specific purpose for a limited time. `sasTokens` expire, usually after a few hours, and must be "refreshed" before they expire for sessions that outlive them.
+
+Administrators may provide access to CloudContainers to groups of users via RBAC rules. Normally most users are provided readonly access to WorkspaceContainers, since they have no need or ability to change workspace content. Only a small set of trusted administrators are granted rights to modify the content of WorkspaceContainers.
+
+If a WorkspaceContainer is marked for offline use, it is downloaded using a valid sasToken, but is available without the token thereafter. When the user goes online again, a new sasToken must be obtained to refresh the WorkspaceContainer if it has been modified.
+
+A few special "public" WorkspaceContainers may be read by anyone, without needing an sasToken.
 
 ### Creating and Editing WorkspaceContainers
 
-`WorkspaceContainers` are always created and modified by administrators rather than users. They are created and edited with the `WorkspaceEditor` utility. See README.md for details.
-
-#### WorkspaceDb Versions
+`WorkspaceDb`s are always created and modified by administrators rather than users. They are created and edited with the `WorkspaceEditor` utility. See README.md for details. To edit a WorkspaceDb, administrators must first obtain a writeable sasToken from the container authority.
 
 #### WorkspaceContainer Locks
+
+
+#### WorkspaceDb Versions
 
 ## Workspace Resources
 
