@@ -178,7 +178,6 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@opentelemetry/api': ^1.0.4
-      '@opentelemetry/semantic-conventions': ^1.0.4
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -190,11 +189,11 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
+    dependencies:
+      '@opentelemetry/api': 1.0.4
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@opentelemetry/api': 1.0.4
-      '@opentelemetry/semantic-conventions': 1.2.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
@@ -8062,11 +8061,7 @@ packages:
   /@opentelemetry/api/1.0.4:
     resolution: {integrity: sha512-BuJuXRSJNQ3QoKA6GWWDyuLpOUck+9hAXNMCnrloc1aWVoy6Xq6t9PUV08aBZ4Lutqq2LEHM486bpZqoViScog==}
     engines: {node: '>=8.0.0'}
-
-  /@opentelemetry/semantic-conventions/1.2.0:
-    resolution: {integrity: sha512-BNKB9fiYVghALJzCuWO3eNYfdTExPVK4ykrtmfNfy0A6UWYhOYjGMXifUmkunDJNL8ju9tBobo8jF0WR9zGy1Q==}
-    engines: {node: '>=8.12.0'}
-    dev: true
+    dev: false
 
   /@panva/asn1.js/1.0.0:
     resolution: {integrity: sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==}
