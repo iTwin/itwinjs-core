@@ -11,7 +11,7 @@ import {
   PropertyMetaData, RelatedElement, SubCategoryProps,
 } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
+import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget, SQLiteDb, SubCategory } from "@itwin/core-backend";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 
@@ -509,12 +509,17 @@ export class IModelImporter implements Required<IModelImportOptions> {
     }
   }
 
-  public serializeState(): IModelImporterState {
-    return {
+  /**
+   * @internal
+   * create the tables for and then store the state of this importer in a given database
+   */
+  public serializeStateToDb(db: SQLiteDb): void {
+    {
       options: this.options,
       targetDbId: this.targetDb.iModelId || this.targetDb.nativeDb.getFilePath(),
       doNotUpdateElementIds: CompressedId64Set.compressSet(this.doNotUpdateElementIds),
     };
+    db.
   }
 }
 

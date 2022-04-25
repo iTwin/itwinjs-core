@@ -7,14 +7,14 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, YieldManager } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelCloneContextState, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
-  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
+  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
@@ -29,6 +29,7 @@ const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
 /** Options provided to the [[IModelTransformer]] constructor.
  * @beta
+ * @note if adding an option, you must explicitly add its serialization to [[IModelTransformer.serializeStateToFile]]!
  */
 export interface IModelTransformOptions {
   /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
@@ -1104,16 +1105,64 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /**
-   * Get the state of the active transformation in a serializable format
+   * Serialize the state of the active transformation to a file path, if a file at the path already exists, it will be overwritten
    * This state can be used by [[resumeTransformation]] to resume a transformation from this point.
+   * The serialization format is a custom sqlite database
    */
-  public serializeState(nativeStatePath: string): TransformationState {
-    return {
+  public serializeStateToFile(nativeStatePath: string): void {
+    const r = {
       options: this._options,
-      exporterState: this.exporter.serializeState(),
-      importerState: this.importer.serializeState(),
       importContextState: this.context.serializeState(nativeStatePath),
     };
+    const db = new SQLiteDb();
+    db.createDb(nativeStatePath);
+    this.exporter.serializeStateToDb(db),
+    this.importer.serializeStateToDb(db),
+    this.context.serializeState(nativeStatePath);
+    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(`
+      CREATE TABLE TransformOptions (
+        targetScopeElementId INTEGER,
+        noProvenance BOOLEAN,
+        includeSourceProvenance BOOLEAN,
+        wasSourceIModelCopiedToTarget BOOLEAN,
+        isReverseSynchronization BOOLEAN,
+        loadSourceGeometry BOOLEAN,
+        cloneUsingBinaryGeometry BOOLEAN,
+        preserveElementIdsForFiltering BOOLEAN,
+        danglingPredecessorsBehavior TEXT,
+        optimizeGeometry_inlineUniqueGeometryParts BOOLEAN
+      )
+    `)) throw Error("Failed to create the options table in the state database");
+    db.withSqliteStatement(`
+      INSERT INTO TransformOptions (
+        targetScopeElementId,
+        noProvenance,
+        includeSourceProvenance,
+        wasSourceIModelCopiedToTarget,
+        isReverseSynchronization,
+        loadSourceGeometry,
+        cloneUsingBinaryGeometry,
+        preserveElementIdsForFiltering,
+        danglingPredecessorsBehavior,
+        optimizeGeometry_inlineUniqueGeometryParts
+      ) VALUES (?,?,?,?,?,?,?,?,?,?)
+    `, (stmt) => {
+      const bindBool = (index: string | number, val: boolean) => stmt.bindInteger(index, val ? 1 : 0);
+      stmt.bindId(1, this._options.targetScopeElementId);
+      // each `??` is the default in case the option is undefined
+      bindBool(2, this._options.noProvenance ?? false);
+      bindBool(3, this._options.includeSourceProvenance ?? false);
+      bindBool(4, this._options.wasSourceIModelCopiedToTarget ?? false);
+      bindBool(5, this._options.isReverseSynchronization ?? false);
+      bindBool(6, this._options.loadSourceGeometry ?? false);
+      bindBool(7, this._options.cloneUsingBinaryGeometry ?? true);
+      bindBool(8, this._options.preserveElementIdsForFiltering ?? false);
+      stmt.bindString(9, this._options.danglingPredecessorsBehavior ?? "reject");
+      bindBool(10, this._options.optimizeGeometry?.inlineUniqueGeometryParts ?? false);
+      if (DbResult.BE_SQLITE_DONE !== stmt.step())
+        throw Error("Failed to insert options into the state database");
+    });
+    db.closeDb();
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
