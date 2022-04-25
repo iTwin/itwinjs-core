@@ -1,4 +1,4 @@
-# BIS Schema Reference
+# Domain Schemas
 
 ## Introduction
 

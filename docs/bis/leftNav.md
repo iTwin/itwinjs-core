@@ -67,7 +67,7 @@
 
 &nbsp;
 
-### BIS Schema Reference
+### Domain Schemas
 - [Overview](./domains/index.md)
 - [Core domains](./domains/core-domains.md)
 - [Common domains](./domains/common-domains.md)
