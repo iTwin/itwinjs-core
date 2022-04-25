@@ -6,18 +6,19 @@ trigger:
     - master
     - release/*
     exclude:
-    - release/2*
-    - release/1*
+    - release/2.*
+    - release/1.*
 
 pr:
   drafts: false
+  autoCancel: true
   branches:
     include:
     - master
     - release/*
     exclude:
-    - release/2*
-    - release/1*
+    - release/2.*
+    - release/1.*
 
 jobs:
   - job:
