@@ -15,7 +15,7 @@
 ### [Base Infrastructure Schemas (BIS)](../bis/index.md)
 
 - [Overview](../bis/index.md)
-- [Schema reference](../bis/domains/index.md)
+- [Domain Schemas](../bis/domains/index.md)
 - [Engineering Content (EC)](../bis/ec/index.md)
 
 ---
