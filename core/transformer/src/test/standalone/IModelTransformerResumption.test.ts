@@ -207,13 +207,13 @@ describe("test resuming transformations", () => {
 
   after(() => HubMock.shutdown());
 
-  it("simple single crash transform resumption", async () => {
+  it.only("simple single crash transform resumption", async () => {
     const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const sourceDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: sourceFileName, noLocks: true });
     const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
 
     const crashingTarget = await (async () => {
-      const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: sourceFileName, noLocks: true });
+      const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCrash = 10;
@@ -231,6 +231,8 @@ describe("test resuming transformations", () => {
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+    crashingTarget.close();
+    regularTarget.close();
   });
 
   it("processChanges crash and resume", async () => {
@@ -268,6 +270,8 @@ describe("test resuming transformations", () => {
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+    regularTarget.close();
+    crashingTarget.close();
   });
 
   // env variables:
@@ -296,6 +300,8 @@ describe("test resuming transformations", () => {
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+    regularTarget.close();
+    crashingTarget.close();
   });
 
   // replace "skip" with "only" to run several transformations with random native platform and transformer api method errors thrown
@@ -368,7 +374,8 @@ describe("test resuming transformations", () => {
       })();
 
       await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
-
+      regularTarget.close();
+      crashingTarget.close();
       return crashingTransformResult;
     }
 
