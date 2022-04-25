@@ -32,7 +32,7 @@ export interface ContentProps {
  * @public
  */
 export interface ContentGroupProps {
-  /** An optional id for the [[ContentGroup]] */
+  /** An id for the [[ContentGroup]]. This id is used to locate a ContentGroup and it also can be used by an ContentGroupProvider to save/restore content settings */
   id: string;
   /** Content Layout Id or complete set of [[ContentLayoutProps]]  */
   layout: ContentLayoutProps;

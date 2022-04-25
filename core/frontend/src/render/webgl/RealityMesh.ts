@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, IDisposable } from "@itwin/core-bentley";
+import { assert, dispose, disposeArray, IDisposable } from "@itwin/core-bentley";
 import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
 import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
@@ -44,9 +44,13 @@ class ProjectedTexture {
 }
 type TerrainOrProjectedTexture = TerrainTexture | ProjectedTexture;
 
-class RealityTextureParam {
+class RealityTextureParam implements IDisposable {
   constructor(public texture: RenderTexture | undefined, private _projectedTextureOrMatrix: ProjectedTexture | Matrix4) { }
   public get isProjected() { return this._projectedTextureOrMatrix instanceof ProjectedTexture; }
+
+  public dispose(): void {
+    this.texture = dispose(this.texture);
+  }
 
   /* There are two methods of applying a texture to a reality mesh.  the first member of "params" denotes which
   method is to be used.  A value of zero indicates a standard texture and one represents a classified texture.
@@ -115,7 +119,7 @@ class RealityTextureParam {
 }
 
 /** @internal */
-export class RealityTextureParams {
+export class RealityTextureParams implements IDisposable {
   constructor(public params: RealityTextureParam[]) { }
   public static create(textures: TerrainOrProjectedTexture[]) {
     const maxTexturesPerMesh = System.instance.maxRealityImageryLayers;
@@ -162,8 +166,10 @@ export class RealityTextureParams {
     return new RealityTextureParams(textureParams);
   }
 
+  public dispose(): void {
+    disposeArray(this.params);
+  }
 }
-
 /** @internal */
 
 export class RealityMeshGeometryParams extends IndexedGeometryParams {
@@ -235,6 +241,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public override dispose() {
     super.dispose();
     dispose(this._realityMeshParams);
+    dispose(this.textureParams);
   }
 
   public static createFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
