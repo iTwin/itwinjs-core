@@ -19,7 +19,7 @@ import * as dotenvExpand from "dotenv-expand";
 
 void (async () => {
   try {
-    const envResult = dotenv.config({ path: path.resolve(__dirname, "../.env")});
+    const envResult = dotenv.config({ path: path.resolve(__dirname, "../.env") });
     if (!envResult.error) {
       dotenvExpand(envResult);
     }
@@ -164,6 +164,11 @@ void (async () => {
           desc: "Include existing provenance from the source iModel in the target iModel",
           type: "boolean",
           default: false,
+        },
+        loadSourceGeometry: {
+          desc: "loading source geometry when true",
+          type: "boolean",
+          default: true,
         },
       })
       .parse();
