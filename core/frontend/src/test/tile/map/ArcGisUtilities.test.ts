@@ -6,7 +6,7 @@
 import { expect } from "chai";
 
 import * as sinon from "sinon";
-// import { ArcGisUtilities, EsriOAuth2, EsriOAuth2EndpointType} from "../../../tile/internal";
+// import { ArcGisUtilities, EsriOAuth2, ArcGisOAuth2EndpointType} from "../../../tile/internal";
 
 // describe("ArcGisUtilities tests", () => {
 //   const sandbox = sinon.createSandbox();
@@ -40,12 +40,12 @@ import * as sinon from "sinon";
 //       return Promise.resolve({ body: { authInfo: { tokenServicesUrl: sampleGenerateTokenUrl1 } }, text: undefined, status: 200, header: undefined });
 //     });
 
-//     const authorize1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Authorize);
+//     const authorize1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, ArcGisOAuth2EndpointType.Authorize);
 
 //     expect(authorize1).to.not.undefined;
 //     expect(authorize1?.getUrl()).to.equals(sampleAuthorizeUrl1);
 
-//     const token1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Token);
+//     const token1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, ArcGisOAuth2EndpointType.Token);
 //     expect(token1).to.not.undefined;
 //     expect(token1?.getUrl()).to.equals(sampleTokenUrl1);
 
@@ -58,11 +58,11 @@ import * as sinon from "sinon";
 //       return Promise.resolve({ body: undefined, text: undefined, status: 404, header: undefined });
 //     });
 
-//     const endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Authorize);
+//     const endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, ArcGisOAuth2EndpointType.Authorize);
 //     expect(endpointUrl).to.not.undefined;
 //     expect(endpointUrl?.getUrl()).to.equals(sampleAuthorizeUrl2);
 
-//     const token1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Token);
+//     const token1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, ArcGisOAuth2EndpointType.Token);
 //     expect(token1).to.not.undefined;
 //     expect(token1?.getUrl()).to.equals(sampleTokenUrl2);
 
@@ -81,12 +81,12 @@ import * as sinon from "sinon";
 //       return Promise.resolve({ body: { authInfo: { tokenServicesUrl: sampleGenerateTokenUrl1 } }, text: undefined, status: 200, header: undefined });
 //     });
 
-//     let endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Authorize);
+//     let endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, ArcGisOAuth2EndpointType.Authorize);
 
 //     expect(endpointUrl).to.not.undefined;
 //     expect(endpointUrl?.getUrl()).to.equals(sampleAuthorizeUrl2);
 
-//     endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Token);
+//     endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, ArcGisOAuth2EndpointType.Token);
 //     expect(endpointUrl).to.not.undefined;
 //     expect(endpointUrl?.getUrl()).to.equals(sampleTokenUrl2);
 
@@ -94,12 +94,12 @@ import * as sinon from "sinon";
 
 //   it("should build proper OAuth2 endpoint URL if ArcGIS online", async () => {
 
-//     let endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnlineFeatureServer1, EsriOAuth2EndpointType.Authorize);
+//     let endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnlineFeatureServer1, ArcGisOAuth2EndpointType.Authorize);
 
 //     expect(endpointUrl).to.not.undefined;
 //     expect(endpointUrl?.getUrl()).to.equals(sampleOnlineAuthorize1);
 
-//     endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnlineFeatureServer1, EsriOAuth2EndpointType.Token);
+//     endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnlineFeatureServer1, ArcGisOAuth2EndpointType.Token);
 //     expect(endpointUrl).to.not.undefined;
 //     expect(endpointUrl?.getUrl()).to.equals(sampleOnlineToken1);
 

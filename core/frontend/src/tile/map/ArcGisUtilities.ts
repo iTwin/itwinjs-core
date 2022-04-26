@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Angle } from "@itwin/core-geometry";
-import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
+import { MapSubLayerProps } from "@itwin/core-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
-import {MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
+import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
 import { IModelApp } from "../../IModelApp";
-import { MapLayerAccessTokenParams } from "../internal";
 
 /** @packageDocumentation
  * @module Tiles
@@ -122,9 +121,6 @@ export class ArcGisUtilities {
   }
 
   public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-
-    // const authMethod: MapLayerAuthType = MapLayerAuthType.None;
-    // let tokenEndpoint: EsriOAuth2Endpoint | undefined;
     const json = await this.getServiceJson(url, credentials, ignoreCache);
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -134,15 +130,6 @@ export class ArcGisUtilities {
       // and return information needed to initiate the authentification process... the end-user
       // will have to provide his credentials before we can fully validate this source.
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
-        // authMethod = MapLayerAuthType.EsriToken; // In case we failed to get the Oauth2 token endpoint, fall back to the legacy ESRI token method
-        // try {
-        //   tokenEndpoint = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(url, EsriOAuth2EndpointType.Authorize);
-        //   if (tokenEndpoint) {
-        //     authMethod = MapLayerAuthType.EsriOAuth2;
-        //   }
-        // } catch { }
-
-        // return { status: MapLayerSourceStatus.RequireAuth, authInfo: { authMethod, tokenEndpoint } };
         return { status: MapLayerSourceStatus.RequireAuth};
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
         return { status: MapLayerSourceStatus.InvalidCredentials, authInfo: { authMethod: MapLayerAuthType.EsriToken } };
@@ -194,7 +181,7 @@ export class ArcGisUtilities {
       tmpUrl.searchParams.append("f", "json");
       const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
       if (accessClient) {
-        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: tmpUrl, userName: credentials?.user, password: credentials?.password });
+        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName: credentials?.user, password: credentials?.password });
       }
       const data = await request(tmpUrl.toString(), options);
       const json = data.body ?? undefined;
@@ -224,7 +211,7 @@ export class ArcGisUtilities {
       tmpUrl.searchParams.append("outSR", "4326");
       const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
       if (accessClient) {
-        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: tmpUrl, userName: credentials?.user, password: credentials?.password });
+        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName: credentials?.user, password: credentials?.password });
       }
 
       const json = await getJson(tmpUrl.toString());
@@ -251,37 +238,6 @@ export class ArcGisUtilities {
     }
 
     return undefined;
-  }
-
-  private static extractRestBaseUrl(url: string) {
-    const searchStr = "/rest/";
-    const restPos = url.indexOf(searchStr);
-    return (restPos === -1 ? undefined : url.substr(0, restPos + searchStr.length));
-
-  }
-
-  public static async requestGetJson(url: string) {
-    return request(url, { method: "GET", responseType: "json" });
-  }
-
-  public static async getRestUrlFromGenerateTokenUrl(url: string): Promise<string | undefined> {
-    const restUrl = ArcGisUtilities.extractRestBaseUrl(url);
-    if (restUrl === undefined) {
-      return undefined;
-    }
-
-    // First attempt: derive the Oauth2 token URL from the 'tokenServicesUrl', exposed by the 'info request'
-    const infoUrl = `${restUrl}info?f=json`;
-    let data;
-    try {
-      data = await this.requestGetJson(infoUrl);
-    } catch { }
-
-    const tokenServicesUrl = data?.body?.authInfo?.tokenServicesUrl;
-    if (tokenServicesUrl === undefined) {
-      return undefined;
-    }
-    return ArcGisUtilities.extractRestBaseUrl(tokenServicesUrl);
   }
 
 }

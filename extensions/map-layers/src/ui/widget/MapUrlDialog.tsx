@@ -105,6 +105,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [externalLoginUrl, setExternalLoginUrl] = React.useState<string|undefined>();
   const [onOauthProcessEnd] = React.useState(new BeEvent());
   const [accessClient, setAccessClient] = React.useState<MapLayerAccessClient | undefined>();
+  const [isAccessClientInitialized, setAccessClientInitialized] = React.useState(false);
 
   const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
 
@@ -188,6 +189,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     const invalidCredentials = (sourceValidation.status === MapLayerSourceStatus.InvalidCredentials);
     if (sourceRequireAuth) {
       const settings = source.toLayerSettings();
+
       if (accessClient !== undefined && accessClient.getTokenServiceEndPoint !== undefined && settings !== undefined) {
         try {
           const tokenEndpoint = await accessClient.getTokenServiceEndPoint(settings.url);
@@ -375,6 +377,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     // Attach source asynchronously.
     void (async () => {
       try {
+        console.log("attemptAttachSource from handleOk");
         const closeDialog = await attemptAttachSource(source);
         if (isMounted.current) {
           setLayerAttachPending(false);
@@ -394,33 +397,36 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   }, [createSource, props.mapLayerSourceToEdit, props.activeViewport, onOkResult, mapUrl, isSettingsStorageAvailable, attemptAttachSource]);
 
-  // Setup the onOAuthProcessEnd handler when types is changed to 'ArcGIS'
   React.useEffect(() => {
     const handleOAuthProcessEnd = (success: boolean, _state: string ) => {
+      console.log(`Raising event onOauthProcessEnd`);
       onOauthProcessEnd.raiseEvent(success, _state);
     };
 
     // Currently only arcgis support AccessClient
-    if (MAP_TYPES.arcGis === mapType) {
-      const ac = IModelApp.mapLayerFormatRegistry.getAccessClient(MAP_TYPES.arcGis);
-      setAccessClient(ac);    // cache it, so we dont need to make another lookup;
 
-      if (ac?.onOAuthProcessEnd) {
-        ac.onOAuthProcessEnd.addListener(handleOAuthProcessEnd);
-      }
+    const ac = IModelApp.mapLayerFormatRegistry.getAccessClient(MAP_TYPES.arcGis);
+    if (ac?.onOAuthProcessEnd) {
+      setAccessClient(ac);   // cache it, so we dont need to make another lookup;
+      ac.onOAuthProcessEnd.addListener(handleOAuthProcessEnd);
+      console.log(`accessClient.onOAuthProcessEnd.addListener, numberOfListeners: ${ ac.onOAuthProcessEnd.numberOfListeners}`);
     }
-
+    setAccessClientInitialized(true);
     return () => {
-      if (accessClient?.onOAuthProcessEnd && accessClient?.onOAuthProcessEnd.has(handleOAuthProcessEnd)) {
-        accessClient?.onOAuthProcessEnd.removeListener(handleOAuthProcessEnd);
+      console.log(`accessClient.onOAuthProcessEnd.removeListener}`);
+      if (ac?.onOAuthProcessEnd) {
+        ac.onOAuthProcessEnd.removeListener(handleOAuthProcessEnd);
       }
+
       setAccessClient(undefined);
+      setAccessClientInitialized(false);
     };
-  }, [accessClient, mapType, onOauthProcessEnd]);
+  }, [mapType, onOauthProcessEnd, setAccessClient]);
 
   // After a map type change, make sure the different Oauth states are reset.
   React.useEffect(() => {
     // Reset few states
+    setServerRequireCredentials(false);
     setInvalidCredentialsProvided(false);
     setShowOauthPopup(false);
     setOAuthProcessSucceeded(undefined);
@@ -434,9 +440,13 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   React.useEffect(() => {
     // Attach source asynchronously.
     void (async () => {
-      if (props.layerRequiringCredentials?.url !== undefined && props.layerRequiringCredentials?.name !== undefined) {
+      if (isAccessClientInitialized && props.layerRequiringCredentials?.url !== undefined && props.layerRequiringCredentials?.name !== undefined) {
         try {
-          const source = MapLayerSource.fromJSON({url: props.layerRequiringCredentials.url, name: props.layerRequiringCredentials.name,formatId: props.layerRequiringCredentials.formatId});
+          const source = MapLayerSource.fromJSON({
+            url: props.layerRequiringCredentials.url,
+            name: props.layerRequiringCredentials.name,
+            formatId: props.layerRequiringCredentials.formatId});
+
           if (source !== undefined) {
             setLayerAttachPending(true);
             const validation = await source.validateSource(true);
@@ -449,9 +459,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       }
     })();
 
-  // Only run this effect when the dialog is initialized, otherwise it will it creates undesirable side-effects when 'OK' button is clicked.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAccessClientInitialized,
+    props.layerRequiringCredentials?.formatId,
+    props.layerRequiringCredentials?.name,
+    props.layerRequiringCredentials?.url,
+    updateAuthState]);
 
   const dialogContainer = React.useRef<HTMLDivElement>(null);
 
@@ -484,6 +496,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         setOAuthProcessSucceeded(true);
         setShowOauthPopup(false);
         setLayerAttachPending(false);
+        console.log("Call to handleOk from onOauthProcessEnd effect");
         handleOk(); // Add the layer the same way the user would do by clicking 'ok'
       } else {
         setShowOauthPopup(false);
@@ -493,7 +506,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     };
 
     onOauthProcessEnd.addListener(handleOauthProcess);
+    console.log(`onOauthProcessEnd.addListener, numberOfListeners: ${ onOauthProcessEnd.numberOfListeners}`);
     return () => {
+      console.log("onOauthProcessEnd.removeListener");
       onOauthProcessEnd.removeListener(handleOauthProcess);
     };
   }, [handleOk, onOauthProcessEnd]);

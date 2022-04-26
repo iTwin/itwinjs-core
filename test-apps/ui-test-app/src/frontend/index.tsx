@@ -34,7 +34,7 @@ import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import { DefaultMapFeatureInfoTool, EsriOAuth2, EsriOAuth2Callback, MapLayersUI } from "@itwin/map-layers";
+import { ArcGisAccessClient, DefaultMapFeatureInfoTool, EsriOAuth2Callback, MapLayersUI } from "@itwin/map-layers";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
@@ -69,6 +69,7 @@ import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { InspectUiItemInfoTool } from "./tools/InspectTool";
+import { MichelTestPrefs } from "./MichelTestPrefs";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -350,11 +351,15 @@ export class SampleAppIModelApp {
     // initialize state from all registered UserSettingsProviders
     await UiFramework.initializeStateFromUserSettingsProviders();
 
-    const esriOAuth2InitStatus = EsriOAuth2.initialize("http://localhost:3000/esri-oauth2-callback");
-    EsriOAuth2.arcGisOnlineClientId = "fZHKhTB31C91eui3";
-    EsriOAuth2.setEnterpriseClientId("https://dtlgeoarcgis.adtl.com", "vOCEIGcWhyDQu2Xd");
-
-    assert(esriOAuth2InitStatus === true);
+    // const esriOAuth2InitStatus = EsriOAuth2.initialize("http://localhost:3000/esri-oauth2-callback");
+    // EsriOAuth2.arcGisOnlineClientId = "fZHKhTB31C91eui3";
+    // EsriOAuth2.setEnterpriseClientId("https://dtlgeoarcgis.adtl.com", "vOCEIGcWhyDQu2Xd");
+    const accessClient = new ArcGisAccessClient();
+    const initStatus = accessClient.initialize("http://localhost:3000/esri-oauth2-callback");
+    assert(initStatus === true);
+    accessClient.arcGisOnlineClientId = "fZHKhTB31C91eui3";
+    accessClient.setEnterpriseClientId("https://dtlgeoarcgis.adtl.com", "vOCEIGcWhyDQu2Xd");
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();

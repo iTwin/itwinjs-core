@@ -328,7 +328,10 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     try {
       if (this._accessClient) {
         this._lastAccessToken = undefined;  // reset any previous accessToken, and rely on access client's cache
-        this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {mapLayerUrl: urlObj, userName: this._settings.userName, password: this._settings.password });
+        this._lastAccessToken = await ArcGisUtilities.appendSecurityToken(urlObj, this._accessClient, {
+          mapLayerUrl: new URL(this._settings.url),
+          userName: this._settings.userName,
+          password: this._settings.password });
       }
 
     } catch {

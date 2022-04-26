@@ -7,8 +7,6 @@
  */
 
 import { BeEvent, Listener } from "@itwin/core-bentley";
-import { ImageMapLayerSettings } from "@itwin/core-common";
-import { RequestBasicCredentials } from "../../request/Request";
 
 /** @beta */
 export enum MapLayerAuthType {
