@@ -18,6 +18,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
+import { SettingsSchemas } from "../core-backend";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore rowid primarykey
@@ -73,6 +74,8 @@ export namespace WorkspaceContainer {
    * @beta
    */
   export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
+    /** true if the container is public (doesn't require authentication) */
+    isPublic?: boolean;
     /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. */
     syncOnConnect?: boolean;
   }
@@ -264,7 +267,7 @@ export interface Workspace {
    * @param databaseName the database name, resolved via [[resolveDatabase]].
    * @see [[getWorkspaceDbFromProps]]
    */
-  getWorkspaceDb(databaseName: WorkspaceDb.Name): WorkspaceDb;
+  getWorkspaceDb(databaseName: WorkspaceDb.Name,): Promise<WorkspaceDb>;
 
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
@@ -359,11 +362,15 @@ export class ITwinWorkspace implements Workspace {
     return this.getContainer(containerProps, account).getWorkspaceDb(dbProps);
   }
 
-  public getWorkspaceDb(dbAlias: string) {
+  public async getWorkspaceDb(dbAlias: string,) {
     const dbProps = this.resolveDatabase(dbAlias);
     const containerProps = this.resolveContainer(dbProps.containerName);
     const account = containerProps.accountName !== "" ? this.resolveAccount(containerProps.accountName) : undefined;
-    return this.getWorkspaceDbFromProps(dbProps, containerProps, account);
+    let container: WorkspaceContainer | undefined = this.findContainer(containerProps.containerId);
+    if (undefined === container) {
+      container = this.getContainer(containerProps, account);
+    }
+    return container?.getWorkspaceDb(dbProps);
   }
 
   public loadSettingsDictionary(settingRsc: WorkspaceResource.Props, db: WorkspaceDb, priority: SettingsPriority) {
@@ -410,6 +417,7 @@ export class ITwinWorkspace implements Workspace {
 
   public resolveContainer(containerName: string): WorkspaceContainer.Props & WorkspaceAccount.Alias {
     const checkMember = (val: any, member: string) => ITwinWorkspace.checkStringMember(val, member, WorkspaceSetting.Containers, containerName);
+    // const containerSchema = SettingsSchemas.allSchemas.get(WorkspaceSetting.Containers);
     const resolved = this.settings.resolveSetting<WorkspaceContainer.Props & WorkspaceAccount.Alias>(WorkspaceSetting.Containers, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {

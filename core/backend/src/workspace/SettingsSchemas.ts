@@ -88,7 +88,11 @@ export class SettingsSchemas {
 
   /** Add a [[SettingSchemaGroup]] from a json5 file. */
   public static addFile(fileName: LocalFileName): string[] {
-    return this.addJson(fs.readFileSync(fileName, "utf-8"));
+    try {
+      return this.addJson(fs.readFileSync(fileName, "utf-8"));
+    } catch (e: any) {
+      throw new Error(`parsing SettingSchema file "${fileName}": ${e.message}"`);
+    }
   }
 
   /** Add all files with a either ".json" or ".json5" extension from a supplied directory. */

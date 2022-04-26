@@ -20,7 +20,7 @@
         "properties": {
           "name": {
             "type": "string",
-            "description": "the alias name of the cloud account, referenced from setting values"
+            "description": "the alias name of the cloud account used in `cloud/container.containerId` values"
           },
           "accessName": {
             "type": "string",
@@ -54,7 +54,12 @@
           },
           "accountName": {
             "type": "string",
-            "description": "the account name for this cloud container. Must be an entry in \"cloud/accounts\""
+            "description": "the account name for this cloud container. Must be an entry in \"cloud/accounts\" or empty string for local (non-cloud) containers."
+          },
+          "isPublic": {
+            "type": "boolean",
+            "description": "whether the cloud container is public (doesn't require authentication)",
+            "default": false
           }
         }
       }

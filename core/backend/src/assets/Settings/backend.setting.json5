@@ -10,7 +10,8 @@
     {
       "name": "gcs/container",
       "accountName": "gcs/account",
-      "containerId": "gcs"
+      "containerId": "gcs",
+      "isPublic": true
     }
   ],
   "workspace/databases": [

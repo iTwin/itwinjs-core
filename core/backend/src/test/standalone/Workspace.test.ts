@@ -146,7 +146,7 @@ describe("WorkspaceFile", () => {
     compareFiles(inFile2, outFile);
   });
 
-  it("resolve workspace alias", () => {
+  it("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultDb = makeEditableDb({ containerId: "default", dbName: "db1" });
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
@@ -164,7 +164,7 @@ describe("WorkspaceFile", () => {
     fontsDb.close();
 
     const fontList = settings.getArray<string>("workspace/fontDbs")!;
-    const fonts = workspace.getWorkspaceDb(fontList[0]);
+    const fonts = await workspace.getWorkspaceDb(fontList[0]);
     expect(fonts).to.not.be.undefined;
     const fontFile = fonts.getFile("Helvetica.ttf")!;
     expect(fontFile).contains(".ttf");

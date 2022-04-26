@@ -1,6 +1,10 @@
-# Workspaces in iTwin.js
+# Workspaces and Settings in iTwin.js
 
 > Note: Workspaces and Settings are both backend-only concepts.
+
+## Workspaces
+
+The [Workspace]($backend) api enables applications to have configurable options and to load resources on demand. It allows administrators to specify choices for configuration options and to decide which resources and which versions are appropriate for their users.
 
 When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an instance of a [Workspace]($backend), in [IModelHost.appWorkspace]($backend).
 
@@ -8,7 +12,7 @@ When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an insta
 
 Whenever an application opens an iModel using the [IModelDb]($backend) class, it creates an instance of a [Workspace]($backend) in [IModelDb.workspace]($backend) to customize the session according to the choices made by administrators for the iTwin and the iModel.
 
-When combined, the `IModelHost.appWorkspace` and the `IModelDb.workspace` customize the session according to the:
+When combined, the `IModelHost.appWorkspace` and the `IModelDb.workspace` customize a session according to the:
 
 1. application's defaults
 2. organization of the user
@@ -31,11 +35,11 @@ This means that there must be some way to initialize the process. That can eithe
 
 ## Settings
 
-Settings are named parameters, defined by applications but supplied at runtime so that their values may vary according to circumstances across and even within sessions. At runtime, Settings are just JavaScript primitives, and may be accessed via [Settings.getSetting]($backend) by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they cannot get out of sync as they change.
+Settings are named parameters defined by applications but supplied at runtime so that their values may vary according to circumstances across and even within sessions. At runtime Settings are just JavaScript primitives and may be accessed via [Settings.getSetting]($backend) by supplying a `SettingName`. Setting lookup is generally very efficient, so settings should *not* be cached in application code and should instead be retrieved as needed. That way they do not get out of sync as they change.
 
 ### SettingNames
 
-A [SettingName]($backend) used by applications to retrieve the current value of a Setting. A `SettingName` must be unique across all applications, so it should be formed as a "path", with the parts separated by a "/". By convention, the first entry in the path is the "application id", and all Settings for an application should start with the same value. Groups of related settings for an application should have the same path prefix. The settings editor will split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
+A [SettingName]($backend) is used to retrieve the current value of a Setting. `SettingName`s must be unique across all applications, so they should be formed as a "path", with the parts separated by a "/". By convention the first entry in the path is the "application id" and all Settings for an application should start with the same value. Groups of related settings for an application should have the same path prefix. The settings editor will split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
 
 For example:
 
@@ -50,22 +54,22 @@ For example:
 "vibration-map/filters/prefabricated"
 ```
 
-`SettingNames` must be valid [JavaScript property names](https://developer.mozilla.org/en-US/docs/Glossary/property/JavaScript), but should *not* contain periods or spaces.
+`SettingName`s must be valid [JavaScript property names](https://developer.mozilla.org/en-US/docs/Glossary/property/JavaScript), but should not contain periods or spaces.
 
 ### SettingSchema
 
-A single `Setting` is defined according to the rules of [JSON Schema](https://json-schema.org/) via a [SettingSchema]($backend). The primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for setting using a settings editor, and are presented with the information from `SettingsSchema`s to guide their choices. In addition, `SettingSchema`s may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
+A single `Setting` is defined according to the rules of [JSON Schema](https://json-schema.org/) via a [SettingSchema]($backend). The primary objective of creating a [SettingSchema]($backend) is to advertise the existence, meaning, and "form" of a Setting. Users supply values for setting using a settings editor, and are presented with the information from `SettingsSchema`s to guide their choices. Also, `SettingSchema`s may also supply a default value so users can understand what happens if they don't provide a value for a Setting.
 
 ### SettingTypes
 
 A `SettingSchema` defines the *type* of a Setting as one of:
 
-- string
-- number
-- integer
-- boolean
-- array
-- object
+- `string`
+- `number`
+- `integer`
+- `boolean`
+- `object`
+- an array of one the above.
 
 The Settings Editor will enforce that the values supplied for a Setting is the correct type.
 
@@ -223,9 +227,13 @@ To save a `SettingDictionary` in an iModel, use [IModelDb.saveSettingDictionary]
 
 ## WorkspaceDbs
 
-[WorkspaceDb]($backend)s are SQLite databases that hold `workspace resource`s.
+[WorkspaceDb]($backend)s are SQLite databases that hold [workspace resources](#workspace-resources). They can either be local files managed externally or they can be [CloudSqlite]($backend) databases accessed directly from cloud storage.
 
-## Cloud-based Workspaces
+### Cloud-based WorkspacesDbs
+
+Cloud storage systems (aka *blob storage*) provide access to data through a top-level concept called a *storage account*. A storage account is assigned a unique name (the "account name") by the cloud provider, and is registered to a single organization who pays for its use. Within a storage account, data is stored in named groups called *containers*. Containers names must be unique within a storage account, and generally have strict rules on format and length. It is common that container names are not human-readable, but are instead identifiers like GUIDs, perhaps with a prefix or suffix.
+
+Containers can each have independent access rights, and users and applications are granted permissions to read, write, create, etc. by authenticating their identity and then obtaining a container-specific (usually expiring) *shared access signature* token or `sasToken` from the storage authority.
 
 Cloud-based `WorkspaceContainer`s provide a mechanism for storing and retrieving `WorkspaceDb`s through a secure, reliable, and highly available cloud api.
 
@@ -239,12 +247,6 @@ Data stored in cloud-based `WorkspaceDb`s:
 - is automatically synched when changes are made
 
 The `WorkspaceContainer` apis abstract the cloud storage implementation, so the may be configured to use any cloud storage system (e.g. Azure, AWS, Google, etc.)
-
-### Cloud storage fundamentals
-
-Cloud-based storage systems provide access to data through a top-level concept called a "storage account". A storage account is assigned a unique name (the "account name") by the cloud provider, and is registered to a single organization who pays for its use. Within a storage account, data is stored in named groups called "containers". Containers names must be unique within a storage account, and generally have strict rules on format and length. It is generally expected that container names are not human-readable, but are instead identifiers like GUIDs, perhaps with a prefix or suffix. Containers can each have independent access rights, and users and applications are granted permissions to read, write, create, etc. by authenticating their identity and then obtaining a container-specific (usually expiring) "shared access signature token" or `sasToken` from the storage authority.
-
-### WorkspaceContainer and WorkspaceDb
 
 A [WorkspaceContainer]($backend) is a special type of cloud container that (only) holds [WorkspaceDb]($backend)s. [WorkspaceDb]($backend)s are databases that hold [workspace resources](#workspace-resources).
 
@@ -262,10 +264,6 @@ However, when deciding how to organize workspace data, keep in mind:
 - Access rights are per-`WorkspaceContainer`. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all `WorkspaceDb`s within it.
 - For offline access, `WorkspaceDb`s are saved as files on local computers, and must be downloaded before going offline and then updated whenever new versions are created. Large downloads can be time consuming, so breaking large sets of resources into multiple `WorkspaceDb`s can be helpful.
 - `WorkspaceDb`s are versioned. There is no versioning of individual resources within a `WorkspaceDb`.
-
-### WorkspaceContainer.Name and WorkspaceContainer.Id
-
-Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainer.Id]($backend). `WorkspaceContainer.Id`s may be GUIDs or any other identifier scheme that guarantees uniqueness. When the WorkspaceContainer is stored in the cloud, the `WorkspaceContainer.Id` identifies the name  con Since `WorkspaceContainer.Id`s can therefore be long and hard to recognize, `WorkspaceContainer`s can also be identified with a shorter, human recognizable `WorkspaceContainer.Name`. This not only provides an easier to recognize and understand scheme for interacting with `WorkspaceContainer`s, but also provides a level of indirection that can be useful for substituting different `WorkspaceContainer`s for the same `WorkspaceContainer.Name` at runtime, for example for versioning.
 
 #### Workspace related SettingsSchemas
 
@@ -326,7 +324,12 @@ defined by the following `SettingSchema`s:
           },
           "accountName": {
             "type": "string",
-            "description": "the account name for this cloud container. Must be an entry in \"cloud/accounts\""
+            "description": "the account name for this cloud container. Must be an entry in \"cloud/accounts\" or empty string for local (non-cloud) containers."
+          },
+          "isPublic": {
+            "type": "boolean",
+            "description": "whether the cloud container is public (doesn't require authentication)",
+            "default": false
           }
         }
       }
@@ -382,24 +385,64 @@ For example:
 [[include:Settings.containerAlias]]
 ```
 
+To load a [workspace resource](#workspace-resources), you must first obtain a `WorkspaceDb` by calling [Workspace.getWorkspaceDb]($backend) and supplying a [WorkspaceDb.Name]($backend). That value must be an entry in a `workspace/databases` Setting. The `workspace/databases` Setting will supply the `containerName` and `dbName`. The value of `containerName` must be an entry in a `cloud/containers` Setting. The `cloud/containers` Setting will supply the `containerId` and `accountName`. The value of `accountName` must be an entry in a `cloud/accounts` Setting that will supply the cloud `accessName` and `storageType`.
+
+For example, consider the following `acme.settings.json` setting file:
+
+```json
+{
+  "cloud/accounts": [
+    {
+      "name": "acme/account1",
+      "accessName": "acmeprod1",
+      "storageType": "azure?sas=1"
+    }
+  ],
+  "cloud/containers": [
+    {
+      "name": "acme/all-company",
+      "accountName": "acme/account1",
+      "containerId": "ws-16e7f4ca-f08b-4778-9882-5bfb2ac7b160"
+    }
+  ],
+  "workspace/databases": [
+    {
+      "name": "acme/workspace-fen",
+      "dbName": "fen",
+      "containerName": "acme/all-company",
+      "version": "^1"
+    },
+    {
+      "name": "acme/workspace-req",
+      "dbName": "req",
+      "containerName": "acme/all-company",
+      "version": "^2.0"
+    },
+  ]
+}
+
+```
+
+then, calling
+
+```ts
+  const wsdb = await IModelHost.appWorkspace.getWorkspaceDb("acme/workspace-fen");
+```
+
+Will attempt to load a `WorkspaceDb` with:
+- the most recent version (compatible with "^1") of the database: `fen` (e.g. `fen:1.5.2`)
+- in a cloud container with id: `ws-16e7f4ca-f08b-4778-9882-5bfb2ac7b160`
+- from an Azure storage account named: `acmeprod1`
+
 ### CloudContainer Shared Access Signature (SAS) Tokens
 
-To access a CloudContainer, users must first obtain a Shared Access Signature (aka a "sasToken") by supplying user credentials from the container authority. A `sasToken` provides access for a specific purpose for a limited time. `sasTokens` expire, usually after a few hours, and must be "refreshed" before they expire for sessions that outlive them.
+To access a CloudContainer, users must first obtain a Shared Access Signature token (aka a "sasToken") from the container authority, by supplying their user credentials. A `sasToken` provides access for a specific purpose for a limited time. `sasTokens` expire, usually after a few hours, and must be "refreshed" before they expire for sessions that outlive them.
 
-Administrators may provide access to CloudContainers to groups of users via RBAC rules. Normally most users are provided readonly access to WorkspaceContainers, since they have no need or ability to change workspace content. Only a small set of trusted administrators are granted rights to modify the content of WorkspaceContainers.
+Administrators may provide access to CloudContainers to groups of users via RBAC rules. Normally most users are provided readonly access to WorkspaceContainers, since they have no need or ability to change workspace content. Only a small set of trusted administrators are granted rights to modify the content of `WorkspaceContainer`s.
 
 If a WorkspaceContainer is marked for offline use, it is downloaded using a valid sasToken, but is available without the token thereafter. When the user goes online again, a new sasToken must be obtained to refresh the WorkspaceContainer if it has been modified.
 
-A few special "public" WorkspaceContainers may be read by anyone, without needing an sasToken.
-
-### Creating and Editing WorkspaceContainers
-
-`WorkspaceDb`s are always created and modified by administrators rather than users. They are created and edited with the `WorkspaceEditor` utility. See README.md for details. To edit a WorkspaceDb, administrators must first obtain a writeable sasToken from the container authority.
-
-#### WorkspaceContainer Locks
-
-
-#### WorkspaceDb Versions
+A few special "public" WorkspaceContainers may be read by anyone, without a sasToken.
 
 ## Workspace Resources
 
@@ -423,4 +466,11 @@ Possible resource types are:
 
 It is often useful to store `SettingDictionary`s in a `WorkspaceContainer`, so they may be distributed, versioned, aliased, and access controlled. This can be easily accomplished by storing the stringified JSON representation of the `SettingDictionary` as a `string` resource and using [Workspace.loadSettingsDictionary]($backend) to load it.
 
-## WorkspaceEditor
+## Creating and Editing WorkspaceDbs with WorkspaceEditor
+
+`WorkspaceDb`s are always created and modified by administrators rather than users, using the `WorkspaceEditor` utility (see its `README.md` for details.) To edit a WorkspaceDb, administrators must first obtain a writeable sasToken from the container authority.
+
+#### WorkspaceContainer Locks
+
+#### WorkspaceDb Versions
+

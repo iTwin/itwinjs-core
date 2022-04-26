@@ -204,8 +204,8 @@ describe("CloudSqlite", () => {
     await CloudSqlite.withWriteLock(user, contain1, async () => contain1.cleanDeletedBlocks());
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
-    // can't connect a container to another cache
-    expect(() => contain1.connect(caches[0])).throws("container already attached");
+    // should be connected
+    expect(contain1.isConnected);
 
     // can't connect two containers with same name
     const cont2 = CloudSqliteTest.makeCloudSqliteContainer(contain1.containerId, false);

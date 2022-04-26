@@ -28,7 +28,7 @@
           },
           "containerName": {
             "type": "string",
-            "description": "the cloud container name"
+            "description": "the container name"
           },
           "version": {
             "type": "string",
