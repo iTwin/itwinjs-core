@@ -43,6 +43,9 @@ describe("Settings", () => {
       "app1/sub2": {
         type: "array",
         description: "an array",
+        items: {
+          type: "string",
+        },
       },
       "app1/boolVal": {
         type: "boolean",
@@ -56,6 +59,64 @@ describe("Settings", () => {
       "app1/intVal": {
         type: "integer",
         default: 22,
+      },
+      "app1/obj": {
+        type: "object",
+        properties: {
+          out: {
+            type: "object",
+            properties: {
+              o1: {
+                type: "object",
+                required: ["m1", "m2"],
+                properties: {
+                  m1: {
+                    type: "string",
+                  },
+                  m2: {
+                    type: "number",
+                  },
+                },
+              },
+            },
+          },
+        },
+
+      },
+      "app1/databases": {
+        type: "array",
+        items: {
+          type: "object",
+          required: ["name", "dbName", "containerName"],
+          properties: {
+            name: {
+              type: "string",
+            },
+            dbName: {
+              type: "string",
+            },
+            containerName: {
+              type: "string",
+            },
+            b2: {
+              type: "object",
+              properties: {
+                o1: {
+                  type: "object",
+                  required: ["m1"],
+                  properties: {
+                    m1: {
+                      type: "string",
+                    },
+                    m2: {
+                      type: "number",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     },
   };

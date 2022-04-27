@@ -90,41 +90,36 @@ export class SettingsSchemas {
   /**
    * Add one or more [[SettingSchemaGroup]]s to the registry. `SettingSchemaGroup`s must include a `groupName` member that is used
    * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
-   * @returns an array of problems found adding properties of the supplied group(s).
    */
-  public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]) {
+  public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void {
     if (!Array.isArray(settingsGroup))
       settingsGroup = [settingsGroup];
 
-    const problems: string[] = [];
     this.doAdd(settingsGroup);
     this.onSchemaChanged.raiseEvent();
-    return problems;
   }
 
   /** Add a [[SettingSchemaGroup]] from stringified json5. */
-  public static addJson(settingSchema: string): string[] {
-    return this.addGroup(parse(settingSchema));
+  public static addJson(settingSchema: string): void {
+    this.addGroup(parse(settingSchema));
   }
 
   /** Add a [[SettingSchemaGroup]] from a json5 file. */
-  public static addFile(fileName: LocalFileName): string[] {
+  public static addFile(fileName: LocalFileName): void {
     try {
-      return this.addJson(fs.readFileSync(fileName, "utf-8"));
+      this.addJson(fs.readFileSync(fileName, "utf-8"));
     } catch (e: any) {
       throw new Error(`parsing SettingSchema file "${fileName}": ${e.message}"`);
     }
   }
 
   /** Add all files with a either ".json" or ".json5" extension from a supplied directory. */
-  public static addDirectory(dirName: LocalDirName): string[] {
-    const problems: string[] = [];
+  public static addDirectory(dirName: LocalDirName) {
     for (const fileName of IModelJsFs.readdirSync(dirName)) {
       const ext = extname(fileName);
       if (ext === ".json5" || ext === ".json")
-        problems.push(...this.addFile(join(dirName, fileName)));
+        this.addFile(join(dirName, fileName));
     }
-    return problems;
   }
 
   /** Remove a previously added [[SettingSchemaGroup]] by groupName */
@@ -153,38 +148,71 @@ export class SettingsSchemas {
     this._allGroups.delete(groupName);
   }
 
-  private static validateProperty(property: string) {
-    if (!property.trim())
+  private static validateName(name: string) {
+    if (!name.trim())
       throw new Error(`empty property name`);
-    if (this.allSchemas.has(property))
-      throw new Error(`property "${property}" is already defined`);
+    if (this.allSchemas.has(name))
+      throw new Error(`property "${name}" is already defined`);
+  }
+
+  private static validateProperty(name: string, property: JSONSchema | undefined) {
+    if (!property)
+      throw new Error(`missing required property ${name}`);
+
+    if (!property.type)
+      throw new Error(`property ${name} has no type`);
+
+    switch (property.type) {
+      case "boolean":
+      case "integer":
+      case "null":
+      case "number":
+      case "string":
+        return;
+
+      case "object":
+        const required = property.required;
+        const props = property.properties;
+        if (required) {
+          if (typeof props === "object") {
+            for (const entry of required)
+              this.validateProperty(entry, props[entry] as SettingSchema);
+          }
+        }
+        if (props) {
+          for (const key of Object.keys(props))
+            try {
+              this.validateProperty(key, props[key] as SettingSchema);
+            } catch (e: any) {
+              throw new Error(`property ${key} of ${name}: ${e.message}`);
+            }
+        }
+        return;
+
+      case "array":
+        if (typeof property.items !== "object")
+          throw new Error(`array property ${name} has no items member`);
+        try {
+          this.validateProperty("items", property.items as JSONSchema);
+        } catch (e: any) {
+          throw new Error(`array property ${name}: ${e.message}`);
+        }
+        return;
+
+      default:
+        throw new Error(`property ${name} has illegal type "${property.type}"`);
+    }
   }
 
   private static validateAndAdd(group: SettingSchemaGroup) {
     const properties = group.properties;
     if (undefined === properties)
-      return;
+      throw new Error(`group ${group.groupName} has no properties`);
 
     for (const key of Object.keys(properties)) {
-      this.validateProperty(key);
-
+      this.validateName(key);
+      this.validateProperty(key, properties[key]);
       const property: Mutable<SettingSchema> = properties[key];
-      if (!property.type)
-        throw new Error(`property ${key} has no type`);
-      if (property.type === "array") {
-        if (property.items !== undefined)
-          throw new Error(`array property ${key} has no items`);
-
-        const items = property.items as any;
-        const required = items.required;
-        const props = items.properties;
-        if (Array.isArray(required) && typeof props === "object") {
-          for (const entry of required) {
-            if (typeof props[entry]?.type !== "string")
-              throw new Error(`required property definition "${entry}" of "${key}" missing`);
-          }
-        }
-      }
       property.default = property.default ?? this.getDefaultValue(property.type);
       this.allSchemas.set(key, property);
     }
