@@ -203,13 +203,13 @@ Examples:
 
 ## User Interface
 
-The [9-Zone UI](./learning/ui/ninezone/index.md) UX pattern organizes the screen into 9 purpose-specific zones for ease of use and consistency.
+The [AppUI](./learning/ui/appui/index) UX pattern provides specific zones for tools and tool settings, and allow panels around the main content area to be populated with widgets that interact with an iModel.
 
-The iTwin.js UI layer is based in React, so its UI controls can be added to existing web apps.
+The iTwin.js UI layer is based in React, so its UI controls can be added to existing iModelApp-based applications that can run in a browser or on a desktop that runs Electron.
 
 ### UI Controls
 
-Controls built to implement a UI using the 9-zone pattern.
+Controls built to participate in the AppUI pattern.
 
 - ✔️ [Widgets](./learning/ui/appui-react/Widgets.md)
 - ✔️ Toolbars
