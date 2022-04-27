@@ -66,20 +66,25 @@ export class SettingsSchemas {
     this.onSchemaChanged.clear();
   }
 
-  public static validateValue(val: any, schemaName: string, msg: string) {
+  public static validateArrayObject<T>(val: T, schemaName: string, msg: string): T {
     const schema = this.allSchemas.get(schemaName);
-    const items = schema?.items as any;
-    if (undefined === items)
-      return;
+    const items = schema?.items as JSONSchema;
+    if (typeof items !== "object")
+      return val;
     const required = items.required;
     const properties = items.properties;
     if (!Array.isArray(required) || typeof properties !== "object")
-      return;
+      return val;
 
     for (const entry of required) {
-      if (typeof val[entry] !== properties[entry].type)
-        throw new Error(`invalid "${schemaName}" setting entry for "${msg}": ${entry} is ${val[entry]}`);
+      const entryType = properties[entry].type;
+      const value = (val as any)[entry];
+      if (entryType === "array" && Array.isArray(value))
+        continue;
+      if (typeof value !== entryType)
+        throw new Error(`invalid "${schemaName}" setting entry for "${msg}": ${entry} is ${value}`);
     }
+    return val;
   }
 
   /**
@@ -164,16 +169,20 @@ export class SettingsSchemas {
       this.validateProperty(key);
 
       const property: Mutable<SettingSchema> = properties[key];
-      if (property.items === undefined)
-        throw new Error(`property ${key} has no items`);
+      if (!property.type)
+        throw new Error(`property ${key} has no type`);
+      if (property.type === "array") {
+        if (property.items !== undefined)
+          throw new Error(`array property ${key} has no items`);
 
-      const items = property.items as any;
-      const required = items.required;
-      const props = items.properties;
-      if (Array.isArray(required) && typeof props === "object") {
-        for (const entry of required) {
-          if (typeof props[entry]?.type !== "string")
-            throw new Error(`required property definition "${entry}" of "${key}" missing`);
+        const items = property.items as any;
+        const required = items.required;
+        const props = items.properties;
+        if (Array.isArray(required) && typeof props === "object") {
+          for (const entry of required) {
+            if (typeof props[entry]?.type !== "string")
+              throw new Error(`required property definition "${entry}" of "${key}" missing`);
+          }
         }
       }
       property.default = property.default ?? this.getDefaultValue(property.type);

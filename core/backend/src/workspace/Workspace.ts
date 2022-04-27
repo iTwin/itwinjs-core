@@ -390,15 +390,12 @@ export class ITwinWorkspace implements Workspace {
     this._cloudCache = undefined;
   }
 
-
   public resolveAccount(accountName: string): WorkspaceAccount.Props {
     const resolved = this.settings.resolveSetting<WorkspaceAccount.Props>(WorkspaceSetting.Accounts, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
-          if (typeof entry === "object" && entry.name === accountName) {
-            SettingsSchemas.validateValue(entry, WorkspaceSetting.Accounts, accountName);
-            return entry;
-          }
+          if (typeof entry === "object" && entry.name === accountName)
+            return SettingsSchemas.validateArrayObject(entry, WorkspaceSetting.Accounts, accountName);
         }
       }
       return undefined; // keep going through all settings dictionaries
@@ -413,10 +410,8 @@ export class ITwinWorkspace implements Workspace {
     const resolved = this.settings.resolveSetting<WorkspaceContainer.Props & WorkspaceAccount.Alias>(WorkspaceSetting.Containers, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
-          if (typeof entry === "object" && entry.name === containerName) {
-            SettingsSchemas.validateValue(entry, WorkspaceSetting.Containers, containerName);
-            return entry;
-          }
+          if (typeof entry === "object" && entry.name === containerName)
+            return SettingsSchemas.validateArrayObject(entry, WorkspaceSetting.Containers, containerName);
         }
       }
       return undefined; // keep going through all settings dictionaries
@@ -431,10 +426,8 @@ export class ITwinWorkspace implements Workspace {
     const resolved = this.settings.resolveSetting<WorkspaceDb.Props & WorkspaceContainer.Alias>(WorkspaceSetting.Databases, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
-          if (typeof entry === "object" && entry.name === databaseName) {
-            SettingsSchemas.validateValue(entry, WorkspaceSetting.Databases, databaseName);
-            return entry;
-          }
+          if (typeof entry === "object" && entry.name === databaseName)
+            return SettingsSchemas.validateArrayObject(entry, WorkspaceSetting.Databases, databaseName);
         }
       }
       return undefined; // keep going through all settings dictionaries
