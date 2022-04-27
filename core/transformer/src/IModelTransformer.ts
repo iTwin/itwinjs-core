@@ -1085,14 +1085,18 @@ export class IModelTransformer extends IModelExportHandler {
     this.finalizeTransformation();
   }
 
-  public static jsStateTable = "TransformerJsState";
+  public static readonly jsStateTable = "TransformerJsState";
 
   /**
+   * Return a new transformer instance with the same remappings state as saved from a previous [[IModelTransformer.serializeStateToFile]] call.
+   * This allows you to "resume" an iModel transformation, you will have to call [[IModelTransformer.processChanges]]/[[IModelTransformer.processAll]]
+   * again but the remapping state will cause already mapped elements to be skipped.
    * To "resume" an iModel Transformation you need:
    * - the sourceDb at the same changeset
    * - the same targetDb in the state in which it was before
-   * @param state the serialized state of the transformer, use [[serializeState]] to get this from an existing transformer instance
+   * @param statePath the path to the serialized state of the transformer, use [[serializeStateToFile]] to get this from an existing transformer instance
    * @param constructorArgs remaining arguments that you would normally pass to the Transformer subclass you are using, usually (sourceDb, targetDb)
+   * @note custom transformers with custom state may need to override this method in order to handle loading their own custom state somewhere
    */
   public static resumeTransformation<SubClass extends new(...a: any[]) => IModelTransformer = typeof IModelTransformer>(
     this: SubClass,
@@ -1104,7 +1108,7 @@ export class IModelTransformer extends IModelExportHandler {
     db.openDb(statePath, OpenMode.Readonly);
     const state: TransformationJsonState = db.withSqliteStatement(`SELECT data FROM ${IModelTransformer.jsStateTable}`, (stmt) => {
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
-        throw Error("");
+        throw Error("expected row when getting data from js state table");
       return JSON.parse(stmt.getValueString(0));
     });
     // force assign to readonly options since we do not know how the transformer subclass takes options to pass to the superclass
@@ -1118,6 +1122,8 @@ export class IModelTransformer extends IModelExportHandler {
    * Serialize the state of the active transformation to a file path, if a file at the path already exists, it will be overwritten
    * This state can be used by [[resumeTransformation]] to resume a transformation from this point.
    * The serialization format is a custom sqlite database
+   * @note custom transformers with custom state may need to override this method in order to handle storing their own custom state somewhere,
+   *       potentially inside the same sqlite file in separate tables
    */
   public serializeStateToFile(nativeStatePath: string): void {
     const db = new SQLiteDb();
