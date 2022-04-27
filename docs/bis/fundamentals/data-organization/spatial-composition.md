@@ -2,53 +2,55 @@
 
 ## Introduction
 
-Infrastructure assets are typically decomposed spatially when they are modelled physically. The spatial structure of an infrastructure asset might define as many levels of decomposition as necessary for a project. The following tree shows a sample project that involves a building, a road and a bridge at a Bus Terminal.
+BIS's [SpatialComposition Domain Schema](../../domains/spatialcomposition.ecschema.md/) allows an iModel author to cleanly express the spatial structure of a site/facility and use that structure to organize `PhysicalElement`s and `SpatialLocationElement`s regardless of how they are organized into separate Models.
 
-| Project Facilities | Spatial Decomposition |
+As many levels of composition as necessary can be used when modeling the spatial structure of an infrastructure asset. `SpatialCompositon` defines base `SpatialStructureElement` classes for `Region`, `Site`, `Facility`, `FacilityPart`, and `Space` that are used to express the primary spatial structure of an infrastructure asset.  Discipline-specific domains supply more-specialized semantics through subclasses of these base classes. Instances of these classes are organized into a hierarchy using an "Aggregates" relationship.
+
+ The following table shows a sample infrastructure asset that involves a building, a road, and a bridge at a Bus Terminal. The table lists a name for the real-world Entity along with the discipline-specific class that it maps to (with its `SpatialComposition` base class in parenthesis).
+
+| Entity | Discipline-specific class label (`SpatialComposition` class) |
 | ----------- | -----------|
-| Bus Terminal | Site |
-| -- Bus Terminal Building | Building (Facility) |
-| ---- First floor | Story (Facility Part) |
-| ------ Restroom 1 | Space (Facility Part) |
-| -- Access Road | Road (Facility) |
-| ---- Southbound Roadway | Roadway (Facility Part) |
-| ------ Travel Lane | Traffic Lane (Facility Part) |
-| ---- Median | Central Reserve (Facility Part) |
-| ---- Northbound Roadway | Roadway (Facility Part) |
-| -- Ramp | Bridge (Facility) |
-| ---- Superstructure | Bridge Superstructure (Facility Part) |
-| ------ Deck | Bridge Deck (Facility Part) |
-| ---- Substructure | Bridge Substructure (Facility Part) |
-| ------ Pier | Bridge Pier (Facility Part) |
+| Bus Terminal | Site (`Site`) |
+| -- Bus Terminal Building | Building (`Facility`) |
+| ---- First floor | Story (`FacilityPart`) |
+| ------ Restroom 1 | Space (`Space`) |
+| -- Access Road | Road (`Facility`) |
+| ---- Southbound Roadway | Roadway (`FacilityPart`) |
+| ------ Travel Lane | Traffic Lane (`FacilityPart`) |
+| ---- Median | Central Reserve (`FacilityPart`) |
+| ---- Northbound Roadway | Roadway (`FacilityPart`) |
+| -- Ramp | Bridge (`Facility`) |
+| ---- Superstructure | Bridge Superstructure (`FacilityPart`) |
+| ------ Deck | Bridge Deck (`FacilityPart`) |
+| ---- Substructure | Bridge Substructure (`FacilityPart`) |
+| ------ Pier | Bridge Pier (`FacilityPart`) |
 
-This approach is offered in BIS via the [SpatialComposition](../../domains/spatialcomposition.ecschema/) schema. This data organization scheme presents a Facility-centric hierarchy of an iModel.
+`SpatialComposition` also defines a `Zone` which can be used to express some alternate spatial-based grouping.
 
-## Semantics
+## Using the Spatial Structure to organize other Elements
 
-The `SpatialComposition` organization captures important semantics of a facility and its parts. All related Physical or SpatialLocation elements are then associated to a concept captured by the resulting hierarchy, at the appropriate level, with the corresponding semantics.
+Once the spatial structure is modeled, its elements can be used to organize any `bis:SpatialElement` (the base class for both `bis:PhysicalElement` and `bis:SpatialLocationElement`) using "Holds" and "References" relationships. "Holds" implies that the related element (or some significant part of it, like the base of an elevator shaft) is contained in the `SpatialStructureElement` or `Zone`. "References" implies some weaker relationship (e.g. the elevator shaft passes through the space).
 
-The following table shows the Physical and SpatialLocation elements that could be associated to the Bus Terminal example presented earlier.
+The following table shows `bis:SpatialElement`s that could be associated to the Bus Terminal example presented earlier.
 
-| Project Facilities | Associated elements | Spatial Relationship |
-| ----------- | ----------- | ------------ |
-| Bus Terminal | Road Alignments | Contains (Holds) |
-| -- Bus Terminal Building | Grids | Contains (Holds) |
-| ---- First floor | Columns, Beams, Walls, Doors |  Contains (Holds) |
-| ------ Restroom 1 | Sinks, Toilets | Contains (Holds) |
-| -- Access Road |  |  |
-| ---- Southbound Roadway | Pavement courses | Contains (Holds) |
-| ------ Travel Lane | Lane Markings  | References |
-| ---- Median | Barriers | Contains (Holds) |
-| ---- Northbound Roadway | Pavement courses | Contains (Holds) |
-| -- Ramp |  |  |
-| ---- Superstructure | Beams | Contains (Holds) |
-| ------ Deck | Slab, Guard-rails | Contains (Holds) |
-| ---- Substructure |  |  |
-| ------ Pier | Columns, Footings, Caps | Contains (Holds) |
+| Entity | Spatial Structure Element | Physical/Spatial Elements | Relationship |
+| ----------- | --- | ----------- | ------------ |
+| Bus Terminal | Site | Holds | Road Alignments |
+| -- Bus Terminal Building | Building | Holds | Grids |
+| ---- First floor | Story |  Holds |Columns, Beams, Walls, Doors |
+| ------ Restroom 1 | Space | Holds | Sinks, Toilets |
+| -- Access Road | Road |  |
+| ---- Southbound Roadway | Roadway | Holds | Pavement courses |
+| ------ Travel Lane | Traffic Lane | References | Lane Markings  |
+| ---- Median | Central Reserve | Holds | Barriers |
+| ---- Northbound Roadway | Roadway | Holds | Pavement courses |
+| -- Ramp |  Bridge |  | |
+| ---- Superstructure | Bridge Superstructure | Holds | Beams |
+| ------ Deck | Bridge Deck | Holds | Slab, Guard-rails |
+| ---- Substructure | Bridge Substructure |  | |
+| ------ Pier | Bridge Pier | Holds | Columns, Footings, Caps |
 
-As it can be seen in the example above, the semantics of an overall Infrastructure Project can be modeled via parallel hierarchies, such as the Spatial decomposition of facilities, physical assemblies as well as elements contained in models. This approach of distributing semantical responsabilities among multiple parallel hierarchies enables great flexibility to both schema designers as well as end-users in general.
-
-See the documentation of the [SpatialComposition](../../domains/spatialcomposition.ecschema/) BIS schema for more information.
+As seen in the example above, real-world infrastructure entities can be modeled using multiple parallel organizational structures, including the spatial composition hierarchy, spatial zones, physical assemblies, and partitioning of elements into models. Each modeling technique independently expresses a different aspect of meaning, enabling flexibility for schema designers and end-users.
 
 ---
 | Next: [Modeling Systems](./modeling-systems.md)

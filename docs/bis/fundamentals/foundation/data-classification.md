@@ -43,7 +43,7 @@ Please refer to [Categories](./categories.md) for more details.
 
 Relating an Element to one or more Classifications in one or more ClassificationSystems allows even more dimensions along which to organize and express the meaning of Elements. These systems can be specific to a particular digital twin, but they are commonly representation of an externally-defined standard used in a given discipline. Examples include [Uniclass](https://www.thenbs.com/our-tools/uniclass) and [OmniClass](https://www.csiresources.org/standards/omniclass).
 
-See [ClassificationSystems](../../domains/classificationsystems.ecschema/).
+See [ClassificationSystems](../../domains/classificationsystems.ecschema.md/).
 
 ---
 | Next: [Type Definitions](./type-definitions.md)
