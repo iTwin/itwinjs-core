@@ -1540,6 +1540,79 @@ importers:
       typemoq: 2.1.0
       typescript: 4.4.4
 
+  ../../extensions/map-layers-auth:
+    specifiers:
+      '@itwin/build-tools': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
+      '@itwin/core-frontend': workspace:*
+      '@itwin/eslint-plugin': workspace:*
+      '@itwin/itwinui-css': 0.x
+      '@itwin/itwinui-react': ^1.32.0
+      '@types/chai': ^4.1.4
+      '@types/enzyme': 3.9.3
+      '@types/mocha': ^8.2.2
+      '@types/node': 14.14.31
+      '@types/react': ^17.0.37
+      '@types/sinon': ^9.0.0
+      '@types/sinon-chai': ^3.2.0
+      chai: ^4.1.2
+      chai-as-promised: ^7
+      chai-jest-snapshot: ^2.0.0
+      chai-spies: 1.0.0
+      classnames: ^2.3.1
+      cpx2: ^3.0.0
+      enzyme: ^3.4.0
+      enzyme-to-json: ^3.3.4
+      eslint: ^7.11.0
+      jsdom: ^17.0.0
+      jsdom-global: 3.0.2
+      mocha: ^8.3.2
+      nyc: ^15.1.0
+      react: ^17.0.0
+      rimraf: ^3.0.2
+      sinon: ^9.0.2
+      sinon-chai: ^3.2.0
+      source-map-support: ^0.5.6
+      typemoq: ^2.1.0
+      typescript: ~4.4.0
+    dependencies:
+      classnames: 2.3.1
+    devDependencies:
+      '@itwin/build-tools': link:../../tools/build
+      '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-common': link:../../core/common
+      '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      '@itwin/itwinui-css': 0.52.0
+      '@itwin/itwinui-react': 1.34.0_react@17.0.2
+      '@types/chai': 4.3.0
+      '@types/enzyme': 3.9.3
+      '@types/mocha': 8.2.3
+      '@types/node': 14.14.31
+      '@types/react': 17.0.42
+      '@types/sinon': 9.0.11
+      '@types/sinon-chai': 3.2.8
+      chai: 4.3.6
+      chai-as-promised: 7.1.1_chai@4.3.6
+      chai-jest-snapshot: 2.0.0_chai@4.3.6
+      chai-spies: 1.0.0_chai@4.3.6
+      cpx2: 3.0.2
+      enzyme: 3.11.0
+      enzyme-to-json: 3.6.2_enzyme@3.11.0
+      eslint: 7.32.0
+      jsdom: 17.0.0
+      jsdom-global: 3.0.2_jsdom@17.0.0
+      mocha: 8.4.0
+      nyc: 15.1.0
+      react: 17.0.2
+      rimraf: 3.0.2
+      sinon: 9.2.4
+      sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
+      source-map-support: 0.5.21
+      typemoq: 2.1.0
+      typescript: 4.4.4
+
   ../../extensions/test-extension:
     specifiers:
       '@itwin/build-tools': workspace:*
@@ -3155,6 +3228,7 @@ importers:
       '@itwin/itwinui-icons-react': ^1.8.0
       '@itwin/itwinui-react': ^1.32.0
       '@itwin/map-layers': workspace:*
+      '@itwin/map-layers-auth': workspace:*
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -3233,6 +3307,7 @@ importers:
       '@itwin/itwinui-icons-react': 1.8.0_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.34.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../extensions/map-layers
+      '@itwin/map-layers-auth': link:../../extensions/map-layers-auth
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -14095,7 +14170,7 @@ packages:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 3.0.4
+      minimatch: 3.1.2
       once: 1.4.0
       path-is-absolute: 1.0.1
 
