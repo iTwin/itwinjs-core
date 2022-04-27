@@ -1,40 +1,49 @@
-# Main Data Classification Schemes
+# Classifying Elements
 
 ## Introduction
 
-BIS offers a number of classification schemes that enable schema designers and iModel writers in general group the entities of interest in a particular discipline according to similar qualities and relationships that they share. It is also important for consumers of information modeled in BIS schemas to understand these classification schemes in order to take full advantage of the semantics they communicate.
+There are at least four ways of expressing the semantic meaning of an Element which authors and consumers of BIS schemas should understand:
 
-The following are the main data classification schemes offered in BIS to schema designers:
-- Element Classes
-- Type Definitions
-- Categories
-- Classification Systems
+- [Element Classes](#element-class): Primary. A static part of metadata. Determine properties.
+- [Type Definitions](#type-definitions): Further specialization within an Element Class. Optional. Dynamically defined in "reference data". May map to "catalog entries".
+- [Categories](#categories): Only for geometric elements. Used as display criteria like CAD "layers" or "levels".
+- [Classification Systems](#classification-systems): Optional. Typically express industry or company-specific classification that may be orthogonal to Element Class and Category.
 
-## Data classification via Element Classes
+## Element Class
 
-BIS requires a schema to define a primary classification for every concept modeled with it. Such primary classification is the *Element class* chosen to model it.
+Every Element has an [ECEntityClass](../../ec/ec-entity-class.md) that defines its primary semantic meaning and defines its properties.
 
-Common examples of Element classes include concepts such as `Pipe`, `Column` or `Pump`.
+Examples of Element Classes include `Pipe`, `Column` or `Pump` and are defined in [Domain Schemas](../../domains/index.md).
 
-The `BisCore` schema defines the core Element classes from which all other Element classes must descend. Please refer to [Element Fundamentals](./element-fundamentals.md#core-element-classes) for more details on *Core Element Classes*.
+The [BisCore](../../domains/biscore.ecschema.md) schema defines the core Element classes from which all other Element classes must derive. See [Element Fundamentals](./element-fundamentals.md#core-element-classes) for more details on *Core Element Classes*.
 
-## Data classification via Type Definitions
+## Type Definitions
 
-Elements of the same *Element class* need to be often further classified. Such a need leads to the introduction of a secondary classification scheme along the same line of the primary classification chosen for a particular concept.
+Class and Type organize Elements along roughly the same semantic/property dimension. The Type is a further specialization of the Element Class, but is defined more-dynamically in data as TypeDefinition instances.
 
-Common examples of secondary classifications include elements that can be ordered from catalogs: *Pump ABC-123* and *Pump XYZ-123* are secondary classifications of `Pump` as a primary concept. This classification scheme can be applied to elements not organized into catalogs too. *Wearing course layer*, *Base course layer* and *Sub-base course layer* are secondary classifications of `Course` as a primary concept.
+A schema author must *enable* such further specialization of a particular Class by defining a TypeDefinition Class that "applies to" that Class and creating a RelationshipClass that expresses that constraint.
 
-BIS includes the concept of `Type Definitions` to cover such needs. Please refer to [Type Definitions](./type-definitions.md) for more details.
+The properties of the TypeDefinition define the properties whose values will be common among all instances of a given Type.
 
-## Data classification via Categories
+Types often correspond to "manufacturer's models" in a catalog, e.g. catalog entries for *Pump RCP-24* and *Pump RCP-26* can be thought of as specializations of the `Pump` Class. In some domains, the set of TypeDefinition instances may not be thought of as a "catalog", e.g. *Wearing course layer*, *Base course layer* and *Sub-base course layer* are specializations of the `Course` Class.
 
-Categories are typically used to offer end-users control over the visualization of a group of `GeometricElement` instances. Categories could be defined by end-users, specified by schema designers or iModel writers. Since Categories can group elements of various primary and secondary classifications, they can be seen as a scheme that can be used to achieve orthogonal classifications.
+For a real-world specialization hierarchy, how much of it should translate into a Class hierarchy vs a set of Types? Generally, Classes are used for specializations that are known when the schema is designed and tend not to vary per project or facility. Types can easily vary among different digital twins. Types can also be used to hold property values shared by many Entity instances, whereas classes assume that all property values can vary per Entity instance.
+
+See [Type Definitions](./type-definitions.md) for more details.
+
+## Categories
+
+Categories can organize Elements along a different dimension than Class/Type, though in practice often correlate with the Class/Type dimension.
+
+Categories are used by the visualization systems to efficiently categorize `GeometricElement` instances for display purposes. Categories could be defined by end-users, specified by schema designers or iModel authors.
 
 Please refer to [Categories](./categories.md) for more details.
 
-## Data classification driven by External Standards
+## Classification Systems
 
-Various externally-defined standards exist that introduce classification systems targeting specific disciplines or workflows. BIS can capture those classification systems in parallel to the schemes described above via the classes and patterns introduced by the [ClassificationSystems](../../domains/classificationsystems.ecschema/) schema.
+Relating an Element to one or more Classifications in one or more ClassificationSystems allows even more dimensions along which to organize and express the meaning of Elements. These systems can be specific to a particular digital twin, but they are commonly representation of an externally-defined standard used in a given discipline. Examples include [Uniclass](https://www.thenbs.com/our-tools/uniclass) and [OmniClass](https://www.csiresources.org/standards/omniclass).
+
+See [ClassificationSystems](../../domains/classificationsystems.ecschema/).
 
 ---
 | Next: [Type Definitions](./type-definitions.md)
