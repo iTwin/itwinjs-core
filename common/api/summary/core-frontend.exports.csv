@@ -232,6 +232,8 @@ internal;class GltfReader
 internal;GltfReaderArgs
 internal;GltfReaderProps
 internal;GltfReaderResult 
+internal;GltfSampler 
+internal;GltfWrapMode
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number

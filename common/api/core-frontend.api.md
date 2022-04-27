@@ -3848,12 +3848,14 @@ export abstract class GltfReader {
     protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
+    defaultWrapMode: GltfWrapMode;
     // (undocumented)
     protected findTextureMapping(id: string, isTransparent: boolean): TextureMapping | undefined;
     // (undocumented)
     getBufferView(json: {
         [k: string]: any;
     }, accessorName: string): GltfBufferView | undefined;
+    getTextureType(sampler?: GltfSampler): RenderTexture.Type;
     // (undocumented)
     protected readonly _glTF: Gltf;
     // (undocumented)
@@ -3976,6 +3978,24 @@ export class GltfReaderProps {
 export interface GltfReaderResult extends TileContent {
     // (undocumented)
     readStatus: TileReadStatus;
+}
+
+// @internal
+export interface GltfSampler extends GltfChildOfRootProperty {
+    magFilter?: GltfMagFilter;
+    minFilter?: GltfMinFilter;
+    wrapS?: GltfWrapMode;
+    wrapT?: GltfWrapMode;
+}
+
+// @internal
+export enum GltfWrapMode {
+    // (undocumented)
+    ClampToEdge = 33071,
+    // (undocumented)
+    MirroredRepeat = 33648,
+    // (undocumented)
+    Repeat = 10497
 }
 
 // @internal (undocumented)

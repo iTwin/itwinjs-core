@@ -6,7 +6,7 @@ import * as React from "react";
 import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@itwin/imodel-components-react";
 import {
   ActionItemButton, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
-  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
+  ModalDialogManager, NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
   ZoneState,
 } from "@itwin/appui-react";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
@@ -17,6 +17,7 @@ import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
 import { StandardContentLayouts, UiAdmin, WidgetState } from "@itwin/appui-abstract";
 import { AppUi } from "../AppUi";
+import { TestModalDialog } from "../dialogs/TestModalDialog";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
@@ -299,6 +300,15 @@ class FrontstageToolWidget extends React.Component {
       },
     });
   }
+
+  private get _openModal() {
+    return new CommandItemDef({
+      iconSpec: "icon-smiley-happy",
+      label: "Open Modal Dialog",
+      execute: () => ModalDialogManager.openDialog(<TestModalDialog />),
+    });
+  }
+
   private _horizontalToolbar = (
     <Toolbar
       expandsTo={Direction.Bottom}
@@ -310,6 +320,7 @@ class FrontstageToolWidget extends React.Component {
           <ActionItemButton actionItem={this._openNestedFrontstage1} />
           <ActionItemButton actionItem={this._switchLayout} />
           <ActionItemButton actionItem={this._pausePlayTimeline} />
+          <ActionItemButton actionItem={this._openModal} />
         </>
       }
     />
