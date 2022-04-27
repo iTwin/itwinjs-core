@@ -1,16 +1,15 @@
 ## Base Infrastructure Schemas (BIS)
 
-- [Overview](./index.md)
-
-### Fundamental Concepts
+### Guide
 
 #### Introduction
+- [Overview](./index.md)
 - [Federated Digital Twins](./fundamentals/intro/federated-digital-twins.md)
 - [Modeling with BIS](./fundamentals/intro/modeling-with-bis.md)
-- [BIS Organization](./fundamentals/intro/bis-organization.md)
+- [Organization of BIS](./fundamentals/intro/bis-organization.md)
 - [Fabric of the Universe](./fundamentals/intro/fabric-of-the-universe.md)
 
-#### Foundation
+#### Fundamentals
 - [Element Fundamentals](./fundamentals/foundation/element-fundamentals.md)
 - [Codes](./fundamentals/foundation/codes.md)
 - [ElementAspect Fundamentals](./fundamentals/foundation/elementaspect-fundamentals.md)
@@ -18,7 +17,7 @@
 - [Model Fundamentals](./fundamentals/foundation/model-fundamentals.md)
 - [Relationship Fundamentals](./fundamentals/foundation/relationship-fundamentals.md)
 - [Schemas (“Domains”)](./fundamentals/foundation/schemas-domains.md)
-- [Data Classification](./fundamentals/foundation/data-classification.md)
+- [Classifying Elements](./fundamentals/foundation/data-classification.md)
 - [Type Definitions](./fundamentals/foundation/type-definitions.md)
 - [Categories](./fundamentals/foundation/categories.md)
 
@@ -76,7 +75,7 @@
 
 &nbsp;
 
-## Engineering Content (EC)
+### EC (Modeling Language)
 
 - [Overview](./ec/index.md)
 - [ECSchema](./ec/ec-schema.md)
