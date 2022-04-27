@@ -14,59 +14,61 @@ import { IDisposable } from "./Disposable";
 // re-export so that consumers can construct full SpanOptions object without external dependencies
 export { SpanKind } from "@opentelemetry/api";
 
-function flattenStringArray(arr: any[]): SpanAttributeValue {
-  const res: string[] = [];
-  for (const el of arr) {
-    if (typeof el === "string")
-      res.push(el);
-    else
-      res.push(JSON.stringify(el));
-  }
-  return res;
+function isValidPrimitive(val: unknown): val is SpanAttributeValue {
+  return typeof val === "string" || typeof val === "number" || typeof val === "boolean";
 }
 
-function flattenNumberArray(arr: any[]): SpanAttributeValue {
-  const res: number[] = [];
-  for (const el of arr) {
-    if (typeof el !== "number")
-      return flattenStringArray(arr);
-    res.push(el);
-  }
-  return res;
-}
+// Only _homogenous_ arrays of strings, numbers, or booleans are supported as OpenTelemetry Attribute values.
+// Per the spec (https://opentelemetry.io/docs/reference/specification/common/common/#attribute), empty arrays and null values are supported too.
+function isValidPrimitiveArray(val: unknown): val is SpanAttributeValue {
+  if (!Array.isArray(val))
+    return false;
 
-function flattenBooleanArray(arr: any[]): SpanAttributeValue {
-  const res: boolean[] = [];
-  for (const el of arr) {
-    if (typeof el !== "boolean")
-      return flattenStringArray(arr);
-    res.push(el);
-  }
-  return res;
-}
+  let itemType;
+  for (const x of val) {
+    if (x === undefined || x === null)
+      continue;
 
-function flattenArray(arr: any[]): SpanAttributeValue {
-  if (typeof arr[0] === "number")
-    return flattenNumberArray(arr);
-  if (typeof arr[0] === "boolean")
-    return flattenBooleanArray(arr);
-  return flattenStringArray(arr);
-}
-
-function flattenObject(obj: any, parent?: string, res: SpanAttributes = {}): SpanAttributes {
-  for (const key of Object.keys(obj)) {
-    const propName = parent ? `${parent}.${key}` : key;
-    if (typeof obj[key] === "object") {
-      if (Array.isArray(obj[key]))
-        res[propName] = flattenArray(obj[key]);
-      else
-        flattenObject(obj[key], propName, res);
-    } else {
-      if (typeof obj[key])
-        res[propName] = obj[key];
+    if (!itemType) {
+      itemType = typeof x;
+      if (!isValidPrimitive(x))
+        return false;
     }
+
+    if (typeof x !== itemType)
+      return false;
   }
-  return res;
+  return true;
+}
+
+function isPlainObject(obj: unknown): obj is object {
+  return typeof obj === "object" && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
+}
+
+function* getFlatEntries(obj: unknown, path = ""): Iterable<[string, SpanAttributeValue]> {
+  if (isValidPrimitiveArray(obj)) {
+    yield [path, obj];
+    return;
+  }
+
+  // Prefer JSON serialization over flattening for any non-POJO types.
+  // There's just too many ways trying to flatten those can go wrong (Dates, Buffers, TypedArrays, etc.)
+  if (!isPlainObject(obj) && !Array.isArray(obj)) {
+    yield [path, isValidPrimitive(obj) ? obj : JSON.stringify(obj)];
+    return;
+  }
+
+  // Always serialize empty objects/arrays as empty array values
+  const entries = Object.entries(obj);
+  if (entries.length === 0)
+    yield [path, []];
+
+  for (const [key, val] of entries)
+    yield* getFlatEntries(val, (path === "") ? key : `${path}.${key}`);
+}
+
+function flattenObject(obj: object): SpanAttributes {
+  return Object.fromEntries(getFlatEntries(obj));
 }
 
 /** Defines the *signature* for a log function.
