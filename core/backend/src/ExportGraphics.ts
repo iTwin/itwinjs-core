@@ -150,7 +150,7 @@ export interface ExportGraphicsOptions {
   /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry).
    * If not supplied, there is no maximum length of an edge. Supplying this value can greatly increase the
    * size of the resulting geometry, and should only be done in cases where necessary (if you don't know
-   * that's it's necessary, it's almost certainly not!)
+   * that it's necessary, it's almost certainly not!)
    */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
@@ -241,7 +241,7 @@ export interface ExportPartGraphicsOptions {
   /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry)
    * If not supplied, there is no maximum length of an edge. Supplying this value can greatly increase the
    * size of the resulting geometry, and should only be done in cases where necessary (if you don't know
-   * that's it's necessary, it's almost certainly not!)
+   * that it's necessary, it's almost certainly not!)
    */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
