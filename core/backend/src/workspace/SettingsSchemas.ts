@@ -66,17 +66,33 @@ export class SettingsSchemas {
     this.onSchemaChanged.clear();
   }
 
+  public static validateValue(val: any, schemaName: string, msg: string) {
+    const schema = this.allSchemas.get(schemaName);
+    const items = schema?.items as any;
+    if (undefined === items)
+      return;
+    const required = items.required;
+    const properties = items.properties;
+    if (!Array.isArray(required) || typeof properties !== "object")
+      return;
+
+    for (const entry of required) {
+      if (typeof val[entry] !== properties[entry].type)
+        throw new Error(`invalid "${schemaName}" setting entry for "${msg}": ${entry} is ${val[entry]}`);
+    }
+  }
+
   /**
    * Add one or more [[SettingSchemaGroup]]s to the registry. `SettingSchemaGroup`s must include a `groupName` member that is used
    * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
    * @returns an array of problems found adding properties of the supplied group(s).
    */
-  public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): string[] {
+  public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]) {
     if (!Array.isArray(settingsGroup))
       settingsGroup = [settingsGroup];
 
     const problems: string[] = [];
-    this.doAdd(settingsGroup, problems);
+    this.doAdd(settingsGroup);
     this.onSchemaChanged.raiseEvent();
     return problems;
   }
@@ -112,15 +128,13 @@ export class SettingsSchemas {
     this.onSchemaChanged.raiseEvent();
   }
 
-  private static doAdd(settingsGroup: SettingSchemaGroup[], problems?: string[]) {
+  private static doAdd(settingsGroup: SettingSchemaGroup[]) {
     settingsGroup.forEach((group) => {
-      if (undefined === group.groupName) {
-        problems?.push(`settings group has no "groupName" member`);
-        return;
-      }
+      if (undefined === group.groupName)
+        throw new Error(`settings group has no "groupName" member`);
 
       this.doRemove(group.groupName);
-      this.validateAndAdd(group, problems);
+      this.validateAndAdd(group);
       this._allGroups.set(group.groupName, group);
     });
   }
@@ -134,29 +148,34 @@ export class SettingsSchemas {
     this._allGroups.delete(groupName);
   }
 
-  private static validateProperty(property: string): string | undefined {
+  private static validateProperty(property: string) {
     if (!property.trim())
-      return "empty property name";
+      throw new Error(`empty property name`);
     if (this.allSchemas.has(property))
-      return `property "${property}" is already defined`;
-
-    return undefined;
+      throw new Error(`property "${property}" is already defined`);
   }
 
-  private static validateAndAdd(group: SettingSchemaGroup, problems?: string[]) {
+  private static validateAndAdd(group: SettingSchemaGroup) {
     const properties = group.properties;
     if (undefined === properties)
       return;
 
     for (const key of Object.keys(properties)) {
-      const problem = this.validateProperty(key);
-      if (problem) {
-        problems?.push(problem);
-        delete properties[key];
-        continue;
-      }
+      this.validateProperty(key);
 
       const property: Mutable<SettingSchema> = properties[key];
+      if (property.items === undefined)
+        throw new Error(`property ${key} has no items`);
+
+      const items = property.items as any;
+      const required = items.required;
+      const props = items.properties;
+      if (Array.isArray(required) && typeof props === "object") {
+        for (const entry of required) {
+          if (typeof props[entry]?.type !== "string")
+            throw new Error(`required property definition "${entry}" of "${key}" missing`);
+        }
+      }
       property.default = property.default ?? this.getDefaultValue(property.type);
       this.allSchemas.set(key, property);
     }

@@ -17,11 +17,11 @@
           "dbName",
           "containerName"
         ],
-        "name": {
-          "type": "string",
-          "description": "the alias name of the workspace database"
-        },
         "properties": {
+          "name": {
+            "type": "string",
+            "description": "the alias name of the workspace database"
+          },
           "dbName": {
             "type": "string",
             "description": "the name of the database within its cloud container"

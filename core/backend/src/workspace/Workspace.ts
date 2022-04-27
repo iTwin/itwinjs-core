@@ -18,7 +18,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
-import { SettingsSchemas } from "../core-backend";
+import { SettingSchema, SettingsSchemas } from "./SettingsSchemas";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore rowid primarykey
@@ -390,19 +390,13 @@ export class ITwinWorkspace implements Workspace {
     this._cloudCache = undefined;
   }
 
-  private static checkStringMember(val: any, member: string, cat: string, name: string) {
-    if (typeof val[member] !== "string")
-      throw new Error(`invalid "${cat}" setting entry for "${name}": ${member} is ${val[member]}`);
-  }
 
   public resolveAccount(accountName: string): WorkspaceAccount.Props {
-    const checkMember = (val: any, member: string) => ITwinWorkspace.checkStringMember(val, member, WorkspaceSetting.Accounts, accountName);
     const resolved = this.settings.resolveSetting<WorkspaceAccount.Props>(WorkspaceSetting.Accounts, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === accountName) {
-            checkMember(entry, "storageType");
-            checkMember(entry, "accessName");
+            SettingsSchemas.validateValue(entry, WorkspaceSetting.Accounts, accountName);
             return entry;
           }
         }
@@ -416,14 +410,11 @@ export class ITwinWorkspace implements Workspace {
   }
 
   public resolveContainer(containerName: string): WorkspaceContainer.Props & WorkspaceAccount.Alias {
-    const checkMember = (val: any, member: string) => ITwinWorkspace.checkStringMember(val, member, WorkspaceSetting.Containers, containerName);
-    // const containerSchema = SettingsSchemas.allSchemas.get(WorkspaceSetting.Containers);
     const resolved = this.settings.resolveSetting<WorkspaceContainer.Props & WorkspaceAccount.Alias>(WorkspaceSetting.Containers, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === containerName) {
-            checkMember(entry, "containerId");
-            checkMember(entry, "accountName");
+            SettingsSchemas.validateValue(entry, WorkspaceSetting.Containers, containerName);
             return entry;
           }
         }
@@ -437,13 +428,11 @@ export class ITwinWorkspace implements Workspace {
   }
 
   public resolveDatabase(databaseName: string): WorkspaceDb.Props & WorkspaceContainer.Alias {
-    const checkMember = (val: any, member: string) => ITwinWorkspace.checkStringMember(val, member, WorkspaceSetting.Databases, databaseName);
     const resolved = this.settings.resolveSetting<WorkspaceDb.Props & WorkspaceContainer.Alias>(WorkspaceSetting.Databases, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === databaseName) {
-            checkMember(entry, "dbName");
-            checkMember(entry, "containerName");
+            SettingsSchemas.validateValue(entry, WorkspaceSetting.Databases, databaseName);
             return entry;
           }
         }
