@@ -8,6 +8,7 @@ import { SpanAttributes } from '@opentelemetry/api';
 import { SpanContext } from '@opentelemetry/api';
 import { SpanKind } from '@opentelemetry/api';
 import { SpanOptions } from '@opentelemetry/api';
+import { Tracer } from '@opentelemetry/api';
 
 // @beta (undocumented)
 export class AbandonedError extends Error {
@@ -1129,11 +1130,10 @@ export type LogFunction = (category: string, message: string, metaData: LoggingM
 // @public
 export class Logger {
     static configureLevels(cfg: LoggerLevelsConfig): void;
+    static enableOpenTelemetry(tracer: Tracer, api: typeof Logger._openTelemetry): void;
     static getLevel(category: string): LogLevel | undefined;
     static getMetaData(metaData?: LoggingMetaData): object;
     static initialize(logError?: LogFunction, logWarning?: LogFunction, logInfo?: LogFunction, logTrace?: LogFunction): void;
-    // (undocumented)
-    static initializeOpenTelemetry(name: string, version?: string): void;
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: LoggingMetaData): void;
@@ -1160,7 +1160,6 @@ export class Logger {
     static turnOffCategories(): void;
     static turnOffLevelDefault(): void;
     static validateProps(config: any): void;
-    // (undocumented)
     static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }
 
