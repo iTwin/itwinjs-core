@@ -1,6 +1,6 @@
 # Accessing Models
 
-A [Model]($backend) is an in-memory representation of a [BIS Model](../../bis/fundamentals/foundation/model-fundamentals.md).
+A [Model]($backend) is an in-memory representation of a [BIS Model](../../bis/guide/fundamentals/model-fundamentals.md).
 
 The [IModelDb.Models]($backend) class represents the collection of Models in an iModel. It has methods to find model Ids and to load Model objects.
 

@@ -1,6 +1,6 @@
 # Organizing Repository-global Definition Elements
 
-Instances of [DefinitionElement](../glossary.md#DefinitionElement) hold configuration-related information that is meant to be referenced and shared. They are expected to be contained in `DefinitionModel`s as explained in [Model Fundamentals](../foundation/model-fundamentals.md).
+Instances of [DefinitionElement](../glossary.md#DefinitionElement) hold configuration-related information that is meant to be referenced and shared. They are expected to be contained in `DefinitionModel`s as explained in [Model Fundamentals](../fundamentals/model-fundamentals.md).
 
 Examples of `DefinitionElement`s include instances of:
 

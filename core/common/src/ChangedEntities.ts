@@ -8,7 +8,7 @@
 
 import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
 
-/** Describes an [Entity]($backend) and its [ECClass]($docs/bis/fundamentals/glossary/#ecclass) by Id.
+/** Describes an [Entity]($backend) and its [ECClass]($docs/bis/guide/glossary/#ecclass) by Id.
  * @public
  * @extensions
  */

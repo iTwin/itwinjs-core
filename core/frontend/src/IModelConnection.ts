@@ -808,7 +808,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** @internal */
     public constructor(private _iModel: IModelConnection) { }
 
-    /** The Id of the [root subject element]($docs/bis/fundamentals/glossary.md#subject-root) for this iModel. */
+    /** The Id of the [root subject element]($docs/bis/guide/glossary.md#subject-root) for this iModel. */
     public get rootSubjectId(): Id64String { return "0x1"; }
 
     /** Get a set of element ids that satisfy a query */

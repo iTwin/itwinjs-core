@@ -82,11 +82,11 @@ These two rules imply that a given class of Element cannot be both sub-modeled *
 
 ### Identifiers
 
-Elements have one primary identifier ([ElementId](../glossary.md#elementid)) and hold two identifiers of the real-world [Entity](../glossary.md#entity) that the Element models: [Code](../foundation/codes.md) and [FederationGuid](../glossary.md#federationguid).
+Elements have one primary identifier ([ElementId](../glossary.md#elementid)) and hold two identifiers of the real-world [Entity](../glossary.md#entity) that the Element models: [Code](../fundamentals/codes.md) and [FederationGuid](../glossary.md#federationguid).
 
 [**ElementId**](../glossary.md#elementid) is a 64-bit integer property that is the Element's primary identifier and must be unique within the BIS Repository. Different implementations of BIS Repository manage this identifier differently.
 
-The [**Code**](../foundation/codes.md) is a human-readable string identifier of the represented Entity. The Code en**code**s some business meaning.
+The [**Code**](../fundamentals/codes.md) is a human-readable string identifier of the represented Entity. The Code en**code**s some business meaning.
 There are three Element properties related to the Code: [CodeValue](../glossary.md#codevalue-property) holds the Code, [CodeSpec](../glossary.md#codespec-property) governs its encoding/decoding, and [CodeScope](../glossary.md#codescope-property) defines the scope within which it is unique. The combination of the three code-related properties must be unique within the BIS repository and could be considered a secondary identifier of the Element.
 
 The [**FederationGuid**](../glossary.md#federationguid) is optional but can be used to identify an Entity that is represented in many different repositories (BIS or otherwise).

@@ -119,8 +119,8 @@ To understand the APIs, you will need to have an understanding of typescript.
 
 Two foundational articles which are highly recommended for background knowledge of building connectors are:
 
-- [Intro to BIS - Information Hierarchy](../bis/fundamentals/data-organization/information-hierarchy)
-- [Intro to BIS - Fabric of the Universe](../bis/fundamentals/intro/fabric-of-the-universe)
+- [Intro to BIS - Information Hierarchy](../bis/guide/data-organization/information-hierarchy)
+- [Intro to BIS - Fabric of the Universe](../bis/guide/intro/fabric-of-the-universe)
 
 ### Structure of the guide
 
@@ -150,7 +150,7 @@ An iTwin Connector provides a workflow to easily synchronize information from va
 
 #### Element
 
-iModel uses BIS schemas to describe the persistence model of the digital twin. An element represents an instance of a [bis:Element](../bis/fundamentals/foundation/element-fundamentals) class.
+iModel uses BIS schemas to describe the persistence model of the digital twin. An element represents an instance of a [bis:Element](../bis/guide/fundamentals/element-fundamentals) class.
 
 #### Changeset
 
@@ -217,7 +217,7 @@ When the format for incoming data in the native source is not completely known, 
 
 For example, if the native source allows for user-defined classes or properties, then as the classes and properties are read from the native source, they can be added to an iModel schema in-memory and real-time (a.k.a. dynamically). In effect, each native source file has its unique schema.
 
-As an iTwin Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that subsequent executions can use. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/fundamentals/schema-evolution/schema-versioning-and-generations.md)
+As an iTwin Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that subsequent executions can use. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/guide/schema-evolution/schema-versioning-and-generations.md)
 
 The [DynamicSchema](../bis/domains/corecustomattributes.ecschema/#dynamicschema) custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes,` enabling iModelHub to detect dynamic schemas programmatically. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
@@ -225,7 +225,7 @@ The [DynamicSchema](../bis/domains/corecustomattributes.ecschema/#dynamicschema)
 
 Wherever practical, the Elements generated from an iTwin Connector should be identifiable through an optimal "Display Label."
 
-As discussed in [Element Fundamentals](../bis/fundamentals/foundation/element-fundamentals.md), the Display Labels are created through the following logic:
+As discussed in [Element Fundamentals](../bis/guide/fundamentals/element-fundamentals.md), the Display Labels are created through the following logic:
 
 1. If the UserLabel property is set, it is taken as the Display Label.
 2. If the CodeValue is set (and the UserLabel is not set), the CodeValue becomes the Display Label.
@@ -250,7 +250,7 @@ A common condition occurs where a property is generally readable and unique, but
 
 For some elements in some models, such an identifier may really not exist. For example, a simple geometric line element w/o additional business data would not have an obvious, unique, and human-readable identifier, and it would generally be detrimental to generate a CodeValue solely for not leaving it blank. Additionally, generated CodeValues have a high chance of violating the "human-readable" requirement. In such a case, this section should not be taken as a directive to generate such an identifier when it doesn't exist.
 
-Refer to [Element Codes](../bis/fundamentals/foundation/codes) in the "Introduction to BIS" documentation.
+Refer to [Element Codes](../bis/guide/fundamentals/codes) in the "Introduction to BIS" documentation.
 
 #### Sync
 
@@ -334,7 +334,7 @@ See [updateElementClass](https://github.com/imodeljs/itwin-connector-sample/blob
 
 An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to store information about the element.
 
-Note: the [Federation GUID](../bis/fundamentals/foundation/element-fundamentals#federationguid) is an optional property available for mapping external ids to elements in the iModel. The Code is also a helpful way of searching for an element based on external data. If the source data does not have stable, unique IDs, then the Connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
+Note: the [Federation GUID](../bis/guide/fundamentals/element-fundamentals#federationguid) is an optional property available for mapping external ids to elements in the iModel. The Code is also a helpful way of searching for an element based on external data. If the source data does not have stable, unique IDs, then the Connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
 
 ##### Change detection
 

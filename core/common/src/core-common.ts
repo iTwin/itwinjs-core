@@ -158,7 +158,7 @@ export * from "./WhiteOnWhiteReversalSettings";
  */
 /**
  * @docs-group-description Codes
- * Types for working with [Codes]($docs/bis/fundamentals/foundation/codes.md).
+ * Types for working with [Codes]($docs/bis/guide/fundamentals/codes.md).
  */
 /**
  * @docs-group-description Geometry

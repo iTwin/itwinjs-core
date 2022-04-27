@@ -1,6 +1,6 @@
 ## Common domains
 
-The following domains lay out the [Common layer](../fundamentals/intro/bis-organization.md) in the BIS hierarchy. They define abstract concepts and patterns used by multiple disciplines.
+The following domains lay out the [Common layer](../guide/intro/bis-organization.md) in the BIS hierarchy. They define abstract concepts and patterns used by multiple disciplines.
 
 ### [AECUnits](./AecUnits.ecschema.md)
 

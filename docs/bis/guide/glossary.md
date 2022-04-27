@@ -18,11 +18,11 @@ Key BIS terms used in this documentation are defined on this page.
 | **BisCore** | The base BIS Domain for BIS. All ECClasses in any other Domain must derive (directly or indirectly) from a BisCore class. |
 | **Category** | A property of a GeometricElement that "categorizes" its geometry. Every GeometricElement is assigned to one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. |
 | **Class** | See [ECClass](#ecclass). |
-| **Code** | A synonym for [CodeValue](#codevalue-property). See [Codes](./foundation/codes.md). |
-| **CodeScope Property** | A navigation property of Element that points to an Element that indicates the *scope for uniqueness* for the CodeValue. See [Codes](./foundation/codes.md). |
-| **CodeSpec** | A "Code Specification" that specifies how a Code is encoded and decoded. See [Codes](./foundation/codes.md). |
-| **CodeSpec Property** | A navigation property of Element that points to a [CodeSpec](#codespec) that specifies how the Code is encoded and decoded. See [Codes](./foundation/codes.md). |
-| **CodeValue Property** | A nullable string property of Element that holds a human-readable identifier of the [Entity](#entity) that the Element represents. See [Codes](./foundation/codes.md). |
+| **Code** | A synonym for [CodeValue](#codevalue-property). See [Codes](./fundamentals/codes.md). |
+| **CodeScope Property** | A navigation property of Element that points to an Element that indicates the *scope for uniqueness* for the CodeValue. See [Codes](./fundamentals/codes.md). |
+| **CodeSpec** | A "Code Specification" that specifies how a Code is encoded and decoded. See [Codes](./fundamentals/codes.md). |
+| **CodeSpec Property** | A navigation property of Element that points to a [CodeSpec](#codespec) that specifies how the Code is encoded and decoded. See [Codes](./fundamentals/codes.md). |
+| **CodeValue Property** | A nullable string property of Element that holds a human-readable identifier of the [Entity](#entity) that the Element represents. See [Codes](./fundamentals/codes.md). |
 | **DefinitionElement** | A subclass of InformationContentElement that holds information that helps *define* other Elements and is intended to be referenced (i.e. shared) by multiple of those Elements. |
 | **DictionaryModel** | A special model for repository-global `DefinitionElement` instances. Every BIS Repository has one and only one DictionaryModel. It can be accessed via a `DefinitionPartition` with code 'BisCore.DictionaryModel' always created as a child of the root `Subject` of an iModel. |
 | **Digital Twin** | A digital representation of some portion of the real world. A Digital Twin should be designed to be used by multiple applications (in contrast to application-specific “silo” databases). A complete Digital Twin is normally a federation of data from multiple repositories (e.g. a BIS Repository such as an iModel, plus Reality Data services, plus IoT data services, plus Asset Lifecycle Information Management services, etc.) |

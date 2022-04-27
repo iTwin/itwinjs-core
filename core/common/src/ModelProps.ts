@@ -12,7 +12,7 @@ import { CodeProps } from "./Code";
 import { RelatedElementProps } from "./ElementProps";
 import { EntityProps, EntityQueryParams } from "./EntityProps";
 
-/** Properties that define a [Model]($docs/bis/fundamentals/foundation/model-fundamentals)
+/** Properties that define a [Model]($docs/bis/guide/fundamentals/model-fundamentals)
  * @public
  * @extensions
  */
