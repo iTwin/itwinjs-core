@@ -219,7 +219,7 @@ Settings may also be stored externally, in JSON. That can be either stringified 
 
 When [IModelhost.startup](#backend) is called, all files with the extension ".json" or ".json5" in the `@itwin/core-backend` package `assets\Settings` directory, plus all files listed by [IModelHostConfiguration.workspace.settingsFiles]($backend), are loaded into [IModelHost.appWorkspace.settings]($backend).
 
-### iModel-based Settings
+### iModel Based Settings
 
 Every iModel can hold a set of `SettingDictionary`s that are automatically loaded when the iModel is opened. This can be used to supply values that should be present every session, for example a list of required `WorkspaceDb`s.
 
@@ -265,7 +265,7 @@ However, when deciding how to organize workspace data, keep in mind:
 - For offline access, `WorkspaceDb`s are saved as files on local computers, and must be downloaded before going offline and then updated whenever new versions are created. Large downloads can be time consuming, so breaking large sets of resources into multiple `WorkspaceDb`s can be helpful.
 - `WorkspaceDb`s are versioned. There is no versioning of individual resources within a `WorkspaceDb`.
 
-#### Workspace related SettingsSchemas
+#### Workspace related Settings
 
 The Workspace subsystem used 3 Setting values:
 
@@ -387,35 +387,35 @@ For example:
 
 To load a [workspace resource](#workspace-resources), you must first obtain a `WorkspaceDb` by calling [Workspace.getWorkspaceDb]($backend) and supplying a [WorkspaceDb.Name]($backend). That value must be an entry in a `workspace/databases` Setting. The `workspace/databases` Setting will supply the `containerName` and `dbName`. The value of `containerName` must be an entry in a `cloud/containers` Setting. The `cloud/containers` Setting will supply the `containerId` and `accountName`. The value of `accountName` must be an entry in a `cloud/accounts` Setting that will supply the cloud `accessName` and `storageType`.
 
-For example, consider the following `acme.settings.json` setting file:
+For example, consider the following `ace-inc.settings.json` setting file:
 
 ```json
 {
   "cloud/accounts": [
     {
-      "name": "acme/account1",
-      "accessName": "acmeprod1",
+      "name": "ace-inc/account1",
+      "accessName": "aceprod1",
       "storageType": "azure?sas=1"
     }
   ],
   "cloud/containers": [
     {
-      "name": "acme/all-company",
-      "accountName": "acme/account1",
-      "containerId": "ws-16e7f4ca-f08b-4778-9882-5bfb2ac7b160"
+      "name": "ace-inc/all-company",
+      "accountName": "ace-inc/account1",
+      "containerId": "16e7f4ca-f08b-4778-9882-5bfb2ac7b160"
     }
   ],
   "workspace/databases": [
     {
-      "name": "acme/workspace-fen",
-      "dbName": "fen",
-      "containerName": "acme/all-company",
+      "name": "ace-inc/ws-structural",
+      "dbName": "struct",
+      "containerName": "ace-inc/all-company",
       "version": "^1"
     },
     {
-      "name": "acme/workspace-req",
+      "name": "ace-inc/ws-civil-site",
       "dbName": "req",
-      "containerName": "acme/all-company",
+      "containerName": "ace-inc/all-company",
       "version": "^2.0"
     },
   ]
@@ -426,23 +426,46 @@ For example, consider the following `acme.settings.json` setting file:
 then, calling
 
 ```ts
-  const wsdb = await IModelHost.appWorkspace.getWorkspaceDb("acme/workspace-fen");
+  const wsdb = await IModelHost.appWorkspace.getWorkspaceDb("ace-inc/ws-structural");
 ```
 
 Will attempt to load a `WorkspaceDb` with:
-- the most recent version (compatible with "^1") of the database: `fen` (e.g. `fen:1.5.2`)
-- in a cloud container with id: `ws-16e7f4ca-f08b-4778-9882-5bfb2ac7b160`
-- from an Azure storage account named: `acmeprod1`
+- the most recent version greater than or equal to 1.0.0 but less than 2.0.0 of the database `struct` (e.g. `struct:1.5.2`)
+- in a cloud container with id `16e7f4ca-f08b-4778-9882-5bfb2ac7b160`
+- from an Azure storage account named `aceprod1`
+
+Workspace settings may also be stored [in an iModel](#imodel-based-settings) so `WorkspaceDb`s may be iModel specific. So if this:
+
+```json
+  "workspace/databases": [
+    {
+      "name": "ace-inc/ws-structural",
+      "dbName": "struct",
+      "containerName": "ace-inc/all-company",
+      "version": "~1.4.3"
+    },
+```
+
+were stored in a `SettingDictionary` in an iModel, then
+
+```ts
+  const wsdb = await iModel.workspace.getWorkspaceDb("ace-inc/ws-structural");
+```
+
+Will attempt to load a `WorkspaceDb` with:
+- the most recent version greater than or equal to 1.4.3 but less than 1.5.0 of the database `struct` (e.g. `struct:1.4.10`)
+- in a cloud container with id `16e7f4ca-f08b-4778-9882-5bfb2ac7b160`
+- from an Azure storage account named `aceprod1`
 
 ### CloudContainer Shared Access Signature (SAS) Tokens
 
-To access a CloudContainer, users must first obtain a Shared Access Signature token (aka a "sasToken") from the container authority, by supplying their user credentials. A `sasToken` provides access for a specific purpose for a limited time. `sasTokens` expire, usually after a few hours, and must be "refreshed" before they expire for sessions that outlive them.
+To access a CloudContainer, users must first obtain a Shared Access Signature token (aka a `sasToken`) from the container authority, by supplying their user credentials. A `sasToken` provides access for a specific purpose for a limited time. `sasTokens` expire, usually after a few hours, and must be *refreshed* before they expire for sessions that outlive them.
 
 Administrators may provide access to CloudContainers to groups of users via RBAC rules. Normally most users are provided readonly access to WorkspaceContainers, since they have no need or ability to change workspace content. Only a small set of trusted administrators are granted rights to modify the content of `WorkspaceContainer`s.
 
-If a WorkspaceContainer is marked for offline use, it is downloaded using a valid sasToken, but is available without the token thereafter. When the user goes online again, a new sasToken must be obtained to refresh the WorkspaceContainer if it has been modified.
+If a WorkspaceContainer is marked for offline use, it is downloaded using a valid `sasToken`, but is available indefinitely without the token thereafter. When the user goes online again, a new `sasToken` must be obtained to refresh the WorkspaceContainer if it has been modified in the cloud.
 
-A few special "public" WorkspaceContainers may be read by anyone, without a sasToken.
+A few special "public" WorkspaceContainers may be read by anyone, without a `sasToken`.
 
 ## Workspace Resources
 
@@ -454,7 +477,7 @@ Possible resource types are:
 - `blob` resources that hold `Uint8Array`s. They may be loaded with [WorkspaceDb.getBlob]($backend).
 - `file` resources that hold arbitrary files. They may be extracted to local files with [WorkspaceDb.getFile]($backend)
 
-> Note: files are zipped as they are stored in `WorkspaceContainer`s.
+> Note: files may be compressed as they are stored in `WorkspaceContainer`s.
 
 ### WorkspaceResource.Names
 
@@ -468,9 +491,18 @@ It is often useful to store `SettingDictionary`s in a `WorkspaceContainer`, so t
 
 ## Creating and Editing WorkspaceDbs with WorkspaceEditor
 
-`WorkspaceDb`s are always created and modified by administrators rather than users, using the `WorkspaceEditor` utility (see its `README.md` for details.) To edit a WorkspaceDb, administrators must first obtain a writeable sasToken from the container authority.
+`WorkspaceDb`s are always created and modified by administrators rather than users, using the `WorkspaceEditor` utility (see its `README.md` for details.)
 
 #### WorkspaceContainer Locks
 
+To edit a WorkspaceDb, administrators must first obtain authorization in the form of a writeable `sasToken` from the container authority. Additionally, there may only be one editor *per container* at the same time. This is enforced via the *write-lock* for WorkspaceContainers. The `WorkspaceEditor` utility has a command `acquireLock` that acquires the write-lock for a WorkspaceContainer. The `acquireLock` command must be executed before any other editing commands may be performed, and will fail if another user has already obtained the write-lock.
+
+All changes to `WorkspaceDb`s are performed locally and are not visible to users until the `releaseLock` command is executed. The `releaseLock` command pushes all changes to the cloud before it releases the write-lock.
+
+> Note the write-lock is per-WorkspaceContainer, not per-WorkspaceDb. Locking a WorkspaceContainer implicitly locks all `WorkspaceDb`s within it.
+
 #### WorkspaceDb Versions
 
+The WorkspaceEditor enforces that `WorkspaceDb`s always have a version number associated with them within a `WorkspaceContainer` (by default, the initial version is marked "1.0.0"). WorkspaceDb version numbers follow the [semver versioning](https://semver.org/) rules. To modify an existing WorkspaceDb within a `WorkspaceContainer`, administrators must (with the write-lock held) make a new version using the `versionDb` command. New versions may be of type "patch", "minor", or "major", depending on its impact to users. When the write-lock is released, the newly edited version of the WorkspaceDb becomes immutable and may never be changed again. This way old or archived projects may continue to refer to consistent workspace data without risk.
+
+By specifying an acceptable [version range](https://docs.npmjs.com/cli/v6/using-npm/semver#ranges) in `workspace/databases` Settings, administrators can control when, how, and if users see updates to workspace resources.

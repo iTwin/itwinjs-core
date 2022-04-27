@@ -9,7 +9,7 @@
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { extname, join } from "path";
-import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, MarkRequired, Mutable } from "@itwin/core-bentley";
+import { BeEvent, JSONSchema, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../IModelJsFs";
 
@@ -20,11 +20,11 @@ import { IModelJsFs } from "../IModelJsFs";
  * @note the `type` member is marked optional in JSONSchema but is required for Settings.
  * @beta
  */
-export interface SettingSchema extends Readonly<MarkRequired<JSONSchema, "type">> {
-  /** labels for items of an enum. */
-  readonly enumItemLabels?: string[];
-  /** whether the editor should show multiple lines. */
-  readonly multilineEdit?: true;
+export interface SettingSchema extends Readonly<JSONSchema> {
+  readonly items?: SettingSchema; // must be single object, not array
+  readonly type: JSONSchemaTypeName; // type is required for settings
+  readonly properties?: { [name: string]: SettingSchema };
+
   /** whether the setting replaces lower priority entries with the same name or combines with them. */
   readonly cumulative?: true;
 }
@@ -66,14 +66,15 @@ export class SettingsSchemas {
     this.onSchemaChanged.clear();
   }
 
+  /** @internal */
   public static validateArrayObject<T>(val: T, schemaName: string, msg: string): T {
     const schema = this.allSchemas.get(schemaName);
-    const items = schema?.items as JSONSchema;
-    if (typeof items !== "object")
+    const items = schema?.items;
+    if (undefined === items)
       return val;
     const required = items.required;
     const properties = items.properties;
-    if (!Array.isArray(required) || typeof properties !== "object")
+    if (undefined === required || undefined === properties)
       return val;
 
     for (const entry of required) {
@@ -88,7 +89,7 @@ export class SettingsSchemas {
   }
 
   /**
-   * Add one or more [[SettingSchemaGroup]]s to the registry. `SettingSchemaGroup`s must include a `groupName` member that is used
+   * Add one or more [[SettingSchemaGroup]]s. `SettingSchemaGroup`s must include a `groupName` member that is used
    * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
    */
   public static addGroup(settingsGroup: SettingSchemaGroup | SettingSchemaGroup[]): void {
@@ -155,7 +156,7 @@ export class SettingsSchemas {
       throw new Error(`property "${name}" is already defined`);
   }
 
-  private static validateProperty(name: string, property: JSONSchema | undefined) {
+  private static validateProperty(name: string, property: SettingSchema | undefined) {
     if (!property)
       throw new Error(`missing required property ${name}`);
 
@@ -173,16 +174,14 @@ export class SettingsSchemas {
       case "object":
         const required = property.required;
         const props = property.properties;
-        if (required) {
-          if (typeof props === "object") {
-            for (const entry of required)
-              this.validateProperty(entry, props[entry] as SettingSchema);
-          }
+        if (required && props) {
+          for (const entry of required)
+            this.validateProperty(entry, props[entry]);
         }
         if (props) {
           for (const key of Object.keys(props))
             try {
-              this.validateProperty(key, props[key] as SettingSchema);
+              this.validateProperty(key, props[key]);
             } catch (e: any) {
               throw new Error(`property ${key} of ${name}: ${e.message}`);
             }
@@ -193,7 +192,7 @@ export class SettingsSchemas {
         if (typeof property.items !== "object")
           throw new Error(`array property ${name} has no items member`);
         try {
-          this.validateProperty("items", property.items as JSONSchema);
+          this.validateProperty("items", property.items);
         } catch (e: any) {
           throw new Error(`array property ${name}: ${e.message}`);
         }

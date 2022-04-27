@@ -271,9 +271,8 @@ export interface Workspace {
 
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
-   * @returns a Promise that is resolved when the settings resource has been loaded.
    */
-  loadSettingsDictionary(settingRsc: WorkspaceResource.Props, db: WorkspaceDb, priority: SettingsPriority): void;
+  loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
 
   /** Close this Workspace. All WorkspaceContainers are dropped. */
   close(): void;
@@ -373,12 +372,12 @@ export class ITwinWorkspace implements Workspace {
     return container?.getWorkspaceDb(dbProps);
   }
 
-  public loadSettingsDictionary(settingRsc: WorkspaceResource.Props, db: WorkspaceDb, priority: SettingsPriority) {
-    const setting = db.getString(settingRsc.rscName);
+  public loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority) {
+    const setting = db.getString(settingRsc);
     if (undefined === setting)
-      throw new Error(`could not load setting resource ${settingRsc.rscName}`);
+      throw new Error(`could not load setting resource ${settingRsc}`);
 
-    this.settings.addJson(`${db.container.id}/${db.dbName}/${settingRsc.rscName}`, priority, setting);
+    this.settings.addJson(`${db.container.id}/${db.dbName}/${settingRsc}`, priority, setting);
   }
 
   public close() {

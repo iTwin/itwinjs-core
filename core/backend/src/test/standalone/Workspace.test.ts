@@ -154,7 +154,7 @@ describe("WorkspaceFile", () => {
 
     const settings = workspace.settings;
     const wsDb = workspace.getWorkspaceDbFromProps({ dbName: "db1" }, { containerId: "default" });
-    workspace.loadSettingsDictionary({ rscName: "default-settings" }, wsDb, SettingsPriority.defaults);
+    workspace.loadSettingsDictionary("default-settings", wsDb, SettingsPriority.defaults);
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
