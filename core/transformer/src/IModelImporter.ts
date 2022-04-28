@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
-import { IModelTransformOptions } from "./IModelTransformer";
+import type { IModelTransformOptions } from "./IModelTransformer";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 

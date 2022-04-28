@@ -513,7 +513,7 @@ describe("test resuming transformations", () => {
         return transformNoCrash({sourceDb, targetDb, transformer});
       })();
 
-      await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+      await assertIdentityTransformation(regularTarget, crashingTarget);
       regularTarget.close();
       crashingTarget.close();
       return crashingTransformResult;
