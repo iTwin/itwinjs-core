@@ -530,7 +530,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * intended for [[IModelTransformer.resumeTransformation]]
    * @internal
    */
-  public serializeStateToJson(): IModelImporterState {
+  public saveStateToJson(): IModelImporterState {
     return {
       options: this.options,
       targetDbId: this.targetDb.iModelId || this.targetDb.nativeDb.getFilePath(),

@@ -720,7 +720,7 @@ export class IModelExporter {
    * intended for [[IModelTransformer.resumeTransformation]]
    * @internal
    */
-  public serializeStateToJson(): IModelExporterState {
+  public saveStateToJson(): IModelExporterState {
     return {
       wantGeometry: this.wantGeometry,
       wantTemplateModels: this.wantTemplateModels,
