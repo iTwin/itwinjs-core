@@ -5,7 +5,7 @@
 import { Angle } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
-import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
+import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
 import { IModelApp } from "../../IModelApp";
 
 /** @packageDocumentation
@@ -132,7 +132,7 @@ export class ArcGisUtilities {
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
         return { status: MapLayerSourceStatus.RequireAuth};
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
-        return { status: MapLayerSourceStatus.InvalidCredentials, authInfo: { authMethod: MapLayerAuthType.ArcGisToken } };
+        return { status: MapLayerSourceStatus.InvalidCredentials};
     }
 
     // Check this service support map queries

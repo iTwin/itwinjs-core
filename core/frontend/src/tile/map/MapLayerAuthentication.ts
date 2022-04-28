@@ -8,13 +8,6 @@
 
 import { BeEvent, Listener } from "@itwin/core-bentley";
 
-/** @beta */
-export enum MapLayerAuthType {
-  None = 1,
-  Basic = 2,
-  ArcGisToken = 3,
-  ArcGisOAuth2 = 4,
-}
 /** @internal */
 export interface MapLayerTokenEndpoint {
   getLoginUrl(stateData?: string): string|undefined;
@@ -23,7 +16,6 @@ export interface MapLayerTokenEndpoint {
 
 /** @internal */
 export interface MapLayerAuthenticationInfo {
-  authMethod: MapLayerAuthType;
   tokenEndpoint?: MapLayerTokenEndpoint;
 }
 

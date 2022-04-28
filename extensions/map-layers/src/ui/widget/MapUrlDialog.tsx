@@ -99,7 +99,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [userNameLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:AuthenticationInputs.Username"));
   const [userNameRequiredLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:AuthenticationInputs.UsernameRequired"));
   const [settingsStorage, setSettingsStorageRadio] = React.useState("iTwin");
-  // const [layerAuthMethod, setLayerAuthMethod] = React.useState(MapLayerAuthType.None);
   const [oauthProcessSucceeded, setOAuthProcessSucceeded] = React.useState<undefined|boolean>(undefined);
   const [showOauthPopup, setShowOauthPopup] = React.useState(false);
   const [externalLoginUrl, setExternalLoginUrl] = React.useState<string|undefined>();
