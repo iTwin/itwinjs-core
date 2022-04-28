@@ -16,8 +16,9 @@ import {
 import {
   BackstageAppButton,
   ConfigurableUiManager, ContentGroup, ContentGroupProps,
-  ContentGroupProvider, ContentProps, FrontstageProps, IModelViewportControl, StageContentLayout, StageContentLayoutProps, StandardContentToolsUiItemsProvider,
-  StandardFrontstageProps,
+  ContentGroupProvider, ContentProps, FrontstageProps, IModelViewportControl,
+  SettingsModalFrontstage, StageContentLayout, StageContentLayoutProps,
+  StandardContentToolsUiItemsProvider, StandardFrontstageProps,
   StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
@@ -25,8 +26,7 @@ import {
 } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { AppUi } from "../AppUi";
-// cSpell:Ignore contentviews statusbars uitestapp
-import { ActiveSettingsManager } from "../../api/ActiveSettingsManager";
+// cSpell:Ignore contentviews statusbars
 import { LocalStateStorage } from "@itwin/core-react";
 import stageIconSvg from "./imodeljs.svg?sprite";
 
@@ -108,9 +108,6 @@ export class InitialIModelContentStageProvider extends ContentGroupProvider {
         const viewState = savedViewLayoutProps.contentGroupProps.contents[0].applicationData?.viewState;
         if (viewState) {
           UiFramework.setDefaultViewState(viewState);
-          if (this._forEditing) {
-            ActiveSettingsManager.onViewOpened(viewState);
-          }
         }
         return new ContentGroup(savedViewLayoutProps.contentGroupProps);
       }
@@ -138,9 +135,6 @@ export class InitialIModelContentStageProvider extends ContentGroupProvider {
     viewStates.forEach((viewState, index) => {
       if (0 === index) {
         UiFramework.setDefaultViewState(viewState);
-        if (this._forEditing) {
-          ActiveSettingsManager.onViewOpened(viewState);
-        }
       }
       const thisContentProps: ContentProps = {
         id: `imodel-view-${index}`,
@@ -178,6 +172,7 @@ class MainStageBackstageItemsProvider implements UiItemsProvider {
   public provideBackstageItems(): BackstageItem[] {
     return [
       BackstageItemUtilities.createStageLauncher(MainFrontstage.stageId, 100, 10, IModelApp.localization.getLocalizedString("SampleApp:backstage.viewIModel"), IModelApp.localization.getLocalizedString("SampleApp:backstage.iModelStage"), `svg:${stageIconSvg}`),
+      SettingsModalFrontstage.getBackstageActionItem(400, 10),
     ];
   }
 }

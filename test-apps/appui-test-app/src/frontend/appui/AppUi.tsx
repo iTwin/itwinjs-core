@@ -17,9 +17,9 @@ import {
   KeyboardShortcutManager,
   KeyboardShortcutProps,
 } from "@itwin/appui-react";
-import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
-import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
-import { SignInFrontstage } from "./frontstages/SignInFrontstage";
+// import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
+// import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
+// import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 
 // cSpell:ignore uitestapp
 
@@ -36,9 +36,9 @@ export class AppUi {
   /** Define Frontstages
    */
   private static defineFrontstages() {
-    ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
-    ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
-    ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
+    // ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
+    // ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
+    // ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
   }
 
   public static command1 = () => {

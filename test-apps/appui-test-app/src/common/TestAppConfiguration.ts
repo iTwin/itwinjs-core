@@ -13,4 +13,4 @@ export interface TestAppConfiguration {
   cesiumIonKey?: string;
 }
 
-export const loggerCategory = "ui-test-app";
+export const loggerCategory = "appui-test-app";

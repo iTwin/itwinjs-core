@@ -124,7 +124,7 @@ export interface BackstageComposerProps extends CommonProps {
   /** Indicates whether to place an overlay over the frontstage when the backstage is displayed */
   readonly showOverlay?: boolean;
   /** List of backstage items to show */
-  readonly items: BackstageItem[];
+  readonly items?: BackstageItem[];
   /** If true and only one stage launcher item is found, do not show entry in backstage */
   readonly hideSoloStageEntry?: boolean;
 }

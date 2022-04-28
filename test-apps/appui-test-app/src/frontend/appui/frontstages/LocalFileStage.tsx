@@ -5,33 +5,46 @@
 /* eslint-disable deprecation/deprecation */
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
-import { ViewDefinitionProps } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelReadRpcInterface, ViewQueryParams } from "@itwin/core-common";
+import { IModelApp, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
 
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
-import { FillCentered, LocalStateStorage } from "@itwin/core-react";
+import { FillCentered } from "@itwin/core-react";
 import {
+  BackstageAppButton,
   BackstageManager,
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
-  FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, CoreTools, Frontstage, FrontstageManager,
+  FrontstageProps, FrontstageProvider, StandardFrontstageProps, StandardFrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
 } from "@itwin/appui-react";
-import { SampleAppIModelApp } from "../..";
-import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
+import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { LocalFileSupport } from "../LocalFileSupport";
 import { Button, Headline } from "@itwin/itwinui-react";
-import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
-import { MainFrontstage } from "./MainFrontstage";
+import { BackstageItem, BackstageItemUtilities, ConditionalBooleanValue, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 
-function getIModelSpecificKey(inKey: string, iModelConnection: IModelConnection | undefined) {
-  const imodelId = iModelConnection?.iModelId ?? "unknownImodel";
-  return `[${imodelId}]${inKey}`;
-}
+async function getDefaultViewId(iModelConnection: IModelConnection): Promise<Id64String | undefined> {
+  const viewId = await iModelConnection.views.queryDefaultViewId();
+  const params: ViewQueryParams = {};
+  params.from = SpatialViewState.classFullName;
+  params.where = `ECInstanceId=${viewId}`;
 
-async function hasSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
-  const localSettings = new LocalStateStorage();
-  return localSettings.hasSetting("ContentGroupLayout", getIModelSpecificKey(activeFrontstageId, iModelConnection));
+  // Check validity of default view
+  const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(iModelConnection.getRpcProps(), params);
+  if (viewProps.length === 0) {
+    // Return the first view we can find
+    const viewList = await iModelConnection.views.getViewList({ wantPrivate: false });
+    if (viewList.length === 0)
+      return undefined;
+
+    const spatialViewList = viewList.filter((value: IModelConnection.ViewSpec) => value.class.indexOf("Spatial") !== -1);
+    if (spatialViewList.length === 0)
+      return undefined;
+
+    return spatialViewList[0].id;
+  }
+
+  return viewId;
 }
 
 class LocalFileOpenControl extends ContentControl {
@@ -51,64 +64,53 @@ class LocalFileOpenControl extends ContentControl {
   };
 }
 
-/** LocalFileOpenFrontstage displays the file picker and view picker. */
-export class LocalFileOpenFrontstage extends FrontstageProvider {
-  public static stageId = "ui-test-app:LocalFileOpen";
-
-  public get id(): string {
-    return LocalFileOpenFrontstage.stageId;
-  }
+export class LocalFileOpenFrontstage {
+  public static stageId = "appui-test-app:LocalFileOpen";
 
   public static async open() {
     if (LocalFileSupport.localFilesSupported()) {
-      const frontstageProvider = new LocalFileOpenFrontstage();
-      FrontstageManager.addFrontstageProvider(frontstageProvider);
-      const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+      // if frontstage has not yet been registered register it now
+      if (!FrontstageManager.hasFrontstage(LocalFileOpenFrontstage.stageId)) {
+        const contentGroupProps: ContentGroupProps = {
+          id: "appui-test-app:LocalFileOpenGroup",
+          layout: StandardContentLayouts.singleView,
+          contents: [
+            {
+              id: "file-open",
+              classId: LocalFileOpenControl,
+            },
+          ],
+        };
+
+        const stageProps: StandardFrontstageProps = {
+          id: LocalFileOpenFrontstage.stageId,
+          version: 1.0,
+          contentGroupProps,
+          cornerButton: <BackstageAppButton />,
+          usage: StageUsage.Private,
+          hideToolSettings: true,
+          hideStatusBar: true,
+        };
+
+        ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(stageProps));
+        UiItemsManager.register(new LocalFileOpenStageBackstageItemsProvider());
+      }
+
+      const frontstageDef = await FrontstageManager.getFrontstageDef(LocalFileOpenFrontstage.stageId);
       await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     }
   }
-
-  public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentGroup: ContentGroup = new ContentGroup({
-      id: "LocalFileOpenGroup",
-      layout: StandardContentLayouts.singleView,
-      contents: [
-        {
-          id: "file-open",
-          classId: LocalFileOpenControl,
-        },
-      ],
-    });
-
-    return (
-      <Frontstage id={this.id}
-        defaultTool={CoreTools.selectElementCommand}
-        contentGroup={contentGroup}
-        isInFooterMode={false}
-        isIModelIndependent={true}
-        usage={StageUsage.Private}
-        contentManipulationTools={
-          <Zone
-            widgets={[
-              <Widget isFreeform={true} element={<FrontstageToolWidget />} />, // eslint-disable-line react/jsx-key
-            ]}
-          />
-        }
-      />
-    );
-  }
 }
 
-/** Define a ToolWidget with Buttons to display in the TopLeft zone.
- */
-class FrontstageToolWidget extends React.Component {
-  public override render() {
-    return (
-      // eslint-disable-next-line deprecation/deprecation
-      <ToolWidget
-        appButton={BackstageManager.getBackstageToggleCommand()}
-      />
-    );
+class LocalFileOpenStageBackstageItemsProvider implements UiItemsProvider {
+  public readonly id = "local-file-open-stage-backstageItemProvider";
+
+  public provideBackstageItems(): BackstageItem[] {
+    // hide option in backstage if snapshotPath is not set
+    const openLocalFileHidden = new ConditionalBooleanValue(() => SampleAppIModelApp.testAppConfiguration?.snapshotPath === undefined, [SampleAppUiActionId.setIsIModelLocal]);
+    return [
+      BackstageItemUtilities.createActionItem(LocalFileOpenFrontstage.stageId, 300, 30, async () => LocalFileOpenFrontstage.open(), IModelApp.localization.getLocalizedString("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder", { isHidden: openLocalFileHidden }),
+    ];
   }
 }
 
@@ -118,55 +120,32 @@ interface LocalFilePageProps {
   writable: boolean;
 }
 
-interface LocalFilePageState {
-  iModelConnection: IModelConnection | undefined;
-  hasSavedContentGroup: boolean;
-}
-
 /** LocalFilePage displays the file picker and view picker. */
-class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageState> {
-  private _input: HTMLInputElement | null = null;
+function LocalFilePage(props: LocalFilePageProps) {
+  const { onViewsSelected, writable } = props;
 
-  public override readonly state: Readonly<LocalFilePageState> = {
-    iModelConnection: undefined,
-    hasSavedContentGroup: false,
-  };
+  const title = React.useRef(UiFramework.localization.getLocalizedString("SampleApp:localFileStage.localFile"));
+  const buttonLabel = React.useRef(UiFramework.localization.getLocalizedString("SampleApp:localFileStage.selectFile"));
+  const isElectronApp = React.useRef(ElectronApp.isValid);
+  const filePickerElement = React.useRef<HTMLInputElement | null>(null);
 
-  public override componentDidMount() {
-    if (!this.state.iModelConnection) {
-      if (ElectronApp.isValid) {
-        this._handleElectronFileOpen(); // eslint-disable-line @typescript-eslint/no-floating-promises
-      }
-    }
-  }
-
-  private _handleButtonClick = () => {
-    if (!this.state.iModelConnection) {
-      if (ElectronApp.isValid) {
-        this._handleElectronFileOpen(); // eslint-disable-line @typescript-eslint/no-floating-promises
-      } else if (this._input) {
-        this._input.click();
-      }
-    }
-  };
-
-  private _handleFileInputChange = async (_e: React.ChangeEvent) => {
-    if (this._input) {
-      if (this._input.files && this._input.files.length) {
-        const file: File = this._input.files[0];
-        if (file) {
-          const iModelConnection = await LocalFileSupport.openLocalFile(file.name, this.props.writable);
-          const hasSavedContentGroup = await hasSavedViewLayoutProps(MainFrontstage.stageId, iModelConnection);
-          if (iModelConnection) {
-            SampleAppIModelApp.setIsIModelLocal(true, true);
-            this.setState({ iModelConnection, hasSavedContentGroup });
-          }
+  const handleFileInputChange = React.useCallback(async (_e: React.ChangeEvent) => {
+    if (filePickerElement.current && filePickerElement.current.files && filePickerElement.current.files.length) {
+      const file: File = filePickerElement.current.files[0];
+      if (file) {
+        const connection = await LocalFileSupport.openLocalFile(file.name, writable);
+        // const hasSavedContent = await hasSavedViewLayoutProps(MainFrontstage.stageId, connection);
+        if (connection) {
+          SampleAppIModelApp.setIsIModelLocal(true, true);
+          const viewId = await getDefaultViewId(connection);
+          if (undefined !== viewId)
+            onViewsSelected(connection, [viewId]);
         }
       }
     }
-  };
+  }, [onViewsSelected, writable]);
 
-  private _handleElectronFileOpen = async () => {
+  const handleElectronFileOpen = React.useCallback(async () => {
     const opts: OpenDialogOptions = {
       properties: ["openFile"],
       filters: [
@@ -179,63 +158,39 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
 
     const filePath = val.filePaths[0];
     if (filePath) {
-      const iModelConnection = await LocalFileSupport.openLocalFile(filePath, this.props.writable);
-      const hasSavedContentGroup = await hasSavedViewLayoutProps(MainFrontstage.stageId, this.state.iModelConnection);
-      if (iModelConnection) {
+      const connection = await LocalFileSupport.openLocalFile(filePath, writable);
+      if (connection) {
         SampleAppIModelApp.setIsIModelLocal(true, true);
-        this.setState({ iModelConnection, hasSavedContentGroup });
+        const viewId = await getDefaultViewId(connection);
+        if (undefined !== viewId)
+          onViewsSelected(connection, [viewId]);
       }
     }
-  };
+  }, [onViewsSelected, writable]);
 
-  private _handleClose = async (): Promise<void> => {
-    if (this.state.iModelConnection)
-      await this.state.iModelConnection.close();
-    this.setState({ iModelConnection: undefined }, () => this.props.onClose());
-  };
-
-  private _handleViewsSelected = (views: ViewDefinitionProps[]): void => {
-    const idsSelected = new Array<Id64String>();
-    views.forEach((props: ViewDefinitionProps) => {
-      if (props.id)
-        idsSelected.push(props.id);
-    });
-
-    if (this.state.iModelConnection && idsSelected.length)
-      this.props.onViewsSelected(this.state.iModelConnection, idsSelected);
-  };
-
-  public override render() {
-    if (this.state.hasSavedContentGroup && this.state.iModelConnection) {
-      this.props.onViewsSelected(this.state.iModelConnection, []);
-      return null;
+  const handleButtonClick = React.useCallback(async () => {
+    if (isElectronApp.current) {
+      await handleElectronFileOpen();
+    } else if (filePickerElement.current) {
+      filePickerElement.current.click();
     }
+  }, [handleElectronFileOpen]);
 
-    if (!this.state.iModelConnection) {
-      const title = UiFramework.localization.getLocalizedString("SampleApp:localFileStage.localFile");
-
-      return (
-        <>
-          <div style={{ position: "absolute", top: "16px", left: "100px" }}>
-            <Headline>{title}</Headline>
-          </div>
-          <FillCentered>
-            {!ElectronApp.isValid &&
-              <input id="file-input" ref={(e) => this._input = e}
-                type="file" accept=".bim,.ibim" onChange={this._handleFileInputChange}
-                style={{ display: "none" }} />
-            }
-            <Button size="large" styleType="cta" onClick={this._handleButtonClick}>
-              {UiFramework.localization.getLocalizedString("SampleApp:localFileStage.selectFile")}
-            </Button>
-          </FillCentered >
-        </>
-      );
-    } else {
-      return (
-        <IModelViewPicker iModelConnection={this.state.iModelConnection}
-          onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} />
-      );
-    }
-  }
+  return (
+    <>
+      <div style={{ position: "absolute", top: "16px", left: "100px" }}>
+        <Headline>{title.current}</Headline>
+      </div>
+      <FillCentered>
+        {!isElectronApp.current &&
+          <input id="file-input" ref={filePickerElement}
+            type="file" accept=".bim,.ibim" onChange={handleFileInputChange}
+            style={{ display: "none" }} />
+        }
+        <Button size="large" styleType="cta" onClick={handleButtonClick}>
+          {buttonLabel.current}
+        </Button>
+      </FillCentered >
+    </>
+  );
 }
