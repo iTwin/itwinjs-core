@@ -453,7 +453,10 @@ describe("test resuming transformations", () => {
   it.skip("crashing transforms stats gauntlet", async () => {
     let crashableCallsMade = 0;
     const { enableCrashes } = setupCrashingNativeAndTransformer({ onCrashableCallMade() { ++crashableCallsMade; } });
-
+    // TODO: don't run a new control test to compare with every crash test,
+    // right now trying to run assertIdentityTransform against the control transform target dbs in the control loop yields
+    // BE_SQLITE_ERROR: Failed to prepare 'select * from (SELECT ECInstanceId FROM bis.Element) limit :sys_ecdb_count offset :sys_ecdb_offset'. The data source ECDb (parameter 'dataSourceECDb') must be a connection to the same ECDb file as the ECSQL parsing ECDb connection (parameter 'ecdb').
+    // until that is investigated/fixed, the slow method here is used
     async function runAndCompareWithControl(crashingEnabledForThisTest: boolean) {
       const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
       const sourceDb = SnapshotDb.openFile(sourceFileName);
