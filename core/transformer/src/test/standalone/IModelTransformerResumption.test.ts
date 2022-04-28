@@ -295,12 +295,7 @@ describe("test resuming transformations", () => {
       regularToResumedIdMap.set(idInRegular, idInResumed);
     }
 
-    await assertIdentityTransformation(regularTarget, resumedTarget, {
-      context: {
-        findTargetElementId: (id) =>
-          regularToResumedIdMap.get(id) ?? Id64.invalid,
-      },
-    });
+    await assertIdentityTransformation(regularTarget, resumedTarget, (id) => regularToResumedIdMap.get(id) ?? Id64.invalid);
     resumedTarget.close();
     regularTarget.close();
   });
@@ -338,7 +333,7 @@ describe("test resuming transformations", () => {
       return targetDb;
     })();
 
-    await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+    await assertIdentityTransformation(regularTarget, crashingTarget);
     crashingTarget.close();
     regularTarget.close();
   });
@@ -410,7 +405,7 @@ describe("test resuming transformations", () => {
       return targetDb;
     })();
 
-    await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+    await assertIdentityTransformation(regularTarget, crashingTarget);
     regularTarget.close();
     crashingTarget.close();
   });
@@ -445,7 +440,7 @@ describe("test resuming transformations", () => {
       return targetDb;
     })();
 
-    await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
+    await assertIdentityTransformation(regularTarget, crashingTarget);
     regularTarget.close();
     crashingTarget.close();
   });
