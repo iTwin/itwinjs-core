@@ -97,163 +97,90 @@ iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegrate
 
 ### Fixed inconsistent property representation in a property grid
 
-Previously when using `nestedRelatedProperties` attribute, nested related properties were merged or not merged depending on whether at least one property of an intermediate class was selected. Now in both cases properties are not merged.
+Previously, when using [RelatedPropertiesSpecification.nestedRelatedProperties]($presentation-common) attribute, the properties were loaded differently based on whether parent specification included any properties or not. Now the behavior is consistent.
 
 ```json
 {
   "id": "example",
-  "rules": [
-    {
+  "rules": [{
       "ruleType": "Content",
-      "specifications": [
-        {
+      "specifications": [{
           "specType": "ContentInstancesOfSpecificClasses",
-          "classes": {
-            "schemaName": "BisCore",
-            "classNames": ["GeometricModel3d"],
-            "arePolymorphic": true
-          }
-        }
-      ]
-    },
-    {
+          "classes": { "schemaName": "BisCore", "classNames": ["GeometricModel3d"], "arePolymorphic": true }
+        }]
+    }, {
       "ruleType": "ContentModifier",
       "class": {
         "schemaName": "BisCore",
         "className": "Model"
       },
-      "relatedProperties": [
-        {
+      "relatedProperties": [{
           "propertiesSource": {
-            "relationship": {
-              "schemaName": "BisCore",
-              "className": "ModelContainsElements"
-            },
+            "relationship": { "schemaName": "BisCore", "className": "ModelContainsElements" },
             "direction": "Forward",
-            "targetClass": {
-              "schemaName": "Generic",
-              "className": "PhysicalObject"
-            }
+            "targetClass": { "schemaName": "Generic", "className": "PhysicalObject" }
           },
           "properties": "_none_",
-          "nestedRelatedProperties": [
-            {
+          "nestedRelatedProperties": [{
               "propertiesSource": {
-                "relationship": {
-                  "schemaName": "BisCore",
-                  "className": "GeometricElement3dIsInCategory"
-                },
-                "direction": "Forward",
-                "targetClass": {
-                  "schemaName": "BisCore",
-                  "className": "Category"
-                }
-              },
-              "properties": "*",
-              "handleTargetClassPolymorphically": true
-            }
-          ],
-          "handleTargetClassPolymorphically": true
-        }
-      ]
-    }
-  ]
+                "relationship": { "schemaName": "BisCore", "className": "GeometricElement3dIsInCategory" },
+                "direction": "Forward"
+              }
+            }]
+        }]
+    }]
 }
 ```
 
-|                               | before                                                                                                                            | after                                                                                                                             |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| "properties": "\_none\_"      | ![Properties of Spatial Category are merged](./media/SpatialCategoryPropertiesMerged.png)                                         | ![Properties of Spatial Category not merged](./media/SpatialCategoryPropertiesNotMerged.png)                                      |
-| "properties": \["UserLabel"\] | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) |
+| Value of `"properties"` attribute | before                                                                                                                            | after                                                                                                                             |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `"_none_"`                        | ![Properties of Spatial Category are merged](./media/SpatialCategoryPropertiesMerged.png)                                         | ![Properties of Spatial Category not merged](./media/SpatialCategoryPropertiesNotMerged.png)                                      |
+| `["UserLabel"]`                   | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) |
 
 ### Fixed a bug that prevented disabling `relatedProperties` specifications
 
 The bug made it impossible to remove related properties if a lower priority rule specified that the property should be included.
 
-For example, it is now possible to remove all properties of a class `ExternalSourceAspect`, which is owned by a class `Element`. In order to do that, the following rules can be used:
+For example, the [default BisCore supplemental ruleset](https://github.com/iTwin/itwinjs-core/blob/504a7b88e9ade29cc306bd55d093be1d76ddad43/presentation/backend/assets/supplemental-presentation-rules/BisCore.PresentationRuleSet.json#L372-L419) automatically includes `ExternalSourceAspect.Identifier` property to all Elements' content when they have such aspect. It's now possible to disable that rule using one of these approaches:
 
-```json
-{
-  "ruleType": "ContentModifier",
-  "class": {
-    "schemaName": "BisCore",
-    "className": "Element"
-  },
-  "relatedProperties": [
-    {
-      "propertiesSource": {
-        "relationship": {
-          "schemaName": "BisCore",
-          "className": "ElementOwnsMultiAspects"
-        },
-        "direction": "Forward",
-        "targetClass": {
-          "schemaName": "BisCore",
-          "className": "ExternalSourceAspect"
-        }
-      },
-      "properties": []
-    }
-  ]
-}
-```
+- Set `"properties"` to `"_none_"` or `[]`:
 
-```json
-{
-  "ruleType": "ContentModifier",
-  "class": {
-    "schemaName": "BisCore",
-    "className": "Element"
-  },
-  "relatedProperties": [
-    {
-      "propertiesSource": {
-        "relationship": {
-          "schemaName": "BisCore",
-          "className": "ElementOwnsMultiAspects"
+  ```json
+  {
+    "ruleType": "ContentModifier",
+    "class": { "schemaName": "BisCore", "className": "Element" },
+    "relatedProperties": [{
+        "propertiesSource": {
+          "relationship": { "schemaName": "BisCore", "className": "ElementOwnsMultiAspects" },
+          "direction": "Forward",
+          "targetClass": { "schemaName": "BisCore", "className": "ExternalSourceAspect" }
         },
-        "direction": "Forward",
-        "targetClass": {
-          "schemaName": "BisCore",
-          "className": "ExternalSourceAspect"
-        }
-      },
-      "properties": "_none_"
-    }
-  ]
-}
-```
+        "properties": "_none_"
+      }
+    ]
+  }
+  ```
 
-```json
-{
-  "ruleType": "ContentModifier",
-  "class": {
-    "schemaName": "BisCore",
-    "className": "Element"
-  },
-  "relatedProperties": [
-    {
-      "propertiesSource": {
-        "relationship": {
-          "schemaName": "BisCore",
-          "className": "ElementOwnsMultiAspects"
+- Disable property display:
+
+  ```json
+  {
+    "ruleType": "ContentModifier",
+    "class": { "schemaName": "BisCore", "className": "Element" },
+    "relatedProperties": [{
+        "propertiesSource": {
+          "relationship": { "schemaName": "BisCore", "className": "ElementOwnsMultiAspects" },
+          "direction": "Forward",
+          "targetClass": { "schemaName": "BisCore", "className": "ExternalSourceAspect" }
         },
-        "direction": "Forward",
-        "targetClass": {
-          "schemaName": "BisCore",
-          "className": "ExternalSourceAspect"
-        }
-      },
-      "properties": [
-        {
+        "properties": [{
           "name": "Identifier",
           "isDisplayed": false
-        }
-      ]
-    }
-  ]
-}
-```
+        }]
+      }
+    ]
+  }
+  ```
 
 ## ColorDef validation
 
