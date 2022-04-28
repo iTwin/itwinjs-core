@@ -339,8 +339,8 @@ export async function assertIdentityTransformation(
           | undefined;
         if (styles?.environment?.sky) {
           const sky = styles.environment.sky;
+          if (!sky.image) sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
           const image = sky.image;
-          if (image && image.type === undefined) image.type = SkyBoxImageType.None;
           if (image?.texture === Id64.invalid) (image.texture as string | undefined) = undefined;
           if (image?.texture) image.texture = remapContainer.context.findTargetElementId(image.texture);
           if (!sky.twoColor) expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
