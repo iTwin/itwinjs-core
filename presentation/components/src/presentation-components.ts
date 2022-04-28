@@ -101,5 +101,9 @@ export * from "./presentation-components/labels/LabelsProvider";
  */
 export * from "./presentation-components/unified-selection/UnifiedSelectionContext";
 
+export * from "./presentation-components/instanceFilter/ECInstanceFilter";
+export * from "./presentation-components/instanceFilter/PresentationInstanceFilter";
+export * from "./presentation-components/instanceFilter/Types";
+
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);
