@@ -251,13 +251,8 @@ export class IModelTransformerTestUtils {
 export async function assertIdentityTransformation(
   sourceDb: IModelDb,
   targetDb: IModelDb,
-  /**
-   * Subset of IModelTransformer type, so you can pass an IModelTransformer instance or it implement yourself
-   * it must contain a function for determining the target element id from a source element id
-   */
-  remapContainer: {
-    context: { findTargetElementId(id: Id64String): Id64String };
-  } = { context: { findTargetElementId: (id: Id64String) => id } },
+  /** either an IModelTransformer instance or a function mapping source element ids to target elements */
+  remapContainer: IModelTransformer | ((id: Id64String) => Id64String) = (id: Id64String) => id,
   {
     expectedElemsOnlyInSource = [],
     // by default ignore the classes that the transformer ignores, this default is wrong if the option
@@ -269,6 +264,11 @@ export async function assertIdentityTransformation(
     classesToIgnoreMissingElemsOfInTarget?: typeof Entity[];
   } = {}
 ) {
+  const remap =
+    typeof remapContainer === "function"
+      ? remapContainer
+      : remapContainer.context.findTargetElementId.bind(remapContainer.context);
+
   expect(sourceDb.nativeDb.hasUnsavedChanges()).to.be.false;
   expect(targetDb.nativeDb.hasUnsavedChanges()).to.be.false;
 
@@ -279,8 +279,7 @@ export async function assertIdentityTransformation(
   for await (const [sourceElemId] of sourceDb.query(
     "SELECT ECInstanceId FROM bis.Element"
   )) {
-    const targetElemId =
-      remapContainer.context.findTargetElementId(sourceElemId);
+    const targetElemId = remap(sourceElemId);
     const sourceElem = sourceDb.elements.getElement(sourceElemId);
     const targetElem = targetDb.elements.tryGetElement(targetElemId);
     // expect(targetElem.toExist)
@@ -308,10 +307,7 @@ export async function assertIdentityTransformation(
             expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
             relationTargetInTargetId = stmt.getValue(0).getId() ?? Id64.invalid;
           });
-          const mappedRelationTargetInTargetId =
-            remapContainer.context.findTargetElementId(
-              relationTargetInSourceId
-            );
+          const mappedRelationTargetInTargetId = remap(relationTargetInSourceId);
           expect(relationTargetInTargetId).to.equal(
             mappedRelationTargetInTargetId
           );
@@ -342,7 +338,7 @@ export async function assertIdentityTransformation(
           if (!sky.image) sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
           const image = sky.image;
           if (image?.texture === Id64.invalid) (image.texture as string | undefined) = undefined;
-          if (image?.texture) image.texture = remapContainer.context.findTargetElementId(image.texture);
+          if (image?.texture) image.texture = remap(image.texture);
           if (!sky.twoColor) expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
           if ((sky as any).file === "") delete (sky as any).file;
         }
@@ -351,14 +347,11 @@ export async function assertIdentityTransformation(
           : styles?.excludedElements;
         for (let i = 0; i < (styles?.excludedElements?.length ?? 0); ++i) {
           const id = excludedElements![i];
-          excludedElements![i] = remapContainer.context.findTargetElementId(id);
+          excludedElements![i] = remap(id);
         }
         for (const ovr of styles?.subCategoryOvr ?? []) {
-          if (ovr.subCategory) {
-            ovr.subCategory = remapContainer.context.findTargetElementId(
-              ovr.subCategory
-            );
-          }
+          if (ovr.subCategory)
+            ovr.subCategory = remap(ovr.subCategory);
         }
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
@@ -423,8 +416,7 @@ export async function assertIdentityTransformation(
   for await (const [sourceModelId] of sourceDb.query(
     "SELECT ECInstanceId FROM bis.Model"
   )) {
-    const targetModelId =
-      remapContainer.context.findTargetElementId(sourceModelId);
+    const targetModelId = remap(sourceModelId);
     const sourceModel = sourceDb.models.getModel(sourceModelId);
     const targetModel = targetDb.models.tryGetModel(targetModelId);
     // expect(targetModel.toExist)
@@ -492,13 +484,9 @@ export async function assertIdentityTransformation(
       onlyInSourceElements.has(relInSource.SourceECInstanceId) &&
       onlyInSourceElements.has(relInSource.TargetECInstanceId);
     if (isOnlyInSource) continue;
-    const relSourceInTarget = remapContainer.context.findTargetElementId(
-      relInSource.SourceECInstanceId
-    );
+    const relSourceInTarget = remap(relInSource.SourceECInstanceId);
     expect(relSourceInTarget).to.not.equal(Id64.invalid);
-    const relTargetInTarget = remapContainer.context.findTargetElementId(
-      relInSource.TargetECInstanceId
-    );
+    const relTargetInTarget = remap(relInSource.TargetECInstanceId);
     expect(relTargetInTarget).to.not.equal(Id64.invalid);
     const relInTargetKey = makeRelationKey({
       SourceECInstanceId: relSourceInTarget,
