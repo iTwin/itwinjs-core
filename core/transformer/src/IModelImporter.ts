@@ -5,13 +5,14 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { CompressedId64Set, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Base64EncodedString, ElementAspectProps, ElementProps, EntityProps, IModel, IModelError, ModelProps, PrimitiveTypeCode,
   PropertyMetaData, RelatedElement, SubCategoryProps,
 } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
+import { IModelTransformOptions } from "./IModelTransformer";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 
@@ -509,6 +510,26 @@ export class IModelImporter implements Required<IModelImportOptions> {
     }
   }
 
+  /**
+   * Reload our state from a JSON object
+   * intended for [[IModelTransformer.resumeTransformation]]
+   * @internal
+   */
+  public loadStateFromJson(state: IModelImporterState): void {
+    // ignore readonly since this runs right after construction in [[IModelTransformer.resumeTransformation]]
+    (this.options as IModelTransformOptions) = state.options;
+    if (this.targetDb.iModelId !== state.targetDbId)
+      throw Error("can only load importer state when the same target is reused");
+    // TODO: fix upstream, looks like a bad case for the linter rule when casting away readonly for this generic
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    (this.doNotUpdateElementIds as Set<Id64String>) = CompressedId64Set.decompressSet(state.doNotUpdateElementIds);
+  }
+
+  /**
+   * Serialize state to a JSON object
+   * intended for [[IModelTransformer.resumeTransformation]]
+   * @internal
+   */
   public serializeStateToJson(): IModelImporterState {
     return {
       options: this.options,

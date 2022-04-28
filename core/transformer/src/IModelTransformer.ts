@@ -1114,6 +1114,8 @@ export class IModelTransformer extends IModelExportHandler {
     });
     // force assign to readonly options since we do not know how the transformer subclass takes options to pass to the superclass
     (transformer as any)._options = state.options;
+    transformer.importer.loadStateFromJson(state.importerState);
+    transformer.exporter.loadStateFromJson(state.exporterState);
     transformer.context.loadStateFromDb(db);
     db.closeDb();
     return transformer as InstanceType<SubClass>;

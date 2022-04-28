@@ -695,6 +695,11 @@ export class IModelExporter {
     }
   }
 
+  /**
+   * Reload our state from a JSON object
+   * intended for [[IModelTransformer.resumeTransformation]]
+   * @internal
+   */
   public loadStateFromJson(state: IModelExporterState): void {
     this.wantGeometry = state.wantGeometry;
     this.wantTemplateModels = state.wantTemplateModels;
@@ -710,6 +715,11 @@ export class IModelExporter {
     this._excludedRelationshipClasses = new Set(state.excludedRelationshipClassNames.map((c) => this.sourceDb.getJsClass(c)));
   }
 
+  /**
+   * Serialize state to a JSON object
+   * intended for [[IModelTransformer.resumeTransformation]]
+   * @internal
+   */
   public serializeStateToJson(): IModelExporterState {
     return {
       wantGeometry: this.wantGeometry,
