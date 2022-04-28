@@ -5,7 +5,7 @@
 
 import { BriefcaseDb, Element, IModelDb, IModelHost, IModelJsNative, Relationship, SnapshotDb } from "@itwin/core-backend";
 import { ExtensiveTestScenario, HubMock, HubWrappers, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, GuidString, Id64String, StopWatch } from "@itwin/core-bentley";
+import { AccessToken, GuidString, Id64, Id64String, StopWatch } from "@itwin/core-bentley";
 import { ChangesetId, ElementProps } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
@@ -66,12 +66,13 @@ class CountdownTransformer extends IModelTransformer {
   public callback: (() => Promise<void>) | undefined;
   public constructor(...args: ConstructorParameters<typeof IModelTransformer>) {
     super(...args);
-    const oldExportElem = this.exporter.exportElement.bind(this);
-    this.exporter.exportElement = async (elemId: Id64String) => {
-      if (this.elementExportsUntilCall === 0) await this.callback?.();
-      if (this.elementExportsUntilCall !== undefined)
-        this.elementExportsUntilCall--;
-      return oldExportElem(elemId);
+    const _this = this; // eslint-disable-line @typescript-eslint/no-this-alias
+    const oldExportElem = this.exporter.exportElement; // eslint-disable-line @typescript-eslint/unbound-method
+    this.exporter.exportElement = async function (elemId: Id64String) {
+      if (_this.elementExportsUntilCall === 0) await _this.callback?.();
+      if (_this.elementExportsUntilCall !== undefined)
+        _this.elementExportsUntilCall--;
+      return oldExportElem.call(this, elemId);
     };
   }
 }
@@ -225,41 +226,47 @@ describe("test resuming transformations", () => {
 
   after(() => HubMock.shutdown());
 
-  it.only("resume old state after partially committed changes", async () => {
+  it("resume old state after partially committed changes", async () => {
     const sourceDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: seedDb.nativeDb.getFilePath(), noLocks: true });
     const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
 
-    const regularTarget = await (async () => {
+    const [regularTransformer, regularTarget] = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb2", description: "non crashing target", noLocks: true });
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new IModelTransformer(sourceDb, targetDb);
-      return transformNoCrash({sourceDb, targetDb, transformer});
+      await transformNoCrash({sourceDb, targetDb, transformer});
+      targetDb.saveChanges();
+      return [transformer, targetDb] as const;
     })();
 
-    const resumedTarget = await (async () => {
+    const [resumedTransformer, resumedTarget] = await (async () => {
       const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
       let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
-      let transformer = new CountdownTransformer(sourceDb, targetDb);
-      transformer.elementExportsUntilCall = 10;
       let changesetId: ChangesetId;
+      const dumpPath = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "transformer-state.db");
+      let transformer = new CountdownTransformer(sourceDb, targetDb);
+      // after exporting 10 elements, save and push changes
+      transformer.elementExportsUntilCall = 10;
       transformer.callback = async () => {
         targetDb.saveChanges();
         await targetDb.pushChanges({accessToken, description: "early state save"});
+        transformer.serializeStateToFile(dumpPath);
         changesetId = targetDb.changeset.id;
-        throw Error("interrupt");
+        // now after another 10 exported elements, interrupt for resumption
+        transformer.elementExportsUntilCall = 10;
+        transformer.callback = () => {
+          throw Error("interrupt");
+        };
       };
       let interrupted = false;
       try {
         await transformer.processSchemas();
+        // will trigger the callback after 10 exported elements, which triggers another
+        // callback to be installed for after 20 elements, to throw an error to interrupt the transformation
         await transformer.processAll();
       } catch (transformerErr) {
         expect((transformerErr as Error).message).to.equal("interrupt");
         interrupted = true;
-        const dumpPath = IModelTestUtils.prepareOutputFile(
-          "IModelTransformerResumption",
-          "transformer-state.db"
-        );
-        transformer.serializeStateToFile(dumpPath);
         // redownload to simulate restarting without any JS state
         expect(targetDb.nativeDb.hasUnsavedChanges()).to.be.true;
         targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
@@ -269,13 +276,26 @@ describe("test resuming transformations", () => {
         const TransformerClass = transformer.constructor as typeof IModelTransformer;
         transformer = TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb) as CountdownTransformer;
         await transformer.processAll();
-        return targetDb;
+        targetDb.saveChanges();
+        return [transformer, targetDb] as const;
       }
       expect(interrupted, "should have interrupted rather than completing").to.be.true;
       throw Error("unreachable");
     })();
 
-    await assertIdentityTransformation(regularTarget, resumedTarget, { context: { findTargetElementId: (id) => id }});
+    const regularToResumedIdMap = new Map<Id64String, Id64String>();
+    for await (const [sourceElemId] of sourceDb.query("SELECT ECInstanceId from bis.Element")) {
+      const idInRegular = regularTransformer.context.findTargetElementId(sourceElemId);
+      const idInResumed = resumedTransformer.context.findTargetElementId(sourceElemId);
+      regularToResumedIdMap.set(idInRegular, idInResumed);
+    }
+
+    await assertIdentityTransformation(regularTarget, resumedTarget, {
+      context: {
+        findTargetElementId: (id) =>
+          regularToResumedIdMap.get(id) ?? Id64.invalid,
+      },
+    });
     resumedTarget.close();
     regularTarget.close();
   });

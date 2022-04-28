@@ -16,6 +16,7 @@ import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategor
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
+  assertIdentityTransformation,
   CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer,
   TransformerExtensiveTestScenario as TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
@@ -658,5 +659,4 @@ describe("IModelTransformerHub", () => {
       return physicalObjectId;
     }
   }
-
 });
