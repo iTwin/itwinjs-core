@@ -17,17 +17,17 @@ export interface ArcGisEnterpriseClientId {
   clientId: string;
 }
 /** @beta */
-export interface EsriOAuthClientIds {
+export interface ArcGisOAuthClientIds {
   arcgisOnlineClientId?: string;
   enterpriseClientIds?: ArcGisEnterpriseClientId[];
 }
 
 /** @beta */
 export class ArcGisAccessClient implements MapLayerAccessClient {
-  public readonly onOAuthProcessEnd =  new BeEvent();
-  private _redirectUri: string|undefined;
-  private _expiration: number|undefined;
-  private  _clientIds: EsriOAuthClientIds|undefined;
+  public readonly onOAuthProcessEnd = new BeEvent();
+  private _redirectUri: string | undefined;
+  private _expiration: number | undefined;
+  private _clientIds: ArcGisOAuthClientIds | undefined;
 
   public constructor() {
   }
@@ -36,7 +36,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     this._redirectUri = redirectUri;
     this._expiration = tokenExpiration;
 
-    (window as any).esriOAuth2Callback = (redirectLocation?: Location) => {
+    (window as any).arcGisOAuth2Callback = (redirectLocation?: Location) => {
       let eventSuccess = false;
       let decodedState;
 
@@ -49,12 +49,12 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
         const ssl = hashParams.get("ssl") === "true";
         const state = hashParams.get("state") ?? undefined;
         const persist = hashParams.get("persist") === "true";
-        if ( token !== undefined && expiresInStr !== undefined && userName !== undefined && ssl !== undefined && state !== undefined) {
+        if (token !== undefined && expiresInStr !== undefined && userName !== undefined && ssl !== undefined && state !== undefined) {
           decodedState = decodeURIComponent(state);
           const stateUrl = new URL(decodedState);
           const expiresIn = Number(expiresInStr);
           const expiresAt = (expiresIn * 1000) + (+new Date());   // Converts the token expiration delay (seconds) into a timestamp (UNIX time)
-          ArcGisTokenManager.setOAuth2Token(stateUrl.origin, {token, expiresAt, ssl, userName, persist});
+          ArcGisTokenManager.setOAuth2Token(stateUrl.origin, { token, expiresAt, ssl, userName, persist });
           eventSuccess = true;
         }
       }
@@ -66,10 +66,10 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   public unInitialize() {
     this._redirectUri = undefined;
     this._expiration = undefined;
-    (window as any).esriOAuth2Callback = undefined;
+    (window as any).arcGisOAuth2Callback = undefined;
   }
 
-  public async getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined> {
+  public async getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined> {
     // First lookup Oauth2 tokens, otherwise check try "legacy tokens" if credentials were provided
     try {
       const oauth2Token = await this.getOAuthTokenForMapLayerUrl(params.mapLayerUrl.toString());
@@ -101,23 +101,23 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   public invalidateToken(token: MapLayerAccessToken): boolean {
-    let  found =  ArcGisTokenManager.invalidateToken(token);
+    let found = ArcGisTokenManager.invalidateToken(token);
     if (!found) {
-      found =  ArcGisTokenManager.invalidateOAuth2Token(token);
+      found = ArcGisTokenManager.invalidateOAuth2Token(token);
     }
     return found;
   }
 
   /// //////////
   /** @internal */
-  public  async getOAuthTokenForMapLayerUrl(mapLayerUrl: string): Promise<ArcGisOAuth2Token|undefined> {
+  public async getOAuthTokenForMapLayerUrl(mapLayerUrl: string): Promise<ArcGisOAuth2Token | undefined> {
     try {
       const oauthEndpoint = await this.getOAuth2EndpointFromMapLayerUrl(mapLayerUrl, ArcGisOAuth2EndpointType.Authorize);
       if (oauthEndpoint !== undefined) {
         const oauthEndpointUrl = new URL(oauthEndpoint.getUrl());
         return ArcGisTokenManager.getOAuth2Token(oauthEndpointUrl.origin);
       }
-    } catch {}
+    } catch { }
     return undefined;
   }
 
@@ -126,7 +126,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   public getMatchingEnterpriseClientId(url: string) {
-    let clientId: string|undefined;
+    let clientId: string | undefined;
     const clientIds = this.arcGisEnterpriseClientIds;
     if (!clientIds) {
       return undefined;
@@ -147,9 +147,9 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     return this._clientIds?.arcgisOnlineClientId;
   }
 
-  public set arcGisOnlineClientId(clientId: string|undefined) {
+  public set arcGisOnlineClientId(clientId: string | undefined) {
     if (this._clientIds === undefined) {
-      this._clientIds  = {arcgisOnlineClientId: clientId };
+      this._clientIds = { arcgisOnlineClientId: clientId };
     }
     this._clientIds.arcgisOnlineClientId = clientId;
   }
@@ -161,17 +161,17 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   public setEnterpriseClientId(serviceBaseUrl: string, clientId: string) {
 
     if (this._clientIds?.enterpriseClientIds) {
-      const foundIdx = this._clientIds.enterpriseClientIds.findIndex((entry)=>entry.serviceBaseUrl === serviceBaseUrl);
+      const foundIdx = this._clientIds.enterpriseClientIds.findIndex((entry) => entry.serviceBaseUrl === serviceBaseUrl);
       if (foundIdx !== -1) {
         this._clientIds.enterpriseClientIds[foundIdx].clientId = clientId;
       } else {
-        this._clientIds.enterpriseClientIds.push({serviceBaseUrl, clientId});
+        this._clientIds.enterpriseClientIds.push({ serviceBaseUrl, clientId });
       }
     } else {
       if (this._clientIds === undefined) {
-        this._clientIds  = {};
+        this._clientIds = {};
       }
-      this._clientIds.enterpriseClientIds = [{serviceBaseUrl, clientId}];
+      this._clientIds.enterpriseClientIds = [{ serviceBaseUrl, clientId }];
     }
   }
 

@@ -112,13 +112,6 @@
     "UseDepthBuffer": "Allow Model Under Map",
     "Locatable": "Locatable"
   },
-  "EsriSettings": {
-    "ArcGISOnlineButtonTitle": "ArcGIS Online",
-    "ArcGISEnterpriseLabel": "ArcGIS Enterprise",
-    "clientIdLabel": "Client ID",
-    "EditOAuthParamsTitle": "Edit OAuth parameters",
-    "EndpointOriginLabel": "Endpoint Origin"
-  },
   "SubLayers": {
     "AllOn": "Turn on all Sub-layers",
     "AllOff": "Turn off all Sub-layers",

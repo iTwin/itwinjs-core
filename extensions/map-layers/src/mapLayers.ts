@@ -8,7 +8,6 @@ import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 import { FeatureInfoUiItemsProvider } from "./ui/FeatureInfoUiItemsProvider";
 import { MapFeatureInfoOptions, MapLayerOptions } from "./ui/Interfaces";
-import { ArcGisAccessClient } from "./auth/ArcGisAccessClient";
 
 export interface MapLayersConfig {
   localization?: Localization;
@@ -60,7 +59,6 @@ export class MapLayersUI {
       UiItemsManager.register(uiProvider);
     });
 
-    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", new ArcGisAccessClient());
   }
 
   /** Unregisters internationalization service namespace and UiItemManager  */

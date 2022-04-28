@@ -19,13 +19,13 @@ export class ArcGisTokenManager {
   private static _cache = new Map<string, ArcGisToken>();
   private static _oauth2Cache: Map<string, ArcGisOAuth2Token>|undefined;
   private static _generator: ArcGisTokenGenerator | undefined;
-  private static readonly _browserStorageKey = "esriOAuth";
+  private static readonly _browserStorageKey = "arcGisOAuth";
 
-  public static async getToken(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any> {
+  public static async getToken(arcGisRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any> {
     if (!ArcGisTokenManager._generator)
       ArcGisTokenManager._generator = new ArcGisTokenGenerator();
 
-    const tokenCacheKey = `${encodeURIComponent(userName)}@${esriRestServiceUrl}`;
+    const tokenCacheKey = `${encodeURIComponent(userName)}@${arcGisRestServiceUrl}`;
 
     // First check in the session cache
     const cachedToken = ArcGisTokenManager._cache.get(tokenCacheKey);
@@ -36,19 +36,13 @@ export class ArcGisTokenManager {
     }
 
     // Nothing in cache, generate a new token
-    const newToken = await ArcGisTokenManager._generator.generate(esriRestServiceUrl, userName, password, options);
+    const newToken = await ArcGisTokenManager._generator.generate(arcGisRestServiceUrl, userName, password, options);
     if (newToken.token) {
       ArcGisTokenManager._cache.set(tokenCacheKey, newToken as ArcGisToken);
     }
 
     return newToken;
   }
-
-  /*
-  public static invalidateToken(esriRestServiceUrl: string, userName: string): boolean {
-    const tokenCacheKey = `${userName}@${esriRestServiceUrl}`;
-    return ArcGisTokenManager._cache.delete(tokenCacheKey);
-  }*/
 
   public static invalidateToken(token: MapLayerAccessToken): boolean {
 

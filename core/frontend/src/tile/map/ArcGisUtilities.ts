@@ -132,7 +132,7 @@ export class ArcGisUtilities {
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
         return { status: MapLayerSourceStatus.RequireAuth};
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
-        return { status: MapLayerSourceStatus.InvalidCredentials, authInfo: { authMethod: MapLayerAuthType.EsriToken } };
+        return { status: MapLayerSourceStatus.InvalidCredentials, authInfo: { authMethod: MapLayerAuthType.ArcGisToken } };
     }
 
     // Check this service support map queries

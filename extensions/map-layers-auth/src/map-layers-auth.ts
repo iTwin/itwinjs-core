@@ -5,4 +5,4 @@
 export * from "./ArcGis/ArcGisOAuth2Endpoint";
 export * from "./ArcGis/ArcGisUrl";
 export * from "./ArcGis/ArcGisAccessClient";
-export * from "./ArcGis/EsriOAuth2Callback";
+export * from "./ArcGis/ArcGisOauthRedirect";

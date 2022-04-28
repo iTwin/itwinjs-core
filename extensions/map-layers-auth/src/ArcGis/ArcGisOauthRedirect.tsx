@@ -6,16 +6,16 @@ import { ProgressRadial } from "@itwin/itwinui-react";
 import * as React from "react";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function EsriOAuth2Callback() {
+export function ArcGisOauthRedirect() {
 
   const completeLogin = () => {
     if (window.opener) {
-      const opener = (window.opener );
-      if (opener?.esriOAuth2Callback) {
-        opener.esriOAuth2Callback(window.location);
+      const opener = (window.opener);
+      if (opener?.arcGisOAuth2Callback) {
+        opener.arcGisOAuth2Callback(window.location);
       } else {
         // eslint-disable-next-line no-console
-        console.log("ERROR: esriOAuth2Callback is not defined");
+        console.log("ERROR: arcGisOAuth2Callback is not defined");
       }
     }
   };

@@ -78,8 +78,8 @@ export class ArcGisTokenGenerator {
   // Cache info url to avoid fetching/parsing twice for the same base url.
   private static _tokenServiceUrlCache = new Map<string, string>();
 
-  public static async fetchTokenServiceUrl(esriRestServiceUrl: string): Promise<string | undefined> {
-    const lowerUrl = esriRestServiceUrl.toLowerCase();
+  public static async fetchTokenServiceUrl(arcGisRestServiceUrl: string): Promise<string | undefined> {
+    const lowerUrl = arcGisRestServiceUrl.toLowerCase();
     const restApiIdx = lowerUrl.indexOf(ArcGisTokenGenerator.restApiPath);
     if (restApiIdx === -1)
       return undefined;
@@ -111,8 +111,8 @@ export class ArcGisTokenGenerator {
   }
 
   // base url:  ArcGis REST service base URL (format must be "https://<host>/<instance>/rest/")
-  public async generate(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any> {
-    const tokenServiceUrl = await this.getTokenServiceUrl(esriRestServiceUrl);
+  public async generate(arcGisRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any> {
+    const tokenServiceUrl = await this.getTokenServiceUrl(arcGisRestServiceUrl);
     if (!tokenServiceUrl)
       return undefined;
 

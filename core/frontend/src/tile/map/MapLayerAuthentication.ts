@@ -12,8 +12,8 @@ import { BeEvent, Listener } from "@itwin/core-bentley";
 export enum MapLayerAuthType {
   None = 1,
   Basic = 2,
-  EsriToken = 3,
-  EsriOAuth2 = 4,
+  ArcGisToken = 3,
+  ArcGisOAuth2 = 4,
 }
 /** @internal */
 export interface MapLayerTokenEndpoint {
