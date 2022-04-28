@@ -82,13 +82,12 @@ export namespace WmsCapability {
     public readonly subLayers = new Array<SubLayer>();
     private static readonly PREFIX_SEPARATOR = ":";
 
-    constructor(_json: any) {
-      this.queryable = _json.queryable;
-      this.title = _json.title;
-      this.srs = initArray<string>(_json.SRS);
-      this.cartoRange = rangeFromJSON(_json);
-      this.subLayers.push(new SubLayer(_json));
-
+    constructor(json: any, capabilities: WmsCapabilities) {
+      this.queryable = json.queryable;
+      this.title = json.title;
+      this.srs = initArray<string>(capabilities.isVersion13 ? json.CRS : json.SRS);
+      this.cartoRange = rangeFromJSON(json);
+      this.subLayers.push(new SubLayer(json, capabilities));
     }
     public getSubLayers(visible = true): MapSubLayerProps[] {
       const subLayers = new Array<MapSubLayerProps>();
@@ -167,7 +166,7 @@ export namespace WmsCapability {
     public readonly cartoRange?: MapCartoRectangle;
     public readonly children?: SubLayer[];
     public readonly queryable: boolean;
-    public constructor(_json: any, public readonly parent?: SubLayer) {
+    public constructor(_json: any, capabilities: WmsCapabilities, public readonly parent?: SubLayer) {
 
       const getParentCrs = (parentLayer: SubLayer, crsSet: Set<string>) => {
         parentLayer.crs.forEach((parentCrs) => crsSet.add(parentCrs));
@@ -180,7 +179,7 @@ export namespace WmsCapability {
       this.title = _json.Title;
       this.queryable = _json.queryable ? true : false;
       this.cartoRange = rangeFromJSON(_json);
-      this.ownCrs = _json.CRS;
+      this.ownCrs = capabilities.isVersion13 ? _json.CRS : _json.SRS;
       const crs = new Set<string>(this.ownCrs);
       if (parent) {
         getParentCrs(parent, crs);
@@ -190,7 +189,7 @@ export namespace WmsCapability {
       if (Array.isArray(_json.Layer)) {
         this.children = new Array<SubLayer>();
         for (const childLayer of _json.Layer) {
-          this.children.push(new SubLayer(childLayer, this));
+          this.children.push(new SubLayer(childLayer, capabilities, this));
         }
       }
     }
@@ -202,6 +201,7 @@ export class WmsCapabilities {
   private static _capabilitiesCache = new Map<string, WmsCapabilities | undefined>();
   public readonly service: WmsCapability.Service;
   public readonly version?: string;
+  public readonly isVersion13: boolean;
   public readonly layer?: WmsCapability.Layer;
   public get json() { return this._json; }
   public get maxLevel(): number { return this.layer ? this.layer.subLayers.length : - 1; }
@@ -210,9 +210,10 @@ export class WmsCapabilities {
   public get featureInfoFormats(): string[] | undefined { return Array.isArray(this._json.Capability?.Request?.GetFeatureInfo?.Format) ? this._json.Capability?.Request?.GetFeatureInfo?.Format : undefined; }
   constructor(private _json: any) {
     this.version = _json.version;
+    this.isVersion13 = _json.version !== undefined && 0 === _json.version.indexOf("1.3");
     this.service = new WmsCapability.Service(_json.Service);
     if (_json.Capability)
-      this.layer = new WmsCapability.Layer(_json.Capability.Layer);
+      this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
   }
 
   public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmsCapabilities | undefined> {

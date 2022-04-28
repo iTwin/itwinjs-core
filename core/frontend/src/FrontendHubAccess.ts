@@ -9,7 +9,10 @@
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export interface IModelIdArg {
   iModelId: GuidString;
   accessToken: AccessToken;

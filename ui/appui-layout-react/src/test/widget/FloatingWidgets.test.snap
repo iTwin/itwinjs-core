@@ -2,7 +2,7 @@
 
 exports[`FloatingWidgets should render 1`] = `
 <div
-  class="nz-widget-widget nz-widget-floatingWidget"
+  class="nz-widget-widget nz-widget-floatingWidget nz-hidden"
   data-widget-id="w1"
   style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
 >

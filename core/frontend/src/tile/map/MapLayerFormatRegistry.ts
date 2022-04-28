@@ -36,16 +36,20 @@ export interface MapLayerSourceValidation {
 }
 
 /**
- * Options to be passed to the IModelApp on startup which contain access keys for various layer formats
+ * Options supplied at startup via [[IModelAppOptions.mapLayerOptions]] to specify access keys for various map layer formats.
  * @beta
  */
 export interface MapLayerOptions {
+  /** Access key for Azure Maps in the format `{ key: "subscription-key", value: "your-azure-maps-key" }`. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   AzureMaps?: MapLayerKey;
+  /** Access key for Mapbox in the format `{ key: "access_token", value: "your-mapbox-key" }`. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   MapboxImagery?: MapLayerKey;
+  /** Access key for Bing Maps in the format `{ key: "key", value: "your-bing-maps-key" }`. */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   BingMaps?: MapLayerKey;
+  /** Access keys for additional map layer formats. */
   [format: string]: MapLayerKey | undefined;
 }
 

@@ -18,6 +18,7 @@ import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoreTools, Interactiv
 /** The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
  * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)
  * @public
+ * @extensions
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   /** The viewport within which the tool operates.

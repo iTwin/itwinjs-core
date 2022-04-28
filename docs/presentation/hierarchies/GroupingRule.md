@@ -91,7 +91,7 @@ Controls the order in which specifications are handled — specification with hi
 
 ### Attribute: `onlyIfNotHandled`
 
-Specifies whether this rule should be ignored if another rule was handled before as determined by rule priorities. This provides a mechanism for defining a fallback rule.
+When `true`, the rule takes effect only when all other grouping rules with higher priority are ruled out. This attribute is most useful for defining fallback rules.
 
 |                   |           |
 | ----------------- | --------- |
