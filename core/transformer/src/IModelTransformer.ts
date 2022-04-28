@@ -798,7 +798,8 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps {
     const targetModelProps: ModelProps = sourceModel.toJSON();
-    targetModelProps.modeledElement.id = targetModeledElementId;
+    // don't directly edit deep object since toJSON performs a shallow clone
+    targetModelProps.modeledElement = { ...targetModelProps.modeledElement, id: targetModeledElementId };
     targetModelProps.id = targetModeledElementId;
     targetModelProps.parentModel = this.context.findTargetElementId(targetModelProps.parentModel!);
     return targetModelProps;

@@ -174,6 +174,7 @@ async function transformWithCrashAndRecover<
   try {
     await transformerProcessing(transformer);
   } catch (transformerErr) {
+    expect((transformerErr as Error).message).to.equal("crash");
     crashed = true;
     const dumpPath = IModelTestUtils.prepareOutputFile(
       "IModelTransformerResumption",
@@ -231,7 +232,7 @@ describe("test resuming transformations", () => {
   after(() => HubMock.shutdown());
 
   it("resume old state after partially committed changes", async () => {
-    const sourceDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: seedDb.nativeDb.getFilePath(), noLocks: true });
+    const sourceDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: seedDb.pathName, noLocks: true });
     const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
 
     const [regularTransformer, regularTarget] = await (async () => {
@@ -304,8 +305,14 @@ describe("test resuming transformations", () => {
     regularTarget.close();
   });
 
-  it.only("simple single crash transform resumption", async () => {
-    const sourceDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", noLocks: true });
+  it("simple single crash transform resumption", async () => {
+    const sourceDbId = await IModelHost.hubAccess.createNewIModel({
+      iTwinId,
+      iModelName: "sourceDb1",
+      description: "a db called sourceDb1",
+      noLocks: true,
+      version0: seedDb.pathName,
+    });
     const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
 
     const crashingTarget = await (async () => {
@@ -317,6 +324,7 @@ describe("test resuming transformations", () => {
         t.elementExportsUntilCall = undefined;
       }});
       targetDb.saveChanges();
+      transformer.dispose();
       return targetDb;
     })();
 
@@ -326,6 +334,7 @@ describe("test resuming transformations", () => {
       const transformer = new IModelTransformer(sourceDb, targetDb);
       await transformNoCrash({sourceDb, targetDb, transformer});
       targetDb.saveChanges();
+      transformer.dispose();
       return targetDb;
     })();
 
@@ -334,19 +343,59 @@ describe("test resuming transformations", () => {
     regularTarget.close();
   });
 
-  it.only("processChanges crash and resume", async () => {
-    const sourceDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: seedDb.nativeDb.getFilePath(), noLocks: true });
+  it("processChanges crash and resume", async () => {
+    const sourceDbId = await IModelHost.hubAccess.createNewIModel({
+      iTwinId,
+      iModelName: "sourceDb1",
+      description: "a db called sourceDb1",
+      noLocks: true,
+    });
     const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
     await ExtensiveTestScenario.prepareDb(sourceDb);
     ExtensiveTestScenario.populateDb(sourceDb);
     sourceDb.saveChanges();
     await sourceDb.pushChanges({accessToken, description: "populated source db"});
+
+    const targetDbRev0Path = IModelTestUtils.prepareOutputFile("IModelTransformerResumption", "processChanges-targetDbRev0.bim");
+    const targetDbRev0 = SnapshotDb.createFrom(sourceDb, targetDbRev0Path);
+    const provenanceTransformer = new IModelTransformer(sourceDb, targetDbRev0, { wasSourceIModelCopiedToTarget: true });
+    await provenanceTransformer.processAll();
+    provenanceTransformer.dispose();
+    targetDbRev0.saveChanges();
+
     ExtensiveTestScenario.updateDb(sourceDb);
     sourceDb.saveChanges();
     await sourceDb.pushChanges({accessToken, description: "updated source db"});
 
+    const regularTarget = await (async () => {
+      const targetDbId = await IModelHost.hubAccess.createNewIModel({
+        iTwinId,
+        iModelName: "targetDb1",
+        description: "non crashing target",
+        noLocks: true,
+        version0: targetDbRev0Path,
+      });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      await transformNoCrash({
+        sourceDb, targetDb, transformer,
+        async transformerProcessing(t) {
+          await t.processChanges(accessToken);
+        },
+      });
+      targetDb.saveChanges();
+      transformer.dispose();
+      return targetDb;
+    })();
+
     const crashingTarget = await (async () => {
-      const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "sourceDb1", description: "a db called sourceDb1", version0: seedDb.nativeDb.getFilePath(), noLocks: true });
+      const targetDbId = await IModelHost.hubAccess.createNewIModel({
+        iTwinId,
+        iModelName: "targetDb2",
+        description: "crashing target",
+        noLocks: true,
+        version0: targetDbRev0Path,
+      });
       const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCall = 10;
@@ -357,20 +406,7 @@ describe("test resuming transformations", () => {
       }});
       targetDb.saveChanges();
       await targetDb.pushChanges({accessToken, description: "completed transformation that crashed"});
-      return targetDb;
-    })();
-
-    const regularTarget = await (async () => {
-      const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb2", description: "non crashing target", noLocks: true });
-      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
-      const transformer = new IModelTransformer(sourceDb, targetDb);
-      await transformNoCrash({
-        sourceDb, targetDb, transformer,
-        async transformerProcessing(t) {
-          await t.processChanges(accessToken);
-        },
-      });
-      targetDb.saveChanges();
+      transformer.dispose();
       return targetDb;
     })();
 
@@ -391,16 +427,22 @@ describe("test resuming transformations", () => {
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
       const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
       transformer.elementExportsUntilCall = Number(process.env.TRANSFORMER_RESUMPTION_TEST_SINGLE_MODEL_ELEMENTS_BEFORE_CRASH) || 2_500_000;
-      return transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(t) {
+      await transformWithCrashAndRecover({sourceDb, targetDb, transformer, disableCrashing(t) {
         t.elementExportsUntilCall = undefined;
       }});
+      targetDb.saveChanges();
+      transformer.dispose();
+      return targetDb;
     })();
 
     const regularTarget = await (async () => {
       const targetDbPath = "/tmp/huge-model-out.bim";
       const targetDb = SnapshotDb.createEmpty(targetDbPath, sourceDb);
       const transformer = new IModelTransformer(sourceDb, targetDb);
-      return transformNoCrash({sourceDb, targetDb, transformer});
+      await transformNoCrash({sourceDb, targetDb, transformer});
+      targetDb.saveChanges();
+      transformer.dispose();
+      return targetDb;
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget, { context: { findTargetElementId: (id) => id }});
