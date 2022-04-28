@@ -15,7 +15,7 @@ import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { mobileAppChannel } from "../common/MobileAppChannel";
 import { BatteryState, DeviceEvents, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
-import { MobileAppAuthorizationConfiguration, MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
+import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 
 /** @beta */
@@ -66,17 +66,16 @@ export abstract class MobileDevice {
   public abstract resumeDownloadInForeground(requestId: number): boolean;
   public abstract resumeDownloadInBackground(requestId: number): boolean;
   public abstract reconnect(connection: number): void;
-  public abstract authSignIn(callback: (err?: string) => void): void;
-  public abstract authSignOut(callback: (err?: string) => void): void;
   public abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
-  public authInit(_config: MobileAppAuthorizationConfiguration, callback: (err?: string) => void): void { callback(); }
-  public abstract authStateChanged(accessToken?: string, err?: string): void;
 }
 
 class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
   public get channelName() { return mobileAppChannel; }
   public async reconnect(connection: number) {
     MobileHost.reconnect(connection);
+  }
+  public async getAccessToken() {
+    return IModelHost.authorizationClient?.getAccessToken() ?? "";
   }
 }
 
@@ -86,10 +85,6 @@ export interface MobileHostOpts extends NativeHostOpts {
     device?: MobileDevice;
     /** list of RPC interface definitions to register */
     rpcInterfaces?: RpcInterfaceDefinition[];
-    /** if present, [[IModelHost.authorizationClient]] will be set to an instance of [[MobileAuthorizationBackend]]. */
-    authConfig?: MobileAppAuthorizationConfiguration;
-    /** if true, do not attempt to initialize AuthorizationClient on startup */
-    noInitializeAuthClient?: boolean;
   };
 }
 
@@ -104,9 +99,6 @@ export class MobileHost {
   public static readonly onEnterForeground = new BeEvent();
   public static readonly onEnterBackground = new BeEvent();
   public static readonly onWillTerminate = new BeEvent();
-
-  /** @internal */
-  public static get authorization() { return IModelHost.authorizationClient; }
 
   /**  @internal */
   public static reconnect(connection: number) {
@@ -174,11 +166,6 @@ export class MobileHost {
 
     MobileRpcManager.initializeImpl(rpcInterfaces);
 
-    const authorizationBackend = new MobileAuthorizationBackend(opt?.mobileHost?.authConfig);
-    const connectivityStatus = NativeHost.checkInternetConnectivity();
-    if (opt?.mobileHost?.authConfig && true !== opt?.mobileHost?.noInitializeAuthClient && connectivityStatus === InternetConnectivityStatus.Online) {
-      await authorizationBackend.initialize(opt?.mobileHost?.authConfig);
-    }
-    IModelHost.authorizationClient = authorizationBackend;
+    IModelHost.authorizationClient = new MobileAuthorizationBackend();
   }
 }

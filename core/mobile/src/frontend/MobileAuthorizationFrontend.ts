@@ -8,28 +8,18 @@
 
 import { AccessToken } from "@itwin/core-bentley";
 import { AuthorizationClient } from "@itwin/core-common";
-import { MobileHost } from "./MobileHost";
+import { MobileApp } from "./MobileApp";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
  * @beta
  */
-export class MobileAuthorizationBackend implements AuthorizationClient {
+export class MobileAuthorizationFrontend implements AuthorizationClient {
   protected _accessToken: AccessToken = "";
 
   public async getAccessToken(): Promise<AccessToken> {
-    return new Promise<AccessToken>((resolve, reject) => {
-      if (this._accessToken) {
-        resolve(this._accessToken);
-      } else {
-        MobileHost.device.authGetAccessToken((tokenString?: AccessToken, error?: String) => {
-          if (error) {
-            this._accessToken = "";
-            reject(error);
-          }
-          this._accessToken = tokenString ?? "";
-          resolve(this._accessToken);
-        });
-      }
-    });
+    if (!this._accessToken) {
+      this._accessToken = (await MobileApp.callBackend("getAccessToken")) ?? "";
+    }
+    return this._accessToken;
   }
 }

@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { AccessToken } from "@itwin/core-bentley";
+
 /** @beta */
 export enum Orientation {
   Unknown = 0,
@@ -40,4 +42,5 @@ export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForegr
 */
 export interface MobileAppFunctions {
   reconnect: (connection: number) => Promise<void>;
+  getAccessToken: () => Promise<AccessToken>;
 }
