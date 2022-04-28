@@ -377,7 +377,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     // Attach source asynchronously.
     void (async () => {
       try {
-        console.log("attemptAttachSource from handleOk");
         const closeDialog = await attemptAttachSource(source);
         if (isMounted.current) {
           setLayerAttachPending(false);
@@ -399,7 +398,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   React.useEffect(() => {
     const handleOAuthProcessEnd = (success: boolean, _state: string ) => {
-      console.log(`Raising event onOauthProcessEnd`);
       onOauthProcessEnd.raiseEvent(success, _state);
     };
 
@@ -409,11 +407,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     if (ac?.onOAuthProcessEnd) {
       setAccessClient(ac);   // cache it, so we dont need to make another lookup;
       ac.onOAuthProcessEnd.addListener(handleOAuthProcessEnd);
-      console.log(`accessClient.onOAuthProcessEnd.addListener, numberOfListeners: ${ ac.onOAuthProcessEnd.numberOfListeners}`);
     }
     setAccessClientInitialized(true);
     return () => {
-      console.log(`accessClient.onOAuthProcessEnd.removeListener}`);
       if (ac?.onOAuthProcessEnd) {
         ac.onOAuthProcessEnd.removeListener(handleOAuthProcessEnd);
       }
@@ -496,7 +492,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         setOAuthProcessSucceeded(true);
         setShowOauthPopup(false);
         setLayerAttachPending(false);
-        console.log("Call to handleOk from onOauthProcessEnd effect");
         handleOk(); // Add the layer the same way the user would do by clicking 'ok'
       } else {
         setShowOauthPopup(false);
@@ -506,9 +501,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     };
 
     onOauthProcessEnd.addListener(handleOauthProcess);
-    console.log(`onOauthProcessEnd.addListener, numberOfListeners: ${ onOauthProcessEnd.numberOfListeners}`);
     return () => {
-      console.log("onOauthProcessEnd.removeListener");
       onOauthProcessEnd.removeListener(handleOauthProcess);
     };
   }, [handleOk, onOauthProcessEnd]);
