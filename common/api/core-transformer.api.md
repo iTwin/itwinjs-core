@@ -6,6 +6,7 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { CodeSpec } from '@itwin/core-common';
+import { CompressedId64Set } from '@itwin/core-bentley';
 import * as ECSchemaMetaData from '@itwin/ecschema-metadata';
 import { Element } from '@itwin/core-backend';
 import { ElementAspect } from '@itwin/core-backend';
@@ -53,8 +54,12 @@ export class IModelExporter {
     exportSchemas(): Promise<void>;
     exportSubModels(parentModelId: Id64String): Promise<void>;
     protected get handler(): IModelExportHandler;
+    // @internal
+    loadStateFromJson(state: IModelExporterState): void;
     progressInterval: number;
     registerHandler(handler: IModelExportHandler): void;
+    // @internal
+    saveStateToJson(): IModelExporterState;
     shouldExportElement(element: Element): boolean;
     readonly sourceDb: IModelDb;
     visitElements: boolean;
@@ -63,6 +68,32 @@ export class IModelExporter {
     wantSystemSchemas: boolean;
     wantTemplateModels: boolean;
     }
+
+// @internal
+export interface IModelExporterState {
+    // (undocumented)
+    excludedCodeSpecNames: string[];
+    // (undocumented)
+    excludedElementAspectClassFullNames: string[];
+    // (undocumented)
+    excludedElementCategoryIds: CompressedId64Set;
+    // (undocumented)
+    excludedElementClassNames: string[];
+    // (undocumented)
+    excludedElementIds: CompressedId64Set;
+    // (undocumented)
+    excludedRelationshipClassNames: string[];
+    // (undocumented)
+    visitElements: boolean;
+    // (undocumented)
+    visitRelationships: boolean;
+    // (undocumented)
+    wantGeometry: boolean;
+    // (undocumented)
+    wantSystemSchemas: boolean;
+    // (undocumented)
+    wantTemplateModels: boolean;
+}
 
 // @beta
 export abstract class IModelExportHandler {
@@ -102,6 +133,8 @@ export class IModelImporter implements Required<IModelImportOptions> {
     importElementUniqueAspect(aspectProps: ElementAspectProps): void;
     importModel(modelProps: ModelProps): void;
     importRelationship(relationshipProps: RelationshipProps): Id64String;
+    // @internal
+    loadStateFromJson(state: IModelImporterState): void;
     protected onDeleteElement(elementId: Id64String): void;
     protected onDeleteElementAspect(targetElementAspect: ElementAspect): void;
     protected onDeleteRelationship(relationshipProps: RelationshipProps): void;
@@ -120,11 +153,23 @@ export class IModelImporter implements Required<IModelImportOptions> {
     get preserveElementIdsForFiltering(): boolean;
     set preserveElementIdsForFiltering(val: boolean);
     progressInterval: number;
+    // @internal
+    saveStateToJson(): IModelImporterState;
     // @deprecated
     get simplifyElementGeometry(): boolean;
     set simplifyElementGeometry(val: boolean);
     readonly targetDb: IModelDb;
     }
+
+// @internal
+export interface IModelImporterState {
+    // (undocumented)
+    doNotUpdateElementIds: CompressedId64Set;
+    // (undocumented)
+    options: IModelImportOptions;
+    // (undocumented)
+    targetDbId: string;
+}
 
 // @beta
 export interface IModelImportOptions {
@@ -146,6 +191,8 @@ export class IModelTransformer extends IModelExportHandler {
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
     initFromExternalSourceAspects(): void;
+    // @internal
+    static readonly jsStateTable = "TransformerJsState";
     onDeleteElement(sourceElementId: Id64String): void;
     onDeleteModel(_sourceModelId: Id64String): void;
     onDeleteRelationship(sourceRelInstanceId: Id64String): void;
@@ -182,6 +229,8 @@ export class IModelTransformer extends IModelExportHandler {
     get provenanceDb(): IModelDb;
     static get provenanceElementAspectClasses(): (typeof Entity)[];
     static get provenanceElementClasses(): (typeof Entity)[];
+    static resumeTransformation<SubClass extends new (...a: any[]) => IModelTransformer = typeof IModelTransformer>(this: SubClass, statePath: string, ...constructorArgs: ConstructorParameters<SubClass>): InstanceType<SubClass>;
+    saveStateToFile(nativeStatePath: string): void;
     protected _schemaExportDir: string;
     shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     shouldExportElement(_sourceElement: Element): boolean;

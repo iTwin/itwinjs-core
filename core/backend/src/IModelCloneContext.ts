@@ -159,12 +159,16 @@ export class IModelCloneContext {
   /**
    * serialize state to a sqlite database at a given path
    * assumes the database has not already had any context state serialized to it
+   * @internal
    */
   public saveStateToDb(db: SQLiteDb): void {
     this._nativeContext.saveStateToDb(db.nativeDb);
   }
 
-  /** load state from a sqlite database at a given path */
+  /**
+   * load state from a sqlite database at a given path
+   * @internal
+   */
   public loadStateFromDb(db: SQLiteDb): void {
     this._nativeContext.loadStateFromDb(db.nativeDb);
   }

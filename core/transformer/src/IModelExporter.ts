@@ -743,6 +743,7 @@ export class IModelExporter {
  * such as resuming a crashed transformation
  *
  * @note Must be kept synchronized with IModelExporter
+ * @internal
  */
 export interface IModelExporterState {
   /* eslint-disable @typescript-eslint/naming-convention */

@@ -1086,6 +1086,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.finalizeTransformation();
   }
 
+  /** @internal the name of the table where javascript state of the transformer is serialized in transformer state dumps */
   public static readonly jsStateTable = "TransformerJsState";
 
   /**

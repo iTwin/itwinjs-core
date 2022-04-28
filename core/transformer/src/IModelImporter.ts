@@ -539,6 +539,14 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 }
 
+/**
+ * The JSON format of a serialized IModelimporter instance
+ * Used for starting an importer in the middle of an imxport operation,
+ * such as resuming a crashed transformation
+ *
+ * @note Must be kept synchronized with IModelImxporter
+ * @internal
+ */
 export interface IModelImporterState {
   options: IModelImportOptions;
   targetDbId: string;
