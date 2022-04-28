@@ -258,11 +258,6 @@ export class SampleAppIModelApp {
     // store name of this registered control in Redux store so it can be access by extensions
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
 
-    // await FrontendDevTools.initialize();
-
-    // Favorite Properties Support
-    // SampleAppIModelApp._selectionSetListener.initialize();
-
     // default to showing imperial formatted units
     await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
     Presentation.presentation.activeUnitSystem = "imperial";
@@ -543,7 +538,7 @@ async function main() {
     MapboxImagery: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "access_token", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
   };
 
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  // const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
 
   const realityDataClientOptions: RealityDataClientOptions = {
     /** API Version. v1 by default */
@@ -567,7 +562,8 @@ async function main() {
   };
 
   // Start the app.
-  await SampleAppIModelApp.startup(opts, iModelClient);
+  // await SampleAppIModelApp.startup(opts, iModelClient);
+  await SampleAppIModelApp.startup(opts);
 
   await SampleAppIModelApp.initialize();
 
