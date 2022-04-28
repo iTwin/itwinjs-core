@@ -85,6 +85,14 @@ export * from "./components-react/properties/renderers/value/MultilineTextProper
 export * from "./components-react/properties/renderers/value/UrlPropertyValueRenderer";
 export * from "./components-react/properties/renderers/value/WithContextStyle";
 
+export * from "./components-react/instanceFilter/FilterBuilder";
+export * from "./components-react/instanceFilter/FilterBuilderState";
+export * from "./components-react/instanceFilter/FilterPropertySelector";
+export * from "./components-react/instanceFilter/FilterRule";
+export * from "./components-react/instanceFilter/FilterRuleGroup";
+export * from "./components-react/instanceFilter/Types";
+export * from "./components-react/instanceFilter/Operators";
+
 export * from "./components-react/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./components-react/properties/renderers/label/PrimitivePropertyLabelRenderer";
 export * from "./components-react/properties/renderers/label/PropertyLabelRenderer";
