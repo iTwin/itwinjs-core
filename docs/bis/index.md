@@ -1,4 +1,4 @@
----
-layout: forward
-target: ./guide/intro/overview.md
----
+<script>
+  var url = './guide/intro/overview/';
+  window.location = url;
+</script>
