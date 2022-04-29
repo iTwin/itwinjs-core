@@ -6,13 +6,13 @@ import * as fs from "fs";
 import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
-import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -37,18 +37,17 @@ export async function initializeBackend() {
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
 
-  iModelHost.authorizationClient = new TestBrowserAuthorizationClient({
-    clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-    redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
-    scope: process.env.IMJS_OIDC_SCOPES!,
-    authority: process.env.IMJS_AUTH_AUTHORITY,
-  }, {
-    email: process.env.IMJS_OIDC_EMAIL!,
-    password: process.env.IMJS_OIDC_PASSWORD!,
-  });
-
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+    let authClient: ElectronMainAuthorization | undefined;
+    if (process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID && process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI && process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES) {
+      authClient = new ElectronMainAuthorization({
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID,
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI,
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES,
+      });
+      iModelHost.authorizationClient = authClient;
+    }
     await ElectronHost.startup({
       electronHost: {
         webResourcesPath: path.join(__dirname, "..", "..", "build"),
@@ -56,6 +55,9 @@ export async function initializeBackend() {
       },
       iModelHost,
     });
+
+    if (authClient)
+      await authClient.signInSilent();
   } else
     await IModelHost.startup(iModelHost);
 }
