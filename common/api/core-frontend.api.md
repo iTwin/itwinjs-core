@@ -9274,7 +9274,7 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     animateFlyoverToGlobalLocation(destination: GlobalLocation): Promise<void>;
-    // @internal (undocumented)
+    // (undocumented)
     animateFrustumChange(options?: ViewAnimationOptions): void;
     // @internal
     animateToCurrent(_start: Frustum, options?: ViewAnimationOptions): void;
