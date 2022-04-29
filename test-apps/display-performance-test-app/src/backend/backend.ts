@@ -10,6 +10,7 @@ import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 
@@ -35,6 +36,16 @@ export async function initializeBackend() {
   const iModelHost = new IModelHostConfiguration();
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+
+  iModelHost.authorizationClient = new TestBrowserAuthorizationClient({
+    clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+    redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
+    scope: process.env.IMJS_OIDC_SCOPES!,
+    authority: process.env.IMJS_AUTH_AUTHORITY,
+  }, {
+    email: process.env.IMJS_OIDC_EMAIL!,
+    password: process.env.IMJS_OIDC_PASSWORD!,
+  });
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];

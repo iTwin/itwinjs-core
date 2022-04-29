@@ -2606,6 +2606,7 @@ importers:
       electron: ^14.0.0
       eslint: ^7.11.0
       express: ^4.16.3
+      got: ~11.8.2
       internal-tools: workspace:*
       npm-run-all: ^4.1.5
       null-loader: ^0.1.1
@@ -2629,6 +2630,7 @@ importers:
       '@itwin/oidc-signin-tool': 3.4.0_electron@14.2.9
       '@itwin/reality-data-client': 0.7.0
       body-parser: 1.20.0
+      got: 11.8.3
     devDependencies:
       '@bentley/react-scripts': 4.0.3_typescript@4.4.4
       '@itwin/build-tools': link:../../tools/build

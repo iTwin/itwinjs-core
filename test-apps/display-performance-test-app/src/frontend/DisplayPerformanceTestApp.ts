@@ -10,7 +10,6 @@ import {
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
-import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
@@ -61,23 +60,43 @@ export class DisplayPerfTestApp {
   }
 }
 
+async function initializeRemoteIModels(props: TestSetsProps): Promise<void> {
+  /** iModelId -> savedViewNames */
+  const remoteModelsViews = new Map<string, Set<string>>();
+  for(const testSet of props.testSet) {
+    if(testSet.iModelId === undefined)
+      continue; // Not remote
+
+    const externalViews: string[] = [];
+    for(const test of testSet.tests)
+      if(test.extViewName !== undefined)
+        externalViews.push(test.extViewName);
+
+    const thisModelViews = remoteModelsViews.get(testSet.iModelId);
+    if(thisModelViews === undefined)
+      remoteModelsViews.set(testSet.iModelId, new Set(externalViews));
+    else
+      externalViews.forEach((v) => { thisModelViews.add(v); });
+  }
+  if(remoteModelsViews.size < 1)
+    return;
+
+  const iTwinId = props.iTwinId;
+  if(iTwinId === undefined)
+    throw new Error("Missing iTwinId in config for remote iModels");
+
+  const rpcClient = DisplayPerfRpcInterface.getClient();
+  await Promise.all(Array.from(remoteModelsViews).map(async ([iModelId, savedViewNames]) =>
+    rpcClient.initializeRemoteIModel(iTwinId, iModelId, Array.from(savedViewNames))
+  ));
+}
+
 async function main() {
   try {
     const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
 
-    const authorizationClient = new TestBrowserAuthorizationClient({
-      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-      redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
-      scope: process.env.IMJS_OIDC_SCOPES!,
-      authority: process.env.IMJS_AUTH_AUTHORITY,
-    }, {
-      email: process.env.IMJS_OIDC_EMAIL!,
-      password: process.env.IMJS_OIDC_PASSWORD!,
-    });
-    if (props.signIn)
-      await authorizationClient.signIn();
-    IModelApp.authorizationClient = authorizationClient;
+    await initializeRemoteIModels(props);
 
     const runner = new TestRunner(props);
     await runner.run();

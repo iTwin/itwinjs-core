@@ -6,11 +6,13 @@ import { app } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { IModelHost, IModelJsFs } from "@itwin/core-backend";
-import { RpcManager } from "@itwin/core-common";
+import { BriefcaseManager, IModelHost, IModelJsFs } from "@itwin/core-backend";
+import { BriefcaseIdValue, RpcManager } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
+import { ViewStateSpec } from "../frontend/TestConfig";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
+import { fetchSavedViews } from "./savedViewsAPI";
 
 /** The backend implementation of DisplayPerfRpcImpl. */
 export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
@@ -222,6 +224,36 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     return fileNames;
   }
 
+  public override async initializeRemoteIModel(iTwinId: string, iModelId: string, savedViewNames?: string[]): Promise<void> {
+    const existing = BriefcaseManager.getCachedBriefcases(iModelId);
+    if(existing.length < 1) {
+      await BriefcaseManager.downloadBriefcase({
+        iTwinId,
+        iModelId,
+        accessToken: await IModelHost.getAccessToken(),
+        briefcaseId: BriefcaseIdValue.Unassigned,
+      });
+    }
+    if(savedViewNames !== undefined && savedViewNames.length > 0) {
+      const savedViews = await fetchSavedViews(iTwinId, iModelId, new Set(savedViewNames));
+
+      const esvFileName = this.createEsvFilename( await this.getInitializedRemoteIModelFilepath(iModelId) );
+      const esvFileData: ViewStateSpec[] = savedViews.map((sv) => ({
+        name: sv.displayName,
+        viewProps: sv.savedViewData.legacyView,
+        elementOverrides: undefined,
+        selectedElements: undefined,
+      }));
+      IModelJsFs.writeFileSync(esvFileName, JSON.stringify(esvFileData));
+    }
+  }
+
+  public override async getInitializedRemoteIModelFilepath(iModelId: string): Promise<string> {
+    const existing = BriefcaseManager.getCachedBriefcases(iModelId);
+    if(existing.length !== 1)
+      throw new Error(`No model downloaded for id ${iModelId}`);
+    return existing[0].fileName;
+  }
 }
 
 /** Auto-register the impl when this file is included. */

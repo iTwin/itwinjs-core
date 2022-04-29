@@ -30,7 +30,6 @@ export interface TestSetProps extends TestConfigProps {
 
 /** JSON representation of TestRunner. The tests inherit the base configuration options. */
 export interface TestSetsProps extends TestConfigProps {
-  signIn?: boolean;
   minimize?: boolean;
   testSet: TestSetProps[];
 }
@@ -644,29 +643,30 @@ export class TestRunner {
   }
 
   private async openIModel(): Promise<TestContext | undefined> {
-    const filepath = path.join(this.curConfig.iModelLocation, this.curConfig.iModelName);
-    let iModel;
-    try {
-      iModel = await SnapshotConnection.openFile(path.join(filepath));
-    } catch (err: any) {
-      await this.logError(`openSnapshot failed: ${err.toString()}`);
-      return undefined;
-    }
+    const rpcClient = DisplayPerfRpcInterface.getClient();
 
-    const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
+    const filepath = this.curConfig.iModelId !== undefined
+      ? await rpcClient.getInitializedRemoteIModelFilepath(this.curConfig.iModelId)
+      : path.join(this.curConfig.iModelLocation, this.curConfig.iModelName);
+    const iModel = await SnapshotConnection.openFile(filepath);
+
     let externalSavedViews: ViewStateSpec[] = [];
-    if (esv) {
-      const json = JSON.parse(esv) as ViewStateSpecProps[];
-      externalSavedViews = json.map((x) => {
-        return {
-          name: x._name,
-          viewProps: JSON.parse(x._viewStatePropsString) as ViewStateProps,
-          elementOverrides: x._overrideElements ? JSON.parse(x._overrideElements) as ElementOverrideProps[] : undefined,
-          selectedElements: x._selectedElements ? JSON.parse(x._selectedElements) as Id64String | Id64Array : undefined,
-        };
-      });
+    const esvJson = await rpcClient.readExternalSavedViews(filepath);
+    if (esvJson) {
+      const json = JSON.parse(esvJson);
+      if(this.curConfig.iModelId) {
+        externalSavedViews = json as ViewStateSpec[];
+      } else {
+        externalSavedViews = (json as ViewStateSpecProps[]).map((x) => {
+          return {
+            name: x._name,
+            viewProps: JSON.parse(x._viewStatePropsString) as ViewStateProps,
+            elementOverrides: x._overrideElements ? JSON.parse(x._overrideElements) as ElementOverrideProps[] : undefined,
+            selectedElements: x._selectedElements ? JSON.parse(x._selectedElements) as Id64String | Id64Array : undefined,
+          };
+        });
+      }
     }
-
     return { iModel, externalSavedViews };
   }
 

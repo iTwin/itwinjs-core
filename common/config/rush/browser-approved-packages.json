@@ -648,7 +648,7 @@
     },
     {
       "name": "got",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "i18next",
@@ -713,6 +713,10 @@
     {
       "name": "jsonc-parser",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "ky",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "linkify-it",

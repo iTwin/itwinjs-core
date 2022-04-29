@@ -43,7 +43,9 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
 
   public async finishCsv(_output: string, _outputPath?: string, _outputName?: string, _csvFormat?: string): Promise<void> { return this.forward(arguments); }
   public async terminate(): Promise<void> { return this.forward(arguments); }
-
   public async readExternalSavedViews(_filename: string): Promise<string> { return this.forward(arguments); }
   public async getMatchingFiles(_rootDir: string, _pattern: string): Promise<string> { return this.forward(arguments); }
+
+  public async initializeRemoteIModel(_iTwinId: string, _iModelId: string, _savedViewNames?: string[]): Promise<void> { return this.forward(arguments); }
+  public async getInitializedRemoteIModelFilepath(_iModelId: string): Promise<string> { return this.forward(arguments); }
 }
