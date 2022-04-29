@@ -348,40 +348,35 @@ describe("test resuming transformations", () => {
     });
     const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
 
-    const crashingTarget = await (async () => {
-      const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
-      let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
-      const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
-      transformer.elementExportsUntilCall = 10;
-      let crashed = false;
-      try {
-        await transformer.processAll();
-      } catch (transformerErr) {
-        expect((transformerErr as Error).message).to.equal("crash");
-        crashed = true;
-        const dumpPath = IModelTestUtils.prepareOutputFile(
-          "IModelTransformerResumption",
-          "transformer-state.db"
-        );
-        transformer.saveStateToFile(dumpPath);
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const TransformerClass = transformer.constructor as typeof IModelTransformer;
-        // redownload targetDb so that it is reset to the old state
-        targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
-        expect(
-          TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb)
-        ).to.throw(/Target for resuming does not have the expected provenance/);
-      }
+    const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
+    let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+    const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
+    transformer.elementExportsUntilCall = 10;
+    let crashed = false;
+    try {
+      await transformer.processSchemas();
+      await transformer.processAll();
+    } catch (transformerErr) {
+      expect((transformerErr as Error).message).to.equal("crash");
+      crashed = true;
+      const dumpPath = IModelTestUtils.prepareOutputFile(
+        "IModelTransformerResumption",
+        "transformer-state.db"
+      );
+      transformer.saveStateToFile(dumpPath);
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const TransformerClass = transformer.constructor as typeof IModelTransformer;
+      // redownload targetDb so that it is reset to the old state
+      targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      expect(
+        () => TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb)
+      ).to.throw(/does not have the expected provenance/);
+    }
 
-      expect(crashed).to.be.true;
-      targetDb.saveChanges();
-      transformer.dispose();
-      return targetDb;
-    })();
-
-    await assertIdentityTransformation(regularTarget, crashingTarget);
-    crashingTarget.close();
-    regularTarget.close();
+    expect(crashed).to.be.true;
+    targetDb.saveChanges();
+    transformer.dispose();
+    return targetDb;
   });
 
   it("processChanges crash and resume", async () => {

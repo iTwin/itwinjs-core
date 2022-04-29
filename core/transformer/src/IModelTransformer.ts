@@ -1164,7 +1164,7 @@ export class IModelTransformer extends IModelExportHandler {
       statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
       statement.bindString("kind", ExternalSourceAspect.Kind.Element);
       statement.bindId("entityId", lastProvenanceEntityInfo.entityId);
-      statement.bindId("version", lastProvenanceEntityInfo.aspectVersion);
+      statement.bindString("version", lastProvenanceEntityInfo.aspectVersion);
       const stepResult = statement.step();
       switch (stepResult) {
         case DbResult.BE_SQLITE_ROW:
