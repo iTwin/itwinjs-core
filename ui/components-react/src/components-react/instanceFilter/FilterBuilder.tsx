@@ -58,13 +58,15 @@ export function FilterBuilder(props: FilterBuilderProps) {
 
   const contextValue = React.useMemo<FilterBuilderContext>(() => ({dispatch, properties, onRulePropertySelected}), [dispatch, properties, onRulePropertySelected]);
   const renderingContextValue = React.useMemo<FilterBuilderRuleRenderingContext>(() => ({ruleOperatorRenderer, ruleValueRenderer}), [ruleOperatorRenderer, ruleValueRenderer]);
-  return <FilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
-    <FilterBuilderContext.Provider value={contextValue}>
-      <div className="filter-builder">
-        <FilterBuilderRuleGroup path={ROOT_GROUP_PATH} group={state.rootGroup} />
-      </div>
-    </FilterBuilderContext.Provider>
-  </FilterBuilderRuleRenderingContext.Provider>;
+  return (
+    <FilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
+      <FilterBuilderContext.Provider value={contextValue}>
+        <div className="filter-builder">
+          <FilterBuilderRuleGroup path={ROOT_GROUP_PATH} group={state.rootGroup} />
+        </div>
+      </FilterBuilderContext.Provider>
+    </FilterBuilderRuleRenderingContext.Provider>
+  );
 }
 
 function buildFilter(groupItem: FilterRuleGroupItem): Filter | undefined {

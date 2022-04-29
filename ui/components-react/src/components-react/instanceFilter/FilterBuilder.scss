@@ -4,78 +4,122 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/itwinui-css/scss/style/index";
 
-.filter-builder {
+.rule-group {
+  padding-left: 10px;
+  padding-right: 5px;
+  border-radius: $iui-border-radius;
+  border: 1px solid;
+  @include themed {
+    border-color: t(iui-color-background-border);
+  }
 
-  .rule-group {
-    padding-left: 5px;
-    padding-right: 5px;
-    border-radius: $iui-border-radius;
-    border: 1px solid;
-    @include themed {
-      border-color: t(iui-color-background-border);
+  .header {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    padding: 5px 0;
+
+    .rule-group-operator {
+      margin-right: auto;
     }
 
-    .header {
-      display: grid;
-      grid-template-columns: auto auto;
-      align-items: center;
-      padding-top: 5px;
-      padding-bottom: 5px;
-      border-bottom: 1px solid;
-      @include themed {
-        border-color: t(iui-color-background-border);
+    .actions {
+      margin-left: auto;
+      visibility: hidden;
+    }
+
+    &:hover .actions {
+      visibility: visible;
+    }
+  }
+
+  .items {
+    padding: 0 0 10px 10px;
+
+    &:empty {
+      padding-bottom: 0px;
+    }
+
+    .group-or-rule {
+      position: relative;
+      padding-left: 10px;
+      margin-bottom: 10px;
+
+      &:first-child {
+        margin-top: 10px;
       }
 
-      .rule-group-operator {
-        margin-right: auto;
+      &:last-child {
+        margin-bottom: 0;
       }
 
-      .actions {
-        margin-left: auto;
+      &::before, &::after {
+        content: "";
+        position: absolute;
+        left: 0px;
+        width: 10px;
+        height: calc(50% + 10px);
+        box-sizing: border-box;
+        border-style: solid;
+        @include themed {
+          border-color: t(iui-color-background-border);
+        }
+      }
+
+      &::before {
+        top: -10px;
+        border-width: 0 0 1px 1px;
+      }
+
+      &::after {
+        top: 50%;
+        border-width: 0 0 0 1px;
       }
     }
 
-    .items {
-      padding-bottom: 10px;
+    .group-or-rule:first-child::before {
+      top: -15px;
+      height: calc(50% + 15px);
+    }
 
-      & > * {
-        margin-bottom: 10px;
+    .group-or-rule:last-child::before {
+      border-bottom-left-radius: $iui-border-radius;
+    }
 
-        &:first-child {
-          margin-top: 10px;
-        }
+    .group-or-rule:last-child::after {
+      display: none;
+    }
+  }
+}
 
-        &:last-child {
-          margin-bottom: 0;
-        }
+.rule {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+
+  .rule-condition {
+    display: grid;
+    grid-template-columns: minmax(auto, 400px) minmax(auto, 150px) minmax(auto, max-content);
+    align-items: center;
+    grid-column-gap: 5px;
+
+    .rule-field-selector {
+      grid-column: 1;
+
+      .iui-input {
+        padding-top: 1.5px;
+        padding-bottom: 1.5px;
+        min-height: 27px;
       }
     }
   }
 
-  .rule {
-    display: grid;
-    grid-template-columns: auto auto;
-    align-items: center;
+  .rule-actions {
+    margin-left: auto;
+    visibility: hidden;
+  }
 
-    .rule-condition {
-      display: grid;
-      grid-template-columns: minmax(auto, 400px) minmax(auto, 150px) minmax(auto, max-content);
-      align-items: center;
-      grid-column-gap: 5px;
-
-      .rule-field-selector {
-        grid-column: 1;
-
-        .iui-input {
-          padding-top: 1.5px;
-          padding-bottom: 1.5px;
-          min-height: 27px;
-        }
-      }
-    }
-
-    .rule-actions {
-      margin-left: auto;
-    }
+  &:hover .rule-actions {
+    visibility: visible;
   }
 }

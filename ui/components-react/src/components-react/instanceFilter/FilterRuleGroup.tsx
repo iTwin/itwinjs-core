@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Button, ButtonGroup, Select, SelectOption } from "@itwin/itwinui-react";
+import { SvgAdd, SvgDelete } from "@itwin/itwinui-icons-react";
+import { Button, ButtonGroup, IconButton, Select, SelectOption } from "@itwin/itwinui-react";
 import { FilterBuilderContext } from "./FilterBuilder";
 import { FilterRuleGroup, FilterRuleGroupItem, isFilterRuleGroup } from "./FilterBuilderState";
 import { FilterBuilderRule } from "./FilterRule";
@@ -32,13 +33,13 @@ export function FilterBuilderRuleGroup(props: FilterBuilderRuleGroupProps) {
     <div className="header">
       <FilterBuilderRuleGroupOperator operator={group.operator} onChange={onOperatorChange}/>
       <ButtonGroup className="actions">
-        <Button onClick={addRule} size="small">Add Rule</Button>
-        <Button onClick={addRuleGroup} size="small">Add Rule Group</Button>
-        {group.groupId !== undefined && <Button onClick={removeGroup} size="small">Remove Group</Button>}
+        <Button onClick={addRule} styleType="borderless" size="small" startIcon={<SvgAdd />}>Rule</Button>
+        <Button onClick={addRuleGroup} styleType="borderless" size="small" startIcon={<SvgAdd />}>Rule Group</Button>
+        {group.groupId !== undefined && <IconButton onClick={removeGroup} styleType="borderless" size="small"><SvgDelete /></IconButton>}
       </ButtonGroup>
     </div>
     <div className="items">
-      {group.items.map((item) => <FilterGroupItemRenderer key={item.id} path={path} item={item} />)}
+      {group.items.map((item) => <FilterBuilderGroupOrRule key={item.id} path={path} item={item} />)}
     </div>
   </div>;
 }
@@ -63,15 +64,17 @@ export function FilterBuilderRuleGroupOperator(props: FilterRuleGroupOperatorPro
     <Select options={options} value={operator} onChange={onChange} size="small" />
   </div>;
 }
-
-interface FilterGroupItemRendererProps {
+interface FilterBuilderGroupOrRuleProps {
   path: string[];
   item: FilterRuleGroupItem;
 }
 
-function FilterGroupItemRenderer({path, item}: FilterGroupItemRendererProps) {
+function FilterBuilderGroupOrRule({path, item}: FilterBuilderGroupOrRuleProps) {
   const itemPath = React.useMemo(() => ([...path, item.id]), [path, item]);
-  if (isFilterRuleGroup(item))
-    return <FilterBuilderRuleGroup path={itemPath} group={item} />;
-  return <FilterBuilderRule path={itemPath} rule={item} />;
+
+  return <div className="group-or-rule">
+    {isFilterRuleGroup(item)
+      ? <FilterBuilderRuleGroup path={itemPath} group={item} />
+      :<FilterBuilderRule path={itemPath} rule={item} />}
+  </div>;
 }

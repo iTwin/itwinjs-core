@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { PropertyDescription, PropertyValue } from "@itwin/appui-abstract";
-import { Button } from "@itwin/itwinui-react";
+import { SvgDelete } from "@itwin/itwinui-icons-react";
+import { IconButton } from "@itwin/itwinui-react";
 import { FilterBuilderContext, FilterBuilderRuleRenderingContext } from "./FilterBuilder";
 import { FilterRule } from "./FilterBuilderState";
 import { FilterBuilderPropertySelector } from "./FilterPropertySelector";
 import { FilterBuilderRuleOperator } from "./FilterRuleOperator";
 import { FilterBuilderRuleValue } from "./FilterRuleValue";
-import { FilterRuleOperator } from "./Operators";
+import { FilterRuleOperator, filterRuleOperatorNeedsValue } from "./Operators";
 
 /** @alpha */
 export interface FilterBuilderRuleProps {
@@ -39,7 +40,7 @@ export function FilterBuilderRule(props: FilterBuilderRuleProps) {
     dispatch({type: "SET_RULE_VALUE", path, value: newValue});
   }, [path, dispatch]);
 
-  const onRemoveRule = () => dispatch({type: "REMOVE_ITEM", path});
+  const removeRule = () => dispatch({type: "REMOVE_ITEM", path});
 
   const operatorRenderer = React.useCallback(() => {
     if (!property)
@@ -50,12 +51,12 @@ export function FilterBuilderRule(props: FilterBuilderRuleProps) {
   }, [ruleOperatorRenderer, property, operator, onRuleOperatorChange]);
 
   const valueRenderer = React.useCallback(() => {
-    if (!property)
+    if (!property || !operator || !filterRuleOperatorNeedsValue(operator))
       return undefined;
     if (ruleValueRenderer)
       return ruleValueRenderer({property, value, onChange: onRuleValueChange});
     return <FilterBuilderRuleValue property={property} onChange={onRuleValueChange} value={value} />;
-  }, [ruleValueRenderer, property, value, onRuleValueChange]);
+  }, [property, operator, value, ruleValueRenderer, onRuleValueChange]);
 
   return <div className="rule">
     <div className="rule-condition">
@@ -74,7 +75,9 @@ export function FilterBuilderRule(props: FilterBuilderRuleProps) {
       </div>
     </div>
     <div className="rule-actions">
-      <Button onClick={onRemoveRule} size="small">Remove Rule</Button>
+      <IconButton onClick={removeRule} styleType="borderless" size="small">
+        <SvgDelete />
+      </IconButton>
     </div>
   </div>;
 }
