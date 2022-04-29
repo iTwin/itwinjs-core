@@ -6,7 +6,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
@@ -39,15 +38,6 @@ export async function initializeBackend() {
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-    let authClient: ElectronMainAuthorization | undefined;
-    if (process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID && process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI && process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES) {
-      authClient = new ElectronMainAuthorization({
-        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID,
-        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI,
-        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES,
-      });
-      iModelHost.authorizationClient = authClient;
-    }
     await ElectronHost.startup({
       electronHost: {
         webResourcesPath: path.join(__dirname, "..", "..", "build"),
@@ -55,9 +45,6 @@ export async function initializeBackend() {
       },
       iModelHost,
     });
-
-    if (authClient)
-      await authClient.signInSilent();
   } else
     await IModelHost.startup(iModelHost);
 }
