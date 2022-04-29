@@ -6,11 +6,11 @@
 export class ArcGisUrl {
 
   // Extract the sub-url up to '/rest/'
-  public static extractRestBaseUrl(url: URL): URL|undefined {
+  public static extractRestBaseUrl(url: URL): URL | undefined {
     const urlStr = url.toString();
     const searchStr = "/rest/";
     const restPos = urlStr.indexOf(searchStr);
-    return (restPos === -1 ? undefined : new URL(urlStr.substring(0, restPos + searchStr.length)) );
+    return (restPos === -1 ? undefined : new URL(urlStr.substring(0, restPos + searchStr.length)));
 
   }
 
@@ -21,12 +21,12 @@ export class ArcGisUrl {
     }
 
     // First attempt: derive the Oauth2 token URL from the 'tokenServicesUrl', exposed by the 'info request'
-    const infoUrl = new URL(`${restUrl}info`);
+    const infoUrl = new URL(`${restUrl.toString()}info`);
     infoUrl.searchParams.append("f", "json");
+
     let json;
     try {
-      const response = await fetch(infoUrl.toString(), { method: "GET"});
-      json = await response.json();
+      json = await ArcGisUrl.fetchJson(infoUrl);
     } catch {
 
     }
@@ -36,5 +36,15 @@ export class ArcGisUrl {
       return undefined;
     }
     return ArcGisUrl.extractRestBaseUrl(new URL(tokenServicesUrl));
+  }
+
+  private static async fetchJson(url: URL): Promise<any> {
+    let json;
+    try {
+      const response = await fetch(url.toString(), { method: "GET" });
+      json = await response.json();
+    } catch {
+    }
+    return json;
   }
 }
