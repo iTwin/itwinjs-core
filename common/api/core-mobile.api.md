@@ -104,7 +104,11 @@ export class IOSApp {
 }
 
 // @beta (undocumented)
-export type IOSAppOpts = NativeAppOpts;
+export type IOSAppOpts = NativeAppOpts & {
+    iModelApp: {
+        authorizationClient?: never;
+    };
+};
 
 // @beta (undocumented)
 export class IOSHost extends MobileHost {
