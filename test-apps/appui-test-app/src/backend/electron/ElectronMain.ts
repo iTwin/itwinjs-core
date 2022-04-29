@@ -23,7 +23,7 @@ export async function initializeElectron(opts?: IModelHostConfiguration) {
       rpcInterfaces: getSupportedRpcs(),
     },
     nativeHost: {
-      applicationName: "ui-test-app",
+      applicationName: "appui-test-app",
     },
     iModelHost: opts,
   };

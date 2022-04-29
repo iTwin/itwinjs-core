@@ -14,13 +14,13 @@ import { loggerCategory } from "../../common/TestAppConfiguration";
  */
 export async function initializeWeb(opts?: IModelHostConfiguration) {
   // tell BentleyCloudRpcManager which RPC interfaces to handle
-  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "ui-test-app", version: "v1.0" } }, getSupportedRpcs());
+  const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "appui-test-app", version: "v1.0" } }, getSupportedRpcs());
 
   // create a basic express web server
   const port = Number(process.env.PORT || 3001);
   const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
-  Logger.logInfo(loggerCategory, `Web backend for ui-test-app listening on port ${port}`);
+  Logger.logInfo(loggerCategory, `Web backend for appui-test-app listening on port ${port}`);
   await IModelHost.startup(opts);
 }
 

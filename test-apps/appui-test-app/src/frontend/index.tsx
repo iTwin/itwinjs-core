@@ -22,11 +22,11 @@ import {
   ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 // import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
+  AccuSnap, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -40,7 +40,6 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { AppUi } from "./appui/AppUi";
-import { ExternalIModel } from "./appui/ExternalIModel";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
@@ -208,7 +207,7 @@ export class SampleAppIModelApp {
       //        });
       //      }
     } else {
-      const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
+      const rpcParams: BentleyCloudRpcParams = { info: { title: "appui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
       if (ProcessDetector.isElectronAppFrontend) {
         await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
@@ -306,34 +305,34 @@ export class SampleAppIModelApp {
 
   public static loggerCategory(obj: any): string {
     const className = getClassName(obj);
-    const category = `ui-test-app.${className}`;
+    const category = `appui-test-app.${className}`;
     return category;
   }
 
-  public static async openIModelAndViews(iTwinId: string, iModelId: string, viewIdsSelected: Id64String[]) {
-    // Close the current iModelConnection
-    await SampleAppIModelApp.closeCurrentIModel();
-
-    Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-      `openIModelAndViews: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
-
-    let iModelConnection: IModelConnection | undefined;
-    if (ProcessDetector.isMobileAppFrontend) {
-      const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
-        Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
-      });
-      await req.downloadPromise;
-      iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
-      SampleAppIModelApp.setIsIModelLocal(true, true);
-    } else {
-      const iModel = await ExternalIModel.create({ iTwinId, iModelId });
-      await iModel.openIModel();
-      iModelConnection = iModel.iModelConnection!;
-      SampleAppIModelApp.setIsIModelLocal(false, true);
-    }
-
-    await this.openViews(iModelConnection, viewIdsSelected);
-  }
+  // public static async openIModelAndViews(iTwinId: string, iModelId: string, viewIdsSelected: Id64String[]) {
+  //   // Close the current iModelConnection
+  //   await SampleAppIModelApp.closeCurrentIModel();
+  //
+  //   Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
+  //     `openIModelAndViews: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+  //
+  //   let iModelConnection: IModelConnection | undefined;
+  //   if (ProcessDetector.isMobileAppFrontend) {
+  //     const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+  //       Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
+  //     });
+  //     await req.downloadPromise;
+  //     iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
+  //     SampleAppIModelApp.setIsIModelLocal(true, true);
+  //   } else {
+  //     const iModel = await ExternalIModel.create({ iTwinId, iModelId });
+  //     await iModel.openIModel();
+  //     iModelConnection = iModel.iModelConnection!;
+  //     SampleAppIModelApp.setIsIModelLocal(false, true);
+  //   }
+  //
+  //   await this.openViews(iModelConnection, viewIdsSelected);
+  // }
 
   public static async closeCurrentIModel() {
     if (SampleAppIModelApp.isIModelLocal) {

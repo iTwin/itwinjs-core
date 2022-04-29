@@ -16,7 +16,7 @@ export class AppSettingsTabsProvider implements SettingsTabsProvider {
     return [
       getQuantityFormatsSettingsManagerEntry(10, { availableUnitSystems: new Set(["metric", "imperial", "usSurvey"]) }),
       {
-        itemPriority: 20, tabId: "ui-test-app:Accudraw", label: "Accudraw",
+        itemPriority: 20, tabId: "appui-test-app:Accudraw", label: "Accudraw",
         page: <AccudrawSettingsPageComponent />,
         isDisabled: false,
         icon: "icon-paintbrush",
