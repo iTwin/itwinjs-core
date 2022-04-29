@@ -3,11 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 .presentation-instance-filter {
-  overflow: scroll;
   padding: 5px;
 
-  .presentation-instance-filter-selected-classes {
-    min-height: 32px;
+  .presentation-instance-filter-class-selector {
     padding-bottom: 10px;
   }
 }
