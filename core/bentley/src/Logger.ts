@@ -12,7 +12,17 @@ import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 import { IDisposable } from "./Disposable";
 
 // re-export so that consumers can construct full SpanOptions object without external dependencies
-export { SpanKind } from "@opentelemetry/api";
+/**
+ * Mirrors the SpanKind enum from `@opentelemetry/api`
+ * @alpha
+ */
+export declare enum SpanKind {
+  INTERNAL = 0,
+  SERVER = 1,
+  CLIENT = 2,
+  PRODUCER = 3,
+  CONSUMER = 4
+}
 
 function isValidPrimitive(val: unknown): val is SpanAttributeValue {
   return typeof val === "string" || typeof val === "number" || typeof val === "boolean";
@@ -120,7 +130,7 @@ export class Logger {
   private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
   private static _minLevel: LogLevel | undefined = undefined;
   private static _tracer?: Tracer;
-  private static _openTelemetry?: { trace: TraceAPI, context: ContextAPI };
+  private static _openTelemetry?: { trace: Pick<TraceAPI, "setSpan" | "setSpanContext" | "getSpan">, context: Pick<ContextAPI, "active" | "with"> };
 
   /** Should the call stack be included when an exception is logged?  */
   public static logExceptionCallstacks = false;
@@ -182,6 +192,7 @@ export class Logger {
     if (Logger._tracer === undefined || Logger._openTelemetry === undefined)
       return fn();
 
+    // this case is for context propagation - parentContext is typically constructed from HTTP headers
     const parent = parentContext === undefined
       ? Logger._openTelemetry.context.active()
       : Logger._openTelemetry.trace.setSpanContext(Logger._openTelemetry.context.active(), parentContext);
