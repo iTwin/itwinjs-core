@@ -9,6 +9,7 @@ import { IpcApp, NativeApp, NativeAppOpts, NotificationHandler } from "@itwin/co
 import { mobileAppChannel, mobileAppNotify } from "../common/MobileAppChannel";
 import { MobileAppFunctions, MobileNotifications } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
+import { MobileAuthorizationFrontend } from "./MobileAuthorizationFrontend";
 
 /** receive notifications from backend */
 class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifications {
@@ -50,8 +51,14 @@ export class MobileApp {
       MobileRpcManager.initializeClient(rpcInterfaces);
       this._isValid = true;
     }
+
+    const iModelAppOpts = {
+      ...opts?.iModelApp,
+    };
+    iModelAppOpts.authorizationClient = new MobileAuthorizationFrontend();
+
     const socket = new IpcWebSocketFrontend(); // needs work
-    await NativeApp.startup(socket, opts);
+    await NativeApp.startup(socket, { ...opts, iModelApp: iModelAppOpts });
 
     MobileAppNotifyHandler.register(); // receives notifications from backend
   }
