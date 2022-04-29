@@ -21,16 +21,15 @@ import {
   ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
   ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
-import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
-// import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 // import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
-// import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
@@ -46,7 +45,6 @@ import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 
 // cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise hypermodeling testapp urlps
 // cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
@@ -215,10 +213,10 @@ export class SampleAppIModelApp {
       if (ProcessDetector.isElectronAppFrontend) {
         await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
         NativeAppLogger.initialize();
-        // } else if (ProcessDetector.isIOSAppFrontend) {
-        //   await IOSApp.startup(opts);
-        // } else if (ProcessDetector.isAndroidAppFrontend) {
-        //   await AndroidApp.startup(opts);
+      } else if (ProcessDetector.isIOSAppFrontend) {
+        await IOSApp.startup(opts);
+      } else if (ProcessDetector.isAndroidAppFrontend) {
+        await AndroidApp.startup(opts);
       } else {
         await IModelApp.startup(iModelAppOpts);
       }
@@ -502,19 +500,17 @@ const SampleAppViewer2 = () => {
     <Provider store={SampleAppIModelApp.store} >
       <ThemeManager>
         {/* eslint-disable-next-line deprecation/deprecation */}
-        <BeDragDropContext>
-          <SafeAreaContext.Provider value={SafeAreaInsets.All}>
-            <AppDragInteraction>
-              <AppFrameworkVersion>
-                <UiStateStorageHandler>
-                  <ConfigurableUiContent
-                    appBackstage={<BackstageComposer />}
-                  />
-                </UiStateStorageHandler>
-              </AppFrameworkVersion>
-            </AppDragInteraction>
-          </SafeAreaContext.Provider>
-        </BeDragDropContext>
+        <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+          <AppDragInteraction>
+            <AppFrameworkVersion>
+              <UiStateStorageHandler>
+                <ConfigurableUiContent
+                  appBackstage={<BackstageComposer />}
+                />
+              </UiStateStorageHandler>
+            </AppFrameworkVersion>
+          </AppDragInteraction>
+        </SafeAreaContext.Provider>
       </ThemeManager>
     </Provider >
   );
