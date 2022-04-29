@@ -1086,8 +1086,26 @@ export class IModelTransformer extends IModelExportHandler {
     this.finalizeTransformation();
   }
 
+  private _lastProvenanceEntityInfo = {
+    entityId: Id64.invalid,
+    aspectId: Id64.invalid,
+    aspectVersion: "",
+  };
+
+  private markLastProvenance(sourceAspect: ExternalSourceAspect) {
+    // TODO: does this work for relationships?
+    this._lastProvenanceEntityInfo = {
+      entityId: sourceAspect.element.id,
+      aspectId: sourceAspect.id,
+      aspectVersion: sourceAspect.version ?? "",
+    };
+  }
+
   /** @internal the name of the table where javascript state of the transformer is serialized in transformer state dumps */
   public static readonly jsStateTable = "TransformerJsState";
+
+  /** @internal the name of the table where the target state heuristics is serialized in transformer state dumps */
+  public static readonly lastProvenanceEntityInfoTable = "LastProvenanceEntityInfo";
 
   /**
    * Return a new transformer instance with the same remappings state as saved from a previous [[IModelTransformer.saveStateToFile]] call.
@@ -1108,11 +1126,55 @@ export class IModelTransformer extends IModelExportHandler {
     const transformer = new this(...constructorArgs);
     const db = new SQLiteDb();
     db.openDb(statePath, OpenMode.Readonly);
-    const state: TransformationJsonState = db.withSqliteStatement(`SELECT data FROM ${IModelTransformer.jsStateTable}`, (stmt) => {
+    const state = db.withSqliteStatement(`SELECT data FROM ${IModelTransformer.jsStateTable}`, (stmt) => {
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         throw Error("expected row when getting data from js state table");
-      return JSON.parse(stmt.getValueString(0));
+      return JSON.parse(stmt.getValueString(0)) as TransformationJsonState;
     });
+    const lastProvenanceEntityInfo: IModelTransformer["_lastProvenanceEntityInfo"] = db.withSqliteStatement(
+      `SELECT entityId, aspectId, aspectVersion FROM ${IModelTransformer.lastProvenanceEntityInfoTable}`,
+      (stmt) => {
+        if (DbResult.BE_SQLITE_ROW !== stmt.step())
+          throw Error(
+            "expected row when getting lastProvenanceEntityId from target state table"
+          );
+        return {
+          entityId: stmt.getValueId(0),
+          aspectId: stmt.getValueId(1),
+          aspectVersion: stmt.getValueString(2),
+        };
+      }
+    );
+    const targetHasCorrectLastProvenance = transformer.provenanceDb.withPreparedStatement(`
+      SELECT 1 FROM ${ExternalSourceAspect.classFullName}
+      WHERE Scope.Id=:scopeId
+        AND ECInstanceId=:aspectId
+        AND Kind=:kind
+        AND Element.Id=:entityId
+        AND Version=:version
+    `,
+    (statement: ECSqlStatement): boolean => {
+      statement.bindId("scopeId", transformer.targetScopeElementId);
+      statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
+      statement.bindString("kind", ExternalSourceAspect.Kind.Element);
+      statement.bindId("entityId", lastProvenanceEntityInfo.entityId);
+      statement.bindId("version", lastProvenanceEntityInfo.aspectVersion);
+      const stepResult = statement.step();
+      switch (stepResult) {
+        case DbResult.BE_SQLITE_ROW:
+          return true;
+        case DbResult.BE_SQLITE_DONE:
+          return false;
+        default:
+          throw new IModelError(IModelStatus.SQLiteError, `got sql error ${stepResult}`);
+      }
+    });
+    if (!targetHasCorrectLastProvenance)
+      throw Error([
+        "Target for resuming from does not have the expected provenance ",
+        "from the target that the resume state was made with",
+      ].join("\n"));
+    transformer._lastProvenanceEntityInfo = lastProvenanceEntityInfo;
     // force assign to readonly options since we do not know how the transformer subclass takes options to pass to the superclass
     (transformer as any)._options = state.options;
     transformer.importer.loadStateFromJson(state.importerState);
@@ -1142,12 +1204,27 @@ export class IModelTransformer extends IModelExportHandler {
     this.context.saveStateToDb(db);
     if (DbResult.BE_SQLITE_DONE !== db.executeSQL(
       `CREATE TABLE ${IModelTransformer.jsStateTable} (data TEXT)`
-    )) throw Error("Failed to create the options table in the state database");
+    )) throw Error("Failed to create the js state table in the state database");
+    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(`
+      CREATE TABLE ${IModelTransformer.lastProvenanceEntityInfoTable} (
+        entityId INTEGER,
+        aspectId INTEGER,
+        aspectVersion TEXT
+      )
+    `)) throw Error("Failed to create the target state table in the state database");
     db.saveChanges();
     db.withSqliteStatement(
       `INSERT INTO ${IModelTransformer.jsStateTable} (data) VALUES (?)`,
       (stmt) => {
         stmt.bindString(1, JSON.stringify(jsonState));
+        if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");
+      });
+    db.withSqliteStatement(
+      `INSERT INTO ${IModelTransformer.lastProvenanceEntityInfoTable} (entityId, aspectId, aspectVersion) VALUES (?,?,?)`,
+      (stmt) => {
+        stmt.bindId(1, this._lastProvenanceEntityInfo.entityId);
+        stmt.bindId(2, this._lastProvenanceEntityInfo.aspectId);
+        stmt.bindString(3, this._lastProvenanceEntityInfo.aspectVersion);
         if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");
       });
     db.saveChanges();
