@@ -7,8 +7,10 @@
  */
 
 import { assert, BeEvent } from "@itwin/core-bentley";
-import { ArcGisOAuth2Token, ArcGisTokenClientType, ArcGisTokenManager, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerTokenEndpoint } from "@itwin/core-frontend";
+import { MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerTokenEndpoint } from "@itwin/core-frontend";
+import { ArcGisOAuth2Token, ArcGisTokenClientType } from "../map-layers-auth";
 import { ArcGisOAuth2Endpoint, ArcGisOAuth2EndpointType } from "./ArcGisOAuth2Endpoint";
+import { ArcGisTokenManager } from "./ArcGisTokenManager";
 import { ArcGisUrl } from "./ArcGisUrl";
 
 /** @beta */
@@ -77,11 +79,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
         return oauth2Token;
 
       if (params.userName && params.password) {
-        const token = await ArcGisTokenManager.getToken(params.mapLayerUrl.toString(), params.userName, params.password, { client: ArcGisTokenClientType.referer });
-        if (token?.token) {
-          return token?.token;
-        } else if (token?.error)
-          return undefined;
+        return ArcGisTokenManager.getToken(params.mapLayerUrl.toString(), params.userName, params.password, { client: ArcGisTokenClientType.referer });
       }
     } catch {
 

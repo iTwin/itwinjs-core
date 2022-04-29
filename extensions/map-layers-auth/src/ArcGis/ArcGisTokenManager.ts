@@ -6,7 +6,9 @@
  * @module Tiles
  */
 
-import { ArcGisGenerateTokenOptions, ArcGisOAuth2Token, ArcGisToken, ArcGisTokenGenerator, MapLayerAccessToken } from "../internal";
+
+import { MapLayerAccessToken } from "@itwin/core-frontend";
+import { ArcGisGenerateTokenOptions, ArcGisOAuth2Token, ArcGisToken, ArcGisTokenGenerator } from "./ArcGisTokenGenerator";
 
 /** @internal */
 interface ArcGisTokenProps {
@@ -17,11 +19,11 @@ interface ArcGisTokenProps {
 export class ArcGisTokenManager {
   private static readonly tokenExpiryThreshold = 300000;  // 5 minutes in milliseconds
   private static _cache = new Map<string, ArcGisToken>();
-  private static _oauth2Cache: Map<string, ArcGisOAuth2Token>|undefined;
+  private static _oauth2Cache: Map<string, ArcGisOAuth2Token> | undefined;
   private static _generator: ArcGisTokenGenerator | undefined;
   private static readonly _browserStorageKey = "arcGisOAuth";
 
-  public static async getToken(arcGisRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any> {
+  public static async getToken(arcGisRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<ArcGisToken | undefined> {
     if (!ArcGisTokenManager._generator)
       ArcGisTokenManager._generator = new ArcGisTokenGenerator();
 
@@ -38,10 +40,12 @@ export class ArcGisTokenManager {
     // Nothing in cache, generate a new token
     const newToken = await ArcGisTokenManager._generator.generate(arcGisRestServiceUrl, userName, password, options);
     if (newToken.token) {
-      ArcGisTokenManager._cache.set(tokenCacheKey, newToken as ArcGisToken);
+      const token = newToken as ArcGisToken;
+      ArcGisTokenManager._cache.set(tokenCacheKey, token);
+      return token;
     }
 
-    return newToken;
+    return undefined;
   }
 
   public static invalidateToken(token: MapLayerAccessToken): boolean {
@@ -54,7 +58,7 @@ export class ArcGisTokenManager {
     return false;
   }
 
-  public static getOAuth2Token(key: string): ArcGisOAuth2Token|undefined {
+  public static getOAuth2Token(key: string): ArcGisOAuth2Token | undefined {
     if (ArcGisTokenManager._oauth2Cache === undefined) {
       ArcGisTokenManager._oauth2Cache = new Map<string, ArcGisOAuth2Token>();
       ArcGisTokenManager.loadFromBrowserStorage();
@@ -98,9 +102,9 @@ export class ArcGisTokenManager {
       return;
     }
 
-    const loadEntries = (json: string|undefined) => {
+    const loadEntries = (json: string | undefined) => {
       if (json && ArcGisTokenManager._oauth2Cache !== undefined) {
-        const tokens: ArcGisTokenProps|undefined = JSON.parse(json);
+        const tokens: ArcGisTokenProps | undefined = JSON.parse(json);
         if (tokens) {
           for (const [key, value] of Object.entries(tokens)) {
             ArcGisTokenManager._oauth2Cache.set(key, value);
@@ -109,8 +113,8 @@ export class ArcGisTokenManager {
       }
     };
 
-    loadEntries(window.sessionStorage.getItem(this._browserStorageKey)??undefined);
-    loadEntries(window.localStorage.getItem(this._browserStorageKey)??undefined);
+    loadEntries(window.sessionStorage.getItem(this._browserStorageKey) ?? undefined);
+    loadEntries(window.localStorage.getItem(this._browserStorageKey) ?? undefined);
   }
 
   public static saveToBrowserStorage() {

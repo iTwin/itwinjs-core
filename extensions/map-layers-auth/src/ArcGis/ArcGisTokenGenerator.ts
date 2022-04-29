@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { request, RequestOptions } from "../../request/Request";
-import { MapLayerAccessToken } from "../internal";
+import { MapLayerAccessToken } from "@itwin/core-frontend";
 
 /** @packageDocumentation
  * @module Tiles
@@ -87,8 +86,9 @@ export class ArcGisTokenGenerator {
 
     let tokenServicesUrl: string | undefined;
     try {
-      const response = await request(infoUrl, { method: "GET", responseType: "json" });
-      tokenServicesUrl = ArcGisTokenGenerator.getTokenServiceFromInfoJson(response?.body);
+      const response = await fetch(infoUrl, { method: "GET" });
+      const json = await response.json();
+      tokenServicesUrl = ArcGisTokenGenerator.getTokenServiceFromInfoJson(json);
     } catch (_error) {
     }
     return tokenServicesUrl;
@@ -146,17 +146,16 @@ export class ArcGisTokenGenerator {
         clientStr = `&client=requestip&ip=`;
       }
 
-      const httpRequestOptions: RequestOptions = {
+      const httpRequestOptions: RequestInit = {
         method: "POST",
         body: `username=${encodedUsername}&password=${encodedPassword}${clientStr}${expirationStr}&f=pjson`,
-        headers: { "content-type": "application/x-www-form-urlencoded" },
-        responseType: "json",
+        headers: { "content-type": "application/x-www-form-urlencoded" }
       };
 
-      const response = await request(tokenServiceUrl, httpRequestOptions);
+      const response = await fetch(tokenServiceUrl, httpRequestOptions);
 
       // Check a token was really generated (an error could be part of the body)
-      token = response?.body;
+      token = await response.json();
 
     } catch (_error) {
     }
