@@ -62,17 +62,25 @@ class CountingTransformer extends IModelTransformer {
 
 /** a transformer that executes a callback after X element exports */
 class CountdownTransformer extends IModelTransformer {
-  public elementExportsUntilCall: number | undefined = 10;
+  public relationshipExportsUntilCall: number | undefined;
+  public elementExportsUntilCall: number | undefined;
   public callback: (() => Promise<void>) | undefined;
   public constructor(...args: ConstructorParameters<typeof IModelTransformer>) {
     super(...args);
     const _this = this; // eslint-disable-line @typescript-eslint/no-this-alias
     const oldExportElem = this.exporter.exportElement; // eslint-disable-line @typescript-eslint/unbound-method
-    this.exporter.exportElement = async function (elemId: Id64String) {
+    this.exporter.exportElement = async function (...args) {
       if (_this.elementExportsUntilCall === 0) await _this.callback?.();
       if (_this.elementExportsUntilCall !== undefined)
         _this.elementExportsUntilCall--;
-      return oldExportElem.call(this, elemId);
+      return oldExportElem.call(this, ...args);
+    };
+    const oldExportRel = this.exporter.exportRelationship; // eslint-disable-line @typescript-eslint/unbound-method
+    this.exporter.exportRelationship = async function (...args) {
+      if (_this.relationshipExportsUntilCall === 0) await _this.callback?.();
+      if (_this.relationshipExportsUntilCall !== undefined)
+        _this.relationshipExportsUntilCall--;
+      return oldExportRel.call(this, ...args);
     };
   }
 }
@@ -377,6 +385,102 @@ describe("test resuming transformations", () => {
     targetDb.saveChanges();
     transformer.dispose();
     return targetDb;
+  });
+
+  it("should fail to resume from an old target while processing relationships", async () => {
+    const sourceDbId = await IModelHost.hubAccess.createNewIModel({
+      iTwinId,
+      iModelName: "sourceDb1",
+      description: "a db called sourceDb1",
+      noLocks: true,
+      version0: seedDb.pathName,
+    });
+    const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
+
+    const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
+    let targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+    const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
+    transformer.relationshipExportsUntilCall = 2;
+    let crashed = false;
+    try {
+      await transformer.processSchemas();
+      await transformer.processAll();
+    } catch (transformerErr) {
+      expect((transformerErr as Error).message).to.equal("crash");
+      crashed = true;
+      const dumpPath = IModelTestUtils.prepareOutputFile(
+        "IModelTransformerResumption",
+        "transformer-state.db"
+      );
+      transformer.saveStateToFile(dumpPath);
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const TransformerClass = transformer.constructor as typeof IModelTransformer;
+      // redownload targetDb so that it is reset to the old state
+      targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      expect(
+        () => TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb)
+      ).to.throw(/does not have the expected provenance/);
+    }
+
+    expect(crashed).to.be.true;
+    targetDb.saveChanges();
+    transformer.dispose();
+    return targetDb;
+  });
+
+  it("should succeed to resume from an up-to-date target while processing relationships", async () => {
+    const sourceDbId = await IModelHost.hubAccess.createNewIModel({
+      iTwinId,
+      iModelName: "sourceDb1",
+      description: "a db called sourceDb1",
+      noLocks: true,
+      version0: seedDb.pathName,
+    });
+    const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceDbId });
+
+    const crashingTarget = await (async () => {
+      const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb1", description: "crashingTarget", noLocks: true });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      const transformer = new CountdownToCrashTransformer(sourceDb, targetDb);
+      transformer.relationshipExportsUntilCall = 2;
+      let crashed = false;
+      try {
+        await transformer.processSchemas();
+        await transformer.processAll();
+      } catch (transformerErr) {
+        expect((transformerErr as Error).message).to.equal("crash");
+        crashed = true;
+        const dumpPath = IModelTestUtils.prepareOutputFile(
+          "IModelTransformerResumption",
+          "transformer-state.db"
+        );
+        transformer.saveStateToFile(dumpPath);
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const TransformerClass = transformer.constructor as typeof IModelTransformer;
+        TransformerClass.resumeTransformation(dumpPath, sourceDb, targetDb);
+        transformer.relationshipExportsUntilCall = undefined;
+        await transformer.processAll();
+      }
+
+      expect(crashed).to.be.true;
+      targetDb.saveChanges();
+      transformer.dispose();
+      return targetDb;
+    })();
+
+    const regularTarget = await (async () => {
+      const targetDbId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "targetDb2", description: "non crashing target", noLocks: true });
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetDbId });
+      const transformer = new IModelTransformer(sourceDb, targetDb);
+      await transformNoCrash({sourceDb, targetDb, transformer});
+      targetDb.saveChanges();
+      transformer.dispose();
+      return targetDb;
+    })();
+
+    await assertIdentityTransformation(regularTarget, crashingTarget);
+    crashingTarget.close();
+    regularTarget.close();
   });
 
   it("processChanges crash and resume", async () => {

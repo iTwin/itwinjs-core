@@ -702,7 +702,7 @@ export class IModelTransformer extends IModelExportHandler {
         this.provenanceDb.elements.updateAspect(aspectProps);
       }
       assert(aspectProps.id !== undefined);
-      this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">);
+      this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">, { isRelationship: false });
     }
   }
 
@@ -856,7 +856,7 @@ export class IModelTransformer extends IModelExportHandler {
         aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
       }
       assert(aspectProps.id !== undefined);
-      this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">);
+      this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">, { isRelationship: true });
     }
   }
 
@@ -1096,14 +1096,15 @@ export class IModelTransformer extends IModelExportHandler {
     entityId: Id64.invalid,
     aspectId: Id64.invalid,
     aspectVersion: "",
+    aspectKind: ExternalSourceAspect.Kind.Element,
   };
 
-  private markLastProvenance(sourceAspect: MarkRequired<ExternalSourceAspectProps, "id">) {
-    // TODO: does this work for relationships?
+  private markLastProvenance(sourceAspect: MarkRequired<ExternalSourceAspectProps, "id">, { isRelationship = false }) {
     this._lastProvenanceEntityInfo = {
       entityId: sourceAspect.element.id,
       aspectId: sourceAspect.id,
       aspectVersion: sourceAspect.version ?? "",
+      aspectKind: isRelationship ? ExternalSourceAspect.Kind.Relationship : ExternalSourceAspect.Kind.Element,
     };
   }
 
@@ -1138,7 +1139,7 @@ export class IModelTransformer extends IModelExportHandler {
       return JSON.parse(stmt.getValueString(0)) as TransformationJsonState;
     });
     const lastProvenanceEntityInfo: IModelTransformer["_lastProvenanceEntityInfo"] = db.withSqliteStatement(
-      `SELECT entityId, aspectId, aspectVersion FROM ${IModelTransformer.lastProvenanceEntityInfoTable}`,
+      `SELECT entityId, aspectId, aspectVersion, aspectKind FROM ${IModelTransformer.lastProvenanceEntityInfoTable}`,
       (stmt) => {
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
           throw Error(
@@ -1148,27 +1149,27 @@ export class IModelTransformer extends IModelExportHandler {
           entityId: stmt.getValueId(0),
           aspectId: stmt.getValueId(1),
           aspectVersion: stmt.getValueString(2),
+          aspectKind: stmt.getValueString(3) as ExternalSourceAspect.Kind,
         };
       }
     );
     const targetHasCorrectLastProvenance = transformer.provenanceDb.withPreparedStatement(`
-      SELECT 1 FROM ${ExternalSourceAspect.classFullName}
+      SELECT Version FROM ${ExternalSourceAspect.classFullName}
       WHERE Scope.Id=:scopeId
         AND ECInstanceId=:aspectId
         AND Kind=:kind
         AND Element.Id=:entityId
-        AND Version=:version
     `,
     (statement: ECSqlStatement): boolean => {
       statement.bindId("scopeId", transformer.targetScopeElementId);
       statement.bindId("aspectId", lastProvenanceEntityInfo.aspectId);
-      statement.bindString("kind", ExternalSourceAspect.Kind.Element);
+      statement.bindString("kind", lastProvenanceEntityInfo.aspectKind);
       statement.bindId("entityId", lastProvenanceEntityInfo.entityId);
-      statement.bindString("version", lastProvenanceEntityInfo.aspectVersion);
       const stepResult = statement.step();
       switch (stepResult) {
         case DbResult.BE_SQLITE_ROW:
-          return true;
+          const version = statement.getValue(0).getString();
+          return version === lastProvenanceEntityInfo.aspectVersion;
         case DbResult.BE_SQLITE_DONE:
           return false;
         default:
@@ -1215,7 +1216,8 @@ export class IModelTransformer extends IModelExportHandler {
       CREATE TABLE ${IModelTransformer.lastProvenanceEntityInfoTable} (
         entityId INTEGER,
         aspectId INTEGER,
-        aspectVersion TEXT
+        aspectVersion TEXT,
+        aspectKind TEXT
       )
     `)) throw Error("Failed to create the target state table in the state database");
     db.saveChanges();
@@ -1226,11 +1228,12 @@ export class IModelTransformer extends IModelExportHandler {
         if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");
       });
     db.withSqliteStatement(
-      `INSERT INTO ${IModelTransformer.lastProvenanceEntityInfoTable} (entityId, aspectId, aspectVersion) VALUES (?,?,?)`,
+      `INSERT INTO ${IModelTransformer.lastProvenanceEntityInfoTable} (entityId, aspectId, aspectVersion, aspectKind) VALUES (?,?,?,?)`,
       (stmt) => {
         stmt.bindId(1, this._lastProvenanceEntityInfo.entityId);
         stmt.bindId(2, this._lastProvenanceEntityInfo.aspectId);
         stmt.bindString(3, this._lastProvenanceEntityInfo.aspectVersion);
+        stmt.bindString(4, this._lastProvenanceEntityInfo.aspectKind);
         if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");
       });
     db.saveChanges();

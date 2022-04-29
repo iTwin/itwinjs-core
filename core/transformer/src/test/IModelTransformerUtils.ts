@@ -473,9 +473,9 @@ export async function assertIdentityTransformation(
     sourceRelationships.set(makeRelationKey(row), row);
   }
 
-  const targetRelationshipQueue = new Map<string, any>();
+  const targetRelationshipsToFind = new Map<string, any>();
   for await (const row of targetDb.query(...query)) {
-    targetRelationshipQueue.set(makeRelationKey(row), row);
+    targetRelationshipsToFind.set(makeRelationKey(row), row);
   }
 
   /* eslint-disable @typescript-eslint/naming-convention */
@@ -492,9 +492,13 @@ export async function assertIdentityTransformation(
       SourceECInstanceId: relSourceInTarget,
       TargetECInstanceId: relTargetInTarget,
     });
-    const relInTarget = targetRelationshipQueue.get(relInTargetKey);
-    expect(relInTarget).not.to.be.undefined;
-    // this won't work if it has navigation properties (or any remapped property)
+    const relInTarget = targetRelationshipsToFind.get(relInTargetKey);
+    const relClassName = sourceDb.withPreparedStatement(
+      "SELECT Name FROM meta.ECClassDef WHERE ECInstanceId=?",
+      (s) => { s.bindId(1,relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
+    );
+    expect(relInTarget, `rel ${relClassName}:${relInSource.SourceECInstanceId}->${relInSource.TargetECInstanceId} was missing`).not.to.be.undefined;
+    // this won't work if the relationship instance has navigation properties (or any property that was changed by the transformer)
     const makeRelInvariant = ({
       SourceECInstanceId: _1,
       TargetECInstanceId: _2,
@@ -505,11 +509,11 @@ export async function assertIdentityTransformation(
     expect(makeRelInvariant(relInSource)).to.deep.equal(
       makeRelInvariant(relInTarget)
     );
-    targetRelationshipQueue.delete(relInTargetKey);
+    targetRelationshipsToFind.delete(relInTargetKey);
   }
   /* eslint-enable @typescript-eslint/naming-convention */
 
-  expect(targetRelationshipQueue.size).to.equal(0);
+  expect(targetRelationshipsToFind.size).to.equal(0);
 }
 
 export class TransformerExtensiveTestScenario {
