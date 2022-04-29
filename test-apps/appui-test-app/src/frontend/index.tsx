@@ -8,7 +8,7 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
+// import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 // import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
@@ -24,13 +24,13 @@ import {
 import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+// import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+// import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
-import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+// import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
@@ -46,6 +46,7 @@ import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { MainFrontstage } from "./appui/frontstages/MainFrontstage";
 import { AppSettingsTabsProvider } from "./appui/settingsproviders/AppSettingsTabsProvider";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 
 // cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise hypermodeling testapp urlps
 // cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
@@ -149,9 +150,6 @@ export class SampleAppIModelApp {
   public static hubClient?: IModelsClient;
   private static _appStateManager: StateManager | undefined;
 
-  // Favorite Properties Support
-  // private static _selectionSetListener = new ElementSelectionListener(true);
-
   public static get store(): Store<RootState> {
     return StateManager.store as Store<RootState>;
   }
@@ -164,50 +162,66 @@ export class SampleAppIModelApp {
       ...opts.iModelApp,
     };
 
-    if (ProcessDetector.isElectronAppFrontend) {
-      const authClient: ElectronRendererAuthorization = new ElectronRendererAuthorization();
-      iModelAppOpts.authorizationClient = authClient;
-      await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
-      NativeAppLogger.initialize();
-    } else if (ProcessDetector.isIOSAppFrontend) {
-      await IOSApp.startup(opts);
-    } else if (ProcessDetector.isAndroidAppFrontend) {
-      await AndroidApp.startup(opts);
+    if (hubClient) {
+      //      // set up OIDC authorization if hubClient is specified
+      //      if (ProcessDetector.isElectronAppFrontend) {
+      //        const authClient: ElectronRendererAuthorization = new ElectronRendererAuthorization();
+      //        iModelAppOpts.authorizationClient = authClient;
+      //        await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
+      //        NativeAppLogger.initialize();
+      //      } else if (ProcessDetector.isIOSAppFrontend) {
+      //        await IOSApp.startup(opts);
+      //      } else if (ProcessDetector.isAndroidAppFrontend) {
+      //        await AndroidApp.startup(opts);
+      //      } else {
+      //        // if an auth client has not already been configured, use a default Browser client
+      //        const redirectUri = process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "";
+      //        const urlObj = new URL(redirectUri);
+      //        if (urlObj.pathname === window.location.pathname) {
+      //          await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
+      //          return;
+      //        }
+      //
+      //        if (undefined === process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID && undefined === process.env.IMJS_OIDC_BROWSER_TEST_SCOPES) {
+      //          Logger.logWarning(loggerCategory, "Missing IMJS_OIDC_BROWSER_TEST_CLIENT_ID and IMJS_OIDC_BROWSER_TEST_SCOPES environment variables. Authentication will not be possible if not properly set.");
+      //          await IModelApp.startup(iModelAppOpts);
+      //          return;
+      //        }
+      //
+      //        const auth = new BrowserAuthorizationClient({
+      //          clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
+      //          redirectUri,
+      //          scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
+      //          responseType: "code",
+      //        });
+      //        try {
+      //          await auth.signInSilent();
+      //        } catch (err) { }
+      //
+      //        const rpcParams: BentleyCloudRpcParams =
+      //          undefined !== process.env.IMJS_UITESTAPP_GP_BACKEND ?
+      //            { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
+      //            : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
+      //        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
+      //
+      //        await IModelApp.startup({
+      //          ...iModelAppOpts,
+      //          authorizationClient: auth,
+      //        });
+      //      }
     } else {
-      // if an auth client has not already been configured, use a default Browser client
-      const redirectUri = process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "";
-      const urlObj = new URL(redirectUri);
-      if (urlObj.pathname === window.location.pathname) {
-        await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
-        return;
-      }
-
-      if (undefined === process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID && undefined === process.env.IMJS_OIDC_BROWSER_TEST_SCOPES) {
-        Logger.logWarning(loggerCategory, "Missing IMJS_OIDC_BROWSER_TEST_CLIENT_ID and IMJS_OIDC_BROWSER_TEST_SCOPES environment variables. Authentication will not be possible if not properly set.");
-        await IModelApp.startup(iModelAppOpts);
-        return;
-      }
-
-      const auth = new BrowserAuthorizationClient({
-        clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
-        redirectUri,
-        scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
-        responseType: "code",
-      });
-      try {
-        await auth.signInSilent();
-      } catch (err) { }
-
-      const rpcParams: BentleyCloudRpcParams =
-        undefined !== process.env.IMJS_UITESTAPP_GP_BACKEND ?
-          { info: { title: "general-purpose-core-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
-          : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
+      const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
       BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
-
-      await IModelApp.startup({
-        ...iModelAppOpts,
-        authorizationClient: auth,
-      });
+      if (ProcessDetector.isElectronAppFrontend) {
+        await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
+        NativeAppLogger.initialize();
+        // } else if (ProcessDetector.isIOSAppFrontend) {
+        //   await IOSApp.startup(opts);
+        // } else if (ProcessDetector.isAndroidAppFrontend) {
+        //   await AndroidApp.startup(opts);
+      } else {
+        await IModelApp.startup(iModelAppOpts);
+      }
     }
 
     window.onerror = function (error) {
