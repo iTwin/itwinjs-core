@@ -14,8 +14,8 @@ export function MultiTagSelect<Option>(props: Props<Option, true, GroupBase<Opti
   return <Select
     {...props}
     styles={{
-      control: () => ({ display: "grid", gridTemplateColumns: "auto auto", height: "41px", padding: "0 12px"}),
-      menu: () => ({zIndex: 9999}),
+      control: () => ({display: "grid", gridTemplateColumns: "auto auto", height: "41px", padding: "0 12px"}),
+      menu: () => ({position: "absolute", zIndex: 9999}),
       option: () => ({}),
       input: (style) => ({...style, order: -1, flex: 0}),
       valueContainer: (style) => ({...style, padding: 0, flexWrap: "nowrap"}),
@@ -34,19 +34,19 @@ export function MultiTagSelect<Option>(props: Props<Option, true, GroupBase<Opti
   />;
 }
 
-function TagSelectControl<Option>({ children, ...props}: ControlProps<Option, true, GroupBase<Option>>) {
+function TagSelectControl<Option>({children, ...props}: ControlProps<Option, true, GroupBase<Option>>) {
   return <components.Control {...props} className="iui-select-button">
     {children}
   </components.Control>;
 }
 
-function TagSelectMenu<Option>({ children, ...props}: MenuProps<Option, true, GroupBase<Option>>) {
+function TagSelectMenu<Option>({children, ...props}: MenuProps<Option, true, GroupBase<Option>>) {
   return <components.Menu {...props} className="iui-menu">
     {children}
   </components.Menu>;
 }
 
-function TagSelectOption<Option>({ children: _, ...props}: OptionProps<Option, true, GroupBase<Option>>) {
+function TagSelectOption<Option>({children: _, ...props}: OptionProps<Option, true, GroupBase<Option>>) {
   const className = classnames("iui-menu-item", {
     "iui-focused": props.isFocused,
     "iui-active": props.isSelected,
@@ -59,7 +59,7 @@ function TagSelectOption<Option>({ children: _, ...props}: OptionProps<Option, t
   </components.Option>;
 }
 
-function TagSelectValueContainer<Option>({ children, ...props}: ValueContainerProps<Option, true, GroupBase<Option>>) {
+function TagSelectValueContainer<Option>({children, ...props}: ValueContainerProps<Option, true, GroupBase<Option>>) {
   return <components.ValueContainer {...props} className="iui-content">
     {children}
   </components.ValueContainer>;
