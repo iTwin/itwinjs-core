@@ -945,7 +945,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** @alpha */
   public async getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo> {
-    const promises = new Array<Promise<MapLayerFeatureInfo[]  | undefined>>();
+    const promises = new Array<Promise<MapLayerFeatureInfo[] | undefined>>();
 
     // Execute 'getMapFeatureInfo' on every tree, and make sure to handle exception for each call,
     // so that we get still get results even though a tree has failed.
@@ -3064,7 +3064,7 @@ export class ScreenViewport extends Viewport {
     return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
   }
 
-  /** @internal */
+  /** @public */
   public animateFrustumChange(options?: ViewAnimationOptions) {
     if (this._lastPose && this._currentBaseline)
       this.setAnimator(new FrustumAnimator(options ? options : {}, this, this._lastPose, this.view.savePose()));
