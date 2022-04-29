@@ -697,9 +697,12 @@ export class IModelTransformer extends IModelExportHandler {
       const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
       if (aspectProps.id === undefined) {
         this.provenanceDb.elements.insertAspect(aspectProps);
+        aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
       } else {
         this.provenanceDb.elements.updateAspect(aspectProps);
       }
+      assert(aspectProps.id !== undefined);
+      this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">);
     }
   }
 
@@ -850,7 +853,10 @@ export class IModelTransformer extends IModelExportHandler {
       const aspectProps: ExternalSourceAspectProps = this.initRelationshipProvenance(sourceRelationship, targetRelationshipInstanceId);
       if (undefined === aspectProps.id) {
         this.provenanceDb.elements.insertAspect(aspectProps);
+        aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
       }
+      assert(aspectProps.id !== undefined);
+      this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">);
     }
   }
 
@@ -1092,7 +1098,7 @@ export class IModelTransformer extends IModelExportHandler {
     aspectVersion: "",
   };
 
-  private markLastProvenance(sourceAspect: ExternalSourceAspect) {
+  private markLastProvenance(sourceAspect: MarkRequired<ExternalSourceAspectProps, "id">) {
     // TODO: does this work for relationships?
     this._lastProvenanceEntityInfo = {
       entityId: sourceAspect.element.id,
