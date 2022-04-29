@@ -193,6 +193,8 @@ export class IModelTransformer extends IModelExportHandler {
     initFromExternalSourceAspects(): void;
     // @internal
     static readonly jsStateTable = "TransformerJsState";
+    // @internal
+    static readonly lastProvenanceEntityInfoTable = "LastProvenanceEntityInfo";
     onDeleteElement(sourceElementId: Id64String): void;
     onDeleteModel(_sourceModelId: Id64String): void;
     onDeleteRelationship(sourceRelInstanceId: Id64String): void;
